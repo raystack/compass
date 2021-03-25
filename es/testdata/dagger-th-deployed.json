@@ -1,0 +1,14 @@
+[
+  {
+    "description": "",
+    "entity": "odpf",
+    "flink_name": "g-godata-id-playground",
+    "landscape": "th",
+    "name": "g-godata-id-test-gaurav2-dagger",
+    "sink_type": "influx",
+    "state": "DEPLOYED",
+    "team": "Playground",
+    "title": "test_gaurav2",
+    "urn": "g-godata-id-test-gaurav2-dagger"
+  }
+]
