@@ -1,0 +1,38 @@
+[
+  {
+    "description": "",
+    "entity": "odpf",
+    "flink_name": "g-godata-id-playground",
+    "landscape": "id",
+    "name": "g-godata-id-demo-dagger-dagger",
+    "sink_type": "influx",
+    "state": "USER_STOPPED",
+    "team": "data_engineering",
+    "title": "demo-dagger",
+    "urn": "g-godata-id-demo-dagger-dagger"
+  },
+  {
+    "description": "",
+    "entity": "odpf",
+    "flink_name": "g-godata-id-playground",
+    "landscape": "id",
+    "name": "g-godata-id-prakhar-test-001-dagger",
+    "sink_type": "influx",
+    "state": "USER_STOPPED",
+    "team": "",
+    "title": "prakhar_test_001",
+    "urn": "g-godata-id-prakhar-test-001-dagger"
+  },
+  {
+    "description": "",
+    "entity": "odpf",
+    "flink_name": "g-godata-id-playground",
+    "landscape": "id",
+    "name": "g-undefined-undefined-dfgdgd-avi-dagger",
+    "sink_type": "influx",
+    "state": "USER_STOPPED",
+    "team": "Playground",
+    "title": "dfgdgd-avi",
+    "urn": "g-undefined-undefined-dfgdgd-avi-dagger"
+  }
+]
