@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"encoding/json"
@@ -47,78 +47,7 @@ var (
 		fmt.Sprintf("logging level. can be one of [%s]", strings.Join(allLogLevels(), ",")))
 )
 
-func lookupEnvOrString(key, fallback string) string {
-	if val, ok := os.LookupEnv(key); ok {
-		return val
-	}
-	return fallback
-}
-
-func initLogger() *logrus.Logger {
-	logger := logrus.New()
-	lvl, err := logrus.ParseLevel(*logLevel)
-	if err != nil {
-		log.Fatalf("error parsing log level: %v", err)
-	}
-	logger.SetOutput(os.Stdout)
-	logger.SetLevel(lvl)
-	return logger
-}
-
-func allLogLevels() []string {
-	levels := make([]string, len(logrus.AllLevels))
-	for i := 0; i < len(logrus.AllLevels); i++ {
-		levels[i] = logrus.AllLevels[i].String()
-	}
-	return levels
-}
-
-func esInfo(cli *elasticsearch.Client) (string, error) {
-	res, err := cli.Info()
-	if err != nil {
-		return "", err
-	}
-	defer res.Body.Close()
-	if res.IsError() {
-		return "", errors.New(res.Status())
-	}
-	var info = struct {
-		ClusterName string `json:"cluster_name"`
-		Version     struct {
-			Number string `json:"number"`
-		} `json:"version"`
-	}{}
-	json.NewDecoder(res.Body).Decode(&info)
-	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
-}
-
-func typeWhiteList() (whiteList []string) {
-	indices := strings.Split(*typeWhiteListStr, ",")
-	for _, index := range indices {
-		index = strings.TrimSpace(index)
-		if index == "" {
-			continue
-		}
-		whiteList = append(whiteList, index)
-	}
-	return
-}
-
-func initNewRelic(appName, licenseKey string) *newrelic.Application {
-	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName(appName),
-		newrelic.ConfigLicense(licenseKey),
-		newrelic.ConfigDebugLogger(os.Stdout),
-	)
-
-	if err != nil {
-		log.Fatalf("unable to create New Relic Application: %v", err)
-	}
-
-	return app
-}
-
-func main() {
+func Execute() {
 	flag.Parse()
 	rootLogger := initLogger()
 
@@ -226,6 +155,77 @@ func main() {
 	if err := http.ListenAndServe(serverAddr, handler); err != nil {
 		log.Errorf("listen and serve: %v", err)
 	}
+}
+
+func lookupEnvOrString(key, fallback string) string {
+	if val, ok := os.LookupEnv(key); ok {
+		return val
+	}
+	return fallback
+}
+
+func initLogger() *logrus.Logger {
+	logger := logrus.New()
+	lvl, err := logrus.ParseLevel(*logLevel)
+	if err != nil {
+		log.Fatalf("error parsing log level: %v", err)
+	}
+	logger.SetOutput(os.Stdout)
+	logger.SetLevel(lvl)
+	return logger
+}
+
+func allLogLevels() []string {
+	levels := make([]string, len(logrus.AllLevels))
+	for i := 0; i < len(logrus.AllLevels); i++ {
+		levels[i] = logrus.AllLevels[i].String()
+	}
+	return levels
+}
+
+func esInfo(cli *elasticsearch.Client) (string, error) {
+	res, err := cli.Info()
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		return "", errors.New(res.Status())
+	}
+	var info = struct {
+		ClusterName string `json:"cluster_name"`
+		Version     struct {
+			Number string `json:"number"`
+		} `json:"version"`
+	}{}
+	json.NewDecoder(res.Body).Decode(&info)
+	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
+}
+
+func typeWhiteList() (whiteList []string) {
+	indices := strings.Split(*typeWhiteListStr, ",")
+	for _, index := range indices {
+		index = strings.TrimSpace(index)
+		if index == "" {
+			continue
+		}
+		whiteList = append(whiteList, index)
+	}
+	return
+}
+
+func initNewRelic(appName, licenseKey string) *newrelic.Application {
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName(appName),
+		newrelic.ConfigLicense(licenseKey),
+		newrelic.ConfigDebugLogger(os.Stdout),
+	)
+
+	if err != nil {
+		log.Fatalf("unable to create New Relic Application: %v", err)
+	}
+
+	return app
 }
 
 func applyMiddlewares(root *mux.Router, middlewares []mux.MiddlewareFunc) http.Handler {
