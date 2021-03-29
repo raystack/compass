@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -26,6 +25,7 @@ import (
 // Version of the current build. overridden by the build system.
 // see "Makefile" for more information
 var Version string
+var log *logrus.Entry
 
 func Execute() {
 	cfg, err := config.LoadConfig()
@@ -35,21 +35,11 @@ func Execute() {
 
 	rootLogger := initLogger(cfg.LogLevel)
 
-	log := rootLogger.WithField("reporter", "main")
+	log = rootLogger.WithField("reporter", "main")
 	log.Infof("columbus %s starting", Version)
 
 	brokers := strings.Split(cfg.ElasticSearchBrokers, ",")
-	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
-		Addresses: brokers,
-	})
-	if err != nil {
-		log.Fatalf("error connecting to elasticsearch: %v", err)
-	}
-	info, err := esInfo(esClient)
-	if err != nil {
-		log.Fatalf("error obtaining elasticsearch info: %v", err)
-	}
-	log.Infof("connected to elasticsearch cluster %s", info)
+	esClient := initElasticsearch(brokers)
 
 	middlewares := []mux.MiddlewareFunc{
 		requestLoggerMiddleware(
@@ -83,7 +73,6 @@ func Execute() {
 	typeRepository := es.NewTypeRepository(esClient)
 	recordRepositoryFactory := es.NewRecordRepositoryFactory(esClient)
 	recordSearcher, err := es.NewSearcher(esClient, typeWhiteList(cfg.TypeWhiteListStr))
-
 	if err != nil {
 		log.Fatalf("error creating searcher: %v", err)
 	}
@@ -96,29 +85,14 @@ func Execute() {
 		log.Fatal(err)
 	}
 
-	typeHandler := web.NewTypeHandler(
-		rootLogger.WithField("reporter", "type-handler"),
-		typeRepository,
-		recordRepositoryFactory,
-	)
-	searchHandler := web.NewSearchHandler(
-		rootLogger.WithField("reporter", "search-handler"),
-		recordSearcher,
-		typeRepository,
-	)
-	lineageHandler := web.NewLineageHandler(
-		rootLogger.WithField("reporter", "lineage-handler"),
-		lineageService,
-	)
-
-	router := mux.NewRouter()
-
-	// setup routing for different handlers
-	router.PathPrefix("/ping").Handler(web.NewHeartbeatHandler())
-	router.PathPrefix("/v1/types").Handler(typeHandler)
-	router.PathPrefix("/v1/entities").Handler(typeHandler) // For backward compatibility
-	router.PathPrefix("/v1/search").Handler(searchHandler)
-	router.PathPrefix("/v1/lineage").Handler(lineageHandler)
+	router := web.NewRouter(web.Config{
+		Logger:                  rootLogger,
+		RecordSearcher:          recordSearcher,
+		RecordRepositoryFactory: recordRepositoryFactory,
+		TypeRepository:          typeRepository,
+		LineageProvider:         lineageService,
+		Middlewares:             middlewares,
+	})
 
 	// below handlers still have to be manually wrapped by newrelic core library
 	if cfg.NewRelicEnabled {
@@ -126,20 +100,11 @@ func Execute() {
 		_, router.MethodNotAllowedHandler = newrelic.WrapHandle(newRelicApp, "MethodNotAllowedHandler", router.MethodNotAllowedHandler)
 	}
 
-	handler := applyMiddlewares(router, middlewares)
-
 	serverAddr := fmt.Sprintf("%s:%s", cfg.ServerHost, cfg.ServerPort)
 	log.Printf("starting http server on %s", serverAddr)
-	if err := http.ListenAndServe(serverAddr, handler); err != nil {
+	if err := http.ListenAndServe(serverAddr, router); err != nil {
 		log.Errorf("listen and serve: %v", err)
 	}
-}
-
-func lookupEnvOrString(key, fallback string) string {
-	if val, ok := os.LookupEnv(key); ok {
-		return val
-	}
-	return fallback
 }
 
 func initLogger(logLevel string) *logrus.Logger {
@@ -153,12 +118,46 @@ func initLogger(logLevel string) *logrus.Logger {
 	return logger
 }
 
-func allLogLevels() []string {
-	levels := make([]string, len(logrus.AllLevels))
-	for i := 0; i < len(logrus.AllLevels); i++ {
-		levels[i] = logrus.AllLevels[i].String()
+func initElasticsearch(brokers []string) *elasticsearch.Client {
+	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: brokers,
+	})
+	if err != nil {
+		log.Fatalf("error connecting to elasticsearch: %v", err)
 	}
-	return levels
+	info, err := esInfo(esClient)
+	if err != nil {
+		log.Fatalf("error obtaining elasticsearch info: %v", err)
+	}
+	log.Infof("connected to elasticsearch cluster %s", info)
+
+	return esClient
+}
+
+func initNewRelic(appName, licenseKey string) *newrelic.Application {
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName(appName),
+		newrelic.ConfigLicense(licenseKey),
+		newrelic.ConfigDebugLogger(os.Stdout),
+	)
+
+	if err != nil {
+		log.Fatalf("unable to create New Relic Application: %v", err)
+	}
+
+	return app
+}
+
+func requestLoggerMiddleware(dst io.Writer) mux.MiddlewareFunc {
+	return func(handler http.Handler) http.Handler {
+		return handlers.LoggingHandler(dst, handler)
+	}
+}
+
+func telemetryMiddleware(mon metrics.Monitor) mux.MiddlewareFunc {
+	return func(handler http.Handler) http.Handler {
+		return web.MonitoringHandler(handler, mon)
+	}
 }
 
 func esInfo(cli *elasticsearch.Client) (string, error) {
@@ -190,37 +189,4 @@ func typeWhiteList(typeWhiteListStr string) (whiteList []string) {
 		whiteList = append(whiteList, index)
 	}
 	return
-}
-
-func initNewRelic(appName, licenseKey string) *newrelic.Application {
-	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName(appName),
-		newrelic.ConfigLicense(licenseKey),
-		newrelic.ConfigDebugLogger(os.Stdout),
-	)
-
-	if err != nil {
-		log.Fatalf("unable to create New Relic Application: %v", err)
-	}
-
-	return app
-}
-
-func applyMiddlewares(root *mux.Router, middlewares []mux.MiddlewareFunc) http.Handler {
-	for _, middleware := range middlewares {
-		root.Use(middleware)
-	}
-	return root
-}
-
-func requestLoggerMiddleware(dst io.Writer) mux.MiddlewareFunc {
-	return func(handler http.Handler) http.Handler {
-		return handlers.LoggingHandler(dst, handler)
-	}
-}
-
-func telemetryMiddleware(mon metrics.Monitor) mux.MiddlewareFunc {
-	return func(handler http.Handler) http.Handler {
-		return web.MonitoringHandler(handler, mon)
-	}
 }
