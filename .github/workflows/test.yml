@@ -1,0 +1,24 @@
+name: Golang CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      elasticsearch:
+        image: elasticsearch:7.5.2
+        ports:
+          - 9200:9200
+        env:
+          ES_TEST_SERVER_URL: 'http://elasticsearch:9200'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.13
+      - name: Install dependencies
+        run: sudo apt-get install build-essential
+      - name: Install packages
+        run: go mod tidy
+      - name: Run Test
+        run: make test
