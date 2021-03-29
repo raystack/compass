@@ -11,7 +11,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/gorilla/handlers"
@@ -105,18 +104,13 @@ func Execute() {
 		log.Fatalf("error creating searcher: %v", err)
 	}
 
-	lineageRefreshInterval, err := time.ParseDuration(*lineageRefreshIntervalStr)
+	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
+		RefreshInterval: *lineageRefreshIntervalStr,
+		MetricsMonitor:  &metricsMonitor,
+	})
 	if err != nil {
-		log.Fatalf("error parsing lineage refresh interval: %v", err)
+		log.Fatal(err)
 	}
-	lineageSrvOpts := []lineage.ServiceOpt{
-		lineage.WithRefreshInterval(lineageRefreshInterval),
-	}
-	if statsdEnabled {
-		lineageSrvOpts = append(lineageSrvOpts, lineage.WithMetricMonitor(&metricsMonitor))
-	}
-
-	lineageService := lineage.NewService(typeRepository, recordRepositoryFactory, lineageSrvOpts...)
 
 	typeHandler := web.NewTypeHandler(
 		rootLogger.WithField("reporter", "type-handler"),
