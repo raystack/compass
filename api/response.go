@@ -1,4 +1,4 @@
-package web
+package api
 
 // ErrorResponse defines the JSON message returned
 // from handlers when an error occurs
