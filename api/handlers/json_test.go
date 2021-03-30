@@ -1,4 +1,4 @@
-package web
+package handlers
 
 import (
 	"net/http"

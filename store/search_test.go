@@ -1,12 +1,12 @@
-package es_test
+package store_test
 
 import (
 	"fmt"
 	"reflect"
 	"testing"
 
-	"github.com/odpf/columbus/es"
 	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/store"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -282,9 +282,9 @@ func TestSearcher(t *testing.T) {
 		t.Run(testCase.Title, func(t *testing.T) {
 			var (
 				cli               = esTestServer.NewClient()
-				typeRepo          = es.NewTypeRepository(cli)
-				recordRepoFactory = es.NewRecordRepositoryFactory(cli)
-				searcher, err     = es.NewSearcher(cli, testCase.TypeWhiteList)
+				typeRepo          = store.NewTypeRepository(cli)
+				recordRepoFactory = store.NewRecordRepositoryFactory(cli)
+				searcher, err     = store.NewSearcher(cli, testCase.TypeWhiteList)
 			)
 
 			assert.Nil(t, err)
@@ -330,7 +330,7 @@ func TestNewSearcher(t *testing.T) {
 		}
 		for _, ri := range reservedIndices {
 			t.Run(ri, func(t *testing.T) {
-				_, err := es.NewSearcher(esTestServer.NewClient(), []string{ri})
+				_, err := store.NewSearcher(esTestServer.NewClient(), []string{ri})
 				assert.Error(t, err)
 			})
 		}

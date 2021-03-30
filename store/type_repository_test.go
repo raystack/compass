@@ -1,4 +1,4 @@
-package es_test
+package store_test
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/odpf/columbus/es"
 	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/store"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -108,7 +108,7 @@ func TestTypeRepository(t *testing.T) {
 				Validate: func(cli *elasticsearch.Client, recordType models.Type) error {
 					// we'll try to save the type again, with the expectation
 					// that it should succeed as normal
-					repo := es.NewTypeRepository(cli)
+					repo := store.NewTypeRepository(cli)
 					err := repo.CreateOrReplace(daggerType)
 					if err != nil {
 						return fmt.Errorf("repository returned unexpected error: %w", err)
@@ -227,7 +227,7 @@ func TestTypeRepository(t *testing.T) {
 					recordType.Boost = map[string]float64{
 						"name": 2.0,
 					}
-					repo := es.NewTypeRepository(cli)
+					repo := store.NewTypeRepository(cli)
 					err := repo.CreateOrReplace(recordType)
 					if err != nil {
 						return fmt.Errorf("error updating type definition: %v", err)
@@ -282,7 +282,7 @@ func TestTypeRepository(t *testing.T) {
 		for _, testCase := range testCases {
 			t.Run(testCase.Title, func(t *testing.T) {
 				cli := esTestServer.NewClient()
-				repo := es.NewTypeRepository(cli)
+				repo := store.NewTypeRepository(cli)
 				err := repo.CreateOrReplace(testCase.Type)
 				if testCase.ShouldFail {
 					assert.Error(t, err)
@@ -302,7 +302,7 @@ func TestTypeRepository(t *testing.T) {
 		}
 	})
 	t.Run("GetByName", func(t *testing.T) {
-		repo := es.NewTypeRepository(esTestServer.NewClient())
+		repo := store.NewTypeRepository(esTestServer.NewClient())
 		err := repo.CreateOrReplace(daggerType)
 		if err != nil {
 			t.Errorf("error writing to elasticsearch: %v", err)
@@ -320,7 +320,7 @@ func TestTypeRepository(t *testing.T) {
 		}
 	})
 	t.Run("GetAll", func(t *testing.T) {
-		repo := es.NewTypeRepository(esTestServer.NewClient())
+		repo := store.NewTypeRepository(esTestServer.NewClient())
 		err := repo.CreateOrReplace(daggerType)
 		if err != nil {
 			t.Errorf("error writing to elasticsearch: %v", err)
