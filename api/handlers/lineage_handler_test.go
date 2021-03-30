@@ -1,4 +1,4 @@
-package web_test
+package handlers_test
 
 import (
 	"encoding/json"
@@ -8,11 +8,11 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/lib/set"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/models"
-	"github.com/odpf/columbus/web"
 )
 
 func TestLineageHandler(t *testing.T) {
@@ -25,7 +25,7 @@ func TestLineageHandler(t *testing.T) {
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
 
-			handler := web.NewLineageHandler(new(mock.Logger), lp)
+			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
 
 			rr := httptest.NewRequest("GET", "/v1/lineage?filter.type=bqtable", nil)
 			rw := httptest.NewRecorder()
@@ -37,7 +37,7 @@ func TestLineageHandler(t *testing.T) {
 				return
 			}
 
-			var response web.ErrorResponse
+			var response handlers.ErrorResponse
 			err := json.NewDecoder(rw.Body).Decode(&response)
 			if err != nil {
 				t.Errorf("error decoding handler response: %v", err)
@@ -76,7 +76,7 @@ func TestLineageHandler(t *testing.T) {
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
 
-			handler := web.NewLineageHandler(new(mock.Logger), lp)
+			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
 
 			rr := httptest.NewRequest("GET", "/v1/lineage?filter.type=topic&filter.type=dagger", nil)
 			rw := httptest.NewRecorder()
@@ -107,7 +107,7 @@ func TestLineageHandler(t *testing.T) {
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, errNoGraph)
 
-			handler := web.NewLineageHandler(new(mock.Logger), lp)
+			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
 
 			rr := httptest.NewRequest("GET", "/v1/lineage", nil)
 			rw := httptest.NewRecorder()
@@ -141,7 +141,7 @@ func TestLineageHandler(t *testing.T) {
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
 
-			handler := web.NewLineageHandler(new(mock.Logger), lp)
+			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
 
 			rr := httptest.NewRequest("GET", "/v1/lineage", nil)
 			rw := httptest.NewRecorder()
@@ -194,7 +194,7 @@ func TestLineageHandler(t *testing.T) {
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
 
-			handler := web.NewLineageHandler(new(mock.Logger), lp)
+			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
 
 			rr := httptest.NewRequest("GET", "/v1/lineage/bqtable/raw", nil)
 			rw := httptest.NewRecorder()

@@ -1,4 +1,4 @@
-package es_test
+package store_test
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
-	"github.com/odpf/columbus/es"
 	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/store"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -64,7 +64,7 @@ func TestRecordRepository(t *testing.T) {
 					},
 				},
 				Setup: func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error {
-					return es.NewTypeRepository(cli).CreateOrReplace(recordType)
+					return store.NewTypeRepository(cli).CreateOrReplace(recordType)
 				},
 				PostCheck: func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error {
 					searchReq := esapi.SearchRequest{
@@ -106,7 +106,7 @@ func TestRecordRepository(t *testing.T) {
 						t.Errorf("error setting up testcase: %v", err)
 					}
 				}
-				factory := es.NewRecordRepositoryFactory(cli)
+				factory := store.NewRecordRepositoryFactory(cli)
 				repo, err := factory.For(testCase.Type)
 				if err != nil {
 					t.Fatalf("error creating record repository: %s", err)
@@ -134,14 +134,14 @@ func TestRecordRepository(t *testing.T) {
 	// as well as records from the file ./testdata/dagger.json
 	// this is used by test cases of `GetAll` and `GetByID`
 	cli := esTestServer.NewClient()
-	typeRepo := es.NewTypeRepository(cli)
+	typeRepo := store.NewTypeRepository(cli)
 	err := typeRepo.CreateOrReplace(daggerType)
 	if err != nil {
 		t.Fatalf("failed to create dagger type: %v", err)
 		return
 	}
 
-	rrf := es.NewRecordRepositoryFactory(cli)
+	rrf := store.NewRecordRepositoryFactory(cli)
 	recordRepo, err := rrf.For(daggerType)
 	if err != nil {
 		t.Fatalf("failed to construct record repository: %v", err)
