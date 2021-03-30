@@ -50,7 +50,5 @@ func LoadConfig() (Config, error) {
 		return config, fmt.Errorf("unable to unmarshal config to struct: %v\n", err)
 	}
 
-	fmt.Println(config)
-
 	return config, nil
 }
