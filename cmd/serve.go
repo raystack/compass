@@ -27,12 +27,11 @@ var Version string
 var log *logrus.Entry
 
 func Serve() {
-	if err := LoadConfig(); err != nil {
+	if err := loadConfig(); err != nil {
 		panic(err)
 	}
 
 	rootLogger := initLogger(config.LogLevel)
-
 	log = rootLogger.WithField("reporter", "main")
 	log.Infof("columbus %s starting", Version)
 
@@ -45,28 +44,8 @@ func Serve() {
 		),
 	}
 
-	var newRelicApp *newrelic.Application
-	if config.NewRelicEnabled {
-		newRelicApp = initNewRelic(config.NewRelicAppName, config.NewRelicLicenseKey)
-		log.Infof("New Relic monitoring is enabled for: %s", config.NewRelicAppName)
-
-		middlewares = append(middlewares, nrgorilla.Middleware(newRelicApp))
-		log.Infof("New relic is setup on the router middleware.")
-	} else {
-		log.Infof("New Relic monitoring is disabled.")
-	}
-
-	var metricsMonitor metrics.Monitor
-	if config.StatsdEnabled {
-		metricsSeparator := "."
-		statsdClient := metrics.NewStatsdClient(config.StatsdAddress)
-		metricsMonitor = metrics.NewMonitor(statsdClient, config.StatsdPrefix, metricsSeparator)
-
-		middlewares = append(middlewares, telemetryMiddleware(metricsMonitor))
-		log.Infof("statsd metrics monitoring is enabled. (%s)", config.StatsdAddress)
-	} else {
-		log.Infof("statsd metrics monitoring is disabled.")
-	}
+	newRelicApp, middlewares := initNewRelic(config, middlewares)
+	metricsMonitor, middlewares := initMetricsMonitor(config, middlewares)
 
 	typeRepository := es.NewTypeRepository(esClient)
 	recordRepositoryFactory := es.NewRecordRepositoryFactory(esClient)
@@ -74,7 +53,6 @@ func Serve() {
 	if err != nil {
 		log.Fatalf("error creating searcher: %v", err)
 	}
-
 	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
 		RefreshInterval: config.LineageRefreshIntervalStr,
 		MetricsMonitor:  &metricsMonitor,
@@ -91,7 +69,6 @@ func Serve() {
 		LineageProvider:         lineageService,
 		Middlewares:             middlewares,
 	})
-
 	// below handlers still have to be manually wrapped by newrelic core library
 	if config.NewRelicEnabled {
 		_, router.NotFoundHandler = newrelic.WrapHandle(newRelicApp, "NotFoundHandler", router.NotFoundHandler)
@@ -132,18 +109,39 @@ func initElasticsearch(brokers []string) *elasticsearch.Client {
 	return esClient
 }
 
-func initNewRelic(appName, licenseKey string) *newrelic.Application {
+func initNewRelic(config Config, middlewares []mux.MiddlewareFunc) (*newrelic.Application, []mux.MiddlewareFunc) {
+	if !config.NewRelicEnabled {
+		log.Infof("New Relic monitoring is disabled.")
+		return nil, middlewares
+	}
 	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName(appName),
-		newrelic.ConfigLicense(licenseKey),
+		newrelic.ConfigAppName(config.NewRelicAppName),
+		newrelic.ConfigLicense(config.NewRelicLicenseKey),
 		newrelic.ConfigDebugLogger(os.Stdout),
 	)
-
 	if err != nil {
 		log.Fatalf("unable to create New Relic Application: %v", err)
 	}
+	log.Infof("New Relic monitoring is enabled for: %s", config.NewRelicAppName)
+	middlewares = append(middlewares, nrgorilla.Middleware(app))
+	log.Infof("New relic is setup on the router middleware.")
 
-	return app
+	return app, middlewares
+}
+
+func initMetricsMonitor(config Config, middlewares []mux.MiddlewareFunc) (metrics.Monitor, []mux.MiddlewareFunc) {
+	var metricsMonitor metrics.Monitor
+	if !config.StatsdEnabled {
+		log.Infof("statsd metrics monitoring is disabled.")
+		return metricsMonitor, middlewares
+	}
+	metricsSeparator := "."
+	statsdClient := metrics.NewStatsdClient(config.StatsdAddress)
+	metricsMonitor = metrics.NewMonitor(statsdClient, config.StatsdPrefix, metricsSeparator)
+	middlewares = append(middlewares, telemetryMiddleware(metricsMonitor))
+	log.Infof("statsd metrics monitoring is enabled. (%s)", config.StatsdAddress)
+
+	return metricsMonitor, middlewares
 }
 
 func requestLoggerMiddleware(dst io.Writer) mux.MiddlewareFunc {

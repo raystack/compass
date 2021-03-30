@@ -26,7 +26,7 @@ type Config struct {
 var config Config
 
 // LoadConfig returns application configuration
-func LoadConfig() error {
+func loadConfig() error {
 	viper.SetConfigName("config")
 	viper.AddConfigPath("./")
 	viper.AddConfigPath("../")
