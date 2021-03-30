@@ -31,7 +31,7 @@ func TestService(t *testing.T) {
 		entRepo := new(mock.TypeRepository)
 		entRepo.On("GetAll").Return([]models.Type{}, nil)
 		recordRepoFac := new(mock.RecordRepositoryFactory)
-		_ = lineage.NewService(entRepo, recordRepoFac)
+		lineage.NewService(entRepo, recordRepoFac, lineage.Config{})
 	})
 	t.Run("telemetry test", func(t *testing.T) {
 		// Temporarily disabling lineage build on service creation causes this test to fail
@@ -54,12 +54,14 @@ func TestService(t *testing.T) {
 		mm.On("Duration", "lineageBuildTime", int64(100))
 		defer mm.AssertExpectations(t)
 
-		_ = lineage.NewService(
+		lineage.NewService(
 			nil,
 			nil,
-			lineage.WithBuilder(builder),
-			lineage.WithMetricMonitor(mm),
-			lineage.WithTimeSource(lineage.TimeSourceFunc(ts)),
+			lineage.Config{
+				MetricsMonitor: mm,
+				Builder:        builder,
+				TimeSource:     lineage.TimeSourceFunc(ts),
+			},
 		)
 	})
 }
