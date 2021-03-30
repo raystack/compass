@@ -1,7 +1,7 @@
 package lineage
 
 import (
-	"errors"
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -116,7 +116,7 @@ func applyConfig(service *Service, config Config) error {
 	if config.RefreshInterval == "" {
 		lineageRefreshInterval, err := time.ParseDuration(config.RefreshInterval)
 		if err != nil {
-			return errors.New("error parsing lineage refresh interval: %v")
+			return fmt.Errorf("error parsing lineage refresh interval: %v", err)
 		}
 		service.refreshInterval = lineageRefreshInterval
 	}
