@@ -1,4 +1,4 @@
-package config
+package cmd
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ type Config struct {
 var config Config
 
 // LoadConfig returns application configuration
-func LoadConfig() (Config, error) {
+func LoadConfig() error {
 	viper.SetConfigName("config")
 	viper.AddConfigPath("./")
 	viper.AddConfigPath("../")
@@ -39,7 +39,7 @@ func LoadConfig() (Config, error) {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			fmt.Println("config file was not found. Env vars and defaults will be used")
 		} else {
-			return config, err
+			return err
 		}
 	}
 
@@ -47,8 +47,8 @@ func LoadConfig() (Config, error) {
 
 	err = viper.Unmarshal(&config)
 	if err != nil {
-		return config, fmt.Errorf("unable to unmarshal config to struct: %v\n", err)
+		return fmt.Errorf("unable to unmarshal config to struct: %v\n", err)
 	}
 
-	return config, nil
+	return nil
 }

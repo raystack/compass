@@ -14,7 +14,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/newrelic/go-agent/v3/integrations/nrgorilla"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/odpf/columbus/config"
 	"github.com/odpf/columbus/es"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/metrics"
@@ -27,18 +26,17 @@ import (
 var Version string
 var log *logrus.Entry
 
-func Execute() {
-	cfg, err := config.LoadConfig()
-	if err != nil {
+func Serve() {
+	if err := LoadConfig(); err != nil {
 		panic(err)
 	}
 
-	rootLogger := initLogger(cfg.LogLevel)
+	rootLogger := initLogger(config.LogLevel)
 
 	log = rootLogger.WithField("reporter", "main")
 	log.Infof("columbus %s starting", Version)
 
-	brokers := strings.Split(cfg.ElasticSearchBrokers, ",")
+	brokers := strings.Split(config.ElasticSearchBrokers, ",")
 	esClient := initElasticsearch(brokers)
 
 	middlewares := []mux.MiddlewareFunc{
@@ -48,9 +46,9 @@ func Execute() {
 	}
 
 	var newRelicApp *newrelic.Application
-	if cfg.NewRelicEnabled {
-		newRelicApp = initNewRelic(cfg.NewRelicAppName, cfg.NewRelicLicenseKey)
-		log.Infof("New Relic monitoring is enabled for: %s", cfg.NewRelicAppName)
+	if config.NewRelicEnabled {
+		newRelicApp = initNewRelic(config.NewRelicAppName, config.NewRelicLicenseKey)
+		log.Infof("New Relic monitoring is enabled for: %s", config.NewRelicAppName)
 
 		middlewares = append(middlewares, nrgorilla.Middleware(newRelicApp))
 		log.Infof("New relic is setup on the router middleware.")
@@ -59,26 +57,26 @@ func Execute() {
 	}
 
 	var metricsMonitor metrics.Monitor
-	if cfg.StatsdEnabled {
+	if config.StatsdEnabled {
 		metricsSeparator := "."
-		statsdClient := metrics.NewStatsdClient(cfg.StatsdAddress)
-		metricsMonitor = metrics.NewMonitor(statsdClient, cfg.StatsdPrefix, metricsSeparator)
+		statsdClient := metrics.NewStatsdClient(config.StatsdAddress)
+		metricsMonitor = metrics.NewMonitor(statsdClient, config.StatsdPrefix, metricsSeparator)
 
 		middlewares = append(middlewares, telemetryMiddleware(metricsMonitor))
-		log.Infof("statsd metrics monitoring is enabled. (%s)", cfg.StatsdAddress)
+		log.Infof("statsd metrics monitoring is enabled. (%s)", config.StatsdAddress)
 	} else {
 		log.Infof("statsd metrics monitoring is disabled.")
 	}
 
 	typeRepository := es.NewTypeRepository(esClient)
 	recordRepositoryFactory := es.NewRecordRepositoryFactory(esClient)
-	recordSearcher, err := es.NewSearcher(esClient, typeWhiteList(cfg.TypeWhiteListStr))
+	recordSearcher, err := es.NewSearcher(esClient, typeWhiteList(config.TypeWhiteListStr))
 	if err != nil {
 		log.Fatalf("error creating searcher: %v", err)
 	}
 
 	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
-		RefreshInterval: cfg.LineageRefreshIntervalStr,
+		RefreshInterval: config.LineageRefreshIntervalStr,
 		MetricsMonitor:  &metricsMonitor,
 	})
 	if err != nil {
@@ -95,12 +93,12 @@ func Execute() {
 	})
 
 	// below handlers still have to be manually wrapped by newrelic core library
-	if cfg.NewRelicEnabled {
+	if config.NewRelicEnabled {
 		_, router.NotFoundHandler = newrelic.WrapHandle(newRelicApp, "NotFoundHandler", router.NotFoundHandler)
 		_, router.MethodNotAllowedHandler = newrelic.WrapHandle(newRelicApp, "MethodNotAllowedHandler", router.MethodNotAllowedHandler)
 	}
 
-	serverAddr := fmt.Sprintf("%s:%s", cfg.ServerHost, cfg.ServerPort)
+	serverAddr := fmt.Sprintf("%s:%s", config.ServerHost, config.ServerPort)
 	log.Printf("starting http server on %s", serverAddr)
 	if err := http.ListenAndServe(serverAddr, router); err != nil {
 		log.Errorf("listen and serve: %v", err)
