@@ -1,4 +1,4 @@
-package api_test
+package handlers_test
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/odpf/columbus/api"
+	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/models"
 
@@ -120,12 +120,12 @@ func TestSearchHandler(t *testing.T) {
 			},
 			InitRepo: withTypes(testdata.Type),
 			ValidateResponse: func(tc testCase, body io.Reader) error {
-				var response []api.SearchResponse
+				var response []handlers.SearchResponse
 				err := json.NewDecoder(body).Decode(&response)
 				if err != nil {
 					return fmt.Errorf("error reading response body: %v", err)
 				}
-				expectResponse := []api.SearchResponse{
+				expectResponse := []handlers.SearchResponse{
 					{
 						Title:          "test resource",
 						ID:             "test-resource",
@@ -191,12 +191,12 @@ func TestSearchHandler(t *testing.T) {
 			},
 			InitRepo: withTypes(testdata.Type),
 			ValidateResponse: func(tc testCase, body io.Reader) error {
-				var response []api.SearchResponse
+				var response []handlers.SearchResponse
 				err := json.NewDecoder(body).Decode(&response)
 				if err != nil {
 					return fmt.Errorf("error reading response body: %v", err)
 				}
-				expectResponse := []api.SearchResponse{
+				expectResponse := []handlers.SearchResponse{
 					{
 						Title:          "test resource 1",
 						ID:             "test-resource-1",
@@ -305,12 +305,12 @@ func TestSearchHandler(t *testing.T) {
 				return
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
-				var actualResults []api.SearchResponse
+				var actualResults []handlers.SearchResponse
 				err := json.NewDecoder(body).Decode(&actualResults)
 				if err != nil {
 					return fmt.Errorf("error reading response body: %v", err)
 				}
-				expectResults := []api.SearchResponse{
+				expectResults := []handlers.SearchResponse{
 					{
 						Title:          "test 1",
 						ID:             "test-1",
@@ -359,12 +359,12 @@ func TestSearchHandler(t *testing.T) {
 				return
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
-				var actualResults []api.SearchResponse
+				var actualResults []handlers.SearchResponse
 				err := json.NewDecoder(body).Decode(&actualResults)
 				if err != nil {
 					return fmt.Errorf("error reading response body: %v", err)
 				}
-				expectResults := []api.SearchResponse{
+				expectResults := []handlers.SearchResponse{
 					{
 						Title:          "test 1",
 						ID:             "test-1",
@@ -412,13 +412,13 @@ func TestSearchHandler(t *testing.T) {
 				searcher.On("Search", cfg).Return(results, nil)
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
-				var actualResults []api.SearchResponse
+				var actualResults []handlers.SearchResponse
 				err := json.NewDecoder(body).Decode(&actualResults)
 				if err != nil {
 					return fmt.Errorf("error reading response body: %v", err)
 				}
 
-				expectResults := []api.SearchResponse{
+				expectResults := []handlers.SearchResponse{
 					{
 						Title:          "test",
 						ID:             "test",
@@ -464,12 +464,12 @@ func TestSearchHandler(t *testing.T) {
 				return
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
-				var actualResults []api.SearchResponse
+				var actualResults []handlers.SearchResponse
 				err := json.NewDecoder(body).Decode(&actualResults)
 				if err != nil {
 					return fmt.Errorf("error reading response body: %v", err)
 				}
-				expectResults := []api.SearchResponse{
+				expectResults := []handlers.SearchResponse{
 					{
 						Title:          "test 1",
 						ID:             "test-1",
@@ -513,12 +513,12 @@ func TestSearchHandler(t *testing.T) {
 				return
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
-				var actualResults []api.SearchResponse
+				var actualResults []handlers.SearchResponse
 				err := json.NewDecoder(body).Decode(&actualResults)
 				if err != nil {
 					return fmt.Errorf("error reading response body: %v", err)
 				}
-				expectResults := []api.SearchResponse{
+				expectResults := []handlers.SearchResponse{
 					{
 						Title:          "test 1",
 						ID:             "test-1",
@@ -583,7 +583,7 @@ func TestSearchHandler(t *testing.T) {
 			defer recordSearcher.AssertExpectations(t)
 			defer typeRepo.AssertExpectations(t)
 
-			handler := api.NewSearchHandler(new(mock.Logger), recordSearcher, typeRepo)
+			handler := handlers.NewSearchHandler(new(mock.Logger), recordSearcher, typeRepo)
 
 			params := url.Values{}
 			params.Add("text", testCase.SearchText)

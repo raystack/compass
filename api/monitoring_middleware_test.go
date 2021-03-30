@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/odpf/columbus/api"
+	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/metrics"
 )
 
@@ -14,7 +15,7 @@ func TestMonitoringHandler(t *testing.T) {
 	statsdClient := metrics.NewStatsdClient("127.0.0.1:8125")
 	metricsMonitor := metrics.NewMonitor(statsdClient, statsdPrefix, metricsSeparator)
 
-	handler := api.MonitoringHandler(api.NewHeartbeatHandler(), metricsMonitor)
+	handler := api.MonitoringHandler(handlers.NewHeartbeatHandler(), metricsMonitor)
 	rr := httptest.NewRequest("GET", "/ping", nil)
 	rw := httptest.NewRecorder()
 	handler.ServeHTTP(rw, rr)
