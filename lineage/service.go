@@ -1,6 +1,7 @@
 package lineage
 
 import (
+	"errors"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -87,7 +88,7 @@ func (srv *Service) requestRefresh() {
 	}
 }
 
-func NewService(er models.TypeRepository, rrf models.RecordRepositoryFactory, opts ...ServiceOpt) *Service {
+func NewService(er models.TypeRepository, rrf models.RecordRepositoryFactory, config Config) (*Service, error) {
 	srv := &Service{
 		builder:           DefaultBuilder,
 		typeRepo:          er,
@@ -96,8 +97,10 @@ func NewService(er models.TypeRepository, rrf models.RecordRepositoryFactory, op
 		timeSource:        TimeSourceFunc(time.Now),
 		metricsMonitor:    dummyMetricMonitor{},
 	}
-	for _, opt := range opts {
-		opt(srv)
+
+	err := applyConfig(srv, config)
+	if err != nil {
+		return nil, err
 	}
 
 	// TODO: Find a solution to solve memory issue
@@ -106,31 +109,29 @@ func NewService(er models.TypeRepository, rrf models.RecordRepositoryFactory, op
 	// Columbus's memory keeps spiking when app is starting
 	// srv.build()
 
-	return srv
+	return srv, nil
 }
 
-type ServiceOpt func(*Service)
-
-func WithRefreshInterval(d time.Duration) ServiceOpt {
-	return func(srv *Service) {
-		srv.refreshInterval = d
+func applyConfig(service *Service, config Config) error {
+	if config.RefreshInterval == "" {
+		lineageRefreshInterval, err := time.ParseDuration(config.RefreshInterval)
+		if err != nil {
+			return errors.New("error parsing lineage refresh interval: %v")
+		}
+		service.refreshInterval = lineageRefreshInterval
 	}
-}
 
-func WithMetricMonitor(mm MetricsMonitor) ServiceOpt {
-	return func(srv *Service) {
-		srv.metricsMonitor = mm
+	if config.MetricsMonitor != nil {
+		service.metricsMonitor = config.MetricsMonitor
 	}
-}
 
-func WithBuilder(builder Builder) ServiceOpt {
-	return func(srv *Service) {
-		srv.builder = builder
+	if config.Builder != nil {
+		service.builder = config.Builder
 	}
-}
 
-func WithTimeSource(ts TimeSource) ServiceOpt {
-	return func(srv *Service) {
-		srv.timeSource = ts
+	if config.TimeSource != nil {
+		service.timeSource = config.TimeSource
 	}
+
+	return nil
 }
