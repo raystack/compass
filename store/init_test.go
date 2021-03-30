@@ -1,4 +1,4 @@
-package es_test
+package store_test
 
 import (
 	"bytes"
@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/odpf/columbus/es/testutil"
 	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/store/testutil"
 )
 
 var daggerType = models.Type{

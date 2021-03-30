@@ -15,9 +15,9 @@ import (
 	"github.com/newrelic/go-agent/v3/integrations/nrgorilla"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/odpf/columbus/api"
-	"github.com/odpf/columbus/es"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/metrics"
+	"github.com/odpf/columbus/store"
 	"github.com/sirupsen/logrus"
 )
 
@@ -47,9 +47,9 @@ func Serve() {
 	newRelicApp, middlewares := initNewRelic(config, middlewares)
 	metricsMonitor, middlewares := initMetricsMonitor(config, middlewares)
 
-	typeRepository := es.NewTypeRepository(esClient)
-	recordRepositoryFactory := es.NewRecordRepositoryFactory(esClient)
-	recordSearcher, err := es.NewSearcher(esClient, typeWhiteList(config.TypeWhiteListStr))
+	typeRepository := store.NewTypeRepository(esClient)
+	recordRepositoryFactory := store.NewRecordRepositoryFactory(esClient)
+	recordSearcher, err := store.NewSearcher(esClient, typeWhiteList(config.TypeWhiteListStr))
 	if err != nil {
 		log.Fatalf("error creating searcher: %v", err)
 	}
