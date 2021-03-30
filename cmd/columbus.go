@@ -3,13 +3,11 @@ package cmd
 import (
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v7"
@@ -17,6 +15,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/newrelic/go-agent/v3/integrations/nrgorilla"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/odpf/columbus/config"
 	"github.com/odpf/columbus/es"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/metrics"
@@ -28,32 +27,18 @@ import (
 // see "Makefile" for more information
 var Version string
 
-// configuration parameters
-var (
-	serverHost                = flag.String("host", lookupEnvOrString("SERVER_HOST", "0.0.0.0"), "network interface to bind to")
-	serverPort                = flag.String("port", lookupEnvOrString("SERVER_PORT", "8080"), "port to listen on")
-	elasticSearchBrokers      = flag.String("elasticsearch-brokers", lookupEnvOrString("ELASTICSEARCH_BROKERS", "http://localhost:9200"), "comma separated list of elasticsearch nodes")
-	statsdAddress             = flag.String("statsd-address", lookupEnvOrString("STATSD_ADDRESS", "127.0.0.1:8125"), "statsd client to send metrics to")
-	statsdPrefix              = flag.String("statsd-prefix", lookupEnvOrString("STATSD_PREFIX", "columbusApi"), "prefix for statsd metrics names")
-	statsdEnabledStr          = flag.String("statsd-enabled", lookupEnvOrString("STATSD_ENABLED", "false"), "enable publishing application metrics to statsd")
-	typeWhiteListStr          = flag.String("search-whitelist", lookupEnvOrString("SEARCH_WHITELIST", ""), "list of types that will be searchable. leave it empty if you want to run search on everything")
-	lineageRefreshIntervalStr = flag.String("lineage-refresh-interval", lookupEnvOrString("LINEAGE_REFRESH_INTERVAL", "5m"), "refresh interval for lineage")
-	newRelicAppName           = flag.String("new-relic-app-name", lookupEnvOrString("NEW_RELIC_APP_NAME", "columbus"), "New Relic application name")
-	newRelicLicenseKey        = flag.String("new-relic-license-key", lookupEnvOrString("NEW_RELIC_LICENSE_KEY", ""), "New Relic license key")
-	logLevel                  = flag.String(
-		"log-level",
-		lookupEnvOrString("LOG_LEVEL", "info"),
-		fmt.Sprintf("logging level. can be one of [%s]", strings.Join(allLogLevels(), ",")))
-)
-
 func Execute() {
-	flag.Parse()
-	rootLogger := initLogger()
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		panic(err)
+	}
+
+	rootLogger := initLogger(cfg.LogLevel)
 
 	log := rootLogger.WithField("reporter", "main")
 	log.Infof("columbus %s starting", Version)
 
-	brokers := strings.Split(*elasticSearchBrokers, ",")
+	brokers := strings.Split(cfg.ElasticSearchBrokers, ",")
 	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
 		Addresses: brokers,
 	})
@@ -73,9 +58,9 @@ func Execute() {
 	}
 
 	var newRelicApp *newrelic.Application
-	if *newRelicLicenseKey != "" {
-		newRelicApp = initNewRelic(*newRelicAppName, *newRelicLicenseKey)
-		log.Infof("New Relic monitoring is enabled for: %s", *newRelicAppName)
+	if cfg.NewRelicEnabled {
+		newRelicApp = initNewRelic(cfg.NewRelicAppName, cfg.NewRelicLicenseKey)
+		log.Infof("New Relic monitoring is enabled for: %s", cfg.NewRelicAppName)
 
 		middlewares = append(middlewares, nrgorilla.Middleware(newRelicApp))
 		log.Infof("New relic is setup on the router middleware.")
@@ -83,29 +68,28 @@ func Execute() {
 		log.Infof("New Relic monitoring is disabled.")
 	}
 
-	statsdEnabled, _ := strconv.ParseBool(*statsdEnabledStr)
 	var metricsMonitor metrics.Monitor
-	if statsdEnabled {
+	if cfg.StatsdEnabled {
 		metricsSeparator := "."
-		statsdClient := metrics.NewStatsdClient(*statsdAddress)
-		metricsMonitor = metrics.NewMonitor(statsdClient, *statsdPrefix, metricsSeparator)
+		statsdClient := metrics.NewStatsdClient(cfg.StatsdAddress)
+		metricsMonitor = metrics.NewMonitor(statsdClient, cfg.StatsdPrefix, metricsSeparator)
 
 		middlewares = append(middlewares, telemetryMiddleware(metricsMonitor))
-		log.Infof("statsd metrics monitoring is enabled. (%s)", *statsdAddress)
+		log.Infof("statsd metrics monitoring is enabled. (%s)", cfg.StatsdAddress)
 	} else {
 		log.Infof("statsd metrics monitoring is disabled.")
 	}
 
 	typeRepository := es.NewTypeRepository(esClient)
 	recordRepositoryFactory := es.NewRecordRepositoryFactory(esClient)
-	recordSearcher, err := es.NewSearcher(esClient, typeWhiteList())
+	recordSearcher, err := es.NewSearcher(esClient, typeWhiteList(cfg.TypeWhiteListStr))
 
 	if err != nil {
 		log.Fatalf("error creating searcher: %v", err)
 	}
 
 	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
-		RefreshInterval: *lineageRefreshIntervalStr,
+		RefreshInterval: cfg.LineageRefreshIntervalStr,
 		MetricsMonitor:  &metricsMonitor,
 	})
 	if err != nil {
@@ -137,14 +121,14 @@ func Execute() {
 	router.PathPrefix("/v1/lineage").Handler(lineageHandler)
 
 	// below handlers still have to be manually wrapped by newrelic core library
-	if newRelicApp != nil {
+	if cfg.NewRelicEnabled {
 		_, router.NotFoundHandler = newrelic.WrapHandle(newRelicApp, "NotFoundHandler", router.NotFoundHandler)
 		_, router.MethodNotAllowedHandler = newrelic.WrapHandle(newRelicApp, "MethodNotAllowedHandler", router.MethodNotAllowedHandler)
 	}
 
 	handler := applyMiddlewares(router, middlewares)
 
-	serverAddr := fmt.Sprintf("%s:%s", *serverHost, *serverPort)
+	serverAddr := fmt.Sprintf("%s:%s", cfg.ServerHost, cfg.ServerPort)
 	log.Printf("starting http server on %s", serverAddr)
 	if err := http.ListenAndServe(serverAddr, handler); err != nil {
 		log.Errorf("listen and serve: %v", err)
@@ -158,9 +142,9 @@ func lookupEnvOrString(key, fallback string) string {
 	return fallback
 }
 
-func initLogger() *logrus.Logger {
+func initLogger(logLevel string) *logrus.Logger {
 	logger := logrus.New()
-	lvl, err := logrus.ParseLevel(*logLevel)
+	lvl, err := logrus.ParseLevel(logLevel)
 	if err != nil {
 		log.Fatalf("error parsing log level: %v", err)
 	}
@@ -196,8 +180,8 @@ func esInfo(cli *elasticsearch.Client) (string, error) {
 	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
 }
 
-func typeWhiteList() (whiteList []string) {
-	indices := strings.Split(*typeWhiteListStr, ",")
+func typeWhiteList(typeWhiteListStr string) (whiteList []string) {
+	indices := strings.Split(typeWhiteListStr, ",")
 	for _, index := range indices {
 		index = strings.TrimSpace(index)
 		if index == "" {
