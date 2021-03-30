@@ -1,14 +1,14 @@
-package web_test
+package api_test
 
 import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/odpf/columbus/web"
+	"github.com/odpf/columbus/api"
 )
 
 func TestHeartbeatHandler(t *testing.T) {
-	handler := web.NewHeartbeatHandler()
+	handler := api.NewHeartbeatHandler()
 	rr := httptest.NewRequest("GET", "/ping", nil)
 	rw := httptest.NewRecorder()
 	handler.ServeHTTP(rw, rr)

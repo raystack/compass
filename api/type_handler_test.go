@@ -1,4 +1,4 @@
-package web_test
+package api_test
 
 import (
 	"bytes"
@@ -12,9 +12,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/odpf/columbus/api"
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/models"
-	"github.com/odpf/columbus/web"
 )
 
 func TestTypeHandler(t *testing.T) {
@@ -44,7 +44,7 @@ func TestTypeHandler(t *testing.T) {
 			rr := httptest.NewRequest("PUT", "/v1/types", bytes.NewBufferString("{"))
 			rw := httptest.NewRecorder()
 
-			handler := web.NewTypeHandler(new(mock.Logger), nil, nil)
+			handler := api.NewTypeHandler(new(mock.Logger), nil, nil)
 			handler.ServeHTTP(rw, rr)
 
 			if rw.Code != http.StatusBadRequest {
@@ -52,7 +52,7 @@ func TestTypeHandler(t *testing.T) {
 				return
 			}
 
-			var res web.ErrorResponse
+			var res api.ErrorResponse
 			err = json.NewDecoder(rw.Body).Decode(&res)
 			if err != nil {
 				t.Fatalf("error parsing handler response: %v", err)
@@ -108,7 +108,7 @@ func TestTypeHandler(t *testing.T) {
 				rr := httptest.NewRequest("PUT", apiURL, bytes.NewBuffer(raw))
 				rw := httptest.NewRecorder()
 
-				handler := web.NewTypeHandler(new(mock.Logger), nil, nil)
+				handler := api.NewTypeHandler(new(mock.Logger), nil, nil)
 				handler.ServeHTTP(rw, rr)
 
 				if rw.Code != http.StatusBadRequest {
@@ -116,7 +116,7 @@ func TestTypeHandler(t *testing.T) {
 					return
 				}
 
-				var res web.ErrorResponse
+				var res api.ErrorResponse
 				err = json.NewDecoder(rw.Body).Decode(&res)
 				if err != nil {
 					t.Fatalf("error parsing handler response: %v", err)
@@ -136,7 +136,7 @@ func TestTypeHandler(t *testing.T) {
 			typeRepo.On("CreateOrReplace", daggerType).Return(nil)
 			defer typeRepo.AssertExpectations(t)
 
-			handler := web.NewTypeHandler(new(mock.Logger), typeRepo, nil)
+			handler := api.NewTypeHandler(new(mock.Logger), typeRepo, nil)
 			handler.ServeHTTP(rw, rr)
 
 			expectedStatus := http.StatusCreated
@@ -154,7 +154,7 @@ func TestTypeHandler(t *testing.T) {
 			typeRepo.On("CreateOrReplace", daggerType).Return(creationErr)
 			defer typeRepo.AssertExpectations(t)
 
-			handler := web.NewTypeHandler(new(mock.Logger), typeRepo, nil)
+			handler := api.NewTypeHandler(new(mock.Logger), typeRepo, nil)
 			handler.ServeHTTP(rw, rr)
 
 			expectedStatus := http.StatusInternalServerError
@@ -162,7 +162,7 @@ func TestTypeHandler(t *testing.T) {
 				t.Errorf("expected handler to HTTP %d, returned HTTP %d instead", expectedStatus, rw.Code)
 				return
 			}
-			var response web.ErrorResponse
+			var response api.ErrorResponse
 			err := json.NewDecoder(rw.Body).Decode(&response)
 			if err != nil {
 				t.Fatalf("error decoding handler response: %v", err)
@@ -195,7 +195,7 @@ func TestTypeHandler(t *testing.T) {
 			rr := httptest.NewRequest("PUT", "/v1/types", &payload)
 			rw := httptest.NewRecorder()
 
-			handler := web.NewTypeHandler(new(mock.Logger), nil, nil)
+			handler := api.NewTypeHandler(new(mock.Logger), nil, nil)
 			handler.ServeHTTP(rw, rr)
 
 			expectedCode := 400
@@ -232,7 +232,7 @@ func TestTypeHandler(t *testing.T) {
 			repo.On("CreateOrReplace", expectEnt).Return(nil)
 			defer repo.AssertExpectations(t)
 
-			handler := web.NewTypeHandler(new(mock.Logger), repo, nil)
+			handler := api.NewTypeHandler(new(mock.Logger), repo, nil)
 			handler.ServeHTTP(rw, rr)
 		})
 	})
@@ -246,7 +246,7 @@ func TestTypeHandler(t *testing.T) {
 			entRepo.On("GetByName", "dagger").Return(models.Type{}, models.ErrNoSuchType{"dagger"})
 			defer entRepo.AssertExpectations(t)
 
-			handler := web.NewTypeHandler(new(mock.Logger), entRepo, nil)
+			handler := api.NewTypeHandler(new(mock.Logger), entRepo, nil)
 			handler.ServeHTTP(rw, rr)
 
 			expectedStatus := http.StatusNotFound
@@ -255,7 +255,7 @@ func TestTypeHandler(t *testing.T) {
 				return
 			}
 
-			var response web.ErrorResponse
+			var response api.ErrorResponse
 			err := json.NewDecoder(rw.Body).Decode(&response)
 			if err != nil {
 				t.Fatalf("error parsing handler response: %v", err)
@@ -303,7 +303,7 @@ func TestTypeHandler(t *testing.T) {
 				rr := httptest.NewRequest("PUT", daggerTypeURI, strings.NewReader(testCase.payload))
 				rw := httptest.NewRecorder()
 
-				handler := web.NewTypeHandler(new(mock.Logger), entRepo, nil)
+				handler := api.NewTypeHandler(new(mock.Logger), entRepo, nil)
 				handler.ServeHTTP(rw, rr)
 
 				expectedStatus := http.StatusBadRequest
@@ -328,7 +328,7 @@ func TestTypeHandler(t *testing.T) {
 				rr := httptest.NewRequest("PUT", daggerTypeURI, strings.NewReader(payload))
 				rw := httptest.NewRecorder()
 
-				handler := web.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
+				handler := api.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
 				handler.ServeHTTP(rw, rr)
 
 				expectedStatus := http.StatusInternalServerError
@@ -337,7 +337,7 @@ func TestTypeHandler(t *testing.T) {
 					return
 				}
 
-				var response web.ErrorResponse
+				var response api.ErrorResponse
 				json.NewDecoder(rw.Body).Decode(&response)
 				expectedReason := "Internal Server Error"
 				if response.Reason != expectedReason {
@@ -375,7 +375,7 @@ func TestTypeHandler(t *testing.T) {
 				rr := httptest.NewRequest("PUT", daggerTypeURI, bytes.NewBuffer(payload))
 				rw := httptest.NewRecorder()
 
-				handler := web.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
+				handler := api.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
 				handler.ServeHTTP(rw, rr)
 
 				expectedStatus := http.StatusInternalServerError
@@ -384,7 +384,7 @@ func TestTypeHandler(t *testing.T) {
 					return
 				}
 
-				var response web.ErrorResponse
+				var response api.ErrorResponse
 				json.NewDecoder(rw.Body).Decode(&response)
 				expectedReason := "Internal Server Error"
 				if response.Reason != expectedReason {
@@ -401,7 +401,7 @@ func TestTypeHandler(t *testing.T) {
 			rr := httptest.NewRequest("PUT", "/v1/types/dagger", bytes.NewBufferString("{"))
 			rw := httptest.NewRecorder()
 
-			handler := web.NewTypeHandler(new(mock.Logger), typeRepo, nil)
+			handler := api.NewTypeHandler(new(mock.Logger), typeRepo, nil)
 			handler.ServeHTTP(rw, rr)
 
 			if rw.Code != http.StatusBadRequest {
@@ -409,7 +409,7 @@ func TestTypeHandler(t *testing.T) {
 				return
 			}
 
-			var res web.ErrorResponse
+			var res api.ErrorResponse
 			err := json.NewDecoder(rw.Body).Decode(&res)
 			if err != nil {
 				t.Fatalf("error parsing handler response: %v", err)
@@ -450,7 +450,7 @@ func TestTypeHandler(t *testing.T) {
 			rr := httptest.NewRequest("PUT", daggerTypeURI, bytes.NewBuffer(payload))
 			rw := httptest.NewRecorder()
 
-			handler := web.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
+			handler := api.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
 			handler.ServeHTTP(rw, rr)
 
 			expectedStatus := http.StatusOK
@@ -459,13 +459,13 @@ func TestTypeHandler(t *testing.T) {
 				return
 			}
 
-			var response web.StatusResponse
+			var response api.StatusResponse
 			err = json.NewDecoder(rw.Body).Decode(&response)
 			if err != nil {
 				t.Errorf("error reading response body: %v", err)
 				return
 			}
-			expectedResponse := web.StatusResponse{
+			expectedResponse := api.StatusResponse{
 				Status: "success",
 			}
 
@@ -644,7 +644,7 @@ func TestTypeHandler(t *testing.T) {
 				rrf := new(mock.RecordRepositoryFactory)
 				tc.Setup(&tc, er, rrf)
 
-				handler := web.NewTypeHandler(new(mock.Logger), er, rrf)
+				handler := api.NewTypeHandler(new(mock.Logger), er, rrf)
 				rr := httptest.NewRequest("GET", tc.RequestURL, nil)
 				rw := httptest.NewRecorder()
 
@@ -737,7 +737,7 @@ func TestTypeHandler(t *testing.T) {
 
 				rr := httptest.NewRequest("GET", tc.RequestURL, nil)
 				rw := httptest.NewRecorder()
-				handler := web.NewTypeHandler(new(mock.Logger), typeRepo, recordRepoFac)
+				handler := api.NewTypeHandler(new(mock.Logger), typeRepo, recordRepoFac)
 				handler.ServeHTTP(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {

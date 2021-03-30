@@ -14,10 +14,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/newrelic/go-agent/v3/integrations/nrgorilla"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/odpf/columbus/api"
 	"github.com/odpf/columbus/es"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/metrics"
-	"github.com/odpf/columbus/web"
 	"github.com/sirupsen/logrus"
 )
 
@@ -83,7 +83,7 @@ func Serve() {
 		log.Fatal(err)
 	}
 
-	router := web.NewRouter(web.Config{
+	router := api.NewRouter(api.Config{
 		Logger:                  rootLogger,
 		RecordSearcher:          recordSearcher,
 		RecordRepositoryFactory: recordRepositoryFactory,
@@ -154,7 +154,7 @@ func requestLoggerMiddleware(dst io.Writer) mux.MiddlewareFunc {
 
 func telemetryMiddleware(mon metrics.Monitor) mux.MiddlewareFunc {
 	return func(handler http.Handler) http.Handler {
-		return web.MonitoringHandler(handler, mon)
+		return api.MonitoringHandler(handler, mon)
 	}
 }
 
