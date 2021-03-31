@@ -121,8 +121,17 @@ func (handler *TypeHandler) createOrReplaceType(w http.ResponseWriter, r *http.R
 			WithField("type", payload.Name).
 			Errorf("error creating/replacing type: %v", err)
 
-		msg := fmt.Sprintf("error creating type: %v", err)
-		writeJSONError(w, http.StatusInternalServerError, msg)
+		var status int
+		var msg string
+		if _, ok := err.(models.ErrReservedTypeName); ok {
+			status = http.StatusUnprocessableEntity
+			msg = err.Error()
+		} else {
+			status = http.StatusInternalServerError
+			msg = fmt.Sprintf("error creating type: %v", err)
+		}
+
+		writeJSONError(w, status, msg)
 		return
 	}
 	handler.log.Infof("created/updated %q type", payload.Name)

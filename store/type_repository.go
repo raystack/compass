@@ -121,9 +121,8 @@ func (repo *TypeRepository) updateIdx(recordType models.Type) error {
 }
 
 func (repo *TypeRepository) CreateOrReplace(recordType models.Type) error {
-
 	if isReservedName(recordType.Name) {
-		return fmt.Errorf("cannot create type with name %q: name is reserved for internal purposes", recordType.Name)
+		return models.ErrReservedTypeName{TypeName: recordType.Name}
 	}
 
 	// checking for the existence of index before adding the metadata

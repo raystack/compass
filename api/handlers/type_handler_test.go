@@ -147,6 +147,28 @@ func TestTypeHandler(t *testing.T) {
 				return
 			}
 		})
+		t.Run("should return 422 if type name is reserved", func(t *testing.T) {
+			expectedErr := models.ErrReservedTypeName{TypeName: daggerType.Name}
+
+			rr := httptest.NewRequest("PUT", "/v1/types", bytes.NewBuffer(validPayloadRaw))
+			rw := httptest.NewRecorder()
+
+			typeRepo := new(mock.TypeRepository)
+			typeRepo.On("CreateOrReplace", daggerType).Return(expectedErr)
+			defer typeRepo.AssertExpectations(t)
+
+			handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, nil)
+			handler.ServeHTTP(rw, rr)
+
+			assert.Equal(t, http.StatusUnprocessableEntity, rw.Code)
+			var response handlers.ErrorResponse
+			err := json.NewDecoder(rw.Body).Decode(&response)
+			if err != nil {
+				t.Fatalf("error decoding handler response: %v", err)
+				return
+			}
+			assert.Equal(t, expectedErr.Error(), response.Reason)
+		})
 		t.Run("should return HTTP 500 if creating/updating the type fails", func(t *testing.T) {
 			rr := httptest.NewRequest("PUT", "/v1/types", bytes.NewBuffer(validPayloadRaw))
 			rw := httptest.NewRecorder()
