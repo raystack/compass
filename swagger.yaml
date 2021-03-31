@@ -151,6 +151,18 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   "/types":
+    get:
+      summary: fetch all types
+      description: used to fetch all types
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Type'
     put:
       summary: initialise a type
       description: used for initialising/update a type. A type in columbus's nomenclature is a "collection" of documents that belong to a single named type. Type holds metadata about this collection, used when serving search requests
@@ -196,6 +208,22 @@ paths:
           description: validation error
           schema:
             $ref: '#/definitions/ValidationError'
+  "/types/{name}/details":
+    get:
+      summary: fetch a type details
+      description: used to fetch type details by its name
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Type'
+        404:
+          description: type not found
+          schema:
+            $ref: '#/definitions/Error'
+  "/types/{name}/records":
     get:
       summary: list documents for the type
       produces:
