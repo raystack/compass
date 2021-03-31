@@ -230,6 +230,7 @@ func (repo *TypeRepository) Delete(typeName string) error {
 	if res.IsError() && res.StatusCode != http.StatusNotFound {
 		return fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
 	}
+	res.Body.Close()
 
 	res, err = repo.cli.Indices.Delete(
 		[]string{typeName},
@@ -241,6 +242,7 @@ func (repo *TypeRepository) Delete(typeName string) error {
 	if res.IsError() && res.StatusCode != http.StatusNotFound {
 		return fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
 	}
+	res.Body.Close()
 
 	return nil
 }
