@@ -338,4 +338,65 @@ func TestTypeRepository(t *testing.T) {
 			return
 		}
 	})
+	t.Run("Delete", func(t *testing.T) {
+		typeName := "delete-type"
+		esClient := esTestServer.NewClient()
+		repo := store.NewTypeRepository(esClient)
+
+		t.Run("should return error if type name is reserved key", func(t *testing.T) {
+			var err error
+
+			err = repo.Delete("meta")
+			assert.NotNil(t, err)
+			assert.IsType(t, models.ErrReservedTypeName{}, err)
+
+			err = repo.Delete("universe")
+			assert.NotNil(t, err)
+			assert.IsType(t, models.ErrReservedTypeName{}, err)
+		})
+
+		t.Run("should delete type by its name", func(t *testing.T) {
+			err := repo.CreateOrReplace(models.Type{
+				Name: typeName,
+			})
+			if err != nil {
+				t.Errorf("error writing to elasticsearch: %v", err)
+				return
+			}
+			err = repo.Delete(typeName)
+			if err != nil {
+				t.Errorf("error deleting type: %v", err)
+				return
+			}
+
+			_, err = repo.GetByName(typeName)
+			assert.NotNil(t, err)
+			assert.IsType(t, models.ErrNoSuchType{}, err)
+		})
+
+		t.Run("should delete the type's elasticsearch index", func(t *testing.T) {
+			_, err := esClient.Indices.Create(typeName)
+			if err != nil {
+				t.Errorf("error creating index: %v", err)
+				return
+			}
+			err = repo.Delete(typeName)
+			if err != nil {
+				t.Errorf("error deleting type: %v", err)
+				return
+			}
+
+			response, err := esClient.Indices.Get([]string{typeName})
+			if err != nil {
+				t.Errorf("error getting indices type: %v", err)
+				return
+			}
+			var indices map[string]interface{}
+			if err := json.NewDecoder(response.Body).Decode(&indices); err != nil {
+				t.Error(err)
+				return
+			}
+			assert.Nil(t, indices[typeName])
+		})
+	})
 }

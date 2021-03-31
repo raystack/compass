@@ -580,6 +580,59 @@ func TestTypeHandler(t *testing.T) {
 			})
 		}
 	})
+	t.Run("DELETE /v1/types/{name}", func(t *testing.T) {
+		type testCase struct {
+			Description  string
+			RequestURL   string
+			ExpectStatus int
+			Setup        func(tc *testCase, er *mock.TypeRepository)
+			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
+		}
+
+		var testCases = []testCase{
+			{
+				Description:  "should return all types",
+				RequestURL:   "/v1/types/sample",
+				ExpectStatus: http.StatusOK,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("Delete", "sample").Return(nil)
+				},
+			},
+			{
+				Description:  "should return 422 status code if type name is reserved",
+				RequestURL:   "/v1/types/sample",
+				ExpectStatus: http.StatusUnprocessableEntity,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("Delete", "sample").Return(models.ErrReservedTypeName{TypeName: "sample"})
+				},
+			},
+			{
+				Description:  "should return 500 status code if delete fails",
+				RequestURL:   "/v1/types/sample",
+				ExpectStatus: http.StatusInternalServerError,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("Delete", "sample").Return(errors.New("failed to delete type"))
+				},
+			},
+		}
+		for _, tc := range testCases {
+			t.Run(tc.Description, func(t *testing.T) {
+				er := new(mock.TypeRepository)
+				tc.Setup(&tc, er)
+				defer er.AssertExpectations(t)
+
+				handler := handlers.NewTypeHandler(new(mock.Logger), er, new(mock.RecordRepositoryFactory))
+				rr := httptest.NewRequest("DELETE", tc.RequestURL, nil)
+				rw := httptest.NewRecorder()
+
+				handler.ServeHTTP(rw, rr)
+				if rw.Code != tc.ExpectStatus {
+					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
+					return
+				}
+			})
+		}
+	})
 	t.Run("GET /v1/types/{name}/details", func(t *testing.T) {
 		type testCase struct {
 			Description  string

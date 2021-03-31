@@ -129,6 +129,30 @@ func (handler *TypeHandler) createOrReplaceType(w http.ResponseWriter, r *http.R
 	writeJSON(w, http.StatusCreated, payload)
 }
 
+func (handler *TypeHandler) deleteType(w http.ResponseWriter, r *http.Request) {
+	name := mux.Vars(r)["name"]
+	err := handler.typeRepo.Delete(name)
+	if err != nil {
+		handler.log.
+			Errorf("error deleting type \"%s\": %v", name, err)
+
+		var status int
+		var msg string
+		if _, ok := err.(models.ErrReservedTypeName); ok {
+			status = http.StatusUnprocessableEntity
+			msg = err.Error()
+		} else {
+			status = http.StatusInternalServerError
+			msg = fmt.Sprintf("error deleting type \"%s\"", name)
+		}
+
+		writeJSONError(w, status, msg)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, "success")
+}
+
 func (handler *TypeHandler) ingestRecord(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
 	recordType, err := handler.typeRepo.GetByName(name)
@@ -381,6 +405,10 @@ func mapHandlers(handler *TypeHandler, baseURL string) {
 	handler.mux.Path(baseURL).
 		Methods(http.MethodPut).
 		HandlerFunc(handler.createOrReplaceType)
+
+	handler.mux.Path(baseURL + "/{name}").
+		Methods(http.MethodDelete).
+		HandlerFunc(handler.deleteType)
 
 	handler.mux.Path(baseURL + "/{name}").
 		Methods(http.MethodPut).
