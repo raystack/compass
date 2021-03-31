@@ -59,6 +59,11 @@ func (repo *RecordRepository) GetByID(id string) (models.Record, error) {
 	return args.Get(0).(models.Record), args.Error(1)
 }
 
+func (repo *RecordRepository) Delete(id string) error {
+	args := repo.Called(id)
+	return args.Error(0)
+}
+
 type RecordSearcher struct {
 	mock.Mock
 }

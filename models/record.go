@@ -24,6 +24,11 @@ type RecordRepository interface {
 	// type to which this record belongs
 	GetByID(string) (Record, error)
 
+	// Delete deletes a record by it's id.
+	// The field that contains this ID is defined by the
+	// type to which this record belongs
+	Delete(string) error
+
 	// TODO: we should probably switch to iterator types for returning
 	// records, or we could add options for pagination
 }

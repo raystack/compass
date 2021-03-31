@@ -215,6 +215,26 @@ func (repo *RecordRepository) GetByID(id string) (models.Record, error) {
 	return response.Source, nil
 }
 
+func (repo *RecordRepository) Delete(id string) error {
+	res, err := repo.cli.Delete(
+		repo.recordType.Name,
+		id,
+		repo.cli.Delete.WithRefresh("true"),
+	)
+	if err != nil {
+		return fmt.Errorf("error deleting record: %w", err)
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		if res.StatusCode == http.StatusNotFound {
+			return models.ErrNoSuchRecord{RecordID: id}
+		}
+		return fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
+	}
+
+	return nil
+}
+
 // RecordRepositoryFactory can be used to construct a RecordRepository
 // for a certain type
 type RecordRepositoryFactory struct {

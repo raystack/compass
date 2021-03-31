@@ -162,6 +162,56 @@ func (handler *TypeHandler) deleteType(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, "success")
 }
 
+func (handler *TypeHandler) deleteRecord(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	var (
+		typeName = vars["name"]
+		recordID = vars["id"]
+	)
+
+	statusCode := http.StatusInternalServerError
+	errMessage := fmt.Sprintf("error deleting record \"%s\" with type \"%s\"", recordID, typeName)
+
+	recordType, err := handler.typeRepo.GetByName(typeName)
+	if err != nil {
+		handler.log.
+			Errorf("error getting type \"%s\": %v", typeName, err)
+
+		if _, ok := err.(models.ErrNoSuchType); ok {
+			statusCode = http.StatusNotFound
+			errMessage = err.Error()
+		}
+
+		writeJSONError(w, statusCode, errMessage)
+		return
+	}
+
+	recordRepoFactory, _ := handler.recordRepositoryFactory.For(recordType)
+	if err != nil {
+		handler.log.
+			Errorf("error creating record repository for \"%s\": %v", typeName, err)
+		writeJSONError(w, statusCode, errMessage)
+		return
+	}
+
+	err = recordRepoFactory.Delete(recordID)
+	if err != nil {
+		handler.log.
+			Errorf("error deleting record \"%s\": %v", typeName, err)
+
+		if _, ok := err.(models.ErrNoSuchRecord); ok {
+			statusCode = http.StatusNotFound
+			errMessage = err.Error()
+		}
+
+		writeJSONError(w, statusCode, errMessage)
+		return
+	}
+
+	handler.log.Infof("deleted record \"%s\" with type \"%s\"", recordID, typeName)
+	writeJSON(w, http.StatusOK, "success")
+}
+
 func (handler *TypeHandler) ingestRecord(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
 	recordType, err := handler.typeRepo.GetByName(name)
@@ -419,10 +469,19 @@ func mapHandlers(handler *TypeHandler, baseURL string) {
 		Methods(http.MethodDelete).
 		HandlerFunc(handler.deleteType)
 
+	handler.mux.Path(baseURL + "/{name}/records/{id}").
+		Methods(http.MethodDelete).
+		HandlerFunc(handler.deleteRecord)
+
 	handler.mux.Path(baseURL + "/{name}").
 		Methods(http.MethodPut).
 		HandlerFunc(handler.ingestRecord)
 
+	handler.mux.Path(baseURL+"/{name}/records/{id}").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(handler.getTypeRecord)
+
+	// TODO: remove this once no more request is coming
 	handler.mux.Path(baseURL+"/{name}/{id}").
 		Methods(http.MethodGet, http.MethodHead).
 		HandlerFunc(handler.getTypeRecord)
