@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -15,6 +16,7 @@ import (
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTypeHandler(t *testing.T) {
@@ -474,6 +476,109 @@ func TestTypeHandler(t *testing.T) {
 				return
 			}
 		})
+	})
+	t.Run("GET /v1/types", func(t *testing.T) {
+		type testCase struct {
+			Description  string
+			RequestURL   string
+			ExpectStatus int
+			Setup        func(tc *testCase, er *mock.TypeRepository)
+			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
+		}
+
+		var types = []models.Type{
+			{
+				Name:           "bqtable",
+				Classification: "dataset",
+				Fields: models.TypeFields{
+					ID:          "table_name",
+					Title:       "table_name",
+					Description: "description-bqtable",
+					Labels: []string{
+						"dataset",
+						"project",
+					},
+				},
+			},
+			{
+				Name:           "dagger",
+				Classification: "dataset",
+				Fields: models.TypeFields{
+					ID:          "urn-dagger",
+					Title:       "urn-dagger",
+					Description: "description-dagger",
+					Labels: []string{
+						"topic",
+					},
+				},
+			},
+			{
+				Name:           "firehose",
+				Classification: "dataset",
+				Fields: models.TypeFields{
+					ID:          "urn-firehose",
+					Title:       "urn-firehose",
+					Description: "description-firehose",
+					Labels: []string{
+						"sink",
+					},
+				},
+			},
+		}
+
+		var testCases = []testCase{
+			{
+				Description:  "should return all types",
+				RequestURL:   "/v1/types",
+				ExpectStatus: http.StatusOK,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("GetAll").Return(types, nil)
+				},
+				PostCheck: func(t *testing.T, tc *testCase, resp *http.Response) error {
+					respBody, err := ioutil.ReadAll(resp.Body)
+					if err != nil {
+						return err
+					}
+					var actual []models.Type
+					err = json.Unmarshal(respBody, &actual)
+					if err != nil {
+						return err
+					}
+					assert.Equal(t, types, actual)
+					return nil
+				},
+			},
+			{
+				Description:  "should return 500 status code if failing to fetch types",
+				RequestURL:   "/v1/types",
+				ExpectStatus: http.StatusInternalServerError,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("GetAll").Return([]models.Type{}, errors.New("failed to fetch type"))
+				},
+			},
+		}
+		for _, tc := range testCases {
+			t.Run(tc.Description, func(t *testing.T) {
+				er := new(mock.TypeRepository)
+				tc.Setup(&tc, er)
+
+				handler := handlers.NewTypeHandler(new(mock.Logger), er, new(mock.RecordRepositoryFactory))
+				rr := httptest.NewRequest("GET", tc.RequestURL, nil)
+				rw := httptest.NewRecorder()
+
+				handler.ServeHTTP(rw, rr)
+				if rw.Code != tc.ExpectStatus {
+					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
+					return
+				}
+
+				if tc.PostCheck != nil {
+					if err := tc.PostCheck(t, &tc, rw.Result()); err != nil {
+						t.Error(err)
+					}
+				}
+			})
+		}
 	})
 	t.Run("GET /v1/types/{name}", func(t *testing.T) {
 		type testCase struct {

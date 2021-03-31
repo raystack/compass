@@ -65,6 +65,18 @@ func (handler *TypeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handler.mux.ServeHTTP(w, r)
 }
 
+func (handler *TypeHandler) getAll(w http.ResponseWriter, r *http.Request) {
+	types, err := handler.typeRepo.GetAll()
+	if err != nil {
+		handler.log.
+			Errorf("error fetching types: %v", err)
+		writeJSONError(w, http.StatusInternalServerError, "error fetching types")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, types)
+}
+
 func (handler *TypeHandler) createOrReplaceType(w http.ResponseWriter, r *http.Request) {
 	var payload models.Type
 	err := json.NewDecoder(r.Body).Decode(&payload)
@@ -323,6 +335,10 @@ func NewTypeHandler(log logrus.FieldLogger, er models.TypeRepository, rrf models
 }
 
 func mapHandlers(handler *TypeHandler, baseURL string) {
+	handler.mux.Path(baseURL).
+		Methods(http.MethodGet).
+		HandlerFunc(handler.getAll)
+
 	handler.mux.Path(baseURL).
 		Methods(http.MethodPut).
 		HandlerFunc(handler.createOrReplaceType)
