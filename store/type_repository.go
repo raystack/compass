@@ -215,6 +215,37 @@ func (repo *TypeRepository) GetAll() ([]models.Type, error) {
 	return types, nil
 }
 
+func (repo *TypeRepository) Delete(typeName string) error {
+	if isReservedName(typeName) {
+		return models.ErrReservedTypeName{TypeName: typeName}
+	}
+
+	res, err := repo.cli.Delete(
+		defaultMetaIndex,
+		typeName,
+		repo.cli.Delete.WithRefresh("true"),
+	)
+	if err != nil {
+		return elasticSearchError(err)
+	}
+	if res.IsError() && res.StatusCode != http.StatusNotFound {
+		return fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
+	}
+
+	res, err = repo.cli.Indices.Delete(
+		[]string{typeName},
+		repo.cli.Indices.Delete.WithIgnoreUnavailable(true),
+	)
+	if err != nil {
+		return elasticSearchError(err)
+	}
+	if res.IsError() && res.StatusCode != http.StatusNotFound {
+		return fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
+	}
+
+	return nil
+}
+
 func NewTypeRepository(cli *elasticsearch.Client) *TypeRepository {
 	return &TypeRepository{
 		cli: cli,
