@@ -77,6 +77,30 @@ func (handler *TypeHandler) getAll(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, types)
 }
 
+func (handler *TypeHandler) getType(w http.ResponseWriter, r *http.Request) {
+	name := mux.Vars(r)["name"]
+	recordType, err := handler.typeRepo.GetByName(name)
+	if err != nil {
+		handler.log.
+			Errorf("error fetching type \"%s\": %v", name, err)
+
+		var status int
+		var msg string
+		if _, ok := err.(models.ErrNoSuchType); ok {
+			status = http.StatusNotFound
+			msg = err.Error()
+		} else {
+			status = http.StatusInternalServerError
+			msg = fmt.Sprintf("error fetching type \"%s\"", name)
+		}
+
+		writeJSONError(w, status, msg)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, recordType)
+}
+
 func (handler *TypeHandler) createOrReplaceType(w http.ResponseWriter, r *http.Request) {
 	var payload models.Type
 	err := json.NewDecoder(r.Body).Decode(&payload)
@@ -339,6 +363,21 @@ func mapHandlers(handler *TypeHandler, baseURL string) {
 		Methods(http.MethodGet).
 		HandlerFunc(handler.getAll)
 
+	// TODO: remove this route when
+	// getting type details already handled on GET baseUrl/{name}
+	handler.mux.Path(baseURL+"/{name}/details").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(handler.getType)
+
+	// TODO: switch this route to return type details
+	handler.mux.Path(baseURL+"/{name}").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(handler.listTypeRecords)
+
+	handler.mux.Path(baseURL+"/{name}/records").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(handler.listTypeRecords)
+
 	handler.mux.Path(baseURL).
 		Methods(http.MethodPut).
 		HandlerFunc(handler.createOrReplaceType)
@@ -346,10 +385,6 @@ func mapHandlers(handler *TypeHandler, baseURL string) {
 	handler.mux.Path(baseURL + "/{name}").
 		Methods(http.MethodPut).
 		HandlerFunc(handler.ingestRecord)
-
-	handler.mux.Path(baseURL+"/{name}").
-		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(handler.listTypeRecords)
 
 	handler.mux.Path(baseURL+"/{name}/{id}").
 		Methods(http.MethodGet, http.MethodHead).
