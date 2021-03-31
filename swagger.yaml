@@ -208,6 +208,26 @@ paths:
           description: validation error
           schema:
             $ref: '#/definitions/ValidationError'
+    delete:
+      summary: delete a type by its name.
+      description: Use this API to delete a type along with all of its records. This is an idempotent operation.
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+            example: success
+        422:
+          description: reserved type name error
+          schema:
+            $ref: '#/definitions/Error'
   "/types/{name}/details":
     get:
       summary: fetch a type details
@@ -256,6 +276,30 @@ paths:
           description: not found
           schema:
             $ref: '#/definitions/Error'
+  "/types/{name}/records/{id}":
+    delete:
+      summary: delete a record in a type by its record ID
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+        - in: path
+          name: id
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+            example: success
+        404:
+          description: type or record cannot be found
+          schema:
+            $ref: '#/definitions/Error'
   "/types/{name}/{id}":
     get:
       summary: get a record by id
@@ -278,8 +322,7 @@ paths:
         404:
           description: document or type does not exist
           schema:
-            $ref: '#/definitions/Error'
-        
+            $ref: '#/definitions/Error'     
   "/search":
     get:
       summary: search for resources
