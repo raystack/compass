@@ -655,6 +655,85 @@ func TestTypeHandler(t *testing.T) {
 			})
 		}
 	})
+	t.Run("DELETE /v1/types/{name}/records/{id}", func(t *testing.T) {
+		type testCase struct {
+			Description  string
+			RequestURL   string
+			ExpectStatus int
+			Setup        func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository)
+			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
+		}
+
+		var testCases = []testCase{
+			{
+				Description:  "should return 200 on success",
+				RequestURL:   "/v1/types/sample/records/id-10",
+				ExpectStatus: http.StatusOK,
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+					tr.On("GetByName", "sample").Return(daggerType, nil)
+					rrf.On("For", daggerType).Return(rr, nil)
+					rr.On("Delete", "id-10").Return(nil)
+				},
+			},
+			{
+				Description:  "should return 404 if type cannot be found",
+				RequestURL:   "/v1/types/sample/records/id-10",
+				ExpectStatus: http.StatusNotFound,
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+					tr.On("GetByName", "sample").Return(models.Type{}, models.ErrNoSuchType{TypeName: daggerType.Name})
+				},
+			},
+			{
+				Description:  "should return 500 on error fetching type",
+				RequestURL:   "/v1/types/sample/records/id-10",
+				ExpectStatus: http.StatusInternalServerError,
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+					tr.On("GetByName", "sample").Return(models.Type{}, errors.New("error fetching type"))
+				},
+			},
+			{
+				Description:  "should return 404 when record cannot be found",
+				RequestURL:   "/v1/types/sample/records/id-10",
+				ExpectStatus: http.StatusNotFound,
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+					tr.On("GetByName", "sample").Return(daggerType, nil)
+					rrf.On("For", daggerType).Return(rr, nil)
+					rr.On("Delete", "id-10").Return(models.ErrNoSuchRecord{RecordID: "id-10"})
+				},
+			},
+			{
+				Description:  "should return 500 on error deleting record",
+				RequestURL:   "/v1/types/sample/records/id-10",
+				ExpectStatus: http.StatusInternalServerError,
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+					tr.On("GetByName", "sample").Return(daggerType, nil)
+					rrf.On("For", daggerType).Return(rr, nil)
+					rr.On("Delete", "id-10").Return(errors.New("error deleting record"))
+				},
+			},
+		}
+		for _, tc := range testCases {
+			t.Run(tc.Description, func(t *testing.T) {
+				typeRepo := new(mock.TypeRepository)
+				recordRepo := new(mock.RecordRepository)
+				recordRepoFactory := new(mock.RecordRepositoryFactory)
+				tc.Setup(typeRepo, recordRepoFactory, recordRepo)
+				defer typeRepo.AssertExpectations(t)
+				defer recordRepoFactory.AssertExpectations(t)
+				defer recordRepo.AssertExpectations(t)
+
+				handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, recordRepoFactory)
+				rr := httptest.NewRequest("DELETE", tc.RequestURL, nil)
+				rw := httptest.NewRecorder()
+
+				handler.ServeHTTP(rw, rr)
+				if rw.Code != tc.ExpectStatus {
+					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
+					return
+				}
+			})
+		}
+	})
 	t.Run("GET /v1/types/{name}/details", func(t *testing.T) {
 		type testCase struct {
 			Description  string
