@@ -159,6 +159,7 @@ func (handler *TypeHandler) deleteType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	handler.log.Infof("deleted type \"%s\"", name)
 	writeJSON(w, http.StatusOK, "success")
 }
 
