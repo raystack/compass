@@ -27,6 +27,11 @@ func (repo *TypeRepository) GetAll() ([]models.Type, error) {
 	return args.Get(0).([]models.Type), args.Error(1)
 }
 
+func (repo *TypeRepository) Delete(typeName string) error {
+	args := repo.Called(typeName)
+	return args.Error(0)
+}
+
 type RecordRepositoryFactory struct {
 	mock.Mock
 }
@@ -52,6 +57,11 @@ func (repo *RecordRepository) GetAll(filter models.RecordFilter) ([]models.Recor
 func (repo *RecordRepository) GetByID(id string) (models.Record, error) {
 	args := repo.Called(id)
 	return args.Get(0).(models.Record), args.Error(1)
+}
+
+func (repo *RecordRepository) Delete(id string) error {
+	args := repo.Called(id)
+	return args.Error(0)
 }
 
 type RecordSearcher struct {

@@ -65,6 +65,7 @@ type TypeRepository interface {
 	CreateOrReplace(Type) error
 	GetByName(string) (Type, error)
 	GetAll() ([]Type, error)
+	Delete(string) error
 }
 
 type ErrNoSuchType struct {
@@ -73,4 +74,12 @@ type ErrNoSuchType struct {
 
 func (err ErrNoSuchType) Error() string {
 	return fmt.Sprintf("no such type: %q", err.TypeName)
+}
+
+type ErrReservedTypeName struct {
+	TypeName string
+}
+
+func (err ErrReservedTypeName) Error() string {
+	return fmt.Sprintf("type is reserved: %q", err.TypeName)
 }
