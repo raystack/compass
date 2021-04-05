@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/odpf/columbus/models"
@@ -17,13 +18,17 @@ var (
 	filterScriptMatchValuePredicate = `doc[%q].value == %q`
 	defaultMaxResults               = 200
 	defaultMinScore                 = 0.01
+	defaultCachedTypesMapDuration   = 300
 )
 
 // Searcher is an implementation of models.RecordSearcher
 type Searcher struct {
-	cli              *elasticsearch.Client
-	typeWhiteList    []string
-	typeWhiteListSet map[string]bool
+	cli                 *elasticsearch.Client
+	typeWhiteList       []string
+	typeWhiteListSet    map[string]bool
+	typeRepository      models.TypeRepository
+	cachedTypesMap      map[string]models.Type
+	cachedTypeExpiredOn time.Time
 }
 
 // NewSearcher creates a new instance of Searcher
@@ -31,8 +36,7 @@ type Searcher struct {
 // If the white list is nil (or has zero length), then the search will be run
 // on all types. This can be further restricted by FilterConfig.TypeWhiteList
 // in Search()
-func NewSearcher(cli *elasticsearch.Client, typeWhiteList []string) (*Searcher, error) {
-
+func NewSearcher(cli *elasticsearch.Client, typeRepo models.TypeRepository, typeWhiteList []string) (*Searcher, error) {
 	var whiteListSet = make(map[string]bool)
 	for _, ent := range typeWhiteList {
 		if isReservedName(ent) {
@@ -45,6 +49,7 @@ func NewSearcher(cli *elasticsearch.Client, typeWhiteList []string) (*Searcher, 
 		cli:              cli,
 		typeWhiteList:    typeWhiteList,
 		typeWhiteListSet: whiteListSet,
+		typeRepository:   typeRepo,
 	}, nil
 }
 
@@ -94,8 +99,12 @@ func (sr *Searcher) Search(cfg models.SearchConfig) ([]models.SearchResult, erro
 }
 
 func (sr *Searcher) buildQuery(cfg models.SearchConfig, indices []string) (io.Reader, error) {
+	queries, err := sr.buildQueriesFromIndices(indices, cfg)
+	if err != nil {
+		return nil, err
+	}
 	query := elastic.NewBoolQuery().
-		Should(sr.buildQueriesFromIndices(indices, cfg)...).
+		Should(queries...).
 		Filter(sr.filterQuery(cfg.Filters)...)
 
 	src, err := query.Source()
@@ -111,15 +120,19 @@ func (sr *Searcher) buildQuery(cfg models.SearchConfig, indices []string) (io.Re
 	return payload, json.NewEncoder(payload).Encode(q)
 }
 
-func (sr *Searcher) buildQueriesFromIndices(indices []string, cfg models.SearchConfig) []elastic.Query {
+func (sr *Searcher) buildQueriesFromIndices(indices []string, cfg models.SearchConfig) ([]elastic.Query, error) {
 	var queries []elastic.Query
 	for _, index := range indices {
+		fields, err := sr.buildTypeFields(index)
+		if err != nil {
+			return nil, err
+		}
+
 		query := elastic.NewBoolQuery().
 			Should(
 				elastic.NewMultiMatchQuery(
 					cfg.Text,
-					"table_id^10",
-					"table_name^5",
+					fields...,
 				),
 				elastic.NewMultiMatchQuery(
 					cfg.Text,
@@ -131,7 +144,22 @@ func (sr *Searcher) buildQueriesFromIndices(indices []string, cfg models.SearchC
 		queries = append(queries, query)
 	}
 
-	return queries
+	return queries, nil
+}
+
+func (sr *Searcher) buildTypeFields(typeName string) (fields []string, err error) {
+	resourceType, err := sr.getType(typeName)
+	if err != nil {
+		return fields, err
+	}
+
+	fields = append(
+		fields,
+		fmt.Sprintf("%s^10", resourceType.Fields.ID),
+		fmt.Sprintf("%s^5", resourceType.Fields.Title),
+	)
+
+	return
 }
 
 func (sr *Searcher) filterQuery(filters map[string][]string) (filterQueries []elastic.Query) {
@@ -169,6 +197,39 @@ func (sr *Searcher) searchIndices(localWhiteList []string) []string {
 	default:
 		return []string{defaultSearchIndex}
 	}
+}
+
+func (sr *Searcher) getType(typeName string) (models.Type, error) {
+	if sr.cachedTypesMap == nil || time.Now().After(sr.cachedTypeExpiredOn) {
+		typesMap, err := sr.buildTypesMap()
+		if err != nil {
+			return models.Type{}, err
+		}
+
+		sr.cachedTypesMap = typesMap
+		sr.cachedTypeExpiredOn = time.Now().Add(time.Duration(defaultCachedTypesMapDuration) * time.Second)
+	}
+
+	resourceType, ok := sr.cachedTypesMap[typeName]
+	if !ok {
+		return models.Type{}, fmt.Errorf("type does not exist")
+	}
+
+	return resourceType, nil
+}
+
+func (sr *Searcher) buildTypesMap() (map[string]models.Type, error) {
+	types, err := sr.typeRepository.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	typesMap := map[string]models.Type{}
+	for _, typ := range types {
+		typesMap[typ.Name] = typ
+	}
+
+	return typesMap, nil
 }
 
 func anyValidStringSlice(slices ...[]string) []string {
