@@ -36,7 +36,7 @@ func TestSearch(t *testing.T) {
 		esClient := esTestServer.NewClient()
 		defer esTestServer.Close()
 
-		searcher, err := store.NewSearcher(esClient, nil)
+		searcher, err := store.NewSearcher(esClient, store.NewTypeRepository(esClient), nil)
 		if err != nil {
 			t.Error(err)
 			return
@@ -64,7 +64,7 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		searcher, err := store.NewSearcher(esClient, []string{whitelistedType})
+		searcher, err := store.NewSearcher(esClient, store.NewTypeRepository(esClient), []string{whitelistedType})
 		if err != nil {
 			t.Error(err)
 			return
@@ -95,7 +95,7 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		searcher, err := store.NewSearcher(esClient, []string{})
+		searcher, err := store.NewSearcher(esClient, store.NewTypeRepository(esClient), []string{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -134,7 +134,7 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		searcher, err := store.NewSearcher(esClient, globalWhitelist)
+		searcher, err := store.NewSearcher(esClient, store.NewTypeRepository(esClient), globalWhitelist)
 		if err != nil {
 			t.Error(err)
 			return
@@ -166,7 +166,7 @@ func TestSearch(t *testing.T) {
 		}
 
 		typesMap := mapTypesToTypesMap(types)
-		searcher, err := store.NewSearcher(esClient, mapTypesToTypeNames(types))
+		searcher, err := store.NewSearcher(esClient, store.NewTypeRepository(esClient), mapTypesToTypeNames(types))
 		if err != nil {
 			t.Error(err)
 		}

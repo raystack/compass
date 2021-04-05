@@ -49,7 +49,7 @@ func Serve() {
 
 	typeRepository := store.NewTypeRepository(esClient)
 	recordRepositoryFactory := store.NewRecordRepositoryFactory(esClient)
-	recordSearcher, err := store.NewSearcher(esClient, typeWhiteList(config.TypeWhiteListStr))
+	recordSearcher, err := store.NewSearcher(esClient, typeRepository, typeWhiteList(config.TypeWhiteListStr))
 	if err != nil {
 		log.Fatalf("error creating searcher: %v", err)
 	}
