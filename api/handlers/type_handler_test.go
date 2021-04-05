@@ -613,9 +613,9 @@ func TestTypeHandler(t *testing.T) {
 
 		var testCases = []testCase{
 			{
-				Description:  "should return all types",
+				Description:  "should return 204 if delete successes",
 				RequestURL:   "/v1/types/sample",
-				ExpectStatus: http.StatusOK,
+				ExpectStatus: http.StatusNoContent,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
 					er.On("Delete", "sample").Return(nil)
 				},
@@ -666,9 +666,9 @@ func TestTypeHandler(t *testing.T) {
 
 		var testCases = []testCase{
 			{
-				Description:  "should return 200 on success",
+				Description:  "should return 204 on success",
 				RequestURL:   "/v1/types/sample/records/id-10",
-				ExpectStatus: http.StatusOK,
+				ExpectStatus: http.StatusNoContent,
 				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
 					tr.On("GetByName", "sample").Return(daggerType, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
