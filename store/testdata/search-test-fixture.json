@@ -94,6 +94,18 @@
             ]
         },
         {
+            "description": "should enable fuzzy search", 
+            "config": {
+                "Text": "tpic"
+            },
+            "expected": [
+                {"type": "topic", "record_id": "order-topic"},
+                {"type": "topic", "record_id": "purchase-topic"},
+                {"type": "topic", "record_id": "consumer-topic"}
+            ],
+            "match_total_rows": true
+        },
+        {
             "description": "should put more weight on id fields", 
             "config": {
                 "Text": "invoice"
