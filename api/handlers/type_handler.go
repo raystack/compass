@@ -160,7 +160,7 @@ func (handler *TypeHandler) deleteType(w http.ResponseWriter, r *http.Request) {
 	}
 
 	handler.log.Infof("deleted type \"%s\"", name)
-	writeJSON(w, http.StatusOK, "success")
+	writeJSON(w, http.StatusNoContent, "success")
 }
 
 func (handler *TypeHandler) deleteRecord(w http.ResponseWriter, r *http.Request) {
@@ -210,7 +210,7 @@ func (handler *TypeHandler) deleteRecord(w http.ResponseWriter, r *http.Request)
 	}
 
 	handler.log.Infof("deleted record \"%s\" with type \"%s\"", recordID, typeName)
-	writeJSON(w, http.StatusOK, "success")
+	writeJSON(w, http.StatusNoContent, "success")
 }
 
 func (handler *TypeHandler) ingestRecord(w http.ResponseWriter, r *http.Request) {
