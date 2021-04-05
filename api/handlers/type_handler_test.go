@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -15,6 +16,7 @@ import (
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTypeHandler(t *testing.T) {
@@ -144,6 +146,28 @@ func TestTypeHandler(t *testing.T) {
 				t.Errorf("expected handler to HTTP %d, returned HTTP %d instead", expectedStatus, rw.Code)
 				return
 			}
+		})
+		t.Run("should return 422 if type name is reserved", func(t *testing.T) {
+			expectedErr := models.ErrReservedTypeName{TypeName: daggerType.Name}
+
+			rr := httptest.NewRequest("PUT", "/v1/types", bytes.NewBuffer(validPayloadRaw))
+			rw := httptest.NewRecorder()
+
+			typeRepo := new(mock.TypeRepository)
+			typeRepo.On("CreateOrReplace", daggerType).Return(expectedErr)
+			defer typeRepo.AssertExpectations(t)
+
+			handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, nil)
+			handler.ServeHTTP(rw, rr)
+
+			assert.Equal(t, http.StatusUnprocessableEntity, rw.Code)
+			var response handlers.ErrorResponse
+			err := json.NewDecoder(rw.Body).Decode(&response)
+			if err != nil {
+				t.Fatalf("error decoding handler response: %v", err)
+				return
+			}
+			assert.Equal(t, expectedErr.Error(), response.Reason)
 		})
 		t.Run("should return HTTP 500 if creating/updating the type fails", func(t *testing.T) {
 			rr := httptest.NewRequest("PUT", "/v1/types", bytes.NewBuffer(validPayloadRaw))
@@ -474,6 +498,328 @@ func TestTypeHandler(t *testing.T) {
 				return
 			}
 		})
+	})
+	t.Run("GET /v1/types", func(t *testing.T) {
+		type testCase struct {
+			Description  string
+			RequestURL   string
+			ExpectStatus int
+			Setup        func(tc *testCase, er *mock.TypeRepository)
+			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
+		}
+
+		var types = []models.Type{
+			{
+				Name:           "bqtable",
+				Classification: "dataset",
+				Fields: models.TypeFields{
+					ID:          "table_name",
+					Title:       "table_name",
+					Description: "description-bqtable",
+					Labels: []string{
+						"dataset",
+						"project",
+					},
+				},
+			},
+			{
+				Name:           "dagger",
+				Classification: "dataset",
+				Fields: models.TypeFields{
+					ID:          "urn-dagger",
+					Title:       "urn-dagger",
+					Description: "description-dagger",
+					Labels: []string{
+						"topic",
+					},
+				},
+			},
+			{
+				Name:           "firehose",
+				Classification: "dataset",
+				Fields: models.TypeFields{
+					ID:          "urn-firehose",
+					Title:       "urn-firehose",
+					Description: "description-firehose",
+					Labels: []string{
+						"sink",
+					},
+				},
+			},
+		}
+
+		var testCases = []testCase{
+			{
+				Description:  "should return all types",
+				RequestURL:   "/v1/types",
+				ExpectStatus: http.StatusOK,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("GetAll").Return(types, nil)
+				},
+				PostCheck: func(t *testing.T, tc *testCase, resp *http.Response) error {
+					respBody, err := ioutil.ReadAll(resp.Body)
+					if err != nil {
+						return err
+					}
+					var actual []models.Type
+					err = json.Unmarshal(respBody, &actual)
+					if err != nil {
+						return err
+					}
+					assert.Equal(t, types, actual)
+					return nil
+				},
+			},
+			{
+				Description:  "should return 500 status code if failing to fetch types",
+				RequestURL:   "/v1/types",
+				ExpectStatus: http.StatusInternalServerError,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("GetAll").Return([]models.Type{}, errors.New("failed to fetch type"))
+				},
+			},
+		}
+		for _, tc := range testCases {
+			t.Run(tc.Description, func(t *testing.T) {
+				er := new(mock.TypeRepository)
+				tc.Setup(&tc, er)
+
+				handler := handlers.NewTypeHandler(new(mock.Logger), er, new(mock.RecordRepositoryFactory))
+				rr := httptest.NewRequest("GET", tc.RequestURL, nil)
+				rw := httptest.NewRecorder()
+
+				handler.ServeHTTP(rw, rr)
+				if rw.Code != tc.ExpectStatus {
+					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
+					return
+				}
+
+				if tc.PostCheck != nil {
+					if err := tc.PostCheck(t, &tc, rw.Result()); err != nil {
+						t.Error(err)
+					}
+				}
+			})
+		}
+	})
+	t.Run("DELETE /v1/types/{name}", func(t *testing.T) {
+		type testCase struct {
+			Description  string
+			RequestURL   string
+			ExpectStatus int
+			Setup        func(tc *testCase, er *mock.TypeRepository)
+			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
+		}
+
+		var testCases = []testCase{
+			{
+				Description:  "should return 204 if delete successes",
+				RequestURL:   "/v1/types/sample",
+				ExpectStatus: http.StatusNoContent,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("Delete", "sample").Return(nil)
+				},
+			},
+			{
+				Description:  "should return 422 status code if type name is reserved",
+				RequestURL:   "/v1/types/sample",
+				ExpectStatus: http.StatusUnprocessableEntity,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("Delete", "sample").Return(models.ErrReservedTypeName{TypeName: "sample"})
+				},
+			},
+			{
+				Description:  "should return 500 status code if delete fails",
+				RequestURL:   "/v1/types/sample",
+				ExpectStatus: http.StatusInternalServerError,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("Delete", "sample").Return(errors.New("failed to delete type"))
+				},
+			},
+		}
+		for _, tc := range testCases {
+			t.Run(tc.Description, func(t *testing.T) {
+				er := new(mock.TypeRepository)
+				tc.Setup(&tc, er)
+				defer er.AssertExpectations(t)
+
+				handler := handlers.NewTypeHandler(new(mock.Logger), er, new(mock.RecordRepositoryFactory))
+				rr := httptest.NewRequest("DELETE", tc.RequestURL, nil)
+				rw := httptest.NewRecorder()
+
+				handler.ServeHTTP(rw, rr)
+				if rw.Code != tc.ExpectStatus {
+					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
+					return
+				}
+			})
+		}
+	})
+	t.Run("DELETE /v1/types/{name}/records/{id}", func(t *testing.T) {
+		type testCase struct {
+			Description  string
+			RequestURL   string
+			ExpectStatus int
+			Setup        func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository)
+			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
+		}
+
+		var testCases = []testCase{
+			{
+				Description:  "should return 204 on success",
+				RequestURL:   "/v1/types/sample/records/id-10",
+				ExpectStatus: http.StatusNoContent,
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+					tr.On("GetByName", "sample").Return(daggerType, nil)
+					rrf.On("For", daggerType).Return(rr, nil)
+					rr.On("Delete", "id-10").Return(nil)
+				},
+			},
+			{
+				Description:  "should return 404 if type cannot be found",
+				RequestURL:   "/v1/types/sample/records/id-10",
+				ExpectStatus: http.StatusNotFound,
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+					tr.On("GetByName", "sample").Return(models.Type{}, models.ErrNoSuchType{TypeName: daggerType.Name})
+				},
+			},
+			{
+				Description:  "should return 500 on error fetching type",
+				RequestURL:   "/v1/types/sample/records/id-10",
+				ExpectStatus: http.StatusInternalServerError,
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+					tr.On("GetByName", "sample").Return(models.Type{}, errors.New("error fetching type"))
+				},
+			},
+			{
+				Description:  "should return 404 when record cannot be found",
+				RequestURL:   "/v1/types/sample/records/id-10",
+				ExpectStatus: http.StatusNotFound,
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+					tr.On("GetByName", "sample").Return(daggerType, nil)
+					rrf.On("For", daggerType).Return(rr, nil)
+					rr.On("Delete", "id-10").Return(models.ErrNoSuchRecord{RecordID: "id-10"})
+				},
+			},
+			{
+				Description:  "should return 500 on error deleting record",
+				RequestURL:   "/v1/types/sample/records/id-10",
+				ExpectStatus: http.StatusInternalServerError,
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+					tr.On("GetByName", "sample").Return(daggerType, nil)
+					rrf.On("For", daggerType).Return(rr, nil)
+					rr.On("Delete", "id-10").Return(errors.New("error deleting record"))
+				},
+			},
+		}
+		for _, tc := range testCases {
+			t.Run(tc.Description, func(t *testing.T) {
+				typeRepo := new(mock.TypeRepository)
+				recordRepo := new(mock.RecordRepository)
+				recordRepoFactory := new(mock.RecordRepositoryFactory)
+				tc.Setup(typeRepo, recordRepoFactory, recordRepo)
+				defer typeRepo.AssertExpectations(t)
+				defer recordRepoFactory.AssertExpectations(t)
+				defer recordRepo.AssertExpectations(t)
+
+				handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, recordRepoFactory)
+				rr := httptest.NewRequest("DELETE", tc.RequestURL, nil)
+				rw := httptest.NewRecorder()
+
+				handler.ServeHTTP(rw, rr)
+				if rw.Code != tc.ExpectStatus {
+					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
+					return
+				}
+			})
+		}
+	})
+	t.Run("GET /v1/types/{name}/details", func(t *testing.T) {
+		type testCase struct {
+			Description  string
+			RequestURL   string
+			ExpectStatus int
+			Setup        func(tc *testCase, er *mock.TypeRepository)
+			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
+		}
+
+		sampleType := models.Type{
+			Name:           "sample",
+			Classification: "dataset",
+			Fields: models.TypeFields{
+				ID:          "urn-dagger",
+				Title:       "urn-dagger",
+				Description: "description-dagger",
+				Labels: []string{
+					"topic",
+				},
+			},
+		}
+
+		var testCases = []testCase{
+			{
+				Description:  "should return type with name given from route parameter",
+				RequestURL:   "/v1/types/sample/details",
+				ExpectStatus: http.StatusOK,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("GetByName", "sample").Return(sampleType, nil)
+				},
+				PostCheck: func(t *testing.T, tc *testCase, resp *http.Response) error {
+					respBody, err := ioutil.ReadAll(resp.Body)
+					if err != nil {
+						return err
+					}
+					var actual models.Type
+					err = json.Unmarshal(respBody, &actual)
+					if err != nil {
+						return err
+					}
+					assert.Equal(t, sampleType, actual)
+					return nil
+				},
+			},
+			{
+				Description:  "should return 500 status code if failing to fetch type",
+				RequestURL:   "/v1/types/sample/details",
+				ExpectStatus: http.StatusInternalServerError,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("GetByName", "sample").Return(models.Type{}, errors.New("failed to fetch type"))
+				},
+			},
+			{
+				Description:  "should return 404 status code if type could not be found",
+				RequestURL:   "/v1/types/wrong_type/details",
+				ExpectStatus: http.StatusNotFound,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("GetByName", "wrong_type").Return(models.Type{}, models.ErrNoSuchType{
+						TypeName: "wrong_type",
+					})
+				},
+			},
+		}
+		for _, tc := range testCases {
+			t.Run(tc.Description, func(t *testing.T) {
+				er := new(mock.TypeRepository)
+				tc.Setup(&tc, er)
+				defer er.AssertExpectations(t)
+
+				handler := handlers.NewTypeHandler(new(mock.Logger), er, new(mock.RecordRepositoryFactory))
+				rr := httptest.NewRequest("GET", tc.RequestURL, nil)
+				rw := httptest.NewRecorder()
+
+				handler.ServeHTTP(rw, rr)
+				if rw.Code != tc.ExpectStatus {
+					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
+					return
+				}
+
+				if tc.PostCheck != nil {
+					if err := tc.PostCheck(t, &tc, rw.Result()); err != nil {
+						t.Error(err)
+					}
+				}
+			})
+		}
 	})
 	t.Run("GET /v1/types/{name}", func(t *testing.T) {
 		type testCase struct {

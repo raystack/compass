@@ -65,6 +65,42 @@ func (handler *TypeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handler.mux.ServeHTTP(w, r)
 }
 
+func (handler *TypeHandler) getAll(w http.ResponseWriter, r *http.Request) {
+	types, err := handler.typeRepo.GetAll()
+	if err != nil {
+		handler.log.
+			Errorf("error fetching types: %v", err)
+		writeJSONError(w, http.StatusInternalServerError, "error fetching types")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, types)
+}
+
+func (handler *TypeHandler) getType(w http.ResponseWriter, r *http.Request) {
+	name := mux.Vars(r)["name"]
+	recordType, err := handler.typeRepo.GetByName(name)
+	if err != nil {
+		handler.log.
+			Errorf("error fetching type \"%s\": %v", name, err)
+
+		var status int
+		var msg string
+		if _, ok := err.(models.ErrNoSuchType); ok {
+			status = http.StatusNotFound
+			msg = err.Error()
+		} else {
+			status = http.StatusInternalServerError
+			msg = fmt.Sprintf("error fetching type \"%s\"", name)
+		}
+
+		writeJSONError(w, status, msg)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, recordType)
+}
+
 func (handler *TypeHandler) createOrReplaceType(w http.ResponseWriter, r *http.Request) {
 	var payload models.Type
 	err := json.NewDecoder(r.Body).Decode(&payload)
@@ -85,12 +121,96 @@ func (handler *TypeHandler) createOrReplaceType(w http.ResponseWriter, r *http.R
 			WithField("type", payload.Name).
 			Errorf("error creating/replacing type: %v", err)
 
-		msg := fmt.Sprintf("error creating type: %v", err)
-		writeJSONError(w, http.StatusInternalServerError, msg)
+		var status int
+		var msg string
+		if _, ok := err.(models.ErrReservedTypeName); ok {
+			status = http.StatusUnprocessableEntity
+			msg = err.Error()
+		} else {
+			status = http.StatusInternalServerError
+			msg = fmt.Sprintf("error creating type: %v", err)
+		}
+
+		writeJSONError(w, status, msg)
 		return
 	}
 	handler.log.Infof("created/updated %q type", payload.Name)
 	writeJSON(w, http.StatusCreated, payload)
+}
+
+func (handler *TypeHandler) deleteType(w http.ResponseWriter, r *http.Request) {
+	name := mux.Vars(r)["name"]
+	err := handler.typeRepo.Delete(name)
+	if err != nil {
+		handler.log.
+			Errorf("error deleting type \"%s\": %v", name, err)
+
+		var status int
+		var msg string
+		if _, ok := err.(models.ErrReservedTypeName); ok {
+			status = http.StatusUnprocessableEntity
+			msg = err.Error()
+		} else {
+			status = http.StatusInternalServerError
+			msg = fmt.Sprintf("error deleting type \"%s\"", name)
+		}
+
+		writeJSONError(w, status, msg)
+		return
+	}
+
+	handler.log.Infof("deleted type \"%s\"", name)
+	writeJSON(w, http.StatusNoContent, "success")
+}
+
+func (handler *TypeHandler) deleteRecord(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	var (
+		typeName = vars["name"]
+		recordID = vars["id"]
+	)
+
+	statusCode := http.StatusInternalServerError
+	errMessage := fmt.Sprintf("error deleting record \"%s\" with type \"%s\"", recordID, typeName)
+
+	recordType, err := handler.typeRepo.GetByName(typeName)
+	if err != nil {
+		handler.log.
+			Errorf("error getting type \"%s\": %v", typeName, err)
+
+		if _, ok := err.(models.ErrNoSuchType); ok {
+			statusCode = http.StatusNotFound
+			errMessage = err.Error()
+		}
+
+		writeJSONError(w, statusCode, errMessage)
+		return
+	}
+
+	recordRepoFactory, _ := handler.recordRepositoryFactory.For(recordType)
+	if err != nil {
+		handler.log.
+			Errorf("error creating record repository for \"%s\": %v", typeName, err)
+		writeJSONError(w, statusCode, errMessage)
+		return
+	}
+
+	err = recordRepoFactory.Delete(recordID)
+	if err != nil {
+		handler.log.
+			Errorf("error deleting record \"%s\": %v", typeName, err)
+
+		if _, ok := err.(models.ErrNoSuchRecord); ok {
+			statusCode = http.StatusNotFound
+			errMessage = err.Error()
+		}
+
+		writeJSONError(w, statusCode, errMessage)
+		return
+	}
+
+	handler.log.Infof("deleted record \"%s\" with type \"%s\"", recordID, typeName)
+	writeJSON(w, http.StatusNoContent, "success")
 }
 
 func (handler *TypeHandler) ingestRecord(w http.ResponseWriter, r *http.Request) {
@@ -324,17 +444,45 @@ func NewTypeHandler(log logrus.FieldLogger, er models.TypeRepository, rrf models
 
 func mapHandlers(handler *TypeHandler, baseURL string) {
 	handler.mux.Path(baseURL).
+		Methods(http.MethodGet).
+		HandlerFunc(handler.getAll)
+
+	// TODO: remove this route when
+	// getting type details already handled on GET baseUrl/{name}
+	handler.mux.Path(baseURL+"/{name}/details").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(handler.getType)
+
+	// TODO: switch this route to return type details
+	handler.mux.Path(baseURL+"/{name}").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(handler.listTypeRecords)
+
+	handler.mux.Path(baseURL+"/{name}/records").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(handler.listTypeRecords)
+
+	handler.mux.Path(baseURL).
 		Methods(http.MethodPut).
 		HandlerFunc(handler.createOrReplaceType)
+
+	handler.mux.Path(baseURL + "/{name}").
+		Methods(http.MethodDelete).
+		HandlerFunc(handler.deleteType)
+
+	handler.mux.Path(baseURL + "/{name}/records/{id}").
+		Methods(http.MethodDelete).
+		HandlerFunc(handler.deleteRecord)
 
 	handler.mux.Path(baseURL + "/{name}").
 		Methods(http.MethodPut).
 		HandlerFunc(handler.ingestRecord)
 
-	handler.mux.Path(baseURL+"/{name}").
+	handler.mux.Path(baseURL+"/{name}/records/{id}").
 		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(handler.listTypeRecords)
+		HandlerFunc(handler.getTypeRecord)
 
+	// TODO: remove this once no more request is coming
 	handler.mux.Path(baseURL+"/{name}/{id}").
 		Methods(http.MethodGet, http.MethodHead).
 		HandlerFunc(handler.getTypeRecord)
