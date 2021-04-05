@@ -250,4 +250,28 @@ func TestRecordRepository(t *testing.T) {
 			assert.True(t, ok)
 		})
 	})
+	t.Run("Delete", func(t *testing.T) {
+		t.Run("should delete record from index", func(t *testing.T) {
+			id := "delete-id-01"
+			recordRepo.CreateOrReplaceMany([]map[string]interface{}{
+				{
+					"title": "To be deleted",
+					"urn":   id,
+				},
+			})
+
+			err := recordRepo.Delete(id)
+			assert.Nil(t, err)
+
+			record, err := recordRepo.GetByID(id)
+			assert.NotNil(t, err)
+			assert.Nil(t, record)
+		})
+
+		t.Run("should return custom error when record could not be found", func(t *testing.T) {
+			err := recordRepo.Delete("not-found-id")
+			assert.NotNil(t, err)
+			assert.IsType(t, models.ErrNoSuchRecord{}, err)
+		})
+	})
 }
