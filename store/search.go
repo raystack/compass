@@ -130,13 +130,22 @@ func (sr *Searcher) buildQueriesFromIndices(indices []string, cfg models.SearchC
 
 		query := elastic.NewBoolQuery().
 			Should(
-				elastic.NewMultiMatchQuery(
-					cfg.Text,
-					fields...,
-				),
-				elastic.NewMultiMatchQuery(
-					cfg.Text,
-				),
+				elastic.
+					NewMultiMatchQuery(
+						cfg.Text,
+						fields...,
+					),
+				elastic.
+					NewMultiMatchQuery(
+						cfg.Text,
+						fields...,
+					).
+					Fuzziness("AUTO"),
+				elastic.
+					NewMultiMatchQuery(
+						cfg.Text,
+					).
+					Fuzziness("AUTO"),
 			).
 			Filter(
 				elastic.NewTermQuery("_index", index),
