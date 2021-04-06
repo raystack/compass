@@ -16,6 +16,7 @@ type Config struct {
 	StatsdPrefix              string `mapstructure:"STATSD_PREFIX" default:"columbusApi"`
 	StatsdEnabled             bool   `mapstructure:"STATSD_ENABLED" default:"false"`
 	TypeWhiteListStr          string `mapstructure:"SEARCH_WHITELIST" default:""`
+	SearchTypesCacheDuration  int    `mapstructure:"SEARCH_TYPES_CACHE_DURATION" default:"300"`
 	LineageRefreshIntervalStr string `mapstructure:"LINEAGE_REFRESH_INTERVAL" default:"5m"`
 	NewRelicEnabled           bool   `mapstructure:"NEW_RELIC_ENABLED" default:"false"`
 	NewRelicAppName           string `mapstructure:"NEW_RELIC_APP_NAME" default:"columbus"`

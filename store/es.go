@@ -8,7 +8,28 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
+	"github.com/odpf/columbus/models"
 )
+
+// used as a utility for generating request payload
+// since github.com/olivere/elastic generates the
+// <Q> in {"query": <Q>}
+type searchQuery struct {
+	Query    interface{} `json:"query"`
+	MinScore interface{} `json:"min_score"`
+}
+
+type searchHit struct {
+	Index  string        `json:"_index"`
+	Source models.Record `json:"_source"`
+}
+
+type searchResponse struct {
+	ScrollID string `json:"_scroll_id"`
+	Hits     struct {
+		Hits []searchHit `json:"hits"`
+	} `json:"hits"`
+}
 
 // extract error reason from an elasticsearch response
 // returns the raw message in case it fails

@@ -188,7 +188,10 @@ func (repo *RecordRepository) termsQuery(filters models.RecordFilter) (io.Reader
 	if err != nil {
 		return nil, fmt.Errorf("error building terms query: %w", err)
 	}
-	raw := queryEnvelope{src}
+	raw := searchQuery{
+		Query:    src,
+		MinScore: defaultMinScore,
+	}
 	payload := bytes.NewBuffer(nil)
 	return payload, json.NewEncoder(payload).Encode(raw)
 }
