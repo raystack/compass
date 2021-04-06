@@ -9,7 +9,9 @@ require (
 	github.com/etsy/statsd v0.8.6
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.4
+	github.com/jeremywohl/flatten v1.0.1
 	github.com/mcuadros/go-defaults v1.2.0
+	github.com/mitchellh/mapstructure v1.1.2
 	github.com/newrelic/go-agent/v3 v3.10.0
 	github.com/newrelic/go-agent/v3/integrations/nrgorilla v1.1.0
 	github.com/olivere/elastic/v7 v7.0.12
