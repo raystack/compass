@@ -16,21 +16,6 @@ type searchTestData struct {
 	Records []models.Record `json:"records"`
 }
 
-type searchTest struct {
-	Description string `json:"description"`
-	Config      models.SearchConfig
-	Expected    []struct {
-		Type     string `json:"type"`
-		RecordID string `json:"record_id"`
-	}
-	MatchTotalRows bool `json:"match_total_rows"`
-}
-
-type searchTestFixture struct {
-	Data  []searchTestData `json:"data"`
-	Tests []searchTest     `json:"tests"`
-}
-
 func TestSearch(t *testing.T) {
 	t.Run("should return an error if search string is empty", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
@@ -155,18 +140,76 @@ func TestSearch(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		types, err := populateSearchData(esClient, testFixture.Data)
+		types, err := populateSearchData(esClient, testFixture)
 		if err != nil {
 			t.Error(err)
 		}
-
 		typesMap := mapTypesToTypesMap(types)
 		searcher, err := store.NewSearcher(esClient, store.NewTypeRepository(esClient), mapTypesToTypeNames(types))
 		if err != nil {
 			t.Error(err)
 		}
 
-		for _, test := range testFixture.Tests {
+		type expectedRow struct {
+			Type     string `json:"type"`
+			RecordID string `json:"record_id"`
+		}
+		type searchTest struct {
+			Description    string
+			Config         models.SearchConfig
+			Expected       []expectedRow
+			MatchTotalRows bool
+		}
+		tests := []searchTest{
+			{
+				Description: "should fetch records which has text in any of its fields",
+				Config: models.SearchConfig{
+					Text: "topic",
+				},
+				Expected: []expectedRow{
+					{Type: "topic", RecordID: "order-topic"},
+					{Type: "topic", RecordID: "purchase-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
+				},
+			},
+			{
+				Description: "should enable fuzzy search",
+				Config: models.SearchConfig{
+					Text: "tpic",
+				},
+				Expected: []expectedRow{
+					{Type: "topic", RecordID: "order-topic"},
+					{Type: "topic", RecordID: "purchase-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
+				},
+			},
+			{
+				Description: "should put more weight on id fields",
+				Config: models.SearchConfig{
+					Text: "invoice",
+				},
+				Expected: []expectedRow{
+					{Type: "database", RecordID: "au2-microsoft-invoice"},
+					{Type: "database", RecordID: "us1-apple-invoice"},
+					{Type: "topic", RecordID: "transaction"},
+				},
+			},
+			{
+				Description: "should match documents based on filter criteria",
+				Config: models.SearchConfig{
+					Text: "topic",
+					Filters: map[string][]string{
+						"company": {"odpf"},
+					},
+				},
+				Expected: []expectedRow{
+					{Type: "topic", RecordID: "order-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
+				},
+				MatchTotalRows: true,
+			},
+		}
+		for _, test := range tests {
 			t.Run(test.Description, func(t *testing.T) {
 				results, err := searcher.Search(test.Config)
 				if err != nil {
@@ -199,7 +242,7 @@ func buildSampleSearchData(typeName string) searchTestData {
 	}
 }
 
-func loadTestFixture() (testFixture searchTestFixture, err error) {
+func loadTestFixture() (testFixture []searchTestData, err error) {
 	testFixtureJSON, err := ioutil.ReadFile("./testdata/search-test-fixture.json")
 	err = json.Unmarshal(testFixtureJSON, &testFixture)
 	if err != nil {
