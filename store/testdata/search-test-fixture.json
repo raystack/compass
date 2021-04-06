@@ -1,0 +1,82 @@
+[
+    {
+        "type": {
+            "name" : "topic",
+            "classification" : "resource",
+            "record_attributes" : {
+              "id" : "topic_name",
+              "title" : "topic_name",
+              "description" : "description",
+              "labels" : [
+                "partition"
+              ]
+            }
+        },
+        "records": [
+            {
+                "topic_name": "order-topic",
+                "description": "Topic for each submitted order",
+                "company": "odpf",
+                "partition": 250
+            },
+            {
+                "topic_name": "purchase-topic",
+                "description": "Topic for each submitted purchase",
+                "company": "microsoft",
+                "partition": 100
+            },
+            {
+                "topic_name": "consumer-topic",
+                "description": "Update on every customer creation/update",
+                "company": "odpf",
+                "partition": 50
+            },
+            {
+                "topic_name": "transaction",
+                "description": "This publishes all the invoices from each of invoice storage where the invoice will be filtered and checked using invoice filterer and invoice checker",
+                "company": "odpf",
+                "partition": 1
+            }
+        ]
+    },
+    {
+        "type": {
+            "name" : "database",
+            "classification" : "dataset",
+            "record_attributes" : {
+              "id" : "table_id",
+              "title" : "table_name",
+              "description" : "description",
+              "labels" : [
+                "total_rows"
+              ]
+            }
+        },
+        "records": [
+            {
+                "table_id": "au2-microsoft-invoice",
+                "table_name": "microsoft-invoice",
+                "company": "microsoft",
+                "description": "Transaction records for every microsoft purchase",
+                "total_rows": 100,
+                "schema": [
+                    {"name": "id"},
+                    {"name": "username", "description": "purchaser username"},
+                    {"name": "item_id", "description": "item identifications"}
+                ]
+            },
+            {
+                "table_id": "us1-apple-invoice",
+                "table_name": "apple-invoice",
+                "company": "apple",
+                "description": "Transaction records for every Apple purchase",
+                "total_rows": 100,
+                "schema": [
+                    {"name": "id"},
+                    {"name": "user_id", "description": "purchaser user idenfitication"},
+                    {"name": "item_id", "description": "item identifications"}
+                ]
+            }
+        ]
+    }
+]

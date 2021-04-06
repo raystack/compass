@@ -1,338 +1,307 @@
 package store_test
 
 import (
-	"fmt"
-	"reflect"
+	"encoding/json"
+	"io/ioutil"
 	"testing"
 
+	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/odpf/columbus/models"
 	"github.com/odpf/columbus/store"
 	"github.com/stretchr/testify/assert"
 )
 
-type dataset struct {
-	Type    models.Type
-	Records []models.Record
+type searchTestData struct {
+	Type    models.Type     `json:"type"`
+	Records []models.Record `json:"records"`
 }
 
-func TestSearcher(t *testing.T) {
-	type testCase struct {
-		Title         string
-		Datasets      []dataset
-		SearchConfig  models.SearchConfig
-		ShouldFail    bool
-		TypeWhiteList []string
-		Check         func(tc *testCase, results []models.SearchResult) error
-	}
+func TestSearch(t *testing.T) {
+	t.Run("should return an error if search string is empty", func(t *testing.T) {
+		esClient := esTestServer.NewClient()
 
-	type resultFilter func(record models.Record, recordType models.Type) bool
-
-	// stdResults is a helper for generating the search response
-	// generates a results slice, depending on an optional filter condition
-	var stdResults = func(datasets []dataset, filter resultFilter) (results []models.SearchResult) {
-		for _, dataset := range datasets {
-			for _, record := range dataset.Records {
-				if filter != nil && filter(record, dataset.Type) == false {
-					continue
-				}
-				results = append(results, models.SearchResult{
-					TypeName: dataset.Type.Name,
-					Record:   record,
-				})
-			}
-		}
-		return
-	}
-
-	daggerTypeClone := daggerType
-	daggerTypeClone.Name = "dagger2"
-
-	var daggerTestRecord = models.Record{
-		"urn":       "dagger-test-1",
-		"landscape": "id",
-		"title":     "dagger test",
-	}
-
-	var testCases = []testCase{
-		{
-			Title: "should return matched documents",
-			Datasets: []dataset{
-				{
-					Type:    daggerType,
-					Records: []models.Record{daggerTestRecord},
-				},
-			},
-			SearchConfig: models.SearchConfig{
-				Text: "test",
-			},
-			Check: func(tc *testCase, results []models.SearchResult) error {
-				expectResults := stdResults(tc.Datasets, nil)
-				if reflect.DeepEqual(expectResults, results) == false {
-					return incorrectResultsError(expectResults, results)
-				}
-				return nil
-			},
-		},
-		{
-			Title: "should handle search on CamelCase'd field as well",
-			Datasets: []dataset{
-				{
-					Type: daggerType,
-					Records: []models.Record{
-						{
-							"urn":       "BookingLogDagger",
-							"landscape": "id",
-							"title":     "booking log aggregator",
-						},
-					},
-				},
-			},
-			SearchConfig: models.SearchConfig{
-				Text: "booking",
-			},
-			Check: func(tc *testCase, results []models.SearchResult) error {
-				expectResults := stdResults(tc.Datasets, nil)
-				if reflect.DeepEqual(expectResults, results) == false {
-					return incorrectResultsError(expectResults, results)
-				}
-				return nil
-			},
-		},
-		{
-			Title: "should return an error if search string is empty",
-			Datasets: []dataset{
-				{
-					Type:    daggerType,
-					Records: []models.Record{daggerTestRecord},
-				},
-			},
-			ShouldFail: true,
-		},
-		{
-			Title: "should match documents based on filter criteria",
-			Datasets: []dataset{
-				{
-					Type: daggerType,
-					Records: []models.Record{
-						{
-							"urn":       "test-dagger-1",
-							"landscape": "id",
-							"title":     "test dagger 1",
-						},
-						{
-							"urn":       "test-dagger-2",
-							"landscape": "vn",
-							"title":     "test dagger 2",
-						},
-						{
-							"urn":       "test-dagger-3",
-							"landscape": "vn",
-							"title":     "test dagger 3",
-						},
-					},
-				},
-			},
-			SearchConfig: models.SearchConfig{
-				Text: "dagger",
-				Filters: map[string][]string{
-					"landscape": {"vn"},
-				},
-			},
-			Check: func(tc *testCase, results []models.SearchResult) error {
-				expectResults := stdResults(tc.Datasets, func(record models.Record, ent models.Type) bool {
-					return record["landscape"].(string) == "vn"
-				})
-				if reflect.DeepEqual(results, expectResults) == false {
-					return incorrectResultsError(expectResults, results)
-				}
-				return nil
-			},
-		},
-		{
-			Title: "should match documents that don't contain the filter key",
-			Datasets: []dataset{
-				{
-					Type: daggerType,
-					Records: []models.Record{
-						{
-							"urn":       "test-dagger-1",
-							"landscape": "id",
-							"title":     "test dagger 1",
-						},
-						{
-							"urn":   "test-dagger-2",
-							"title": "test dagger 2",
-						},
-					},
-				},
-			},
-			SearchConfig: models.SearchConfig{
-				Text: "dagger",
-				Filters: map[string][]string{
-					"landscape": {"id"},
-				},
-			},
-			Check: func(tc *testCase, results []models.SearchResult) error {
-				expectResults := stdResults(tc.Datasets, nil)
-				if reflect.DeepEqual(results, expectResults) == false {
-					return incorrectResultsError(expectResults, results)
-				}
-				return nil
-			},
-		},
-		{
-			Title: "should restrict search to globally white listed type types",
-			SearchConfig: models.SearchConfig{
-				Text: "dagger",
-			},
-			Datasets: []dataset{
-				{
-					Type:    daggerType,
-					Records: []models.Record{daggerTestRecord},
-				},
-				{
-					Type:    daggerTypeClone,
-					Records: []models.Record{daggerTestRecord},
-				},
-			},
-			TypeWhiteList: []string{daggerType.Name},
-			Check: func(tc *testCase, results []models.SearchResult) error {
-				expectResults := stdResults(tc.Datasets, func(record models.Record, recordType models.Type) bool {
-					for _, name := range tc.TypeWhiteList {
-						if name == recordType.Name {
-							return true
-						}
-					}
-					return false
-				})
-				if reflect.DeepEqual(expectResults, results) == false {
-					return incorrectResultsError(expectResults, results)
-				}
-				return nil
-			},
-		},
-		{
-			Title: "should restrict search to locally white listed type types",
-			SearchConfig: models.SearchConfig{
-				Text:          "dagger",
-				TypeWhiteList: []string{"dagger"},
-			},
-			Datasets: []dataset{
-				{
-					Type:    daggerType,
-					Records: []models.Record{daggerTestRecord},
-				},
-				{
-					Type:    daggerTypeClone,
-					Records: []models.Record{daggerTestRecord},
-				},
-			},
-			Check: func(tc *testCase, results []models.SearchResult) error {
-				expectResults := stdResults(tc.Datasets, func(record models.Record, recordType models.Type) bool {
-					for _, name := range tc.SearchConfig.TypeWhiteList {
-						if name == recordType.Name {
-							return true
-						}
-					}
-					return false
-				})
-				if reflect.DeepEqual(expectResults, results) == false {
-					return incorrectResultsError(expectResults, results)
-				}
-				return nil
-			},
-		},
-		{
-			Title: "should restrict search to the common subset of global and local type types",
-			SearchConfig: models.SearchConfig{
-				Text:          "dagger",
-				TypeWhiteList: []string{"dagger", "dagger2", "firehose"},
-			},
-			TypeWhiteList: []string{"sakaar", "dagger"},
-			Datasets: []dataset{
-				{
-					Type:    daggerType,
-					Records: []models.Record{daggerTestRecord},
-				},
-				{
-					Type:    daggerTypeClone,
-					Records: []models.Record{daggerTestRecord},
-				},
-			},
-			Check: func(tc *testCase, results []models.SearchResult) error {
-				expectResults := stdResults(tc.Datasets, func(record models.Record, recordType models.Type) bool {
-					if recordType.Name == "dagger" {
-						return true
-					}
-					return false
-				})
-				if reflect.DeepEqual(expectResults, results) == false {
-					return incorrectResultsError(expectResults, results)
-				}
-				return nil
-			},
-		},
-	}
-
-	var setupError = func(err error) string {
-		return fmt.Sprintf("error setting up testcase: %v", err)
-	}
-
-	for _, testCase := range testCases {
-		t.Run(testCase.Title, func(t *testing.T) {
-			var (
-				cli               = esTestServer.NewClient()
-				typeRepo          = store.NewTypeRepository(cli)
-				recordRepoFactory = store.NewRecordRepositoryFactory(cli)
-				searcher, err     = store.NewSearcher(cli, testCase.TypeWhiteList)
-			)
-
-			assert.Nil(t, err)
-
-			for _, ds := range testCase.Datasets {
-				err := typeRepo.CreateOrReplace(ds.Type)
-				if err != nil {
-					t.Fatal(setupError(err))
-				}
-				recordRepo, err := recordRepoFactory.For(ds.Type)
-				if err != nil {
-					t.Fatal(setupError(err))
-				}
-				err = recordRepo.CreateOrReplaceMany(ds.Records)
-				if err != nil {
-					t.Fatal(setupError(err))
-				}
-
-			}
-
-			results, err := searcher.Search(testCase.SearchConfig)
-			if testCase.ShouldFail {
-				assert.Error(t, err)
-				return
-			}
-
-			if err != nil {
-				t.Errorf("Search: %v", err)
-				return
-			}
-			if err = testCase.Check(&testCase, results); err != nil {
-				t.Errorf("check failed: %v", err)
-			}
+		searcher, err := store.NewSearcher(store.SearcherConfig{
+			Client:   esClient,
+			TypeRepo: store.NewTypeRepository(esClient),
 		})
-	}
-}
-
-func TestNewSearcher(t *testing.T) {
-	t.Run("should return an error if an internal index is specified in TypeWhiteList", func(t *testing.T) {
-		reservedIndices := []string{
-			"meta",
-			"universe",
+		if err != nil {
+			t.Error(err)
+			return
 		}
-		for _, ri := range reservedIndices {
-			t.Run(ri, func(t *testing.T) {
-				_, err := store.NewSearcher(esTestServer.NewClient(), []string{ri})
-				assert.Error(t, err)
+		_, err = searcher.Search(models.SearchConfig{
+			Text: "",
+		})
+
+		assert.NotNil(t, err)
+	})
+
+	t.Run("should restrict search to globally white listed type types", func(t *testing.T) {
+		esClient := esTestServer.NewClient()
+
+		whitelistedType := "whitelisted_type"
+		queryText := "sample"
+		testData := []searchTestData{
+			buildSampleSearchData(whitelistedType),
+			buildSampleSearchData("random_type"),
+		}
+
+		_, err := populateSearchData(esClient, testData)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		searcher, err := store.NewSearcher(store.SearcherConfig{
+			Client:        esClient,
+			TypeRepo:      store.NewTypeRepository(esClient),
+			TypeWhiteList: []string{whitelistedType},
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		results, err := searcher.Search(models.SearchConfig{Text: queryText})
+		if err != nil {
+			t.Errorf("Search: %v", err)
+			return
+		}
+
+		assert.Equal(t, 1, len(results))
+		assert.Equal(t, whitelistedType, results[0].TypeName)
+	})
+
+	t.Run("should restrict search to locally white listed type types", func(t *testing.T) {
+		esClient := esTestServer.NewClient()
+
+		whitelistedType := "whitelisted_type"
+		queryText := "sample"
+		testData := []searchTestData{
+			buildSampleSearchData(whitelistedType),
+			buildSampleSearchData("random_type"),
+		}
+
+		_, err := populateSearchData(esClient, testData)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		searcher, err := store.NewSearcher(store.SearcherConfig{
+			Client:        esClient,
+			TypeRepo:      store.NewTypeRepository(esClient),
+			TypeWhiteList: []string{},
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		results, err := searcher.Search(models.SearchConfig{
+			Text:          queryText,
+			TypeWhiteList: []string{whitelistedType},
+		})
+		if err != nil {
+			t.Errorf("Search: %v", err)
+			return
+		}
+
+		assert.Equal(t, 1, len(results))
+		assert.Equal(t, whitelistedType, results[0].TypeName)
+	})
+
+	t.Run("should restrict search to the common subset of global and local type types", func(t *testing.T) {
+		esClient := esTestServer.NewClient()
+
+		subsetType := "type_c"
+		localWhitelist := []string{"type_a", "type_b", subsetType}
+		globalWhitelist := []string{subsetType, "type_d", "type_e"}
+		queryText := "sample"
+		testData := []searchTestData{
+			buildSampleSearchData("type_a"),
+			buildSampleSearchData("type_b"),
+			buildSampleSearchData("type_c"),
+			buildSampleSearchData("type_d"),
+			buildSampleSearchData("type_e"),
+		}
+
+		_, err := populateSearchData(esClient, testData)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		searcher, err := store.NewSearcher(store.SearcherConfig{
+			Client:        esClient,
+			TypeRepo:      store.NewTypeRepository(esClient),
+			TypeWhiteList: globalWhitelist,
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		results, err := searcher.Search(models.SearchConfig{
+			Text:          queryText,
+			TypeWhiteList: localWhitelist,
+		})
+		if err != nil {
+			t.Errorf("Search: %v", err)
+			return
+		}
+
+		assert.Equal(t, 1, len(results))
+		assert.Equal(t, subsetType, results[0].TypeName)
+	})
+
+	t.Run("fixtures", func(t *testing.T) {
+		esClient := esTestServer.NewClient()
+
+		testFixture, err := loadTestFixture()
+		if err != nil {
+			t.Error(err)
+		}
+		types, err := populateSearchData(esClient, testFixture)
+		if err != nil {
+			t.Error(err)
+		}
+		typesMap := mapTypesToTypesMap(types)
+		searcher, err := store.NewSearcher(store.SearcherConfig{
+			Client:        esClient,
+			TypeRepo:      store.NewTypeRepository(esClient),
+			TypeWhiteList: mapTypesToTypeNames(types),
+		})
+		if err != nil {
+			t.Error(err)
+		}
+
+		type expectedRow struct {
+			Type     string `json:"type"`
+			RecordID string `json:"record_id"`
+		}
+		type searchTest struct {
+			Description    string
+			Config         models.SearchConfig
+			Expected       []expectedRow
+			MatchTotalRows bool
+		}
+		tests := []searchTest{
+			{
+				Description: "should fetch records which has text in any of its fields",
+				Config: models.SearchConfig{
+					Text: "topic",
+				},
+				Expected: []expectedRow{
+					{Type: "topic", RecordID: "order-topic"},
+					{Type: "topic", RecordID: "purchase-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
+				},
+			},
+			{
+				Description: "should enable fuzzy search",
+				Config: models.SearchConfig{
+					Text: "tpic",
+				},
+				Expected: []expectedRow{
+					{Type: "topic", RecordID: "order-topic"},
+					{Type: "topic", RecordID: "purchase-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
+				},
+			},
+			{
+				Description: "should put more weight on id fields",
+				Config: models.SearchConfig{
+					Text: "invoice",
+				},
+				Expected: []expectedRow{
+					{Type: "database", RecordID: "au2-microsoft-invoice"},
+					{Type: "database", RecordID: "us1-apple-invoice"},
+					{Type: "topic", RecordID: "transaction"},
+				},
+			},
+			{
+				Description: "should match documents based on filter criteria",
+				Config: models.SearchConfig{
+					Text: "topic",
+					Filters: map[string][]string{
+						"company": {"odpf"},
+					},
+				},
+				Expected: []expectedRow{
+					{Type: "topic", RecordID: "order-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
+				},
+				MatchTotalRows: true,
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.Description, func(t *testing.T) {
+				results, err := searcher.Search(test.Config)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				if test.MatchTotalRows {
+					assert.Equal(t, len(test.Expected), len(results))
+				}
+
+				for i, res := range test.Expected {
+					recordIDKey := typesMap[res.Type].Fields.ID
+					assert.Equal(t, res.Type, results[i].TypeName)
+					assert.Equal(t, res.RecordID, results[i].Record[recordIDKey])
+				}
 			})
 		}
 	})
+}
+
+func buildSampleSearchData(typeName string) searchTestData {
+	return searchTestData{
+		Type: models.Type{Name: typeName, Fields: models.TypeFields{ID: "urn"}},
+		Records: []models.Record{{
+			"urn":       "sample-test-1",
+			"landscape": "id",
+			"title":     "sample test",
+		}},
+	}
+}
+
+func loadTestFixture() (testFixture []searchTestData, err error) {
+	testFixtureJSON, err := ioutil.ReadFile("./testdata/search-test-fixture.json")
+	err = json.Unmarshal(testFixtureJSON, &testFixture)
+	if err != nil {
+		return testFixture, err
+	}
+
+	return testFixture, err
+}
+
+func populateSearchData(esClient *elasticsearch.Client, data []searchTestData) (types []models.Type, err error) {
+	typeRepo := store.NewTypeRepository(esClient)
+	for _, sample := range data {
+		types = append(types, sample.Type)
+		if err := typeRepo.CreateOrReplace(sample.Type); err != nil {
+			return types, err
+		}
+
+		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(sample.Type)
+		if err := recordRepo.CreateOrReplaceMany(sample.Records); err != nil {
+			return types, err
+		}
+	}
+
+	return types, nil
+}
+
+func mapTypesToTypeNames(types []models.Type) []string {
+	var result []string
+	for _, typ := range types {
+		result = append(result, typ.Name)
+	}
+
+	return result
+}
+
+func mapTypesToTypesMap(types []models.Type) map[string]models.Type {
+	result := map[string]models.Type{}
+	for _, typ := range types {
+		result[typ.Name] = typ
+	}
+
+	return result
 }
