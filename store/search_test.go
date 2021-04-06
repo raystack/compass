@@ -34,7 +34,6 @@ type searchTestFixture struct {
 func TestSearch(t *testing.T) {
 	t.Run("should return an error if search string is empty", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
-		defer esTestServer.Close()
 
 		searcher, err := store.NewSearcher(esClient, store.NewTypeRepository(esClient), nil)
 		if err != nil {
@@ -50,7 +49,6 @@ func TestSearch(t *testing.T) {
 
 	t.Run("should restrict search to globally white listed type types", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
-		defer esTestServer.Close()
 
 		whitelistedType := "whitelisted_type"
 		queryText := "sample"
@@ -81,7 +79,6 @@ func TestSearch(t *testing.T) {
 
 	t.Run("should restrict search to locally white listed type types", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
-		defer esTestServer.Close()
 
 		whitelistedType := "whitelisted_type"
 		queryText := "sample"
@@ -115,7 +112,6 @@ func TestSearch(t *testing.T) {
 
 	t.Run("should restrict search to the common subset of global and local type types", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
-		defer esTestServer.Close()
 
 		subsetType := "type_c"
 		localWhitelist := []string{"type_a", "type_b", subsetType}
@@ -154,7 +150,6 @@ func TestSearch(t *testing.T) {
 
 	t.Run("fixtures", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
-		defer esTestServer.Close()
 
 		testFixture, err := loadTestFixture()
 		if err != nil {
