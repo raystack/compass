@@ -1,6 +1,8 @@
 # Table of contents
 
 * [Introduction](README.md)
+* [Roadmap](roadmap.md)
+* [Changelog](https://github.com/odpf/columbus/changelog.md)
 
 ## Guides
 
@@ -19,5 +21,5 @@
 
 ## Contribute
 
-* [Contribute](contribute/contribution.md)
+* [Contribution Process](contribute/contributing.md)
 
