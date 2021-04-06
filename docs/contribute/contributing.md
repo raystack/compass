@@ -1,4 +1,4 @@
-# Contribute
+# Contribution Process
 
 ## BECOME A COMMITOR & CONTRIBUTE
 
