@@ -1,8 +1,15 @@
 # Columbus
 
-Columbus is a search server for querying application deployments, datasets and schemas.
+![test workflow](https://github.com/odpf/columbus/actions/workflows/test.yml/badge.svg)
+![build workflow](https://github.com/odpf/columbus/actions/workflows/build.yml/badge.svg)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)
+
+Columbus is a search and discovery engine built for querying application deployments, datasets and meta resources. It can also optionally track data flow relationships between these resources and allow the user to view a representation of the data flow graph.
+
+<p align="center"><img src="./docs/assets/overview.svg" /></p>
 
 ## Requirements
+
 Columbus is written in golang, and requires go version >= 1.13. Please make sure that the go tool chain is available on your machine. See golang’s [documentation](https://golang.org/) for installation instructions.
 
 Alternatively, you can use docker to build columbus as a docker image. More on this in the next section.
@@ -49,6 +56,7 @@ $ ES_CONTAINER_ID=$(docker run -d -e "discovery.type=single-node" --net columbus
 
 # run columbus, passing in the hostname (container id) of the elasticsearch server
 # if everything goes ok, you should say something like this:
+
 # time="2020-04-01T18:41:00Z" level=info msg="columbus v0.1.0-103-g83b909b starting on 0.0.0.0:8080" reporter=main
 # time="2020-04-01T18:41:00Z" level=info msg="connected to elasticsearch cluster \"docker-cluster\" (server version 7.5.2)" reporter=main
 $ docker run --net columbus-net columbus -p 8080:8080 -elasticsearch-brokers http://${ES_CONTAINER_ID}:9200 
@@ -56,15 +64,27 @@ $ docker run --net columbus-net columbus -p 8080:8080 -elasticsearch-brokers htt
 
 ## Testing
 
-Unit tests can be run using:
 ```
-make unit-test
-```
+# Run unit tests
+$ make unit-test
 
-and integration (+ unit) tests with
-```
-make test
+# Run integration tests
+$ make test
 ```
 
 The integration test suite requires docker to run elasticsearch. In case you wish to test against an existing 
 elasticsearch cluster, set the value of `ES_TEST_SERVER_URL` to the URL of the elasticsearch server.
+
+
+## Contribute
+
+Development of Columbus happens in the open on GitHub, and we are grateful to the community for contributing bugfixes and improvements. Read below to learn how you can take part in improving Columbus.
+
+Read our [contributing guide](docs/contribute/contribution.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Columbus.
+
+To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/odpf/columbus/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started.
+
+This project exists thanks to all the [contributors](https://github.com/odpf/columbus/graphs/contributors).
+
+## License
+Columbus is [Apache 2.0](LICENSE) licensed.
