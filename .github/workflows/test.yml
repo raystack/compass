@@ -1,4 +1,4 @@
-name: Golang CI
+name: Test
 on: [push, pull_request]
 
 jobs:
