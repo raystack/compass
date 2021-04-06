@@ -7,8 +7,10 @@
 ## Guides
 
 * [Installation](guides/installation.md)
-* [Usage](guides/usage.md)
-* [End to End Usage example](guides/example.md)
+* [Ingesting metadata](guides/ingestion.md)
+* [Querying  metadata](guides/querying.md)
+* [Creating types](guides/types.md)
+* [Deployment](guides/deployment.md)
 
 ## Concepts
 
@@ -17,9 +19,11 @@
 
 ## Reference
 
+* [API Reference](reference/api.md)
 * [Configurations](reference/configuration.md)
 
 ## Contribute
 
 * [Contribution Process](contribute/contributing.md)
+* [Development Guide](contribute/development-guide.md)
 
