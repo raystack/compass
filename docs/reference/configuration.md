@@ -46,6 +46,14 @@ Variables for Columbus's Search or Discovery feature.
 
 * List of types that will be searchable. leave it empty if you want to run search on everything
 
+#### <a name="SEARCH_TYPES_CACHE_DURATION" /> `SEARCH_TYPES_CACHE_DURATION`
+* Example value: `1000`
+* Type: `optional`
+* Default `"300"`
+
+* Duration for `Type` list cached in search service for performance purposes.
+* Setting this to `0` will disable the cache which would fetch types to storage for every search request.
+
 ## <a name="Lineage" /> Lineage
 Variables for Columbus's Lineage feature.
 

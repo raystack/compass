@@ -20,7 +20,10 @@ func TestSearch(t *testing.T) {
 	t.Run("should return an error if search string is empty", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
 
-		searcher, err := store.NewSearcher(esClient, store.NewTypeRepository(esClient), nil)
+		searcher, err := store.NewSearcher(store.SearcherConfig{
+			Client:   esClient,
+			TypeRepo: store.NewTypeRepository(esClient),
+		})
 		if err != nil {
 			t.Error(err)
 			return
@@ -47,7 +50,11 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		searcher, err := store.NewSearcher(esClient, store.NewTypeRepository(esClient), []string{whitelistedType})
+		searcher, err := store.NewSearcher(store.SearcherConfig{
+			Client:        esClient,
+			TypeRepo:      store.NewTypeRepository(esClient),
+			TypeWhiteList: []string{whitelistedType},
+		})
 		if err != nil {
 			t.Error(err)
 			return
@@ -77,7 +84,11 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		searcher, err := store.NewSearcher(esClient, store.NewTypeRepository(esClient), []string{})
+		searcher, err := store.NewSearcher(store.SearcherConfig{
+			Client:        esClient,
+			TypeRepo:      store.NewTypeRepository(esClient),
+			TypeWhiteList: []string{},
+		})
 		if err != nil {
 			t.Error(err)
 			return
@@ -115,7 +126,11 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		searcher, err := store.NewSearcher(esClient, store.NewTypeRepository(esClient), globalWhitelist)
+		searcher, err := store.NewSearcher(store.SearcherConfig{
+			Client:        esClient,
+			TypeRepo:      store.NewTypeRepository(esClient),
+			TypeWhiteList: globalWhitelist,
+		})
 		if err != nil {
 			t.Error(err)
 			return
@@ -145,7 +160,11 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 		}
 		typesMap := mapTypesToTypesMap(types)
-		searcher, err := store.NewSearcher(esClient, store.NewTypeRepository(esClient), mapTypesToTypeNames(types))
+		searcher, err := store.NewSearcher(store.SearcherConfig{
+			Client:        esClient,
+			TypeRepo:      store.NewTypeRepository(esClient),
+			TypeWhiteList: mapTypesToTypeNames(types),
+		})
 		if err != nil {
 			t.Error(err)
 		}

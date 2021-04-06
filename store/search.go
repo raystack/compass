@@ -18,17 +18,24 @@ var (
 	filterScriptMatchValuePredicate = `doc[%q].value == %q`
 	defaultMaxResults               = 200
 	defaultMinScore                 = 0.01
-	defaultCachedTypesMapDuration   = 300
 )
+
+type SearcherConfig struct {
+	Client                 *elasticsearch.Client
+	TypeRepo               models.TypeRepository
+	TypeWhiteList          []string
+	CachedTypesMapDuration int
+}
 
 // Searcher is an implementation of models.RecordSearcher
 type Searcher struct {
-	cli                 *elasticsearch.Client
-	typeWhiteList       []string
-	typeWhiteListSet    map[string]bool
-	typeRepository      models.TypeRepository
-	cachedTypesMap      map[string]models.Type
-	cachedTypeExpiredOn time.Time
+	cli                    *elasticsearch.Client
+	typeWhiteList          []string
+	typeWhiteListSet       map[string]bool
+	typeRepository         models.TypeRepository
+	cachedTypesMap         map[string]models.Type
+	cachedTypeExpiredOn    time.Time
+	cachedTypesMapDuration int
 }
 
 // NewSearcher creates a new instance of Searcher
@@ -36,9 +43,9 @@ type Searcher struct {
 // If the white list is nil (or has zero length), then the search will be run
 // on all types. This can be further restricted by FilterConfig.TypeWhiteList
 // in Search()
-func NewSearcher(cli *elasticsearch.Client, typeRepo models.TypeRepository, typeWhiteList []string) (*Searcher, error) {
+func NewSearcher(config SearcherConfig) (*Searcher, error) {
 	var whiteListSet = make(map[string]bool)
-	for _, ent := range typeWhiteList {
+	for _, ent := range config.TypeWhiteList {
 		if isReservedName(ent) {
 			return nil, fmt.Errorf("invalid type name in whitelist: %q: reserved for internal purposes", ent)
 		}
@@ -46,10 +53,11 @@ func NewSearcher(cli *elasticsearch.Client, typeRepo models.TypeRepository, type
 	}
 
 	return &Searcher{
-		cli:              cli,
-		typeWhiteList:    typeWhiteList,
-		typeWhiteListSet: whiteListSet,
-		typeRepository:   typeRepo,
+		cli:                    config.Client,
+		typeWhiteList:          config.TypeWhiteList,
+		typeWhiteListSet:       whiteListSet,
+		typeRepository:         config.TypeRepo,
+		cachedTypesMapDuration: config.CachedTypesMapDuration,
 	}, nil
 }
 
@@ -216,7 +224,7 @@ func (sr *Searcher) getType(typeName string) (models.Type, error) {
 		}
 
 		sr.cachedTypesMap = typesMap
-		sr.cachedTypeExpiredOn = time.Now().Add(time.Duration(defaultCachedTypesMapDuration) * time.Second)
+		sr.cachedTypeExpiredOn = time.Now().Add(time.Duration(sr.cachedTypesMapDuration) * time.Second)
 	}
 
 	resourceType, ok := sr.cachedTypesMap[typeName]
