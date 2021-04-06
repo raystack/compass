@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Introduction](introduction.md)
+* [Introduction](README.md)
 
 ## Guides
 
@@ -20,3 +20,4 @@
 ## Contribute
 
 * [Contribute](contribute/contribution.md)
+
