@@ -50,6 +50,7 @@ Variables for Columbus's Search or Discovery feature.
 * List of types that will be searchable. leave it empty if you want to run search on everything
 
 ### `SEARCH_TYPES_CACHE_DURATION`
+
 * Example value: `1000`
 * Type: `optional`
 * Default `"300"`
