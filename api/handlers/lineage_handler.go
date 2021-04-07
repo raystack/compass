@@ -20,16 +20,20 @@ type LineageProvider interface {
 }
 
 type LineageHandler struct {
-	mux             *mux.Router
 	log             logrus.FieldLogger
 	lineageProvider LineageProvider
 }
 
-func (handler *LineageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	handler.mux.ServeHTTP(w, r)
+func NewLineageHandler(log logrus.FieldLogger, provider LineageProvider) *LineageHandler {
+	handler := &LineageHandler{
+		log:             log,
+		lineageProvider: provider,
+	}
+
+	return handler
 }
 
-func (handler *LineageHandler) listLineage(w http.ResponseWriter, r *http.Request) {
+func (handler *LineageHandler) ListLineage(w http.ResponseWriter, r *http.Request) {
 	graph, err := handler.lineageProvider.Graph()
 	if err != nil {
 		handler.log.
@@ -57,7 +61,7 @@ func (handler *LineageHandler) listLineage(w http.ResponseWriter, r *http.Reques
 	writeJSON(w, http.StatusOK, res)
 }
 
-func (handler *LineageHandler) getLineage(w http.ResponseWriter, r *http.Request) {
+func (handler *LineageHandler) GetLineage(w http.ResponseWriter, r *http.Request) {
 	graph, err := handler.lineageProvider.Graph()
 	if err != nil {
 		handler.log.Errorf("error requesting graph: %v", err)
@@ -159,22 +163,4 @@ func (handler *LineageHandler) parseOpts(u url.Values) lineage.QueryCfg {
 		TypeWhitelist: u["filter.type"],
 		Collapse:      collapse,
 	}
-}
-
-func NewLineageHandler(log logrus.FieldLogger, provider LineageProvider) *LineageHandler {
-	handler := &LineageHandler{
-		log:             log,
-		mux:             mux.NewRouter(),
-		lineageProvider: provider,
-	}
-
-	handler.mux.PathPrefix("/v1/lineage/{type}/{id}").
-		Methods(http.MethodGet).
-		HandlerFunc(handler.getLineage)
-
-	handler.mux.PathPrefix("/v1/lineage").
-		Methods(http.MethodGet).
-		HandlerFunc(handler.listLineage)
-
-	return handler
 }

@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/lib/set"
@@ -16,7 +17,7 @@ import (
 )
 
 func TestLineageHandler(t *testing.T) {
-	t.Run("GET /v1/lineage", func(t *testing.T) {
+	t.Run("ListLineage", func(t *testing.T) {
 		t.Run("should return 404 if a non-existent type is requested", func(t *testing.T) {
 			graph := new(mock.Graph)
 			graph.On(
@@ -27,10 +28,10 @@ func TestLineageHandler(t *testing.T) {
 
 			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
 
-			rr := httptest.NewRequest("GET", "/v1/lineage?filter.type=bqtable", nil)
+			rr := httptest.NewRequest("GET", "/?filter.type=bqtable", nil)
 			rw := httptest.NewRecorder()
 
-			handler.ServeHTTP(rw, rr)
+			handler.ListLineage(rw, rr)
 
 			if rw.Code != http.StatusNotFound {
 				t.Errorf("expected handler to respond with status %d, was %d instead", http.StatusNotFound, rw.Code)
@@ -78,10 +79,10 @@ func TestLineageHandler(t *testing.T) {
 
 			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
 
-			rr := httptest.NewRequest("GET", "/v1/lineage?filter.type=topic&filter.type=dagger", nil)
+			rr := httptest.NewRequest("GET", "/?filter.type=topic&filter.type=dagger", nil)
 			rw := httptest.NewRecorder()
 
-			handler.ServeHTTP(rw, rr)
+			handler.ListLineage(rw, rr)
 
 			if rw.Code != http.StatusOK {
 				t.Errorf("expected handler to respond with status %d, was %d instead", http.StatusOK, rw.Code)
@@ -99,7 +100,6 @@ func TestLineageHandler(t *testing.T) {
 				t.Errorf("expected handler response to be %#v, was %#v instead", response, filteredGraph)
 			}
 		})
-
 		t.Run("should return http 500 error if requesting the graph fails", func(t *testing.T) {
 			errNoGraph := errors.New("no graph available")
 			graph := new(mock.Graph)
@@ -109,10 +109,10 @@ func TestLineageHandler(t *testing.T) {
 
 			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
 
-			rr := httptest.NewRequest("GET", "/v1/lineage", nil)
+			rr := httptest.NewRequest("GET", "/", nil)
 			rw := httptest.NewRecorder()
 
-			handler.ServeHTTP(rw, rr)
+			handler.ListLineage(rw, rr)
 			if rw.Code != http.StatusInternalServerError {
 				t.Errorf("expected handler to respond with status %d, was %d instead", http.StatusInternalServerError, rw.Code)
 				return
@@ -143,10 +143,10 @@ func TestLineageHandler(t *testing.T) {
 
 			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
 
-			rr := httptest.NewRequest("GET", "/v1/lineage", nil)
+			rr := httptest.NewRequest("GET", "/", nil)
 			rw := httptest.NewRecorder()
 
-			handler.ServeHTTP(rw, rr)
+			handler.ListLineage(rw, rr)
 
 			if rw.Code != http.StatusOK {
 				t.Errorf("expected handler to respond with status %d, was %d instead", http.StatusOK, rw.Code)
@@ -165,7 +165,7 @@ func TestLineageHandler(t *testing.T) {
 			}
 		})
 	})
-	t.Run("GET /v1/lineage/{type}/{id}", func(t *testing.T) {
+	t.Run("GetLineage", func(t *testing.T) {
 		t.Run("should return a graph containing the requested resource, along with it's related resources", func(t *testing.T) {
 			var fullGraph = lineage.AdjacencyMap{
 				"bqtable/raw": lineage.AdjacencyEntry{
@@ -198,8 +198,12 @@ func TestLineageHandler(t *testing.T) {
 
 			rr := httptest.NewRequest("GET", "/v1/lineage/bqtable/raw", nil)
 			rw := httptest.NewRecorder()
+			rr = mux.SetURLVars(rr, map[string]string{
+				"type": "bqtable",
+				"id":   "raw",
+			})
 
-			handler.ServeHTTP(rw, rr)
+			handler.GetLineage(rw, rr)
 
 			if rw.Code != http.StatusOK {
 				t.Errorf("expected handler to respond with status %d, was %d instead", http.StatusOK, rw.Code)
