@@ -19,10 +19,6 @@ import (
 )
 
 func TestSearchHandler(t *testing.T) {
-	baseURL := &url.URL{
-		Path: "/v1/search",
-	}
-
 	// todo: pass testCase to ValidateResponse
 	type testCase struct {
 		Title            string
@@ -579,11 +575,8 @@ func TestSearchHandler(t *testing.T) {
 			if testCase.InitSearcher != nil {
 				testCase.InitSearcher(testCase, recordSearcher)
 			}
-
 			defer recordSearcher.AssertExpectations(t)
 			defer typeRepo.AssertExpectations(t)
-
-			handler := handlers.NewSearchHandler(new(mock.Logger), recordSearcher, typeRepo)
 
 			params := url.Values{}
 			params.Add("text", testCase.SearchText)
@@ -594,11 +587,12 @@ func TestSearchHandler(t *testing.T) {
 					}
 				}
 			}
-			requestURL := baseURL.ResolveReference(&url.URL{RawQuery: params.Encode()})
-			rr := httptest.NewRequest(http.MethodGet, requestURL.String(), nil)
+			requestURL := "/?" + params.Encode()
+			rr := httptest.NewRequest(http.MethodGet, requestURL, nil)
 			rw := httptest.NewRecorder()
 
-			handler.ServeHTTP(rw, rr)
+			handler := handlers.NewSearchHandler(new(mock.Logger), recordSearcher, typeRepo)
+			handler.Search(rw, rr)
 
 			expectStatus := testCase.ExpectStatus
 			if expectStatus == 0 {
