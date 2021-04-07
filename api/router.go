@@ -48,8 +48,9 @@ func setupRoutes(router *mux.Router, config Config) {
 
 	router.PathPrefix("/ping").Handler(handlers.NewHeartbeatHandler())
 	setupTypeRoutes(router, "/v1/types", typeHandler)
-
-	router.PathPrefix("/v1/search").Handler(searchHandler)
+	router.Path("/v1/search").
+		Methods(http.MethodGet).
+		HandlerFunc(searchHandler.Search)
 	router.PathPrefix("/v1/lineage").Handler(lineageHandler)
 }
 
