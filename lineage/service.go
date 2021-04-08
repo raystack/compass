@@ -24,10 +24,6 @@ func (tsf TimeSourceFunc) Now() time.Time {
 	return tsf()
 }
 
-type MetricsMonitor interface {
-	Duration(string, int64)
-}
-
 // Service represents a high-level interface to the
 // lineage package. Allows the client to configure
 // an interval at which it'll construct the graph, while
@@ -52,7 +48,7 @@ func (srv *Service) build() {
 	graph, err := srv.builder.Build(srv.typeRepo, srv.recordRepoFactory)
 	now := srv.timeSource.Now()
 
-	srv.metricsMonitor.Duration("lineageBuildTime", int64(now.Sub(startTime)/time.Millisecond))
+	srv.metricsMonitor.Duration("lineageBuildTime", int(now.Sub(startTime)/time.Millisecond))
 
 	srv.mu.Lock()
 	defer srv.mu.Unlock()

@@ -12,7 +12,6 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/newrelic/go-agent/v3/integrations/nrgorilla"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/odpf/columbus/api"
 	"github.com/odpf/columbus/lineage"
@@ -35,18 +34,24 @@ func Serve() {
 	log = rootLogger.WithField("reporter", "main")
 	log.Infof("columbus %s starting", Version)
 
-	brokers := strings.Split(config.ElasticSearchBrokers, ",")
-	esClient := initElasticsearch(brokers)
+	esClient := initElasticsearch(config)
+	newRelicMonitor := initNewRelicMonitor(config)
+	statsdMonitor := initStatsdMonitor(config)
+	router := initRouter(esClient, newRelicMonitor, statsdMonitor, rootLogger)
 
-	middlewares := []mux.MiddlewareFunc{
-		requestLoggerMiddleware(
-			rootLogger.WithField("reporter", "http-middleware").Writer(),
-		),
+	serverAddr := fmt.Sprintf("%s:%s", config.ServerHost, config.ServerPort)
+	log.Printf("starting http server on %s", serverAddr)
+	if err := http.ListenAndServe(serverAddr, router); err != nil {
+		log.Errorf("listen and serve: %v", err)
 	}
+}
 
-	newRelicApp, middlewares := initNewRelic(config, middlewares)
-	metricsMonitor, middlewares := initMetricsMonitor(config, middlewares)
-
+func initRouter(
+	esClient *elasticsearch.Client,
+	nrMonitor *metrics.NewrelicMonitor,
+	statsdMonitor *metrics.StatsdMonitor,
+	rootLogger logrus.FieldLogger,
+) *mux.Router {
 	typeRepository := store.NewTypeRepository(esClient)
 	recordRepositoryFactory := store.NewRecordRepositoryFactory(esClient)
 	recordSearcher, err := store.NewSearcher(store.SearcherConfig{
@@ -60,31 +65,31 @@ func Serve() {
 	}
 	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
 		RefreshInterval: config.LineageRefreshIntervalStr,
-		MetricsMonitor:  &metricsMonitor,
+		MetricsMonitor:  statsdMonitor,
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	router := api.NewRouter(api.Config{
+	router := mux.NewRouter()
+	if nrMonitor != nil {
+		nrMonitor.MonitorRouter(router)
+	}
+	if statsdMonitor != nil {
+		statsdMonitor.MonitorRouter(router)
+	}
+	router.Use(requestLoggerMiddleware(
+		rootLogger.WithField("reporter", "http-middleware").Writer(),
+	))
+	api.RegisterRoutes(router, api.Config{
 		Logger:                  rootLogger,
 		RecordSearcher:          recordSearcher,
 		RecordRepositoryFactory: recordRepositoryFactory,
 		TypeRepository:          typeRepository,
 		LineageProvider:         lineageService,
-		Middlewares:             middlewares,
 	})
-	// below handlers still have to be manually wrapped by newrelic core library
-	if config.NewRelicEnabled {
-		_, router.NotFoundHandler = newrelic.WrapHandle(newRelicApp, "NotFoundHandler", router.NotFoundHandler)
-		_, router.MethodNotAllowedHandler = newrelic.WrapHandle(newRelicApp, "MethodNotAllowedHandler", router.MethodNotAllowedHandler)
-	}
 
-	serverAddr := fmt.Sprintf("%s:%s", config.ServerHost, config.ServerPort)
-	log.Printf("starting http server on %s", serverAddr)
-	if err := http.ListenAndServe(serverAddr, router); err != nil {
-		log.Errorf("listen and serve: %v", err)
-	}
+	return router
 }
 
 func initLogger(logLevel string) *logrus.Logger {
@@ -98,7 +103,8 @@ func initLogger(logLevel string) *logrus.Logger {
 	return logger
 }
 
-func initElasticsearch(brokers []string) *elasticsearch.Client {
+func initElasticsearch(config Config) *elasticsearch.Client {
+	brokers := strings.Split(config.ElasticSearchBrokers, ",")
 	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
 		Addresses: brokers,
 	})
@@ -114,10 +120,10 @@ func initElasticsearch(brokers []string) *elasticsearch.Client {
 	return esClient
 }
 
-func initNewRelic(config Config, middlewares []mux.MiddlewareFunc) (*newrelic.Application, []mux.MiddlewareFunc) {
+func initNewRelicMonitor(config Config) *metrics.NewrelicMonitor {
 	if !config.NewRelicEnabled {
 		log.Infof("New Relic monitoring is disabled.")
-		return nil, middlewares
+		return nil
 	}
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName(config.NewRelicAppName),
@@ -128,36 +134,28 @@ func initNewRelic(config Config, middlewares []mux.MiddlewareFunc) (*newrelic.Ap
 		log.Fatalf("unable to create New Relic Application: %v", err)
 	}
 	log.Infof("New Relic monitoring is enabled for: %s", config.NewRelicAppName)
-	middlewares = append(middlewares, nrgorilla.Middleware(app))
-	log.Infof("New relic is setup on the router middleware.")
 
-	return app, middlewares
+	monitor := metrics.NewNewrelicMonitor(app)
+	return monitor
 }
 
-func initMetricsMonitor(config Config, middlewares []mux.MiddlewareFunc) (metrics.Monitor, []mux.MiddlewareFunc) {
-	var metricsMonitor metrics.Monitor
+func initStatsdMonitor(config Config) *metrics.StatsdMonitor {
+	var metricsMonitor *metrics.StatsdMonitor
 	if !config.StatsdEnabled {
 		log.Infof("statsd metrics monitoring is disabled.")
-		return metricsMonitor, middlewares
+		return nil
 	}
 	metricsSeparator := "."
 	statsdClient := metrics.NewStatsdClient(config.StatsdAddress)
-	metricsMonitor = metrics.NewMonitor(statsdClient, config.StatsdPrefix, metricsSeparator)
-	middlewares = append(middlewares, telemetryMiddleware(metricsMonitor))
+	metricsMonitor = metrics.NewStatsdMonitor(statsdClient, config.StatsdPrefix, metricsSeparator)
 	log.Infof("statsd metrics monitoring is enabled. (%s)", config.StatsdAddress)
 
-	return metricsMonitor, middlewares
+	return metricsMonitor
 }
 
 func requestLoggerMiddleware(dst io.Writer) mux.MiddlewareFunc {
 	return func(handler http.Handler) http.Handler {
 		return handlers.LoggingHandler(dst, handler)
-	}
-}
-
-func telemetryMiddleware(mon metrics.Monitor) mux.MiddlewareFunc {
-	return func(handler http.Handler) http.Handler {
-		return api.MonitoringHandler(handler, mon)
 	}
 }
 
