@@ -22,7 +22,7 @@ type mockMetricsMonitor struct {
 	testifyMock.Mock
 }
 
-func (mm *mockMetricsMonitor) Duration(op string, d int64) {
+func (mm *mockMetricsMonitor) Duration(op string, d int) {
 	mm.Called(op, d)
 }
 
