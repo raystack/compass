@@ -13,22 +13,9 @@ type Config struct {
 	RecordRepositoryFactory models.RecordRepositoryFactory
 	RecordSearcher          models.RecordSearcher
 	LineageProvider         handlers.LineageProvider
-	Middlewares             []mux.MiddlewareFunc
 }
 
-func NewRouter(config Config) *mux.Router {
-	router := mux.NewRouter()
-
-	for _, middleware := range config.Middlewares {
-		router.Use(middleware)
-	}
-
-	setupRoutes(router, config)
-
-	return router
-}
-
-func setupRoutes(router *mux.Router, config Config) {
+func RegisterRoutes(router *mux.Router, config Config) {
 	typeHandler := handlers.NewTypeHandler(
 		config.Logger.WithField("reporter", "type-handler"),
 		config.TypeRepository,
