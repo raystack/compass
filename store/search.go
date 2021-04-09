@@ -2,6 +2,7 @@ package store
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -236,7 +237,7 @@ func (sr *Searcher) getType(typeName string) (models.Type, error) {
 }
 
 func (sr *Searcher) buildTypesMap() (map[string]models.Type, error) {
-	types, err := sr.typeRepository.GetAll()
+	types, err := sr.typeRepository.GetAll(context.Background())
 	if err != nil {
 		return nil, err
 	}

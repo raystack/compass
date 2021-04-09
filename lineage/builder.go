@@ -1,6 +1,7 @@
 package lineage
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/odpf/columbus/models"
@@ -38,8 +39,7 @@ type defaultBuilder struct{}
 // This has the effect of phatom references in graph: A resource may refer another resource in the graph, but that resource
 // may not be available in the graph
 func (builder defaultBuilder) Build(er models.TypeRepository, rrf models.RecordRepositoryFactory) (Graph, error) {
-
-	typs, err := er.GetAll()
+	typs, err := er.GetAll(context.Background())
 	if err != nil {
 		return InMemoryGraph{}, fmt.Errorf("error loading type metadata: %w", err)
 	}

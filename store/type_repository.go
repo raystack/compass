@@ -2,6 +2,7 @@ package store
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -120,7 +121,7 @@ func (repo *TypeRepository) updateIdx(recordType models.Type) error {
 	return nil
 }
 
-func (repo *TypeRepository) CreateOrReplace(recordType models.Type) error {
+func (repo *TypeRepository) CreateOrReplace(ctx context.Context, recordType models.Type) error {
 	if isReservedName(recordType.Name) {
 		return models.ErrReservedTypeName{TypeName: recordType.Name}
 	}
@@ -151,7 +152,7 @@ func (repo *TypeRepository) CreateOrReplace(recordType models.Type) error {
 	return nil
 }
 
-func (repo *TypeRepository) GetByName(name string) (models.Type, error) {
+func (repo *TypeRepository) GetByName(ctx context.Context, name string) (models.Type, error) {
 	res, err := repo.cli.Get(
 		defaultMetaIndex,
 		name,
@@ -181,7 +182,7 @@ func (repo *TypeRepository) getAllQuery() io.Reader {
 	return strings.NewReader(`{"query":{"match_all":{}}}`)
 }
 
-func (repo *TypeRepository) GetAll() ([]models.Type, error) {
+func (repo *TypeRepository) GetAll(ctx context.Context) ([]models.Type, error) {
 
 	// we'll reuse record repositories' scrolling capabilities
 	// to obtain types, instead of reimplementing it.
@@ -214,7 +215,7 @@ func (repo *TypeRepository) GetAll() ([]models.Type, error) {
 	return types, nil
 }
 
-func (repo *TypeRepository) Delete(typeName string) error {
+func (repo *TypeRepository) Delete(ctx context.Context, typeName string) error {
 	if isReservedName(typeName) {
 		return models.ErrReservedTypeName{TypeName: typeName}
 	}

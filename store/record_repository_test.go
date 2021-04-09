@@ -17,6 +17,8 @@ import (
 )
 
 func TestRecordRepository(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("CreateOrReplaceMany", func(t *testing.T) {
 		var testCases = []struct {
 			Title      string
@@ -64,7 +66,7 @@ func TestRecordRepository(t *testing.T) {
 					},
 				},
 				Setup: func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error {
-					return store.NewTypeRepository(cli).CreateOrReplace(recordType)
+					return store.NewTypeRepository(cli).CreateOrReplace(ctx, recordType)
 				},
 				PostCheck: func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error {
 					searchReq := esapi.SearchRequest{
@@ -135,7 +137,7 @@ func TestRecordRepository(t *testing.T) {
 	// this is used by test cases of `GetAll` and `GetByID`
 	cli := esTestServer.NewClient()
 	typeRepo := store.NewTypeRepository(cli)
-	err := typeRepo.CreateOrReplace(daggerType)
+	err := typeRepo.CreateOrReplace(ctx, daggerType)
 	if err != nil {
 		t.Fatalf("failed to create dagger type: %v", err)
 		return
