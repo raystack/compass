@@ -19,6 +19,7 @@ import (
 )
 
 func TestSearchHandler(t *testing.T) {
+	ctx := testifyMock.AnythingOfType("*context.valueCtx")
 	baseURL := &url.URL{
 		Path: "/v1/search",
 	}
@@ -55,7 +56,7 @@ func TestSearchHandler(t *testing.T) {
 	var withTypes = func(ents ...models.Type) func(tc testCase, repo *mock.TypeRepository) {
 		return func(tc testCase, repo *mock.TypeRepository) {
 			for _, ent := range ents {
-				repo.On("GetByName", ent.Name).Return(ent, nil)
+				repo.On("GetByName", ctx, ent.Name).Return(ent, nil)
 			}
 			return
 		}
@@ -92,7 +93,7 @@ func TestSearchHandler(t *testing.T) {
 					Return(results, nil)
 			},
 			InitRepo: func(tc testCase, repo *mock.TypeRepository) {
-				repo.On("GetByName", testifyMock.AnythingOfType("string")).
+				repo.On("GetByName", ctx, testifyMock.AnythingOfType("string")).
 					Return(models.Type{}, models.ErrNoSuchType{})
 			},
 			ExpectStatus: http.StatusInternalServerError,

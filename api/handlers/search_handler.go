@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -49,11 +50,11 @@ type cachingTypeRepo struct {
 	repo  models.TypeRepository
 }
 
-func (decorator *cachingTypeRepo) CreateOrReplace(ent models.Type) error {
+func (decorator *cachingTypeRepo) CreateOrReplace(ctx context.Context, ent models.Type) error {
 	panic("not implemented")
 }
 
-func (decorator *cachingTypeRepo) GetByName(name string) (models.Type, error) {
+func (decorator *cachingTypeRepo) GetByName(ctx context.Context, name string) (models.Type, error) {
 	ent, exists := decorator.cache[name]
 	if exists {
 		return ent, nil
@@ -61,7 +62,7 @@ func (decorator *cachingTypeRepo) GetByName(name string) (models.Type, error) {
 
 	decorator.mu.Lock()
 	defer decorator.mu.Unlock()
-	ent, err := decorator.repo.GetByName(name)
+	ent, err := decorator.repo.GetByName(ctx, name)
 	if err != nil {
 		return ent, err
 	}
@@ -143,7 +144,7 @@ func (handler *SearchHandler) search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := handler.toSearchResponse(results)
+	response, err := handler.toSearchResponse(r.Context(), results)
 	if err != nil {
 		handler.log.Errorf("error mapping search results: %w", err)
 		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
@@ -172,10 +173,10 @@ func (handler *SearchHandler) buildSearchCfg(params url.Values) (cfg models.Sear
 	return
 }
 
-func (handler *SearchHandler) toSearchResponse(results []models.SearchResult) (response []SearchResponse, err error) {
+func (handler *SearchHandler) toSearchResponse(ctx context.Context, results []models.SearchResult) (response []SearchResponse, err error) {
 	typeRepo := newCachingTypeRepo(handler.typeRepo)
 	for _, result := range results {
-		recordType, err := typeRepo.GetByName(result.TypeName)
+		recordType, err := typeRepo.GetByName(ctx, result.TypeName)
 		if err != nil {
 			return nil, fmt.Errorf("typeRepository.GetByName: %q: %v", result.TypeName, err)
 		}

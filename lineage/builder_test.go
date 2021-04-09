@@ -2,6 +2,7 @@ package lineage_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -32,7 +33,7 @@ func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordRe
 		rrf.On("For", typ).Return(recordRepo, nil)
 		typList = append(typList, typ)
 	}
-	tr.On("GetAll").Return(typList, nil)
+	tr.On("GetAll", context.Background()).Return(typList, nil)
 	return tr, rrf
 }
 

@@ -66,7 +66,7 @@ func (handler *TypeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (handler *TypeHandler) getAll(w http.ResponseWriter, r *http.Request) {
-	types, err := handler.typeRepo.GetAll()
+	types, err := handler.typeRepo.GetAll(r.Context())
 	if err != nil {
 		handler.log.
 			Errorf("error fetching types: %v", err)
@@ -79,7 +79,7 @@ func (handler *TypeHandler) getAll(w http.ResponseWriter, r *http.Request) {
 
 func (handler *TypeHandler) getType(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
-	recordType, err := handler.typeRepo.GetByName(name)
+	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
 	if err != nil {
 		handler.log.
 			Errorf("error fetching type \"%s\": %v", name, err)
@@ -115,7 +115,7 @@ func (handler *TypeHandler) createOrReplaceType(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	err = handler.typeRepo.CreateOrReplace(payload)
+	err = handler.typeRepo.CreateOrReplace(r.Context(), payload)
 	if err != nil {
 		handler.log.
 			WithField("type", payload.Name).
@@ -140,7 +140,7 @@ func (handler *TypeHandler) createOrReplaceType(w http.ResponseWriter, r *http.R
 
 func (handler *TypeHandler) deleteType(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
-	err := handler.typeRepo.Delete(name)
+	err := handler.typeRepo.Delete(r.Context(), name)
 	if err != nil {
 		handler.log.
 			Errorf("error deleting type \"%s\": %v", name, err)
@@ -173,7 +173,7 @@ func (handler *TypeHandler) deleteRecord(w http.ResponseWriter, r *http.Request)
 	statusCode := http.StatusInternalServerError
 	errMessage := fmt.Sprintf("error deleting record \"%s\" with type \"%s\"", recordID, typeName)
 
-	recordType, err := handler.typeRepo.GetByName(typeName)
+	recordType, err := handler.typeRepo.GetByName(r.Context(), typeName)
 	if err != nil {
 		handler.log.
 			Errorf("error getting type \"%s\": %v", typeName, err)
@@ -215,7 +215,7 @@ func (handler *TypeHandler) deleteRecord(w http.ResponseWriter, r *http.Request)
 
 func (handler *TypeHandler) ingestRecord(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
-	recordType, err := handler.typeRepo.GetByName(name)
+	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
 	if err != nil {
 		status := http.StatusInternalServerError
 		if _, ok := err.(models.ErrNoSuchType); ok {
@@ -269,7 +269,7 @@ func (handler *TypeHandler) ingestRecord(w http.ResponseWriter, r *http.Request)
 
 func (handler *TypeHandler) listTypeRecords(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
-	recordType, err := handler.typeRepo.GetByName(name)
+	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
 	if err != nil {
 		status, message := handler.responseStatusForError(err)
 		writeJSONError(w, status, message)
@@ -308,7 +308,7 @@ func (handler *TypeHandler) getTypeRecord(w http.ResponseWriter, r *http.Request
 		typeName = vars["name"]
 		recordID = vars["id"]
 	)
-	recordType, err := handler.typeRepo.GetByName(typeName)
+	recordType, err := handler.typeRepo.GetByName(r.Context(), typeName)
 
 	// TODO(Aman): make error handling a bit more DRY
 	if err != nil {

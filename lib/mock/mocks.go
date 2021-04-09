@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"context"
 	"io/ioutil"
 
 	"github.com/odpf/columbus/lineage"
@@ -13,22 +14,23 @@ type TypeRepository struct {
 	mock.Mock
 }
 
-func (repo *TypeRepository) CreateOrReplace(e models.Type) error {
-	return repo.Called(e).Error(0)
+func (repo *TypeRepository) CreateOrReplace(ctx context.Context, e models.Type) error {
+	args := repo.Called(ctx, e)
+	return args.Error(0)
 }
 
-func (repo *TypeRepository) GetByName(name string) (models.Type, error) {
-	args := repo.Called(name)
+func (repo *TypeRepository) GetByName(ctx context.Context, name string) (models.Type, error) {
+	args := repo.Called(ctx, name)
 	return args.Get(0).(models.Type), args.Error(1)
 }
 
-func (repo *TypeRepository) GetAll() ([]models.Type, error) {
-	args := repo.Called()
+func (repo *TypeRepository) GetAll(ctx context.Context) ([]models.Type, error) {
+	args := repo.Called(ctx)
 	return args.Get(0).([]models.Type), args.Error(1)
 }
 
-func (repo *TypeRepository) Delete(typeName string) error {
-	args := repo.Called(typeName)
+func (repo *TypeRepository) Delete(ctx context.Context, typeName string) error {
+	args := repo.Called(ctx, typeName)
 	return args.Error(0)
 }
 

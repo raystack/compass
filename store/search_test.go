@@ -1,6 +1,7 @@
 package store_test
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"testing"
@@ -275,7 +276,7 @@ func populateSearchData(esClient *elasticsearch.Client, data []searchTestData) (
 	typeRepo := store.NewTypeRepository(esClient)
 	for _, sample := range data {
 		types = append(types, sample.Type)
-		if err := typeRepo.CreateOrReplace(sample.Type); err != nil {
+		if err := typeRepo.CreateOrReplace(context.Background(), sample.Type); err != nil {
 			return types, err
 		}
 
