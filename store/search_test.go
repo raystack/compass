@@ -18,6 +18,7 @@ type searchTestData struct {
 }
 
 func TestSearch(t *testing.T) {
+	ctx := context.Background()
 	t.Run("should return an error if search string is empty", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
 
@@ -29,7 +30,7 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err = searcher.Search(models.SearchConfig{
+		_, err = searcher.Search(ctx, models.SearchConfig{
 			Text: "",
 		})
 
@@ -60,7 +61,7 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		results, err := searcher.Search(models.SearchConfig{Text: queryText})
+		results, err := searcher.Search(ctx, models.SearchConfig{Text: queryText})
 		if err != nil {
 			t.Errorf("Search: %v", err)
 			return
@@ -94,7 +95,7 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		results, err := searcher.Search(models.SearchConfig{
+		results, err := searcher.Search(ctx, models.SearchConfig{
 			Text:          queryText,
 			TypeWhiteList: []string{whitelistedType},
 		})
@@ -136,7 +137,7 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		results, err := searcher.Search(models.SearchConfig{
+		results, err := searcher.Search(ctx, models.SearchConfig{
 			Text:          queryText,
 			TypeWhiteList: localWhitelist,
 		})
@@ -231,7 +232,7 @@ func TestSearch(t *testing.T) {
 		}
 		for _, test := range tests {
 			t.Run(test.Description, func(t *testing.T) {
-				results, err := searcher.Search(test.Config)
+				results, err := searcher.Search(ctx, test.Config)
 				if err != nil {
 					t.Error(err)
 					return

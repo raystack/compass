@@ -74,7 +74,7 @@ func NewSearcher(config SearcherConfig) (*Searcher, error) {
 // Entities searched : {C}
 // GL specified that search can only be done for {A, B, C} types, while LL requested
 // the search for {C, D} types. Since {D} doesn't belong to GL's set, it won't be searched
-func (sr *Searcher) Search(cfg models.SearchConfig) ([]models.SearchResult, error) {
+func (sr *Searcher) Search(ctx context.Context, cfg models.SearchConfig) ([]models.SearchResult, error) {
 	if strings.TrimSpace(cfg.Text) == "" {
 		return nil, fmt.Errorf("search text cannot be empty")
 	}
@@ -84,7 +84,7 @@ func (sr *Searcher) Search(cfg models.SearchConfig) ([]models.SearchResult, erro
 		maxResults = defaultMaxResults
 	}
 	indices := sr.searchIndices(cfg.TypeWhiteList)
-	query, err := sr.buildQuery(cfg, indices)
+	query, err := sr.buildQuery(ctx, cfg, indices)
 	if err != nil {
 		return nil, fmt.Errorf("error building query: %v", err)
 	}
@@ -107,8 +107,8 @@ func (sr *Searcher) Search(cfg models.SearchConfig) ([]models.SearchResult, erro
 	return sr.toSearchResults(response.Hits.Hits), nil
 }
 
-func (sr *Searcher) buildQuery(cfg models.SearchConfig, indices []string) (io.Reader, error) {
-	queries, err := sr.buildQueriesFromIndices(indices, cfg)
+func (sr *Searcher) buildQuery(ctx context.Context, cfg models.SearchConfig, indices []string) (io.Reader, error) {
+	queries, err := sr.buildQueriesFromIndices(ctx, indices, cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -129,10 +129,10 @@ func (sr *Searcher) buildQuery(cfg models.SearchConfig, indices []string) (io.Re
 	return payload, json.NewEncoder(payload).Encode(q)
 }
 
-func (sr *Searcher) buildQueriesFromIndices(indices []string, cfg models.SearchConfig) ([]elastic.Query, error) {
+func (sr *Searcher) buildQueriesFromIndices(ctx context.Context, indices []string, cfg models.SearchConfig) ([]elastic.Query, error) {
 	var queries []elastic.Query
 	for _, index := range indices {
-		fields, err := sr.buildTypeFields(index)
+		fields, err := sr.buildTypeFields(ctx, index)
 		if err != nil {
 			return nil, err
 		}
@@ -165,8 +165,8 @@ func (sr *Searcher) buildQueriesFromIndices(indices []string, cfg models.SearchC
 	return queries, nil
 }
 
-func (sr *Searcher) buildTypeFields(typeName string) (fields []string, err error) {
-	resourceType, err := sr.getType(typeName)
+func (sr *Searcher) buildTypeFields(ctx context.Context, typeName string) (fields []string, err error) {
+	resourceType, err := sr.getType(ctx, typeName)
 	if err != nil {
 		return fields, err
 	}
@@ -217,9 +217,9 @@ func (sr *Searcher) searchIndices(localWhiteList []string) []string {
 	}
 }
 
-func (sr *Searcher) getType(typeName string) (models.Type, error) {
+func (sr *Searcher) getType(ctx context.Context, typeName string) (models.Type, error) {
 	if sr.cachedTypesMap == nil || time.Now().After(sr.cachedTypeExpiredOn) {
-		typesMap, err := sr.buildTypesMap()
+		typesMap, err := sr.buildTypesMap(ctx)
 		if err != nil {
 			return models.Type{}, err
 		}
@@ -236,8 +236,8 @@ func (sr *Searcher) getType(typeName string) (models.Type, error) {
 	return resourceType, nil
 }
 
-func (sr *Searcher) buildTypesMap() (map[string]models.Type, error) {
-	types, err := sr.typeRepository.GetAll(context.Background())
+func (sr *Searcher) buildTypesMap(ctx context.Context) (map[string]models.Type, error) {
+	types, err := sr.typeRepository.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -1,5 +1,7 @@
 package models
 
+import "context"
+
 // SearchConfig represents a search query along
 // with any corresponding filter(s)
 type SearchConfig struct {
@@ -29,5 +31,5 @@ type SearchResult struct {
 // to search records. The search is intended to be fuzzy over
 // the fields of the records, while also supporting filter criteria
 type RecordSearcher interface {
-	Search(cfg SearchConfig) ([]SearchResult, error)
+	Search(ctx context.Context, cfg SearchConfig) ([]SearchResult, error)
 }

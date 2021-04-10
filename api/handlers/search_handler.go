@@ -137,7 +137,7 @@ func (handler *SearchHandler) search(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	results, err := handler.recordSearcher.Search(cfg)
+	results, err := handler.recordSearcher.Search(r.Context(), cfg)
 	if err != nil {
 		handler.log.Errorf("error searching records: %w", err)
 		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
