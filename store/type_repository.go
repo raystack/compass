@@ -60,7 +60,7 @@ type TypeRepository struct {
 	cli *elasticsearch.Client
 }
 
-func (repo *TypeRepository) addTypeToMetaIdx(recordType models.Type) error {
+func (repo *TypeRepository) addTypeToMetaIdx(ctx context.Context, recordType models.Type) error {
 	raw := bytes.NewBuffer(nil)
 	err := json.NewEncoder(raw).Encode(recordType)
 	if err != nil {
@@ -72,6 +72,7 @@ func (repo *TypeRepository) addTypeToMetaIdx(recordType models.Type) error {
 		raw,
 		repo.cli.Index.WithDocumentID(recordType.Name),
 		repo.cli.Index.WithRefresh("true"),
+		repo.cli.Index.WithContext(ctx),
 	)
 	if err != nil {
 		return elasticSearchError(err)
@@ -83,7 +84,7 @@ func (repo *TypeRepository) addTypeToMetaIdx(recordType models.Type) error {
 	return nil
 }
 
-func (repo *TypeRepository) createIdx(recordType models.Type) error {
+func (repo *TypeRepository) createIdx(ctx context.Context, recordType models.Type) error {
 	indexSettings, err := createIndexSettings(recordType)
 	if err != nil {
 		return fmt.Errorf("error building index settings: %v", err)
@@ -91,6 +92,7 @@ func (repo *TypeRepository) createIdx(recordType models.Type) error {
 	res, err := repo.cli.Indices.Create(
 		recordType.Name,
 		repo.cli.Indices.Create.WithBody(strings.NewReader(indexSettings)),
+		repo.cli.Indices.Create.WithContext(ctx),
 	)
 	if err != nil {
 		return elasticSearchError(err)
@@ -102,7 +104,7 @@ func (repo *TypeRepository) createIdx(recordType models.Type) error {
 	return nil
 }
 
-func (repo *TypeRepository) updateIdx(recordType models.Type) error {
+func (repo *TypeRepository) updateIdx(ctx context.Context, recordType models.Type) error {
 	mappings, err := createIndexMapping(recordType)
 	if err != nil {
 		return fmt.Errorf("updateIdx: %v", err)
@@ -110,6 +112,7 @@ func (repo *TypeRepository) updateIdx(recordType models.Type) error {
 	res, err := repo.cli.Indices.PutMapping(
 		strings.NewReader(mappings),
 		repo.cli.Indices.PutMapping.WithIndex(recordType.Name),
+		repo.cli.Indices.PutMapping.WithContext(ctx),
 	)
 	if err != nil {
 		return elasticSearchError(err)
@@ -129,21 +132,21 @@ func (repo *TypeRepository) CreateOrReplace(ctx context.Context, recordType mode
 	// checking for the existence of index before adding the metadata
 	// entry, because if this operation fails, we don't have to do a rollback
 	// for the addTypeToMetaIdx()
-	idxExists, err := indexExists(repo.cli, recordType.Name)
+	idxExists, err := indexExists(ctx, repo.cli, recordType.Name)
 	if err != nil {
 		return err
 	}
 
 	// save the type information to meta index
-	if err := repo.addTypeToMetaIdx(recordType); err != nil {
+	if err := repo.addTypeToMetaIdx(ctx, recordType); err != nil {
 		return err
 	}
 
 	// update/create the index
 	if idxExists {
-		err = repo.updateIdx(recordType)
+		err = repo.updateIdx(ctx, recordType)
 	} else {
-		err = repo.createIdx(recordType)
+		err = repo.createIdx(ctx, recordType)
 	}
 	if err != nil {
 		return err
@@ -157,6 +160,7 @@ func (repo *TypeRepository) GetByName(ctx context.Context, name string) (models.
 		defaultMetaIndex,
 		name,
 		repo.cli.Get.WithRefresh(true),
+		repo.cli.Get.WithContext(ctx),
 	)
 	if err != nil {
 		return models.Type{}, elasticSearchError(err)
@@ -224,6 +228,7 @@ func (repo *TypeRepository) Delete(ctx context.Context, typeName string) error {
 		defaultMetaIndex,
 		typeName,
 		repo.cli.Delete.WithRefresh("true"),
+		repo.cli.Delete.WithContext(ctx),
 	)
 	if err != nil {
 		return elasticSearchError(err)

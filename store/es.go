@@ -2,6 +2,7 @@ package store
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -51,8 +52,11 @@ func errorReasonFromResponse(res *esapi.Response) string {
 }
 
 // checks for the existence of an index
-func indexExists(cli *elasticsearch.Client, name string) (bool, error) {
-	res, err := cli.Indices.Exists([]string{name})
+func indexExists(ctx context.Context, cli *elasticsearch.Client, name string) (bool, error) {
+	res, err := cli.Indices.Exists(
+		[]string{name},
+		cli.Indices.Exists.WithContext(ctx),
+	)
 	if err != nil {
 		return false, fmt.Errorf("indexExists: %w", elasticSearchError(err))
 	}
