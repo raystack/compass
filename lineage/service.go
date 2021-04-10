@@ -1,6 +1,7 @@
 package lineage
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -29,11 +30,12 @@ func (tsf TimeSourceFunc) Now() time.Time {
 // an interval at which it'll construct the graph, while
 // serving an old copy in between ticks.
 type Service struct {
-	typeRepo          models.TypeRepository
-	recordRepoFactory models.RecordRepositoryFactory
-	metricsMonitor    MetricsMonitor
-	builder           Builder
-	timeSource        TimeSource
+	typeRepo           models.TypeRepository
+	recordRepoFactory  models.RecordRepositoryFactory
+	metricsMonitor     MetricsMonitor
+	performanceMonitor PerformanceMonitor
+	builder            Builder
+	timeSource         TimeSource
 
 	refreshInterval time.Duration
 	lastBuilt       time.Time
@@ -44,10 +46,12 @@ type Service struct {
 }
 
 func (srv *Service) build() {
-	startTime := srv.timeSource.Now()
-	graph, err := srv.builder.Build(srv.typeRepo, srv.recordRepoFactory)
-	now := srv.timeSource.Now()
+	ctx, endTxn := srv.performanceMonitor.StartTransaction(context.Background(), "lineage:Service/build")
+	defer endTxn()
 
+	startTime := srv.timeSource.Now()
+	graph, err := srv.builder.Build(ctx, srv.typeRepo, srv.recordRepoFactory)
+	now := srv.timeSource.Now()
 	srv.metricsMonitor.Duration("lineageBuildTime", int(now.Sub(startTime)/time.Millisecond))
 
 	srv.mu.Lock()
@@ -86,12 +90,13 @@ func (srv *Service) requestRefresh() {
 
 func NewService(er models.TypeRepository, rrf models.RecordRepositoryFactory, config Config) (*Service, error) {
 	srv := &Service{
-		builder:           DefaultBuilder,
-		typeRepo:          er,
-		recordRepoFactory: rrf,
-		refreshInterval:   time.Minute,
-		timeSource:        TimeSourceFunc(time.Now),
-		metricsMonitor:    dummyMetricMonitor{},
+		builder:            DefaultBuilder,
+		typeRepo:           er,
+		recordRepoFactory:  rrf,
+		refreshInterval:    time.Minute,
+		timeSource:         TimeSourceFunc(time.Now),
+		metricsMonitor:     dummyMetricMonitor{},
+		performanceMonitor: &dummyPerformanceMonitor{},
 	}
 
 	err := applyConfig(srv, config)
@@ -109,16 +114,22 @@ func NewService(er models.TypeRepository, rrf models.RecordRepositoryFactory, co
 }
 
 func applyConfig(service *Service, config Config) error {
-	if config.RefreshInterval == "" {
-		lineageRefreshInterval, err := time.ParseDuration(config.RefreshInterval)
-		if err != nil {
-			return fmt.Errorf("error parsing lineage refresh interval: %v", err)
-		}
-		service.refreshInterval = lineageRefreshInterval
+	refreshInterval := config.RefreshInterval
+	if refreshInterval == "" {
+		refreshInterval = "5m"
 	}
+	lineageRefreshInterval, err := time.ParseDuration(refreshInterval)
+	if err != nil {
+		return fmt.Errorf("error parsing lineage refresh interval: %v", err)
+	}
+	service.refreshInterval = lineageRefreshInterval
 
 	if config.MetricsMonitor != nil {
 		service.metricsMonitor = config.MetricsMonitor
+	}
+
+	if config.PerformanceMonitor != nil {
+		service.performanceMonitor = config.PerformanceMonitor
 	}
 
 	if config.Builder != nil {

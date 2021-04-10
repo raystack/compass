@@ -197,7 +197,7 @@ func TestDefaultBuilder(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.Description, func(t *testing.T) {
 				er, rrf := initialiseRepos(tc.Datasets)
-				graph, err := lineage.DefaultBuilder.Build(er, rrf)
+				graph, err := lineage.DefaultBuilder.Build(context.Background(), er, rrf)
 				if err != nil {
 					if err != tc.BuildErr {
 						t.Errorf("unexpected error when building graph: %v", err)
