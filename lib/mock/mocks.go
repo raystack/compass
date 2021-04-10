@@ -47,22 +47,23 @@ type RecordRepository struct {
 	mock.Mock
 }
 
-func (repo *RecordRepository) CreateOrReplaceMany(records []models.Record) error {
-	return repo.Called(records).Error(0)
+func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []models.Record) error {
+	args := repo.Called(ctx, records)
+	return args.Error(0)
 }
 
-func (repo *RecordRepository) GetAll(filter models.RecordFilter) ([]models.Record, error) {
-	args := repo.Called(filter)
+func (repo *RecordRepository) GetAll(ctx context.Context, filter models.RecordFilter) ([]models.Record, error) {
+	args := repo.Called(ctx, filter)
 	return args.Get(0).([]models.Record), args.Error(1)
 }
 
-func (repo *RecordRepository) GetByID(id string) (models.Record, error) {
-	args := repo.Called(id)
+func (repo *RecordRepository) GetByID(ctx context.Context, id string) (models.Record, error) {
+	args := repo.Called(ctx, id)
 	return args.Get(0).(models.Record), args.Error(1)
 }
 
-func (repo *RecordRepository) Delete(id string) error {
-	args := repo.Called(id)
+func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
+	args := repo.Called(ctx, id)
 	return args.Error(0)
 }
 

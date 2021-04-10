@@ -273,15 +273,16 @@ func loadTestFixture() (testFixture []searchTestData, err error) {
 }
 
 func populateSearchData(esClient *elasticsearch.Client, data []searchTestData) (types []models.Type, err error) {
+	ctx := context.Background()
 	typeRepo := store.NewTypeRepository(esClient)
 	for _, sample := range data {
 		types = append(types, sample.Type)
-		if err := typeRepo.CreateOrReplace(context.Background(), sample.Type); err != nil {
+		if err := typeRepo.CreateOrReplace(ctx, sample.Type); err != nil {
 			return types, err
 		}
 
 		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(sample.Type)
-		if err := recordRepo.CreateOrReplaceMany(sample.Records); err != nil {
+		if err := recordRepo.CreateOrReplaceMany(ctx, sample.Records); err != nil {
 			return types, err
 		}
 	}

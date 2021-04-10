@@ -195,7 +195,7 @@ func (handler *TypeHandler) deleteRecord(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = recordRepoFactory.Delete(recordID)
+	err = recordRepoFactory.Delete(r.Context(), recordID)
 	if err != nil {
 		handler.log.
 			Errorf("error deleting record \"%s\": %v", typeName, err)
@@ -255,7 +255,7 @@ func (handler *TypeHandler) ingestRecord(w http.ResponseWriter, r *http.Request)
 		writeJSONError(w, status, http.StatusText(status))
 		return
 	}
-	if err = recordRepo.CreateOrReplaceMany(records); err != nil {
+	if err = recordRepo.CreateOrReplaceMany(r.Context(), records); err != nil {
 		handler.log.WithField("type", recordType.Name).
 			Errorf("error creating/updating records: %v", err)
 
@@ -286,7 +286,7 @@ func (handler *TypeHandler) listTypeRecords(w http.ResponseWriter, r *http.Reque
 	}
 	filterCfg := filterConfigFromValues(r.URL.Query())
 
-	records, err := recordRepo.GetAll(filterCfg)
+	records, err := recordRepo.GetAll(r.Context(), filterCfg)
 	if err != nil {
 		handler.log.WithField("type", recordType).
 			Errorf("error fetching records: GetAll: %v", err)
@@ -329,7 +329,7 @@ func (handler *TypeHandler) getTypeRecord(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	record, err := recordRepo.GetByID(recordID)
+	record, err := recordRepo.GetByID(r.Context(), recordID)
 	if err != nil {
 		handler.log.WithField("type", typeName).
 			WithField("record", recordID).

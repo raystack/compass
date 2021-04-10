@@ -195,7 +195,7 @@ func (repo *TypeRepository) GetAll(ctx context.Context) ([]models.Type, error) {
 		recordType: models.Type{Name: "meta"},
 	}
 
-	rawEntities, err := recordRepo.GetAll(models.RecordFilter{})
+	rawEntities, err := recordRepo.GetAll(ctx, models.RecordFilter{})
 	if err != nil {
 		return nil, err
 	}

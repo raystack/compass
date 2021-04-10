@@ -24,16 +24,17 @@ func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordRe
 		tr      = new(mock.TypeRepository)
 		rrf     = new(mock.RecordRepositoryFactory)
 		typList = []models.Type{}
+		ctx     = context.Background()
 	)
 	for _, dataset := range datasets {
 		typ := dataset.Type.Normalise()
 		tr.On("GetByName", typ.Name).Return(typ, nil)
 		recordRepo := new(mock.RecordRepository)
-		recordRepo.On("GetAll", models.RecordFilter{}).Return(dataset.Records, nil)
+		recordRepo.On("GetAll", ctx, models.RecordFilter{}).Return(dataset.Records, nil)
 		rrf.On("For", typ).Return(recordRepo, nil)
 		typList = append(typList, typ)
 	}
-	tr.On("GetAll", context.Background()).Return(typList, nil)
+	tr.On("GetAll", ctx).Return(typList, nil)
 	return tr, rrf
 }
 

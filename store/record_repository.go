@@ -2,6 +2,7 @@ package store
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -30,8 +31,7 @@ type RecordRepository struct {
 	cli        *elasticsearch.Client
 }
 
-func (repo *RecordRepository) CreateOrReplaceMany(records []models.Record) error {
-
+func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []models.Record) error {
 	idxExists, err := indexExists(repo.cli, repo.recordType.Name)
 	if err != nil {
 		return err
@@ -91,7 +91,7 @@ func (repo *RecordRepository) writeInsertAction(w io.Writer, record models.Recor
 	return json.NewEncoder(w).Encode(action)
 }
 
-func (repo *RecordRepository) GetAll(filters models.RecordFilter) ([]models.Record, error) {
+func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordFilter) ([]models.Record, error) {
 	// XXX(Aman): we should probably think about result ordering, if the client
 	// is going to slice the data for pagination. Does ES guarantee the result order?
 	body, err := repo.getAllQuery(filters)
@@ -196,7 +196,7 @@ func (repo *RecordRepository) termsQuery(filters models.RecordFilter) (io.Reader
 	return payload, json.NewEncoder(payload).Encode(raw)
 }
 
-func (repo *RecordRepository) GetByID(id string) (models.Record, error) {
+func (repo *RecordRepository) GetByID(ctx context.Context, id string) (models.Record, error) {
 	res, err := repo.cli.Get(repo.recordType.Name, id)
 	if err != nil {
 		return nil, fmt.Errorf("error executing get: %w", err)
@@ -218,7 +218,7 @@ func (repo *RecordRepository) GetByID(id string) (models.Record, error) {
 	return response.Source, nil
 }
 
-func (repo *RecordRepository) Delete(id string) error {
+func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 	res, err := repo.cli.Delete(
 		repo.recordType.Name,
 		id,

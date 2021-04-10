@@ -394,7 +394,7 @@ func TestTypeHandler(t *testing.T) {
 
 				repositoryErr := errors.New("unknown error")
 				recordRepository := new(mock.RecordRepository)
-				recordRepository.On("CreateOrReplaceMany", records).Return(repositoryErr)
+				recordRepository.On("CreateOrReplaceMany", ctx, records).Return(repositoryErr)
 				defer recordRepository.AssertExpectations(t)
 
 				recordRepoFac := new(mock.RecordRepositoryFactory)
@@ -468,7 +468,7 @@ func TestTypeHandler(t *testing.T) {
 			defer entRepo.AssertExpectations(t)
 
 			recordRepo := new(mock.RecordRepository)
-			recordRepo.On("CreateOrReplaceMany", records).Return(nil)
+			recordRepo.On("CreateOrReplaceMany", ctx, records).Return(nil)
 			defer recordRepo.AssertExpectations(t)
 
 			recordRepoFac := new(mock.RecordRepositoryFactory)
@@ -673,7 +673,7 @@ func TestTypeHandler(t *testing.T) {
 				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
 					tr.On("GetByName", ctx, "sample").Return(daggerType, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
-					rr.On("Delete", "id-10").Return(nil)
+					rr.On("Delete", ctx, "id-10").Return(nil)
 				},
 			},
 			{
@@ -699,7 +699,7 @@ func TestTypeHandler(t *testing.T) {
 				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
 					tr.On("GetByName", ctx, "sample").Return(daggerType, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
-					rr.On("Delete", "id-10").Return(models.ErrNoSuchRecord{RecordID: "id-10"})
+					rr.On("Delete", ctx, "id-10").Return(models.ErrNoSuchRecord{RecordID: "id-10"})
 				},
 			},
 			{
@@ -709,7 +709,7 @@ func TestTypeHandler(t *testing.T) {
 				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
 					tr.On("GetByName", ctx, "sample").Return(daggerType, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
-					rr.On("Delete", "id-10").Return(errors.New("error deleting record"))
+					rr.On("Delete", ctx, "id-10").Return(errors.New("error deleting record"))
 				},
 			},
 		}
@@ -861,7 +861,7 @@ func TestTypeHandler(t *testing.T) {
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
 					rr := new(mock.RecordRepository)
-					rr.On("GetAll", map[string][]string{"environment": {"nonexisting"}}).Return(daggerRecords, nil)
+					rr.On("GetAll", ctx, map[string][]string{"environment": {"nonexisting"}}).Return(daggerRecords, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 			},
@@ -872,7 +872,7 @@ func TestTypeHandler(t *testing.T) {
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
 					rr := new(mock.RecordRepository)
-					rr.On("GetAll", map[string][]string{}).Return(daggerRecords, nil)
+					rr.On("GetAll", ctx, map[string][]string{}).Return(daggerRecords, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 			},
@@ -883,7 +883,7 @@ func TestTypeHandler(t *testing.T) {
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
 					rr := new(mock.RecordRepository)
-					rr.On("GetAll", map[string][]string{"environment": {"test"}}).Return(daggerRecords, nil)
+					rr.On("GetAll", ctx, map[string][]string{"environment": {"test"}}).Return(daggerRecords, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
@@ -906,7 +906,7 @@ func TestTypeHandler(t *testing.T) {
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
 					rr := new(mock.RecordRepository)
-					rr.On("GetAll", map[string][]string{"environment": {"test"}}).Return(daggerRecords, nil)
+					rr.On("GetAll", ctx, map[string][]string{"environment": {"test"}}).Return(daggerRecords, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
@@ -945,7 +945,7 @@ func TestTypeHandler(t *testing.T) {
 						"entity":      {"odpf"},
 						"environment": {"test"},
 					}
-					rr.On("GetAll", filters).Return(daggerRecords, nil)
+					rr.On("GetAll", ctx, filters).Return(daggerRecords, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
@@ -979,7 +979,7 @@ func TestTypeHandler(t *testing.T) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
 					rr := new(mock.RecordRepository)
 					err := fmt.Errorf("temporarily unavailable")
-					rr.On("GetAll", map[string][]string{"environment": {"test"}}).Return([]models.Record{}, err)
+					rr.On("GetAll", ctx, map[string][]string{"environment": {"test"}}).Return([]models.Record{}, err)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 			},
@@ -1027,7 +1027,7 @@ func TestTypeHandler(t *testing.T) {
 				Setup: func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", ctx, "dagger").Return(daggerType, nil)
 					recordRepo := new(mock.RecordRepository)
-					recordRepo.On("GetByID", "record01").Return(map[string]interface{}{}, models.ErrNoSuchRecord{"record01"})
+					recordRepo.On("GetByID", ctx, "record01").Return(map[string]interface{}{}, models.ErrNoSuchRecord{"record01"})
 					rrf.On("For", daggerType).Return(recordRepo, nil)
 				},
 			},
@@ -1056,7 +1056,7 @@ func TestTypeHandler(t *testing.T) {
 				Setup: func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", ctx, "dagger").Return(daggerType, nil)
 					recordRepo := new(mock.RecordRepository)
-					recordRepo.On("GetByID", "deployment01").Return(deployment01, nil)
+					recordRepo.On("GetByID", ctx, "deployment01").Return(deployment01, nil)
 					rrf.On("For", daggerType).Return(recordRepo, nil)
 				},
 				PostCheck: func(r *http.Response) error {
