@@ -71,8 +71,8 @@ type RecordSearcher struct {
 	mock.Mock
 }
 
-func (searcher *RecordSearcher) Search(cfg models.SearchConfig) ([]models.SearchResult, error) {
-	args := searcher.Called(cfg)
+func (searcher *RecordSearcher) Search(ctx context.Context, cfg models.SearchConfig) ([]models.SearchResult, error) {
+	args := searcher.Called(ctx, cfg)
 	return args.Get(0).([]models.SearchResult), args.Error(1)
 }
 
