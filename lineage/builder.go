@@ -100,13 +100,12 @@ func (builder defaultBuilder) opposite(dir models.DataflowDir) (models.DataflowD
 // if type definition has a valid "lineage" field
 // it will be used for obtaining the values for downstreams and upstreams.
 func (builder defaultBuilder) populateTypeRecords(graph AdjacencyMap, typ models.Type, rrf models.RecordRepositoryFactory) error {
-
 	lineageProc := newLineageProcessor(typ.Lineage)
 	recordRepository, err := rrf.For(typ)
 	if err != nil {
 		return fmt.Errorf("error obtaing record repository: %w", err)
 	}
-	records, err := recordRepository.GetAll(models.RecordFilter{})
+	records, err := recordRepository.GetAll(context.Background(), models.RecordFilter{})
 	if err != nil {
 		return fmt.Errorf("error reading records for type %q: %w", typ.Name, err)
 	}
