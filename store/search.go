@@ -93,6 +93,7 @@ func (sr *Searcher) Search(ctx context.Context, cfg models.SearchConfig) ([]mode
 		sr.cli.Search.WithIndex(indices...),
 		sr.cli.Search.WithSize(maxResults),
 		sr.cli.Search.WithIgnoreUnavailable(true),
+		sr.cli.Search.WithContext(ctx),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error executing search: %v", err)

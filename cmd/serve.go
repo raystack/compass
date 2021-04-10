@@ -12,6 +12,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	nrelasticsearch "github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/odpf/columbus/api"
 	"github.com/odpf/columbus/lineage"
@@ -107,6 +108,7 @@ func initElasticsearch(config Config) *elasticsearch.Client {
 	brokers := strings.Split(config.ElasticSearchBrokers, ",")
 	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
 		Addresses: brokers,
+		Transport: nrelasticsearch.NewRoundTripper(nil),
 	})
 	if err != nil {
 		log.Fatalf("error connecting to elasticsearch: %v", err)

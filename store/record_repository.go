@@ -32,7 +32,7 @@ type RecordRepository struct {
 }
 
 func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []models.Record) error {
-	idxExists, err := indexExists(repo.cli, repo.recordType.Name)
+	idxExists, err := indexExists(ctx, repo.cli, repo.recordType.Name)
 	if err != nil {
 		return err
 	}
@@ -47,6 +47,7 @@ func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records [
 	res, err := repo.cli.Bulk(
 		requestPayload,
 		repo.cli.Bulk.WithRefresh("true"),
+		repo.cli.Bulk.WithContext(ctx),
 	)
 	if err != nil {
 		return elasticSearchError(err)
@@ -104,6 +105,7 @@ func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordF
 		repo.cli.Search.WithBody(body),
 		repo.cli.Search.WithScroll(defaultScrollTimeout),
 		repo.cli.Search.WithSize(defaultScrollBatchSize),
+		repo.cli.Search.WithContext(ctx),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error executing search: %w", err)
@@ -122,7 +124,7 @@ func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordF
 	var scrollID = response.ScrollID
 	for {
 		var nextResults []models.Record
-		nextResults, scrollID, err = repo.scrollRecords(scrollID)
+		nextResults, scrollID, err = repo.scrollRecords(ctx, scrollID)
 		if err != nil {
 			return nil, fmt.Errorf("error scrolling results: %v", err)
 		}
@@ -134,10 +136,11 @@ func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordF
 	return results, nil
 }
 
-func (repo *RecordRepository) scrollRecords(scrollID string) ([]models.Record, string, error) {
+func (repo *RecordRepository) scrollRecords(ctx context.Context, scrollID string) ([]models.Record, string, error) {
 	resp, err := repo.cli.Scroll(
 		repo.cli.Scroll.WithScrollID(scrollID),
 		repo.cli.Scroll.WithScroll(defaultScrollTimeout),
+		repo.cli.Scroll.WithContext(ctx),
 	)
 	if err != nil {
 		return nil, "", fmt.Errorf("error executing scroll: %v", err)
@@ -197,7 +200,11 @@ func (repo *RecordRepository) termsQuery(filters models.RecordFilter) (io.Reader
 }
 
 func (repo *RecordRepository) GetByID(ctx context.Context, id string) (models.Record, error) {
-	res, err := repo.cli.Get(repo.recordType.Name, id)
+	res, err := repo.cli.Get(
+		repo.recordType.Name,
+		id,
+		repo.cli.Get.WithContext(ctx),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("error executing get: %w", err)
 	}
@@ -223,6 +230,7 @@ func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 		repo.recordType.Name,
 		id,
 		repo.cli.Delete.WithRefresh("true"),
+		repo.cli.Delete.WithContext(ctx),
 	)
 	if err != nil {
 		return fmt.Errorf("error deleting record: %w", err)
