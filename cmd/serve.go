@@ -65,8 +65,9 @@ func initRouter(
 		log.Fatalf("error creating searcher: %v", err)
 	}
 	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
-		RefreshInterval: config.LineageRefreshIntervalStr,
-		MetricsMonitor:  statsdMonitor,
+		RefreshInterval:    config.LineageRefreshIntervalStr,
+		MetricsMonitor:     statsdMonitor,
+		PerformanceMonitor: nrMonitor,
 	})
 	if err != nil {
 		log.Fatal(err)

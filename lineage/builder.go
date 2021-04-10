@@ -9,7 +9,7 @@ import (
 
 // Builder encapsulates the algorithm for building a graph
 type Builder interface {
-	Build(models.TypeRepository, models.RecordRepositoryFactory) (Graph, error)
+	Build(context.Context, models.TypeRepository, models.RecordRepositoryFactory) (Graph, error)
 }
 
 var DefaultBuilder = defaultBuilder{}
@@ -38,15 +38,15 @@ type defaultBuilder struct{}
 // If any reference'd record is not found in the graph, the algorithm gives up and looks at the next related entry.
 // This has the effect of phatom references in graph: A resource may refer another resource in the graph, but that resource
 // may not be available in the graph
-func (builder defaultBuilder) Build(er models.TypeRepository, rrf models.RecordRepositoryFactory) (Graph, error) {
-	typs, err := er.GetAll(context.Background())
+func (builder defaultBuilder) Build(ctx context.Context, er models.TypeRepository, rrf models.RecordRepositoryFactory) (Graph, error) {
+	typs, err := er.GetAll(ctx)
 	if err != nil {
 		return InMemoryGraph{}, fmt.Errorf("error loading type metadata: %w", err)
 	}
 
 	var graph = make(AdjacencyMap)
 	for _, typ := range typs {
-		if err := builder.populateTypeRecords(graph, typ, rrf); err != nil {
+		if err := builder.populateTypeRecords(ctx, graph, typ, rrf); err != nil {
 			return InMemoryGraph{}, fmt.Errorf("error parsing type records: %w", err)
 		}
 	}
@@ -99,13 +99,13 @@ func (builder defaultBuilder) opposite(dir models.DataflowDir) (models.DataflowD
 // load the records for a type onto the graph
 // if type definition has a valid "lineage" field
 // it will be used for obtaining the values for downstreams and upstreams.
-func (builder defaultBuilder) populateTypeRecords(graph AdjacencyMap, typ models.Type, rrf models.RecordRepositoryFactory) error {
+func (builder defaultBuilder) populateTypeRecords(ctx context.Context, graph AdjacencyMap, typ models.Type, rrf models.RecordRepositoryFactory) error {
 	lineageProc := newLineageProcessor(typ.Lineage)
 	recordRepository, err := rrf.For(typ)
 	if err != nil {
 		return fmt.Errorf("error obtaing record repository: %w", err)
 	}
-	records, err := recordRepository.GetAll(context.Background(), models.RecordFilter{})
+	records, err := recordRepository.GetAll(ctx, models.RecordFilter{})
 	if err != nil {
 		return fmt.Errorf("error reading records for type %q: %w", typ.Name, err)
 	}
