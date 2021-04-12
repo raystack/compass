@@ -11,7 +11,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/models"
 )
 
@@ -20,131 +19,37 @@ var (
 	whiteListQueryParamKey = "filter.type"
 )
 
-func filterConfigFromValues(values url.Values) map[string][]string {
-	var filter = make(map[string][]string)
-	for key, fields := range values {
-		// filters are of form "filter.{field}", apart from "filter.type", which is used
-		// for building the type whitelist.
-		if !strings.HasPrefix(key, filterPrefix) || strings.EqualFold(key, whiteListQueryParamKey) {
-			continue
-		}
-		filterKey := strings.TrimPrefix(key, filterPrefix)
-		filter[filterKey] = fields
-	}
-	return filter
-}
-
-func parseTypeWhiteList(values url.Values) (types []string) {
-	for _, typ := range values[whiteListQueryParamKey] {
-		typList := strings.Split(typ, ",")
-		types = append(types, typList...)
-	}
-	return
-}
-
-// cachingTypeRepo is a decorator over a models.TypeRepository
-// that caches results of previous read-only operations
-type cachingTypeRepo struct {
-	mu    sync.Mutex
-	cache map[string]models.Type
-	repo  models.TypeRepository
-}
-
-func (decorator *cachingTypeRepo) CreateOrReplace(ctx context.Context, ent models.Type) error {
-	panic("not implemented")
-}
-
-func (decorator *cachingTypeRepo) GetByName(ctx context.Context, name string) (models.Type, error) {
-	ent, exists := decorator.cache[name]
-	if exists {
-		return ent, nil
-	}
-
-	decorator.mu.Lock()
-	defer decorator.mu.Unlock()
-	ent, err := decorator.repo.GetByName(ctx, name)
-	if err != nil {
-		return ent, err
-	}
-	decorator.cache[ent.Name] = ent
-	return ent, nil
-}
-
-func newCachingTypeRepo(repo models.TypeRepository) *cachingTypeRepo {
-	return &cachingTypeRepo{
-		repo:  repo,
-		cache: make(map[string]models.Type),
-	}
-}
-
-func getStringFromGenericMap(m map[string]interface{}, key string) (string, error) {
-	val, exists := m[key]
-	if !exists {
-		return "", fmt.Errorf("no such key: %q", key)
-	}
-	stringVal, ok := val.(string)
-	if !ok {
-		return "", fmt.Errorf("not a string field: %q", key)
-	}
-	return stringVal, nil
-}
-
-// recordView is a helper for querying record fields.
-// It provides a fail-through interface for obtaining
-// string fields from a record. If an error is encountered,
-// all subsequent GetString operations will return immediately
-// with an empty string, while the Error method will return
-// the error that was encountered
-type recordView struct {
-	err    error
-	Record models.Record
-}
-
-func (view *recordView) GetString(name string) string {
-	if view.err != nil {
-		return ""
-	}
-	var val string
-	val, view.err = getStringFromGenericMap(view.Record, name)
-	if view.err != nil {
-		return ""
-	}
-	return val
-}
-
-func (view *recordView) Error() error {
-	return view.err
-}
-
-func newRecordView(record models.Record) *recordView {
-	return &recordView{Record: record}
-}
-
 type SearchHandler struct {
 	recordSearcher models.RecordSearcher
 	typeRepo       models.TypeRepository
-	mux            *mux.Router
 	log            logrus.FieldLogger
 }
 
-func (handler *SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	handler.mux.ServeHTTP(w, r)
+func NewSearchHandler(log logrus.FieldLogger, searcher models.RecordSearcher, repo models.TypeRepository) *SearchHandler {
+	handler := &SearchHandler{
+		recordSearcher: searcher,
+		typeRepo:       repo,
+		log:            log,
+	}
+
+	return handler
 }
 
-func (handler *SearchHandler) search(w http.ResponseWriter, r *http.Request) {
+func (handler *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	cfg, err := handler.buildSearchCfg(r.URL.Query())
 	if err != nil {
 		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	results, err := handler.recordSearcher.Search(r.Context(), cfg)
+	results, err := handler.recordSearcher.Search(ctx, cfg)
 	if err != nil {
 		handler.log.Errorf("error searching records: %w", err)
 		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}
 
-	response, err := handler.toSearchResponse(r.Context(), results)
+	response, err := handler.toSearchResponse(ctx, results)
 	if err != nil {
 		handler.log.Errorf("error mapping search results: %w", err)
 		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
@@ -213,17 +118,102 @@ func (handler *SearchHandler) toSearchResponse(ctx context.Context, results []mo
 	return
 }
 
-func NewSearchHandler(log logrus.FieldLogger, searcher models.RecordSearcher, repo models.TypeRepository) *SearchHandler {
-	handler := &SearchHandler{
-		recordSearcher: searcher,
-		typeRepo:       repo,
-		log:            log,
-		mux:            mux.NewRouter(),
+// recordView is a helper for querying record fields.
+// It provides a fail-through interface for obtaining
+// string fields from a record. If an error is encountered,
+// all subsequent GetString operations will return immediately
+// with an empty string, while the Error method will return
+// the error that was encountered
+type recordView struct {
+	err    error
+	Record models.Record
+}
+
+func newRecordView(record models.Record) *recordView {
+	return &recordView{Record: record}
+}
+
+func (view *recordView) GetString(name string) string {
+	if view.err != nil {
+		return ""
+	}
+	var val string
+	val, view.err = getStringFromGenericMap(view.Record, name)
+	if view.err != nil {
+		return ""
+	}
+	return val
+}
+
+func (view *recordView) Error() error {
+	return view.err
+}
+
+// cachingTypeRepo is a decorator over a models.TypeRepository
+// that caches results of previous read-only operations
+type cachingTypeRepo struct {
+	mu    sync.Mutex
+	cache map[string]models.Type
+	repo  models.TypeRepository
+}
+
+func (decorator *cachingTypeRepo) CreateOrReplace(ctx context.Context, ent models.Type) error {
+	panic("not implemented")
+}
+
+func (decorator *cachingTypeRepo) GetByName(ctx context.Context, name string) (models.Type, error) {
+	ent, exists := decorator.cache[name]
+	if exists {
+		return ent, nil
 	}
 
-	handler.mux.PathPrefix("/v1/search").
-		Methods(http.MethodGet).
-		HandlerFunc(handler.search)
+	decorator.mu.Lock()
+	defer decorator.mu.Unlock()
+	ent, err := decorator.repo.GetByName(ctx, name)
+	if err != nil {
+		return ent, err
+	}
+	decorator.cache[ent.Name] = ent
+	return ent, nil
+}
 
-	return handler
+func newCachingTypeRepo(repo models.TypeRepository) *cachingTypeRepo {
+	return &cachingTypeRepo{
+		repo:  repo,
+		cache: make(map[string]models.Type),
+	}
+}
+
+func getStringFromGenericMap(m map[string]interface{}, key string) (string, error) {
+	val, exists := m[key]
+	if !exists {
+		return "", fmt.Errorf("no such key: %q", key)
+	}
+	stringVal, ok := val.(string)
+	if !ok {
+		return "", fmt.Errorf("not a string field: %q", key)
+	}
+	return stringVal, nil
+}
+
+func filterConfigFromValues(values url.Values) map[string][]string {
+	var filter = make(map[string][]string)
+	for key, fields := range values {
+		// filters are of form "filter.{field}", apart from "filter.type", which is used
+		// for building the type whitelist.
+		if !strings.HasPrefix(key, filterPrefix) || strings.EqualFold(key, whiteListQueryParamKey) {
+			continue
+		}
+		filterKey := strings.TrimPrefix(key, filterPrefix)
+		filter[filterKey] = fields
+	}
+	return filter
+}
+
+func parseTypeWhiteList(values url.Values) (types []string) {
+	for _, typ := range values[whiteListQueryParamKey] {
+		typList := strings.Split(typ, ",")
+		types = append(types, typList...)
+	}
+	return
 }
