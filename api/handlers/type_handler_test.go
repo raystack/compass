@@ -13,6 +13,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/models"
@@ -32,22 +33,20 @@ func TestTypeHandler(t *testing.T) {
 				},
 			},
 		}
-		daggerTypeURI = fmt.Sprintf("/v1/types/%s", daggerType.Name)
 	)
 
-	t.Run("PUT /v1/types", func(t *testing.T) {
-		const apiURL = "/v1/types"
+	t.Run("CreateOrReplaceType", func(t *testing.T) {
 		validPayloadRaw, err := json.Marshal(daggerType)
 		if err != nil {
 			t.Fatalf("error preparing request payload: %v", err)
 			return
 		}
 		t.Run("should return HTTP 400 if the JSON document is invalid", func(t *testing.T) {
-			rr := httptest.NewRequest("PUT", "/v1/types", bytes.NewBufferString("{"))
+			rr := httptest.NewRequest("PUT", "/", bytes.NewBufferString("{"))
 			rw := httptest.NewRecorder()
 
 			handler := handlers.NewTypeHandler(new(mock.Logger), nil, nil)
-			handler.ServeHTTP(rw, rr)
+			handler.CreateOrReplaceType(rw, rr)
 
 			if rw.Code != http.StatusBadRequest {
 				t.Errorf("handler returned HTTP %d, expected HTTP %d", rw.Code, http.StatusBadRequest)
@@ -107,11 +106,11 @@ func TestTypeHandler(t *testing.T) {
 					t.Fatalf("error creating test payload: %v", err)
 					return
 				}
-				rr := httptest.NewRequest("PUT", apiURL, bytes.NewBuffer(raw))
+				rr := httptest.NewRequest("PUT", "/", bytes.NewBuffer(raw))
 				rw := httptest.NewRecorder()
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), nil, nil)
-				handler.ServeHTTP(rw, rr)
+				handler.CreateOrReplaceType(rw, rr)
 
 				if rw.Code != http.StatusBadRequest {
 					t.Errorf("handler returned HTTP %d, expected HTTP %d", rw.Code, http.StatusBadRequest)
@@ -131,7 +130,7 @@ func TestTypeHandler(t *testing.T) {
 			}
 		})
 		t.Run("should return HTTP 201 for successful type creation/update", func(t *testing.T) {
-			rr := httptest.NewRequest("PUT", "/v1/types", bytes.NewBuffer(validPayloadRaw))
+			rr := httptest.NewRequest("PUT", "/", bytes.NewBuffer(validPayloadRaw))
 			rw := httptest.NewRecorder()
 
 			typeRepo := new(mock.TypeRepository)
@@ -139,7 +138,7 @@ func TestTypeHandler(t *testing.T) {
 			defer typeRepo.AssertExpectations(t)
 
 			handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, nil)
-			handler.ServeHTTP(rw, rr)
+			handler.CreateOrReplaceType(rw, rr)
 
 			expectedStatus := http.StatusCreated
 			if rw.Code != expectedStatus {
@@ -150,7 +149,7 @@ func TestTypeHandler(t *testing.T) {
 		t.Run("should return 422 if type name is reserved", func(t *testing.T) {
 			expectedErr := models.ErrReservedTypeName{TypeName: daggerType.Name}
 
-			rr := httptest.NewRequest("PUT", "/v1/types", bytes.NewBuffer(validPayloadRaw))
+			rr := httptest.NewRequest("PUT", "/", bytes.NewBuffer(validPayloadRaw))
 			rw := httptest.NewRecorder()
 
 			typeRepo := new(mock.TypeRepository)
@@ -158,7 +157,7 @@ func TestTypeHandler(t *testing.T) {
 			defer typeRepo.AssertExpectations(t)
 
 			handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, nil)
-			handler.ServeHTTP(rw, rr)
+			handler.CreateOrReplaceType(rw, rr)
 
 			assert.Equal(t, http.StatusUnprocessableEntity, rw.Code)
 			var response handlers.ErrorResponse
@@ -170,7 +169,7 @@ func TestTypeHandler(t *testing.T) {
 			assert.Equal(t, expectedErr.Error(), response.Reason)
 		})
 		t.Run("should return HTTP 500 if creating/updating the type fails", func(t *testing.T) {
-			rr := httptest.NewRequest("PUT", "/v1/types", bytes.NewBuffer(validPayloadRaw))
+			rr := httptest.NewRequest("PUT", "/", bytes.NewBuffer(validPayloadRaw))
 			rw := httptest.NewRecorder()
 
 			creationErr := fmt.Errorf("failed to write to elasticsearch")
@@ -179,7 +178,7 @@ func TestTypeHandler(t *testing.T) {
 			defer typeRepo.AssertExpectations(t)
 
 			handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, nil)
-			handler.ServeHTTP(rw, rr)
+			handler.CreateOrReplaceType(rw, rr)
 
 			expectedStatus := http.StatusInternalServerError
 			if rw.Code != expectedStatus {
@@ -216,11 +215,11 @@ func TestTypeHandler(t *testing.T) {
 				t.Fatalf("error preparing test data: %v", err)
 				return
 			}
-			rr := httptest.NewRequest("PUT", "/v1/types", &payload)
+			rr := httptest.NewRequest("PUT", "/", &payload)
 			rw := httptest.NewRecorder()
 
 			handler := handlers.NewTypeHandler(new(mock.Logger), nil, nil)
-			handler.ServeHTTP(rw, rr)
+			handler.CreateOrReplaceType(rw, rr)
 
 			expectedCode := 400
 			if rw.Code != expectedCode {
@@ -249,7 +248,7 @@ func TestTypeHandler(t *testing.T) {
 				return
 			}
 
-			rr := httptest.NewRequest("PUT", "/v1/types", &payload)
+			rr := httptest.NewRequest("PUT", "/", &payload)
 			rw := httptest.NewRecorder()
 
 			repo := new(mock.TypeRepository)
@@ -257,21 +256,23 @@ func TestTypeHandler(t *testing.T) {
 			defer repo.AssertExpectations(t)
 
 			handler := handlers.NewTypeHandler(new(mock.Logger), repo, nil)
-			handler.ServeHTTP(rw, rr)
+			handler.CreateOrReplaceType(rw, rr)
 		})
 	})
-	t.Run("PUT /v1/types/{name}", func(t *testing.T) {
+	t.Run("IngestRecord", func(t *testing.T) {
 		t.Run("should return HTTP 404 if type doesn't exist", func(t *testing.T) {
-			reqURI := "/v1/types/dagger"
-			rr := httptest.NewRequest("PUT", reqURI, strings.NewReader("{}"))
+			rr := httptest.NewRequest("PUT", "/", strings.NewReader("{}"))
 			rw := httptest.NewRecorder()
+			rr = mux.SetURLVars(rr, map[string]string{
+				"name": "dagger",
+			})
 
 			entRepo := new(mock.TypeRepository)
-			entRepo.On("GetByName", "dagger").Return(models.Type{}, models.ErrNoSuchType{"dagger"})
+			entRepo.On("GetByName", "dagger").Return(models.Type{}, models.ErrNoSuchType{TypeName: "dagger"})
 			defer entRepo.AssertExpectations(t)
 
 			handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, nil)
-			handler.ServeHTTP(rw, rr)
+			handler.IngestRecord(rw, rr)
 
 			expectedStatus := http.StatusNotFound
 			if rw.Code != expectedStatus {
@@ -324,11 +325,14 @@ func TestTypeHandler(t *testing.T) {
 				entRepo.On("GetByName", "dagger").Return(daggerType, nil)
 				defer entRepo.AssertExpectations(t)
 
-				rr := httptest.NewRequest("PUT", daggerTypeURI, strings.NewReader(testCase.payload))
+				rr := httptest.NewRequest("PUT", "/", strings.NewReader(testCase.payload))
 				rw := httptest.NewRecorder()
+				rr = mux.SetURLVars(rr, map[string]string{
+					"name": "dagger",
+				})
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, nil)
-				handler.ServeHTTP(rw, rr)
+				handler.IngestRecord(rw, rr)
 
 				expectedStatus := http.StatusBadRequest
 				if rw.Code != expectedStatus {
@@ -349,11 +353,14 @@ func TestTypeHandler(t *testing.T) {
 				defer recordRepoFac.AssertExpectations(t)
 
 				var payload = `[{"urn": "test dagger", "team": "de", "name": "de-dagger-test", "environment": "test"}]`
-				rr := httptest.NewRequest("PUT", daggerTypeURI, strings.NewReader(payload))
+				rr := httptest.NewRequest("PUT", "/", strings.NewReader(payload))
 				rw := httptest.NewRecorder()
+				rr = mux.SetURLVars(rr, map[string]string{
+					"name": "dagger",
+				})
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
-				handler.ServeHTTP(rw, rr)
+				handler.IngestRecord(rw, rr)
 
 				expectedStatus := http.StatusInternalServerError
 				if rw.Code != expectedStatus {
@@ -396,11 +403,14 @@ func TestTypeHandler(t *testing.T) {
 					t.Fatalf("error creating request payload: %v", err)
 					return
 				}
-				rr := httptest.NewRequest("PUT", daggerTypeURI, bytes.NewBuffer(payload))
+				rr := httptest.NewRequest("PUT", "/", bytes.NewBuffer(payload))
 				rw := httptest.NewRecorder()
+				rr = mux.SetURLVars(rr, map[string]string{
+					"name": "dagger",
+				})
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
-				handler.ServeHTTP(rw, rr)
+				handler.IngestRecord(rw, rr)
 
 				expectedStatus := http.StatusInternalServerError
 				if rw.Code != expectedStatus {
@@ -422,11 +432,14 @@ func TestTypeHandler(t *testing.T) {
 			typeRepo.On("GetByName", "dagger").Return(daggerType, nil)
 			defer typeRepo.AssertExpectations(t)
 
-			rr := httptest.NewRequest("PUT", "/v1/types/dagger", bytes.NewBufferString("{"))
+			rr := httptest.NewRequest("PUT", "/", bytes.NewBufferString("{"))
 			rw := httptest.NewRecorder()
+			rr = mux.SetURLVars(rr, map[string]string{
+				"name": "dagger",
+			})
 
 			handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, nil)
-			handler.ServeHTTP(rw, rr)
+			handler.IngestRecord(rw, rr)
 
 			if rw.Code != http.StatusBadRequest {
 				t.Errorf("handler returned HTTP %d, expected HTTP %d", rw.Code, http.StatusBadRequest)
@@ -471,11 +484,14 @@ func TestTypeHandler(t *testing.T) {
 				t.Fatalf("error creating request payload: %v", err)
 				return
 			}
-			rr := httptest.NewRequest("PUT", daggerTypeURI, bytes.NewBuffer(payload))
+			rr := httptest.NewRequest("PUT", "/", bytes.NewBuffer(payload))
 			rw := httptest.NewRecorder()
+			rr = mux.SetURLVars(rr, map[string]string{
+				"name": "dagger",
+			})
 
 			handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
-			handler.ServeHTTP(rw, rr)
+			handler.IngestRecord(rw, rr)
 
 			expectedStatus := http.StatusOK
 			if rw.Code != expectedStatus {
@@ -499,10 +515,9 @@ func TestTypeHandler(t *testing.T) {
 			}
 		})
 	})
-	t.Run("GET /v1/types", func(t *testing.T) {
+	t.Run("GetAll", func(t *testing.T) {
 		type testCase struct {
 			Description  string
-			RequestURL   string
 			ExpectStatus int
 			Setup        func(tc *testCase, er *mock.TypeRepository)
 			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
@@ -551,7 +566,6 @@ func TestTypeHandler(t *testing.T) {
 		var testCases = []testCase{
 			{
 				Description:  "should return all types",
-				RequestURL:   "/v1/types",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
 					er.On("GetAll").Return(types, nil)
@@ -572,7 +586,6 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return 500 status code if failing to fetch types",
-				RequestURL:   "/v1/types",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
 					er.On("GetAll").Return([]models.Type{}, errors.New("failed to fetch type"))
@@ -585,10 +598,10 @@ func TestTypeHandler(t *testing.T) {
 				tc.Setup(&tc, er)
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), er, new(mock.RecordRepositoryFactory))
-				rr := httptest.NewRequest("GET", tc.RequestURL, nil)
+				rr := httptest.NewRequest("GET", "/", nil)
 				rw := httptest.NewRecorder()
 
-				handler.ServeHTTP(rw, rr)
+				handler.GetAll(rw, rr)
 				if rw.Code != tc.ExpectStatus {
 					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
 					return
@@ -602,10 +615,10 @@ func TestTypeHandler(t *testing.T) {
 			})
 		}
 	})
-	t.Run("DELETE /v1/types/{name}", func(t *testing.T) {
+	t.Run("DeleteType", func(t *testing.T) {
 		type testCase struct {
 			Description  string
-			RequestURL   string
+			TypeName     string
 			ExpectStatus int
 			Setup        func(tc *testCase, er *mock.TypeRepository)
 			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
@@ -614,7 +627,7 @@ func TestTypeHandler(t *testing.T) {
 		var testCases = []testCase{
 			{
 				Description:  "should return 204 if delete successes",
-				RequestURL:   "/v1/types/sample",
+				TypeName:     "sample",
 				ExpectStatus: http.StatusNoContent,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
 					er.On("Delete", "sample").Return(nil)
@@ -622,7 +635,7 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return 422 status code if type name is reserved",
-				RequestURL:   "/v1/types/sample",
+				TypeName:     "sample",
 				ExpectStatus: http.StatusUnprocessableEntity,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
 					er.On("Delete", "sample").Return(models.ErrReservedTypeName{TypeName: "sample"})
@@ -630,7 +643,7 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return 500 status code if delete fails",
-				RequestURL:   "/v1/types/sample",
+				TypeName:     "sample",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
 					er.On("Delete", "sample").Return(errors.New("failed to delete type"))
@@ -644,10 +657,13 @@ func TestTypeHandler(t *testing.T) {
 				defer er.AssertExpectations(t)
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), er, new(mock.RecordRepositoryFactory))
-				rr := httptest.NewRequest("DELETE", tc.RequestURL, nil)
+				rr := httptest.NewRequest("DELETE", "/", nil)
 				rw := httptest.NewRecorder()
+				rr = mux.SetURLVars(rr, map[string]string{
+					"name": tc.TypeName,
+				})
 
-				handler.ServeHTTP(rw, rr)
+				handler.DeleteType(rw, rr)
 				if rw.Code != tc.ExpectStatus {
 					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
 					return
@@ -655,10 +671,11 @@ func TestTypeHandler(t *testing.T) {
 			})
 		}
 	})
-	t.Run("DELETE /v1/types/{name}/records/{id}", func(t *testing.T) {
+	t.Run("DeleteRecord", func(t *testing.T) {
 		type testCase struct {
 			Description  string
-			RequestURL   string
+			TypeName     string
+			RecordID     string
 			ExpectStatus int
 			Setup        func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository)
 			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
@@ -667,7 +684,8 @@ func TestTypeHandler(t *testing.T) {
 		var testCases = []testCase{
 			{
 				Description:  "should return 204 on success",
-				RequestURL:   "/v1/types/sample/records/id-10",
+				TypeName:     "sample",
+				RecordID:     "id-10",
 				ExpectStatus: http.StatusNoContent,
 				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
 					tr.On("GetByName", "sample").Return(daggerType, nil)
@@ -677,7 +695,8 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return 404 if type cannot be found",
-				RequestURL:   "/v1/types/sample/records/id-10",
+				TypeName:     "sample",
+				RecordID:     "id-10",
 				ExpectStatus: http.StatusNotFound,
 				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
 					tr.On("GetByName", "sample").Return(models.Type{}, models.ErrNoSuchType{TypeName: daggerType.Name})
@@ -685,7 +704,8 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return 500 on error fetching type",
-				RequestURL:   "/v1/types/sample/records/id-10",
+				TypeName:     "sample",
+				RecordID:     "id-10",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
 					tr.On("GetByName", "sample").Return(models.Type{}, errors.New("error fetching type"))
@@ -693,7 +713,8 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return 404 when record cannot be found",
-				RequestURL:   "/v1/types/sample/records/id-10",
+				TypeName:     "sample",
+				RecordID:     "id-10",
 				ExpectStatus: http.StatusNotFound,
 				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
 					tr.On("GetByName", "sample").Return(daggerType, nil)
@@ -703,7 +724,8 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return 500 on error deleting record",
-				RequestURL:   "/v1/types/sample/records/id-10",
+				TypeName:     "sample",
+				RecordID:     "id-10",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
 					tr.On("GetByName", "sample").Return(daggerType, nil)
@@ -723,10 +745,14 @@ func TestTypeHandler(t *testing.T) {
 				defer recordRepo.AssertExpectations(t)
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, recordRepoFactory)
-				rr := httptest.NewRequest("DELETE", tc.RequestURL, nil)
+				rr := httptest.NewRequest("DELETE", "/", nil)
 				rw := httptest.NewRecorder()
+				rr = mux.SetURLVars(rr, map[string]string{
+					"name": tc.TypeName,
+					"id":   tc.RecordID,
+				})
 
-				handler.ServeHTTP(rw, rr)
+				handler.DeleteRecord(rw, rr)
 				if rw.Code != tc.ExpectStatus {
 					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
 					return
@@ -734,10 +760,10 @@ func TestTypeHandler(t *testing.T) {
 			})
 		}
 	})
-	t.Run("GET /v1/types/{name}/details", func(t *testing.T) {
+	t.Run("GetType", func(t *testing.T) {
 		type testCase struct {
 			Description  string
-			RequestURL   string
+			TypeName     string
 			ExpectStatus int
 			Setup        func(tc *testCase, er *mock.TypeRepository)
 			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
@@ -759,7 +785,7 @@ func TestTypeHandler(t *testing.T) {
 		var testCases = []testCase{
 			{
 				Description:  "should return type with name given from route parameter",
-				RequestURL:   "/v1/types/sample/details",
+				TypeName:     "sample",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
 					er.On("GetByName", "sample").Return(sampleType, nil)
@@ -780,7 +806,7 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return 500 status code if failing to fetch type",
-				RequestURL:   "/v1/types/sample/details",
+				TypeName:     "sample",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
 					er.On("GetByName", "sample").Return(models.Type{}, errors.New("failed to fetch type"))
@@ -788,7 +814,7 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return 404 status code if type could not be found",
-				RequestURL:   "/v1/types/wrong_type/details",
+				TypeName:     "wrong_type",
 				ExpectStatus: http.StatusNotFound,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
 					er.On("GetByName", "wrong_type").Return(models.Type{}, models.ErrNoSuchType{
@@ -804,10 +830,13 @@ func TestTypeHandler(t *testing.T) {
 				defer er.AssertExpectations(t)
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), er, new(mock.RecordRepositoryFactory))
-				rr := httptest.NewRequest("GET", tc.RequestURL, nil)
+				rr := httptest.NewRequest("GET", "/", nil)
 				rw := httptest.NewRecorder()
+				rr = mux.SetURLVars(rr, map[string]string{
+					"name": tc.TypeName,
+				})
 
-				handler.ServeHTTP(rw, rr)
+				handler.GetType(rw, rr)
 				if rw.Code != tc.ExpectStatus {
 					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
 					return
@@ -821,10 +850,11 @@ func TestTypeHandler(t *testing.T) {
 			})
 		}
 	})
-	t.Run("GET /v1/types/{name}", func(t *testing.T) {
+	t.Run("ListTypeRecords", func(t *testing.T) {
 		type testCase struct {
 			Description  string
-			RequestURL   string
+			TypeName     string
+			QueryStrings string
 			ExpectStatus int
 			Setup        func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory)
 			PostCheck    func(tc *testCase, resp *http.Response) error
@@ -848,7 +878,8 @@ func TestTypeHandler(t *testing.T) {
 		var testCases = []testCase{
 			{
 				Description:  "should return an http 404 if the type doesn't exist",
-				RequestURL:   "/v1/types/invalid?filter.environment=test",
+				TypeName:     "invalid",
+				QueryStrings: "filter.environment=test",
 				ExpectStatus: http.StatusNotFound,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", "invalid").Return(models.Type{}, models.ErrNoSuchType{"invalid"})
@@ -856,7 +887,8 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return an http 200 irrespective of environment value",
-				RequestURL:   "/v1/types/dagger?filter.environment=nonexisting",
+				TypeName:     "dagger",
+				QueryStrings: "filter.environment=nonexisting",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", daggerType.Name).Return(daggerType, nil)
@@ -867,7 +899,8 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return an http 200 even if the environment is not provided",
-				RequestURL:   "/v1/types/dagger",
+				TypeName:     "dagger",
+				QueryStrings: "",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", daggerType.Name).Return(daggerType, nil)
@@ -878,7 +911,8 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return all records for an type",
-				RequestURL:   "/v1/types/dagger?filter.environment=test",
+				TypeName:     "dagger",
+				QueryStrings: "filter.environment=test",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", daggerType.Name).Return(daggerType, nil)
@@ -901,7 +935,8 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return the subset of fields specified via select parameter",
-				RequestURL:   "/v1/types/dagger?filter.environment=test&select=" + url.QueryEscape("urn,owner"),
+				TypeName:     "dagger",
+				QueryStrings: "filter.environment=test&select=" + url.QueryEscape("urn,owner"),
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", daggerType.Name).Return(daggerType, nil)
@@ -935,7 +970,8 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should support landscape and entity filters",
-				RequestURL:   "/v1/types/dagger?filter.environment=test&filter.landscape=id&filter.entity=odpf",
+				TypeName:     "dagger",
+				QueryStrings: "filter.environment=test&filter.landscape=id&filter.entity=odpf",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", daggerType.Name).Return(daggerType, nil)
@@ -962,7 +998,8 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "(internal) should return http 500 if the handler fails to construct record repository",
-				RequestURL:   "/v1/types/dagger?filter.environment=test",
+				TypeName:     "dagger",
+				QueryStrings: "filter.environment=test",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", daggerType.Name).Return(daggerType, nil)
@@ -973,7 +1010,8 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "(internal) should return an http 500 if calling recordRepository.GetAll fails",
-				RequestURL:   "/v1/types/dagger?filter.environment=test",
+				TypeName:     "dagger",
+				QueryStrings: "filter.environment=test",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", daggerType.Name).Return(daggerType, nil)
@@ -991,10 +1029,13 @@ func TestTypeHandler(t *testing.T) {
 				tc.Setup(&tc, er, rrf)
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), er, rrf)
-				rr := httptest.NewRequest("GET", tc.RequestURL, nil)
+				rr := httptest.NewRequest("GET", "/?"+tc.QueryStrings, nil)
 				rw := httptest.NewRecorder()
+				rr = mux.SetURLVars(rr, map[string]string{
+					"name": tc.TypeName,
+				})
 
-				handler.ServeHTTP(rw, rr)
+				handler.ListTypeRecords(rw, rr)
 				if rw.Code != tc.ExpectStatus {
 					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
 					return
@@ -1008,13 +1049,14 @@ func TestTypeHandler(t *testing.T) {
 			})
 		}
 	})
-	t.Run("GET /v1/types/{name}/{id}", func(t *testing.T) {
+	t.Run("GetTypeRecord", func(t *testing.T) {
 		var deployment01 = map[string]interface{}{
 			"contents": "data",
 		}
 		type testCase struct {
 			Description  string
-			RequestURL   string
+			TypeName     string
+			RecordID     string
 			ExpectStatus int
 			Setup        func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory)
 			PostCheck    func(resp *http.Response) error
@@ -1023,7 +1065,8 @@ func TestTypeHandler(t *testing.T) {
 		var testCases = []testCase{
 			{
 				Description:  `should return http 404 if the record doesn't exist`,
-				RequestURL:   "/v1/types/dagger/record01",
+				TypeName:     "dagger",
+				RecordID:     "record01",
 				ExpectStatus: http.StatusNotFound,
 				Setup: func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", "dagger").Return(daggerType, nil)
@@ -1034,7 +1077,8 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  `should return http 404 if the type doesn't exist`,
-				RequestURL:   "/v1/types/nonexistant/record",
+				TypeName:     "nonexistant",
+				RecordID:     "record",
 				ExpectStatus: http.StatusNotFound,
 				Setup: func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", "nonexistant").Return(models.Type{}, models.ErrNoSuchType{"nonexistant"})
@@ -1042,7 +1086,8 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "(internal) should return an http 500 if the handler fails to construct recordRepository",
-				RequestURL:   "/v1/types/dagger/record",
+				TypeName:     "dagger",
+				RecordID:     "record",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					errSomethingBadHappened := fmt.Errorf("something bad happened")
@@ -1052,7 +1097,8 @@ func TestTypeHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return http 200 status along with the record, if found",
-				RequestURL:   "/v1/types/dagger/deployment01",
+				TypeName:     "dagger",
+				RecordID:     "deployment01",
 				ExpectStatus: http.StatusOK,
 				Setup: func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", "dagger").Return(daggerType, nil)
@@ -1081,10 +1127,15 @@ func TestTypeHandler(t *testing.T) {
 					tc.Setup(typeRepo, recordRepoFac)
 				}
 
-				rr := httptest.NewRequest("GET", tc.RequestURL, nil)
+				rr := httptest.NewRequest("GET", "/", nil)
 				rw := httptest.NewRecorder()
+				rr = mux.SetURLVars(rr, map[string]string{
+					"name": tc.TypeName,
+					"id":   tc.RecordID,
+				})
+
 				handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, recordRepoFac)
-				handler.ServeHTTP(rw, rr)
+				handler.GetTypeRecord(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {
 					t.Errorf("expected handler to return http %d, returned %d instead", tc.ExpectStatus, rw.Code)
