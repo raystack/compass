@@ -46,7 +46,6 @@ func setupRoutes(router *mux.Router, config Config) {
 
 	router.PathPrefix("/ping").Handler(handlers.NewHeartbeatHandler())
 	router.PathPrefix("/v1/types").Handler(typeHandler)
-	router.PathPrefix("/v1/entities").Handler(typeHandler) // For backward compatibility
 	router.PathPrefix("/v1/search").Handler(searchHandler)
 	router.PathPrefix("/v1/lineage").Handler(lineageHandler)
 }

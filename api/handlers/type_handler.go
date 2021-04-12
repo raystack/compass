@@ -435,14 +435,8 @@ func NewTypeHandler(log logrus.FieldLogger, er models.TypeRepository, rrf models
 		log:                     log,
 	}
 
-	mapHandlers(handler, "/v1/types")
-	// For backward compatibility
-	mapHandlers(handler, "/v1/entities")
+	baseURL := "/v1/types"
 
-	return handler
-}
-
-func mapHandlers(handler *TypeHandler, baseURL string) {
 	handler.mux.Path(baseURL).
 		Methods(http.MethodGet).
 		HandlerFunc(handler.getAll)
@@ -486,4 +480,6 @@ func mapHandlers(handler *TypeHandler, baseURL string) {
 	handler.mux.Path(baseURL+"/{name}/{id}").
 		Methods(http.MethodGet, http.MethodHead).
 		HandlerFunc(handler.getTypeRecord)
+
+	return handler
 }
