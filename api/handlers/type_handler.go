@@ -22,18 +22,6 @@ var (
 	typeFieldNamespace = getJSONKeyNameForField(models.Type{}, "Fields")
 )
 
-func getJSONKeyNameForField(structure interface{}, field string) string {
-	structType := reflect.TypeOf(structure)
-	structField, exists := structType.FieldByName(field)
-	if !exists {
-		msg := fmt.Sprintf("no such Field %q in %q", field, structType.Name())
-		panic(msg)
-	}
-	tag := structField.Tag.Get("json")
-	items := strings.Split(tag, ",")
-	return strings.TrimSpace(items[0])
-}
-
 func init() {
 	validClassifications = make(map[models.TypeClassification]int)
 	clsList := make([]string, len(models.AllTypeClassifications))
@@ -44,28 +32,24 @@ func init() {
 	validClassificationsList = strings.Join(clsList, ",")
 }
 
-func isClassificationValid(cls models.TypeClassification) bool {
-	_, valid := validClassifications[cls]
-	return valid
-}
-
-func bodyParserErrorMsg(err error) string {
-	return fmt.Sprintf("error parsing request body: %v", err)
-}
-
 // TypeHandler exposes a REST interface to types
 type TypeHandler struct {
-	mux                     *mux.Router
 	typeRepo                models.TypeRepository
 	recordRepositoryFactory models.RecordRepositoryFactory
 	log                     logrus.FieldLogger
 }
 
-func (handler *TypeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	handler.mux.ServeHTTP(w, r)
+func NewTypeHandler(log logrus.FieldLogger, er models.TypeRepository, rrf models.RecordRepositoryFactory) *TypeHandler {
+	handler := &TypeHandler{
+		typeRepo:                er,
+		recordRepositoryFactory: rrf,
+		log:                     log,
+	}
+
+	return handler
 }
 
-func (handler *TypeHandler) getAll(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	types, err := handler.typeRepo.GetAll(r.Context())
 	if err != nil {
 		handler.log.
@@ -77,7 +61,7 @@ func (handler *TypeHandler) getAll(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, types)
 }
 
-func (handler *TypeHandler) getType(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) GetType(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
 	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
 	if err != nil {
@@ -101,7 +85,7 @@ func (handler *TypeHandler) getType(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, recordType)
 }
 
-func (handler *TypeHandler) createOrReplaceType(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) CreateOrReplaceType(w http.ResponseWriter, r *http.Request) {
 	var payload models.Type
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
@@ -138,7 +122,7 @@ func (handler *TypeHandler) createOrReplaceType(w http.ResponseWriter, r *http.R
 	writeJSON(w, http.StatusCreated, payload)
 }
 
-func (handler *TypeHandler) deleteType(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) DeleteType(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
 	err := handler.typeRepo.Delete(r.Context(), name)
 	if err != nil {
@@ -163,7 +147,7 @@ func (handler *TypeHandler) deleteType(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusNoContent, "success")
 }
 
-func (handler *TypeHandler) deleteRecord(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) DeleteRecord(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var (
 		typeName = vars["name"]
@@ -213,7 +197,7 @@ func (handler *TypeHandler) deleteRecord(w http.ResponseWriter, r *http.Request)
 	writeJSON(w, http.StatusNoContent, "success")
 }
 
-func (handler *TypeHandler) ingestRecord(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) IngestRecord(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
 	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
 	if err != nil {
@@ -267,7 +251,7 @@ func (handler *TypeHandler) ingestRecord(w http.ResponseWriter, r *http.Request)
 	writeJSON(w, http.StatusOK, StatusResponse{Status: "success"})
 }
 
-func (handler *TypeHandler) listTypeRecords(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) ListTypeRecords(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
 	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
 	if err != nil {
@@ -302,7 +286,7 @@ func (handler *TypeHandler) listTypeRecords(w http.ResponseWriter, r *http.Reque
 	writeJSON(w, http.StatusOK, records)
 }
 
-func (handler *TypeHandler) getTypeRecord(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) GetTypeRecord(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var (
 		typeName = vars["name"]
@@ -427,63 +411,23 @@ func (handler *TypeHandler) responseStatusForError(err error) (int, string) {
 	return http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)
 }
 
-func NewTypeHandler(log logrus.FieldLogger, er models.TypeRepository, rrf models.RecordRepositoryFactory) *TypeHandler {
-	handler := &TypeHandler{
-		mux:                     mux.NewRouter(),
-		typeRepo:                er,
-		recordRepositoryFactory: rrf,
-		log:                     log,
-	}
-
-	mapHandlers(handler, "/v1/types")
-	// For backward compatibility
-	mapHandlers(handler, "/v1/entities")
-
-	return handler
+func isClassificationValid(cls models.TypeClassification) bool {
+	_, valid := validClassifications[cls]
+	return valid
 }
 
-func mapHandlers(handler *TypeHandler, baseURL string) {
-	handler.mux.Path(baseURL).
-		Methods(http.MethodGet).
-		HandlerFunc(handler.getAll)
+func bodyParserErrorMsg(err error) string {
+	return fmt.Sprintf("error parsing request body: %v", err)
+}
 
-	// TODO: remove this route when
-	// getting type details already handled on GET baseUrl/{name}
-	handler.mux.Path(baseURL+"/{name}/details").
-		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(handler.getType)
-
-	// TODO: switch this route to return type details
-	handler.mux.Path(baseURL+"/{name}").
-		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(handler.listTypeRecords)
-
-	handler.mux.Path(baseURL+"/{name}/records").
-		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(handler.listTypeRecords)
-
-	handler.mux.Path(baseURL).
-		Methods(http.MethodPut).
-		HandlerFunc(handler.createOrReplaceType)
-
-	handler.mux.Path(baseURL + "/{name}").
-		Methods(http.MethodDelete).
-		HandlerFunc(handler.deleteType)
-
-	handler.mux.Path(baseURL + "/{name}/records/{id}").
-		Methods(http.MethodDelete).
-		HandlerFunc(handler.deleteRecord)
-
-	handler.mux.Path(baseURL + "/{name}").
-		Methods(http.MethodPut).
-		HandlerFunc(handler.ingestRecord)
-
-	handler.mux.Path(baseURL+"/{name}/records/{id}").
-		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(handler.getTypeRecord)
-
-	// TODO: remove this once no more request is coming
-	handler.mux.Path(baseURL+"/{name}/{id}").
-		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(handler.getTypeRecord)
+func getJSONKeyNameForField(structure interface{}, field string) string {
+	structType := reflect.TypeOf(structure)
+	structField, exists := structType.FieldByName(field)
+	if !exists {
+		msg := fmt.Sprintf("no such Field %q in %q", field, structType.Name())
+		panic(msg)
+	}
+	tag := structField.Tag.Get("json")
+	items := strings.Split(tag, ",")
+	return strings.TrimSpace(items[0])
 }
