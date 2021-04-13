@@ -3,6 +3,7 @@ package lineage
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -97,23 +98,21 @@ func NewService(er models.TypeRepository, rrf models.RecordRepositoryFactory, co
 		timeSource:         TimeSourceFunc(time.Now),
 		metricsMonitor:     dummyMetricMonitor{},
 		performanceMonitor: &dummyPerformanceMonitor{},
+		graph:              InMemoryGraph{},
 	}
 
 	err := applyConfig(srv, config)
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO: Find a solution to solve memory issue
-
-	// Temporarily disable building lineage on service creation.
-	// Columbus's memory keeps spiking when app is starting
-	// srv.build()
+	if !config.DisableInitialBuild {
+		srv.build()
+	}
 
 	return srv, nil
 }
 
-func applyConfig(service *Service, config Config) error {
+func applyConfig(service *Service, config Config) (err error) {
 	refreshInterval := config.RefreshInterval
 	if refreshInterval == "" {
 		refreshInterval = "5m"
@@ -124,21 +123,25 @@ func applyConfig(service *Service, config Config) error {
 	}
 	service.refreshInterval = lineageRefreshInterval
 
-	if config.MetricsMonitor != nil {
+	if !isNil(config.MetricsMonitor) {
 		service.metricsMonitor = config.MetricsMonitor
 	}
-
-	if config.PerformanceMonitor != nil {
+	if !isNil(config.PerformanceMonitor) {
 		service.performanceMonitor = config.PerformanceMonitor
 	}
-
-	if config.Builder != nil {
+	if !isNil(config.Builder) {
 		service.builder = config.Builder
 	}
-
-	if config.TimeSource != nil {
+	if !isNil(config.TimeSource) {
 		service.timeSource = config.TimeSource
 	}
 
-	return nil
+	return
+}
+
+// isNil() solves nil interface value not evaluating to nil
+// It is an expected behaviour in Go
+// Reference: https://golang.org/doc/faq#nil_error
+func isNil(val interface{}) bool {
+	return val == nil || (reflect.ValueOf(val).Kind() == reflect.Ptr && reflect.ValueOf(val).IsNil())
 }

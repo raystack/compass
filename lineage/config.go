@@ -1,9 +1,10 @@
 package lineage
 
 type Config struct {
-	RefreshInterval    string
-	MetricsMonitor     MetricsMonitor
-	PerformanceMonitor PerformanceMonitor
-	Builder            Builder
-	TimeSource         TimeSource
+	RefreshInterval     string
+	MetricsMonitor      MetricsMonitor
+	PerformanceMonitor  PerformanceMonitor
+	Builder             Builder
+	TimeSource          TimeSource
+	DisableInitialBuild bool
 }

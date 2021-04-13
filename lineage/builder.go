@@ -39,13 +39,13 @@ type defaultBuilder struct{}
 // This has the effect of phatom references in graph: A resource may refer another resource in the graph, but that resource
 // may not be available in the graph
 func (builder defaultBuilder) Build(ctx context.Context, er models.TypeRepository, rrf models.RecordRepositoryFactory) (Graph, error) {
-	typs, err := er.GetAll(ctx)
+	types, err := er.GetAll(ctx)
 	if err != nil {
 		return InMemoryGraph{}, fmt.Errorf("error loading type metadata: %w", err)
 	}
 
 	var graph = make(AdjacencyMap)
-	for _, typ := range typs {
+	for _, typ := range types {
 		if err := builder.populateTypeRecords(ctx, graph, typ, rrf); err != nil {
 			return InMemoryGraph{}, fmt.Errorf("error parsing type records: %w", err)
 		}

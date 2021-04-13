@@ -46,9 +46,6 @@ func TestService(t *testing.T) {
 		lineage.NewService(entRepo, recordRepoFac, lineage.Config{})
 	})
 	t.Run("telemetry test", func(t *testing.T) {
-		// Temporarily disabling lineage build on service creation causes this test to fail
-		t.Skip()
-
 		now := time.Now()
 		tsCalled := 0
 		txnEnd := false
