@@ -50,7 +50,7 @@ func NewTypeHandler(log logrus.FieldLogger, er models.TypeRepository, rrf models
 }
 
 func (handler *TypeHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	types, err := handler.typeRepo.GetAll()
+	types, err := handler.typeRepo.GetAll(r.Context())
 	if err != nil {
 		handler.log.
 			Errorf("error fetching types: %v", err)
@@ -63,7 +63,7 @@ func (handler *TypeHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 
 func (handler *TypeHandler) GetType(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
-	recordType, err := handler.typeRepo.GetByName(name)
+	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
 	if err != nil {
 		handler.log.
 			Errorf("error fetching type \"%s\": %v", name, err)
@@ -99,7 +99,7 @@ func (handler *TypeHandler) CreateOrReplaceType(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	err = handler.typeRepo.CreateOrReplace(payload)
+	err = handler.typeRepo.CreateOrReplace(r.Context(), payload)
 	if err != nil {
 		handler.log.
 			WithField("type", payload.Name).
@@ -124,7 +124,7 @@ func (handler *TypeHandler) CreateOrReplaceType(w http.ResponseWriter, r *http.R
 
 func (handler *TypeHandler) DeleteType(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
-	err := handler.typeRepo.Delete(name)
+	err := handler.typeRepo.Delete(r.Context(), name)
 	if err != nil {
 		handler.log.
 			Errorf("error deleting type \"%s\": %v", name, err)
@@ -157,7 +157,7 @@ func (handler *TypeHandler) DeleteRecord(w http.ResponseWriter, r *http.Request)
 	statusCode := http.StatusInternalServerError
 	errMessage := fmt.Sprintf("error deleting record \"%s\" with type \"%s\"", recordID, typeName)
 
-	recordType, err := handler.typeRepo.GetByName(typeName)
+	recordType, err := handler.typeRepo.GetByName(r.Context(), typeName)
 	if err != nil {
 		handler.log.
 			Errorf("error getting type \"%s\": %v", typeName, err)
@@ -179,7 +179,7 @@ func (handler *TypeHandler) DeleteRecord(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = recordRepoFactory.Delete(recordID)
+	err = recordRepoFactory.Delete(r.Context(), recordID)
 	if err != nil {
 		handler.log.
 			Errorf("error deleting record \"%s\": %v", typeName, err)
@@ -199,7 +199,7 @@ func (handler *TypeHandler) DeleteRecord(w http.ResponseWriter, r *http.Request)
 
 func (handler *TypeHandler) IngestRecord(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
-	recordType, err := handler.typeRepo.GetByName(name)
+	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
 	if err != nil {
 		status := http.StatusInternalServerError
 		if _, ok := err.(models.ErrNoSuchType); ok {
@@ -239,7 +239,7 @@ func (handler *TypeHandler) IngestRecord(w http.ResponseWriter, r *http.Request)
 		writeJSONError(w, status, http.StatusText(status))
 		return
 	}
-	if err = recordRepo.CreateOrReplaceMany(records); err != nil {
+	if err = recordRepo.CreateOrReplaceMany(r.Context(), records); err != nil {
 		handler.log.WithField("type", recordType.Name).
 			Errorf("error creating/updating records: %v", err)
 
@@ -253,7 +253,7 @@ func (handler *TypeHandler) IngestRecord(w http.ResponseWriter, r *http.Request)
 
 func (handler *TypeHandler) ListTypeRecords(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
-	recordType, err := handler.typeRepo.GetByName(name)
+	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
 	if err != nil {
 		status, message := handler.responseStatusForError(err)
 		writeJSONError(w, status, message)
@@ -270,7 +270,7 @@ func (handler *TypeHandler) ListTypeRecords(w http.ResponseWriter, r *http.Reque
 	}
 	filterCfg := filterConfigFromValues(r.URL.Query())
 
-	records, err := recordRepo.GetAll(filterCfg)
+	records, err := recordRepo.GetAll(r.Context(), filterCfg)
 	if err != nil {
 		handler.log.WithField("type", recordType).
 			Errorf("error fetching records: GetAll: %v", err)
@@ -292,7 +292,7 @@ func (handler *TypeHandler) GetTypeRecord(w http.ResponseWriter, r *http.Request
 		typeName = vars["name"]
 		recordID = vars["id"]
 	)
-	recordType, err := handler.typeRepo.GetByName(typeName)
+	recordType, err := handler.typeRepo.GetByName(r.Context(), typeName)
 
 	// TODO(Aman): make error handling a bit more DRY
 	if err != nil {
@@ -313,7 +313,7 @@ func (handler *TypeHandler) GetTypeRecord(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	record, err := recordRepo.GetByID(recordID)
+	record, err := recordRepo.GetByID(r.Context(), recordID)
 	if err != nil {
 		handler.log.WithField("type", typeName).
 			WithField("record", recordID).

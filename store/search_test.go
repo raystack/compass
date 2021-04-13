@@ -1,6 +1,7 @@
 package store_test
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"testing"
@@ -17,6 +18,7 @@ type searchTestData struct {
 }
 
 func TestSearch(t *testing.T) {
+	ctx := context.Background()
 	t.Run("should return an error if search string is empty", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
 
@@ -28,7 +30,7 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err = searcher.Search(models.SearchConfig{
+		_, err = searcher.Search(ctx, models.SearchConfig{
 			Text: "",
 		})
 
@@ -59,7 +61,7 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		results, err := searcher.Search(models.SearchConfig{Text: queryText})
+		results, err := searcher.Search(ctx, models.SearchConfig{Text: queryText})
 		if err != nil {
 			t.Errorf("Search: %v", err)
 			return
@@ -93,7 +95,7 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		results, err := searcher.Search(models.SearchConfig{
+		results, err := searcher.Search(ctx, models.SearchConfig{
 			Text:          queryText,
 			TypeWhiteList: []string{whitelistedType},
 		})
@@ -135,7 +137,7 @@ func TestSearch(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		results, err := searcher.Search(models.SearchConfig{
+		results, err := searcher.Search(ctx, models.SearchConfig{
 			Text:          queryText,
 			TypeWhiteList: localWhitelist,
 		})
@@ -230,7 +232,7 @@ func TestSearch(t *testing.T) {
 		}
 		for _, test := range tests {
 			t.Run(test.Description, func(t *testing.T) {
-				results, err := searcher.Search(test.Config)
+				results, err := searcher.Search(ctx, test.Config)
 				if err != nil {
 					t.Error(err)
 					return
@@ -272,15 +274,16 @@ func loadTestFixture() (testFixture []searchTestData, err error) {
 }
 
 func populateSearchData(esClient *elasticsearch.Client, data []searchTestData) (types []models.Type, err error) {
+	ctx := context.Background()
 	typeRepo := store.NewTypeRepository(esClient)
 	for _, sample := range data {
 		types = append(types, sample.Type)
-		if err := typeRepo.CreateOrReplace(sample.Type); err != nil {
+		if err := typeRepo.CreateOrReplace(ctx, sample.Type); err != nil {
 			return types, err
 		}
 
 		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(sample.Type)
-		if err := recordRepo.CreateOrReplaceMany(sample.Records); err != nil {
+		if err := recordRepo.CreateOrReplaceMany(ctx, sample.Records); err != nil {
 			return types, err
 		}
 	}
