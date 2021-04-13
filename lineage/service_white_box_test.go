@@ -1,6 +1,7 @@
 package lineage
 
 import (
+	"context"
 	"sync"
 	"testing"
 	"time"
@@ -28,7 +29,7 @@ type roundRobinBuilder struct {
 	Index  int
 }
 
-func (builder *roundRobinBuilder) Build(er models.TypeRepository, rrf models.RecordRepositoryFactory) (Graph, error) {
+func (builder *roundRobinBuilder) Build(ctx context.Context, er models.TypeRepository, rrf models.RecordRepositoryFactory) (Graph, error) {
 	index := builder.Index
 	builder.Index = (builder.Index + 1) % len(builder.Graphs)
 	return builder.Graphs[index], nil
@@ -56,11 +57,12 @@ func TestService(t *testing.T) {
 			},
 		}
 		srv := &Service{
-			timeSource:      ts,
-			builder:         builder,
-			refreshInterval: time.Minute,
-			lastBuilt:       now,
-			metricsMonitor:  dummyMetricMonitor{},
+			timeSource:         ts,
+			builder:            builder,
+			refreshInterval:    time.Minute,
+			lastBuilt:          now,
+			metricsMonitor:     dummyMetricMonitor{},
+			performanceMonitor: dummyPerformanceMonitor{},
 		}
 		srv.build()
 

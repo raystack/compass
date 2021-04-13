@@ -45,6 +45,7 @@ github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZm
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
 github.com/elastic/go-elasticsearch v0.0.0 h1:Pd5fqOuBxKxv83b0+xOAJDAkziWYwFinWnBO0y+TZaA=
 github.com/elastic/go-elasticsearch v0.0.0/go.mod h1:TkBSJBuTyFdBnrNqoPc54FN0vKf5c04IdM4zuStJ7xg=
+github.com/elastic/go-elasticsearch/v7 v7.5.0/go.mod h1:OJ4wdbtDNk5g503kvlHLyErCgQwwzmDtaFC4XyOxXA4=
 github.com/elastic/go-elasticsearch/v7 v7.6.0 h1:sYpGLpEFHgLUKLsZUBfuaVI9QgHjS3JdH9fX4/z8QI8=
 github.com/elastic/go-elasticsearch/v7 v7.6.0/go.mod h1:OJ4wdbtDNk5g503kvlHLyErCgQwwzmDtaFC4XyOxXA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
@@ -165,6 +166,8 @@ github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRW
 github.com/newrelic/go-agent/v3 v3.0.0/go.mod h1:H28zDNUC0U/b7kLoY4EFOhuth10Xu/9dchozUiOseQQ=
 github.com/newrelic/go-agent/v3 v3.10.0 h1:qHcDwtC1DjOTI0r0nCtf8jT2LfEoNQ6gSo2tcxnR6ns=
 github.com/newrelic/go-agent/v3 v3.10.0/go.mod h1:1A1dssWBwzB7UemzRU6ZVaGDsI+cEn5/bNxI0wiYlIc=
+github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7 v1.0.0 h1:8bnHOp4OcYKs4mkWtGm4vrKWVlYspEzuGBypZGIaboQ=
+github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7 v1.0.0/go.mod h1:MqWii42Cz9ouZ3OGXaqoNrflnkF8e73aG/v7jLIzH2w=
 github.com/newrelic/go-agent/v3/integrations/nrgorilla v1.1.0 h1:3RDWj/QcU5CBP0lJnkh4CwK7tIxsSH53C+GPo5OGFCE=
 github.com/newrelic/go-agent/v3/integrations/nrgorilla v1.1.0/go.mod h1:1XnCVdRSKjS5ikMycFh7VKXBkk0oYPaKQb+sd6aSCoA=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWbfPhv4DMiApHyliiK5xCTNVSPiaAs=
