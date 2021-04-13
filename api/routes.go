@@ -54,16 +54,9 @@ func setupTypeRoutes(router *mux.Router, baseURL string, typeHandler *handlers.T
 		Methods(http.MethodGet).
 		HandlerFunc(typeHandler.GetAll)
 
-	// TODO: remove this route when
-	// getting type details already handled on GET baseUrl/{name}
-	router.Path(baseURL + "/{name}/details").
-		Methods(http.MethodGet).
-		HandlerFunc(typeHandler.GetType)
-
-	// TODO: switch this route to return type details
 	router.Path(baseURL+"/{name}").
 		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(typeHandler.ListTypeRecords)
+		HandlerFunc(typeHandler.GetType)
 
 	router.Path(baseURL+"/{name}/records").
 		Methods(http.MethodGet, http.MethodHead).
@@ -81,20 +74,11 @@ func setupTypeRoutes(router *mux.Router, baseURL string, typeHandler *handlers.T
 		Methods(http.MethodDelete).
 		HandlerFunc(typeHandler.DeleteRecord)
 
-	router.Path(baseURL + "/{name}").
-		Methods(http.MethodPut).
-		HandlerFunc(typeHandler.IngestRecord)
-
 	router.Path(baseURL + "/{name}/records").
 		Methods(http.MethodPut).
 		HandlerFunc(typeHandler.IngestRecord)
 
 	router.Path(baseURL+"/{name}/records/{id}").
-		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(typeHandler.GetTypeRecord)
-
-	// TODO: remove this once no more request is coming
-	router.Path(baseURL+"/{name}/{id}").
 		Methods(http.MethodGet, http.MethodHead).
 		HandlerFunc(typeHandler.GetTypeRecord)
 }
