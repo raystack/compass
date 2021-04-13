@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -19,6 +20,7 @@ import (
 )
 
 func TestSearchHandler(t *testing.T) {
+	ctx := context.Background()
 	// todo: pass testCase to ValidateResponse
 	type testCase struct {
 		Title            string
@@ -51,7 +53,7 @@ func TestSearchHandler(t *testing.T) {
 	var withTypes = func(ents ...models.Type) func(tc testCase, repo *mock.TypeRepository) {
 		return func(tc testCase, repo *mock.TypeRepository) {
 			for _, ent := range ents {
-				repo.On("GetByName", ent.Name).Return(ent, nil)
+				repo.On("GetByName", ctx, ent.Name).Return(ent, nil)
 			}
 			return
 		}
@@ -69,7 +71,7 @@ func TestSearchHandler(t *testing.T) {
 			SearchText: "test",
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				err := fmt.Errorf("service unavailable")
-				searcher.On("Search", testifyMock.AnythingOfType("models.SearchConfig")).
+				searcher.On("Search", ctx, testifyMock.AnythingOfType("models.SearchConfig")).
 					Return([]models.SearchResult{}, err)
 			},
 			ExpectStatus: http.StatusInternalServerError,
@@ -84,11 +86,11 @@ func TestSearchHandler(t *testing.T) {
 						Record:   models.Record{},
 					},
 				}
-				searcher.On("Search", testifyMock.AnythingOfType("models.SearchConfig")).
+				searcher.On("Search", ctx, testifyMock.AnythingOfType("models.SearchConfig")).
 					Return(results, nil)
 			},
 			InitRepo: func(tc testCase, repo *mock.TypeRepository) {
-				repo.On("GetByName", testifyMock.AnythingOfType("string")).
+				repo.On("GetByName", ctx, testifyMock.AnythingOfType("string")).
 					Return(models.Type{}, models.ErrNoSuchType{})
 			},
 			ExpectStatus: http.StatusInternalServerError,
@@ -112,7 +114,7 @@ func TestSearchHandler(t *testing.T) {
 						},
 					},
 				}
-				searcher.On("Search", cfg).Return(response, nil)
+				searcher.On("Search", ctx, cfg).Return(response, nil)
 			},
 			InitRepo: withTypes(testdata.Type),
 			ValidateResponse: func(tc testCase, body io.Reader) error {
@@ -183,7 +185,7 @@ func TestSearchHandler(t *testing.T) {
 						},
 					},
 				}
-				searcher.On("Search", cfg).Return(results, nil)
+				searcher.On("Search", ctx, cfg).Return(results, nil)
 			},
 			InitRepo: withTypes(testdata.Type),
 			ValidateResponse: func(tc testCase, body io.Reader) error {
@@ -250,7 +252,7 @@ func TestSearchHandler(t *testing.T) {
 					results = append(results, result)
 				}
 
-				searcher.On("Search", cfg).Return(results, nil)
+				searcher.On("Search", ctx, cfg).Return(results, nil)
 				return
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
@@ -297,7 +299,7 @@ func TestSearchHandler(t *testing.T) {
 						},
 					},
 				}
-				searcher.On("Search", cfg).Return(results, nil)
+				searcher.On("Search", ctx, cfg).Return(results, nil)
 				return
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
@@ -351,7 +353,7 @@ func TestSearchHandler(t *testing.T) {
 						},
 					},
 				}
-				searcher.On("Search", cfg).Return(results, nil)
+				searcher.On("Search", ctx, cfg).Return(results, nil)
 				return
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
@@ -405,7 +407,7 @@ func TestSearchHandler(t *testing.T) {
 						},
 					},
 				}
-				searcher.On("Search", cfg).Return(results, nil)
+				searcher.On("Search", ctx, cfg).Return(results, nil)
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
 				var actualResults []handlers.SearchResponse
@@ -456,7 +458,7 @@ func TestSearchHandler(t *testing.T) {
 						},
 					},
 				}
-				searcher.On("Search", cfg).Return(results, nil)
+				searcher.On("Search", ctx, cfg).Return(results, nil)
 				return
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
@@ -505,7 +507,7 @@ func TestSearchHandler(t *testing.T) {
 						},
 					},
 				}
-				searcher.On("Search", cfg).Return(results, nil)
+				searcher.On("Search", ctx, cfg).Return(results, nil)
 				return
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
@@ -558,7 +560,7 @@ func TestSearchHandler(t *testing.T) {
 						},
 					},
 				}
-				searcher.On("Search", cfg).Return(results, nil)
+				searcher.On("Search", ctx, cfg).Return(results, nil)
 				return
 			},
 		},

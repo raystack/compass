@@ -17,6 +17,8 @@ import (
 )
 
 func TestRecordRepository(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("CreateOrReplaceMany", func(t *testing.T) {
 		var testCases = []struct {
 			Title      string
@@ -64,7 +66,7 @@ func TestRecordRepository(t *testing.T) {
 					},
 				},
 				Setup: func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error {
-					return store.NewTypeRepository(cli).CreateOrReplace(recordType)
+					return store.NewTypeRepository(cli).CreateOrReplace(ctx, recordType)
 				},
 				PostCheck: func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error {
 					searchReq := esapi.SearchRequest{
@@ -112,7 +114,7 @@ func TestRecordRepository(t *testing.T) {
 					t.Fatalf("error creating record repository: %s", err)
 				}
 
-				err = repo.CreateOrReplaceMany(testCase.Records)
+				err = repo.CreateOrReplaceMany(ctx, testCase.Records)
 				if testCase.ShouldFail {
 					assert.Error(t, err)
 				} else if err != nil {
@@ -135,7 +137,7 @@ func TestRecordRepository(t *testing.T) {
 	// this is used by test cases of `GetAll` and `GetByID`
 	cli := esTestServer.NewClient()
 	typeRepo := store.NewTypeRepository(cli)
-	err := typeRepo.CreateOrReplace(daggerType)
+	err := typeRepo.CreateOrReplace(ctx, daggerType)
 	if err != nil {
 		t.Fatalf("failed to create dagger type: %v", err)
 		return
@@ -155,7 +157,7 @@ func TestRecordRepository(t *testing.T) {
 		t.Fatalf("error reading testdata: %v", err)
 		return
 	}
-	err = recordRepo.CreateOrReplaceMany(records)
+	err = recordRepo.CreateOrReplaceMany(ctx, records)
 	if err != nil {
 		t.Fatalf("error writing testdata to elasticsearch: %v", err)
 		return
@@ -212,7 +214,7 @@ func TestRecordRepository(t *testing.T) {
 					return
 				}
 
-				actualResults, err := recordRepo.GetAll(tc.Filter)
+				actualResults, err := recordRepo.GetAll(ctx, tc.Filter)
 				if err != nil {
 					t.Fatalf("error executing GetAll: %v", err)
 					return
@@ -233,7 +235,7 @@ func TestRecordRepository(t *testing.T) {
 					t.Fatalf("bad test data: record doesn't have %q key", daggerType.Fields.ID)
 					return
 				}
-				recordFromRepo, err := recordRepo.GetByID(id)
+				recordFromRepo, err := recordRepo.GetByID(ctx, id)
 				if err != nil {
 					t.Errorf("unexpected error: GetByID(%q): %v", id, err)
 					return
@@ -245,7 +247,7 @@ func TestRecordRepository(t *testing.T) {
 		})
 		t.Run("should return an error if a non-existent record is requested", func(t *testing.T) {
 			var id = "this-doesnt-exists"
-			_, err := recordRepo.GetByID(id)
+			_, err := recordRepo.GetByID(ctx, id)
 			_, ok := err.(models.ErrNoSuchRecord)
 			assert.True(t, ok)
 		})
@@ -253,23 +255,23 @@ func TestRecordRepository(t *testing.T) {
 	t.Run("Delete", func(t *testing.T) {
 		t.Run("should delete record from index", func(t *testing.T) {
 			id := "delete-id-01"
-			recordRepo.CreateOrReplaceMany([]map[string]interface{}{
+			recordRepo.CreateOrReplaceMany(ctx, []map[string]interface{}{
 				{
 					"title": "To be deleted",
 					"urn":   id,
 				},
 			})
 
-			err := recordRepo.Delete(id)
+			err := recordRepo.Delete(ctx, id)
 			assert.Nil(t, err)
 
-			record, err := recordRepo.GetByID(id)
+			record, err := recordRepo.GetByID(ctx, id)
 			assert.NotNil(t, err)
 			assert.Nil(t, record)
 		})
 
 		t.Run("should return custom error when record could not be found", func(t *testing.T) {
-			err := recordRepo.Delete("not-found-id")
+			err := recordRepo.Delete(ctx, "not-found-id")
 			assert.NotNil(t, err)
 			assert.IsType(t, models.ErrNoSuchRecord{}, err)
 		})

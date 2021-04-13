@@ -2,6 +2,7 @@ package lineage_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -23,16 +24,17 @@ func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordRe
 		tr      = new(mock.TypeRepository)
 		rrf     = new(mock.RecordRepositoryFactory)
 		typList = []models.Type{}
+		ctx     = context.Background()
 	)
 	for _, dataset := range datasets {
 		typ := dataset.Type.Normalise()
 		tr.On("GetByName", typ.Name).Return(typ, nil)
 		recordRepo := new(mock.RecordRepository)
-		recordRepo.On("GetAll", models.RecordFilter{}).Return(dataset.Records, nil)
+		recordRepo.On("GetAll", ctx, models.RecordFilter{}).Return(dataset.Records, nil)
 		rrf.On("For", typ).Return(recordRepo, nil)
 		typList = append(typList, typ)
 	}
-	tr.On("GetAll").Return(typList, nil)
+	tr.On("GetAll", ctx).Return(typList, nil)
 	return tr, rrf
 }
 
@@ -195,7 +197,7 @@ func TestDefaultBuilder(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.Description, func(t *testing.T) {
 				er, rrf := initialiseRepos(tc.Datasets)
-				graph, err := lineage.DefaultBuilder.Build(er, rrf)
+				graph, err := lineage.DefaultBuilder.Build(context.Background(), er, rrf)
 				if err != nil {
 					if err != tc.BuildErr {
 						t.Errorf("unexpected error when building graph: %v", err)

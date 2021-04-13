@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"fmt"
 	"strings"
 )
@@ -62,10 +63,10 @@ func (e Type) Normalise() Type {
 // TypeRepository is an interface to a storage
 // system for types.
 type TypeRepository interface {
-	CreateOrReplace(Type) error
-	GetByName(string) (Type, error)
-	GetAll() ([]Type, error)
-	Delete(string) error
+	CreateOrReplace(context.Context, Type) error
+	GetByName(context.Context, string) (Type, error)
+	GetAll(context.Context) ([]Type, error)
+	Delete(context.Context, string) error
 }
 
 type ErrNoSuchType struct {

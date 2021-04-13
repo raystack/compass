@@ -17,6 +17,8 @@ import (
 )
 
 func TestTypeRepository(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("CreateOrReplace", func(t *testing.T) {
 		var testCases = []struct {
 			Title      string
@@ -109,7 +111,7 @@ func TestTypeRepository(t *testing.T) {
 					// we'll try to save the type again, with the expectation
 					// that it should succeed as normal
 					repo := store.NewTypeRepository(cli)
-					err := repo.CreateOrReplace(daggerType)
+					err := repo.CreateOrReplace(ctx, daggerType)
 					if err != nil {
 						return fmt.Errorf("repository returned unexpected error: %w", err)
 					}
@@ -228,7 +230,7 @@ func TestTypeRepository(t *testing.T) {
 						"name": 2.0,
 					}
 					repo := store.NewTypeRepository(cli)
-					err := repo.CreateOrReplace(recordType)
+					err := repo.CreateOrReplace(ctx, recordType)
 					if err != nil {
 						return fmt.Errorf("error updating type definition: %v", err)
 					}
@@ -283,7 +285,7 @@ func TestTypeRepository(t *testing.T) {
 			t.Run(testCase.Title, func(t *testing.T) {
 				cli := esTestServer.NewClient()
 				repo := store.NewTypeRepository(cli)
-				err := repo.CreateOrReplace(testCase.Type)
+				err := repo.CreateOrReplace(ctx, testCase.Type)
 				if testCase.ShouldFail {
 					assert.Error(t, err)
 					return
@@ -303,13 +305,13 @@ func TestTypeRepository(t *testing.T) {
 	})
 	t.Run("GetByName", func(t *testing.T) {
 		repo := store.NewTypeRepository(esTestServer.NewClient())
-		err := repo.CreateOrReplace(daggerType)
+		err := repo.CreateOrReplace(ctx, daggerType)
 		if err != nil {
 			t.Errorf("error writing to elasticsearch: %v", err)
 			return
 		}
 
-		typeFromRepo, err := repo.GetByName(daggerType.Name)
+		typeFromRepo, err := repo.GetByName(ctx, daggerType.Name)
 		if err != nil {
 			t.Errorf("error getting type from repository: %v", err)
 			return
@@ -321,13 +323,13 @@ func TestTypeRepository(t *testing.T) {
 	})
 	t.Run("GetAll", func(t *testing.T) {
 		repo := store.NewTypeRepository(esTestServer.NewClient())
-		err := repo.CreateOrReplace(daggerType)
+		err := repo.CreateOrReplace(ctx, daggerType)
 		if err != nil {
 			t.Errorf("error writing to elasticsearch: %v", err)
 			return
 		}
 
-		types, err := repo.GetAll()
+		types, err := repo.GetAll(ctx)
 		if err != nil {
 			t.Errorf("error getting type from repository: %v", err)
 			return
@@ -346,30 +348,30 @@ func TestTypeRepository(t *testing.T) {
 		t.Run("should return error if type name is reserved key", func(t *testing.T) {
 			var err error
 
-			err = repo.Delete("meta")
+			err = repo.Delete(ctx, "meta")
 			assert.NotNil(t, err)
 			assert.IsType(t, models.ErrReservedTypeName{}, err)
 
-			err = repo.Delete("universe")
+			err = repo.Delete(ctx, "universe")
 			assert.NotNil(t, err)
 			assert.IsType(t, models.ErrReservedTypeName{}, err)
 		})
 
 		t.Run("should delete type by its name", func(t *testing.T) {
-			err := repo.CreateOrReplace(models.Type{
+			err := repo.CreateOrReplace(ctx, models.Type{
 				Name: typeName,
 			})
 			if err != nil {
 				t.Errorf("error writing to elasticsearch: %v", err)
 				return
 			}
-			err = repo.Delete(typeName)
+			err = repo.Delete(ctx, typeName)
 			if err != nil {
 				t.Errorf("error deleting type: %v", err)
 				return
 			}
 
-			_, err = repo.GetByName(typeName)
+			_, err = repo.GetByName(ctx, typeName)
 			assert.NotNil(t, err)
 			assert.IsType(t, models.ErrNoSuchType{}, err)
 		})
@@ -380,7 +382,7 @@ func TestTypeRepository(t *testing.T) {
 				t.Errorf("error creating index: %v", err)
 				return
 			}
-			err = repo.Delete(typeName)
+			err = repo.Delete(ctx, typeName)
 			if err != nil {
 				t.Errorf("error deleting type: %v", err)
 				return
