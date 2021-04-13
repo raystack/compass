@@ -85,6 +85,10 @@ func setupTypeRoutes(router *mux.Router, baseURL string, typeHandler *handlers.T
 		Methods(http.MethodPut).
 		HandlerFunc(typeHandler.IngestRecord)
 
+	router.Path(baseURL + "/{name}/records").
+		Methods(http.MethodPut).
+		HandlerFunc(typeHandler.IngestRecord)
+
 	router.Path(baseURL+"/{name}/records/{id}").
 		Methods(http.MethodGet, http.MethodHead).
 		HandlerFunc(typeHandler.GetTypeRecord)
