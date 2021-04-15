@@ -17,24 +17,31 @@
                 "topic_name": "order-topic",
                 "description": "Topic for each submitted order",
                 "company": "odpf",
+                "environment": "integration",
+                "landscape": "us",
                 "partition": 250
             },
             {
                 "topic_name": "purchase-topic",
                 "description": "Topic for each submitted purchase",
                 "company": "microsoft",
+                "environment": "integration",
+                "landscape": "id",
                 "partition": 100
             },
             {
                 "topic_name": "consumer-topic",
                 "description": "Update on every customer creation/update",
                 "company": "odpf",
+                "environment": "production",
+                "landscape": "id",
                 "partition": 50
             },
             {
                 "topic_name": "transaction",
                 "description": "This publishes all the invoices from each of invoice storage where the invoice will be filtered and checked using invoice filterer and invoice checker",
                 "company": "odpf",
+                "environment": "production",
                 "partition": 1
             }
         ]
@@ -57,6 +64,8 @@
                 "table_id": "au2-microsoft-invoice",
                 "table_name": "microsoft-invoice",
                 "company": "microsoft",
+                "environment": "integration",
+                "landscape": "us",
                 "description": "Transaction records for every microsoft purchase",
                 "total_rows": 100,
                 "schema": [
@@ -69,6 +78,8 @@
                 "table_id": "us1-apple-invoice",
                 "table_name": "apple-invoice",
                 "company": "apple",
+                "environment": "production",
+                "landscape": "id",
                 "description": "Transaction records for every Apple purchase",
                 "total_rows": 100,
                 "schema": [
