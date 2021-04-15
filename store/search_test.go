@@ -229,6 +229,21 @@ func TestSearch(t *testing.T) {
 				},
 				MatchTotalRows: true,
 			},
+			{
+				Description: "should not return records without fields specified in filters",
+				Config: models.SearchConfig{
+					Text: "invoice topic",
+					Filters: map[string][]string{
+						"landscape":   {"id"},
+						"environment": {"production"},
+						"company":     {"odpf"},
+					},
+				},
+				Expected: []expectedRow{
+					{Type: "topic", RecordID: "consumer-topic"},
+				},
+				MatchTotalRows: true,
+			},
 		}
 		for _, test := range tests {
 			t.Run(test.Description, func(t *testing.T) {
