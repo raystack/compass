@@ -204,7 +204,7 @@ func (repo *TypeRepository) GetAll(ctx context.Context) ([]models.Type, error) {
 		return nil, err
 	}
 
-	var types []models.Type
+	types := []models.Type{}
 	for _, rawType := range rawEntities {
 		var serialised = new(bytes.Buffer)
 		if err := json.NewEncoder(serialised).Encode(rawType); err != nil {
