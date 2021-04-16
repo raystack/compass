@@ -22,21 +22,22 @@ var (
 )
 
 type SearcherConfig struct {
-	Client                 *elasticsearch.Client
-	TypeRepo               models.TypeRepository
-	TypeWhiteList          []string
-	CachedTypesMapDuration int
+	Client              *elasticsearch.Client
+	TypeRepo            models.TypeRepository
+	TypeWhiteList       []string
+	CachedTypesDuration int
 }
 
 // Searcher is an implementation of models.RecordSearcher
 type Searcher struct {
-	cli                    *elasticsearch.Client
-	typeWhiteList          []string
-	typeWhiteListSet       map[string]bool
-	typeRepository         models.TypeRepository
-	cachedTypesMap         map[string]models.Type
-	cachedTypeExpiredOn    time.Time
-	cachedTypesMapDuration int
+	cli                 *elasticsearch.Client
+	typeWhiteList       []string
+	typeWhiteListSet    map[string]bool
+	typeRepository      models.TypeRepository
+	cachedTypes         []models.Type
+	cachedTypesMap      map[string]models.Type
+	cachedTypeExpiredOn time.Time
+	cachedTypesDuration int
 }
 
 // NewSearcher creates a new instance of Searcher
@@ -54,11 +55,11 @@ func NewSearcher(config SearcherConfig) (*Searcher, error) {
 	}
 
 	return &Searcher{
-		cli:                    config.Client,
-		typeWhiteList:          config.TypeWhiteList,
-		typeWhiteListSet:       whiteListSet,
-		typeRepository:         config.TypeRepo,
-		cachedTypesMapDuration: config.CachedTypesMapDuration,
+		cli:                 config.Client,
+		typeWhiteList:       config.TypeWhiteList,
+		typeWhiteListSet:    whiteListSet,
+		typeRepository:      config.TypeRepo,
+		cachedTypesDuration: config.CachedTypesDuration,
 	}, nil
 }
 
@@ -131,9 +132,14 @@ func (sr *Searcher) buildQuery(ctx context.Context, cfg models.SearchConfig, ind
 }
 
 func (sr *Searcher) buildQueriesFromIndices(ctx context.Context, indices []string, cfg models.SearchConfig) ([]elastic.Query, error) {
+	types, err := sr.mapIndicesToTypes(indices)
+	if err != nil {
+		return nil, err
+	}
+
 	var queries []elastic.Query
-	for _, index := range indices {
-		fields, err := sr.buildTypeFields(ctx, index)
+	for _, typ := range types {
+		fields, err := sr.buildTypeFields(typ)
 		if err != nil {
 			return nil, err
 		}
@@ -158,7 +164,7 @@ func (sr *Searcher) buildQueriesFromIndices(ctx context.Context, indices []strin
 					Fuzziness("AUTO"),
 			).
 			Filter(
-				elastic.NewTermQuery("_index", index),
+				elastic.NewTermQuery("_index", typ.Name),
 			)
 		queries = append(queries, query)
 	}
@@ -166,12 +172,7 @@ func (sr *Searcher) buildQueriesFromIndices(ctx context.Context, indices []strin
 	return queries, nil
 }
 
-func (sr *Searcher) buildTypeFields(ctx context.Context, typeName string) (fields []string, err error) {
-	resourceType, err := sr.getType(ctx, typeName)
-	if err != nil {
-		return fields, err
-	}
-
+func (sr *Searcher) buildTypeFields(resourceType models.Type) (fields []string, err error) {
 	fields = append(
 		fields,
 		fmt.Sprintf("%s^10", resourceType.Fields.ID),
@@ -214,41 +215,52 @@ func (sr *Searcher) searchIndices(localWhiteList []string) []string {
 	case hasGL || hasLL:
 		return anyValidStringSlice(localWhiteList, sr.typeWhiteList)
 	default:
-		return []string{defaultSearchIndex}
+		return []string{}
 	}
 }
 
-func (sr *Searcher) getType(ctx context.Context, typeName string) (models.Type, error) {
-	if sr.cachedTypesMap == nil || time.Now().After(sr.cachedTypeExpiredOn) {
-		typesMap, err := sr.buildTypesMap(ctx)
+func (sr *Searcher) mapIndicesToTypes(indices []string) ([]models.Type, error) {
+	types, err := sr.getTypes(context.Background())
+	if err != nil {
+		return types, err
+	}
+	if len(indices) == 0 {
+		return types, nil
+	}
+
+	whitelistedTypes := []models.Type{}
+	for _, index := range indices {
+		typ, ok := sr.cachedTypesMap[index]
+		if ok {
+			whitelistedTypes = append(whitelistedTypes, typ)
+		}
+	}
+
+	return whitelistedTypes, nil
+}
+
+func (sr *Searcher) getTypes(ctx context.Context) ([]models.Type, error) {
+	if sr.cachedTypes == nil || time.Now().After(sr.cachedTypeExpiredOn) {
+		types, err := sr.typeRepository.GetAll(ctx)
 		if err != nil {
-			return models.Type{}, err
+			return nil, err
 		}
 
-		sr.cachedTypesMap = typesMap
-		sr.cachedTypeExpiredOn = time.Now().Add(time.Duration(sr.cachedTypesMapDuration) * time.Second)
+		sr.cachedTypes = types
+		sr.cachedTypesMap = sr.buildTypesMap(types)
+		sr.cachedTypeExpiredOn = time.Now().Add(time.Duration(sr.cachedTypesDuration) * time.Second)
 	}
 
-	resourceType, ok := sr.cachedTypesMap[typeName]
-	if !ok {
-		return models.Type{}, fmt.Errorf("type does not exist")
-	}
-
-	return resourceType, nil
+	return sr.cachedTypes, nil
 }
 
-func (sr *Searcher) buildTypesMap(ctx context.Context) (map[string]models.Type, error) {
-	types, err := sr.typeRepository.GetAll(ctx)
-	if err != nil {
-		return nil, err
-	}
-
+func (sr *Searcher) buildTypesMap(types []models.Type) map[string]models.Type {
 	typesMap := map[string]models.Type{}
 	for _, typ := range types {
 		typesMap[typ.Name] = typ
 	}
 
-	return typesMap, nil
+	return typesMap
 }
 
 func anyValidStringSlice(slices ...[]string) []string {
