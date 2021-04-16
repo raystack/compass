@@ -56,10 +56,10 @@ func initRouter(
 	typeRepository := store.NewTypeRepository(esClient)
 	recordRepositoryFactory := store.NewRecordRepositoryFactory(esClient)
 	recordSearcher, err := store.NewSearcher(store.SearcherConfig{
-		Client:                 esClient,
-		TypeRepo:               typeRepository,
-		TypeWhiteList:          typeWhiteList(config.TypeWhiteListStr),
-		CachedTypesMapDuration: config.SearchTypesCacheDuration,
+		Client:              esClient,
+		TypeRepo:            typeRepository,
+		TypeWhiteList:       typeWhiteList(config.TypeWhiteListStr),
+		CachedTypesDuration: config.SearchTypesCacheDuration,
 	})
 	if err != nil {
 		log.Fatalf("error creating searcher: %v", err)

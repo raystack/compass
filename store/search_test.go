@@ -150,6 +150,36 @@ func TestSearch(t *testing.T) {
 		assert.Equal(t, subsetType, results[0].TypeName)
 	})
 
+	t.Run("should process all types when there is no whitelist", func(t *testing.T) {
+		esClient := esTestServer.NewClient()
+
+		testData := []searchTestData{
+			buildSampleSearchData("random_type_1"),
+			buildSampleSearchData("random_type_2"),
+		}
+		_, err := populateSearchData(esClient, testData)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		searcher, err := store.NewSearcher(store.SearcherConfig{
+			Client:        esClient,
+			TypeRepo:      store.NewTypeRepository(esClient),
+			TypeWhiteList: []string{},
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		results, err := searcher.Search(ctx, models.SearchConfig{Text: "sample"})
+		if err != nil {
+			t.Errorf("Search: %v", err)
+			return
+		}
+
+		assert.Equal(t, 2, len(results))
+	})
+
 	t.Run("fixtures", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
 
