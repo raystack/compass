@@ -322,23 +322,39 @@ func TestTypeRepository(t *testing.T) {
 		}
 	})
 	t.Run("GetAll", func(t *testing.T) {
-		repo := store.NewTypeRepository(esTestServer.NewClient())
-		err := repo.CreateOrReplace(ctx, daggerType)
-		if err != nil {
-			t.Errorf("error writing to elasticsearch: %v", err)
-			return
-		}
+		t.Run("should return empty list if no type is available", func(t *testing.T) {
+			esClient := esTestServer.NewClient()
+			repo := store.NewTypeRepository(esClient)
+			_, err := esClient.Indices.Create("meta")
+			if err != nil {
+				t.Errorf("error creating meta index: %v", err)
+				return
+			}
 
-		types, err := repo.GetAll(ctx)
-		if err != nil {
-			t.Errorf("error getting type from repository: %v", err)
-			return
-		}
-		var expect = []models.Type{daggerType}
-		if reflect.DeepEqual(expect, types) == false {
-			t.Errorf("expected repository to return %#v, returned %#v instead", expect, types)
-			return
-		}
+			types, err := repo.GetAll(ctx)
+			if err != nil {
+				t.Errorf("error getting type from repository: %v", err)
+				return
+			}
+
+			assert.Equal(t, []models.Type{}, types)
+		})
+		t.Run("should return types from elasticsearch", func(t *testing.T) {
+			repo := store.NewTypeRepository(esTestServer.NewClient())
+			err := repo.CreateOrReplace(ctx, daggerType)
+			if err != nil {
+				t.Errorf("error writing to elasticsearch: %v", err)
+				return
+			}
+
+			types, err := repo.GetAll(ctx)
+			if err != nil {
+				t.Errorf("error getting type from repository: %v", err)
+				return
+			}
+			var expect = []models.Type{daggerType}
+			assert.Equal(t, expect, types)
+		})
 	})
 	t.Run("Delete", func(t *testing.T) {
 		typeName := "delete-type"
