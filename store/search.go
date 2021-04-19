@@ -15,10 +15,8 @@ import (
 )
 
 var (
-	filterScriptBasePredicate       = `doc.containsKey(%q) == false || doc[%q].size() == 0`
-	filterScriptMatchValuePredicate = `doc[%q].value == %q`
-	defaultMaxResults               = 200
-	defaultMinScore                 = 0.01
+	defaultMaxResults = 200
+	defaultMinScore   = 0.01
 )
 
 type SearcherConfig struct {
@@ -183,8 +181,13 @@ func (sr *Searcher) buildTypeFields(ctx context.Context, typeName string) (field
 
 func (sr *Searcher) filterQuery(filters map[string][]string) (filterQueries []elastic.Query) {
 	for key, elements := range filters {
-		filter := buildScriptFilter(key, elements)
-		filterQueries = append(filterQueries, filter)
+		if len(elements) < 1 {
+			continue
+		}
+		filterQueries = append(
+			filterQueries,
+			elastic.NewTermQuery(key, elements[0]),
+		)
 	}
 	return
 }
@@ -258,28 +261,4 @@ func anyValidStringSlice(slices ...[]string) []string {
 		}
 	}
 	return nil
-}
-
-// buildScriptFilter builds a script that can be used
-// within the filter context of a query. The script behaves
-// mostly as a "terms" filter, except that it will also match documents
-// that don't have the filter "key".
-func buildScriptFilter(key string, values []string) *elastic.ScriptQuery {
-
-	// by default, all string fields in the document are indexed as `text`, which is not suitable
-	// for exact matches, since their contents are analyzed before being stored.
-	// The "${key}.keyword" sub-field is created for each text field that has < 256 chars, and holds
-	// the unprocessed contents, which are suitable for exact string matches
-	key = fmt.Sprintf("%s.keyword", key)
-
-	predicates := []string{
-		fmt.Sprintf(filterScriptBasePredicate, key, key),
-	}
-	for _, value := range values {
-		predicate := fmt.Sprintf(filterScriptMatchValuePredicate, key, value)
-		predicates = append(predicates, predicate)
-	}
-
-	src := strings.Join(predicates, " || ")
-	return elastic.NewScriptQuery(elastic.NewScriptInline(src))
 }
