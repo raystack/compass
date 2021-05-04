@@ -1,4 +1,4 @@
-# Creating types
+# Ingesting metadata
 
 This document showcases columbus usage, from producing data, to using APIs for specific use-cases. This guide is geared towards adminstrators, more than users. It is meant to give the administrators an introduction of different configuration options available, and how they affect the behaviour of the application.
 

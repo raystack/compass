@@ -7,10 +7,8 @@
 ## Guides
 
 * [Installation](guides/installation.md)
-* [Ingesting metadata](guides/ingestion.md)
+* [Ingesting metadata](guides/types.md)
 * [Querying  metadata](guides/querying.md)
-* [Creating types](guides/types.md)
-* [Deployment](guides/deployment.md)
 
 ## Concepts
 
