@@ -2,9 +2,9 @@
 
 ## Requirements
 
-Columbus is written in golang, and requires go version &gt;= 1.13. Please make sure that the go tool chain is available on your machine. See golang’s [documentation](https://golang.org/) for installation instructions.
+Columbus is written in Golang, and requires go version &gt;= 1.13. Please make sure that the go toolchain is available on your machine. See Golang’s [documentation](https://golang.org/) for installation instructions.
 
-Alternatively, you can use docker to build columbus as a docker image. More on this in the next section.
+Alternatively, you can use docker to build Columbus as a docker image. More on this in the next section.
 
 Columbus uses elasticsearch v7 as the query and storage backend. In order to run columbus locally, you’ll need to have an instance of elasticsearch running. You can either download elasticsearch and run it manually, or you can run elasticsearch inside docker by running the following command in a terminal
 
