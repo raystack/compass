@@ -2,9 +2,10 @@
 
 Columbus is a search and discovery engine built for querying application deployments, datasets and meta resources. It can also optionally track data flow relationships between these resources and allow the user to view a representation of the data flow graph.
 
-![](./assets/overview.svg)
+![](.gitbook/assets/overview.svg)
 
 ## Key Features
+
 Discover why users choose Columbus as their main data discovery and lineage service
 
 * **Full text search** Faster and better search results powered by ElasticSearch full text search capability.
@@ -18,9 +19,8 @@ Discover why users choose Columbus as their main data discovery and lineage serv
 
 Explore the following resources to get started with Columbus:
 
-* [Guides](./guides) provides guidance on ingesting and queying metadata from Columbus.
-* [Concepts](./concepts) describes all important Columbus concepts.
-* [Reference](./reference) contains details about configurations, metrics and other aspects of Columbus.
-* [Contribute](./contribute/contribution.md) contains resources for anyone who wants to contribute to Columbus.
-
+* [Guides](https://github.com/odpf/columbus/tree/1093c7e9a2c862b0b1dbd45812e7c3837125ef79/docs/guides/README.md) provides guidance on ingesting and queying metadata from Columbus.
+* [Concepts](https://github.com/odpf/columbus/tree/1093c7e9a2c862b0b1dbd45812e7c3837125ef79/docs/concepts/README.md) describes all important Columbus concepts.
+* [Reference](https://github.com/odpf/columbus/tree/1093c7e9a2c862b0b1dbd45812e7c3837125ef79/docs/reference/README.md) contains details about configurations, metrics and other aspects of Columbus.
+* [Contribute](https://github.com/odpf/columbus/tree/1093c7e9a2c862b0b1dbd45812e7c3837125ef79/docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Columbus.
 
