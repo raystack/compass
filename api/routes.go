@@ -28,10 +28,6 @@ func RegisterRoutes(router *mux.Router, config Config) {
 		config.RecordSearcher,
 		config.TypeRepository,
 	)
-	lineageHandler := handlers.NewLineageHandler(
-		config.Logger.WithField("reporter", "lineage-handler"),
-		config.LineageProvider,
-	)
 
 	router.PathPrefix("/ping").Handler(handlers.NewHeartbeatHandler())
 	setupTypeRoutes(router, "/v1/types", typeHandler)
@@ -40,13 +36,18 @@ func RegisterRoutes(router *mux.Router, config Config) {
 		Methods(http.MethodGet).
 		HandlerFunc(searchHandler.Search)
 
-	router.PathPrefix("/v1/lineage/{type}/{id}").
-		Methods(http.MethodGet).
-		HandlerFunc(lineageHandler.GetLineage)
+	// Temporarily disable lineage routes
+	// lineageHandler := handlers.NewLineageHandler(
+	// 	config.Logger.WithField("reporter", "lineage-handler"),
+	// 	config.LineageProvider,
+	// )
+	// router.PathPrefix("/v1/lineage/{type}/{id}").
+	// 	Methods(http.MethodGet).
+	// 	HandlerFunc(lineageHandler.GetLineage)
 
-	router.PathPrefix("/v1/lineage").
-		Methods(http.MethodGet).
-		HandlerFunc(lineageHandler.ListLineage)
+	// router.PathPrefix("/v1/lineage").
+	// 	Methods(http.MethodGet).
+	// 	HandlerFunc(lineageHandler.ListLineage)
 }
 
 func setupTypeRoutes(router *mux.Router, baseURL string, typeHandler *handlers.TypeHandler) {
