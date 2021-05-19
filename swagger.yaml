@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: "Universal Search"
   description: "Universal Search API"
-  version: 0.0.0
+  version: 0.1.0
 host: localhost:3000
 basePath: "/v1"
 schemes: 
