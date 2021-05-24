@@ -31,5 +31,5 @@ jobs:
         tags: |
             docker.pkg.github.com/${{ github.repository }}/columbus:latest
             docker.pkg.github.com/${{ github.repository }}/columbus:${{ steps.get_version.outputs.version-without-v }}
-            odpf/shield:latest
-            odpf/shield:${{ steps.get_version.outputs.version-without-v }}
+            odpf/columbus:latest
+            odpf/columbus:${{ steps.get_version.outputs.version-without-v }}
