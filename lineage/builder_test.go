@@ -15,22 +15,22 @@ import (
 )
 
 type dataset struct {
-	Type    models.Type
-	Records []models.Record
+	Type      models.Type
+	RecordV1s []models.RecordV1
 }
 
-func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordRepositoryFactory) {
+func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordV1RepositoryFactory) {
 	var (
 		tr      = new(mock.TypeRepository)
-		rrf     = new(mock.RecordRepositoryFactory)
+		rrf     = new(mock.RecordV1RepositoryFactory)
 		typList = []models.Type{}
 		ctx     = context.Background()
 	)
 	for _, dataset := range datasets {
 		typ := dataset.Type.Normalise()
 		tr.On("GetByName", typ.Name).Return(typ, nil)
-		recordRepo := new(mock.RecordRepository)
-		recordRepo.On("GetAll", ctx, models.RecordFilter{}).Return(dataset.Records, nil)
+		recordRepo := new(mock.RecordV1Repository)
+		recordRepo.On("GetAll", ctx, models.RecordV1Filter{}).Return(dataset.RecordV1s, nil)
 		rrf.On("For", typ).Return(recordRepo, nil)
 		typList = append(typList, typ)
 	}
@@ -69,7 +69,7 @@ func TestDefaultBuilder(t *testing.T) {
 								ID: "id",
 							},
 						},
-						Records: []models.Record{
+						RecordV1s: []models.RecordV1{
 							{
 								"id": "1",
 							},
@@ -109,7 +109,7 @@ func TestDefaultBuilder(t *testing.T) {
 								},
 							},
 						},
-						Records: []models.Record{
+						RecordV1s: []models.RecordV1{
 							{
 								"id":         "1",
 								"upstreams":  []string{"A", "B"},
@@ -138,7 +138,7 @@ func TestDefaultBuilder(t *testing.T) {
 								ID: "id",
 							},
 						},
-						Records: []models.Record{
+						RecordV1s: []models.RecordV1{
 							{
 								"id": "data-booking",
 							},
@@ -159,7 +159,7 @@ func TestDefaultBuilder(t *testing.T) {
 								},
 							},
 						},
-						Records: []models.Record{
+						RecordV1s: []models.RecordV1{
 							{
 								"id":  "booking-aggregator",
 								"src": "data-booking",

@@ -262,7 +262,7 @@ func TestTypeHandler(t *testing.T) {
 			handler.CreateOrReplaceType(rw, rr)
 		})
 	})
-	t.Run("IngestRecord", func(t *testing.T) {
+	t.Run("IngestRecordV1", func(t *testing.T) {
 		t.Run("should return HTTP 404 if type doesn't exist", func(t *testing.T) {
 			rr := httptest.NewRequest("PUT", "/", strings.NewReader("{}"))
 			rw := httptest.NewRecorder()
@@ -275,7 +275,7 @@ func TestTypeHandler(t *testing.T) {
 			defer entRepo.AssertExpectations(t)
 
 			handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, nil)
-			handler.IngestRecord(rw, rr)
+			handler.IngestRecordV1(rw, rr)
 
 			expectedStatus := http.StatusNotFound
 			if rw.Code != expectedStatus {
@@ -334,7 +334,7 @@ func TestTypeHandler(t *testing.T) {
 				})
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, nil)
-				handler.IngestRecord(rw, rr)
+				handler.IngestRecordV1(rw, rr)
 
 				expectedStatus := http.StatusBadRequest
 				if rw.Code != expectedStatus {
@@ -344,7 +344,7 @@ func TestTypeHandler(t *testing.T) {
 			}
 		})
 		t.Run("should return HTTP 500 if the resource creation/update fails", func(t *testing.T) {
-			t.Run("RecordRepositoryFactory fails", func(t *testing.T) {
+			t.Run("RecordV1RepositoryFactory fails", func(t *testing.T) {
 				var payload = `[{"urn": "test dagger", "team": "de", "name": "de-dagger-test", "environment": "test"}]`
 				rr := httptest.NewRequest("PUT", "/", strings.NewReader(payload))
 				rw := httptest.NewRecorder()
@@ -357,12 +357,12 @@ func TestTypeHandler(t *testing.T) {
 				defer entRepo.AssertExpectations(t)
 
 				factoryError := errors.New("unknown error")
-				recordRepoFac := new(mock.RecordRepositoryFactory)
-				recordRepoFac.On("For", daggerType).Return(new(mock.RecordRepository), factoryError)
+				recordRepoFac := new(mock.RecordV1RepositoryFactory)
+				recordRepoFac.On("For", daggerType).Return(new(mock.RecordV1Repository), factoryError)
 				defer recordRepoFac.AssertExpectations(t)
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
-				handler.IngestRecord(rw, rr)
+				handler.IngestRecordV1(rw, rr)
 
 				expectedStatus := http.StatusInternalServerError
 				if rw.Code != expectedStatus {
@@ -378,7 +378,7 @@ func TestTypeHandler(t *testing.T) {
 					return
 				}
 			})
-			t.Run("RecordRepository fails", func(t *testing.T) {
+			t.Run("RecordV1Repository fails", func(t *testing.T) {
 				var records = []map[string]interface{}{
 					{
 						"name":        "de-dagger-test",
@@ -403,16 +403,16 @@ func TestTypeHandler(t *testing.T) {
 				defer entRepo.AssertExpectations(t)
 
 				repositoryErr := errors.New("unknown error")
-				recordRepository := new(mock.RecordRepository)
+				recordRepository := new(mock.RecordV1Repository)
 				recordRepository.On("CreateOrReplaceMany", ctx, records).Return(repositoryErr)
 				defer recordRepository.AssertExpectations(t)
 
-				recordRepoFac := new(mock.RecordRepositoryFactory)
+				recordRepoFac := new(mock.RecordV1RepositoryFactory)
 				recordRepoFac.On("For", daggerType).Return(recordRepository, nil)
 				defer recordRepoFac.AssertExpectations(t)
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
-				handler.IngestRecord(rw, rr)
+				handler.IngestRecordV1(rw, rr)
 
 				expectedStatus := http.StatusInternalServerError
 				if rw.Code != expectedStatus {
@@ -441,7 +441,7 @@ func TestTypeHandler(t *testing.T) {
 			defer typeRepo.AssertExpectations(t)
 
 			handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, nil)
-			handler.IngestRecord(rw, rr)
+			handler.IngestRecordV1(rw, rr)
 
 			if rw.Code != http.StatusBadRequest {
 				t.Errorf("handler returned HTTP %d, expected HTTP %d", rw.Code, http.StatusBadRequest)
@@ -461,7 +461,7 @@ func TestTypeHandler(t *testing.T) {
 			}
 		})
 		t.Run("should return HTTP 200 if the resource is successfully created/update", func(t *testing.T) {
-			var records = []models.Record{
+			var records = []models.RecordV1{
 				{
 					"name":        "de-dagger-test",
 					"urn":         "test dagger",
@@ -483,16 +483,16 @@ func TestTypeHandler(t *testing.T) {
 			entRepo.On("GetByName", ctx, "dagger").Return(daggerType, nil)
 			defer entRepo.AssertExpectations(t)
 
-			recordRepo := new(mock.RecordRepository)
+			recordRepo := new(mock.RecordV1Repository)
 			recordRepo.On("CreateOrReplaceMany", ctx, records).Return(nil)
 			defer recordRepo.AssertExpectations(t)
 
-			recordRepoFac := new(mock.RecordRepositoryFactory)
+			recordRepoFac := new(mock.RecordV1RepositoryFactory)
 			recordRepoFac.On("For", daggerType).Return(recordRepo, nil)
 			defer recordRepoFac.AssertExpectations(t)
 
 			handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
-			handler.IngestRecord(rw, rr)
+			handler.IngestRecordV1(rw, rr)
 
 			expectedStatus := http.StatusOK
 			if rw.Code != expectedStatus {
@@ -598,7 +598,7 @@ func TestTypeHandler(t *testing.T) {
 				er := new(mock.TypeRepository)
 				tc.Setup(&tc, er)
 
-				handler := handlers.NewTypeHandler(new(mock.Logger), er, new(mock.RecordRepositoryFactory))
+				handler := handlers.NewTypeHandler(new(mock.Logger), er, new(mock.RecordV1RepositoryFactory))
 				rr := httptest.NewRequest("GET", "/", nil)
 				rw := httptest.NewRecorder()
 
@@ -663,7 +663,7 @@ func TestTypeHandler(t *testing.T) {
 				tc.Setup(&tc, er)
 				defer er.AssertExpectations(t)
 
-				handler := handlers.NewTypeHandler(new(mock.Logger), er, new(mock.RecordRepositoryFactory))
+				handler := handlers.NewTypeHandler(new(mock.Logger), er, new(mock.RecordV1RepositoryFactory))
 				handler.DeleteType(rw, rr)
 				if rw.Code != tc.ExpectStatus {
 					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
@@ -672,13 +672,13 @@ func TestTypeHandler(t *testing.T) {
 			})
 		}
 	})
-	t.Run("DeleteRecord", func(t *testing.T) {
+	t.Run("DeleteRecordV1", func(t *testing.T) {
 		type testCase struct {
 			Description  string
 			TypeName     string
-			RecordID     string
+			RecordV1ID   string
 			ExpectStatus int
-			Setup        func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository)
+			Setup        func(er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory, rr *mock.RecordV1Repository)
 			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
 		}
 
@@ -686,9 +686,9 @@ func TestTypeHandler(t *testing.T) {
 			{
 				Description:  "should return 204 on success",
 				TypeName:     "sample",
-				RecordID:     "id-10",
+				RecordV1ID:   "id-10",
 				ExpectStatus: http.StatusNoContent,
-				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory, rr *mock.RecordV1Repository) {
 					tr.On("GetByName", ctx, "sample").Return(daggerType, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 					rr.On("Delete", ctx, "id-10").Return(nil)
@@ -697,38 +697,38 @@ func TestTypeHandler(t *testing.T) {
 			{
 				Description:  "should return 404 if type cannot be found",
 				TypeName:     "sample",
-				RecordID:     "id-10",
+				RecordV1ID:   "id-10",
 				ExpectStatus: http.StatusNotFound,
-				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory, rr *mock.RecordV1Repository) {
 					tr.On("GetByName", ctx, "sample").Return(models.Type{}, models.ErrNoSuchType{TypeName: daggerType.Name})
 				},
 			},
 			{
 				Description:  "should return 500 on error fetching type",
 				TypeName:     "sample",
-				RecordID:     "id-10",
+				RecordV1ID:   "id-10",
 				ExpectStatus: http.StatusInternalServerError,
-				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory, rr *mock.RecordV1Repository) {
 					tr.On("GetByName", ctx, "sample").Return(models.Type{}, errors.New("error fetching type"))
 				},
 			},
 			{
 				Description:  "should return 404 when record cannot be found",
 				TypeName:     "sample",
-				RecordID:     "id-10",
+				RecordV1ID:   "id-10",
 				ExpectStatus: http.StatusNotFound,
-				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory, rr *mock.RecordV1Repository) {
 					tr.On("GetByName", ctx, "sample").Return(daggerType, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
-					rr.On("Delete", ctx, "id-10").Return(models.ErrNoSuchRecord{RecordID: "id-10"})
+					rr.On("Delete", ctx, "id-10").Return(models.ErrNoSuchRecordV1{RecordV1ID: "id-10"})
 				},
 			},
 			{
 				Description:  "should return 500 on error deleting record",
 				TypeName:     "sample",
-				RecordID:     "id-10",
+				RecordV1ID:   "id-10",
 				ExpectStatus: http.StatusInternalServerError,
-				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+				Setup: func(tr *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory, rr *mock.RecordV1Repository) {
 					tr.On("GetByName", ctx, "sample").Return(daggerType, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 					rr.On("Delete", ctx, "id-10").Return(errors.New("error deleting record"))
@@ -741,18 +741,18 @@ func TestTypeHandler(t *testing.T) {
 				rw := httptest.NewRecorder()
 				rr = mux.SetURLVars(rr, map[string]string{
 					"name": tc.TypeName,
-					"id":   tc.RecordID,
+					"id":   tc.RecordV1ID,
 				})
 				typeRepo := new(mock.TypeRepository)
-				recordRepo := new(mock.RecordRepository)
-				recordRepoFactory := new(mock.RecordRepositoryFactory)
+				recordRepo := new(mock.RecordV1Repository)
+				recordRepoFactory := new(mock.RecordV1RepositoryFactory)
 				tc.Setup(typeRepo, recordRepoFactory, recordRepo)
 				defer typeRepo.AssertExpectations(t)
 				defer recordRepoFactory.AssertExpectations(t)
 				defer recordRepo.AssertExpectations(t)
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, recordRepoFactory)
-				handler.DeleteRecord(rw, rr)
+				handler.DeleteRecordV1(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {
 					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
@@ -835,7 +835,7 @@ func TestTypeHandler(t *testing.T) {
 				tc.Setup(&tc, er)
 				defer er.AssertExpectations(t)
 
-				handler := handlers.NewTypeHandler(new(mock.Logger), er, new(mock.RecordRepositoryFactory))
+				handler := handlers.NewTypeHandler(new(mock.Logger), er, new(mock.RecordV1RepositoryFactory))
 				handler.GetType(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {
@@ -851,17 +851,17 @@ func TestTypeHandler(t *testing.T) {
 			})
 		}
 	})
-	t.Run("ListTypeRecords", func(t *testing.T) {
+	t.Run("ListTypeRecordV1s", func(t *testing.T) {
 		type testCase struct {
 			Description  string
 			TypeName     string
 			QueryStrings string
 			ExpectStatus int
-			Setup        func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory)
+			Setup        func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory)
 			PostCheck    func(tc *testCase, resp *http.Response) error
 		}
 
-		var daggerRecords = []models.Record{
+		var daggerRecordV1s = []models.RecordV1{
 			{
 				"urn":         "test-fh-1",
 				"owner":       "de",
@@ -882,7 +882,7 @@ func TestTypeHandler(t *testing.T) {
 				TypeName:     "invalid",
 				QueryStrings: "filter.environment=test",
 				ExpectStatus: http.StatusNotFound,
-				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
+				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory) {
 					er.On("GetByName", ctx, "invalid").Return(models.Type{}, models.ErrNoSuchType{"invalid"})
 				},
 			},
@@ -891,10 +891,10 @@ func TestTypeHandler(t *testing.T) {
 				TypeName:     "dagger",
 				QueryStrings: "filter.environment=nonexisting",
 				ExpectStatus: http.StatusOK,
-				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
+				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
-					rr := new(mock.RecordRepository)
-					rr.On("GetAll", ctx, map[string][]string{"environment": {"nonexisting"}}).Return(daggerRecords, nil)
+					rr := new(mock.RecordV1Repository)
+					rr.On("GetAll", ctx, map[string][]string{"environment": {"nonexisting"}}).Return(daggerRecordV1s, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 			},
@@ -903,10 +903,10 @@ func TestTypeHandler(t *testing.T) {
 				TypeName:     "dagger",
 				QueryStrings: "",
 				ExpectStatus: http.StatusOK,
-				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
+				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
-					rr := new(mock.RecordRepository)
-					rr.On("GetAll", ctx, map[string][]string{}).Return(daggerRecords, nil)
+					rr := new(mock.RecordV1Repository)
+					rr.On("GetAll", ctx, map[string][]string{}).Return(daggerRecordV1s, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 			},
@@ -915,21 +915,21 @@ func TestTypeHandler(t *testing.T) {
 				TypeName:     "dagger",
 				QueryStrings: "filter.environment=test",
 				ExpectStatus: http.StatusOK,
-				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
+				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
-					rr := new(mock.RecordRepository)
-					rr.On("GetAll", ctx, map[string][]string{"environment": {"test"}}).Return(daggerRecords, nil)
+					rr := new(mock.RecordV1Repository)
+					rr.On("GetAll", ctx, map[string][]string{"environment": {"test"}}).Return(daggerRecordV1s, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
-					var response []models.Record
+					var response []models.RecordV1
 					err := json.NewDecoder(resp.Body).Decode(&response)
 					if err != nil {
 						return fmt.Errorf("error parsing response payload: %v", err)
 					}
 					// TODO: more useful error messages
-					if reflect.DeepEqual(response, daggerRecords) == false {
-						return fmt.Errorf("expected handler to return %v, returned %v instead", daggerRecords, response)
+					if reflect.DeepEqual(response, daggerRecordV1s) == false {
+						return fmt.Errorf("expected handler to return %v, returned %v instead", daggerRecordV1s, response)
 					}
 					return nil
 				},
@@ -939,32 +939,32 @@ func TestTypeHandler(t *testing.T) {
 				TypeName:     "dagger",
 				QueryStrings: "filter.environment=test&select=" + url.QueryEscape("urn,owner"),
 				ExpectStatus: http.StatusOK,
-				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
+				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
-					rr := new(mock.RecordRepository)
-					rr.On("GetAll", ctx, map[string][]string{"environment": {"test"}}).Return(daggerRecords, nil)
+					rr := new(mock.RecordV1Repository)
+					rr.On("GetAll", ctx, map[string][]string{"environment": {"test"}}).Return(daggerRecordV1s, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
-					var expectRecords []models.Record
+					var expectRecordV1s []models.RecordV1
 					var fields = []string{
 						"urn",
 						"owner",
 					}
-					for _, record := range daggerRecords {
-						var expectRecord = make(models.Record)
+					for _, record := range daggerRecordV1s {
+						var expectRecordV1 = make(models.RecordV1)
 						for _, field := range fields {
-							expectRecord[field] = record[field]
+							expectRecordV1[field] = record[field]
 						}
-						expectRecords = append(expectRecords, expectRecord)
+						expectRecordV1s = append(expectRecordV1s, expectRecordV1)
 					}
-					var response []models.Record
+					var response []models.RecordV1
 					err := json.NewDecoder(resp.Body).Decode(&response)
 					if err != nil {
 						return fmt.Errorf("error parsing response payload: %v", err)
 					}
-					if reflect.DeepEqual(response, expectRecords) == false {
-						return fmt.Errorf("expected handler to return %v, returned %v instead", expectRecords, response)
+					if reflect.DeepEqual(response, expectRecordV1s) == false {
+						return fmt.Errorf("expected handler to return %v, returned %v instead", expectRecordV1s, response)
 					}
 					return nil
 				},
@@ -974,25 +974,25 @@ func TestTypeHandler(t *testing.T) {
 				TypeName:     "dagger",
 				QueryStrings: "filter.environment=test&filter.landscape=id&filter.entity=odpf",
 				ExpectStatus: http.StatusOK,
-				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
+				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
-					rr := new(mock.RecordRepository)
+					rr := new(mock.RecordV1Repository)
 					filters := map[string][]string{
 						"landscape":   {"id"},
 						"entity":      {"odpf"},
 						"environment": {"test"},
 					}
-					rr.On("GetAll", ctx, filters).Return(daggerRecords, nil)
+					rr.On("GetAll", ctx, filters).Return(daggerRecordV1s, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
-					var response []models.Record
+					var response []models.RecordV1
 					err := json.NewDecoder(resp.Body).Decode(&response)
 					if err != nil {
 						return fmt.Errorf("error parsing response payload: %v", err)
 					}
-					if reflect.DeepEqual(response, daggerRecords) == false {
-						return fmt.Errorf("expected handler to return %v, returned %v instead", daggerRecords, response)
+					if reflect.DeepEqual(response, daggerRecordV1s) == false {
+						return fmt.Errorf("expected handler to return %v, returned %v instead", daggerRecordV1s, response)
 					}
 					return nil
 				},
@@ -1002,9 +1002,9 @@ func TestTypeHandler(t *testing.T) {
 				TypeName:     "dagger",
 				QueryStrings: "filter.environment=test",
 				ExpectStatus: http.StatusInternalServerError,
-				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
+				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
-					rr := new(mock.RecordRepository)
+					rr := new(mock.RecordV1Repository)
 					err := fmt.Errorf("something went wrong")
 					rrf.On("For", daggerType).Return(rr, err)
 				},
@@ -1014,11 +1014,11 @@ func TestTypeHandler(t *testing.T) {
 				TypeName:     "dagger",
 				QueryStrings: "filter.environment=test",
 				ExpectStatus: http.StatusInternalServerError,
-				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
+				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
-					rr := new(mock.RecordRepository)
+					rr := new(mock.RecordV1Repository)
 					err := fmt.Errorf("temporarily unavailable")
-					rr.On("GetAll", ctx, map[string][]string{"environment": {"test"}}).Return([]models.Record{}, err)
+					rr.On("GetAll", ctx, map[string][]string{"environment": {"test"}}).Return([]models.RecordV1{}, err)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 			},
@@ -1031,11 +1031,11 @@ func TestTypeHandler(t *testing.T) {
 					"name": tc.TypeName,
 				})
 				er := new(mock.TypeRepository)
-				rrf := new(mock.RecordRepositoryFactory)
+				rrf := new(mock.RecordV1RepositoryFactory)
 				tc.Setup(&tc, er, rrf)
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), er, rrf)
-				handler.ListTypeRecords(rw, rr)
+				handler.ListTypeRecordV1s(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {
 					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
@@ -1050,16 +1050,16 @@ func TestTypeHandler(t *testing.T) {
 			})
 		}
 	})
-	t.Run("GetTypeRecord", func(t *testing.T) {
+	t.Run("GetTypeRecordV1", func(t *testing.T) {
 		var deployment01 = map[string]interface{}{
 			"contents": "data",
 		}
 		type testCase struct {
 			Description  string
 			TypeName     string
-			RecordID     string
+			RecordV1ID   string
 			ExpectStatus int
-			Setup        func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory)
+			Setup        func(er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory)
 			PostCheck    func(resp *http.Response) error
 		}
 
@@ -1067,48 +1067,48 @@ func TestTypeHandler(t *testing.T) {
 			{
 				Description:  `should return http 404 if the record doesn't exist`,
 				TypeName:     "dagger",
-				RecordID:     "record01",
+				RecordV1ID:   "record01",
 				ExpectStatus: http.StatusNotFound,
-				Setup: func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
+				Setup: func(er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory) {
 					er.On("GetByName", ctx, "dagger").Return(daggerType, nil)
-					recordRepo := new(mock.RecordRepository)
-					recordRepo.On("GetByID", ctx, "record01").Return(map[string]interface{}{}, models.ErrNoSuchRecord{"record01"})
+					recordRepo := new(mock.RecordV1Repository)
+					recordRepo.On("GetByID", ctx, "record01").Return(map[string]interface{}{}, models.ErrNoSuchRecordV1{"record01"})
 					rrf.On("For", daggerType).Return(recordRepo, nil)
 				},
 			},
 			{
 				Description:  `should return http 404 if the type doesn't exist`,
 				TypeName:     "nonexistant",
-				RecordID:     "record",
+				RecordV1ID:   "record",
 				ExpectStatus: http.StatusNotFound,
-				Setup: func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
+				Setup: func(er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory) {
 					er.On("GetByName", ctx, "nonexistant").Return(models.Type{}, models.ErrNoSuchType{"nonexistant"})
 				},
 			},
 			{
 				Description:  "(internal) should return an http 500 if the handler fails to construct recordRepository",
 				TypeName:     "dagger",
-				RecordID:     "record",
+				RecordV1ID:   "record",
 				ExpectStatus: http.StatusInternalServerError,
-				Setup: func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
+				Setup: func(er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory) {
 					errSomethingBadHappened := fmt.Errorf("something bad happened")
 					er.On("GetByName", ctx, "dagger").Return(daggerType, nil)
-					rrf.On("For", daggerType).Return(new(mock.RecordRepository), errSomethingBadHappened)
+					rrf.On("For", daggerType).Return(new(mock.RecordV1Repository), errSomethingBadHappened)
 				},
 			},
 			{
 				Description:  "should return http 200 status along with the record, if found",
 				TypeName:     "dagger",
-				RecordID:     "deployment01",
+				RecordV1ID:   "deployment01",
 				ExpectStatus: http.StatusOK,
-				Setup: func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
+				Setup: func(er *mock.TypeRepository, rrf *mock.RecordV1RepositoryFactory) {
 					er.On("GetByName", ctx, "dagger").Return(daggerType, nil)
-					recordRepo := new(mock.RecordRepository)
+					recordRepo := new(mock.RecordV1Repository)
 					recordRepo.On("GetByID", ctx, "deployment01").Return(deployment01, nil)
 					rrf.On("For", daggerType).Return(recordRepo, nil)
 				},
 				PostCheck: func(r *http.Response) error {
-					var record models.Record
+					var record models.RecordV1
 					err := json.NewDecoder(r.Body).Decode(&record)
 					if err != nil {
 						return fmt.Errorf("error reading response body: %w", err)
@@ -1126,16 +1126,16 @@ func TestTypeHandler(t *testing.T) {
 				rw := httptest.NewRecorder()
 				rr = mux.SetURLVars(rr, map[string]string{
 					"name": tc.TypeName,
-					"id":   tc.RecordID,
+					"id":   tc.RecordV1ID,
 				})
 				typeRepo := new(mock.TypeRepository)
-				recordRepoFac := new(mock.RecordRepositoryFactory)
+				recordRepoFac := new(mock.RecordV1RepositoryFactory)
 				if tc.Setup != nil {
 					tc.Setup(typeRepo, recordRepoFac)
 				}
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, recordRepoFac)
-				handler.GetTypeRecord(rw, rr)
+				handler.GetTypeRecordV1(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {
 					t.Errorf("expected handler to return http %d, returned %d instead", tc.ExpectStatus, rw.Code)

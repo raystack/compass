@@ -10,22 +10,22 @@ import (
 )
 
 type Config struct {
-	Logger                  logrus.FieldLogger
-	TypeRepository          models.TypeRepository
-	RecordRepositoryFactory models.RecordRepositoryFactory
-	RecordSearcher          models.RecordSearcher
-	LineageProvider         handlers.LineageProvider
+	Logger                    logrus.FieldLogger
+	TypeRepository            models.TypeRepository
+	RecordV1RepositoryFactory models.RecordV1RepositoryFactory
+	RecordV1Searcher          models.RecordV1Searcher
+	LineageProvider           handlers.LineageProvider
 }
 
 func RegisterRoutes(router *mux.Router, config Config) {
 	typeHandler := handlers.NewTypeHandler(
 		config.Logger.WithField("reporter", "type-handler"),
 		config.TypeRepository,
-		config.RecordRepositoryFactory,
+		config.RecordV1RepositoryFactory,
 	)
 	searchHandler := handlers.NewSearchHandler(
 		config.Logger.WithField("reporter", "search-handler"),
-		config.RecordSearcher,
+		config.RecordV1Searcher,
 		config.TypeRepository,
 	)
 
@@ -61,7 +61,7 @@ func setupTypeRoutes(router *mux.Router, baseURL string, typeHandler *handlers.T
 
 	router.Path(baseURL+"/{name}/records").
 		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(typeHandler.ListTypeRecords)
+		HandlerFunc(typeHandler.ListTypeRecordV1s)
 
 	router.Path(baseURL).
 		Methods(http.MethodPut).
@@ -73,13 +73,13 @@ func setupTypeRoutes(router *mux.Router, baseURL string, typeHandler *handlers.T
 
 	router.Path(baseURL + "/{name}/records/{id}").
 		Methods(http.MethodDelete).
-		HandlerFunc(typeHandler.DeleteRecord)
+		HandlerFunc(typeHandler.DeleteRecordV1)
 
 	router.Path(baseURL + "/{name}/records").
 		Methods(http.MethodPut).
-		HandlerFunc(typeHandler.IngestRecord)
+		HandlerFunc(typeHandler.IngestRecordV1)
 
 	router.Path(baseURL+"/{name}/records/{id}").
 		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(typeHandler.GetTypeRecord)
+		HandlerFunc(typeHandler.GetTypeRecordV1)
 }

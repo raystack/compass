@@ -16,17 +16,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRecordRepository(t *testing.T) {
+func TestRecordV1Repository(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("CreateOrReplaceMany", func(t *testing.T) {
 		var testCases = []struct {
 			Title      string
 			ShouldFail bool
-			Setup      func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error
-			PostCheck  func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error
+			Setup      func(cli *elasticsearch.Client, records []models.RecordV1, recordType models.Type) error
+			PostCheck  func(cli *elasticsearch.Client, records []models.RecordV1, recordType models.Type) error
 			Type       models.Type
-			Records    []models.Record
+			RecordV1s  []models.RecordV1
 		}{
 			{
 				Title:      "should return an error if the type under which the records are inserted does not exist",
@@ -34,7 +34,7 @@ func TestRecordRepository(t *testing.T) {
 				Type: models.Type{
 					Name: "i-dont-exist",
 				},
-				Records: []models.Record{
+				RecordV1s: []models.RecordV1{
 					{
 						"foo": "bar",
 					},
@@ -51,7 +51,7 @@ func TestRecordRepository(t *testing.T) {
 						Labels: []string{"landscape"},
 					},
 				},
-				Records: []models.Record{
+				RecordV1s: []models.RecordV1{
 					{
 						"data": "foo",
 						"urn":  "dagger1",
@@ -65,10 +65,10 @@ func TestRecordRepository(t *testing.T) {
 						"urn":  "dagger3",
 					},
 				},
-				Setup: func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error {
+				Setup: func(cli *elasticsearch.Client, records []models.RecordV1, recordType models.Type) error {
 					return store.NewTypeRepository(cli).CreateOrReplace(ctx, recordType)
 				},
-				PostCheck: func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error {
+				PostCheck: func(cli *elasticsearch.Client, records []models.RecordV1, recordType models.Type) error {
 					searchReq := esapi.SearchRequest{
 						Index: []string{recordType.Name},
 						Body:  strings.NewReader(`{"query":{"match_all":{}}}`),
@@ -103,18 +103,18 @@ func TestRecordRepository(t *testing.T) {
 			t.Run(testCase.Title, func(t *testing.T) {
 				cli := esTestServer.NewClient()
 				if testCase.Setup != nil {
-					err := testCase.Setup(cli, testCase.Records, testCase.Type)
+					err := testCase.Setup(cli, testCase.RecordV1s, testCase.Type)
 					if err != nil {
 						t.Errorf("error setting up testcase: %v", err)
 					}
 				}
-				factory := store.NewRecordRepositoryFactory(cli)
+				factory := store.NewRecordV1RepositoryFactory(cli)
 				repo, err := factory.For(testCase.Type)
 				if err != nil {
 					t.Fatalf("error creating record repository: %s", err)
 				}
 
-				err = repo.CreateOrReplaceMany(ctx, testCase.Records)
+				err = repo.CreateOrReplaceMany(ctx, testCase.RecordV1s)
 				if testCase.ShouldFail {
 					assert.Error(t, err)
 				} else if err != nil {
@@ -122,7 +122,7 @@ func TestRecordRepository(t *testing.T) {
 					return
 				}
 				if testCase.PostCheck != nil {
-					if err := testCase.PostCheck(cli, testCase.Records, testCase.Type); err != nil {
+					if err := testCase.PostCheck(cli, testCase.RecordV1s, testCase.Type); err != nil {
 						t.Error(err)
 						return
 					}
@@ -143,7 +143,7 @@ func TestRecordRepository(t *testing.T) {
 		return
 	}
 
-	rrf := store.NewRecordRepositoryFactory(cli)
+	rrf := store.NewRecordV1RepositoryFactory(cli)
 	recordRepo, err := rrf.For(daggerType)
 	if err != nil {
 		t.Fatalf("failed to construct record repository: %v", err)
@@ -151,7 +151,7 @@ func TestRecordRepository(t *testing.T) {
 	}
 
 	src, err := ioutil.ReadFile("./testdata/dagger.json")
-	var records []models.Record
+	var records []models.RecordV1
 	err = json.Unmarshal(src, &records)
 	if err != nil {
 		t.Fatalf("error reading testdata: %v", err)
@@ -166,7 +166,7 @@ func TestRecordRepository(t *testing.T) {
 	t.Run("GetAll", func(t *testing.T) {
 		type testCase struct {
 			Description string
-			Filter      models.RecordFilter
+			Filter      models.RecordV1Filter
 			ResultsFile string
 		}
 
@@ -202,7 +202,7 @@ func TestRecordRepository(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.Description, func(t *testing.T) {
-				expectedResults := []models.Record{}
+				expectedResults := []models.RecordV1{}
 				raw, err := ioutil.ReadFile(tc.ResultsFile)
 				if err != nil {
 					t.Fatalf("error reading results file: %v", err)
@@ -248,7 +248,7 @@ func TestRecordRepository(t *testing.T) {
 		t.Run("should return an error if a non-existent record is requested", func(t *testing.T) {
 			var id = "this-doesnt-exists"
 			_, err := recordRepo.GetByID(ctx, id)
-			_, ok := err.(models.ErrNoSuchRecord)
+			_, ok := err.(models.ErrNoSuchRecordV1)
 			assert.True(t, ok)
 		})
 	})
@@ -273,7 +273,7 @@ func TestRecordRepository(t *testing.T) {
 		t.Run("should return custom error when record could not be found", func(t *testing.T) {
 			err := recordRepo.Delete(ctx, "not-found-id")
 			assert.NotNil(t, err)
-			assert.IsType(t, models.ErrNoSuchRecord{}, err)
+			assert.IsType(t, models.ErrNoSuchRecordV1{}, err)
 		})
 	})
 }

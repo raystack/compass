@@ -26,7 +26,7 @@ type SearcherConfig struct {
 	CachedTypesDuration int
 }
 
-// Searcher is an implementation of models.RecordSearcher
+// Searcher is an implementation of models.RecordV1Searcher
 type Searcher struct {
 	cli                 *elasticsearch.Client
 	typeWhiteList       []string
@@ -197,7 +197,7 @@ func (sr *Searcher) toSearchResults(hits []searchHit) (results []models.SearchRe
 	for _, hit := range hits {
 		results = append(results, models.SearchResult{
 			TypeName: hit.Index,
-			Record:   hit.Source,
+			RecordV1: hit.Source,
 		})
 	}
 	return

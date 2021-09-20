@@ -21,8 +21,8 @@ type searchQuery struct {
 }
 
 type searchHit struct {
-	Index  string        `json:"_index"`
-	Source models.Record `json:"_source"`
+	Index  string          `json:"_index"`
+	Source models.RecordV1 `json:"_source"`
 }
 
 type searchResponse struct {

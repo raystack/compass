@@ -9,7 +9,7 @@ import (
 
 // Builder encapsulates the algorithm for building a graph
 type Builder interface {
-	Build(context.Context, models.TypeRepository, models.RecordRepositoryFactory) (Graph, error)
+	Build(context.Context, models.TypeRepository, models.RecordV1RepositoryFactory) (Graph, error)
 }
 
 var DefaultBuilder = defaultBuilder{}
@@ -38,7 +38,7 @@ type defaultBuilder struct{}
 // If any reference'd record is not found in the graph, the algorithm gives up and looks at the next related entry.
 // This has the effect of phatom references in graph: A resource may refer another resource in the graph, but that resource
 // may not be available in the graph
-func (builder defaultBuilder) Build(ctx context.Context, er models.TypeRepository, rrf models.RecordRepositoryFactory) (Graph, error) {
+func (builder defaultBuilder) Build(ctx context.Context, er models.TypeRepository, rrf models.RecordV1RepositoryFactory) (Graph, error) {
 	typs, err := er.GetAll(ctx)
 	if err != nil {
 		return InMemoryGraph{}, fmt.Errorf("error loading type metadata: %w", err)
@@ -46,7 +46,7 @@ func (builder defaultBuilder) Build(ctx context.Context, er models.TypeRepositor
 
 	var graph = make(AdjacencyMap)
 	for _, typ := range typs {
-		if err := builder.populateTypeRecords(ctx, graph, typ, rrf); err != nil {
+		if err := builder.populateTypeRecordV1s(ctx, graph, typ, rrf); err != nil {
 			return InMemoryGraph{}, fmt.Errorf("error parsing type records: %w", err)
 		}
 	}
@@ -99,18 +99,18 @@ func (builder defaultBuilder) opposite(dir models.DataflowDir) (models.DataflowD
 // load the records for a type onto the graph
 // if type definition has a valid "lineage" field
 // it will be used for obtaining the values for downstreams and upstreams.
-func (builder defaultBuilder) populateTypeRecords(ctx context.Context, graph AdjacencyMap, typ models.Type, rrf models.RecordRepositoryFactory) error {
+func (builder defaultBuilder) populateTypeRecordV1s(ctx context.Context, graph AdjacencyMap, typ models.Type, rrf models.RecordV1RepositoryFactory) error {
 	lineageProc := newLineageProcessor(typ.Lineage)
 	recordRepository, err := rrf.For(typ)
 	if err != nil {
 		return fmt.Errorf("error obtaing record repository: %w", err)
 	}
-	records, err := recordRepository.GetAll(ctx, models.RecordFilter{})
+	records, err := recordRepository.GetAll(ctx, models.RecordV1Filter{})
 	if err != nil {
 		return fmt.Errorf("error reading records for type %q: %w", typ.Name, err)
 	}
 	for _, record := range records {
-		if err := builder.addRecord(graph, typ, record, lineageProc); err != nil {
+		if err := builder.addRecordV1(graph, typ, record, lineageProc); err != nil {
 			return fmt.Errorf("error adding record to graph: %w", err)
 		}
 	}
@@ -119,7 +119,7 @@ func (builder defaultBuilder) populateTypeRecords(ctx context.Context, graph Adj
 
 // add the corresponding records to graph.
 // Uses lineageProcessor to obtain information about upstreams/downstreams
-func (builder defaultBuilder) addRecord(graph AdjacencyMap, typ models.Type, record models.Record, lineageProcessor lineageProcessor) error {
+func (builder defaultBuilder) addRecordV1(graph AdjacencyMap, typ models.Type, record models.RecordV1, lineageProcessor lineageProcessor) error {
 	recordID, ok := record[typ.Fields.ID].(string)
 	if !ok {
 		return fmt.Errorf("record missing ID field; record=%#v type=%#v", record, typ)
@@ -144,6 +144,6 @@ type StaticGraphBuilder struct {
 	Graph InMemoryGraph
 }
 
-func (bld StaticGraphBuilder) Build(models.TypeRepository, models.RecordRepositoryFactory) (Graph, error) {
+func (bld StaticGraphBuilder) Build(models.TypeRepository, models.RecordV1RepositoryFactory) (Graph, error) {
 	return bld.Graph, nil
 }

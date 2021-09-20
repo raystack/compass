@@ -35,11 +35,11 @@ func init() {
 // TypeHandler exposes a REST interface to types
 type TypeHandler struct {
 	typeRepo                models.TypeRepository
-	recordRepositoryFactory models.RecordRepositoryFactory
+	recordRepositoryFactory models.RecordV1RepositoryFactory
 	log                     logrus.FieldLogger
 }
 
-func NewTypeHandler(log logrus.FieldLogger, er models.TypeRepository, rrf models.RecordRepositoryFactory) *TypeHandler {
+func NewTypeHandler(log logrus.FieldLogger, er models.TypeRepository, rrf models.RecordV1RepositoryFactory) *TypeHandler {
 	handler := &TypeHandler{
 		typeRepo:                er,
 		recordRepositoryFactory: rrf,
@@ -147,7 +147,7 @@ func (handler *TypeHandler) DeleteType(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusNoContent, "success")
 }
 
-func (handler *TypeHandler) DeleteRecord(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) DeleteRecordV1(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var (
 		typeName = vars["name"]
@@ -184,7 +184,7 @@ func (handler *TypeHandler) DeleteRecord(w http.ResponseWriter, r *http.Request)
 		handler.log.
 			Errorf("error deleting record \"%s\": %v", typeName, err)
 
-		if _, ok := err.(models.ErrNoSuchRecord); ok {
+		if _, ok := err.(models.ErrNoSuchRecordV1); ok {
 			statusCode = http.StatusNotFound
 			errMessage = err.Error()
 		}
@@ -197,7 +197,7 @@ func (handler *TypeHandler) DeleteRecord(w http.ResponseWriter, r *http.Request)
 	writeJSON(w, http.StatusNoContent, "success")
 }
 
-func (handler *TypeHandler) IngestRecord(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) IngestRecordV1(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
 	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
 	if err != nil {
@@ -209,24 +209,24 @@ func (handler *TypeHandler) IngestRecord(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	var records []models.Record
+	var records []models.RecordV1
 	err = json.NewDecoder(r.Body).Decode(&records)
 	if err != nil {
 		writeJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
 		return
 	}
 
-	var failedRecords = make(map[int]string)
+	var failedRecordV1s = make(map[int]string)
 	for idx, record := range records {
-		if err := handler.validateRecord(recordType, record); err != nil {
+		if err := handler.validateRecordV1(recordType, record); err != nil {
 			handler.log.WithField("type", recordType).
 				WithField("record", record).
 				Errorf("error validating record: %v", err)
-			failedRecords[idx] = err.Error()
+			failedRecordV1s[idx] = err.Error()
 		}
 	}
-	if len(failedRecords) > 0 {
-		writeJSON(w, http.StatusBadRequest, NewValidationErrorResponse(failedRecords))
+	if len(failedRecordV1s) > 0 {
+		writeJSON(w, http.StatusBadRequest, NewValidationErrorResponse(failedRecordV1s))
 		return
 	}
 
@@ -251,7 +251,7 @@ func (handler *TypeHandler) IngestRecord(w http.ResponseWriter, r *http.Request)
 	writeJSON(w, http.StatusOK, StatusResponse{Status: "success"})
 }
 
-func (handler *TypeHandler) ListTypeRecords(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) ListTypeRecordV1s(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
 	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
 	if err != nil {
@@ -281,12 +281,12 @@ func (handler *TypeHandler) ListTypeRecords(w http.ResponseWriter, r *http.Reque
 
 	fieldsToSelect := handler.parseSelectQuery(r.URL.Query().Get("select"))
 	if len(fieldsToSelect) > 0 {
-		records = handler.selectRecordFields(fieldsToSelect, records)
+		records = handler.selectRecordV1Fields(fieldsToSelect, records)
 	}
 	writeJSON(w, http.StatusOK, records)
 }
 
-func (handler *TypeHandler) GetTypeRecord(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) GetTypeRecordV1(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var (
 		typeName = vars["name"]
@@ -338,22 +338,22 @@ func (handler *TypeHandler) parseSelectQuery(raw string) (fields []string) {
 	return
 }
 
-func (handler *TypeHandler) selectRecordFields(fields []string, records []models.Record) (processedRecords []models.Record) {
+func (handler *TypeHandler) selectRecordV1Fields(fields []string, records []models.RecordV1) (processedRecordV1s []models.RecordV1) {
 	for _, record := range records {
-		currentRecord := make(models.Record)
+		currentRecordV1 := make(models.RecordV1)
 		for _, field := range fields {
 			v, ok := record[field]
 			if !ok {
 				continue
 			}
-			currentRecord[field] = v
+			currentRecordV1[field] = v
 		}
-		processedRecords = append(processedRecords, currentRecord)
+		processedRecordV1s = append(processedRecordV1s, currentRecordV1)
 	}
 	return
 }
 
-func (handler *TypeHandler) validateRecord(recordType models.Type, record map[string]interface{}) error {
+func (handler *TypeHandler) validateRecordV1(recordType models.Type, record map[string]interface{}) error {
 	var shouldHave = []string{recordType.Fields.Title, recordType.Fields.ID}
 	for _, key := range shouldHave {
 		val, ok := record[key]
@@ -405,7 +405,7 @@ func (handler *TypeHandler) validateType(e models.Type) error {
 
 func (handler *TypeHandler) responseStatusForError(err error) (int, string) {
 	switch err.(type) {
-	case models.ErrNoSuchType, models.ErrNoSuchRecord:
+	case models.ErrNoSuchType, models.ErrNoSuchRecordV1:
 		return http.StatusNotFound, err.Error()
 	}
 	return http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)

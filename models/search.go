@@ -11,7 +11,7 @@ type SearchConfig struct {
 
 	// Filters specifies document level values to look for.
 	// Multiple values can be specified for a single key
-	Filters RecordFilter
+	Filters RecordV1Filter
 
 	// Number of relevant results to return
 	MaxResults int
@@ -24,12 +24,12 @@ type SearchConfig struct {
 // SearchResult represents an individual result item
 type SearchResult struct {
 	TypeName string
-	Record   Record
+	RecordV1 RecordV1
 }
 
-// RecordSearcher is an interface representing the ability
+// RecordV1Searcher is an interface representing the ability
 // to search records. The search is intended to be fuzzy over
 // the fields of the records, while also supporting filter criteria
-type RecordSearcher interface {
+type RecordV1Searcher interface {
 	Search(ctx context.Context, cfg SearchConfig) ([]SearchResult, error)
 }

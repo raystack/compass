@@ -34,44 +34,44 @@ func (repo *TypeRepository) Delete(ctx context.Context, typeName string) error {
 	return args.Error(0)
 }
 
-type RecordRepositoryFactory struct {
+type RecordV1RepositoryFactory struct {
 	mock.Mock
 }
 
-func (fac *RecordRepositoryFactory) For(e models.Type) (models.RecordRepository, error) {
+func (fac *RecordV1RepositoryFactory) For(e models.Type) (models.RecordV1Repository, error) {
 	args := fac.Called(e)
-	return args.Get(0).(models.RecordRepository), args.Error(1)
+	return args.Get(0).(models.RecordV1Repository), args.Error(1)
 }
 
-type RecordRepository struct {
+type RecordV1Repository struct {
 	mock.Mock
 }
 
-func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []models.Record) error {
+func (repo *RecordV1Repository) CreateOrReplaceMany(ctx context.Context, records []models.RecordV1) error {
 	args := repo.Called(ctx, records)
 	return args.Error(0)
 }
 
-func (repo *RecordRepository) GetAll(ctx context.Context, filter models.RecordFilter) ([]models.Record, error) {
+func (repo *RecordV1Repository) GetAll(ctx context.Context, filter models.RecordV1Filter) ([]models.RecordV1, error) {
 	args := repo.Called(ctx, filter)
-	return args.Get(0).([]models.Record), args.Error(1)
+	return args.Get(0).([]models.RecordV1), args.Error(1)
 }
 
-func (repo *RecordRepository) GetByID(ctx context.Context, id string) (models.Record, error) {
+func (repo *RecordV1Repository) GetByID(ctx context.Context, id string) (models.RecordV1, error) {
 	args := repo.Called(ctx, id)
-	return args.Get(0).(models.Record), args.Error(1)
+	return args.Get(0).(models.RecordV1), args.Error(1)
 }
 
-func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
+func (repo *RecordV1Repository) Delete(ctx context.Context, id string) error {
 	args := repo.Called(ctx, id)
 	return args.Error(0)
 }
 
-type RecordSearcher struct {
+type RecordV1Searcher struct {
 	mock.Mock
 }
 
-func (searcher *RecordSearcher) Search(ctx context.Context, cfg models.SearchConfig) ([]models.SearchResult, error) {
+func (searcher *RecordV1Searcher) Search(ctx context.Context, cfg models.SearchConfig) ([]models.SearchResult, error) {
 	args := searcher.Called(ctx, cfg)
 	return args.Get(0).([]models.SearchResult), args.Error(1)
 }

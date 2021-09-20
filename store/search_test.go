@@ -13,8 +13,8 @@ import (
 )
 
 type searchTestData struct {
-	Type    models.Type     `json:"type"`
-	Records []models.Record `json:"records"`
+	Type      models.Type       `json:"type"`
+	RecordV1s []models.RecordV1 `json:"records"`
 }
 
 func TestSearch(t *testing.T) {
@@ -202,8 +202,8 @@ func TestSearch(t *testing.T) {
 		}
 
 		type expectedRow struct {
-			Type     string `json:"type"`
-			RecordID string `json:"record_id"`
+			Type       string `json:"type"`
+			RecordV1ID string `json:"record_id"`
 		}
 		type searchTest struct {
 			Description    string
@@ -218,9 +218,9 @@ func TestSearch(t *testing.T) {
 					Text: "topic",
 				},
 				Expected: []expectedRow{
-					{Type: "topic", RecordID: "order-topic"},
-					{Type: "topic", RecordID: "purchase-topic"},
-					{Type: "topic", RecordID: "consumer-topic"},
+					{Type: "topic", RecordV1ID: "order-topic"},
+					{Type: "topic", RecordV1ID: "purchase-topic"},
+					{Type: "topic", RecordV1ID: "consumer-topic"},
 				},
 			},
 			{
@@ -229,9 +229,9 @@ func TestSearch(t *testing.T) {
 					Text: "tpic",
 				},
 				Expected: []expectedRow{
-					{Type: "topic", RecordID: "order-topic"},
-					{Type: "topic", RecordID: "purchase-topic"},
-					{Type: "topic", RecordID: "consumer-topic"},
+					{Type: "topic", RecordV1ID: "order-topic"},
+					{Type: "topic", RecordV1ID: "purchase-topic"},
+					{Type: "topic", RecordV1ID: "consumer-topic"},
 				},
 			},
 			{
@@ -240,9 +240,9 @@ func TestSearch(t *testing.T) {
 					Text: "invoice",
 				},
 				Expected: []expectedRow{
-					{Type: "database", RecordID: "au2-microsoft-invoice"},
-					{Type: "database", RecordID: "us1-apple-invoice"},
-					{Type: "topic", RecordID: "transaction"},
+					{Type: "database", RecordV1ID: "au2-microsoft-invoice"},
+					{Type: "database", RecordV1ID: "us1-apple-invoice"},
+					{Type: "topic", RecordV1ID: "transaction"},
 				},
 			},
 			{
@@ -254,8 +254,8 @@ func TestSearch(t *testing.T) {
 					},
 				},
 				Expected: []expectedRow{
-					{Type: "topic", RecordID: "order-topic"},
-					{Type: "topic", RecordID: "consumer-topic"},
+					{Type: "topic", RecordV1ID: "order-topic"},
+					{Type: "topic", RecordV1ID: "consumer-topic"},
 				},
 				MatchTotalRows: true,
 			},
@@ -270,7 +270,7 @@ func TestSearch(t *testing.T) {
 					},
 				},
 				Expected: []expectedRow{
-					{Type: "topic", RecordID: "consumer-topic"},
+					{Type: "topic", RecordV1ID: "consumer-topic"},
 				},
 				MatchTotalRows: true,
 			},
@@ -290,7 +290,7 @@ func TestSearch(t *testing.T) {
 				for i, res := range test.Expected {
 					recordIDKey := typesMap[res.Type].Fields.ID
 					assert.Equal(t, res.Type, results[i].TypeName)
-					assert.Equal(t, res.RecordID, results[i].Record[recordIDKey])
+					assert.Equal(t, res.RecordV1ID, results[i].RecordV1[recordIDKey])
 				}
 			})
 		}
@@ -300,7 +300,7 @@ func TestSearch(t *testing.T) {
 func buildSampleSearchData(typeName string) searchTestData {
 	return searchTestData{
 		Type: models.Type{Name: typeName, Fields: models.TypeFields{ID: "urn"}},
-		Records: []models.Record{{
+		RecordV1s: []models.RecordV1{{
 			"urn":       "sample-test-1",
 			"landscape": "id",
 			"title":     "sample test",
@@ -327,8 +327,8 @@ func populateSearchData(esClient *elasticsearch.Client, data []searchTestData) (
 			return types, err
 		}
 
-		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(sample.Type)
-		if err := recordRepo.CreateOrReplaceMany(ctx, sample.Records); err != nil {
+		recordRepo, _ := store.NewRecordV1RepositoryFactory(esClient).For(sample.Type)
+		if err := recordRepo.CreateOrReplaceMany(ctx, sample.RecordV1s); err != nil {
 			return types, err
 		}
 	}

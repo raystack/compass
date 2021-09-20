@@ -16,7 +16,7 @@ type stubBuilder struct {
 	testifyMock.Mock
 }
 
-func (b *stubBuilder) Build(ctx context.Context, er models.TypeRepository, rrf models.RecordRepositoryFactory) (lineage.Graph, error) {
+func (b *stubBuilder) Build(ctx context.Context, er models.TypeRepository, rrf models.RecordV1RepositoryFactory) (lineage.Graph, error) {
 	return nil, nil
 }
 
@@ -42,7 +42,7 @@ func TestService(t *testing.T) {
 	t.Run("smoke test", func(t *testing.T) {
 		entRepo := new(mock.TypeRepository)
 		entRepo.On("GetAll", ctx).Return([]models.Type{}, nil)
-		recordRepoFac := new(mock.RecordRepositoryFactory)
+		recordRepoFac := new(mock.RecordV1RepositoryFactory)
 		lineage.NewService(entRepo, recordRepoFac, lineage.Config{})
 	})
 	t.Run("telemetry test", func(t *testing.T) {

@@ -12,7 +12,7 @@ type lineageProcessor struct {
 	descriptors []models.LineageDescriptor
 }
 
-func (lp lineageProcessor) LineageOf(record models.Record) (upstream, downstream set.StringSet, err error) {
+func (lp lineageProcessor) LineageOf(record models.RecordV1) (upstream, downstream set.StringSet, err error) {
 	upstream, downstream = set.NewStringSet(), set.NewStringSet()
 	for _, desc := range lp.descriptors {
 		var values []string
@@ -35,7 +35,7 @@ func (lp lineageProcessor) LineageOf(record models.Record) (upstream, downstream
 	return
 }
 
-func (lp lineageProcessor) executeQuery(data models.Record, query string) (values []string, err error) {
+func (lp lineageProcessor) executeQuery(data models.RecordV1, query string) (values []string, err error) {
 
 	defer func() {
 		if err != nil {

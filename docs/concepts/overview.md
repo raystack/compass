@@ -1,8 +1,8 @@
 # Overview
 
-Columbus has two major concepts when it comes to data ingestion: Types and Records. Types define a ‘type’ of resource. For example, if you wanted to push data for bigquery dataset\(s\) to Columbus, you would need to first define the ‘bigquery’ type in columbus.
+Columbus has two major concepts when it comes to data ingestion: Types and RecordV1s. Types define a ‘type’ of resource. For example, if you wanted to push data for bigquery dataset\(s\) to Columbus, you would need to first define the ‘bigquery’ type in columbus.
 
-Records are arbitrary JSON objects that define a searchable data-point for an type. These don’t have a fixed schema, but must have certain fields in them. \(more on this later\)
+RecordV1s are arbitrary JSON objects that define a searchable data-point for an type. These don’t have a fixed schema, but must have certain fields in them. \(more on this later\)
 
 ## Types
 
@@ -48,9 +48,9 @@ Let’s briefly discuss the type definition:
 
 When Columbus answers a search request, it uses the fields defined in record\_attributes to generate the response. This lets you change how the response for a particular type will look, without changing the data \(records\) for that type. The id field is also used as the primary identifier for a record, and is for referenced making create/replace decisions internally.
 
-## Records
+## RecordV1s
 
-A Record is a JSON document that describes a data-point for an type. The schema for a record is loosely defined as the set of fields referenced in type.record\_attributes. To demonstrate what that means, let’s take the example of a hypothetical type:
+A RecordV1 is a JSON document that describes a data-point for an type. The schema for a record is loosely defined as the set of fields referenced in type.record\_attributes. To demonstrate what that means, let’s take the example of a hypothetical type:
 
 ```text
 {
@@ -85,7 +85,7 @@ but this one is not:
 }
 ```
 
-Record Ingestion API \(/v1/types/{name}\) is idempotent, and it’s safe to send the same record multiple times. If a record has changed, pushing it to ingestion API will replace the older record. Every record is produced to some type \(or more accurately, every record belongs to some type\) but the search is run against every record, irrespective of the type \(unless restricted by a filter criteria\).
+RecordV1 Ingestion API \(/v1/types/{name}\) is idempotent, and it’s safe to send the same record multiple times. If a record has changed, pushing it to ingestion API will replace the older record. Every record is produced to some type \(or more accurately, every record belongs to some type\) but the search is run against every record, irrespective of the type \(unless restricted by a filter criteria\).
 
 ## Lineage
 

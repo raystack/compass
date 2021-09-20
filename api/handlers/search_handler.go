@@ -20,12 +20,12 @@ var (
 )
 
 type SearchHandler struct {
-	recordSearcher models.RecordSearcher
+	recordSearcher models.RecordV1Searcher
 	typeRepo       models.TypeRepository
 	log            logrus.FieldLogger
 }
 
-func NewSearchHandler(log logrus.FieldLogger, searcher models.RecordSearcher, repo models.TypeRepository) *SearchHandler {
+func NewSearchHandler(log logrus.FieldLogger, searcher models.RecordV1Searcher, repo models.TypeRepository) *SearchHandler {
 	handler := &SearchHandler{
 		recordSearcher: searcher,
 		typeRepo:       repo,
@@ -86,9 +86,9 @@ func (handler *SearchHandler) toSearchResponse(ctx context.Context, results []mo
 			return nil, fmt.Errorf("typeRepository.GetByName: %q: %v", result.TypeName, err)
 		}
 
-		rv := newRecordView(result.Record)
+		rv := newRecordV1View(result.RecordV1)
 
-		description, _ := getStringFromGenericMap(result.Record, recordType.Fields.Description)
+		description, _ := getStringFromGenericMap(result.RecordV1, recordType.Fields.Description)
 		res := SearchResponse{
 			ID:             rv.GetString(recordType.Fields.ID),
 			Title:          rv.GetString(recordType.Fields.Title),
@@ -100,13 +100,13 @@ func (handler *SearchHandler) toSearchResponse(ctx context.Context, results []mo
 
 		if err := rv.Error(); err != nil {
 			handler.log.
-				WithField("record", result.Record).
+				WithField("record", result.RecordV1).
 				Errorf("dropping record from search result: missing mandatory field: %v", err)
 			continue
 		}
 
 		for _, label := range recordType.Fields.Labels {
-			value, err := getStringFromGenericMap(result.Record, label)
+			value, err := getStringFromGenericMap(result.RecordV1, label)
 			if err != nil {
 				continue
 			}
@@ -125,12 +125,12 @@ func (handler *SearchHandler) toSearchResponse(ctx context.Context, results []mo
 // with an empty string, while the Error method will return
 // the error that was encountered
 type recordView struct {
-	err    error
-	Record models.Record
+	err      error
+	RecordV1 models.RecordV1
 }
 
-func newRecordView(record models.Record) *recordView {
-	return &recordView{Record: record}
+func newRecordV1View(record models.RecordV1) *recordView {
+	return &recordView{RecordV1: record}
 }
 
 func (view *recordView) GetString(name string) string {
@@ -138,7 +138,7 @@ func (view *recordView) GetString(name string) string {
 		return ""
 	}
 	var val string
-	val, view.err = getStringFromGenericMap(view.Record, name)
+	val, view.err = getStringFromGenericMap(view.RecordV1, name)
 	if view.err != nil {
 		return ""
 	}
