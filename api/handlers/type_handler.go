@@ -251,7 +251,61 @@ func (handler *TypeHandler) IngestRecordV1(w http.ResponseWriter, r *http.Reques
 	writeJSON(w, http.StatusOK, StatusResponse{Status: "success"})
 }
 
-func (handler *TypeHandler) ListTypeRecordV1s(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) IngestRecordV2(w http.ResponseWriter, r *http.Request) {
+	name := mux.Vars(r)["name"]
+	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
+	if err != nil {
+		status := http.StatusInternalServerError
+		if _, ok := err.(models.ErrNoSuchType); ok {
+			status = http.StatusNotFound
+		}
+		writeJSONError(w, status, err.Error())
+		return
+	}
+
+	var records []models.RecordV2
+	err = json.NewDecoder(r.Body).Decode(&records)
+	if err != nil {
+		writeJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
+		return
+	}
+
+	var failedRecordV1s = make(map[int]string)
+	for idx, record := range records {
+		if err := handler.validateRecordV2(record); err != nil {
+			handler.log.WithField("type", recordType).
+				WithField("record", record).
+				Errorf("error validating record: %v", err)
+			failedRecordV1s[idx] = err.Error()
+		}
+	}
+	if len(failedRecordV1s) > 0 {
+		writeJSON(w, http.StatusBadRequest, NewValidationErrorResponse(failedRecordV1s))
+		return
+	}
+
+	recordRepo, err := handler.recordRepositoryFactory.For(recordType)
+	if err != nil {
+		handler.log.WithField("type", recordType.Name).
+			Errorf("error creating record repository: %v", err)
+
+		status := http.StatusInternalServerError
+		writeJSONError(w, status, http.StatusText(status))
+		return
+	}
+	if err := recordRepo.CreateOrReplaceManyV2(r.Context(), records); err != nil {
+		handler.log.WithField("type", recordType.Name).
+			Errorf("error creating/updating records: %v", err)
+
+		status := http.StatusInternalServerError
+		writeJSONError(w, status, http.StatusText(status))
+		return
+	}
+	handler.log.Infof("created/updated %d records for %q type", len(records), recordType.Name)
+	writeJSON(w, http.StatusOK, StatusResponse{Status: "success"})
+}
+
+func (handler *TypeHandler) ListTypeRecords(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
 	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
 	if err != nil {
@@ -281,12 +335,12 @@ func (handler *TypeHandler) ListTypeRecordV1s(w http.ResponseWriter, r *http.Req
 
 	fieldsToSelect := handler.parseSelectQuery(r.URL.Query().Get("select"))
 	if len(fieldsToSelect) > 0 {
-		records = handler.selectRecordV1Fields(fieldsToSelect, records)
+		records = handler.selectRecordFields(fieldsToSelect, records)
 	}
 	writeJSON(w, http.StatusOK, records)
 }
 
-func (handler *TypeHandler) GetTypeRecordV1(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) GetTypeRecord(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var (
 		typeName = vars["name"]
@@ -338,7 +392,7 @@ func (handler *TypeHandler) parseSelectQuery(raw string) (fields []string) {
 	return
 }
 
-func (handler *TypeHandler) selectRecordV1Fields(fields []string, records []models.RecordV1) (processedRecordV1s []models.RecordV1) {
+func (handler *TypeHandler) selectRecordFields(fields []string, records []models.RecordV1) (processedRecordV1s []models.RecordV1) {
 	for _, record := range records {
 		currentRecordV1 := make(models.RecordV1)
 		for _, field := range fields {
@@ -368,6 +422,20 @@ func (handler *TypeHandler) validateRecordV1(recordType models.Type, record map[
 			return fmt.Errorf("%q cannot be empty", key)
 		}
 	}
+	return nil
+}
+
+func (handler *TypeHandler) validateRecordV2(record models.RecordV2) error {
+	if record.Urn == "" {
+		return fmt.Errorf("urn is required")
+	}
+	if record.Name == "" {
+		return fmt.Errorf("name is required")
+	}
+	if record.Data == nil {
+		return fmt.Errorf("data is required")
+	}
+
 	return nil
 }
 

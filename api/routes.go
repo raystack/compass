@@ -30,7 +30,8 @@ func RegisterRoutes(router *mux.Router, config Config) {
 	)
 
 	router.PathPrefix("/ping").Handler(handlers.NewHeartbeatHandler())
-	setupTypeRoutes(router, "/v1/types", typeHandler)
+	setupV1TypeRoutes(router, "/v1/types", typeHandler)
+	setupV2TypeRoutes(router, "/v2/types", typeHandler)
 
 	router.Path("/v1/search").
 		Methods(http.MethodGet).
@@ -50,7 +51,7 @@ func RegisterRoutes(router *mux.Router, config Config) {
 	// 	HandlerFunc(lineageHandler.ListLineage)
 }
 
-func setupTypeRoutes(router *mux.Router, baseURL string, typeHandler *handlers.TypeHandler) {
+func setupV1TypeRoutes(router *mux.Router, baseURL string, typeHandler *handlers.TypeHandler) {
 	router.Path(baseURL).
 		Methods(http.MethodGet).
 		HandlerFunc(typeHandler.GetAll)
@@ -61,7 +62,7 @@ func setupTypeRoutes(router *mux.Router, baseURL string, typeHandler *handlers.T
 
 	router.Path(baseURL+"/{name}/records").
 		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(typeHandler.ListTypeRecordV1s)
+		HandlerFunc(typeHandler.ListTypeRecords)
 
 	router.Path(baseURL).
 		Methods(http.MethodPut).
@@ -81,5 +82,11 @@ func setupTypeRoutes(router *mux.Router, baseURL string, typeHandler *handlers.T
 
 	router.Path(baseURL+"/{name}/records/{id}").
 		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(typeHandler.GetTypeRecordV1)
+		HandlerFunc(typeHandler.GetTypeRecord)
+}
+
+func setupV2TypeRoutes(router *mux.Router, baseURL string, typeHandler *handlers.TypeHandler) {
+	router.Path(baseURL + "/{name}/records").
+		Methods(http.MethodPut).
+		HandlerFunc(typeHandler.IngestRecordV2)
 }
