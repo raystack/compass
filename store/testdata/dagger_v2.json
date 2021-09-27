@@ -1,0 +1,53 @@
+[
+  {
+    "urn": "g-godata-id-dagger-001-dagger",
+    "name": "g-godata-id-dagger-001-dagger",
+    "description": "",
+    "data": {
+      "urn": "g-godata-id-dagger-001-dagger",
+      "name": "g-godata-id-dagger-001-dagger",
+      "description": "",
+      "entity": "odpf",
+      "flink_name": "g-godata-id-playground",
+      "landscape": "vn",
+      "sink_type": "influx",
+      "state": "USER_STOPPED",
+      "team": "Playground",
+      "title": "dagger-001"
+    }
+  },
+  {
+    "urn": "g-godata-id-test-dagger-dagger",
+    "name": "g-godata-id-test-dagger-dagger",
+    "description": "",
+    "data": {
+      "urn": "g-godata-id-test-dagger-dagger",
+      "name": "g-godata-id-test-dagger-dagger",
+      "description": "",
+      "entity": "odpf",
+      "flink_name": "g-godata-id-playground",
+      "landscape": "th",
+      "sink_type": "influx",
+      "state": "SYSTEM_STOPPED",
+      "team": "Playground",
+      "title": "test-dagger"
+    }
+  },
+  {
+    "urn": "g-godata-id-demo-dagger-dagger",
+    "name": "g-godata-id-demo-dagger-dagger",
+    "description": "",
+    "data": {
+      "urn": "g-godata-id-demo-dagger-dagger",
+      "name": "g-godata-id-demo-dagger-dagger",
+      "description": "",
+      "entity": "odpf",
+      "flink_name": "g-godata-id-playground",
+      "landscape": "id",
+      "sink_type": "influx",
+      "state": "USER_STOPPED",
+      "team": "data_engineering",
+      "title": "demo-dagger"
+    }
+  }
+]

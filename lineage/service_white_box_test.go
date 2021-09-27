@@ -29,7 +29,7 @@ type roundRobinBuilder struct {
 	Index  int
 }
 
-func (builder *roundRobinBuilder) Build(ctx context.Context, er models.TypeRepository, rrf models.RecordV1RepositoryFactory) (Graph, error) {
+func (builder *roundRobinBuilder) Build(ctx context.Context, er models.TypeRepository, rrf models.RecordRepositoryFactory) (Graph, error) {
 	index := builder.Index
 	builder.Index = (builder.Index + 1) % len(builder.Graphs)
 	return builder.Graphs[index], nil

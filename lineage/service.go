@@ -31,7 +31,7 @@ func (tsf TimeSourceFunc) Now() time.Time {
 // serving an old copy in between ticks.
 type Service struct {
 	typeRepo           models.TypeRepository
-	recordRepoFactory  models.RecordV1RepositoryFactory
+	recordRepoFactory  models.RecordRepositoryFactory
 	metricsMonitor     MetricsMonitor
 	performanceMonitor PerformanceMonitor
 	builder            Builder
@@ -88,7 +88,7 @@ func (srv *Service) requestRefresh() {
 	}
 }
 
-func NewService(er models.TypeRepository, rrf models.RecordV1RepositoryFactory, config Config) (*Service, error) {
+func NewService(er models.TypeRepository, rrf models.RecordRepositoryFactory, config Config) (*Service, error) {
 	srv := &Service{
 		builder:            DefaultBuilder,
 		typeRepo:           er,

@@ -194,12 +194,12 @@ func (repo *TypeRepository) GetAll(ctx context.Context) ([]models.Type, error) {
 	// but is a very efficient trade-off considering we don't have to re-implement
 	// scrolling. Or we could generalise the scrolling operation on elasticsearch response
 	// and then both of them could use it.
-	recordRepo := RecordV1Repository{
+	recordRepo := RecordRepository{
 		cli:        repo.cli,
 		recordType: models.Type{Name: "meta"},
 	}
 
-	rawEntities, err := recordRepo.GetAll(ctx, models.RecordV1Filter{})
+	rawEntities, err := recordRepo.GetAll(ctx, models.RecordFilter{})
 	if err != nil {
 		return nil, err
 	}

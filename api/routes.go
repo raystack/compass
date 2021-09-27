@@ -10,18 +10,18 @@ import (
 )
 
 type Config struct {
-	Logger                    logrus.FieldLogger
-	TypeRepository            models.TypeRepository
-	RecordV1RepositoryFactory models.RecordV1RepositoryFactory
-	RecordV1Searcher          models.RecordV1Searcher
-	LineageProvider           handlers.LineageProvider
+	Logger                  logrus.FieldLogger
+	TypeRepository          models.TypeRepository
+	RecordRepositoryFactory models.RecordRepositoryFactory
+	RecordV1Searcher        models.RecordV1Searcher
+	LineageProvider         handlers.LineageProvider
 }
 
 func RegisterRoutes(router *mux.Router, config Config) {
 	typeHandler := handlers.NewTypeHandler(
 		config.Logger.WithField("reporter", "type-handler"),
 		config.TypeRepository,
-		config.RecordV1RepositoryFactory,
+		config.RecordRepositoryFactory,
 	)
 	searchHandler := handlers.NewSearchHandler(
 		config.Logger.WithField("reporter", "search-handler"),

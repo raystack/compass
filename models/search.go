@@ -11,7 +11,7 @@ type SearchConfig struct {
 
 	// Filters specifies document level values to look for.
 	// Multiple values can be specified for a single key
-	Filters RecordV1Filter
+	Filters RecordFilter
 
 	// Number of relevant results to return
 	MaxResults int

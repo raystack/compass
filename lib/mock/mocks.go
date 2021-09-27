@@ -34,35 +34,40 @@ func (repo *TypeRepository) Delete(ctx context.Context, typeName string) error {
 	return args.Error(0)
 }
 
-type RecordV1RepositoryFactory struct {
+type RecordRepositoryFactory struct {
 	mock.Mock
 }
 
-func (fac *RecordV1RepositoryFactory) For(e models.Type) (models.RecordV1Repository, error) {
+func (fac *RecordRepositoryFactory) For(e models.Type) (models.RecordRepository, error) {
 	args := fac.Called(e)
-	return args.Get(0).(models.RecordV1Repository), args.Error(1)
+	return args.Get(0).(models.RecordRepository), args.Error(1)
 }
 
-type RecordV1Repository struct {
+type RecordRepository struct {
 	mock.Mock
 }
 
-func (repo *RecordV1Repository) CreateOrReplaceMany(ctx context.Context, records []models.RecordV1) error {
+func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []models.RecordV1) error {
 	args := repo.Called(ctx, records)
 	return args.Error(0)
 }
 
-func (repo *RecordV1Repository) GetAll(ctx context.Context, filter models.RecordV1Filter) ([]models.RecordV1, error) {
+func (repo *RecordRepository) CreateOrReplaceManyV2(ctx context.Context, records []models.RecordV2) error {
+	args := repo.Called(ctx, records)
+	return args.Error(0)
+}
+
+func (repo *RecordRepository) GetAll(ctx context.Context, filter models.RecordFilter) ([]models.RecordV1, error) {
 	args := repo.Called(ctx, filter)
 	return args.Get(0).([]models.RecordV1), args.Error(1)
 }
 
-func (repo *RecordV1Repository) GetByID(ctx context.Context, id string) (models.RecordV1, error) {
+func (repo *RecordRepository) GetByID(ctx context.Context, id string) (models.RecordV1, error) {
 	args := repo.Called(ctx, id)
 	return args.Get(0).(models.RecordV1), args.Error(1)
 }
 
-func (repo *RecordV1Repository) Delete(ctx context.Context, id string) error {
+func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 	args := repo.Called(ctx, id)
 	return args.Error(0)
 }

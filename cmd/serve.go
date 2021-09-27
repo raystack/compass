@@ -54,7 +54,7 @@ func initRouter(
 	rootLogger logrus.FieldLogger,
 ) *mux.Router {
 	typeRepository := store.NewTypeRepository(esClient)
-	recordRepositoryFactory := store.NewRecordV1RepositoryFactory(esClient)
+	recordRepositoryFactory := store.NewRecordRepositoryFactory(esClient)
 	recordSearcher, err := store.NewSearcher(store.SearcherConfig{
 		Client:              esClient,
 		TypeRepo:            typeRepository,
@@ -84,11 +84,11 @@ func initRouter(
 		rootLogger.WithField("reporter", "http-middleware").Writer(),
 	))
 	api.RegisterRoutes(router, api.Config{
-		Logger:                    rootLogger,
-		RecordV1Searcher:          recordSearcher,
-		RecordV1RepositoryFactory: recordRepositoryFactory,
-		TypeRepository:            typeRepository,
-		LineageProvider:           lineageService,
+		Logger:                  rootLogger,
+		RecordV1Searcher:        recordSearcher,
+		RecordRepositoryFactory: recordRepositoryFactory,
+		TypeRepository:          typeRepository,
+		LineageProvider:         lineageService,
 	})
 
 	return router

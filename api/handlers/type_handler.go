@@ -35,11 +35,11 @@ func init() {
 // TypeHandler exposes a REST interface to types
 type TypeHandler struct {
 	typeRepo                models.TypeRepository
-	recordRepositoryFactory models.RecordV1RepositoryFactory
+	recordRepositoryFactory models.RecordRepositoryFactory
 	log                     logrus.FieldLogger
 }
 
-func NewTypeHandler(log logrus.FieldLogger, er models.TypeRepository, rrf models.RecordV1RepositoryFactory) *TypeHandler {
+func NewTypeHandler(log logrus.FieldLogger, er models.TypeRepository, rrf models.RecordRepositoryFactory) *TypeHandler {
 	handler := &TypeHandler{
 		typeRepo:                er,
 		recordRepositoryFactory: rrf,
@@ -184,7 +184,7 @@ func (handler *TypeHandler) DeleteRecordV1(w http.ResponseWriter, r *http.Reques
 		handler.log.
 			Errorf("error deleting record \"%s\": %v", typeName, err)
 
-		if _, ok := err.(models.ErrNoSuchRecordV1); ok {
+		if _, ok := err.(models.ErrNoSuchRecord); ok {
 			statusCode = http.StatusNotFound
 			errMessage = err.Error()
 		}
@@ -405,7 +405,7 @@ func (handler *TypeHandler) validateType(e models.Type) error {
 
 func (handler *TypeHandler) responseStatusForError(err error) (int, string) {
 	switch err.(type) {
-	case models.ErrNoSuchType, models.ErrNoSuchRecordV1:
+	case models.ErrNoSuchType, models.ErrNoSuchRecord:
 		return http.StatusNotFound, err.Error()
 	}
 	return http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)

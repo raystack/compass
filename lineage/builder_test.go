@@ -19,18 +19,18 @@ type dataset struct {
 	RecordV1s []models.RecordV1
 }
 
-func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordV1RepositoryFactory) {
+func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordRepositoryFactory) {
 	var (
 		tr      = new(mock.TypeRepository)
-		rrf     = new(mock.RecordV1RepositoryFactory)
+		rrf     = new(mock.RecordRepositoryFactory)
 		typList = []models.Type{}
 		ctx     = context.Background()
 	)
 	for _, dataset := range datasets {
 		typ := dataset.Type.Normalise()
 		tr.On("GetByName", typ.Name).Return(typ, nil)
-		recordRepo := new(mock.RecordV1Repository)
-		recordRepo.On("GetAll", ctx, models.RecordV1Filter{}).Return(dataset.RecordV1s, nil)
+		recordRepo := new(mock.RecordRepository)
+		recordRepo.On("GetAll", ctx, models.RecordFilter{}).Return(dataset.RecordV1s, nil)
 		rrf.On("For", typ).Return(recordRepo, nil)
 		typList = append(typList, typ)
 	}
