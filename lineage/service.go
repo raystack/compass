@@ -53,7 +53,7 @@ func (srv *Service) build() {
 	graph, err := srv.builder.Build(ctx, srv.typeRepo, srv.recordRepoFactory)
 	now := srv.timeSource.Now()
 	srv.metricsMonitor.Duration("lineageBuildTime", int(now.Sub(startTime)/time.Millisecond))
-
+	fmt.Printf("lineage build time: %s\n", now.Sub(startTime).String())
 	srv.mu.Lock()
 	defer srv.mu.Unlock()
 
@@ -108,7 +108,7 @@ func NewService(er models.TypeRepository, rrf models.RecordRepositoryFactory, co
 
 	// Temporarily disable building lineage on service creation.
 	// Columbus's memory keeps spiking when app is starting
-	// srv.build()
+	srv.build()
 
 	return srv, nil
 }

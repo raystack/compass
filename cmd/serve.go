@@ -9,6 +9,8 @@ import (
 	"os"
 	"strings"
 
+	_ "net/http/pprof"
+
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -64,11 +66,16 @@ func initRouter(
 	if err != nil {
 		log.Fatalf("error creating searcher: %v", err)
 	}
+
+	// debug
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+
 	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
-		RefreshInterval:    config.LineageRefreshIntervalStr,
-		MetricsMonitor:     statsdMonitor,
-		PerformanceMonitor: nrMonitor,
+		RefreshInterval: config.LineageRefreshIntervalStr,
 	})
+	rootLogger.Info("lineage build complete")
 	if err != nil {
 		log.Fatal(err)
 	}

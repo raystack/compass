@@ -9,6 +9,12 @@ import (
 // TODO(Aman): add validation for mandatory fields? (landscape for instance)
 type Record = map[string]interface{}
 
+type RecordIterator interface {
+	Scan() bool
+	Next() []Record
+	Close() error
+}
+
 // RecordFilter is a filter intended to be used as a search
 // criteria for operations involving record search
 type RecordFilter = map[string][]string
@@ -21,6 +27,8 @@ type RecordRepository interface {
 	// RecordFilter is an optional data structure that is
 	// used for return documents matching the search criteria.
 	GetAll(context.Context, RecordFilter) ([]Record, error)
+
+	GetAllIterator(context.Context) (RecordIterator, error)
 
 	// GetByID returns a record by it's id.
 	// The field that contains this ID is defined by the

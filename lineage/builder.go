@@ -105,13 +105,16 @@ func (builder defaultBuilder) populateTypeRecords(ctx context.Context, graph Adj
 	if err != nil {
 		return fmt.Errorf("error obtaing record repository: %w", err)
 	}
-	records, err := recordRepository.GetAll(ctx, models.RecordFilter{})
+	recordIter, err := recordRepository.GetAllIterator(ctx)
 	if err != nil {
-		return fmt.Errorf("error reading records for type %q: %w", typ.Name, err)
+		panic(err)
 	}
-	for _, record := range records {
-		if err := builder.addRecord(graph, typ, record, lineageProc); err != nil {
-			return fmt.Errorf("error adding record to graph: %w", err)
+	defer recordIter.Close()
+	for recordIter.Scan() {
+		for _, record := range recordIter.Next() {
+			if err := builder.addRecord(graph, typ, record, lineageProc); err != nil {
+				return fmt.Errorf("error adding record to graph: %w", err)
+			}
 		}
 	}
 	return nil
