@@ -163,7 +163,7 @@ func TestRecordRepository(t *testing.T) {
 		return
 	}
 
-	t.Run("GetAll", func(t *testing.T) {
+	t.Run("GetAllIterator", func(t *testing.T) {
 		type testCase struct {
 			Description string
 			Filter      models.RecordFilter

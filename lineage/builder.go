@@ -108,7 +108,7 @@ func (builder defaultBuilder) populateTypeRecords(ctx context.Context, graph Adj
 
 	recordIter, err := recordRepository.GetAllIterator(ctx)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("error getting record iterator: %w", err)
 	}
 	defer recordIter.Close()
 	for recordIter.Scan() {
