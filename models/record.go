@@ -28,6 +28,7 @@ type RecordRepository interface {
 	// used for return documents matching the search criteria.
 	GetAll(context.Context, RecordFilter) ([]Record, error)
 
+	// GetAllIterator returns RecordIterator to iterate records by batches
 	GetAllIterator(context.Context) (RecordIterator, error)
 
 	// GetByID returns a record by it's id.

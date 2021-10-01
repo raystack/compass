@@ -105,6 +105,7 @@ func (builder defaultBuilder) populateTypeRecords(ctx context.Context, graph Adj
 	if err != nil {
 		return fmt.Errorf("error obtaing record repository: %w", err)
 	}
+
 	recordIter, err := recordRepository.GetAllIterator(ctx)
 	if err != nil {
 		panic(err)
