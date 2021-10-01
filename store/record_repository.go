@@ -93,34 +93,6 @@ func (repo *RecordRepository) writeInsertAction(w io.Writer, record models.Recor
 	return json.NewEncoder(w).Encode(action)
 }
 
-type recordIterator struct {
-	resp     *esapi.Response
-	records  []models.Record
-	repo     *RecordRepository
-	scrollID string
-}
-
-func (it *recordIterator) Scan() bool {
-	return len(strings.TrimSpace(it.scrollID)) > 0
-}
-
-func (it *recordIterator) Next() (prev []models.Record) {
-	prev = it.records
-	var err error
-	it.records, it.scrollID, err = it.repo.scrollRecords(context.Background(), it.scrollID)
-	if err != nil {
-		panic("error scrolling results:" + err.Error())
-	}
-	if len(it.records) == 0 {
-		it.scrollID = ""
-	}
-	return
-}
-
-func (it *recordIterator) Close() error {
-	return it.resp.Body.Close()
-}
-
 func (repo *RecordRepository) GetAllIterator(ctx context.Context) (models.RecordIterator, error) {
 	body, err := repo.getAllQuery(models.RecordFilter{})
 	if err != nil {
@@ -154,19 +126,6 @@ func (repo *RecordRepository) GetAllIterator(ctx context.Context) (models.Record
 		repo:     repo,
 	}
 	return &it, nil
-	// var scrollID = response.ScrollID
-	// for {
-	// 	var nextResults []models.Record
-	// 	nextResults, scrollID, err = repo.scrollRecords(ctx, scrollID)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("error scrolling results: %v", err)
-	// 	}
-	// 	if len(nextResults) == 0 {
-	// 		break
-	// 	}
-	// 	results = append(results, nextResults...)
-	// }
-	// return results, nil
 }
 
 func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordFilter) ([]models.Record, error) {
@@ -321,6 +280,35 @@ func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+// recordIterator is the internal implementation of models.RecordIterator by RecordRepository
+type recordIterator struct {
+	resp     *esapi.Response
+	records  []models.Record
+	repo     *RecordRepository
+	scrollID string
+}
+
+func (it *recordIterator) Scan() bool {
+	return len(strings.TrimSpace(it.scrollID)) > 0
+}
+
+func (it *recordIterator) Next() (prev []models.Record) {
+	prev = it.records
+	var err error
+	it.records, it.scrollID, err = it.repo.scrollRecords(context.Background(), it.scrollID)
+	if err != nil {
+		panic("error scrolling results:" + err.Error())
+	}
+	if len(it.records) == 0 {
+		it.scrollID = ""
+	}
+	return
+}
+
+func (it *recordIterator) Close() error {
+	return it.resp.Body.Close()
 }
 
 // RecordRepositoryFactory can be used to construct a RecordRepository
