@@ -3,6 +3,7 @@ package lineage
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -119,11 +120,11 @@ func applyConfig(service *Service, config Config) error {
 	}
 	service.refreshInterval = lineageRefreshInterval
 
-	if config.MetricsMonitor != nil {
+	if !isNilMonitor(config.MetricsMonitor) {
 		service.metricsMonitor = config.MetricsMonitor
 	}
 
-	if config.PerformanceMonitor != nil {
+	if !isNilMonitor(config.PerformanceMonitor) {
 		service.performanceMonitor = config.PerformanceMonitor
 	}
 
@@ -136,4 +137,9 @@ func applyConfig(service *Service, config Config) error {
 	}
 
 	return nil
+}
+
+func isNilMonitor(monitor interface{}) bool {
+	v := reflect.ValueOf(monitor)
+	return !v.IsValid() || reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
 }
