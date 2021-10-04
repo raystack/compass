@@ -3,6 +3,7 @@ package lineage
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -53,7 +54,6 @@ func (srv *Service) build() {
 	graph, err := srv.builder.Build(ctx, srv.typeRepo, srv.recordRepoFactory)
 	now := srv.timeSource.Now()
 	srv.metricsMonitor.Duration("lineageBuildTime", int(now.Sub(startTime)/time.Millisecond))
-
 	srv.mu.Lock()
 	defer srv.mu.Unlock()
 
@@ -104,11 +104,7 @@ func NewService(er models.TypeRepository, rrf models.RecordRepositoryFactory, co
 		return nil, err
 	}
 
-	// TODO: Find a solution to solve memory issue
-
-	// Temporarily disable building lineage on service creation.
-	// Columbus's memory keeps spiking when app is starting
-	// srv.build()
+	srv.build()
 
 	return srv, nil
 }
@@ -124,11 +120,11 @@ func applyConfig(service *Service, config Config) error {
 	}
 	service.refreshInterval = lineageRefreshInterval
 
-	if config.MetricsMonitor != nil {
+	if !isNilMonitor(config.MetricsMonitor) {
 		service.metricsMonitor = config.MetricsMonitor
 	}
 
-	if config.PerformanceMonitor != nil {
+	if !isNilMonitor(config.PerformanceMonitor) {
 		service.performanceMonitor = config.PerformanceMonitor
 	}
 
@@ -141,4 +137,9 @@ func applyConfig(service *Service, config Config) error {
 	}
 
 	return nil
+}
+
+func isNilMonitor(monitor interface{}) bool {
+	v := reflect.ValueOf(monitor)
+	return !v.IsValid() || reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
 }

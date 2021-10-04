@@ -163,6 +163,44 @@ func TestRecordRepository(t *testing.T) {
 		return
 	}
 
+	t.Run("GetAllIterator", func(t *testing.T) {
+		type testCase struct {
+			Description string
+			Filter      models.RecordFilter
+			ResultsFile string
+		}
+
+		t.Run("should return record iterator to iterate records", func(t *testing.T) {
+			expectedResults := []models.Record{}
+			raw, err := ioutil.ReadFile("./testdata/dagger.json")
+			if err != nil {
+				t.Fatalf("error reading results file: %v", err)
+				return
+			}
+			err = json.Unmarshal(raw, &expectedResults)
+			if err != nil {
+				t.Fatalf("error parsing results file: %v", err)
+				return
+			}
+
+			var actualResults []models.Record
+			iterator, err := recordRepo.GetAllIterator(ctx)
+			if err != nil {
+				t.Fatalf("error executing GetAllIterator: %v", err)
+				return
+			}
+			for iterator.Scan() {
+				actualResults = append(actualResults, iterator.Next()...)
+			}
+			iterator.Close()
+
+			if reflect.DeepEqual(expectedResults, actualResults) == false {
+				t.Error(incorrectResultsError(expectedResults, actualResults))
+				return
+			}
+		})
+	})
+
 	t.Run("GetAll", func(t *testing.T) {
 		type testCase struct {
 			Description string

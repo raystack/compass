@@ -57,6 +57,11 @@ func (repo *RecordRepository) GetAll(ctx context.Context, filter models.RecordFi
 	return args.Get(0).([]models.Record), args.Error(1)
 }
 
+func (repo *RecordRepository) GetAllIterator(ctx context.Context) (models.RecordIterator, error) {
+	args := repo.Called(ctx)
+	return args.Get(0).(models.RecordIterator), args.Error(1)
+}
+
 func (repo *RecordRepository) GetByID(ctx context.Context, id string) (models.Record, error) {
 	args := repo.Called(ctx, id)
 	return args.Get(0).(models.Record), args.Error(1)
@@ -64,6 +69,25 @@ func (repo *RecordRepository) GetByID(ctx context.Context, id string) (models.Re
 
 func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 	args := repo.Called(ctx, id)
+	return args.Error(0)
+}
+
+type RecordIterator struct {
+	mock.Mock
+}
+
+func (m *RecordIterator) Scan() bool {
+	args := m.Called()
+	return args.Bool(0)
+}
+
+func (m *RecordIterator) Next() []models.Record {
+	args := m.Called()
+	return args.Get(0).([]models.Record)
+}
+
+func (m *RecordIterator) Close() error {
+	args := m.Called()
 	return args.Error(0)
 }
 
