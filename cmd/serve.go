@@ -73,7 +73,11 @@ func initRouter(
 	if err != nil {
 		log.Fatal(err)
 	}
-	rootLogger.Info("lineage build complete")
+	// build lineage asynchronously
+	go func() {
+		lineageService.ForceBuild()
+		rootLogger.Info("lineage build complete")
+	}()
 
 	router := mux.NewRouter()
 	if nrMonitor != nil {
