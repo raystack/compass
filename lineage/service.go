@@ -46,6 +46,10 @@ type Service struct {
 	err             error
 }
 
+func (srv *Service) ForceBuild() {
+	srv.build()
+}
+
 func (srv *Service) build() {
 	ctx, endTxn := srv.performanceMonitor.StartTransaction(context.Background(), "lineage:Service/build")
 	defer endTxn()
@@ -97,14 +101,13 @@ func NewService(er models.TypeRepository, rrf models.RecordRepositoryFactory, co
 		timeSource:         TimeSourceFunc(time.Now),
 		metricsMonitor:     dummyMetricMonitor{},
 		performanceMonitor: &dummyPerformanceMonitor{},
+		graph:              NewInMemoryGraph(AdjacencyMap{}),
 	}
 
 	err := applyConfig(srv, config)
 	if err != nil {
 		return nil, err
 	}
-
-	srv.build()
 
 	return srv, nil
 }
