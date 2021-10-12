@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/mitchellh/mapstructure"
 	"github.com/odpf/columbus/models"
 	"github.com/olivere/elastic/v7"
@@ -149,6 +150,41 @@ func (repo *RecordRepository) writeInsertActionV2(w io.Writer, record models.Rec
 		},
 	}
 	return json.NewEncoder(w).Encode(action)
+}
+
+func (repo *RecordRepository) GetAllIterator(ctx context.Context) (models.RecordIterator, error) {
+	body, err := repo.getAllQuery(models.RecordFilter{})
+	if err != nil {
+		return nil, fmt.Errorf("error building search query: %w", err)
+	}
+
+	resp, err := repo.cli.Search(
+		repo.cli.Search.WithIndex(repo.recordType.Name),
+		repo.cli.Search.WithBody(body),
+		repo.cli.Search.WithScroll(defaultScrollTimeout),
+		repo.cli.Search.WithSize(defaultScrollBatchSize),
+		repo.cli.Search.WithContext(ctx),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error executing search: %w", err)
+	}
+	if resp.IsError() {
+		return nil, fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(resp))
+	}
+
+	var response searchResponse
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding es response: %w", err)
+	}
+	var results = repo.toRecordV1List(response)
+	it := recordIterator{
+		resp:     resp,
+		records:  results,
+		scrollID: response.ScrollID,
+		repo:     repo,
+	}
+	return &it, nil
 }
 
 func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordFilter) ([]models.RecordV1, error) {
@@ -338,6 +374,35 @@ func (repo *RecordRepository) toV1Record(data map[string]interface{}) models.Rec
 	}
 
 	return data
+}
+
+// recordIterator is the internal implementation of models.RecordIterator by RecordRepository
+type recordIterator struct {
+	resp     *esapi.Response
+	records  []models.RecordV1
+	repo     *RecordRepository
+	scrollID string
+}
+
+func (it *recordIterator) Scan() bool {
+	return len(strings.TrimSpace(it.scrollID)) > 0
+}
+
+func (it *recordIterator) Next() (prev []models.RecordV1) {
+	prev = it.records
+	var err error
+	it.records, it.scrollID, err = it.repo.scrollRecordV1s(context.Background(), it.scrollID)
+	if err != nil {
+		panic("error scrolling results:" + err.Error())
+	}
+	if len(it.records) == 0 {
+		it.scrollID = ""
+	}
+	return
+}
+
+func (it *recordIterator) Close() error {
+	return it.resp.Body.Close()
 }
 
 // RecordRepositoryFactory can be used to construct a RecordRepository

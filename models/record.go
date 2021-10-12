@@ -21,6 +21,12 @@ type RecordV2 struct {
 	UpdatedAt   time.Time              `json:"updated_at" mapstructure:"updated_at"`
 }
 
+type RecordIterator interface {
+	Scan() bool
+	Next() []RecordV1
+	Close() error
+}
+
 // RecordFilter is a filter intended to be used as a search
 // criteria for operations involving record search
 type RecordFilter = map[string][]string
@@ -34,6 +40,9 @@ type RecordRepository interface {
 	// RecordFilter is an optional data structure that is
 	// used for return documents matching the search criteria.
 	GetAll(context.Context, RecordFilter) ([]RecordV1, error)
+
+	// GetAllIterator returns RecordIterator to iterate records by batches
+	GetAllIterator(context.Context) (RecordIterator, error)
 
 	// GetByID returns a record by it's id.
 	// The field that contains this ID is defined by the

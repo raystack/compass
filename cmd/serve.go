@@ -64,6 +64,7 @@ func initRouter(
 	if err != nil {
 		log.Fatalf("error creating searcher: %v", err)
 	}
+
 	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
 		RefreshInterval:    config.LineageRefreshIntervalStr,
 		MetricsMonitor:     statsdMonitor,
@@ -72,6 +73,11 @@ func initRouter(
 	if err != nil {
 		log.Fatal(err)
 	}
+	// build lineage asynchronously
+	go func() {
+		lineageService.ForceBuild()
+		rootLogger.Info("lineage build complete")
+	}()
 
 	router := mux.NewRouter()
 	if nrMonitor != nil {
