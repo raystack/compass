@@ -7,13 +7,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"reflect"
 	"strings"
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
-	"github.com/mitchellh/mapstructure"
 	"github.com/odpf/columbus/models"
 	"github.com/olivere/elastic/v7"
 )
@@ -362,18 +360,12 @@ func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 
 // toV1Record will transform data into RecordV1 if the given data is in RecordV2 format
 func (repo *RecordRepository) toV1Record(data map[string]interface{}) models.RecordV1 {
-	var v2Record models.RecordV2
-	err := decode(data, &v2Record)
+	recordV2, err := mapToV2(data)
 	if err != nil {
 		return data
 	}
 
-	isV2Record := v2Record.Data != nil && v2Record.Name != "" && v2Record.Urn != ""
-	if isV2Record {
-		return v2Record.Data
-	}
-
-	return data
+	return recordV2.Data
 }
 
 // recordIterator is the internal implementation of models.RecordIterator by RecordRepository
@@ -421,46 +413,5 @@ func (factory *RecordRepositoryFactory) For(recordType models.Type) (models.Reco
 func NewRecordRepositoryFactory(cli *elasticsearch.Client) *RecordRepositoryFactory {
 	return &RecordRepositoryFactory{
 		cli: cli,
-	}
-}
-
-// decode is being used to map v2 record to v1 record
-func decode(input map[string]interface{}, result interface{}) error {
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Metadata: nil,
-		DecodeHook: mapstructure.ComposeDecodeHookFunc(
-			toTimeHookFunc()),
-		Result: result,
-	})
-	if err != nil {
-		return err
-	}
-
-	if err := decoder.Decode(input); err != nil {
-		return err
-	}
-	return err
-}
-
-func toTimeHookFunc() mapstructure.DecodeHookFunc {
-	return func(
-		f reflect.Type,
-		t reflect.Type,
-		data interface{}) (interface{}, error) {
-		if t != reflect.TypeOf(time.Time{}) {
-			return data, nil
-		}
-
-		switch f.Kind() {
-		case reflect.String:
-			return time.Parse(time.RFC3339, data.(string))
-		case reflect.Float64:
-			return time.Unix(0, int64(data.(float64))*int64(time.Millisecond)), nil
-		case reflect.Int64:
-			return time.Unix(0, data.(int64)*int64(time.Millisecond)), nil
-		default:
-			return data, nil
-		}
-		// Convert it by parsing
 	}
 }

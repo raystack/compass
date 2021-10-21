@@ -105,6 +105,15 @@ func (searcher *RecordV1Searcher) Search(ctx context.Context, cfg models.SearchC
 	return args.Get(0).([]models.SearchResult), args.Error(1)
 }
 
+type RecordV2Searcher struct {
+	mock.Mock
+}
+
+func (searcher *RecordV2Searcher) Search(ctx context.Context, cfg models.SearchConfig) ([]models.SearchResultV2, error) {
+	args := searcher.Called(ctx, cfg)
+	return args.Get(0).([]models.SearchResultV2), args.Error(1)
+}
+
 type LineageProvider struct {
 	mock.Mock
 }

@@ -14,18 +14,6 @@ import (
 	"github.com/olivere/elastic/v7"
 )
 
-var (
-	defaultMaxResults = 200
-	defaultMinScore   = 0.01
-)
-
-type SearcherConfig struct {
-	Client              *elasticsearch.Client
-	TypeRepo            models.TypeRepository
-	TypeWhiteList       []string
-	CachedTypesDuration int
-}
-
 // Searcher is an implementation of models.RecordV1Searcher
 type Searcher struct {
 	cli                 *elasticsearch.Client
