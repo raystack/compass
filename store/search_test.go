@@ -256,7 +256,7 @@ func TestSearch(t *testing.T) {
 				Config: models.SearchConfig{
 					Text: "invoice topic",
 					Filters: map[string][]string{
-						"landscape":   {"id"},
+						"country":     {"id"},
 						"environment": {"production"},
 						"company":     {"odpf"},
 					},
@@ -296,9 +296,9 @@ func buildSampleSearchData(typeName string) searchTestData {
 				Urn:  "sample-test-1",
 				Name: "sample test",
 				Data: map[string]interface{}{
-					"urn":       "sample-test-1",
-					"landscape": "id",
-					"title":     "sample test",
+					"urn":     "sample-test-1",
+					"country": "id",
+					"title":   "sample test",
 				},
 			},
 		},

@@ -16,7 +16,7 @@ var daggerType = models.Type{
 	Classification: models.TypeClassificationResource,
 	Fields: models.TypeFields{
 		ID:     "urn",
-		Labels: []string{"landscape"},
+		Labels: []string{"country"},
 		Title:  "title",
 	},
 }

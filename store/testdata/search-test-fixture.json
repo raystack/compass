@@ -22,7 +22,7 @@
                     "description": "Topic for each submitted order",
                     "company": "odpf",
                     "environment": "integration",
-                    "landscape": "us",
+                    "country": "us",
                     "partition": 250
                 }
             },
@@ -35,7 +35,7 @@
                     "description": "Topic for each submitted purchase",
                     "company": "microsoft",
                     "environment": "integration",
-                    "landscape": "id",
+                    "country": "id",
                     "partition": 100
                 }
             },
@@ -48,7 +48,7 @@
                     "description": "Update on every customer creation/update",
                     "company": "odpf",
                     "environment": "production",
-                    "landscape": "id",
+                    "country": "id",
                     "partition": 50
                 }
             },
@@ -89,7 +89,7 @@
                     "table_name": "microsoft-invoice",
                     "company": "microsoft",
                     "environment": "integration",
-                    "landscape": "us",
+                    "country": "us",
                     "description": "Transaction records for every microsoft purchase",
                     "total_rows": 100,
                     "schema": [
@@ -108,7 +108,7 @@
                     "table_name": "apple-invoice",
                     "company": "apple",
                     "environment": "production",
-                    "landscape": "id",
+                    "country": "id",
                     "description": "Transaction records for every Apple purchase",
                     "total_rows": 100,
                     "schema": [

@@ -60,7 +60,7 @@ func TestTypeRepository(t *testing.T) {
 					Fields: models.TypeFields{
 						ID:     "urn",
 						Title:  "title",
-						Labels: []string{"landscape"},
+						Labels: []string{"country"},
 					},
 				},
 				ShouldFail: true,
@@ -73,7 +73,7 @@ func TestTypeRepository(t *testing.T) {
 					Fields: models.TypeFields{
 						ID:     "urn",
 						Title:  "title",
-						Labels: []string{"landscape"},
+						Labels: []string{"country"},
 					},
 				},
 				ShouldFail: true,

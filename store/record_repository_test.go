@@ -207,22 +207,22 @@ func TestRecordRepository(t *testing.T) {
 			{
 				Description: "should support a single value filter",
 				Filter: map[string][]string{
-					"landscape": {"id"},
+					"country": {"id"},
 				},
 				ResultsFile: "./testdata/dagger-id.json",
 			},
 			{
 				Description: "should support multi value filter",
 				Filter: map[string][]string{
-					"landscape": {"id", "vn"},
+					"country": {"id", "vn"},
 				},
 				ResultsFile: "./testdata/dagger-vn-id.json",
 			},
 			{
 				Description: "should support multiple terms",
 				Filter: map[string][]string{
-					"landscape": {"th"},
-					"state":     {"DEPLOYED"},
+					"country": {"th"},
+					"title":   {"test_grant2"},
 				},
 				ResultsFile: "./testdata/dagger-th-deployed.json",
 			},
@@ -315,7 +315,7 @@ func TestRecordRepository(t *testing.T) {
 }
 
 func insertRecord(ctx context.Context, t *testing.T, repo models.RecordRepository) (records []models.Record) {
-	src, err := ioutil.ReadFile("./testdata/dagger-populate.json")
+	src, err := ioutil.ReadFile("./testdata/dagger.json")
 	err = json.Unmarshal(src, &records)
 	if err != nil {
 		t.Fatalf("error reading testdata: %v", err)
