@@ -38,10 +38,6 @@ func TestSearchHandler(t *testing.T) {
 		Type: models.Type{
 			Name:           "test",
 			Classification: models.TypeClassificationResource,
-			Fields: models.TypeFields{
-				ID:    "urn",
-				Title: "name",
-			},
 		},
 	}
 

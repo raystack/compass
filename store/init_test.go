@@ -14,11 +14,6 @@ import (
 var daggerType = models.Type{
 	Name:           "dagger",
 	Classification: models.TypeClassificationResource,
-	Fields: models.TypeFields{
-		ID:     "urn",
-		Labels: []string{"country"},
-		Title:  "title",
-	},
 }
 
 var esTestServer *testutil.ElasticsearchTestServer

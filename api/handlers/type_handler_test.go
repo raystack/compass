@@ -27,13 +27,6 @@ func TestTypeHandler(t *testing.T) {
 		daggerType = models.Type{
 			Name:           "dagger",
 			Classification: models.TypeClassificationResource,
-			Fields: models.TypeFields{
-				ID:    "name",
-				Title: "urn",
-				Labels: []string{
-					"team",
-				},
-			},
 		}
 		ctx = tmock.AnythingOfType("*context.valueCtx")
 	)
@@ -82,23 +75,6 @@ func TestTypeHandler(t *testing.T) {
 						Name: "foo",
 					},
 					expectedReason: "'classification' is required",
-				},
-				{
-					payload: models.Type{
-						Name:           "foo",
-						Classification: models.TypeClassificationResource,
-					},
-					expectedReason: "'record_attributes.title' is required",
-				},
-				{
-					payload: models.Type{
-						Name:           "foo",
-						Classification: models.TypeClassificationResource,
-						Fields: models.TypeFields{
-							Title: "bar",
-						},
-					},
-					expectedReason: "'record_attributes.id' is required",
 				},
 			}
 
@@ -204,13 +180,6 @@ func TestTypeHandler(t *testing.T) {
 			typeWithInvalidClassification := &models.Type{
 				Name:           "application",
 				Classification: "unknown",
-				Fields: models.TypeFields{
-					ID:    "urn",
-					Title: "title",
-					Labels: []string{
-						"landscape",
-					},
-				},
 			}
 			var payload bytes.Buffer
 			err := json.NewEncoder(&payload).Encode(typeWithInvalidClassification)
@@ -233,13 +202,6 @@ func TestTypeHandler(t *testing.T) {
 			ent := &models.Type{
 				Name:           "DAGGER",
 				Classification: models.TypeClassificationResource,
-				Fields: models.TypeFields{
-					ID:    "urn",
-					Title: "title",
-					Labels: []string{
-						"landscape",
-					},
-				},
 			}
 			expectEnt := *ent
 			expectEnt.Name = strings.ToLower(ent.Name)
@@ -488,39 +450,14 @@ func TestTypeHandler(t *testing.T) {
 			{
 				Name:           "bqtable",
 				Classification: "dataset",
-				Fields: models.TypeFields{
-					ID:          "table_name",
-					Title:       "table_name",
-					Description: "description-bqtable",
-					Labels: []string{
-						"dataset",
-						"project",
-					},
-				},
 			},
 			{
 				Name:           "dagger",
 				Classification: "dataset",
-				Fields: models.TypeFields{
-					ID:          "urn-dagger",
-					Title:       "urn-dagger",
-					Description: "description-dagger",
-					Labels: []string{
-						"topic",
-					},
-				},
 			},
 			{
 				Name:           "firehose",
 				Classification: "dataset",
-				Fields: models.TypeFields{
-					ID:          "urn-firehose",
-					Title:       "urn-firehose",
-					Description: "description-firehose",
-					Labels: []string{
-						"sink",
-					},
-				},
 			},
 		}
 
@@ -733,14 +670,6 @@ func TestTypeHandler(t *testing.T) {
 		sampleType := models.Type{
 			Name:           "sample",
 			Classification: "dataset",
-			Fields: models.TypeFields{
-				ID:          "urn-dagger",
-				Title:       "urn-dagger",
-				Description: "description-dagger",
-				Labels: []string{
-					"topic",
-				},
-			},
 		}
 
 		var testCases = []testCase{

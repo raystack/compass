@@ -259,14 +259,9 @@ func TestRecordRepository(t *testing.T) {
 	t.Run("GetByID", func(t *testing.T) {
 		t.Run("data-based tests", func(t *testing.T) {
 			for _, record := range records {
-				id, ok := record.Data[daggerType.Fields.ID].(string)
-				if !ok {
-					t.Fatalf("bad test data: record doesn't have %q key", daggerType.Fields.ID)
-					return
-				}
-				recordFromRepo, err := recordRepo.GetByID(ctx, id)
+				recordFromRepo, err := recordRepo.GetByID(ctx, record.Urn)
 				if err != nil {
-					t.Errorf("unexpected error: GetByID(%q): %v", id, err)
+					t.Errorf("unexpected error: GetByID(%q): %v", record.Urn, err)
 					return
 				}
 				if reflect.DeepEqual(record, recordFromRepo) == false {

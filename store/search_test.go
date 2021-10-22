@@ -290,7 +290,7 @@ func TestSearch(t *testing.T) {
 
 func buildSampleSearchData(typeName string) searchTestData {
 	return searchTestData{
-		Type: models.Type{Name: typeName, Fields: models.TypeFields{ID: "urn", Title: "name"}},
+		Type: models.Type{Name: typeName},
 		Records: []models.Record{
 			{
 				Urn:  "sample-test-1",

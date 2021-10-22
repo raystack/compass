@@ -46,7 +46,6 @@ var AllTypeClassifications = []TypeClassification{
 type Type struct {
 	Name           string              `json:"name"`
 	Classification TypeClassification  `json:"classification"`
-	Fields         TypeFields          `json:"record_attributes"`
 	Lineage        []LineageDescriptor `json:"lineage"`
 	Boost          map[string]float64  `json:"boost"`
 }

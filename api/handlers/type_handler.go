@@ -15,11 +15,6 @@ import (
 var (
 	validClassifications     map[models.TypeClassification]int
 	validClassificationsList string
-
-	// typeFieldNamespace refers to the keyname of the models.TypeFields
-	// inside models.Type. This is used to avoid hard coding the JSON keyname
-	// for type fields
-	typeFieldNamespace = getJSONKeyNameForField(models.Type{}, "Fields")
 )
 
 func init() {
@@ -381,10 +376,6 @@ func (handler *TypeHandler) validateType(e models.Type) error {
 		return fmt.Errorf("'classification' is required")
 	case isClassificationValid(e.Classification) == false:
 		return fmt.Errorf("'classification' must be one of [%s]", validClassificationsList)
-	case trim(e.Fields.Title) == "":
-		return fmt.Errorf("'%s.title' is required", typeFieldNamespace)
-	case trim(e.Fields.ID) == "":
-		return fmt.Errorf("'%s.id' is required", typeFieldNamespace)
 	}
 	for idx, desc := range e.Lineage {
 		if desc.Dir.Valid() == false {

@@ -57,11 +57,6 @@ func TestTypeRepository(t *testing.T) {
 				Type: models.Type{
 					Name:           "meta", // defaultMetaIndex
 					Classification: models.TypeClassificationResource,
-					Fields: models.TypeFields{
-						ID:     "urn",
-						Title:  "title",
-						Labels: []string{"country"},
-					},
 				},
 				ShouldFail: true,
 			},
@@ -70,11 +65,6 @@ func TestTypeRepository(t *testing.T) {
 				Type: models.Type{
 					Name:           "universe", // defaultSearchIndex
 					Classification: models.TypeClassificationResource,
-					Fields: models.TypeFields{
-						ID:     "urn",
-						Title:  "title",
-						Labels: []string{"country"},
-					},
 				},
 				ShouldFail: true,
 			},
@@ -165,9 +155,6 @@ func TestTypeRepository(t *testing.T) {
 				Title: "created index should have the correct boost configured",
 				Type: models.Type{
 					Name: "foo",
-					Fields: models.TypeFields{
-						ID: "id",
-					},
 					Boost: map[string]float64{
 						"name": 2.0,
 					},
@@ -220,9 +207,6 @@ func TestTypeRepository(t *testing.T) {
 				Title: "updated index should have the correct boost configured",
 				Type: models.Type{
 					Name: "foo",
-					Fields: models.TypeFields{
-						ID: "id",
-					},
 				},
 				Validate: func(cli *elasticsearch.Client, recordType models.Type) error {
 					// update the type definition with boost configuration and run the update
