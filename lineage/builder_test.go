@@ -15,8 +15,8 @@ import (
 )
 
 type dataset struct {
-	Type      models.Type
-	RecordV2s []models.RecordV2
+	Type    models.Type
+	Records []models.Record
 }
 
 func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordRepositoryFactory) {
@@ -32,7 +32,7 @@ func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordRe
 		recordIterator := new(mock.RecordIterator)
 		recordIterator.On("Scan").Return(true).Once()
 		recordIterator.On("Scan").Return(false).Once()
-		recordIterator.On("Next").Return(dataset.RecordV2s)
+		recordIterator.On("Next").Return(dataset.Records)
 		recordIterator.On("Close").Return(nil)
 		recordRepo := new(mock.RecordRepository)
 		recordRepo.On("GetAllIterator", ctx).Return(recordIterator, nil)
@@ -71,7 +71,7 @@ func TestDefaultBuilder(t *testing.T) {
 							Name:           "test",
 							Classification: models.TypeClassificationResource,
 						},
-						RecordV2s: []models.RecordV2{
+						Records: []models.Record{
 							{
 								Urn: "1",
 								Data: map[string]interface{}{
@@ -114,7 +114,7 @@ func TestDefaultBuilder(t *testing.T) {
 								},
 							},
 						},
-						RecordV2s: []models.RecordV2{
+						Records: []models.Record{
 							{
 								Urn: "1",
 								Data: map[string]interface{}{
@@ -143,7 +143,7 @@ func TestDefaultBuilder(t *testing.T) {
 							Name:           "producer",
 							Classification: models.TypeClassificationResource,
 						},
-						RecordV2s: []models.RecordV2{
+						Records: []models.Record{
 							{
 								Urn: "data-booking",
 								Data: map[string]interface{}{
@@ -164,7 +164,7 @@ func TestDefaultBuilder(t *testing.T) {
 								},
 							},
 						},
-						RecordV2s: []models.RecordV2{
+						Records: []models.Record{
 							{
 								Urn: "booking-aggregator",
 								Data: map[string]interface{}{

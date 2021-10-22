@@ -13,7 +13,7 @@ type Config struct {
 	Logger                  logrus.FieldLogger
 	TypeRepository          models.TypeRepository
 	RecordRepositoryFactory models.RecordRepositoryFactory
-	RecordV2Searcher        models.RecordV2Searcher
+	RecordSearcher          models.RecordSearcher
 	LineageProvider         handlers.LineageProvider
 }
 
@@ -23,9 +23,9 @@ func RegisterRoutes(router *mux.Router, config Config) {
 		config.TypeRepository,
 		config.RecordRepositoryFactory,
 	)
-	searchHandler := handlers.NewSearchV2Handler(
+	searchHandler := handlers.NewSearchHandler(
 		config.Logger.WithField("reporter", "search-handler"),
-		config.RecordV2Searcher,
+		config.RecordSearcher,
 		config.TypeRepository,
 	)
 
@@ -73,7 +73,7 @@ func setupV1TypeRoutes(router *mux.Router, baseURL string, typeHandler *handlers
 
 	router.Path(baseURL + "/{name}/records/{id}").
 		Methods(http.MethodDelete).
-		HandlerFunc(typeHandler.DeleteRecordV2)
+		HandlerFunc(typeHandler.DeleteRecord)
 
 	router.Path(baseURL + "/{name}/records").
 		Methods(http.MethodPut).

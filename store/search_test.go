@@ -12,16 +12,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type searchTestDataV2 struct {
-	Type      models.Type       `json:"type"`
-	RecordV2s []models.RecordV2 `json:"records"`
+type searchTestData struct {
+	Type    models.Type     `json:"type"`
+	Records []models.Record `json:"records"`
 }
 
-func TestSearchV2(t *testing.T) {
+func TestSearch(t *testing.T) {
 	ctx := context.Background()
 	t.Run("should return an error if search string is empty", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
-		searcher, err := store.NewSearcherV2(store.SearcherConfig{
+		searcher, err := store.NewSearcher(store.SearcherConfig{
 			Client: esClient,
 		})
 		if err != nil {
@@ -38,19 +38,19 @@ func TestSearchV2(t *testing.T) {
 	t.Run("should restrict search to globally white listed type types", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
 
-		whitelistedType := "whitelisted_type_v2"
+		whitelistedType := "whitelisted_type"
 		queryText := "sample"
-		testData := []searchTestDataV2{
-			buildSampleSearchDataV2(whitelistedType),
-			buildSampleSearchDataV2("random_type_v2"),
+		testData := []searchTestData{
+			buildSampleSearchData(whitelistedType),
+			buildSampleSearchData("random_type"),
 		}
 
-		_, err := populateSearchDataV2(esClient, testData)
+		_, err := populateSearchData(esClient, testData)
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		searcher, err := store.NewSearcherV2(store.SearcherConfig{
+		searcher, err := store.NewSearcher(store.SearcherConfig{
 			Client:        esClient,
 			TypeWhiteList: []string{whitelistedType},
 		})
@@ -71,19 +71,19 @@ func TestSearchV2(t *testing.T) {
 	t.Run("should restrict search to locally white listed type types", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
 
-		whitelistedType := "whitelisted_type_v2"
+		whitelistedType := "whitelisted_type"
 		queryText := "sample"
-		testData := []searchTestDataV2{
-			buildSampleSearchDataV2(whitelistedType),
-			buildSampleSearchDataV2("random_type_v2"),
+		testData := []searchTestData{
+			buildSampleSearchData(whitelistedType),
+			buildSampleSearchData("random_type"),
 		}
 
-		_, err := populateSearchDataV2(esClient, testData)
+		_, err := populateSearchData(esClient, testData)
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		searcher, err := store.NewSearcherV2(store.SearcherConfig{
+		searcher, err := store.NewSearcher(store.SearcherConfig{
 			Client:        esClient,
 			TypeWhiteList: []string{},
 		})
@@ -107,24 +107,24 @@ func TestSearchV2(t *testing.T) {
 	t.Run("should restrict search to the common subset of global and local type types", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
 
-		subsetType := "type_c_v2"
-		localWhitelist := []string{"type_a_v2", "type_b_v2", subsetType}
-		globalWhitelist := []string{subsetType, "type_d_v2", "type_e_v2"}
+		subsetType := "type_c"
+		localWhitelist := []string{"type_a", "type_b", subsetType}
+		globalWhitelist := []string{subsetType, "type_d", "type_e"}
 		queryText := "sample"
-		testData := []searchTestDataV2{
-			buildSampleSearchDataV2("type_a_v2"),
-			buildSampleSearchDataV2("type_b_v2"),
-			buildSampleSearchDataV2("type_c_v2"),
-			buildSampleSearchDataV2("type_d_v2"),
-			buildSampleSearchDataV2("type_e_v2"),
+		testData := []searchTestData{
+			buildSampleSearchData("type_a"),
+			buildSampleSearchData("type_b"),
+			buildSampleSearchData("type_c"),
+			buildSampleSearchData("type_d"),
+			buildSampleSearchData("type_e"),
 		}
 
-		_, err := populateSearchDataV2(esClient, testData)
+		_, err := populateSearchData(esClient, testData)
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		searcher, err := store.NewSearcherV2(store.SearcherConfig{
+		searcher, err := store.NewSearcher(store.SearcherConfig{
 			Client:        esClient,
 			TypeWhiteList: globalWhitelist,
 		})
@@ -148,16 +148,16 @@ func TestSearchV2(t *testing.T) {
 	t.Run("should process all types when there is no whitelist", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
 
-		testData := []searchTestDataV2{
-			buildSampleSearchDataV2("random_type_1_v2"),
-			buildSampleSearchDataV2("random_type_2_v2"),
+		testData := []searchTestData{
+			buildSampleSearchData("random_type_1"),
+			buildSampleSearchData("random_type_2"),
 		}
-		_, err := populateSearchDataV2(esClient, testData)
+		_, err := populateSearchData(esClient, testData)
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		searcher, err := store.NewSearcherV2(store.SearcherConfig{
+		searcher, err := store.NewSearcher(store.SearcherConfig{
 			Client:        esClient,
 			TypeWhiteList: []string{},
 		})
@@ -177,15 +177,15 @@ func TestSearchV2(t *testing.T) {
 	t.Run("fixtures", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
 
-		testFixture, err := loadTestFixtureV2()
+		testFixture, err := loadTestFixture()
 		if err != nil {
 			t.Error(err)
 		}
-		types, err := populateSearchDataV2(esClient, testFixture)
+		types, err := populateSearchData(esClient, testFixture)
 		if err != nil {
 			t.Error(err)
 		}
-		searcher, err := store.NewSearcherV2(store.SearcherConfig{
+		searcher, err := store.NewSearcher(store.SearcherConfig{
 			Client:        esClient,
 			TypeWhiteList: mapTypesToTypeNames(types),
 		})
@@ -210,9 +210,9 @@ func TestSearchV2(t *testing.T) {
 					Text: "topic",
 				},
 				Expected: []expectedRow{
-					{Type: "topic_v2", RecordID: "order-topic"},
-					{Type: "topic_v2", RecordID: "purchase-topic"},
-					{Type: "topic_v2", RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "order-topic"},
+					{Type: "topic", RecordID: "purchase-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
 				},
 			},
 			{
@@ -221,9 +221,9 @@ func TestSearchV2(t *testing.T) {
 					Text: "tpic",
 				},
 				Expected: []expectedRow{
-					{Type: "topic_v2", RecordID: "order-topic"},
-					{Type: "topic_v2", RecordID: "purchase-topic"},
-					{Type: "topic_v2", RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "order-topic"},
+					{Type: "topic", RecordID: "purchase-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
 				},
 			},
 			{
@@ -232,9 +232,9 @@ func TestSearchV2(t *testing.T) {
 					Text: "invoice",
 				},
 				Expected: []expectedRow{
-					{Type: "database_v2", RecordID: "au2-microsoft-invoice"},
-					{Type: "database_v2", RecordID: "us1-apple-invoice"},
-					{Type: "topic_v2", RecordID: "transaction"},
+					{Type: "database", RecordID: "au2-microsoft-invoice"},
+					{Type: "database", RecordID: "us1-apple-invoice"},
+					{Type: "topic", RecordID: "transaction"},
 				},
 			},
 			{
@@ -246,8 +246,8 @@ func TestSearchV2(t *testing.T) {
 					},
 				},
 				Expected: []expectedRow{
-					{Type: "topic_v2", RecordID: "order-topic"},
-					{Type: "topic_v2", RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "order-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
 				},
 				MatchTotalRows: true,
 			},
@@ -262,7 +262,7 @@ func TestSearchV2(t *testing.T) {
 					},
 				},
 				Expected: []expectedRow{
-					{Type: "topic_v2", RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
 				},
 				MatchTotalRows: true,
 			},
@@ -281,17 +281,17 @@ func TestSearchV2(t *testing.T) {
 
 				for i, res := range test.Expected {
 					assert.Equal(t, res.Type, results[i].TypeName)
-					assert.Equal(t, res.RecordID, results[i].RecordV2.Urn)
+					assert.Equal(t, res.RecordID, results[i].Record.Urn)
 				}
 			})
 		}
 	})
 }
 
-func buildSampleSearchDataV2(typeName string) searchTestDataV2 {
-	return searchTestDataV2{
+func buildSampleSearchData(typeName string) searchTestData {
+	return searchTestData{
 		Type: models.Type{Name: typeName, Fields: models.TypeFields{ID: "urn", Title: "name"}},
-		RecordV2s: []models.RecordV2{
+		Records: []models.Record{
 			{
 				Urn:  "sample-test-1",
 				Name: "sample test",
@@ -305,8 +305,8 @@ func buildSampleSearchDataV2(typeName string) searchTestDataV2 {
 	}
 }
 
-func loadTestFixtureV2() (testFixture []searchTestDataV2, err error) {
-	testFixtureJSON, err := ioutil.ReadFile("./testdata/search-test-fixture-v2.json")
+func loadTestFixture() (testFixture []searchTestData, err error) {
+	testFixtureJSON, err := ioutil.ReadFile("./testdata/search-test-fixture.json")
 	err = json.Unmarshal(testFixtureJSON, &testFixture)
 	if err != nil {
 		return testFixture, err
@@ -315,7 +315,7 @@ func loadTestFixtureV2() (testFixture []searchTestDataV2, err error) {
 	return testFixture, err
 }
 
-func populateSearchDataV2(esClient *elasticsearch.Client, data []searchTestDataV2) (types []models.Type, err error) {
+func populateSearchData(esClient *elasticsearch.Client, data []searchTestData) (types []models.Type, err error) {
 	ctx := context.Background()
 	typeRepo := store.NewTypeRepository(esClient)
 	for _, sample := range data {
@@ -325,7 +325,7 @@ func populateSearchDataV2(esClient *elasticsearch.Client, data []searchTestDataV
 		}
 
 		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(sample.Type)
-		if err := recordRepo.CreateOrReplaceMany(ctx, sample.RecordV2s); err != nil {
+		if err := recordRepo.CreateOrReplaceMany(ctx, sample.Records); err != nil {
 			return types, err
 		}
 	}

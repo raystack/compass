@@ -147,7 +147,7 @@ func (handler *TypeHandler) DeleteType(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusNoContent, "success")
 }
 
-func (handler *TypeHandler) DeleteRecordV2(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) DeleteRecord(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var (
 		typeName = vars["name"]
@@ -209,24 +209,24 @@ func (handler *TypeHandler) IngestRecord(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	var records []models.RecordV2
+	var records []models.Record
 	err = json.NewDecoder(r.Body).Decode(&records)
 	if err != nil {
 		writeJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
 		return
 	}
 
-	var failedRecordV2s = make(map[int]string)
+	var failedRecords = make(map[int]string)
 	for idx, record := range records {
-		if err := handler.validateRecordV2(record); err != nil {
+		if err := handler.validateRecord(record); err != nil {
 			handler.log.WithField("type", recordType).
 				WithField("record", record).
 				Errorf("error validating record: %v", err)
-			failedRecordV2s[idx] = err.Error()
+			failedRecords[idx] = err.Error()
 		}
 	}
-	if len(failedRecordV2s) > 0 {
-		writeJSON(w, http.StatusBadRequest, NewValidationErrorResponse(failedRecordV2s))
+	if len(failedRecords) > 0 {
+		writeJSON(w, http.StatusBadRequest, NewValidationErrorResponse(failedRecords))
 		return
 	}
 
@@ -338,7 +338,7 @@ func (handler *TypeHandler) parseSelectQuery(raw string) (fields []string) {
 	return
 }
 
-func (handler *TypeHandler) selectRecordFields(fields []string, records []models.RecordV2) (processedRecordV2s []models.RecordV2) {
+func (handler *TypeHandler) selectRecordFields(fields []string, records []models.Record) (processedRecords []models.Record) {
 	for _, record := range records {
 		newData := map[string]interface{}{}
 		for _, field := range fields {
@@ -349,12 +349,12 @@ func (handler *TypeHandler) selectRecordFields(fields []string, records []models
 			newData[field] = v
 		}
 		record.Data = newData
-		processedRecordV2s = append(processedRecordV2s, record)
+		processedRecords = append(processedRecords, record)
 	}
 	return
 }
 
-func (handler *TypeHandler) validateRecordV2(record models.RecordV2) error {
+func (handler *TypeHandler) validateRecord(record models.Record) error {
 	if record.Urn == "" {
 		return fmt.Errorf("urn is required")
 	}

@@ -1,7 +1,7 @@
 [
     {
         "type": {
-            "name" : "topic_v2",
+            "name" : "topic",
             "classification" : "resource",
             "record_attributes" : {
               "id" : "urn",
@@ -68,7 +68,7 @@
     },
     {
         "type": {
-            "name" : "database_v2",
+            "name" : "database",
             "classification" : "dataset",
             "record_attributes" : {
               "id" : "urn",

@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-// RecordV2 is a model that wraps arbitrary data with Columbus' context
-type RecordV2 struct {
+// Record is a model that wraps arbitrary data with Columbus' context
+type Record struct {
 	Urn         string                 `json:"urn" mapstructure:"urn"`
 	Name        string                 `json:"name" mapstructure:"name"`
 	Description string                 `json:"description" mapstructure:"description"`
@@ -19,7 +19,7 @@ type RecordV2 struct {
 
 type RecordIterator interface {
 	Scan() bool
-	Next() []RecordV2
+	Next() []Record
 	Close() error
 }
 
@@ -27,14 +27,14 @@ type RecordIterator interface {
 // criteria for operations involving record search
 type RecordFilter = map[string][]string
 
-// RecordRepository is an abstract storage for RecordV2s
+// RecordRepository is an abstract storage for Records
 type RecordRepository interface {
-	CreateOrReplaceMany(context.Context, []RecordV2) error
+	CreateOrReplaceMany(context.Context, []Record) error
 
 	// GetAll returns specific records from storage
 	// RecordFilter is an optional data structure that is
 	// used for return documents matching the search criteria.
-	GetAll(context.Context, RecordFilter) ([]RecordV2, error)
+	GetAll(context.Context, RecordFilter) ([]Record, error)
 
 	// GetAllIterator returns RecordIterator to iterate records by batches
 	GetAllIterator(context.Context) (RecordIterator, error)
@@ -42,7 +42,7 @@ type RecordRepository interface {
 	// GetByID returns a record by it's id.
 	// The field that contains this ID is defined by the
 	// type to which this record belongs
-	GetByID(context.Context, string) (RecordV2, error)
+	GetByID(context.Context, string) (Record, error)
 
 	// Delete deletes a record by it's id.
 	// The field that contains this ID is defined by the

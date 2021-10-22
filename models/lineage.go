@@ -30,7 +30,7 @@ type LineageDescriptor struct {
 	Type string `json:"type"`
 
 	// Query is a JSON Path query that is run against
-	// a RecordV2 to obtain the id's of it's related resources
+	// a Record to obtain the id's of it's related resources
 	Query string `json:"query"`
 
 	// Direction of the related resource in terms of whether

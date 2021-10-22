@@ -19,14 +19,14 @@ var (
 	whiteListQueryParamKey = "filter.type"
 )
 
-type SearchV2Handler struct {
-	recordSearcher models.RecordV2Searcher
+type SearchHandler struct {
+	recordSearcher models.RecordSearcher
 	typeRepo       models.TypeRepository
 	log            logrus.FieldLogger
 }
 
-func NewSearchV2Handler(log logrus.FieldLogger, searcher models.RecordV2Searcher, repo models.TypeRepository) *SearchV2Handler {
-	handler := &SearchV2Handler{
+func NewSearchHandler(log logrus.FieldLogger, searcher models.RecordSearcher, repo models.TypeRepository) *SearchHandler {
+	handler := &SearchHandler{
 		recordSearcher: searcher,
 		typeRepo:       repo,
 		log:            log,
@@ -35,7 +35,7 @@ func NewSearchV2Handler(log logrus.FieldLogger, searcher models.RecordV2Searcher
 	return handler
 }
 
-func (handler *SearchV2Handler) Search(w http.ResponseWriter, r *http.Request) {
+func (handler *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	cfg, err := handler.buildSearchCfg(r.URL.Query())
 	if err != nil {
@@ -65,7 +65,7 @@ func (handler *SearchV2Handler) Search(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, response)
 }
 
-func (handler *SearchV2Handler) buildSearchCfg(params url.Values) (cfg models.SearchConfig, err error) {
+func (handler *SearchHandler) buildSearchCfg(params url.Values) (cfg models.SearchConfig, err error) {
 	text := strings.TrimSpace(params.Get("text"))
 	if text == "" {
 		err = fmt.Errorf("'text' must be specified")
@@ -78,7 +78,7 @@ func (handler *SearchV2Handler) buildSearchCfg(params url.Values) (cfg models.Se
 	return
 }
 
-func (handler *SearchV2Handler) toSearchResponse(ctx context.Context, results []models.SearchResultV2) (response []SearchResponse, err error) {
+func (handler *SearchHandler) toSearchResponse(ctx context.Context, results []models.SearchResult) (response []SearchResponse, err error) {
 	typeRepo := newCachingTypeRepo(handler.typeRepo)
 	for _, result := range results {
 		recordType, err := typeRepo.GetByName(ctx, result.TypeName)
@@ -87,10 +87,10 @@ func (handler *SearchV2Handler) toSearchResponse(ctx context.Context, results []
 		}
 
 		res := SearchResponse{
-			ID:             result.RecordV2.Urn,
-			Title:          result.RecordV2.Name,
-			Description:    result.RecordV2.Description,
-			Labels:         result.RecordV2.Labels,
+			ID:             result.Record.Urn,
+			Title:          result.Record.Name,
+			Description:    result.Record.Description,
+			Labels:         result.Record.Labels,
 			Type:           recordType.Name,
 			Classification: string(recordType.Classification),
 		}

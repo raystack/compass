@@ -124,7 +124,7 @@ func (builder defaultBuilder) populateTypeRecords(ctx context.Context, graph Adj
 
 // add the corresponding records to graph.
 // Uses lineageProcessor to obtain information about upstreams/downstreams
-func (builder defaultBuilder) addRecord(graph AdjacencyMap, typ models.Type, record models.RecordV2, lineageProcessor lineageProcessor) error {
+func (builder defaultBuilder) addRecord(graph AdjacencyMap, typ models.Type, record models.Record, lineageProcessor lineageProcessor) error {
 	upstreams, downstreams, err := lineageProcessor.LineageOf(record)
 	if err != nil {
 		return fmt.Errorf("error obtaining lineage for record %q: %w", record.Urn, err)

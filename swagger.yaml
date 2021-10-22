@@ -15,7 +15,7 @@ definitions:
       - resource
       - dataset
       - schema
-  RecordV2:
+  Record:
     type: object
     properties:
       name:
@@ -198,7 +198,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/RecordV2'
+              $ref: '#/definitions/Record'
       responses:
         200:
           description: OK
@@ -267,7 +267,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/RecordV2'
+              $ref: '#/definitions/Record'
         400:
           description: bad input
           schema:
@@ -318,7 +318,7 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/RecordV2'
+            $ref: '#/definitions/Record'
         404:
           description: document or type does not exist
           schema:

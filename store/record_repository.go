@@ -22,7 +22,7 @@ const (
 )
 
 type getResponse struct {
-	Source models.RecordV2 `json:"_source"`
+	Source models.Record `json:"_source"`
 }
 
 // RecordRepository implements models.RecordRepository
@@ -32,7 +32,7 @@ type RecordRepository struct {
 	cli        *elasticsearch.Client
 }
 
-func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []models.RecordV2) error {
+func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []models.Record) error {
 	idxExists, err := indexExists(ctx, repo.cli, repo.recordType.Name)
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records [
 		return models.ErrNoSuchType{TypeName: repo.recordType.Name}
 	}
 
-	requestPayload, err := repo.createBulkInsertPayloadV2(records)
+	requestPayload, err := repo.createBulkInsertPayload(records)
 	if err != nil {
 		return fmt.Errorf("error serialising payload: %w", err)
 	}
@@ -60,12 +60,12 @@ func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records [
 	return nil
 }
 
-func (repo *RecordRepository) createBulkInsertPayloadV2(records []models.RecordV2) (io.Reader, error) {
+func (repo *RecordRepository) createBulkInsertPayload(records []models.Record) (io.Reader, error) {
 	payload := bytes.NewBuffer(nil)
 	for _, record := range records {
-		err := repo.writeInsertActionV2(payload, record)
+		err := repo.writeInsertAction(payload, record)
 		if err != nil {
-			return nil, fmt.Errorf("createBulkInsertPayloadV2: %w", err)
+			return nil, fmt.Errorf("createBulkInsertPayload: %w", err)
 		}
 		err = json.NewEncoder(payload).Encode(record)
 		if err != nil {
@@ -75,7 +75,7 @@ func (repo *RecordRepository) createBulkInsertPayloadV2(records []models.RecordV
 	return payload, nil
 }
 
-func (repo *RecordRepository) writeInsertActionV2(w io.Writer, record models.RecordV2) error {
+func (repo *RecordRepository) writeInsertAction(w io.Writer, record models.Record) error {
 	if strings.TrimSpace(record.Urn) == "" {
 		return fmt.Errorf("URN record field cannot be empty")
 	}
@@ -124,7 +124,7 @@ func (repo *RecordRepository) GetAllIterator(ctx context.Context) (models.Record
 	return &it, nil
 }
 
-func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordFilter) ([]models.RecordV2, error) {
+func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordFilter) ([]models.Record, error) {
 	// XXX(Aman): we should probably think about result ordering, if the client
 	// is going to slice the data for pagination. Does ES guarantee the result order?
 	body, err := repo.getAllQuery(filters)
@@ -155,8 +155,8 @@ func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordF
 	var results = repo.toRecordList(response)
 	var scrollID = response.ScrollID
 	for {
-		var nextResults []models.RecordV2
-		nextResults, scrollID, err = repo.scrollRecordV2s(ctx, scrollID)
+		var nextResults []models.Record
+		nextResults, scrollID, err = repo.scrollRecords(ctx, scrollID)
 		if err != nil {
 			return nil, fmt.Errorf("error scrolling results: %v", err)
 		}
@@ -168,7 +168,7 @@ func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordF
 	return results, nil
 }
 
-func (repo *RecordRepository) scrollRecordV2s(ctx context.Context, scrollID string) ([]models.RecordV2, string, error) {
+func (repo *RecordRepository) scrollRecords(ctx context.Context, scrollID string) ([]models.Record, string, error) {
 	resp, err := repo.cli.Scroll(
 		repo.cli.Scroll.WithScrollID(scrollID),
 		repo.cli.Scroll.WithScroll(defaultScrollTimeout),
@@ -190,10 +190,9 @@ func (repo *RecordRepository) scrollRecordV2s(ctx context.Context, scrollID stri
 	return repo.toRecordList(response), response.ScrollID, nil
 }
 
-func (repo *RecordRepository) toRecordList(res searchResponse) (records []models.RecordV2) {
+func (repo *RecordRepository) toRecordList(res searchResponse) (records []models.Record) {
 	for _, entry := range res.Hits.Hits {
-		record, _ := mapToV2(entry.Source)
-		records = append(records, record)
+		records = append(records, entry.Source)
 	}
 	return
 }
@@ -210,20 +209,7 @@ func (repo *RecordRepository) matchAllQuery() io.Reader {
 }
 
 func (repo *RecordRepository) termsQuery(filters models.RecordFilter) (io.Reader, error) {
-	var termsQueries []elastic.Query
-
-	var termsQueriesV1 []elastic.Query
-	for key, rawValues := range filters {
-		var values []interface{}
-		for _, val := range rawValues {
-			values = append(values, val)
-		}
-		key = fmt.Sprintf("%s.keyword", key)
-		termsQueriesV1 = append(termsQueriesV1, elastic.NewTermsQuery(key, values...))
-	}
-	termsQueries = append(termsQueries, elastic.NewBoolQuery().Must(termsQueriesV1...))
-
-	var termsQueriesV2 []elastic.Query
+	var termQueries []elastic.Query
 	for key, rawValues := range filters {
 		var values []interface{}
 		for _, val := range rawValues {
@@ -231,11 +217,10 @@ func (repo *RecordRepository) termsQuery(filters models.RecordFilter) (io.Reader
 		}
 
 		key := fmt.Sprintf("data.%s.keyword", key)
-		termsQueriesV2 = append(termsQueriesV2, elastic.NewTermsQuery(key, values...))
+		termQueries = append(termQueries, elastic.NewTermsQuery(key, values...))
 	}
-	termsQueries = append(termsQueries, elastic.NewBoolQuery().Must(termsQueriesV2...))
-
-	q := elastic.NewBoolQuery().Should(termsQueries...)
+	boolQuery := elastic.NewBoolQuery().Must(termQueries...)
+	q := elastic.NewBoolQuery().Should(boolQuery)
 	src, err := q.Source()
 	if err != nil {
 		return nil, fmt.Errorf("error building terms query: %w", err)
@@ -249,7 +234,7 @@ func (repo *RecordRepository) termsQuery(filters models.RecordFilter) (io.Reader
 	return payload, json.NewEncoder(payload).Encode(raw)
 }
 
-func (repo *RecordRepository) GetByID(ctx context.Context, id string) (record models.RecordV2, err error) {
+func (repo *RecordRepository) GetByID(ctx context.Context, id string) (record models.Record, err error) {
 	res, err := repo.cli.Get(
 		repo.recordType.Name,
 		id,
@@ -305,7 +290,7 @@ func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 // recordIterator is the internal implementation of models.RecordIterator by RecordRepository
 type recordIterator struct {
 	resp     *esapi.Response
-	records  []models.RecordV2
+	records  []models.Record
 	repo     *RecordRepository
 	scrollID string
 }
@@ -314,10 +299,10 @@ func (it *recordIterator) Scan() bool {
 	return len(strings.TrimSpace(it.scrollID)) > 0
 }
 
-func (it *recordIterator) Next() (prev []models.RecordV2) {
+func (it *recordIterator) Next() (prev []models.Record) {
 	prev = it.records
 	var err error
-	it.records, it.scrollID, err = it.repo.scrollRecordV2s(context.Background(), it.scrollID)
+	it.records, it.scrollID, err = it.repo.scrollRecords(context.Background(), it.scrollID)
 	if err != nil {
 		panic("error scrolling results:" + err.Error())
 	}

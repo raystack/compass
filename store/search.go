@@ -24,19 +24,19 @@ type SearcherConfig struct {
 	TypeWhiteList []string
 }
 
-// Searcher is an implementation of models.RecordV2Searcher
-type SearcherV2 struct {
+// Searcher is an implementation of models.RecordSearcher
+type Searcher struct {
 	cli              *elasticsearch.Client
 	typeWhiteList    []string
 	typeWhiteListSet map[string]bool
 }
 
-// NewSearcherV2 creates a new instance of SearcherV2
+// NewSearcher creates a new instance of Searcher
 // You can optionally specify a list of type names to whitelist for search
 // If the white list is nil (or has zero length), then the search will be run
 // on all types. This can be further restricted by FilterConfig.TypeWhiteList
 // in Search()
-func NewSearcherV2(config SearcherConfig) (*SearcherV2, error) {
+func NewSearcher(config SearcherConfig) (*Searcher, error) {
 	var whiteListSet = make(map[string]bool)
 	for _, ent := range config.TypeWhiteList {
 		if isReservedName(ent) {
@@ -45,7 +45,7 @@ func NewSearcherV2(config SearcherConfig) (*SearcherV2, error) {
 		whiteListSet[ent] = true
 	}
 
-	return &SearcherV2{
+	return &Searcher{
 		cli:              config.Client,
 		typeWhiteList:    config.TypeWhiteList,
 		typeWhiteListSet: whiteListSet,
@@ -64,7 +64,7 @@ func NewSearcherV2(config SearcherConfig) (*SearcherV2, error) {
 // Entities searched : {C}
 // GL specified that search can only be done for {A, B, C} types, while LL requested
 // the search for {C, D} types. Since {D} doesn't belong to GL's set, it won't be searched
-func (sr *SearcherV2) Search(ctx context.Context, cfg models.SearchConfig) (results []models.SearchResultV2, err error) {
+func (sr *Searcher) Search(ctx context.Context, cfg models.SearchConfig) (results []models.SearchResult, err error) {
 	if strings.TrimSpace(cfg.Text) == "" {
 		err = errors.New("search text cannot be empty")
 		return
@@ -108,7 +108,7 @@ func (sr *SearcherV2) Search(ctx context.Context, cfg models.SearchConfig) (resu
 	return
 }
 
-func (sr *SearcherV2) buildQuery(ctx context.Context, cfg models.SearchConfig, indices []string) (io.Reader, error) {
+func (sr *Searcher) buildQuery(ctx context.Context, cfg models.SearchConfig, indices []string) (io.Reader, error) {
 	textQuery := sr.buildTextQuery(ctx, cfg.Text)
 	filterQueries := sr.buildFilterQueries(cfg.Filters)
 	query := elastic.NewBoolQuery().
@@ -128,7 +128,7 @@ func (sr *SearcherV2) buildQuery(ctx context.Context, cfg models.SearchConfig, i
 	return payload, json.NewEncoder(payload).Encode(q)
 }
 
-func (sr *SearcherV2) buildTextQuery(ctx context.Context, text string) elastic.Query {
+func (sr *Searcher) buildTextQuery(ctx context.Context, text string) elastic.Query {
 	boostedFields := []string{
 		"urn^10",
 		"name^5",
@@ -155,7 +155,7 @@ func (sr *SearcherV2) buildTextQuery(ctx context.Context, text string) elastic.Q
 		)
 }
 
-func (sr *SearcherV2) buildFilterQueries(filters map[string][]string) (filterQueries []elastic.Query) {
+func (sr *Searcher) buildFilterQueries(filters map[string][]string) (filterQueries []elastic.Query) {
 	for key, elements := range filters {
 		if len(elements) < 1 {
 			continue
@@ -168,24 +168,17 @@ func (sr *SearcherV2) buildFilterQueries(filters map[string][]string) (filterQue
 	return
 }
 
-func (sr *SearcherV2) toSearchResults(hits []searchHit) (results []models.SearchResultV2, err error) {
+func (sr *Searcher) toSearchResults(hits []searchHit) (results []models.SearchResult, err error) {
 	for _, hit := range hits {
-		var record models.RecordV2
-		record, err = mapToV2(hit.Source)
-		if err != nil {
-			err = errors.Wrap(err, "error transforming to record v2")
-			return
-		}
-
-		results = append(results, models.SearchResultV2{
+		results = append(results, models.SearchResult{
 			TypeName: hit.Index,
-			RecordV2: record,
+			Record:   hit.Source,
 		})
 	}
 	return
 }
 
-func (sr *SearcherV2) searchIndices(localWhiteList []string) []string {
+func (sr *Searcher) searchIndices(localWhiteList []string) []string {
 	hasGL := len(sr.typeWhiteList) > 0
 	hasLL := len(localWhiteList) > 0
 	switch {

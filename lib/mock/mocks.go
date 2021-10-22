@@ -47,14 +47,14 @@ type RecordRepository struct {
 	mock.Mock
 }
 
-func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []models.RecordV2) error {
+func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []models.Record) error {
 	args := repo.Called(ctx, records)
 	return args.Error(0)
 }
 
-func (repo *RecordRepository) GetAll(ctx context.Context, filter models.RecordFilter) ([]models.RecordV2, error) {
+func (repo *RecordRepository) GetAll(ctx context.Context, filter models.RecordFilter) ([]models.Record, error) {
 	args := repo.Called(ctx, filter)
-	return args.Get(0).([]models.RecordV2), args.Error(1)
+	return args.Get(0).([]models.Record), args.Error(1)
 }
 
 func (repo *RecordRepository) GetAllIterator(ctx context.Context) (models.RecordIterator, error) {
@@ -62,9 +62,9 @@ func (repo *RecordRepository) GetAllIterator(ctx context.Context) (models.Record
 	return args.Get(0).(models.RecordIterator), args.Error(1)
 }
 
-func (repo *RecordRepository) GetByID(ctx context.Context, id string) (models.RecordV2, error) {
+func (repo *RecordRepository) GetByID(ctx context.Context, id string) (models.Record, error) {
 	args := repo.Called(ctx, id)
-	return args.Get(0).(models.RecordV2), args.Error(1)
+	return args.Get(0).(models.Record), args.Error(1)
 }
 
 func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
@@ -81,9 +81,9 @@ func (m *RecordIterator) Scan() bool {
 	return args.Bool(0)
 }
 
-func (m *RecordIterator) Next() []models.RecordV2 {
+func (m *RecordIterator) Next() []models.Record {
 	args := m.Called()
-	return args.Get(0).([]models.RecordV2)
+	return args.Get(0).([]models.Record)
 }
 
 func (m *RecordIterator) Close() error {
@@ -91,13 +91,13 @@ func (m *RecordIterator) Close() error {
 	return args.Error(0)
 }
 
-type RecordV2Searcher struct {
+type RecordSearcher struct {
 	mock.Mock
 }
 
-func (searcher *RecordV2Searcher) Search(ctx context.Context, cfg models.SearchConfig) ([]models.SearchResultV2, error) {
+func (searcher *RecordSearcher) Search(ctx context.Context, cfg models.SearchConfig) ([]models.SearchResult, error) {
 	args := searcher.Called(ctx, cfg)
-	return args.Get(0).([]models.SearchResultV2), args.Error(1)
+	return args.Get(0).([]models.SearchResult), args.Error(1)
 }
 
 type LineageProvider struct {

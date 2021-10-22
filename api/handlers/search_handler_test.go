@@ -19,7 +19,7 @@ import (
 	testifyMock "github.com/stretchr/testify/mock"
 )
 
-func TestSearchV2Handler(t *testing.T) {
+func TestSearchHandler(t *testing.T) {
 	ctx := context.Background()
 	// todo: pass testCase to ValidateResponse
 	type testCase struct {
@@ -28,7 +28,7 @@ func TestSearchV2Handler(t *testing.T) {
 		ExpectStatus     int
 		RequestParams    map[string][]string
 		InitRepo         func(testCase, *mock.TypeRepository)
-		InitSearcher     func(testCase, *mock.RecordV2Searcher)
+		InitSearcher     func(testCase, *mock.RecordSearcher)
 		ValidateResponse func(testCase, io.Reader) error
 	}
 
@@ -65,21 +65,21 @@ func TestSearchV2Handler(t *testing.T) {
 		{
 			Title:      "should report HTTP 500 if record searcher fails",
 			SearchText: "test",
-			InitSearcher: func(tc testCase, searcher *mock.RecordV2Searcher) {
+			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				err := fmt.Errorf("service unavailable")
 				searcher.On("Search", ctx, testifyMock.AnythingOfType("models.SearchConfig")).
-					Return([]models.SearchResultV2{}, err)
+					Return([]models.SearchResult{}, err)
 			},
 			ExpectStatus: http.StatusInternalServerError,
 		},
 		{
 			Title:      "should return an error if looking up an type detail fails",
 			SearchText: "test",
-			InitSearcher: func(tc testCase, searcher *mock.RecordV2Searcher) {
-				results := []models.SearchResultV2{
+			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
+				results := []models.SearchResult{
 					{
 						TypeName: "test",
-						RecordV2: models.RecordV2{},
+						Record:   models.Record{},
 					},
 				}
 				searcher.On("Search", ctx, testifyMock.AnythingOfType("models.SearchConfig")).
@@ -103,7 +103,7 @@ func TestSearchV2Handler(t *testing.T) {
 				"filter.type":      {"dagger"},
 			},
 			InitRepo: withTypes(testdata.Type),
-			InitSearcher: func(tc testCase, searcher *mock.RecordV2Searcher) {
+			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				cfg := models.SearchConfig{
 					Text:          tc.SearchText,
 					TypeWhiteList: tc.RequestParams["filter.type"],
@@ -112,10 +112,10 @@ func TestSearchV2Handler(t *testing.T) {
 					},
 				}
 
-				results := []models.SearchResultV2{
+				results := []models.SearchResult{
 					{
 						TypeName: testdata.Type.Name,
-						RecordV2: models.RecordV2{
+						Record: models.Record{
 							Urn:  "test-1",
 							Name: "test 1",
 							Data: map[string]interface{}{
@@ -137,15 +137,15 @@ func TestSearchV2Handler(t *testing.T) {
 		{
 			Title:      "should return the matched documents",
 			SearchText: "test",
-			InitSearcher: func(tc testCase, searcher *mock.RecordV2Searcher) {
+			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				cfg := models.SearchConfig{
 					Text:    tc.SearchText,
 					Filters: make(map[string][]string),
 				}
-				response := []models.SearchResultV2{
+				response := []models.SearchResult{
 					{
 						TypeName: "test",
-						RecordV2: models.RecordV2{
+						Record: models.Record{
 							Urn:         "test-resource",
 							Name:        "test resource",
 							Description: "some description",
@@ -198,7 +198,7 @@ func TestSearchV2Handler(t *testing.T) {
 			},
 			SearchText: "resource",
 			InitRepo:   withTypes(testdata.Type),
-			InitSearcher: func(tc testCase, searcher *mock.RecordV2Searcher) {
+			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				maxResults, _ := strconv.Atoi(tc.RequestParams["size"][0])
 				cfg := models.SearchConfig{
 					Text:       tc.SearchText,
@@ -206,11 +206,11 @@ func TestSearchV2Handler(t *testing.T) {
 					Filters:    make(map[string][]string),
 				}
 
-				var results []models.SearchResultV2
+				var results []models.SearchResult
 				for i := 0; i < cfg.MaxResults; i++ {
 					urn := fmt.Sprintf("resource-%d", i+1)
 					name := fmt.Sprintf("resource %d", i+1)
-					record := models.RecordV2{
+					record := models.Record{
 						Urn:  urn,
 						Name: name,
 						Data: map[string]interface{}{
@@ -224,8 +224,8 @@ func TestSearchV2Handler(t *testing.T) {
 							"entity":    "odpf",
 						},
 					}
-					result := models.SearchResultV2{
-						RecordV2: record,
+					result := models.SearchResult{
+						Record:   record,
 						TypeName: testdata.Type.Name,
 					}
 					results = append(results, result)
@@ -252,7 +252,7 @@ func TestSearchV2Handler(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.Title, func(t *testing.T) {
 			var (
-				recordSearcher = new(mock.RecordV2Searcher)
+				recordSearcher = new(mock.RecordSearcher)
 				typeRepo       = new(mock.TypeRepository)
 			)
 			if testCase.InitRepo != nil {
@@ -277,7 +277,7 @@ func TestSearchV2Handler(t *testing.T) {
 			rr := httptest.NewRequest(http.MethodGet, requestURL, nil)
 			rw := httptest.NewRecorder()
 
-			handler := handlers.NewSearchV2Handler(new(mock.Logger), recordSearcher, typeRepo)
+			handler := handlers.NewSearchHandler(new(mock.Logger), recordSearcher, typeRepo)
 			handler.Search(rw, rr)
 
 			expectStatus := testCase.ExpectStatus
