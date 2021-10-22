@@ -7,10 +7,16 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/sirupsen/logrus"
 
 	"github.com/odpf/columbus/models"
+)
+
+var (
+	filterPrefix           = "filter."
+	whiteListQueryParamKey = "filter.type"
 )
 
 type SearchV2Handler struct {
@@ -90,6 +96,63 @@ func (handler *SearchV2Handler) toSearchResponse(ctx context.Context, results []
 		}
 
 		response = append(response, res)
+	}
+	return
+}
+
+// cachingTypeRepo is a decorator over a models.TypeRepository
+// that caches results of previous read-only operations
+type cachingTypeRepo struct {
+	mu    sync.Mutex
+	cache map[string]models.Type
+	repo  models.TypeRepository
+}
+
+func (decorator *cachingTypeRepo) CreateOrReplace(ctx context.Context, ent models.Type) error {
+	panic("not implemented")
+}
+
+func (decorator *cachingTypeRepo) GetByName(ctx context.Context, name string) (models.Type, error) {
+	ent, exists := decorator.cache[name]
+	if exists {
+		return ent, nil
+	}
+
+	decorator.mu.Lock()
+	defer decorator.mu.Unlock()
+	ent, err := decorator.repo.GetByName(ctx, name)
+	if err != nil {
+		return ent, err
+	}
+	decorator.cache[ent.Name] = ent
+	return ent, nil
+}
+
+func newCachingTypeRepo(repo models.TypeRepository) *cachingTypeRepo {
+	return &cachingTypeRepo{
+		repo:  repo,
+		cache: make(map[string]models.Type),
+	}
+}
+
+func filterConfigFromValues(values url.Values) map[string][]string {
+	var filter = make(map[string][]string)
+	for key, fields := range values {
+		// filters are of form "filter.{field}", apart from "filter.type", which is used
+		// for building the type whitelist.
+		if !strings.HasPrefix(key, filterPrefix) || strings.EqualFold(key, whiteListQueryParamKey) {
+			continue
+		}
+		filterKey := strings.TrimPrefix(key, filterPrefix)
+		filter[filterKey] = fields
+	}
+	return filter
+}
+
+func parseTypeWhiteList(values url.Values) (types []string) {
+	for _, typ := range values[whiteListQueryParamKey] {
+		typList := strings.Split(typ, ",")
+		types = append(types, typList...)
 	}
 	return
 }

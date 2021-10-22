@@ -21,10 +21,8 @@ func TestSearchV2(t *testing.T) {
 	ctx := context.Background()
 	t.Run("should return an error if search string is empty", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
-
 		searcher, err := store.NewSearcherV2(store.SearcherConfig{
-			Client:   esClient,
-			TypeRepo: store.NewTypeRepository(esClient),
+			Client: esClient,
 		})
 		if err != nil {
 			t.Error(err)
@@ -34,7 +32,7 @@ func TestSearchV2(t *testing.T) {
 			Text: "",
 		})
 
-		assert.NotNil(t, err)
+		assert.Error(t, err)
 	})
 
 	t.Run("should restrict search to globally white listed type types", func(t *testing.T) {
@@ -54,7 +52,6 @@ func TestSearchV2(t *testing.T) {
 		}
 		searcher, err := store.NewSearcherV2(store.SearcherConfig{
 			Client:        esClient,
-			TypeRepo:      store.NewTypeRepository(esClient),
 			TypeWhiteList: []string{whitelistedType},
 		})
 		if err != nil {
@@ -88,7 +85,6 @@ func TestSearchV2(t *testing.T) {
 		}
 		searcher, err := store.NewSearcherV2(store.SearcherConfig{
 			Client:        esClient,
-			TypeRepo:      store.NewTypeRepository(esClient),
 			TypeWhiteList: []string{},
 		})
 		if err != nil {
@@ -130,7 +126,6 @@ func TestSearchV2(t *testing.T) {
 		}
 		searcher, err := store.NewSearcherV2(store.SearcherConfig{
 			Client:        esClient,
-			TypeRepo:      store.NewTypeRepository(esClient),
 			TypeWhiteList: globalWhitelist,
 		})
 		if err != nil {
@@ -164,7 +159,6 @@ func TestSearchV2(t *testing.T) {
 		}
 		searcher, err := store.NewSearcherV2(store.SearcherConfig{
 			Client:        esClient,
-			TypeRepo:      store.NewTypeRepository(esClient),
 			TypeWhiteList: []string{},
 		})
 		if err != nil {
@@ -193,7 +187,6 @@ func TestSearchV2(t *testing.T) {
 		}
 		searcher, err := store.NewSearcherV2(store.SearcherConfig{
 			Client:        esClient,
-			TypeRepo:      store.NewTypeRepository(esClient),
 			TypeWhiteList: mapTypesToTypeNames(types),
 		})
 		if err != nil {
@@ -332,10 +325,19 @@ func populateSearchDataV2(esClient *elasticsearch.Client, data []searchTestDataV
 		}
 
 		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(sample.Type)
-		if err := recordRepo.CreateOrReplaceManyV2(ctx, sample.RecordV2s); err != nil {
+		if err := recordRepo.CreateOrReplaceMany(ctx, sample.RecordV2s); err != nil {
 			return types, err
 		}
 	}
 
 	return types, nil
+}
+
+func mapTypesToTypeNames(types []models.Type) []string {
+	var result []string
+	for _, typ := range types {
+		result = append(result, typ.Name)
+	}
+
+	return result
 }

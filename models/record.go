@@ -6,10 +6,6 @@ import (
 	"time"
 )
 
-// RecordV1 represents an arbitrary JSON message
-// TODO(Aman): add validation for mandatory fields? (landscape for instance)
-type RecordV1 = map[string]interface{}
-
 // RecordV2 is a model that wraps arbitrary data with Columbus' context
 type RecordV2 struct {
 	Urn         string                 `json:"urn" mapstructure:"urn"`
@@ -23,7 +19,7 @@ type RecordV2 struct {
 
 type RecordIterator interface {
 	Scan() bool
-	Next() []RecordV1
+	Next() []RecordV2
 	Close() error
 }
 
@@ -31,15 +27,14 @@ type RecordIterator interface {
 // criteria for operations involving record search
 type RecordFilter = map[string][]string
 
-// RecordRepository is an abstract storage for RecordV1s
+// RecordRepository is an abstract storage for RecordV2s
 type RecordRepository interface {
-	CreateOrReplaceMany(context.Context, []RecordV1) error
-	CreateOrReplaceManyV2(context.Context, []RecordV2) error
+	CreateOrReplaceMany(context.Context, []RecordV2) error
 
 	// GetAll returns specific records from storage
 	// RecordFilter is an optional data structure that is
 	// used for return documents matching the search criteria.
-	GetAll(context.Context, RecordFilter) ([]RecordV1, error)
+	GetAll(context.Context, RecordFilter) ([]RecordV2, error)
 
 	// GetAllIterator returns RecordIterator to iterate records by batches
 	GetAllIterator(context.Context) (RecordIterator, error)
@@ -47,7 +42,7 @@ type RecordRepository interface {
 	// GetByID returns a record by it's id.
 	// The field that contains this ID is defined by the
 	// type to which this record belongs
-	GetByID(context.Context, string) (RecordV1, error)
+	GetByID(context.Context, string) (RecordV2, error)
 
 	// Delete deletes a record by it's id.
 	// The field that contains this ID is defined by the

@@ -147,7 +147,7 @@ func (handler *TypeHandler) DeleteType(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusNoContent, "success")
 }
 
-func (handler *TypeHandler) DeleteRecordV1(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) DeleteRecordV2(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var (
 		typeName = vars["name"]
@@ -197,61 +197,7 @@ func (handler *TypeHandler) DeleteRecordV1(w http.ResponseWriter, r *http.Reques
 	writeJSON(w, http.StatusNoContent, "success")
 }
 
-func (handler *TypeHandler) IngestRecordV1(w http.ResponseWriter, r *http.Request) {
-	name := mux.Vars(r)["name"]
-	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
-	if err != nil {
-		status := http.StatusInternalServerError
-		if _, ok := err.(models.ErrNoSuchType); ok {
-			status = http.StatusNotFound
-		}
-		writeJSONError(w, status, err.Error())
-		return
-	}
-
-	var records []models.RecordV1
-	err = json.NewDecoder(r.Body).Decode(&records)
-	if err != nil {
-		writeJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
-		return
-	}
-
-	var failedRecordV1s = make(map[int]string)
-	for idx, record := range records {
-		if err := handler.validateRecordV1(recordType, record); err != nil {
-			handler.log.WithField("type", recordType).
-				WithField("record", record).
-				Errorf("error validating record: %v", err)
-			failedRecordV1s[idx] = err.Error()
-		}
-	}
-	if len(failedRecordV1s) > 0 {
-		writeJSON(w, http.StatusBadRequest, NewValidationErrorResponse(failedRecordV1s))
-		return
-	}
-
-	recordRepo, err := handler.recordRepositoryFactory.For(recordType)
-	if err != nil {
-		handler.log.WithField("type", recordType.Name).
-			Errorf("error creating record repository: %v", err)
-
-		status := http.StatusInternalServerError
-		writeJSONError(w, status, http.StatusText(status))
-		return
-	}
-	if err = recordRepo.CreateOrReplaceMany(r.Context(), records); err != nil {
-		handler.log.WithField("type", recordType.Name).
-			Errorf("error creating/updating records: %v", err)
-
-		status := http.StatusInternalServerError
-		writeJSONError(w, status, http.StatusText(status))
-		return
-	}
-	handler.log.Infof("created/updated %d records for %q type", len(records), recordType.Name)
-	writeJSON(w, http.StatusOK, StatusResponse{Status: "success"})
-}
-
-func (handler *TypeHandler) IngestRecordV2(w http.ResponseWriter, r *http.Request) {
+func (handler *TypeHandler) IngestRecord(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
 	recordType, err := handler.typeRepo.GetByName(r.Context(), name)
 	if err != nil {
@@ -270,17 +216,17 @@ func (handler *TypeHandler) IngestRecordV2(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	var failedRecordV1s = make(map[int]string)
+	var failedRecordV2s = make(map[int]string)
 	for idx, record := range records {
 		if err := handler.validateRecordV2(record); err != nil {
 			handler.log.WithField("type", recordType).
 				WithField("record", record).
 				Errorf("error validating record: %v", err)
-			failedRecordV1s[idx] = err.Error()
+			failedRecordV2s[idx] = err.Error()
 		}
 	}
-	if len(failedRecordV1s) > 0 {
-		writeJSON(w, http.StatusBadRequest, NewValidationErrorResponse(failedRecordV1s))
+	if len(failedRecordV2s) > 0 {
+		writeJSON(w, http.StatusBadRequest, NewValidationErrorResponse(failedRecordV2s))
 		return
 	}
 
@@ -293,7 +239,7 @@ func (handler *TypeHandler) IngestRecordV2(w http.ResponseWriter, r *http.Reques
 		writeJSONError(w, status, http.StatusText(status))
 		return
 	}
-	if err := recordRepo.CreateOrReplaceManyV2(r.Context(), records); err != nil {
+	if err := recordRepo.CreateOrReplaceMany(r.Context(), records); err != nil {
 		handler.log.WithField("type", recordType.Name).
 			Errorf("error creating/updating records: %v", err)
 
@@ -392,37 +338,20 @@ func (handler *TypeHandler) parseSelectQuery(raw string) (fields []string) {
 	return
 }
 
-func (handler *TypeHandler) selectRecordFields(fields []string, records []models.RecordV1) (processedRecordV1s []models.RecordV1) {
+func (handler *TypeHandler) selectRecordFields(fields []string, records []models.RecordV2) (processedRecordV2s []models.RecordV2) {
 	for _, record := range records {
-		currentRecordV1 := make(models.RecordV1)
+		newData := map[string]interface{}{}
 		for _, field := range fields {
-			v, ok := record[field]
+			v, ok := record.Data[field]
 			if !ok {
 				continue
 			}
-			currentRecordV1[field] = v
+			newData[field] = v
 		}
-		processedRecordV1s = append(processedRecordV1s, currentRecordV1)
+		record.Data = newData
+		processedRecordV2s = append(processedRecordV2s, record)
 	}
 	return
-}
-
-func (handler *TypeHandler) validateRecordV1(recordType models.Type, record map[string]interface{}) error {
-	var shouldHave = []string{recordType.Fields.Title, recordType.Fields.ID}
-	for _, key := range shouldHave {
-		val, ok := record[key]
-		if !ok {
-			return fmt.Errorf("%q is required", key)
-		}
-		stringVal, ok := val.(string)
-		if !ok {
-			return fmt.Errorf("%q must be string", key)
-		}
-		if strings.TrimSpace(stringVal) == "" {
-			return fmt.Errorf("%q cannot be empty", key)
-		}
-	}
-	return nil
 }
 
 func (handler *TypeHandler) validateRecordV2(record models.RecordV2) error {

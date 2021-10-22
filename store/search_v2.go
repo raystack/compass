@@ -14,7 +14,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Searcher is an implementation of models.RecordV1Searcher
+var (
+	defaultMaxResults = 200
+	defaultMinScore   = 0.01
+)
+
+type SearcherConfig struct {
+	Client        *elasticsearch.Client
+	TypeWhiteList []string
+}
+
+// Searcher is an implementation of models.RecordV2Searcher
 type SearcherV2 struct {
 	cli              *elasticsearch.Client
 	typeWhiteList    []string
@@ -56,7 +66,7 @@ func NewSearcherV2(config SearcherConfig) (*SearcherV2, error) {
 // the search for {C, D} types. Since {D} doesn't belong to GL's set, it won't be searched
 func (sr *SearcherV2) Search(ctx context.Context, cfg models.SearchConfig) (results []models.SearchResultV2, err error) {
 	if strings.TrimSpace(cfg.Text) == "" {
-		err = errors.Wrap(err, "search text cannot be empty")
+		err = errors.New("search text cannot be empty")
 		return
 	}
 
@@ -192,4 +202,13 @@ func (sr *SearcherV2) searchIndices(localWhiteList []string) []string {
 	default:
 		return []string{}
 	}
+}
+
+func anyValidStringSlice(slices ...[]string) []string {
+	for _, slice := range slices {
+		if len(slice) > 0 {
+			return slice
+		}
+	}
+	return nil
 }

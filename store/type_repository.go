@@ -187,36 +187,74 @@ func (repo *TypeRepository) getAllQuery() io.Reader {
 }
 
 func (repo *TypeRepository) GetAll(ctx context.Context) ([]models.Type, error) {
-
-	// we'll reuse record repositories' scrolling capabilities
-	// to obtain types, instead of reimplementing it.
-	// This will slow down this operation a bit (due to the JSON conversions necessary)
-	// but is a very efficient trade-off considering we don't have to re-implement
-	// scrolling. Or we could generalise the scrolling operation on elasticsearch response
-	// and then both of them could use it.
-	recordRepo := RecordRepository{
-		cli:        repo.cli,
-		recordType: models.Type{Name: "meta"},
-	}
-
-	rawEntities, err := recordRepo.GetAll(ctx, models.RecordFilter{})
+	body := strings.NewReader(`{"query":{"match_all":{}}}`)
+	resp, err := repo.cli.Search(
+		repo.cli.Search.WithIndex(defaultMetaIndex),
+		repo.cli.Search.WithBody(body),
+		repo.cli.Search.WithScroll(defaultScrollTimeout),
+		repo.cli.Search.WithSize(defaultScrollBatchSize),
+		repo.cli.Search.WithContext(ctx),
+	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error executing search: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.IsError() {
+		return nil, fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(resp))
 	}
 
-	types := []models.Type{}
-	for _, rawType := range rawEntities {
-		var serialised = new(bytes.Buffer)
-		if err := json.NewEncoder(serialised).Encode(rawType); err != nil {
-			return nil, fmt.Errorf("internal: error serialising record to JSON: %w", err)
-		}
-		var recordType models.Type
-		if err := json.NewDecoder(serialised).Decode(&recordType); err != nil {
-			return nil, fmt.Errorf("internal: error deserialising JSON to type: %w", err)
-		}
-		types = append(types, recordType)
+	var response typeResponse
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding es response: %w", err)
 	}
-	return types, nil
+	var results = repo.toTypeList(response)
+	var scrollID = response.ScrollID
+	for {
+		var types []models.Type
+		types, scrollID, err = repo.scrollRecord(ctx, scrollID)
+		if err != nil {
+			return nil, fmt.Errorf("error scrolling results: %v", err)
+		}
+		if len(types) == 0 {
+			break
+		}
+		results = append(results, types...)
+	}
+	return results, nil
+}
+
+func (repo *TypeRepository) scrollRecord(ctx context.Context, scrollID string) ([]models.Type, string, error) {
+	resp, err := repo.cli.Scroll(
+		repo.cli.Scroll.WithScrollID(scrollID),
+		repo.cli.Scroll.WithScroll(defaultScrollTimeout),
+		repo.cli.Scroll.WithContext(ctx),
+	)
+	if err != nil {
+		return nil, "", fmt.Errorf("error executing scroll: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.IsError() {
+		return nil, "", fmt.Errorf("error response from elasticsearch: %v", errorReasonFromResponse(resp))
+	}
+
+	var response typeResponse
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	resp.Body.Close()
+	if err != nil {
+		return nil, "", fmt.Errorf("error decoding es response: %w", err)
+	}
+
+	return repo.toTypeList(response), response.ScrollID, nil
+}
+
+func (repo *TypeRepository) toTypeList(response typeResponse) []models.Type {
+	types := []models.Type{}
+	for _, hit := range response.Hits.Hits {
+		types = append(types, hit.Source)
+	}
+
+	return types
 }
 
 func (repo *TypeRepository) Delete(ctx context.Context, typeName string) error {
@@ -257,4 +295,14 @@ func NewTypeRepository(cli *elasticsearch.Client) *TypeRepository {
 	return &TypeRepository{
 		cli: cli,
 	}
+}
+
+type typeResponse struct {
+	ScrollID string `json:"_scroll_id"`
+	Hits     struct {
+		Hits []struct {
+			Index  string      `json:"_index"`
+			Source models.Type `json:"_source"`
+		} `json:"hits"`
+	} `json:"hits"`
 }

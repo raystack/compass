@@ -107,7 +107,7 @@ Use this API for adding records for a certain type. The document can have any nu
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
 | name | path |  | Yes | string |
-| payload | body |  | No | [ [RecordV1](#record) ] |
+| payload | body |  | No | [ [RecordV2](#record) ] |
 
 ##### Responses
 
@@ -175,7 +175,7 @@ list documents for the type
 
 | Code | Description | Schema |
 | ---- | ----------- | ------ |
-| 200 | OK | [ [RecordV1](#record) ] |
+| 200 | OK | [ [RecordV2](#record) ] |
 | 400 | bad input | [Error](#error) |
 | 404 | not found | [Error](#error) |
 
@@ -218,7 +218,7 @@ get a record by id
 
 | Code | Description | Schema |
 | ---- | ----------- | ------ |
-| 200 | OK | [RecordV1](#record) |
+| 200 | OK | [RecordV2](#record) |
 | 404 | document or type does not exist | [Error](#error) |
 
 ### /search
@@ -261,7 +261,7 @@ defines the 'class' of the resource
 | ---- | ---- | ----------- | -------- |
 | Classifications | string | defines the 'class' of the resource |  |
 
-#### RecordV1
+#### RecordV2
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |

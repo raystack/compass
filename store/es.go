@@ -9,7 +9,6 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
-	"github.com/odpf/columbus/models"
 )
 
 // used as a utility for generating request payload
@@ -21,8 +20,8 @@ type searchQuery struct {
 }
 
 type searchHit struct {
-	Index  string          `json:"_index"`
-	Source models.RecordV1 `json:"_source"`
+	Index  string                 `json:"_index"`
+	Source map[string]interface{} `json:"_source"`
 }
 
 type searchResponse struct {

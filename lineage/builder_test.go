@@ -16,7 +16,7 @@ import (
 
 type dataset struct {
 	Type      models.Type
-	RecordV1s []models.RecordV1
+	RecordV2s []models.RecordV2
 }
 
 func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordRepositoryFactory) {
@@ -32,7 +32,7 @@ func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordRe
 		recordIterator := new(mock.RecordIterator)
 		recordIterator.On("Scan").Return(true).Once()
 		recordIterator.On("Scan").Return(false).Once()
-		recordIterator.On("Next").Return(dataset.RecordV1s)
+		recordIterator.On("Next").Return(dataset.RecordV2s)
 		recordIterator.On("Close").Return(nil)
 		recordRepo := new(mock.RecordRepository)
 		recordRepo.On("GetAllIterator", ctx).Return(recordIterator, nil)
@@ -70,16 +70,19 @@ func TestDefaultBuilder(t *testing.T) {
 						Type: models.Type{
 							Name:           "test",
 							Classification: models.TypeClassificationResource,
-							Fields: models.TypeFields{
-								ID: "id",
-							},
 						},
-						RecordV1s: []models.RecordV1{
+						RecordV2s: []models.RecordV2{
 							{
-								"id": "1",
+								Urn: "1",
+								Data: map[string]interface{}{
+									"id": "1",
+								},
 							},
 							{
-								"id": "2",
+								Urn: "2",
+								Data: map[string]interface{}{
+									"id": "2",
+								},
 							},
 						},
 					},
@@ -98,9 +101,6 @@ func TestDefaultBuilder(t *testing.T) {
 						Type: models.Type{
 							Name:           "internal-ref",
 							Classification: models.TypeClassificationResource,
-							Fields: models.TypeFields{
-								ID: "id",
-							},
 							Lineage: []models.LineageDescriptor{
 								{
 									Type:  "related-resource-ds",
@@ -114,11 +114,14 @@ func TestDefaultBuilder(t *testing.T) {
 								},
 							},
 						},
-						RecordV1s: []models.RecordV1{
+						RecordV2s: []models.RecordV2{
 							{
-								"id":         "1",
-								"upstreams":  []string{"A", "B"},
-								"downstream": "C",
+								Urn: "1",
+								Data: map[string]interface{}{
+									"id":         "1",
+									"upstreams":  []string{"A", "B"},
+									"downstream": "C",
+								},
 							},
 						},
 					},
@@ -139,13 +142,13 @@ func TestDefaultBuilder(t *testing.T) {
 						Type: models.Type{
 							Name:           "producer",
 							Classification: models.TypeClassificationResource,
-							Fields: models.TypeFields{
-								ID: "id",
-							},
 						},
-						RecordV1s: []models.RecordV1{
+						RecordV2s: []models.RecordV2{
 							{
-								"id": "data-booking",
+								Urn: "data-booking",
+								Data: map[string]interface{}{
+									"id": "data-booking",
+								},
 							},
 						},
 					},
@@ -153,9 +156,6 @@ func TestDefaultBuilder(t *testing.T) {
 						Type: models.Type{
 							Name:           "consumer",
 							Classification: models.TypeClassificationResource,
-							Fields: models.TypeFields{
-								ID: "id",
-							},
 							Lineage: []models.LineageDescriptor{
 								{
 									Type:  "producer",
@@ -164,14 +164,20 @@ func TestDefaultBuilder(t *testing.T) {
 								},
 							},
 						},
-						RecordV1s: []models.RecordV1{
+						RecordV2s: []models.RecordV2{
 							{
-								"id":  "booking-aggregator",
-								"src": "data-booking",
+								Urn: "booking-aggregator",
+								Data: map[string]interface{}{
+									"id":  "booking-aggregator",
+									"src": "data-booking",
+								},
 							},
 							{
-								"id":  "booking-fraud-detector",
-								"src": "data-booking",
+								Urn: "booking-fraud-detector",
+								Data: map[string]interface{}{
+									"id":  "booking-fraud-detector",
+									"src": "data-booking",
+								},
 							},
 						},
 					},

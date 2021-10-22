@@ -55,11 +55,9 @@ func initRouter(
 ) *mux.Router {
 	typeRepository := store.NewTypeRepository(esClient)
 	recordRepositoryFactory := store.NewRecordRepositoryFactory(esClient)
-	recordSearcher, err := store.NewSearcher(store.SearcherConfig{
-		Client:              esClient,
-		TypeRepo:            typeRepository,
-		TypeWhiteList:       typeWhiteList(config.TypeWhiteListStr),
-		CachedTypesDuration: config.SearchTypesCacheDuration,
+	recordSearcher, err := store.NewSearcherV2(store.SearcherConfig{
+		Client:        esClient,
+		TypeWhiteList: typeWhiteList(config.TypeWhiteListStr),
 	})
 	if err != nil {
 		log.Fatalf("error creating searcher: %v", err)
@@ -91,7 +89,7 @@ func initRouter(
 	))
 	api.RegisterRoutes(router, api.Config{
 		Logger:                  rootLogger,
-		RecordV1Searcher:        recordSearcher,
+		RecordV2Searcher:        recordSearcher,
 		RecordRepositoryFactory: recordRepositoryFactory,
 		TypeRepository:          typeRepository,
 		LineageProvider:         lineageService,

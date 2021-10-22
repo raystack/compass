@@ -22,7 +22,7 @@ const (
 )
 
 type getResponse struct {
-	Source models.RecordV1 `json:"_source"`
+	Source models.RecordV2 `json:"_source"`
 }
 
 // RecordRepository implements models.RecordRepository
@@ -32,35 +32,7 @@ type RecordRepository struct {
 	cli        *elasticsearch.Client
 }
 
-func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []models.RecordV1) error {
-	idxExists, err := indexExists(ctx, repo.cli, repo.recordType.Name)
-	if err != nil {
-		return err
-	}
-	if !idxExists {
-		return models.ErrNoSuchType{TypeName: repo.recordType.Name}
-	}
-
-	requestPayload, err := repo.createBulkInsertPayload(records)
-	if err != nil {
-		return fmt.Errorf("error serialising payload: %w", err)
-	}
-	res, err := repo.cli.Bulk(
-		requestPayload,
-		repo.cli.Bulk.WithRefresh("true"),
-		repo.cli.Bulk.WithContext(ctx),
-	)
-	if err != nil {
-		return elasticSearchError(err)
-	}
-	defer res.Body.Close()
-	if res.IsError() {
-		return fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
-	}
-	return nil
-}
-
-func (repo *RecordRepository) CreateOrReplaceManyV2(ctx context.Context, records []models.RecordV2) error {
+func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []models.RecordV2) error {
 	idxExists, err := indexExists(ctx, repo.cli, repo.recordType.Name)
 	if err != nil {
 		return err
@@ -88,21 +60,6 @@ func (repo *RecordRepository) CreateOrReplaceManyV2(ctx context.Context, records
 	return nil
 }
 
-func (repo *RecordRepository) createBulkInsertPayload(records []models.RecordV1) (io.Reader, error) {
-	payload := bytes.NewBuffer(nil)
-	for _, record := range records {
-		err := repo.writeInsertAction(payload, record)
-		if err != nil {
-			return nil, fmt.Errorf("createBulkInsertPayload: %w", err)
-		}
-		err = json.NewEncoder(payload).Encode(record)
-		if err != nil {
-			return nil, fmt.Errorf("error serialising record: %w", err)
-		}
-	}
-	return payload, nil
-}
-
 func (repo *RecordRepository) createBulkInsertPayloadV2(records []models.RecordV2) (io.Reader, error) {
 	payload := bytes.NewBuffer(nil)
 	for _, record := range records {
@@ -116,24 +73,6 @@ func (repo *RecordRepository) createBulkInsertPayloadV2(records []models.RecordV
 		}
 	}
 	return payload, nil
-}
-
-func (repo *RecordRepository) writeInsertAction(w io.Writer, record models.RecordV1) error {
-	id, ok := record[repo.recordType.Fields.ID].(string)
-	if !ok {
-		return fmt.Errorf("record must have a %q string field", repo.recordType.Fields.ID)
-	}
-	if strings.TrimSpace(id) == "" {
-		return fmt.Errorf("%q record field cannot be empty", repo.recordType.Fields.ID)
-	}
-	type obj map[string]interface{}
-	action := obj{
-		"index": obj{
-			"_index": repo.recordType.Name,
-			"_id":    id,
-		},
-	}
-	return json.NewEncoder(w).Encode(action)
 }
 
 func (repo *RecordRepository) writeInsertActionV2(w io.Writer, record models.RecordV2) error {
@@ -175,7 +114,7 @@ func (repo *RecordRepository) GetAllIterator(ctx context.Context) (models.Record
 	if err != nil {
 		return nil, fmt.Errorf("error decoding es response: %w", err)
 	}
-	var results = repo.toRecordV1List(response)
+	var results = repo.toRecordList(response)
 	it := recordIterator{
 		resp:     resp,
 		records:  results,
@@ -185,7 +124,7 @@ func (repo *RecordRepository) GetAllIterator(ctx context.Context) (models.Record
 	return &it, nil
 }
 
-func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordFilter) ([]models.RecordV1, error) {
+func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordFilter) ([]models.RecordV2, error) {
 	// XXX(Aman): we should probably think about result ordering, if the client
 	// is going to slice the data for pagination. Does ES guarantee the result order?
 	body, err := repo.getAllQuery(filters)
@@ -213,11 +152,11 @@ func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordF
 	if err != nil {
 		return nil, fmt.Errorf("error decoding es response: %w", err)
 	}
-	var results = repo.toRecordV1List(response)
+	var results = repo.toRecordList(response)
 	var scrollID = response.ScrollID
 	for {
-		var nextResults []models.RecordV1
-		nextResults, scrollID, err = repo.scrollRecordV1s(ctx, scrollID)
+		var nextResults []models.RecordV2
+		nextResults, scrollID, err = repo.scrollRecordV2s(ctx, scrollID)
 		if err != nil {
 			return nil, fmt.Errorf("error scrolling results: %v", err)
 		}
@@ -229,7 +168,7 @@ func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordF
 	return results, nil
 }
 
-func (repo *RecordRepository) scrollRecordV1s(ctx context.Context, scrollID string) ([]models.RecordV1, string, error) {
+func (repo *RecordRepository) scrollRecordV2s(ctx context.Context, scrollID string) ([]models.RecordV2, string, error) {
 	resp, err := repo.cli.Scroll(
 		repo.cli.Scroll.WithScrollID(scrollID),
 		repo.cli.Scroll.WithScroll(defaultScrollTimeout),
@@ -248,13 +187,13 @@ func (repo *RecordRepository) scrollRecordV1s(ctx context.Context, scrollID stri
 	if err != nil {
 		return nil, "", fmt.Errorf("error decoding es response: %w", err)
 	}
-	return repo.toRecordV1List(response), response.ScrollID, nil
+	return repo.toRecordList(response), response.ScrollID, nil
 }
 
-func (repo *RecordRepository) toRecordV1List(res searchResponse) (records []models.RecordV1) {
+func (repo *RecordRepository) toRecordList(res searchResponse) (records []models.RecordV2) {
 	for _, entry := range res.Hits.Hits {
-		var record models.RecordV1 = entry.Source
-		records = append(records, repo.toV1Record(record))
+		record, _ := mapToV2(entry.Source)
+		records = append(records, record)
 	}
 	return
 }
@@ -310,31 +249,36 @@ func (repo *RecordRepository) termsQuery(filters models.RecordFilter) (io.Reader
 	return payload, json.NewEncoder(payload).Encode(raw)
 }
 
-func (repo *RecordRepository) GetByID(ctx context.Context, id string) (models.RecordV1, error) {
+func (repo *RecordRepository) GetByID(ctx context.Context, id string) (record models.RecordV2, err error) {
 	res, err := repo.cli.Get(
 		repo.recordType.Name,
 		id,
 		repo.cli.Get.WithContext(ctx),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("error executing get: %w", err)
+		err = fmt.Errorf("error executing get: %w", err)
+		return
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
 		if res.StatusCode == http.StatusNotFound {
-			return nil, models.ErrNoSuchRecord{RecordID: id}
+			err = models.ErrNoSuchRecord{RecordID: id}
+			return
 		}
-		return nil, fmt.Errorf("error response from elasticsearch: %s", res.Status())
+		err = fmt.Errorf("error response from elasticsearch: %s", res.Status())
+		return
 	}
 
 	var response getResponse
 	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing response: %w", err)
+		err = fmt.Errorf("error parsing response: %w", err)
+		return
 	}
 
-	return repo.toV1Record(response.Source), nil
+	record = response.Source
+	return
 }
 
 func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
@@ -358,20 +302,10 @@ func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-// toV1Record will transform data into RecordV1 if the given data is in RecordV2 format
-func (repo *RecordRepository) toV1Record(data map[string]interface{}) models.RecordV1 {
-	recordV2, err := mapToV2(data)
-	if err != nil {
-		return data
-	}
-
-	return recordV2.Data
-}
-
 // recordIterator is the internal implementation of models.RecordIterator by RecordRepository
 type recordIterator struct {
 	resp     *esapi.Response
-	records  []models.RecordV1
+	records  []models.RecordV2
 	repo     *RecordRepository
 	scrollID string
 }
@@ -380,10 +314,10 @@ func (it *recordIterator) Scan() bool {
 	return len(strings.TrimSpace(it.scrollID)) > 0
 }
 
-func (it *recordIterator) Next() (prev []models.RecordV1) {
+func (it *recordIterator) Next() (prev []models.RecordV2) {
 	prev = it.records
 	var err error
-	it.records, it.scrollID, err = it.repo.scrollRecordV1s(context.Background(), it.scrollID)
+	it.records, it.scrollID, err = it.repo.scrollRecordV2s(context.Background(), it.scrollID)
 	if err != nil {
 		panic("error scrolling results:" + err.Error())
 	}

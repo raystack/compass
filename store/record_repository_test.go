@@ -23,118 +23,6 @@ func TestRecordRepository(t *testing.T) {
 		var testCases = []struct {
 			Title      string
 			ShouldFail bool
-			Setup      func(cli *elasticsearch.Client, records []models.RecordV1, recordType models.Type) error
-			PostCheck  func(cli *elasticsearch.Client, records []models.RecordV1, recordType models.Type) error
-			Type       models.Type
-			RecordV1s  []models.RecordV1
-		}{
-			{
-				Title:      "should return an error if the type under which the records are inserted does not exist",
-				ShouldFail: true,
-				Type: models.Type{
-					Name: "i-dont-exist",
-				},
-				RecordV1s: []models.RecordV1{
-					{
-						"foo": "bar",
-					},
-				},
-			},
-			{
-				Title: "should succesfully write all the documents to the index for a valid type",
-				Type: models.Type{
-					Name:           "dagger",
-					Classification: models.TypeClassificationResource,
-					Fields: models.TypeFields{
-						ID:     "urn",
-						Title:  "title",
-						Labels: []string{"landscape"},
-					},
-				},
-				RecordV1s: []models.RecordV1{
-					{
-						"data": "foo",
-						"urn":  "dagger1",
-					},
-					{
-						"data": "bar",
-						"urn":  "dagger2",
-					},
-					{
-						"data": "baz",
-						"urn":  "dagger3",
-					},
-				},
-				Setup: func(cli *elasticsearch.Client, records []models.RecordV1, recordType models.Type) error {
-					return store.NewTypeRepository(cli).CreateOrReplace(ctx, recordType)
-				},
-				PostCheck: func(cli *elasticsearch.Client, records []models.RecordV1, recordType models.Type) error {
-					searchReq := esapi.SearchRequest{
-						Index: []string{recordType.Name},
-						Body:  strings.NewReader(`{"query":{"match_all":{}}}`),
-					}
-					res, err := searchReq.Do(context.Background(), cli)
-					if err != nil {
-						return fmt.Errorf("error querying elasticsearch: %w", err)
-					}
-					defer res.Body.Close()
-					if res.IsError() {
-						return fmt.Errorf("elasticsearch query returned error: %s", res.Status())
-					}
-
-					var response = struct {
-						Hits struct {
-							Hits []interface{} `json:"hits"`
-						} `json:"hits"`
-					}{}
-					err = json.NewDecoder(res.Body).Decode(&response)
-					if err != nil {
-						return fmt.Errorf("error parsing elasticsearch response: %w", err)
-					}
-					if len(records) != len(response.Hits.Hits) {
-						return fmt.Errorf("expected elasticsearch index to contain %d records, but had %d records instead", len(records), len(response.Hits.Hits))
-					}
-					return nil
-				},
-			},
-		}
-
-		for _, testCase := range testCases {
-			t.Run(testCase.Title, func(t *testing.T) {
-				cli := esTestServer.NewClient()
-				if testCase.Setup != nil {
-					err := testCase.Setup(cli, testCase.RecordV1s, testCase.Type)
-					if err != nil {
-						t.Errorf("error setting up testcase: %v", err)
-					}
-				}
-				factory := store.NewRecordRepositoryFactory(cli)
-				repo, err := factory.For(testCase.Type)
-				if err != nil {
-					t.Fatalf("error creating record repository: %s", err)
-				}
-
-				err = repo.CreateOrReplaceMany(ctx, testCase.RecordV1s)
-				if testCase.ShouldFail {
-					assert.Error(t, err)
-				} else if err != nil {
-					t.Errorf("repository returned unexpected error: %v", err)
-					return
-				}
-				if testCase.PostCheck != nil {
-					if err := testCase.PostCheck(cli, testCase.RecordV1s, testCase.Type); err != nil {
-						t.Error(err)
-						return
-					}
-				}
-			})
-		}
-	})
-
-	t.Run("CreateOrReplaceManyV2", func(t *testing.T) {
-		var testCases = []struct {
-			Title      string
-			ShouldFail bool
 			Setup      func(cli *elasticsearch.Client, records []models.RecordV2, recordType models.Type) error
 			PostCheck  func(cli *elasticsearch.Client, records []models.RecordV2, recordType models.Type) error
 			Type       models.Type
@@ -228,7 +116,7 @@ func TestRecordRepository(t *testing.T) {
 					t.Fatalf("error creating record repository: %s", err)
 				}
 
-				err = repo.CreateOrReplaceManyV2(ctx, testCase.Records)
+				err = repo.CreateOrReplaceMany(ctx, testCase.Records)
 				if testCase.ShouldFail {
 					assert.Error(t, err)
 				} else if err != nil {
@@ -247,7 +135,7 @@ func TestRecordRepository(t *testing.T) {
 
 	// the following block of code setups
 	// an type repository, initialised with the daggerType
-	// as well as records from the file ./testdata/dagger_v1.json and ./testdata/dagger_v2.json
+	// as well as records from the file ./testdata/dagger_v2.json
 	// this is used by test cases of `GetAll` and `GetByID`
 	cli := esTestServer.NewClient()
 	typeRepo := store.NewTypeRepository(cli)
@@ -264,12 +152,7 @@ func TestRecordRepository(t *testing.T) {
 		return
 	}
 
-	records_v2 := insertV2Record(ctx, t, recordRepo)
-	records_v1 := insertV1Record(ctx, t, recordRepo)
-
-	var records []models.RecordV1
-	records = append(records, mapV2toV1(records_v2)...)
-	records = append(records, records_v1...)
+	records := insertV2Record(ctx, t, recordRepo)
 
 	t.Run("GetAllIterator", func(t *testing.T) {
 		type testCase struct {
@@ -279,7 +162,7 @@ func TestRecordRepository(t *testing.T) {
 		}
 
 		t.Run("should return record iterator to iterate records", func(t *testing.T) {
-			expectedResults := []models.RecordV1{}
+			expectedResults := []models.RecordV2{}
 			raw, err := ioutil.ReadFile("./testdata/dagger.json")
 			if err != nil {
 				t.Fatalf("error reading results file: %v", err)
@@ -291,7 +174,7 @@ func TestRecordRepository(t *testing.T) {
 				return
 			}
 
-			var actualResults []models.RecordV1
+			var actualResults []models.RecordV2
 			iterator, err := recordRepo.GetAllIterator(ctx)
 			if err != nil {
 				t.Fatalf("error executing GetAllIterator: %v", err)
@@ -325,22 +208,22 @@ func TestRecordRepository(t *testing.T) {
 			{
 				Description: "should support a single value filter",
 				Filter: map[string][]string{
-					"landscape": []string{"id"},
+					"landscape": {"id"},
 				},
 				ResultsFile: "./testdata/dagger-id.json",
 			},
 			{
 				Description: "should support multi value filter",
 				Filter: map[string][]string{
-					"landscape": []string{"id", "vn"},
+					"landscape": {"id", "vn"},
 				},
 				ResultsFile: "./testdata/dagger-vn-id.json",
 			},
 			{
 				Description: "should support multiple terms",
 				Filter: map[string][]string{
-					"landscape": []string{"th"},
-					"state":     []string{"DEPLOYED"},
+					"landscape": {"th"},
+					"state":     {"DEPLOYED"},
 				},
 				ResultsFile: "./testdata/dagger-th-deployed.json",
 			},
@@ -348,7 +231,7 @@ func TestRecordRepository(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.Description, func(t *testing.T) {
-				expectedResults := []models.RecordV1{}
+				expectedResults := []models.RecordV2{}
 				raw, err := ioutil.ReadFile(tc.ResultsFile)
 				if err != nil {
 					t.Fatalf("error reading results file: %v", err)
@@ -377,7 +260,7 @@ func TestRecordRepository(t *testing.T) {
 	t.Run("GetByID", func(t *testing.T) {
 		t.Run("data-based tests", func(t *testing.T) {
 			for _, record := range records {
-				id, ok := record[daggerType.Fields.ID].(string)
+				id, ok := record.Data[daggerType.Fields.ID].(string)
 				if !ok {
 					t.Fatalf("bad test data: record doesn't have %q key", daggerType.Fields.ID)
 					return
@@ -402,19 +285,26 @@ func TestRecordRepository(t *testing.T) {
 	t.Run("Delete", func(t *testing.T) {
 		t.Run("should delete record from index", func(t *testing.T) {
 			id := "delete-id-01"
-			recordRepo.CreateOrReplaceMany(ctx, []map[string]interface{}{
+			err := recordRepo.CreateOrReplaceMany(ctx, []models.RecordV2{
 				{
-					"title": "To be deleted",
-					"urn":   id,
+					Urn:  id,
+					Name: "To be deleted",
+					Data: map[string]interface{}{
+						"title": "To be deleted",
+						"urn":   id,
+					},
 				},
 			})
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			err := recordRepo.Delete(ctx, id)
+			err = recordRepo.Delete(ctx, id)
 			assert.Nil(t, err)
 
 			record, err := recordRepo.GetByID(ctx, id)
 			assert.NotNil(t, err)
-			assert.Nil(t, record)
+			assert.Equal(t, models.RecordV2{}, record)
 		})
 
 		t.Run("should return custom error when record could not be found", func(t *testing.T) {
@@ -425,8 +315,8 @@ func TestRecordRepository(t *testing.T) {
 	})
 }
 
-func insertV1Record(ctx context.Context, t *testing.T, repo models.RecordRepository) (records []models.RecordV1) {
-	src, err := ioutil.ReadFile("./testdata/dagger_v1.json")
+func insertV2Record(ctx context.Context, t *testing.T, repo models.RecordRepository) (records []models.RecordV2) {
+	src, err := ioutil.ReadFile("./testdata/dagger_v2.json")
 	err = json.Unmarshal(src, &records)
 	if err != nil {
 		t.Fatalf("error reading testdata: %v", err)
@@ -436,30 +326,6 @@ func insertV1Record(ctx context.Context, t *testing.T, repo models.RecordReposit
 	if err != nil {
 		t.Fatalf("error writing testdata to elasticsearch: %v", err)
 		return
-	}
-
-	return
-}
-
-func insertV2Record(ctx context.Context, t *testing.T, repo models.RecordRepository) (records []models.RecordV2) {
-	src, err := ioutil.ReadFile("./testdata/dagger_v2.json")
-	err = json.Unmarshal(src, &records)
-	if err != nil {
-		t.Fatalf("error reading testdata: %v", err)
-		return
-	}
-	err = repo.CreateOrReplaceManyV2(ctx, records)
-	if err != nil {
-		t.Fatalf("error writing testdata to elasticsearch: %v", err)
-		return
-	}
-
-	return
-}
-
-func mapV2toV1(v2 []models.RecordV2) (v1 []models.RecordV1) {
-	for _, record := range v2 {
-		v1 = append(v1, record.Data)
 	}
 
 	return

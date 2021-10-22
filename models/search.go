@@ -22,24 +22,14 @@ type SearchConfig struct {
 }
 
 // SearchResult represents an individual result item
-type SearchResult struct {
-	TypeName string
-	RecordV1 RecordV1
-}
-
-// SearchResult represents an individual result item
 type SearchResultV2 struct {
 	TypeName string
 	RecordV2 RecordV2
 }
 
-// RecordV1Searcher is an interface representing the ability
+// RecordSearcher is an interface representing the ability
 // to search records. The search is intended to be fuzzy over
 // the fields of the records, while also supporting filter criteria
-type RecordV1Searcher interface {
-	Search(ctx context.Context, cfg SearchConfig) ([]SearchResult, error)
-}
-
 type RecordV2Searcher interface {
 	Search(ctx context.Context, cfg SearchConfig) ([]SearchResultV2, error)
 }
