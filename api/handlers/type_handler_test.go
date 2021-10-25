@@ -229,14 +229,14 @@ func TestTypeHandler(t *testing.T) {
 			rr := httptest.NewRequest("PUT", "/", strings.NewReader("{}"))
 			rw := httptest.NewRecorder()
 			rr = mux.SetURLVars(rr, map[string]string{
-				"name": "wrong-type",
+				"name": "dagger",
 			})
 
-			typeRepo := new(mock.TypeRepository)
-			typeRepo.On("GetByName", ctx, "wrong-type").Return(models.Type{}, models.ErrNoSuchType{TypeName: "wrong-type"})
-			defer typeRepo.AssertExpectations(t)
+			entRepo := new(mock.TypeRepository)
+			entRepo.On("GetByName", ctx, "dagger").Return(models.Type{}, models.ErrNoSuchType{TypeName: "dagger"})
+			defer entRepo.AssertExpectations(t)
 
-			handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, nil)
+			handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, nil)
 			handler.IngestRecord(rw, rr)
 
 			expectedStatus := http.StatusNotFound
@@ -251,7 +251,7 @@ func TestTypeHandler(t *testing.T) {
 				t.Fatalf("error parsing handler response: %v", err)
 				return
 			}
-			expectedReason := `no such type: "wrong-type"`
+			expectedReason := `no such type: "dagger"`
 			if response.Reason != expectedReason {
 				t.Errorf("expected handler to return reason %q, returnd %q instead", expectedReason, response.Reason)
 				return
@@ -282,18 +282,12 @@ func TestTypeHandler(t *testing.T) {
 				{
 					payload: `[{"name": "some-name", "data": {}}]`,
 				},
-				{
-					payload: `[{"urn": "some-urn", "name": "some-name", "data": {}}]`,
-				},
-				{
-					payload: `[{"service": "kafka", "name": "some-name", "data": {}}]`,
-				},
 			}
 
 			for _, testCase := range testCases {
-				typeRepo := new(mock.TypeRepository)
-				typeRepo.On("GetByName", ctx, "dagger").Return(daggerType, nil)
-				defer typeRepo.AssertExpectations(t)
+				entRepo := new(mock.TypeRepository)
+				entRepo.On("GetByName", ctx, "dagger").Return(daggerType, nil)
+				defer entRepo.AssertExpectations(t)
 
 				rw := httptest.NewRecorder()
 				rr := httptest.NewRequest("PUT", "/", strings.NewReader(testCase.payload))
@@ -301,7 +295,7 @@ func TestTypeHandler(t *testing.T) {
 					"name": "dagger",
 				})
 
-				handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, nil)
+				handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, nil)
 				handler.IngestRecord(rw, rr)
 
 				expectedStatus := http.StatusBadRequest
@@ -313,23 +307,23 @@ func TestTypeHandler(t *testing.T) {
 		})
 		t.Run("should return HTTP 500 if the resource creation/update fails", func(t *testing.T) {
 			t.Run("RecordRepositoryFactory fails", func(t *testing.T) {
-				var payload = `[{"urn": "test dagger", "name": "de-dagger-test", "service": "kafka", "data": {}}]`
+				var payload = `[{"urn": "test dagger", "name": "de-dagger-test", "data": {}}]`
 				rr := httptest.NewRequest("PUT", "/", strings.NewReader(payload))
 				rw := httptest.NewRecorder()
 				rr = mux.SetURLVars(rr, map[string]string{
 					"name": "dagger",
 				})
 
-				typeRepo := new(mock.TypeRepository)
-				typeRepo.On("GetByName", ctx, "dagger").Return(daggerType, nil)
-				defer typeRepo.AssertExpectations(t)
+				entRepo := new(mock.TypeRepository)
+				entRepo.On("GetByName", ctx, "dagger").Return(daggerType, nil)
+				defer entRepo.AssertExpectations(t)
 
 				factoryError := errors.New("unknown error")
 				recordRepoFac := new(mock.RecordRepositoryFactory)
 				recordRepoFac.On("For", daggerType).Return(new(mock.RecordRepository), factoryError)
 				defer recordRepoFac.AssertExpectations(t)
 
-				handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, recordRepoFac)
+				handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
 				handler.IngestRecord(rw, rr)
 
 				expectedStatus := http.StatusInternalServerError
@@ -347,13 +341,12 @@ func TestTypeHandler(t *testing.T) {
 				}
 			})
 			t.Run("RecordRepository fails", func(t *testing.T) {
-				payload := `[{"urn": "test dagger", "name": "de-dagger-test", "service": "kafka", "data": {}}]`
+				payload := `[{"urn": "test dagger", "name": "de-dagger-test", "data": {}}]`
 				expectedRecords := []models.Record{
 					{
-						Urn:     "test dagger",
-						Name:    "de-dagger-test",
-						Service: "kafka",
-						Data:    map[string]interface{}{},
+						Urn:  "test dagger",
+						Name: "de-dagger-test",
+						Data: map[string]interface{}{},
 					},
 				}
 
@@ -363,9 +356,9 @@ func TestTypeHandler(t *testing.T) {
 					"name": "dagger",
 				})
 
-				typeRepo := new(mock.TypeRepository)
-				typeRepo.On("GetByName", ctx, "dagger").Return(daggerType, nil)
-				defer typeRepo.AssertExpectations(t)
+				entRepo := new(mock.TypeRepository)
+				entRepo.On("GetByName", ctx, "dagger").Return(daggerType, nil)
+				defer entRepo.AssertExpectations(t)
 
 				repositoryErr := errors.New("unknown error")
 				recordRepository := new(mock.RecordRepository)
@@ -376,7 +369,7 @@ func TestTypeHandler(t *testing.T) {
 				recordRepoFac.On("For", daggerType).Return(recordRepository, nil)
 				defer recordRepoFac.AssertExpectations(t)
 
-				handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, recordRepoFac)
+				handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
 				handler.IngestRecord(rw, rr)
 
 				expectedStatus := http.StatusInternalServerError
@@ -395,13 +388,12 @@ func TestTypeHandler(t *testing.T) {
 			})
 		})
 		t.Run("should return HTTP 200 if the resource is successfully created/update", func(t *testing.T) {
-			payload := `[{"urn": "test dagger", "name": "de-dagger-test", "service": "kafka", "data": {}}]`
+			payload := `[{"urn": "test dagger", "name": "de-dagger-test", "data": {}}]`
 			expectedRecords := []models.Record{
 				{
-					Urn:     "test dagger",
-					Name:    "de-dagger-test",
-					Service: "kafka",
-					Data:    map[string]interface{}{},
+					Urn:  "test dagger",
+					Name: "de-dagger-test",
+					Data: map[string]interface{}{},
 				},
 			}
 			rr := httptest.NewRequest("PUT", "/", strings.NewReader(payload))
@@ -409,9 +401,9 @@ func TestTypeHandler(t *testing.T) {
 			rr = mux.SetURLVars(rr, map[string]string{
 				"name": "dagger",
 			})
-			typeRepo := new(mock.TypeRepository)
-			typeRepo.On("GetByName", ctx, "dagger").Return(daggerType, nil)
-			defer typeRepo.AssertExpectations(t)
+			entRepo := new(mock.TypeRepository)
+			entRepo.On("GetByName", ctx, "dagger").Return(daggerType, nil)
+			defer entRepo.AssertExpectations(t)
 
 			recordRepo := new(mock.RecordRepository)
 			recordRepo.On("CreateOrReplaceMany", ctx, expectedRecords).Return(nil)
@@ -421,7 +413,7 @@ func TestTypeHandler(t *testing.T) {
 			recordRepoFac.On("For", daggerType).Return(recordRepo, nil)
 			defer recordRepoFac.AssertExpectations(t)
 
-			handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, recordRepoFac)
+			handler := handlers.NewTypeHandler(new(mock.Logger), entRepo, recordRepoFac)
 			handler.IngestRecord(rw, rr)
 
 			expectedStatus := http.StatusOK

@@ -11,7 +11,6 @@ type Record struct {
 	Urn         string                 `json:"urn" mapstructure:"urn"`
 	Name        string                 `json:"name" mapstructure:"name"`
 	Description string                 `json:"description" mapstructure:"description"`
-	Service     string                 `json:"service" mapstructure:"service"`
 	Data        map[string]interface{} `json:"data" mapstructure:"data"`
 	Labels      map[string]string      `json:"labels" mapstructure:"labels"`
 	CreatedAt   time.Time              `json:"created_at" mapstructure:"created_at"`

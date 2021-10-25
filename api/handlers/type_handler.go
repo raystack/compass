@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -352,16 +351,13 @@ func (handler *TypeHandler) selectRecordFields(fields []string, records []models
 
 func (handler *TypeHandler) validateRecord(record models.Record) error {
 	if record.Urn == "" {
-		return errors.New("urn is required")
+		return fmt.Errorf("urn is required")
 	}
 	if record.Name == "" {
-		return errors.New("name is required")
-	}
-	if record.Service == "" {
-		return errors.New("service is required")
+		return fmt.Errorf("name is required")
 	}
 	if record.Data == nil {
-		return errors.New("data is required")
+		return fmt.Errorf("data is required")
 	}
 
 	return nil
