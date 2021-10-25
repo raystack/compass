@@ -15,11 +15,6 @@ import (
 var (
 	validClassifications     map[models.TypeClassification]int
 	validClassificationsList string
-
-	// typeFieldNamespace refers to the keyname of the models.TypeFields
-	// inside models.Type. This is used to avoid hard coding the JSON keyname
-	// for type fields
-	typeFieldNamespace = getJSONKeyNameForField(models.Type{}, "Fields")
 )
 
 func init() {
@@ -218,7 +213,7 @@ func (handler *TypeHandler) IngestRecord(w http.ResponseWriter, r *http.Request)
 
 	var failedRecords = make(map[int]string)
 	for idx, record := range records {
-		if err := handler.validateRecord(recordType, record); err != nil {
+		if err := handler.validateRecord(record); err != nil {
 			handler.log.WithField("type", recordType).
 				WithField("record", record).
 				Errorf("error validating record: %v", err)
@@ -239,7 +234,7 @@ func (handler *TypeHandler) IngestRecord(w http.ResponseWriter, r *http.Request)
 		writeJSONError(w, status, http.StatusText(status))
 		return
 	}
-	if err = recordRepo.CreateOrReplaceMany(r.Context(), records); err != nil {
+	if err := recordRepo.CreateOrReplaceMany(r.Context(), records); err != nil {
 		handler.log.WithField("type", recordType.Name).
 			Errorf("error creating/updating records: %v", err)
 
@@ -340,34 +335,31 @@ func (handler *TypeHandler) parseSelectQuery(raw string) (fields []string) {
 
 func (handler *TypeHandler) selectRecordFields(fields []string, records []models.Record) (processedRecords []models.Record) {
 	for _, record := range records {
-		currentRecord := make(models.Record)
+		newData := map[string]interface{}{}
 		for _, field := range fields {
-			v, ok := record[field]
+			v, ok := record.Data[field]
 			if !ok {
 				continue
 			}
-			currentRecord[field] = v
+			newData[field] = v
 		}
-		processedRecords = append(processedRecords, currentRecord)
+		record.Data = newData
+		processedRecords = append(processedRecords, record)
 	}
 	return
 }
 
-func (handler *TypeHandler) validateRecord(recordType models.Type, record map[string]interface{}) error {
-	var shouldHave = []string{recordType.Fields.Title, recordType.Fields.ID}
-	for _, key := range shouldHave {
-		val, ok := record[key]
-		if !ok {
-			return fmt.Errorf("%q is required", key)
-		}
-		stringVal, ok := val.(string)
-		if !ok {
-			return fmt.Errorf("%q must be string", key)
-		}
-		if strings.TrimSpace(stringVal) == "" {
-			return fmt.Errorf("%q cannot be empty", key)
-		}
+func (handler *TypeHandler) validateRecord(record models.Record) error {
+	if record.Urn == "" {
+		return fmt.Errorf("urn is required")
 	}
+	if record.Name == "" {
+		return fmt.Errorf("name is required")
+	}
+	if record.Data == nil {
+		return fmt.Errorf("data is required")
+	}
+
 	return nil
 }
 
@@ -384,10 +376,6 @@ func (handler *TypeHandler) validateType(e models.Type) error {
 		return fmt.Errorf("'classification' is required")
 	case isClassificationValid(e.Classification) == false:
 		return fmt.Errorf("'classification' must be one of [%s]", validClassificationsList)
-	case trim(e.Fields.Title) == "":
-		return fmt.Errorf("'%s.title' is required", typeFieldNamespace)
-	case trim(e.Fields.ID) == "":
-		return fmt.Errorf("'%s.id' is required", typeFieldNamespace)
 	}
 	for idx, desc := range e.Lineage {
 		if desc.Dir.Valid() == false {

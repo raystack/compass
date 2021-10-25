@@ -110,6 +110,7 @@ func (builder defaultBuilder) populateTypeRecords(ctx context.Context, graph Adj
 	if err != nil {
 		return fmt.Errorf("error getting record iterator: %w", err)
 	}
+
 	defer recordIter.Close()
 	for recordIter.Scan() {
 		for _, record := range recordIter.Next() {
@@ -124,18 +125,14 @@ func (builder defaultBuilder) populateTypeRecords(ctx context.Context, graph Adj
 // add the corresponding records to graph.
 // Uses lineageProcessor to obtain information about upstreams/downstreams
 func (builder defaultBuilder) addRecord(graph AdjacencyMap, typ models.Type, record models.Record, lineageProcessor lineageProcessor) error {
-	recordID, ok := record[typ.Fields.ID].(string)
-	if !ok {
-		return fmt.Errorf("record missing ID field; record=%#v type=%#v", record, typ)
-	}
 	upstreams, downstreams, err := lineageProcessor.LineageOf(record)
 	if err != nil {
-		return fmt.Errorf("error obtaining lineage for record %q: %w", recordID, err)
+		return fmt.Errorf("error obtaining lineage for record %q: %w", record.Urn, err)
 	}
 	var (
 		entry = AdjacencyEntry{
 			Type:        typ.Name,
-			URN:         recordID,
+			URN:         record.Urn,
 			Downstreams: downstreams,
 			Upstreams:   upstreams,
 		}

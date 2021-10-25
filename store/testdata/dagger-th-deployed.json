@@ -1,14 +1,14 @@
 [
   {
+    "urn": "e-test-grant2",
+    "name": "test_grant2",
     "description": "",
-    "entity": "odpf",
-    "flink_name": "g-godata-id-playground",
-    "landscape": "th",
-    "name": "g-godata-id-test-gaurav2-dagger",
-    "sink_type": "influx",
-    "state": "DEPLOYED",
-    "team": "Playground",
-    "title": "test_gaurav2",
-    "urn": "g-godata-id-test-gaurav2-dagger"
+    "data": {
+      "urn": "e-test-grant2",
+      "title": "test_grant2",
+      "description": "",
+      "entity": "odpf",
+      "country": "th"
+    }
   }
 ]

@@ -38,14 +38,6 @@ func TestSearchHandler(t *testing.T) {
 		Type: models.Type{
 			Name:           "test",
 			Classification: models.TypeClassificationResource,
-			Fields: models.TypeFields{
-				ID:    "id",
-				Title: "title",
-				Labels: []string{
-					"landscape",
-					"entity",
-				},
-			},
 		},
 	}
 
@@ -96,6 +88,49 @@ func TestSearchHandler(t *testing.T) {
 			ExpectStatus: http.StatusInternalServerError,
 		},
 		{
+			Title:      "should pass filter to search config format",
+			SearchText: "resource",
+			RequestParams: map[string][]string{
+				// "landscape" is not a valid filter key. All filters
+				// begin with the "filter." prefix. Adding this here is just a little
+				// extra check to make sure that the handler correctly parses the filters.
+				"landscape":        {"id", "vn"},
+				"filter.landscape": {"th"},
+				"filter.type":      {"dagger"},
+			},
+			InitRepo: withTypes(testdata.Type),
+			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
+				cfg := models.SearchConfig{
+					Text:          tc.SearchText,
+					TypeWhiteList: tc.RequestParams["filter.type"],
+					Filters: map[string][]string{
+						"landscape": tc.RequestParams["filter.landscape"],
+					},
+				}
+
+				results := []models.SearchResult{
+					{
+						TypeName: testdata.Type.Name,
+						Record: models.Record{
+							Urn:  "test-1",
+							Name: "test 1",
+							Data: map[string]interface{}{
+								"id":        "test-1",
+								"title":     "test 1",
+								"landscape": "th",
+								"entity":    "odpf",
+							},
+						},
+					},
+				}
+				searcher.On("Search", ctx, cfg).Return(results, nil)
+				return
+			},
+			ValidateResponse: func(tc testCase, body io.Reader) error {
+				return nil
+			},
+		},
+		{
 			Title:      "should return the matched documents",
 			SearchText: "test",
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
@@ -106,11 +141,20 @@ func TestSearchHandler(t *testing.T) {
 				response := []models.SearchResult{
 					{
 						TypeName: "test",
-						Record: map[string]interface{}{
-							"id":        "test-resource",
-							"title":     "test resource",
-							"landscape": "id",
-							"entity":    "odpf",
+						Record: models.Record{
+							Urn:         "test-resource",
+							Name:        "test resource",
+							Description: "some description",
+							Data: map[string]interface{}{
+								"id":        "test-resource",
+								"title":     "test resource",
+								"landscape": "id",
+								"entity":    "odpf",
+							},
+							Labels: map[string]string{
+								"entity":    "odpf",
+								"landscape": "id",
+							},
 						},
 					},
 				}
@@ -125,93 +169,14 @@ func TestSearchHandler(t *testing.T) {
 				}
 				expectResponse := []handlers.SearchResponse{
 					{
-						Title:          "test resource",
 						ID:             "test-resource",
+						Title:          "test resource",
+						Description:    "some description",
 						Classification: string(models.TypeClassificationResource),
 						Type:           "test",
 						Labels: map[string]string{
 							"entity":    "odpf",
 							"landscape": "id",
-						},
-					},
-				}
-
-				if reflect.DeepEqual(response, expectResponse) == false {
-					return fmt.Errorf("expected handler response to be %#v, was %#v", expectResponse, response)
-				}
-				return nil
-			},
-		},
-		{
-			Title:      "should drop records that have mandatory fields missing",
-			SearchText: "test",
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
-				cfg := models.SearchConfig{
-					Text:    tc.SearchText,
-					Filters: make(map[string][]string),
-				}
-				results := []models.SearchResult{
-					{
-						TypeName: "test",
-						Record: models.Record{
-							"id":        "test-resource-1",
-							"title":     "test resource 1",
-							"landscape": "id",
-							"entity":    "odpf",
-						},
-					},
-					{
-						TypeName: "test",
-						Record: models.Record{
-							"id":        "test-resource-2",
-							"landscape": "id",
-							"entity":    "odpf",
-						},
-					},
-					{
-						TypeName: "test",
-						Record: models.Record{
-							"title":     "test resource 3",
-							"landscape": "id",
-							"entity":    "odpf",
-						},
-					},
-					{
-						TypeName: "test",
-						Record: models.Record{
-							"id":     "test-resource-4",
-							"title":  "test resource 4",
-							"entity": "odpf",
-						},
-					},
-				}
-				searcher.On("Search", ctx, cfg).Return(results, nil)
-			},
-			InitRepo: withTypes(testdata.Type),
-			ValidateResponse: func(tc testCase, body io.Reader) error {
-				var response []handlers.SearchResponse
-				err := json.NewDecoder(body).Decode(&response)
-				if err != nil {
-					return fmt.Errorf("error reading response body: %v", err)
-				}
-				expectResponse := []handlers.SearchResponse{
-					{
-						Title:          "test resource 1",
-						ID:             "test-resource-1",
-						Classification: string(models.TypeClassificationResource),
-						Type:           "test",
-						Labels: map[string]string{
-							"landscape": "id",
-							"entity":    "odpf",
-						},
-					},
-					{
-						Title:          "test resource 4",
-						ID:             "test-resource-4",
-						Classification: string(models.TypeClassificationResource),
-						Type:           "test",
-						Labels: map[string]string{
-							"entity": "odpf",
 						},
 					},
 				}
@@ -225,7 +190,7 @@ func TestSearchHandler(t *testing.T) {
 		{
 			Title: "should return the requested number of records",
 			RequestParams: map[string][]string{
-				"size": []string{"15"},
+				"size": {"15"},
 			},
 			SearchText: "resource",
 			InitRepo:   withTypes(testdata.Type),
@@ -239,11 +204,21 @@ func TestSearchHandler(t *testing.T) {
 
 				var results []models.SearchResult
 				for i := 0; i < cfg.MaxResults; i++ {
+					urn := fmt.Sprintf("resource-%d", i+1)
+					name := fmt.Sprintf("resource %d", i+1)
 					record := models.Record{
-						"id":        fmt.Sprintf("resource-%d", i+1),
-						"title":     fmt.Sprintf("resource %d", i+1),
-						"landscape": "id",
-						"entity":    "odpf",
+						Urn:  urn,
+						Name: name,
+						Data: map[string]interface{}{
+							"id":        urn,
+							"title":     name,
+							"landscape": "id",
+							"entity":    "odpf",
+						},
+						Labels: map[string]string{
+							"landscape": "id",
+							"entity":    "odpf",
+						},
 					}
 					result := models.SearchResult{
 						Record:   record,
@@ -267,301 +242,6 @@ func TestSearchHandler(t *testing.T) {
 					return fmt.Errorf("expected search request to return %d results, returned %d results instead", expectedResults, actualResults)
 				}
 				return nil
-			},
-		},
-		{
-			Title:      "should filter results for landscape",
-			SearchText: "resource",
-			RequestParams: map[string][]string{
-				// "landscape" is not a valid filter key. All filters
-				// begin with the "filter." prefix. Adding this here is just a little
-				// extra check to make sure that the handler correctly parses the filters.
-				"landscape":        []string{"id", "vn"},
-				"filter.landscape": []string{"th"},
-			},
-			InitRepo: withTypes(testdata.Type),
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
-				cfg := models.SearchConfig{
-					Text: tc.SearchText,
-					Filters: map[string][]string{
-						"landscape": tc.RequestParams["filter.landscape"],
-					},
-				}
-
-				results := []models.SearchResult{
-					{
-						TypeName: testdata.Type.Name,
-						Record: models.Record{
-							"id":        "test-1",
-							"title":     "test 1",
-							"landscape": "th",
-							"entity":    "odpf",
-						},
-					},
-				}
-				searcher.On("Search", ctx, cfg).Return(results, nil)
-				return
-			},
-			ValidateResponse: func(tc testCase, body io.Reader) error {
-				var actualResults []handlers.SearchResponse
-				err := json.NewDecoder(body).Decode(&actualResults)
-				if err != nil {
-					return fmt.Errorf("error reading response body: %v", err)
-				}
-				expectResults := []handlers.SearchResponse{
-					{
-						Title:          "test 1",
-						ID:             "test-1",
-						Type:           testdata.Type.Name,
-						Classification: string(testdata.Type.Classification),
-						Labels: map[string]string{
-							"landscape": "th",
-							"entity":    "odpf",
-						},
-					},
-				}
-
-				if reflect.DeepEqual(actualResults, expectResults) == false {
-					return fmt.Errorf("expected handler response to be %#v, was %#v", expectResults, actualResults)
-				}
-				return nil
-			},
-		},
-		{
-			Title:      "should filter results for entity",
-			SearchText: "resource",
-			RequestParams: map[string][]string{
-				"filter.entity": []string{"odpf"},
-			},
-			InitRepo: withTypes(testdata.Type),
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
-				cfg := models.SearchConfig{
-					Text: tc.SearchText,
-					Filters: map[string][]string{
-						"entity": tc.RequestParams["filter.entity"],
-					},
-				}
-
-				results := []models.SearchResult{
-					{
-						TypeName: testdata.Type.Name,
-						Record: models.Record{
-							"id":        "test-1",
-							"title":     "test 1",
-							"landscape": "id",
-							"entity":    "odpf",
-						},
-					},
-				}
-				searcher.On("Search", ctx, cfg).Return(results, nil)
-				return
-			},
-			ValidateResponse: func(tc testCase, body io.Reader) error {
-				var actualResults []handlers.SearchResponse
-				err := json.NewDecoder(body).Decode(&actualResults)
-				if err != nil {
-					return fmt.Errorf("error reading response body: %v", err)
-				}
-				expectResults := []handlers.SearchResponse{
-					{
-						Title:          "test 1",
-						ID:             "test-1",
-						Type:           testdata.Type.Name,
-						Classification: string(testdata.Type.Classification),
-						Labels: map[string]string{
-							"landscape": "id",
-							"entity":    "odpf",
-						},
-					},
-				}
-
-				if reflect.DeepEqual(actualResults, expectResults) == false {
-					return fmt.Errorf("expected handler response to be %#v, was %#v", expectResults, actualResults)
-				}
-				return nil
-			},
-		},
-		{
-			Title:      "should return description, if available",
-			SearchText: "resource",
-			InitRepo: func(tc testCase, repo *mock.TypeRepository) {
-				// create a copy of the testdata type
-				// and override the description field
-				recordType := testdata.Type
-				recordType.Fields.Description = "description_text"
-				initFunc := withTypes(recordType)
-				initFunc(tc, repo)
-			},
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
-				cfg := models.SearchConfig{
-					Text:    tc.SearchText,
-					Filters: make(map[string][]string),
-				}
-				results := []models.SearchResult{
-					{
-						TypeName: "test",
-						Record: models.Record{
-							"title":            "test",
-							"id":               "test",
-							"description_text": "this is a test record",
-						},
-					},
-				}
-				searcher.On("Search", ctx, cfg).Return(results, nil)
-			},
-			ValidateResponse: func(tc testCase, body io.Reader) error {
-				var actualResults []handlers.SearchResponse
-				err := json.NewDecoder(body).Decode(&actualResults)
-				if err != nil {
-					return fmt.Errorf("error reading response body: %v", err)
-				}
-
-				expectResults := []handlers.SearchResponse{
-					{
-						Title:          "test",
-						ID:             "test",
-						Description:    "this is a test record",
-						Type:           testdata.Type.Name,
-						Classification: string(testdata.Type.Classification),
-						Labels:         map[string]string{},
-					},
-				}
-
-				if reflect.DeepEqual(actualResults, expectResults) == false {
-					return fmt.Errorf("expected handler response to be %#v, was %#v", expectResults, actualResults)
-				}
-				return nil
-			},
-		},
-		{
-			Title:      "should filter results for environment",
-			SearchText: "resource",
-			RequestParams: map[string][]string{
-				"filter.environment": {"test"},
-			},
-			InitRepo: withTypes(testdata.Type),
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
-				cfg := models.SearchConfig{
-					Text: tc.SearchText,
-					Filters: map[string][]string{
-						"environment": {"test"},
-					},
-				}
-				results := []models.SearchResult{
-					{
-						TypeName: testdata.Type.Name,
-						Record: models.Record{
-							"id":        "test-1",
-							"title":     "test 1",
-							"landscape": "id",
-							"entity":    "odpf",
-						},
-					},
-				}
-				searcher.On("Search", ctx, cfg).Return(results, nil)
-				return
-			},
-			ValidateResponse: func(tc testCase, body io.Reader) error {
-				var actualResults []handlers.SearchResponse
-				err := json.NewDecoder(body).Decode(&actualResults)
-				if err != nil {
-					return fmt.Errorf("error reading response body: %v", err)
-				}
-				expectResults := []handlers.SearchResponse{
-					{
-						Title:          "test 1",
-						ID:             "test-1",
-						Type:           testdata.Type.Name,
-						Classification: string(testdata.Type.Classification),
-						Labels: map[string]string{
-							"landscape": "id",
-							"entity":    "odpf",
-						},
-					},
-				}
-
-				if reflect.DeepEqual(actualResults, expectResults) == false {
-					return fmt.Errorf("expected handler response to be %#v, was %#v", expectResults, actualResults)
-				}
-				return nil
-			},
-		},
-		{
-			Title:         "should filter results even when environment is not provided",
-			SearchText:    "resource",
-			RequestParams: map[string][]string{},
-			InitRepo:      withTypes(testdata.Type),
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
-				cfg := models.SearchConfig{
-					Text:    tc.SearchText,
-					Filters: map[string][]string{},
-				}
-				results := []models.SearchResult{
-					{
-						TypeName: testdata.Type.Name,
-						Record: models.Record{
-							"id":        "test-1",
-							"title":     "test 1",
-							"landscape": "id",
-							"entity":    "odpf",
-						},
-					},
-				}
-				searcher.On("Search", ctx, cfg).Return(results, nil)
-				return
-			},
-			ValidateResponse: func(tc testCase, body io.Reader) error {
-				var actualResults []handlers.SearchResponse
-				err := json.NewDecoder(body).Decode(&actualResults)
-				if err != nil {
-					return fmt.Errorf("error reading response body: %v", err)
-				}
-				expectResults := []handlers.SearchResponse{
-					{
-						Title:          "test 1",
-						ID:             "test-1",
-						Type:           testdata.Type.Name,
-						Classification: string(testdata.Type.Classification),
-						Labels: map[string]string{
-							"landscape": "id",
-							"entity":    "odpf",
-						},
-					},
-				}
-
-				if reflect.DeepEqual(actualResults, expectResults) == false {
-					return fmt.Errorf("expected handler response to be %#v, was %#v", expectResults, actualResults)
-				}
-				return nil
-			},
-		},
-		{
-			Title:      "should filter results on the basis of types",
-			SearchText: "text",
-			RequestParams: map[string][]string{
-				"filter.type": {"dagger"},
-			},
-			ExpectStatus: http.StatusOK,
-			InitRepo:     withTypes(testdata.Type),
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
-				cfg := models.SearchConfig{
-					Text:          tc.SearchText,
-					TypeWhiteList: tc.RequestParams["filter.type"],
-					Filters:       map[string][]string{},
-				}
-				results := []models.SearchResult{
-					{
-						TypeName: testdata.Type.Name,
-						Record: models.Record{
-							"id":        "test-1",
-							"title":     "test 1",
-							"landscape": "id",
-							"entity":    "odpf",
-						},
-					},
-				}
-				searcher.On("Search", ctx, cfg).Return(results, nil)
-				return
 			},
 		},
 	}

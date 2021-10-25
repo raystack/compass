@@ -27,13 +27,6 @@ func TestTypeHandler(t *testing.T) {
 		daggerType = models.Type{
 			Name:           "dagger",
 			Classification: models.TypeClassificationResource,
-			Fields: models.TypeFields{
-				ID:    "name",
-				Title: "urn",
-				Labels: []string{
-					"team",
-				},
-			},
 		}
 		ctx = tmock.AnythingOfType("*context.valueCtx")
 	)
@@ -82,23 +75,6 @@ func TestTypeHandler(t *testing.T) {
 						Name: "foo",
 					},
 					expectedReason: "'classification' is required",
-				},
-				{
-					payload: models.Type{
-						Name:           "foo",
-						Classification: models.TypeClassificationResource,
-					},
-					expectedReason: "'record_attributes.title' is required",
-				},
-				{
-					payload: models.Type{
-						Name:           "foo",
-						Classification: models.TypeClassificationResource,
-						Fields: models.TypeFields{
-							Title: "bar",
-						},
-					},
-					expectedReason: "'record_attributes.id' is required",
 				},
 			}
 
@@ -204,13 +180,6 @@ func TestTypeHandler(t *testing.T) {
 			typeWithInvalidClassification := &models.Type{
 				Name:           "application",
 				Classification: "unknown",
-				Fields: models.TypeFields{
-					ID:    "urn",
-					Title: "title",
-					Labels: []string{
-						"landscape",
-					},
-				},
 			}
 			var payload bytes.Buffer
 			err := json.NewEncoder(&payload).Encode(typeWithInvalidClassification)
@@ -233,13 +202,6 @@ func TestTypeHandler(t *testing.T) {
 			ent := &models.Type{
 				Name:           "DAGGER",
 				Classification: models.TypeClassificationResource,
-				Fields: models.TypeFields{
-					ID:    "urn",
-					Title: "title",
-					Labels: []string{
-						"landscape",
-					},
-				},
 			}
 			expectEnt := *ent
 			expectEnt.Name = strings.ToLower(ent.Name)
@@ -295,7 +257,7 @@ func TestTypeHandler(t *testing.T) {
 				return
 			}
 		})
-		t.Run("should return HTTP 400 if the incoming payload doesn't contain the required type fields", func(t *testing.T) {
+		t.Run("should return HTTP 400 for invalid payload", func(t *testing.T) {
 			testCases := []struct {
 				payload string
 			}{
@@ -303,22 +265,22 @@ func TestTypeHandler(t *testing.T) {
 					payload: `[{}]`,
 				},
 				{
-					payload: `[{"urn": "whatever"}]`,
+					payload: `[{"urn": "some-urn"}]`,
 				},
 				{
-					payload: `[{"urn": "whatever", "team": {}}]`,
+					payload: `[{"name": "some-name"}]`,
 				},
 				{
-					payload: `[{"urn": "whatever", "team": ""}]`,
+					payload: `[{"data": {}}]`,
 				},
 				{
-					payload: `[{"urn": "whatever", "team": "de"}]`,
+					payload: `[{"urn": "some-urn", "name": "some-name"}]`,
 				},
 				{
-					payload: `[{"urn": "whatever", "team": "de", "name": ""}]`,
+					payload: `[{"urn": "some-urn", "data": {}}]`,
 				},
 				{
-					payload: `[{"urn": "whatever", "team": "de", "name": {}}]`,
+					payload: `[{"name": "some-name", "data": {}}]`,
 				},
 			}
 
@@ -345,7 +307,7 @@ func TestTypeHandler(t *testing.T) {
 		})
 		t.Run("should return HTTP 500 if the resource creation/update fails", func(t *testing.T) {
 			t.Run("RecordRepositoryFactory fails", func(t *testing.T) {
-				var payload = `[{"urn": "test dagger", "team": "de", "name": "de-dagger-test", "environment": "test"}]`
+				var payload = `[{"urn": "test dagger", "name": "de-dagger-test", "data": {}}]`
 				rr := httptest.NewRequest("PUT", "/", strings.NewReader(payload))
 				rw := httptest.NewRecorder()
 				rr = mux.SetURLVars(rr, map[string]string{
@@ -379,20 +341,16 @@ func TestTypeHandler(t *testing.T) {
 				}
 			})
 			t.Run("RecordRepository fails", func(t *testing.T) {
-				var records = []map[string]interface{}{
+				payload := `[{"urn": "test dagger", "name": "de-dagger-test", "data": {}}]`
+				expectedRecords := []models.Record{
 					{
-						"name":        "de-dagger-test",
-						"urn":         "test dagger",
-						"team":        "de",
-						"environment": "test",
+						Urn:  "test dagger",
+						Name: "de-dagger-test",
+						Data: map[string]interface{}{},
 					},
 				}
-				payload, err := json.Marshal(records)
-				if err != nil {
-					t.Fatalf("error creating request payload: %v", err)
-					return
-				}
-				rr := httptest.NewRequest("PUT", "/", bytes.NewBuffer(payload))
+
+				rr := httptest.NewRequest("PUT", "/", strings.NewReader(payload))
 				rw := httptest.NewRecorder()
 				rr = mux.SetURLVars(rr, map[string]string{
 					"name": "dagger",
@@ -404,7 +362,7 @@ func TestTypeHandler(t *testing.T) {
 
 				repositoryErr := errors.New("unknown error")
 				recordRepository := new(mock.RecordRepository)
-				recordRepository.On("CreateOrReplaceMany", ctx, records).Return(repositoryErr)
+				recordRepository.On("CreateOrReplaceMany", ctx, expectedRecords).Return(repositoryErr)
 				defer recordRepository.AssertExpectations(t)
 
 				recordRepoFac := new(mock.RecordRepositoryFactory)
@@ -429,52 +387,16 @@ func TestTypeHandler(t *testing.T) {
 				}
 			})
 		})
-		t.Run("should return HTTP 400 if the JSON document is invalid", func(t *testing.T) {
-			rr := httptest.NewRequest("PUT", "/", bytes.NewBufferString("{"))
-			rw := httptest.NewRecorder()
-			rr = mux.SetURLVars(rr, map[string]string{
-				"name": "dagger",
-			})
-
-			typeRepo := new(mock.TypeRepository)
-			typeRepo.On("GetByName", ctx, "dagger").Return(daggerType, nil)
-			defer typeRepo.AssertExpectations(t)
-
-			handler := handlers.NewTypeHandler(new(mock.Logger), typeRepo, nil)
-			handler.IngestRecord(rw, rr)
-
-			if rw.Code != http.StatusBadRequest {
-				t.Errorf("handler returned HTTP %d, expected HTTP %d", rw.Code, http.StatusBadRequest)
-				return
-			}
-
-			var res handlers.ErrorResponse
-			err := json.NewDecoder(rw.Body).Decode(&res)
-			if err != nil {
-				t.Fatalf("error parsing handler response: %v", err)
-				return
-			}
-			expectedReason := "error parsing request body: unexpected EOF"
-			if res.Reason != expectedReason {
-				t.Errorf("expected handler to return reason %q, returned %q instead", expectedReason, res.Reason)
-				return
-			}
-		})
 		t.Run("should return HTTP 200 if the resource is successfully created/update", func(t *testing.T) {
-			var records = []models.Record{
+			payload := `[{"urn": "test dagger", "name": "de-dagger-test", "data": {}}]`
+			expectedRecords := []models.Record{
 				{
-					"name":        "de-dagger-test",
-					"urn":         "test dagger",
-					"team":        "de",
-					"environment": "test",
+					Urn:  "test dagger",
+					Name: "de-dagger-test",
+					Data: map[string]interface{}{},
 				},
 			}
-			payload, err := json.Marshal(records)
-			if err != nil {
-				t.Fatalf("error creating request payload: %v", err)
-				return
-			}
-			rr := httptest.NewRequest("PUT", "/", bytes.NewBuffer(payload))
+			rr := httptest.NewRequest("PUT", "/", strings.NewReader(payload))
 			rw := httptest.NewRecorder()
 			rr = mux.SetURLVars(rr, map[string]string{
 				"name": "dagger",
@@ -484,7 +406,7 @@ func TestTypeHandler(t *testing.T) {
 			defer entRepo.AssertExpectations(t)
 
 			recordRepo := new(mock.RecordRepository)
-			recordRepo.On("CreateOrReplaceMany", ctx, records).Return(nil)
+			recordRepo.On("CreateOrReplaceMany", ctx, expectedRecords).Return(nil)
 			defer recordRepo.AssertExpectations(t)
 
 			recordRepoFac := new(mock.RecordRepositoryFactory)
@@ -501,7 +423,7 @@ func TestTypeHandler(t *testing.T) {
 			}
 
 			var response handlers.StatusResponse
-			err = json.NewDecoder(rw.Body).Decode(&response)
+			err := json.NewDecoder(rw.Body).Decode(&response)
 			if err != nil {
 				t.Errorf("error reading response body: %v", err)
 				return
@@ -528,39 +450,14 @@ func TestTypeHandler(t *testing.T) {
 			{
 				Name:           "bqtable",
 				Classification: "dataset",
-				Fields: models.TypeFields{
-					ID:          "table_name",
-					Title:       "table_name",
-					Description: "description-bqtable",
-					Labels: []string{
-						"dataset",
-						"project",
-					},
-				},
 			},
 			{
 				Name:           "dagger",
 				Classification: "dataset",
-				Fields: models.TypeFields{
-					ID:          "urn-dagger",
-					Title:       "urn-dagger",
-					Description: "description-dagger",
-					Labels: []string{
-						"topic",
-					},
-				},
 			},
 			{
 				Name:           "firehose",
 				Classification: "dataset",
-				Fields: models.TypeFields{
-					ID:          "urn-firehose",
-					Title:       "urn-firehose",
-					Description: "description-firehose",
-					Labels: []string{
-						"sink",
-					},
-				},
 			},
 		}
 
@@ -773,14 +670,6 @@ func TestTypeHandler(t *testing.T) {
 		sampleType := models.Type{
 			Name:           "sample",
 			Classification: "dataset",
-			Fields: models.TypeFields{
-				ID:          "urn-dagger",
-				Title:       "urn-dagger",
-				Description: "description-dagger",
-				Labels: []string{
-					"topic",
-				},
-			},
 		}
 
 		var testCases = []testCase{
@@ -863,16 +752,22 @@ func TestTypeHandler(t *testing.T) {
 
 		var daggerRecords = []models.Record{
 			{
-				"urn":         "test-fh-1",
-				"owner":       "de",
-				"created":     "2020-05-13T08:30:04Z",
-				"environment": "test",
+				Urn: "test-fh-1",
+				Data: map[string]interface{}{
+					"urn":         "test-fh-1",
+					"owner":       "de",
+					"created":     "2020-05-13T08:30:04Z",
+					"environment": "test",
+				},
 			},
 			{
-				"urn":         "test-fh-2",
-				"owner":       "de",
-				"created":     "2020-05-12T00:00:00Z",
-				"environment": "test",
+				Urn: "test-fh-2",
+				Data: map[string]interface{}{
+					"urn":         "test-fh-2",
+					"owner":       "de",
+					"created":     "2020-05-12T00:00:00Z",
+					"environment": "test",
+				},
 			},
 		}
 
@@ -883,7 +778,7 @@ func TestTypeHandler(t *testing.T) {
 				QueryStrings: "filter.environment=test",
 				ExpectStatus: http.StatusNotFound,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
-					er.On("GetByName", ctx, "invalid").Return(models.Type{}, models.ErrNoSuchType{"invalid"})
+					er.On("GetByName", ctx, "invalid").Return(models.Type{}, models.ErrNoSuchType{TypeName: "invalid"})
 				},
 			},
 			{
@@ -946,26 +841,33 @@ func TestTypeHandler(t *testing.T) {
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
-					var expectRecords []models.Record
-					var fields = []string{
-						"urn",
-						"owner",
+					var expectRecords = []models.Record{
+						{
+							Urn: "test-fh-1",
+							Data: map[string]interface{}{
+								"urn":   "test-fh-1",
+								"owner": "de",
+							},
+						},
+						{
+							Urn: "test-fh-2",
+							Data: map[string]interface{}{
+								"urn":   "test-fh-2",
+								"owner": "de",
+							},
+						},
 					}
-					for _, record := range daggerRecords {
-						var expectRecord = make(models.Record)
-						for _, field := range fields {
-							expectRecord[field] = record[field]
-						}
-						expectRecords = append(expectRecords, expectRecord)
-					}
+
 					var response []models.Record
 					err := json.NewDecoder(resp.Body).Decode(&response)
 					if err != nil {
 						return fmt.Errorf("error parsing response payload: %v", err)
 					}
+
 					if reflect.DeepEqual(response, expectRecords) == false {
 						return fmt.Errorf("expected handler to return %v, returned %v instead", expectRecords, response)
 					}
+
 					return nil
 				},
 			},
@@ -1051,8 +953,11 @@ func TestTypeHandler(t *testing.T) {
 		}
 	})
 	t.Run("GetTypeRecord", func(t *testing.T) {
-		var deployment01 = map[string]interface{}{
-			"contents": "data",
+		var deployment01 = models.Record{
+			Urn: "id-1",
+			Data: map[string]interface{}{
+				"contents": "data",
+			},
 		}
 		type testCase struct {
 			Description  string
@@ -1072,7 +977,7 @@ func TestTypeHandler(t *testing.T) {
 				Setup: func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", ctx, "dagger").Return(daggerType, nil)
 					recordRepo := new(mock.RecordRepository)
-					recordRepo.On("GetByID", ctx, "record01").Return(map[string]interface{}{}, models.ErrNoSuchRecord{"record01"})
+					recordRepo.On("GetByID", ctx, "record01").Return(models.Record{}, models.ErrNoSuchRecord{RecordID: "record01"})
 					rrf.On("For", daggerType).Return(recordRepo, nil)
 				},
 			},
@@ -1082,7 +987,7 @@ func TestTypeHandler(t *testing.T) {
 				RecordID:     "record",
 				ExpectStatus: http.StatusNotFound,
 				Setup: func(er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
-					er.On("GetByName", ctx, "nonexistant").Return(models.Type{}, models.ErrNoSuchType{"nonexistant"})
+					er.On("GetByName", ctx, "nonexistant").Return(models.Type{}, models.ErrNoSuchType{TypeName: "nonexistant"})
 				},
 			},
 			{

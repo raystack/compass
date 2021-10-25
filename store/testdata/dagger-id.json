@@ -1,38 +1,38 @@
 [
   {
+    "urn": "c-demo-dagger",
+    "name": "demo-dagger",
     "description": "",
-    "entity": "odpf",
-    "flink_name": "g-godata-id-playground",
-    "landscape": "id",
-    "name": "g-godata-id-demo-dagger-dagger",
-    "sink_type": "influx",
-    "state": "USER_STOPPED",
-    "team": "data_engineering",
-    "title": "demo-dagger",
-    "urn": "g-godata-id-demo-dagger-dagger"
+    "data": {
+      "urn": "c-demo-dagger",
+      "title": "demo-dagger",
+      "description": "",
+      "entity": "odpf",
+      "country": "id"
+    }
   },
   {
+    "urn": "f-john-test-001",
+    "name": "john_test_001",
     "description": "",
-    "entity": "odpf",
-    "flink_name": "g-godata-id-playground",
-    "landscape": "id",
-    "name": "g-godata-id-prakhar-test-001-dagger",
-    "sink_type": "influx",
-    "state": "USER_STOPPED",
-    "team": "",
-    "title": "prakhar_test_001",
-    "urn": "g-godata-id-prakhar-test-001-dagger"
+    "data": {
+      "urn": "f-john-test-001",
+      "title": "john_test_001",
+      "description": "",
+      "entity": "odpf",
+      "country": "id"
+    }
   },
   {
+    "urn": "i-undefined-dfgdgd-avi",
+    "name": "dfgdgd-avi",
     "description": "",
-    "entity": "odpf",
-    "flink_name": "g-godata-id-playground",
-    "landscape": "id",
-    "name": "g-undefined-undefined-dfgdgd-avi-dagger",
-    "sink_type": "influx",
-    "state": "USER_STOPPED",
-    "team": "Playground",
-    "title": "dfgdgd-avi",
-    "urn": "g-undefined-undefined-dfgdgd-avi-dagger"
+    "data": {
+      "urn": "i-undefined-dfgdgd-avi",
+      "title": "dfgdgd-avi",
+      "description": "",
+      "entity": "odpf",
+      "country": "id"
+    }
   }
 ]

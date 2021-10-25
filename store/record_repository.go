@@ -76,18 +76,14 @@ func (repo *RecordRepository) createBulkInsertPayload(records []models.Record) (
 }
 
 func (repo *RecordRepository) writeInsertAction(w io.Writer, record models.Record) error {
-	id, ok := record[repo.recordType.Fields.ID].(string)
-	if !ok {
-		return fmt.Errorf("record must have a %q string field", repo.recordType.Fields.ID)
-	}
-	if strings.TrimSpace(id) == "" {
-		return fmt.Errorf("%q record field cannot be empty", repo.recordType.Fields.ID)
+	if strings.TrimSpace(record.Urn) == "" {
+		return fmt.Errorf("URN record field cannot be empty")
 	}
 	type obj map[string]interface{}
 	action := obj{
 		"index": obj{
 			"_index": repo.recordType.Name,
-			"_id":    id,
+			"_id":    record.Urn,
 		},
 	}
 	return json.NewEncoder(w).Encode(action)
@@ -213,20 +209,23 @@ func (repo *RecordRepository) matchAllQuery() io.Reader {
 }
 
 func (repo *RecordRepository) termsQuery(filters models.RecordFilter) (io.Reader, error) {
-	var termsQueries []elastic.Query
+	var termQueries []elastic.Query
 	for key, rawValues := range filters {
 		var values []interface{}
 		for _, val := range rawValues {
 			values = append(values, val)
 		}
-		key = fmt.Sprintf("%s.keyword", key)
-		termsQueries = append(termsQueries, elastic.NewTermsQuery(key, values...))
+
+		key := fmt.Sprintf("data.%s.keyword", key)
+		termQueries = append(termQueries, elastic.NewTermsQuery(key, values...))
 	}
-	q := elastic.NewBoolQuery().Must(termsQueries...)
+	boolQuery := elastic.NewBoolQuery().Must(termQueries...)
+	q := elastic.NewBoolQuery().Should(boolQuery)
 	src, err := q.Source()
 	if err != nil {
 		return nil, fmt.Errorf("error building terms query: %w", err)
 	}
+
 	raw := searchQuery{
 		Query:    src,
 		MinScore: defaultMinScore,
@@ -235,30 +234,36 @@ func (repo *RecordRepository) termsQuery(filters models.RecordFilter) (io.Reader
 	return payload, json.NewEncoder(payload).Encode(raw)
 }
 
-func (repo *RecordRepository) GetByID(ctx context.Context, id string) (models.Record, error) {
+func (repo *RecordRepository) GetByID(ctx context.Context, id string) (record models.Record, err error) {
 	res, err := repo.cli.Get(
 		repo.recordType.Name,
 		id,
 		repo.cli.Get.WithContext(ctx),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("error executing get: %w", err)
+		err = fmt.Errorf("error executing get: %w", err)
+		return
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
 		if res.StatusCode == http.StatusNotFound {
-			return nil, models.ErrNoSuchRecord{RecordID: id}
+			err = models.ErrNoSuchRecord{RecordID: id}
+			return
 		}
-		return nil, fmt.Errorf("error response from elasticsearch: %s", res.Status())
+		err = fmt.Errorf("error response from elasticsearch: %s", res.Status())
+		return
 	}
 
 	var response getResponse
 	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing response: %w", err)
+		err = fmt.Errorf("error parsing response: %w", err)
+		return
 	}
-	return response.Source, nil
+
+	record = response.Source
+	return
 }
 
 func (repo *RecordRepository) Delete(ctx context.Context, id string) error {

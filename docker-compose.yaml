@@ -1,0 +1,7 @@
+services:
+  es:
+    ports:
+      - 9200:9200
+    image: 'elasticsearch:7.6.1'
+    environment:
+      discovery.type: single-node

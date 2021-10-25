@@ -86,67 +86,18 @@ func (handler *SearchHandler) toSearchResponse(ctx context.Context, results []mo
 			return nil, fmt.Errorf("typeRepository.GetByName: %q: %v", result.TypeName, err)
 		}
 
-		rv := newRecordView(result.Record)
-
-		description, _ := getStringFromGenericMap(result.Record, recordType.Fields.Description)
 		res := SearchResponse{
-			ID:             rv.GetString(recordType.Fields.ID),
-			Title:          rv.GetString(recordType.Fields.Title),
-			Description:    description,
+			ID:             result.Record.Urn,
+			Title:          result.Record.Name,
+			Description:    result.Record.Description,
+			Labels:         result.Record.Labels,
 			Type:           recordType.Name,
 			Classification: string(recordType.Classification),
-			Labels:         make(map[string]string),
-		}
-
-		if err := rv.Error(); err != nil {
-			handler.log.
-				WithField("record", result.Record).
-				Errorf("dropping record from search result: missing mandatory field: %v", err)
-			continue
-		}
-
-		for _, label := range recordType.Fields.Labels {
-			value, err := getStringFromGenericMap(result.Record, label)
-			if err != nil {
-				continue
-			}
-			res.Labels[label] = value
 		}
 
 		response = append(response, res)
 	}
 	return
-}
-
-// recordView is a helper for querying record fields.
-// It provides a fail-through interface for obtaining
-// string fields from a record. If an error is encountered,
-// all subsequent GetString operations will return immediately
-// with an empty string, while the Error method will return
-// the error that was encountered
-type recordView struct {
-	err    error
-	Record models.Record
-}
-
-func newRecordView(record models.Record) *recordView {
-	return &recordView{Record: record}
-}
-
-func (view *recordView) GetString(name string) string {
-	if view.err != nil {
-		return ""
-	}
-	var val string
-	val, view.err = getStringFromGenericMap(view.Record, name)
-	if view.err != nil {
-		return ""
-	}
-	return val
-}
-
-func (view *recordView) Error() error {
-	return view.err
 }
 
 // cachingTypeRepo is a decorator over a models.TypeRepository
@@ -182,18 +133,6 @@ func newCachingTypeRepo(repo models.TypeRepository) *cachingTypeRepo {
 		repo:  repo,
 		cache: make(map[string]models.Type),
 	}
-}
-
-func getStringFromGenericMap(m map[string]interface{}, key string) (string, error) {
-	val, exists := m[key]
-	if !exists {
-		return "", fmt.Errorf("no such key: %q", key)
-	}
-	stringVal, ok := val.(string)
-	if !ok {
-		return "", fmt.Errorf("not a string field: %q", key)
-	}
-	return stringVal, nil
 }
 
 func filterConfigFromValues(values url.Values) map[string][]string {

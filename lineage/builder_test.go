@@ -70,16 +70,19 @@ func TestDefaultBuilder(t *testing.T) {
 						Type: models.Type{
 							Name:           "test",
 							Classification: models.TypeClassificationResource,
-							Fields: models.TypeFields{
-								ID: "id",
-							},
 						},
 						Records: []models.Record{
 							{
-								"id": "1",
+								Urn: "1",
+								Data: map[string]interface{}{
+									"id": "1",
+								},
 							},
 							{
-								"id": "2",
+								Urn: "2",
+								Data: map[string]interface{}{
+									"id": "2",
+								},
 							},
 						},
 					},
@@ -98,9 +101,6 @@ func TestDefaultBuilder(t *testing.T) {
 						Type: models.Type{
 							Name:           "internal-ref",
 							Classification: models.TypeClassificationResource,
-							Fields: models.TypeFields{
-								ID: "id",
-							},
 							Lineage: []models.LineageDescriptor{
 								{
 									Type:  "related-resource-ds",
@@ -116,9 +116,12 @@ func TestDefaultBuilder(t *testing.T) {
 						},
 						Records: []models.Record{
 							{
-								"id":         "1",
-								"upstreams":  []string{"A", "B"},
-								"downstream": "C",
+								Urn: "1",
+								Data: map[string]interface{}{
+									"id":         "1",
+									"upstreams":  []string{"A", "B"},
+									"downstream": "C",
+								},
 							},
 						},
 					},
@@ -139,13 +142,13 @@ func TestDefaultBuilder(t *testing.T) {
 						Type: models.Type{
 							Name:           "producer",
 							Classification: models.TypeClassificationResource,
-							Fields: models.TypeFields{
-								ID: "id",
-							},
 						},
 						Records: []models.Record{
 							{
-								"id": "data-booking",
+								Urn: "data-booking",
+								Data: map[string]interface{}{
+									"id": "data-booking",
+								},
 							},
 						},
 					},
@@ -153,9 +156,6 @@ func TestDefaultBuilder(t *testing.T) {
 						Type: models.Type{
 							Name:           "consumer",
 							Classification: models.TypeClassificationResource,
-							Fields: models.TypeFields{
-								ID: "id",
-							},
 							Lineage: []models.LineageDescriptor{
 								{
 									Type:  "producer",
@@ -166,12 +166,18 @@ func TestDefaultBuilder(t *testing.T) {
 						},
 						Records: []models.Record{
 							{
-								"id":  "booking-aggregator",
-								"src": "data-booking",
+								Urn: "booking-aggregator",
+								Data: map[string]interface{}{
+									"id":  "booking-aggregator",
+									"src": "data-booking",
+								},
 							},
 							{
-								"id":  "booking-fraud-detector",
-								"src": "data-booking",
+								Urn: "booking-fraud-detector",
+								Data: map[string]interface{}{
+									"id":  "booking-fraud-detector",
+									"src": "data-booking",
+								},
 							},
 						},
 					},

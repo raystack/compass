@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/odpf/columbus/models"
 	"github.com/odpf/columbus/store"
 	"github.com/stretchr/testify/assert"
@@ -36,7 +36,7 @@ func TestRecordRepository(t *testing.T) {
 				},
 				Records: []models.Record{
 					{
-						"foo": "bar",
+						Urn: "sample-urn",
 					},
 				},
 			},
@@ -45,24 +45,25 @@ func TestRecordRepository(t *testing.T) {
 				Type: models.Type{
 					Name:           "dagger",
 					Classification: models.TypeClassificationResource,
-					Fields: models.TypeFields{
-						ID:     "urn",
-						Title:  "title",
-						Labels: []string{"landscape"},
-					},
 				},
 				Records: []models.Record{
 					{
-						"data": "foo",
-						"urn":  "dagger1",
+						Urn: "dagger1",
+						Data: map[string]interface{}{
+							"foo": "bar",
+						},
 					},
 					{
-						"data": "bar",
-						"urn":  "dagger2",
+						Urn: "dagger2",
+						Data: map[string]interface{}{
+							"foo": "bar",
+						},
 					},
 					{
-						"data": "baz",
-						"urn":  "dagger3",
+						Urn: "dagger3",
+						Data: map[string]interface{}{
+							"foo": "bar",
+						},
 					},
 				},
 				Setup: func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error {
@@ -94,6 +95,7 @@ func TestRecordRepository(t *testing.T) {
 					if len(records) != len(response.Hits.Hits) {
 						return fmt.Errorf("expected elasticsearch index to contain %d records, but had %d records instead", len(records), len(response.Hits.Hits))
 					}
+
 					return nil
 				},
 			},
@@ -133,7 +135,7 @@ func TestRecordRepository(t *testing.T) {
 
 	// the following block of code setups
 	// an type repository, initialised with the daggerType
-	// as well as records from the file ./testdata/dagger.json
+	// as well as records from the file ./testdata/dagger-populate.json
 	// this is used by test cases of `GetAll` and `GetByID`
 	cli := esTestServer.NewClient()
 	typeRepo := store.NewTypeRepository(cli)
@@ -150,18 +152,7 @@ func TestRecordRepository(t *testing.T) {
 		return
 	}
 
-	src, err := ioutil.ReadFile("./testdata/dagger.json")
-	var records []models.Record
-	err = json.Unmarshal(src, &records)
-	if err != nil {
-		t.Fatalf("error reading testdata: %v", err)
-		return
-	}
-	err = recordRepo.CreateOrReplaceMany(ctx, records)
-	if err != nil {
-		t.Fatalf("error writing testdata to elasticsearch: %v", err)
-		return
-	}
+	records := insertRecord(ctx, t, recordRepo)
 
 	t.Run("GetAllIterator", func(t *testing.T) {
 		type testCase struct {
@@ -200,7 +191,6 @@ func TestRecordRepository(t *testing.T) {
 			}
 		})
 	})
-
 	t.Run("GetAll", func(t *testing.T) {
 		type testCase struct {
 			Description string
@@ -217,22 +207,22 @@ func TestRecordRepository(t *testing.T) {
 			{
 				Description: "should support a single value filter",
 				Filter: map[string][]string{
-					"landscape": []string{"id"},
+					"country": {"id"},
 				},
 				ResultsFile: "./testdata/dagger-id.json",
 			},
 			{
 				Description: "should support multi value filter",
 				Filter: map[string][]string{
-					"landscape": []string{"id", "vn"},
+					"country": {"id", "vn"},
 				},
 				ResultsFile: "./testdata/dagger-vn-id.json",
 			},
 			{
 				Description: "should support multiple terms",
 				Filter: map[string][]string{
-					"landscape": []string{"th"},
-					"state":     []string{"DEPLOYED"},
+					"country": {"th"},
+					"title":   {"test_grant2"},
 				},
 				ResultsFile: "./testdata/dagger-th-deployed.json",
 			},
@@ -258,6 +248,7 @@ func TestRecordRepository(t *testing.T) {
 					return
 				}
 
+				assert.Equal(t, len(expectedResults), len(actualResults))
 				if reflect.DeepEqual(expectedResults, actualResults) == false {
 					t.Error(incorrectResultsError(expectedResults, actualResults))
 					return
@@ -268,14 +259,9 @@ func TestRecordRepository(t *testing.T) {
 	t.Run("GetByID", func(t *testing.T) {
 		t.Run("data-based tests", func(t *testing.T) {
 			for _, record := range records {
-				id, ok := record[daggerType.Fields.ID].(string)
-				if !ok {
-					t.Fatalf("bad test data: record doesn't have %q key", daggerType.Fields.ID)
-					return
-				}
-				recordFromRepo, err := recordRepo.GetByID(ctx, id)
+				recordFromRepo, err := recordRepo.GetByID(ctx, record.Urn)
 				if err != nil {
-					t.Errorf("unexpected error: GetByID(%q): %v", id, err)
+					t.Errorf("unexpected error: GetByID(%q): %v", record.Urn, err)
 					return
 				}
 				if reflect.DeepEqual(record, recordFromRepo) == false {
@@ -293,19 +279,26 @@ func TestRecordRepository(t *testing.T) {
 	t.Run("Delete", func(t *testing.T) {
 		t.Run("should delete record from index", func(t *testing.T) {
 			id := "delete-id-01"
-			recordRepo.CreateOrReplaceMany(ctx, []map[string]interface{}{
+			err := recordRepo.CreateOrReplaceMany(ctx, []models.Record{
 				{
-					"title": "To be deleted",
-					"urn":   id,
+					Urn:  id,
+					Name: "To be deleted",
+					Data: map[string]interface{}{
+						"title": "To be deleted",
+						"urn":   id,
+					},
 				},
 			})
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			err := recordRepo.Delete(ctx, id)
+			err = recordRepo.Delete(ctx, id)
 			assert.Nil(t, err)
 
 			record, err := recordRepo.GetByID(ctx, id)
 			assert.NotNil(t, err)
-			assert.Nil(t, record)
+			assert.Equal(t, models.Record{}, record)
 		})
 
 		t.Run("should return custom error when record could not be found", func(t *testing.T) {
@@ -314,4 +307,20 @@ func TestRecordRepository(t *testing.T) {
 			assert.IsType(t, models.ErrNoSuchRecord{}, err)
 		})
 	})
+}
+
+func insertRecord(ctx context.Context, t *testing.T, repo models.RecordRepository) (records []models.Record) {
+	src, err := ioutil.ReadFile("./testdata/dagger.json")
+	err = json.Unmarshal(src, &records)
+	if err != nil {
+		t.Fatalf("error reading testdata: %v", err)
+		return
+	}
+	err = repo.CreateOrReplaceMany(ctx, records)
+	if err != nil {
+		t.Fatalf("error writing testdata to elasticsearch: %v", err)
+		return
+	}
+
+	return
 }

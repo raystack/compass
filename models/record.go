@@ -3,11 +3,19 @@ package models
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
-// Record represents an arbitrary JSON message
-// TODO(Aman): add validation for mandatory fields? (landscape for instance)
-type Record = map[string]interface{}
+// Record is a model that wraps arbitrary data with Columbus' context
+type Record struct {
+	Urn         string                 `json:"urn" mapstructure:"urn"`
+	Name        string                 `json:"name" mapstructure:"name"`
+	Description string                 `json:"description" mapstructure:"description"`
+	Data        map[string]interface{} `json:"data" mapstructure:"data"`
+	Labels      map[string]string      `json:"labels" mapstructure:"labels"`
+	CreatedAt   time.Time              `json:"created_at" mapstructure:"created_at"`
+	UpdatedAt   time.Time              `json:"updated_at" mapstructure:"updated_at"`
+}
 
 type RecordIterator interface {
 	Scan() bool

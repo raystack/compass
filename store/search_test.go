@@ -21,10 +21,8 @@ func TestSearch(t *testing.T) {
 	ctx := context.Background()
 	t.Run("should return an error if search string is empty", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
-
 		searcher, err := store.NewSearcher(store.SearcherConfig{
-			Client:   esClient,
-			TypeRepo: store.NewTypeRepository(esClient),
+			Client: esClient,
 		})
 		if err != nil {
 			t.Error(err)
@@ -34,7 +32,7 @@ func TestSearch(t *testing.T) {
 			Text: "",
 		})
 
-		assert.NotNil(t, err)
+		assert.Error(t, err)
 	})
 
 	t.Run("should restrict search to globally white listed type types", func(t *testing.T) {
@@ -54,7 +52,6 @@ func TestSearch(t *testing.T) {
 		}
 		searcher, err := store.NewSearcher(store.SearcherConfig{
 			Client:        esClient,
-			TypeRepo:      store.NewTypeRepository(esClient),
 			TypeWhiteList: []string{whitelistedType},
 		})
 		if err != nil {
@@ -88,7 +85,6 @@ func TestSearch(t *testing.T) {
 		}
 		searcher, err := store.NewSearcher(store.SearcherConfig{
 			Client:        esClient,
-			TypeRepo:      store.NewTypeRepository(esClient),
 			TypeWhiteList: []string{},
 		})
 		if err != nil {
@@ -130,7 +126,6 @@ func TestSearch(t *testing.T) {
 		}
 		searcher, err := store.NewSearcher(store.SearcherConfig{
 			Client:        esClient,
-			TypeRepo:      store.NewTypeRepository(esClient),
 			TypeWhiteList: globalWhitelist,
 		})
 		if err != nil {
@@ -164,7 +159,6 @@ func TestSearch(t *testing.T) {
 		}
 		searcher, err := store.NewSearcher(store.SearcherConfig{
 			Client:        esClient,
-			TypeRepo:      store.NewTypeRepository(esClient),
 			TypeWhiteList: []string{},
 		})
 		if err != nil {
@@ -191,10 +185,8 @@ func TestSearch(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		typesMap := mapTypesToTypesMap(types)
 		searcher, err := store.NewSearcher(store.SearcherConfig{
 			Client:        esClient,
-			TypeRepo:      store.NewTypeRepository(esClient),
 			TypeWhiteList: mapTypesToTypeNames(types),
 		})
 		if err != nil {
@@ -264,7 +256,7 @@ func TestSearch(t *testing.T) {
 				Config: models.SearchConfig{
 					Text: "invoice topic",
 					Filters: map[string][]string{
-						"landscape":   {"id"},
+						"country":     {"id"},
 						"environment": {"production"},
 						"company":     {"odpf"},
 					},
@@ -288,9 +280,8 @@ func TestSearch(t *testing.T) {
 				}
 
 				for i, res := range test.Expected {
-					recordIDKey := typesMap[res.Type].Fields.ID
 					assert.Equal(t, res.Type, results[i].TypeName)
-					assert.Equal(t, res.RecordID, results[i].Record[recordIDKey])
+					assert.Equal(t, res.RecordID, results[i].Record.Urn)
 				}
 			})
 		}
@@ -299,12 +290,18 @@ func TestSearch(t *testing.T) {
 
 func buildSampleSearchData(typeName string) searchTestData {
 	return searchTestData{
-		Type: models.Type{Name: typeName, Fields: models.TypeFields{ID: "urn"}},
-		Records: []models.Record{{
-			"urn":       "sample-test-1",
-			"landscape": "id",
-			"title":     "sample test",
-		}},
+		Type: models.Type{Name: typeName},
+		Records: []models.Record{
+			{
+				Urn:  "sample-test-1",
+				Name: "sample test",
+				Data: map[string]interface{}{
+					"urn":     "sample-test-1",
+					"country": "id",
+					"title":   "sample test",
+				},
+			},
+		},
 	}
 }
 
@@ -340,15 +337,6 @@ func mapTypesToTypeNames(types []models.Type) []string {
 	var result []string
 	for _, typ := range types {
 		result = append(result, typ.Name)
-	}
-
-	return result
-}
-
-func mapTypesToTypesMap(types []models.Type) map[string]models.Type {
-	result := map[string]models.Type{}
-	for _, typ := range types {
-		result[typ.Name] = typ
 	}
 
 	return result

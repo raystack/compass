@@ -35,7 +35,7 @@ func (lp lineageProcessor) LineageOf(record models.Record) (upstream, downstream
 	return
 }
 
-func (lp lineageProcessor) executeQuery(data models.Record, query string) (values []string, err error) {
+func (lp lineageProcessor) executeQuery(record models.Record, query string) (values []string, err error) {
 
 	defer func() {
 		if err != nil {
@@ -43,7 +43,7 @@ func (lp lineageProcessor) executeQuery(data models.Record, query string) (value
 		}
 	}()
 
-	result, err := jsonpath.Get(query, data)
+	result, err := jsonpath.Get(query, record.Data)
 	if err != nil {
 		return
 	}
