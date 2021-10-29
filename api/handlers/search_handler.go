@@ -87,12 +87,12 @@ func (handler *SearchHandler) toSearchResponse(ctx context.Context, results []mo
 		}
 
 		res := SearchResponse{
-			ID:             result.Record.Urn,
-			Title:          result.Record.Name,
-			Description:    result.Record.Description,
-			Labels:         result.Record.Labels,
-			Type:           recordType.Name,
-			Classification: string(recordType.Classification),
+			Type:        recordType.Name,
+			ID:          result.Record.Urn,
+			Title:       result.Record.Name,
+			Description: result.Record.Description,
+			Labels:      result.Record.Labels,
+			Service:     result.Record.Service,
 		}
 
 		response = append(response, res)

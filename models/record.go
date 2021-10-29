@@ -10,6 +10,7 @@ import (
 type Record struct {
 	Urn         string                 `json:"urn" mapstructure:"urn"`
 	Name        string                 `json:"name" mapstructure:"name"`
+	Service     string                 `json:"service" mapstructure:"service"`
 	Description string                 `json:"description" mapstructure:"description"`
 	Data        map[string]interface{} `json:"data" mapstructure:"data"`
 	Labels      map[string]string      `json:"labels" mapstructure:"labels"`

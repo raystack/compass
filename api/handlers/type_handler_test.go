@@ -265,22 +265,16 @@ func TestTypeHandler(t *testing.T) {
 					payload: `[{}]`,
 				},
 				{
-					payload: `[{"urn": "some-urn"}]`,
+					payload: `[{"urn": ""}]`,
 				},
 				{
-					payload: `[{"name": "some-name"}]`,
+					payload: `[{"urn": "some-urn", "name": ""}]`,
 				},
 				{
-					payload: `[{"data": {}}]`,
+					payload: `[{"urn": "some-urn", "name": "some-name", "data": null}]`,
 				},
 				{
-					payload: `[{"urn": "some-urn", "name": "some-name"}]`,
-				},
-				{
-					payload: `[{"urn": "some-urn", "data": {}}]`,
-				},
-				{
-					payload: `[{"name": "some-name", "data": {}}]`,
+					payload: `[{"urn": "some-urn", "name": "some-name", "data": {}, "service": ""}]`,
 				},
 			}
 
@@ -307,7 +301,7 @@ func TestTypeHandler(t *testing.T) {
 		})
 		t.Run("should return HTTP 500 if the resource creation/update fails", func(t *testing.T) {
 			t.Run("RecordRepositoryFactory fails", func(t *testing.T) {
-				var payload = `[{"urn": "test dagger", "name": "de-dagger-test", "data": {}}]`
+				var payload = `[{"urn": "test dagger", "name": "de-dagger-test", "service": "kafka", "data": {}}]`
 				rr := httptest.NewRequest("PUT", "/", strings.NewReader(payload))
 				rw := httptest.NewRecorder()
 				rr = mux.SetURLVars(rr, map[string]string{
@@ -341,12 +335,13 @@ func TestTypeHandler(t *testing.T) {
 				}
 			})
 			t.Run("RecordRepository fails", func(t *testing.T) {
-				payload := `[{"urn": "test dagger", "name": "de-dagger-test", "data": {}}]`
+				payload := `[{"urn": "test dagger", "name": "de-dagger-test", "service": "kafka", "data": {}}]`
 				expectedRecords := []models.Record{
 					{
-						Urn:  "test dagger",
-						Name: "de-dagger-test",
-						Data: map[string]interface{}{},
+						Urn:     "test dagger",
+						Name:    "de-dagger-test",
+						Service: "kafka",
+						Data:    map[string]interface{}{},
 					},
 				}
 
@@ -388,12 +383,13 @@ func TestTypeHandler(t *testing.T) {
 			})
 		})
 		t.Run("should return HTTP 200 if the resource is successfully created/update", func(t *testing.T) {
-			payload := `[{"urn": "test dagger", "name": "de-dagger-test", "data": {}}]`
+			payload := `[{"urn": "test dagger", "name": "de-dagger-test", "service": "kafka", "data": {}}]`
 			expectedRecords := []models.Record{
 				{
-					Urn:  "test dagger",
-					Name: "de-dagger-test",
-					Data: map[string]interface{}{},
+					Urn:     "test dagger",
+					Name:    "de-dagger-test",
+					Service: "kafka",
+					Data:    map[string]interface{}{},
 				},
 			}
 			rr := httptest.NewRequest("PUT", "/", strings.NewReader(payload))
