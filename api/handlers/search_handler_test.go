@@ -112,8 +112,9 @@ func TestSearchHandler(t *testing.T) {
 					{
 						TypeName: testdata.Type.Name,
 						Record: models.Record{
-							Urn:  "test-1",
-							Name: "test 1",
+							Urn:     "test-1",
+							Name:    "test 1",
+							Service: "test-service",
 							Data: map[string]interface{}{
 								"id":        "test-1",
 								"title":     "test 1",
@@ -145,6 +146,7 @@ func TestSearchHandler(t *testing.T) {
 							Urn:         "test-resource",
 							Name:        "test resource",
 							Description: "some description",
+							Service:     "test-service",
 							Data: map[string]interface{}{
 								"id":        "test-resource",
 								"title":     "test resource",
@@ -169,11 +171,11 @@ func TestSearchHandler(t *testing.T) {
 				}
 				expectResponse := []handlers.SearchResponse{
 					{
-						ID:             "test-resource",
-						Title:          "test resource",
-						Description:    "some description",
-						Classification: string(models.TypeClassificationResource),
-						Type:           "test",
+						ID:          "test-resource",
+						Title:       "test resource",
+						Description: "some description",
+						Service:     "test-service",
+						Type:        "test",
 						Labels: map[string]string{
 							"entity":    "odpf",
 							"landscape": "id",
@@ -207,8 +209,9 @@ func TestSearchHandler(t *testing.T) {
 					urn := fmt.Sprintf("resource-%d", i+1)
 					name := fmt.Sprintf("resource %d", i+1)
 					record := models.Record{
-						Urn:  urn,
-						Name: name,
+						Urn:     urn,
+						Name:    name,
+						Service: "kafka",
 						Data: map[string]interface{}{
 							"id":        urn,
 							"title":     name,
