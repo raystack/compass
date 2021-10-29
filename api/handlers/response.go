@@ -32,10 +32,10 @@ func NewValidationErrorResponse(details map[int]string) *ValidationErrorResponse
 // SearchResponse defines an individual item
 // in the search response
 type SearchResponse struct {
-	Title          string            `json:"title"`
-	ID             string            `json:"id"`
-	Type           string            `json:"type"`
-	Classification string            `json:"classification"`
-	Description    string            `json:"description"`
-	Labels         map[string]string `json:"labels"`
+	Title       string            `json:"title"`
+	ID          string            `json:"id"`
+	Type        string            `json:"type"`
+	Service     string            `json:"service"`
+	Description string            `json:"description"`
+	Labels      map[string]string `json:"labels"`
 }

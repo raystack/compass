@@ -359,6 +359,9 @@ func (handler *TypeHandler) validateRecord(record models.Record) error {
 	if record.Data == nil {
 		return fmt.Errorf("data is required")
 	}
+	if record.Service == "" {
+		return fmt.Errorf("service is required")
+	}
 
 	return nil
 }
