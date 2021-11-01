@@ -11,6 +11,7 @@ import (
 // (like it’s name and type) as well it’s relationship to other resources
 type AdjacencyEntry struct {
 	Type        string        `json:"type"`
+	Service     string        `json:"service"`
 	URN         string        `json:"urn"`
 	Upstreams   set.StringSet `json:"upstreams"`
 	Downstreams set.StringSet `json:"downstreams"`

@@ -85,6 +85,7 @@ func (builder defaultBuilder) addRecord(graph AdjacencyMap, typeName string, rec
 	entry := AdjacencyEntry{
 		Type:        typeName,
 		URN:         record.Urn,
+		Service:     record.Service,
 		Downstreams: builder.buildAdjacents(record, dataflowDirDownstream),
 		Upstreams:   builder.buildAdjacents(record, dataflowDirUpstream),
 	}
@@ -99,11 +100,12 @@ func (builder defaultBuilder) addBackRefs(graph AdjacencyMap) {
 		// validate refs on both nodes. If any node is missing
 		// a corresponding entry, add it.
 
+		entryID := entry.ID()
 		for upstream := range entry.Upstreams {
-			builder.addBackRef(graph, entry.ID(), upstream, dataflowDirDownstream)
+			builder.addBackRef(graph, entryID, upstream, dataflowDirDownstream)
 		}
 		for downstream := range entry.Downstreams {
-			builder.addBackRef(graph, entry.ID(), downstream, dataflowDirUpstream)
+			builder.addBackRef(graph, entryID, downstream, dataflowDirUpstream)
 		}
 	}
 }

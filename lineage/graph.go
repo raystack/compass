@@ -74,8 +74,8 @@ func (graph InMemoryGraph) buildSubgraphFromRoot(subgraph AdjacencyMap, root str
 
 	result = make(AdjacencyMap)
 	result[rootElm.ID()] = rootElm
-	graph.addAdjacentsInDir(result, graph.Supergraph, rootElm, dataflowDirUpstream)
-	graph.addAdjacentsInDir(result, graph.Supergraph, rootElm, dataflowDirDownstream)
+	graph.addAdjacentsInDir(result, subgraph, rootElm, dataflowDirUpstream)
+	graph.addAdjacentsInDir(result, subgraph, rootElm, dataflowDirDownstream)
 
 	return result, nil
 }
@@ -163,5 +163,6 @@ func NewInMemoryGraph(data AdjacencyMap) InMemoryGraph {
 		typeIdx:    make(map[string]set.StringSet),
 	}
 	graph.init()
+
 	return graph
 }

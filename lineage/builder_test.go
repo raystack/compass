@@ -40,10 +40,11 @@ func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordRe
 	return tr, rrf
 }
 
-func adjEntryWithTypeAndURN(typ, urn string) lineage.AdjacencyEntry {
+func adjEntryWithTypeAndURN(typ, urn, service string) lineage.AdjacencyEntry {
 	return lineage.AdjacencyEntry{
 		Type:        typ,
 		URN:         urn,
+		Service:     service,
 		Downstreams: set.NewStringSet(),
 		Upstreams:   set.NewStringSet(),
 	}
@@ -70,17 +71,19 @@ func TestDefaultBuilder(t *testing.T) {
 						},
 						Records: []models.Record{
 							{
-								Urn: "1",
+								Urn:     "1",
+								Service: "service-A",
 							},
 							{
-								Urn: "2",
+								Urn:     "2",
+								Service: "service-A",
 							},
 						},
 					},
 				},
 				Result: lineage.AdjacencyMap{
-					"test/1": adjEntryWithTypeAndURN("test", "1"),
-					"test/2": adjEntryWithTypeAndURN("test", "2"),
+					"test/1": adjEntryWithTypeAndURN("test", "1", "service-A"),
+					"test/2": adjEntryWithTypeAndURN("test", "2", "service-A"),
 				},
 			},
 			{
@@ -95,7 +98,8 @@ func TestDefaultBuilder(t *testing.T) {
 						},
 						Records: []models.Record{
 							{
-								Urn: "1",
+								Urn:     "1",
+								Service: "service-A",
 								Upstreams: []models.LineageRecord{
 									{
 										Urn:  "A",
@@ -120,6 +124,7 @@ func TestDefaultBuilder(t *testing.T) {
 					"internal-ref/1": lineage.AdjacencyEntry{
 						Type:        "internal-ref",
 						URN:         "1",
+						Service:     "service-A",
 						Downstreams: set.NewStringSet("related-resource-ds/C"),
 						Upstreams:   set.NewStringSet("related-resource-us/A", "related-resource-us/B"),
 					},

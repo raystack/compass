@@ -69,11 +69,9 @@ func (handler *LineageHandler) GetLineage(w http.ResponseWriter, r *http.Request
 		return
 	}
 	requestParams := mux.Vars(r)
-	typeName := requestParams["type"]
 
 	opts := handler.parseOpts(r.URL.Query())
-	opts.Root = fmt.Sprintf("%s/%s", typeName, requestParams["id"])
-	opts.TypeWhitelist = []string{typeName}
+	opts.Root = fmt.Sprintf("%s/%s", requestParams["type"], requestParams["id"])
 
 	res, err := graph.Query(opts)
 	if err != nil {

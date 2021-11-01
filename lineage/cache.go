@@ -40,9 +40,11 @@ func (graph *CachedGraph) hashCfg(cfg QueryCfg) string {
 	var values []string
 	copy(values, cfg.TypeWhitelist)
 	sort.Strings(values)
+	values = append(values, cfg.Root+"%")
 	if cfg.Collapse {
 		values = append(values, "@")
 	}
+
 	return strings.Join(values, ",")
 }
 
