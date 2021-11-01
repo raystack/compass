@@ -189,7 +189,7 @@ func TestLineageHandler(t *testing.T) {
 			}
 
 			graph := new(mock.Graph)
-			graph.On("Query", lineage.QueryCfg{TypeWhitelist: []string{"bqtable"}, Root: "bqtable/raw"}).Return(subGraph, nil)
+			graph.On("Query", lineage.QueryCfg{Root: "bqtable/raw"}).Return(subGraph, nil)
 
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
