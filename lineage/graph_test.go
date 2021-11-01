@@ -30,6 +30,10 @@ func TestInMemoryGraph(t *testing.T) {
 			Upstreams:   set.NewStringSet("type_a/instance_a"),
 			Downstreams: set.NewStringSet("type_a/instance_b"),
 		},
+		"isolated_type/isolated_record": lineage.AdjacencyEntry{
+			Type: "isolated_type",
+			URN:  "isolated_record",
+		},
 	}
 	t.Run("Query", func(t *testing.T) {
 		type testCase struct {
@@ -83,6 +87,31 @@ func TestInMemoryGraph(t *testing.T) {
 						URN:         "instance_b",
 						Upstreams:   set.NewStringSet("type_a/instance_a"),
 						Downstreams: set.NewStringSet(),
+					},
+				},
+			},
+			{
+				Description: "build lineage from Root",
+				Supergraph:  sampleGraph,
+				Cfg: lineage.QueryCfg{
+					Root: "type_a/instance_a",
+				},
+				ExpectGraph: lineage.AdjacencyMap{
+					"type_a/instance_a": lineage.AdjacencyEntry{
+						Type:        "type_a",
+						URN:         "instance_a",
+						Downstreams: set.NewStringSet("type_b/instance_z"),
+					},
+					"type_a/instance_b": lineage.AdjacencyEntry{
+						Type:      "type_a",
+						URN:       "instance_b",
+						Upstreams: set.NewStringSet("type_b/instance_z"),
+					},
+					"type_b/instance_z": lineage.AdjacencyEntry{
+						Type:        "type_b",
+						URN:         "instance_z",
+						Upstreams:   set.NewStringSet("type_a/instance_a"),
+						Downstreams: set.NewStringSet("type_a/instance_b"),
 					},
 				},
 			},

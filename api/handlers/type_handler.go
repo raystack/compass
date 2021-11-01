@@ -380,17 +380,6 @@ func (handler *TypeHandler) validateType(e models.Type) error {
 	case isClassificationValid(e.Classification) == false:
 		return fmt.Errorf("'classification' must be one of [%s]", validClassificationsList)
 	}
-	for idx, desc := range e.Lineage {
-		if desc.Dir.Valid() == false {
-			return fmt.Errorf("lineage[%d].dir: invalid direction %q", idx, desc.Dir)
-		}
-		if strings.TrimSpace(desc.Query) == "" {
-			return fmt.Errorf("lineage[%d].query: query cannot be empty", idx)
-		}
-		if strings.TrimSpace(desc.Type) == "" {
-			return fmt.Errorf("lineage[%d].query: type cannot be empty", idx)
-		}
-	}
 	return nil
 }
 

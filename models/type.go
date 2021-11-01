@@ -44,10 +44,9 @@ var AllTypeClassifications = []TypeClassification{
 // Entities are supposed to represent resources, datasets and schema.
 // XXX(Aman): should Type names be case insensitive?
 type Type struct {
-	Name           string              `json:"name"`
-	Classification TypeClassification  `json:"classification"`
-	Lineage        []LineageDescriptor `json:"lineage"`
-	Boost          map[string]float64  `json:"boost"`
+	Name           string             `json:"name"`
+	Classification TypeClassification `json:"classification"`
+	Boost          map[string]float64 `json:"boost"`
 }
 
 func (e Type) Normalise() Type {

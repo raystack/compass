@@ -11,34 +11,11 @@ func TestTypeHandler(t *testing.T) {
 		t.Run("should fail", func(t *testing.T) {
 			types := []models.Type{
 				{
-					Name:           "three",
-					Classification: models.TypeClassificationResource,
-					Lineage: []models.LineageDescriptor{
-						{
-							Type: "unknown",
-							Dir:  models.DataflowDirUpstream,
-						},
-					},
+					Name: "",
 				},
 				{
 					Name:           "four",
-					Classification: models.TypeClassificationResource,
-					Lineage: []models.LineageDescriptor{
-						{
-							Type:  "unknown",
-							Query: "$.src",
-						},
-					},
-				},
-				{
-					Name:           "four",
-					Classification: models.TypeClassificationResource,
-					Lineage: []models.LineageDescriptor{
-						{
-							Dir:   models.DataflowDirUpstream,
-							Query: "$.src",
-						},
-					},
+					Classification: "",
 				},
 			}
 

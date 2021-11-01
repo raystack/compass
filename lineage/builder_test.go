@@ -74,15 +74,9 @@ func TestDefaultBuilder(t *testing.T) {
 						Records: []models.Record{
 							{
 								Urn: "1",
-								Data: map[string]interface{}{
-									"id": "1",
-								},
 							},
 							{
 								Urn: "2",
-								Data: map[string]interface{}{
-									"id": "2",
-								},
 							},
 						},
 					},
@@ -101,26 +95,25 @@ func TestDefaultBuilder(t *testing.T) {
 						Type: models.Type{
 							Name:           "internal-ref",
 							Classification: models.TypeClassificationResource,
-							Lineage: []models.LineageDescriptor{
-								{
-									Type:  "related-resource-ds",
-									Query: "$.downstream",
-									Dir:   models.DataflowDirDownstream,
-								},
-								{
-									Type:  "related-resource-us",
-									Query: "$.upstreams",
-									Dir:   models.DataflowDirUpstream,
-								},
-							},
 						},
 						Records: []models.Record{
 							{
 								Urn: "1",
-								Data: map[string]interface{}{
-									"id":         "1",
-									"upstreams":  []string{"A", "B"},
-									"downstream": "C",
+								Upstreams: []models.LineageRecord{
+									{
+										Urn:  "A",
+										Type: "related-resource-us",
+									},
+									{
+										Urn:  "B",
+										Type: "related-resource-us",
+									},
+								},
+								Downstreams: []models.LineageRecord{
+									{
+										Urn:  "C",
+										Type: "related-resource-ds",
+									},
 								},
 							},
 						},
@@ -146,9 +139,6 @@ func TestDefaultBuilder(t *testing.T) {
 						Records: []models.Record{
 							{
 								Urn: "data-booking",
-								Data: map[string]interface{}{
-									"id": "data-booking",
-								},
 							},
 						},
 					},
@@ -156,27 +146,24 @@ func TestDefaultBuilder(t *testing.T) {
 						Type: models.Type{
 							Name:           "consumer",
 							Classification: models.TypeClassificationResource,
-							Lineage: []models.LineageDescriptor{
-								{
-									Type:  "producer",
-									Query: "$.src",
-									Dir:   models.DataflowDirUpstream,
-								},
-							},
 						},
 						Records: []models.Record{
 							{
 								Urn: "booking-aggregator",
-								Data: map[string]interface{}{
-									"id":  "booking-aggregator",
-									"src": "data-booking",
+								Upstreams: []models.LineageRecord{
+									{
+										Urn:  "data-booking",
+										Type: "producer",
+									},
 								},
 							},
 							{
 								Urn: "booking-fraud-detector",
-								Data: map[string]interface{}{
-									"id":  "booking-fraud-detector",
-									"src": "data-booking",
+								Upstreams: []models.LineageRecord{
+									{
+										Urn:  "data-booking",
+										Type: "producer",
+									},
 								},
 							},
 						},
