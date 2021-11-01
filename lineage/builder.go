@@ -85,8 +85,8 @@ func (builder defaultBuilder) addRecord(graph AdjacencyMap, typeName string, rec
 	entry := AdjacencyEntry{
 		Type:        typeName,
 		URN:         record.Urn,
-		Downstreams: builder.buildDownstreams(record),
-		Upstreams:   builder.buildUpstreams(record),
+		Downstreams: builder.buildAdjacents(record, dataflowDirDownstream),
+		Upstreams:   builder.buildAdjacents(record, dataflowDirUpstream),
 	}
 
 	graph[entry.ID()] = entry
@@ -98,63 +98,44 @@ func (builder defaultBuilder) addBackRefs(graph AdjacencyMap) {
 		// for {upstream, downstream}, find adjacents and
 		// validate refs on both nodes. If any node is missing
 		// a corresponding entry, add it.
-		for _, dir := range models.AllDataflowDir {
-			for adjacent := range entry.AdjacentEntriesInDir(dir) {
-				builder.addBackRefIfNotFound(graph, entry, adjacent, dir)
-			}
+
+		for upstream := range entry.Upstreams {
+			builder.addBackRef(graph, entry.ID(), upstream, dataflowDirDownstream)
+		}
+		for downstream := range entry.Downstreams {
+			builder.addBackRef(graph, entry.ID(), downstream, dataflowDirUpstream)
 		}
 	}
 }
 
-func (builder defaultBuilder) addBackRefIfNotFound(graph AdjacencyMap, entry AdjacencyEntry, adjacent string, dir models.DataflowDir) {
-	adjacentEntry, exists := graph[adjacent]
+func (builder defaultBuilder) addBackRef(graph AdjacencyMap, refID string, backRefID string, dir dataflowDir) {
+	backRefEntry, exists := graph[backRefID]
 	if !exists {
 		return
 	}
-	oppositeDir, known := builder.opposite(dir)
-	if !known {
-		return
-	}
-	entries := adjacentEntry.AdjacentEntriesInDir(oppositeDir)
-	if _, exists := entries[entry.ID()]; !exists {
-		entries.Add(entry.ID())
-	}
-	return
-}
 
-func (builder defaultBuilder) opposite(dir models.DataflowDir) (models.DataflowDir, bool) {
-	switch dir {
-	case models.DataflowDirUpstream:
-		return models.DataflowDirDownstream, true
-	case models.DataflowDirDownstream:
-		return models.DataflowDirUpstream, true
-	default:
-		return models.DataflowDir("unknown"), false
-	}
-}
-
-func (builder defaultBuilder) buildUpstreams(record models.Record) (upstreams set.StringSet) {
-	upstreams = set.NewStringSet()
-
-	for _, lr := range record.Upstreams {
-		urnWithType := builder.addTypePrefix(lr.Urn, lr.Type)
-		upstreams.Add(urnWithType)
+	adjacents := backRefEntry.getAdjacents(dir)
+	if _, exists := adjacents[refID]; !exists {
+		adjacents.Add(refID)
 	}
 
 	return
 }
 
-func (builder defaultBuilder) buildDownstreams(record models.Record) (downstreams set.StringSet) {
-	downstreams = set.NewStringSet()
+func (builder defaultBuilder) buildAdjacents(record models.Record, dir dataflowDir) (adjacents set.StringSet) {
+	adjacents = set.NewStringSet()
 
-	for _, lr := range record.Downstreams {
-		urnWithType := builder.addTypePrefix(lr.Urn, lr.Type)
-		downstreams.Add(urnWithType)
+	var lineageRecords []models.LineageRecord
+	if dir == dataflowDirUpstream {
+		lineageRecords = record.Upstreams
+	} else {
+		lineageRecords = record.Downstreams
+	}
+
+	for _, lr := range lineageRecords {
+		urnWithType := fmt.Sprintf("%s/%s", lr.Type, lr.Urn)
+		adjacents.Add(urnWithType)
 	}
 
 	return
-}
-
-func (builder defaultBuilder) addTypePrefix(urn string, typ string) (rv string) {
-	return fmt.Sprintf("%s/%s", typ, urn)
 }

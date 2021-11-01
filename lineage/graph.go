@@ -74,23 +74,22 @@ func (graph InMemoryGraph) buildSubgraphFromRoot(subgraph AdjacencyMap, root str
 
 	result = make(AdjacencyMap)
 	result[rootElm.ID()] = rootElm
-	for _, dir := range models.AllDataflowDir {
-		graph.addAdjacentsInDir(result, graph.Supergraph, rootElm, dir)
-	}
+	graph.addAdjacentsInDir(result, graph.Supergraph, rootElm, dataflowDirUpstream)
+	graph.addAdjacentsInDir(result, graph.Supergraph, rootElm, dataflowDirDownstream)
 
 	return result, nil
 }
 
 func (graph InMemoryGraph) collapse(subgraph AdjacencyMap, typeWhitelist set.StringSet) {
 	for _, entry := range subgraph {
-		entry.Upstreams = graph.collapseInDir(entry, models.DataflowDirUpstream, typeWhitelist)
-		entry.Downstreams = graph.collapseInDir(entry, models.DataflowDirDownstream, typeWhitelist)
+		entry.Upstreams = graph.collapseInDir(entry, dataflowDirUpstream, typeWhitelist)
+		entry.Downstreams = graph.collapseInDir(entry, dataflowDirDownstream, typeWhitelist)
 		subgraph[entry.ID()] = entry
 	}
 	return
 }
 
-func (graph InMemoryGraph) collapseInDir(root AdjacencyEntry, dir models.DataflowDir, types set.StringSet) set.StringSet {
+func (graph InMemoryGraph) collapseInDir(root AdjacencyEntry, dir dataflowDir, types set.StringSet) set.StringSet {
 	var (
 		queue     = []AdjacencyEntry{root}
 		collapsed = set.NewStringSet()
@@ -99,7 +98,7 @@ func (graph InMemoryGraph) collapseInDir(root AdjacencyEntry, dir models.Dataflo
 		n := len(queue)
 		entry := queue[n-1]
 		queue = queue[:n-1]
-		adjacents := entry.AdjacentEntriesInDir(dir)
+		adjacents := entry.getAdjacents(dir)
 		for adjacent := range adjacents {
 			adjEntry, exists := graph.Supergraph[adjacent]
 			if !exists {
@@ -115,13 +114,13 @@ func (graph InMemoryGraph) collapseInDir(root AdjacencyEntry, dir models.Dataflo
 	return collapsed
 }
 
-func (graph InMemoryGraph) addAdjacentsInDir(subgraph AdjacencyMap, superGraph AdjacencyMap, root AdjacencyEntry, dir models.DataflowDir) {
+func (graph InMemoryGraph) addAdjacentsInDir(subgraph AdjacencyMap, superGraph AdjacencyMap, root AdjacencyEntry, dir dataflowDir) {
 	queue := []AdjacencyEntry{root}
 	for len(queue) > 0 {
 		n := len(queue)
 		el := queue[n-1]
 		queue = queue[:n-1]
-		for adjacent := range el.AdjacentEntriesInDir(dir) {
+		for adjacent := range el.getAdjacents(dir) {
 			adjacentEl, exists := superGraph[adjacent]
 			if !exists {
 				continue

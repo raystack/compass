@@ -1,17 +1,14 @@
 package lineage_test
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/lib/set"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/models"
+	"github.com/stretchr/testify/assert"
 )
 
 type dataset struct {
@@ -212,19 +209,7 @@ func TestDefaultBuilder(t *testing.T) {
 					return
 				}
 
-				if reflect.DeepEqual(result, tc.Result) == false {
-					var (
-						msg = new(bytes.Buffer)
-						enc = json.NewEncoder(msg)
-					)
-					enc.SetIndent("", "  ")
-					fmt.Fprint(msg, "expected: ")
-					enc.Encode(tc.Result)
-					fmt.Fprint(msg, "got: ")
-					enc.Encode(result)
-					t.Error(msg.String())
-					return
-				}
+				assert.Equal(t, tc.Result, result)
 			})
 		}
 	})

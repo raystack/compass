@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/odpf/columbus/lib/set"
-	"github.com/odpf/columbus/models"
 )
 
 // AdjacencyEntry holds metadata about a resource
@@ -17,15 +16,12 @@ type AdjacencyEntry struct {
 	Downstreams set.StringSet `json:"downstreams"`
 }
 
-func (e AdjacencyEntry) AdjacentEntriesInDir(dir models.DataflowDir) set.StringSet {
-	switch dir {
-	case models.DataflowDirDownstream:
+func (e AdjacencyEntry) getAdjacents(dir dataflowDir) set.StringSet {
+	if dir == dataflowDirDownstream {
 		return e.Downstreams
-	case models.DataflowDirUpstream:
-		return e.Upstreams
-	default:
-		return set.StringSet{}
 	}
+
+	return e.Upstreams
 }
 
 func (e AdjacencyEntry) ID() string {
