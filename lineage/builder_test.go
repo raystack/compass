@@ -1,17 +1,14 @@
 package lineage_test
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/lib/set"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/models"
+	"github.com/stretchr/testify/assert"
 )
 
 type dataset struct {
@@ -43,10 +40,11 @@ func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordRe
 	return tr, rrf
 }
 
-func adjEntryWithTypeAndURN(typ, urn string) lineage.AdjacencyEntry {
+func adjEntryWithTypeAndURN(typ, urn, service string) lineage.AdjacencyEntry {
 	return lineage.AdjacencyEntry{
 		Type:        typ,
 		URN:         urn,
+		Service:     service,
 		Downstreams: set.NewStringSet(),
 		Upstreams:   set.NewStringSet(),
 	}
@@ -73,23 +71,19 @@ func TestDefaultBuilder(t *testing.T) {
 						},
 						Records: []models.Record{
 							{
-								Urn: "1",
-								Data: map[string]interface{}{
-									"id": "1",
-								},
+								Urn:     "1",
+								Service: "service-A",
 							},
 							{
-								Urn: "2",
-								Data: map[string]interface{}{
-									"id": "2",
-								},
+								Urn:     "2",
+								Service: "service-A",
 							},
 						},
 					},
 				},
 				Result: lineage.AdjacencyMap{
-					"test/1": adjEntryWithTypeAndURN("test", "1"),
-					"test/2": adjEntryWithTypeAndURN("test", "2"),
+					"test/1": adjEntryWithTypeAndURN("test", "1", "service-A"),
+					"test/2": adjEntryWithTypeAndURN("test", "2", "service-A"),
 				},
 			},
 			{
@@ -101,26 +95,26 @@ func TestDefaultBuilder(t *testing.T) {
 						Type: models.Type{
 							Name:           "internal-ref",
 							Classification: models.TypeClassificationResource,
-							Lineage: []models.LineageDescriptor{
-								{
-									Type:  "related-resource-ds",
-									Query: "$.downstream",
-									Dir:   models.DataflowDirDownstream,
-								},
-								{
-									Type:  "related-resource-us",
-									Query: "$.upstreams",
-									Dir:   models.DataflowDirUpstream,
-								},
-							},
 						},
 						Records: []models.Record{
 							{
-								Urn: "1",
-								Data: map[string]interface{}{
-									"id":         "1",
-									"upstreams":  []string{"A", "B"},
-									"downstream": "C",
+								Urn:     "1",
+								Service: "service-A",
+								Upstreams: []models.LineageRecord{
+									{
+										Urn:  "A",
+										Type: "related-resource-us",
+									},
+									{
+										Urn:  "B",
+										Type: "related-resource-us",
+									},
+								},
+								Downstreams: []models.LineageRecord{
+									{
+										Urn:  "C",
+										Type: "related-resource-ds",
+									},
 								},
 							},
 						},
@@ -130,6 +124,7 @@ func TestDefaultBuilder(t *testing.T) {
 					"internal-ref/1": lineage.AdjacencyEntry{
 						Type:        "internal-ref",
 						URN:         "1",
+						Service:     "service-A",
 						Downstreams: set.NewStringSet("related-resource-ds/C"),
 						Upstreams:   set.NewStringSet("related-resource-us/A", "related-resource-us/B"),
 					},
@@ -146,9 +141,6 @@ func TestDefaultBuilder(t *testing.T) {
 						Records: []models.Record{
 							{
 								Urn: "data-booking",
-								Data: map[string]interface{}{
-									"id": "data-booking",
-								},
 							},
 						},
 					},
@@ -156,27 +148,24 @@ func TestDefaultBuilder(t *testing.T) {
 						Type: models.Type{
 							Name:           "consumer",
 							Classification: models.TypeClassificationResource,
-							Lineage: []models.LineageDescriptor{
-								{
-									Type:  "producer",
-									Query: "$.src",
-									Dir:   models.DataflowDirUpstream,
-								},
-							},
 						},
 						Records: []models.Record{
 							{
 								Urn: "booking-aggregator",
-								Data: map[string]interface{}{
-									"id":  "booking-aggregator",
-									"src": "data-booking",
+								Upstreams: []models.LineageRecord{
+									{
+										Urn:  "data-booking",
+										Type: "producer",
+									},
 								},
 							},
 							{
 								Urn: "booking-fraud-detector",
-								Data: map[string]interface{}{
-									"id":  "booking-fraud-detector",
-									"src": "data-booking",
+								Upstreams: []models.LineageRecord{
+									{
+										Urn:  "data-booking",
+										Type: "producer",
+									},
 								},
 							},
 						},
@@ -225,19 +214,7 @@ func TestDefaultBuilder(t *testing.T) {
 					return
 				}
 
-				if reflect.DeepEqual(result, tc.Result) == false {
-					var (
-						msg = new(bytes.Buffer)
-						enc = json.NewEncoder(msg)
-					)
-					enc.SetIndent("", "  ")
-					fmt.Fprint(msg, "expected: ")
-					enc.Encode(tc.Result)
-					fmt.Fprint(msg, "got: ")
-					enc.Encode(result)
-					t.Error(msg.String())
-					return
-				}
+				assert.Equal(t, tc.Result, result)
 			})
 		}
 	})

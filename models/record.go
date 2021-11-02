@@ -14,8 +14,15 @@ type Record struct {
 	Description string                 `json:"description" mapstructure:"description"`
 	Data        map[string]interface{} `json:"data" mapstructure:"data"`
 	Labels      map[string]string      `json:"labels" mapstructure:"labels"`
+	Upstreams   []LineageRecord        `json:"upstreams" mapstructure:"upstreams"`
+	Downstreams []LineageRecord        `json:"downstreams" mapstructure:"downstreams"`
 	CreatedAt   time.Time              `json:"created_at" mapstructure:"created_at"`
 	UpdatedAt   time.Time              `json:"updated_at" mapstructure:"updated_at"`
+}
+
+type LineageRecord struct {
+	Urn  string `json:"urn"`
+	Type string `json:"type"`
 }
 
 type RecordIterator interface {

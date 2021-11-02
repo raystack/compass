@@ -167,7 +167,7 @@ func TestLineageHandler(t *testing.T) {
 	})
 	t.Run("GetLineage", func(t *testing.T) {
 		t.Run("should return a graph containing the requested resource, along with it's related resources", func(t *testing.T) {
-			var fullGraph = lineage.AdjacencyMap{
+			var subGraph = lineage.AdjacencyMap{
 				"bqtable/raw": lineage.AdjacencyEntry{
 					Type:        "bqtable",
 					URN:         "raw",
@@ -189,7 +189,7 @@ func TestLineageHandler(t *testing.T) {
 			}
 
 			graph := new(mock.Graph)
-			graph.On("Query", lineage.QueryCfg{TypeWhitelist: []string{"bqtable"}}).Return(fullGraph, nil)
+			graph.On("Query", lineage.QueryCfg{Root: "bqtable/raw"}).Return(subGraph, nil)
 
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
@@ -217,22 +217,8 @@ func TestLineageHandler(t *testing.T) {
 				return
 			}
 
-			var expectedResponse = lineage.AdjacencyMap{
-				"bqtable/raw": lineage.AdjacencyEntry{
-					Type:        "bqtable",
-					URN:         "raw",
-					Upstreams:   set.NewStringSet(),
-					Downstreams: set.NewStringSet("bqtable/std"),
-				},
-				"bqtable/std": lineage.AdjacencyEntry{
-					Type:        "bqtable",
-					URN:         "std",
-					Upstreams:   set.NewStringSet("bqtable/raw"),
-					Downstreams: set.NewStringSet(),
-				},
-			}
-			if reflect.DeepEqual(response, expectedResponse) == false {
-				t.Errorf("expected handler response to be: %#v\n was %#v instead", expectedResponse, response)
+			if reflect.DeepEqual(response, subGraph) == false {
+				t.Errorf("expected handler response to be: %#v\n was %#v instead", subGraph, response)
 			}
 		})
 	})
