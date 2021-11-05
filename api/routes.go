@@ -24,7 +24,7 @@ func RegisterRoutes(router *mux.Router, config Config) {
 	//
 	// This is to allow urn that has "/" to be matched correctly to the route
 	router.UseEncodedPath()
-	router.Use(decodeURLMiddleware)
+	router.Use(decodeURLMiddleware(config.Logger))
 
 	typeHandler := handlers.NewTypeHandler(
 		config.Logger.WithField("reporter", "type-handler"),
