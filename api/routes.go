@@ -18,6 +18,14 @@ type Config struct {
 }
 
 func RegisterRoutes(router *mux.Router, config Config) {
+	// By default mux will decode url and then match the decoded url against the route
+	// we reverse the steps by telling mux to use encoded path to match the url
+	// then we manually decode via custom middleware (decodeURLMiddleware).
+	//
+	// This is to allow urn that has "/" to be matched correctly to the route
+	router.UseEncodedPath()
+	router.Use(decodeURLMiddleware)
+
 	typeHandler := handlers.NewTypeHandler(
 		config.Logger.WithField("reporter", "type-handler"),
 		config.TypeRepository,
