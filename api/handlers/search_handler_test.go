@@ -26,7 +26,7 @@ func TestSearchHandler(t *testing.T) {
 		Title            string
 		SearchText       string
 		ExpectStatus     int
-		RequestParams    map[string][]string
+		RequestQuery     map[string][]string
 		InitRepo         func(testCase, *mock.TypeRepository)
 		InitSearcher     func(testCase, *mock.RecordSearcher)
 		ValidateResponse func(testCase, io.Reader) error
@@ -90,41 +90,26 @@ func TestSearchHandler(t *testing.T) {
 		{
 			Title:      "should pass filter to search config format",
 			SearchText: "resource",
-			RequestParams: map[string][]string{
+			RequestQuery: map[string][]string{
 				// "landscape" is not a valid filter key. All filters
 				// begin with the "filter." prefix. Adding this here is just a little
 				// extra check to make sure that the handler correctly parses the filters.
-				"landscape":        {"id", "vn"},
-				"filter.landscape": {"th"},
-				"filter.type":      {"dagger"},
+				"landscape":             {"id", "vn"},
+				"filter.data.landscape": {"th"},
+				"filter.type":           {"topic"},
+				"filter.service":        {"kafka", "rabbitmq"},
 			},
-			InitRepo: withTypes(testdata.Type),
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				cfg := models.SearchConfig{
 					Text:          tc.SearchText,
-					TypeWhiteList: tc.RequestParams["filter.type"],
+					TypeWhiteList: tc.RequestQuery["filter.type"],
 					Filters: map[string][]string{
-						"landscape": tc.RequestParams["filter.landscape"],
+						"service":        tc.RequestQuery["filter.service"],
+						"data.landscape": tc.RequestQuery["filter.data.landscape"],
 					},
 				}
 
-				results := []models.SearchResult{
-					{
-						TypeName: testdata.Type.Name,
-						Record: models.Record{
-							Urn:     "test-1",
-							Name:    "test 1",
-							Service: "test-service",
-							Data: map[string]interface{}{
-								"id":        "test-1",
-								"title":     "test 1",
-								"landscape": "th",
-								"entity":    "odpf",
-							},
-						},
-					},
-				}
-				searcher.On("Search", ctx, cfg).Return(results, nil)
+				searcher.On("Search", ctx, cfg).Return([]models.SearchResult{}, nil)
 				return
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
@@ -191,13 +176,13 @@ func TestSearchHandler(t *testing.T) {
 		},
 		{
 			Title: "should return the requested number of records",
-			RequestParams: map[string][]string{
+			RequestQuery: map[string][]string{
 				"size": {"15"},
 			},
 			SearchText: "resource",
 			InitRepo:   withTypes(testdata.Type),
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
-				maxResults, _ := strconv.Atoi(tc.RequestParams["size"][0])
+				maxResults, _ := strconv.Atoi(tc.RequestQuery["size"][0])
 				cfg := models.SearchConfig{
 					Text:       tc.SearchText,
 					MaxResults: maxResults,
@@ -239,7 +224,7 @@ func TestSearchHandler(t *testing.T) {
 				if err != nil {
 					return fmt.Errorf("error reading response body: %v", err)
 				}
-				expectedResults, _ := strconv.Atoi(tc.RequestParams["size"][0])
+				expectedResults, _ := strconv.Atoi(tc.RequestQuery["size"][0])
 				actualResults := len(payload)
 				if expectedResults != actualResults {
 					return fmt.Errorf("expected search request to return %d results, returned %d results instead", expectedResults, actualResults)
@@ -265,8 +250,8 @@ func TestSearchHandler(t *testing.T) {
 
 			params := url.Values{}
 			params.Add("text", testCase.SearchText)
-			if testCase.RequestParams != nil {
-				for key, values := range testCase.RequestParams {
+			if testCase.RequestQuery != nil {
+				for key, values := range testCase.RequestQuery {
 					for _, value := range values {
 						params.Add(key, value)
 					}

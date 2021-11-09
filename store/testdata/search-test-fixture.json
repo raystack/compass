@@ -2,20 +2,13 @@
     {
         "type": {
             "name" : "topic",
-            "classification" : "resource",
-            "record_attributes" : {
-              "id" : "urn",
-              "title" : "name",
-              "description" : "description",
-              "labels" : [
-                "partition"
-              ]
-            }
+            "classification" : "resource"
         },
         "records": [
             {
                 "urn": "order-topic",
                 "name": "order-topic",
+                "service": "kafka",
                 "description": "Topic for each submitted order",
                 "data": {
                     "topic_name": "order-topic",
@@ -29,6 +22,7 @@
             {
                 "urn": "purchase-topic",
                 "name": "purchase-topic",
+                "service": "kafka",
                 "description": "Topic for each submitted purchase",
                 "data": {
                     "topic_name": "purchase-topic",
@@ -42,6 +36,7 @@
             {
                 "urn": "consumer-topic",
                 "name": "consumer-topic",
+                "service": "rabbitmq",
                 "description": "Update on every customer creation/update",
                 "data": {
                     "topic_name": "consumer-topic",
@@ -55,6 +50,7 @@
             {
                 "urn": "transaction",
                 "name": "transaction",
+                "service": "rabbitmq",
                 "description": "This publishes all the invoices from each of invoice storage where the invoice will be filtered and checked using invoice filterer and invoice checker",
                 "data": {
                     "topic_name": "transaction",
@@ -69,20 +65,13 @@
     {
         "type": {
             "name" : "database",
-            "classification" : "dataset",
-            "record_attributes" : {
-              "id" : "urn",
-              "title" : "name",
-              "description" : "description",
-              "labels" : [
-                "total_rows"
-              ]
-            }
+            "classification" : "dataset"
         },
         "records": [
             {
                 "urn": "au2-microsoft-invoice",
                 "name": "microsoft-invoice",
+                "service": "postgres",
                 "description": "Transaction records for every microsoft purchase",
                 "data": {
                     "table_id": "au2-microsoft-invoice",
@@ -102,6 +91,7 @@
             {
                 "urn": "us1-apple-invoice",
                 "name": "apple-invoice",
+                "service": "mysql",
                 "description": "Transaction records for every Apple purchase",
                 "data": {
                     "table_id": "us1-apple-invoice",

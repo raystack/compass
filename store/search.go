@@ -156,13 +156,19 @@ func (sr *Searcher) buildTextQuery(ctx context.Context, text string) elastic.Que
 }
 
 func (sr *Searcher) buildFilterQueries(filters map[string][]string) (filterQueries []elastic.Query) {
-	for key, elements := range filters {
-		if len(elements) < 1 {
+	for key, rawValues := range filters {
+		if len(rawValues) < 1 {
 			continue
 		}
+
+		var values []interface{}
+		for _, rawVal := range rawValues {
+			values = append(values, rawVal)
+		}
+
 		filterQueries = append(
 			filterQueries,
-			elastic.NewTermQuery("data."+key, elements[0]),
+			elastic.NewTermsQuery(key, values...),
 		)
 	}
 	return
