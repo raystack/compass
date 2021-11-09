@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -237,7 +238,7 @@ func (repo *RecordRepository) termsQuery(filters models.RecordFilter) (io.Reader
 func (repo *RecordRepository) GetByID(ctx context.Context, id string) (record models.Record, err error) {
 	res, err := repo.cli.Get(
 		repo.recordType.Name,
-		id,
+		url.PathEscape(id),
 		repo.cli.Get.WithContext(ctx),
 	)
 	if err != nil {
@@ -251,7 +252,7 @@ func (repo *RecordRepository) GetByID(ctx context.Context, id string) (record mo
 			err = models.ErrNoSuchRecord{RecordID: id}
 			return
 		}
-		err = fmt.Errorf("error response from elasticsearch: %s", res.Status())
+		err = fmt.Errorf("got %s response from elasticsearch: %s", res.Status(), res.String())
 		return
 	}
 
@@ -269,7 +270,7 @@ func (repo *RecordRepository) GetByID(ctx context.Context, id string) (record mo
 func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 	res, err := repo.cli.Delete(
 		repo.recordType.Name,
-		id,
+		url.PathEscape(id),
 		repo.cli.Delete.WithRefresh("true"),
 		repo.cli.Delete.WithContext(ctx),
 	)
