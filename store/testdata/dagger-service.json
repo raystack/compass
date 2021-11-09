@@ -1,0 +1,28 @@
+[
+    {
+        "urn": "i-undefined-dfgdgd-avi",
+        "name": "dfgdgd-avi",
+        "service": "kafka",
+        "description": "",
+        "data": {
+            "urn": "i-undefined-dfgdgd-avi",
+            "title": "dfgdgd-avi",
+            "description": "",
+            "entity": "odpf",
+            "country": "id"
+        }
+    },
+    {
+        "urn": "j-xcvcx",
+        "name": "xcvcx",
+        "service": "kafka",
+        "description": "",
+        "data": {
+            "urn": "j-xcvcx",
+            "title": "xcvcx",
+            "description": "",
+            "entity": "odpf",
+            "country": "vn"
+        }
+    }
+]

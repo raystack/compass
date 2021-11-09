@@ -780,36 +780,39 @@ func TestTypeHandler(t *testing.T) {
 			{
 				Description:  "should return an http 200 irrespective of environment value",
 				TypeName:     "dagger",
-				QueryStrings: "filter.environment=nonexisting",
+				QueryStrings: "filter.data.environment=nonexisting",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
 					rr := new(mock.RecordRepository)
-					rr.On("GetAll", ctx, map[string][]string{"environment": {"nonexisting"}}).Return(daggerRecords, nil)
+					rr.On("GetAll", ctx, map[string][]string{"data.environment": {"nonexisting"}}).Return(daggerRecords, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 			},
 			{
-				Description:  "should return an http 200 even if the environment is not provided",
+				Description:  "should create filter from querystring",
 				TypeName:     "dagger",
-				QueryStrings: "",
+				QueryStrings: "filter.service=kafka,rabbitmq&filter.data.company=appel",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
 					rr := new(mock.RecordRepository)
-					rr.On("GetAll", ctx, map[string][]string{}).Return(daggerRecords, nil)
+					rr.On("GetAll", ctx, map[string][]string{
+						"service":      {"kafka", "rabbitmq"},
+						"data.company": {"appel"},
+					}).Return(daggerRecords, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 			},
 			{
 				Description:  "should return all records for an type",
 				TypeName:     "dagger",
-				QueryStrings: "filter.environment=test",
+				QueryStrings: "filter.data.environment=test",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
 					rr := new(mock.RecordRepository)
-					rr.On("GetAll", ctx, map[string][]string{"environment": {"test"}}).Return(daggerRecords, nil)
+					rr.On("GetAll", ctx, map[string][]string{"data.environment": {"test"}}).Return(daggerRecords, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
@@ -828,12 +831,12 @@ func TestTypeHandler(t *testing.T) {
 			{
 				Description:  "should return the subset of fields specified via select parameter",
 				TypeName:     "dagger",
-				QueryStrings: "filter.environment=test&select=" + url.QueryEscape("urn,owner"),
+				QueryStrings: "filter.data.environment=test&select=" + url.QueryEscape("urn,owner"),
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
 					rr := new(mock.RecordRepository)
-					rr.On("GetAll", ctx, map[string][]string{"environment": {"test"}}).Return(daggerRecords, nil)
+					rr.On("GetAll", ctx, map[string][]string{"data.environment": {"test"}}).Return(daggerRecords, nil)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
@@ -868,37 +871,9 @@ func TestTypeHandler(t *testing.T) {
 				},
 			},
 			{
-				Description:  "should support landscape and entity filters",
-				TypeName:     "dagger",
-				QueryStrings: "filter.environment=test&filter.landscape=id&filter.entity=odpf",
-				ExpectStatus: http.StatusOK,
-				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
-					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
-					rr := new(mock.RecordRepository)
-					filters := map[string][]string{
-						"landscape":   {"id"},
-						"entity":      {"odpf"},
-						"environment": {"test"},
-					}
-					rr.On("GetAll", ctx, filters).Return(daggerRecords, nil)
-					rrf.On("For", daggerType).Return(rr, nil)
-				},
-				PostCheck: func(tc *testCase, resp *http.Response) error {
-					var response []models.Record
-					err := json.NewDecoder(resp.Body).Decode(&response)
-					if err != nil {
-						return fmt.Errorf("error parsing response payload: %v", err)
-					}
-					if reflect.DeepEqual(response, daggerRecords) == false {
-						return fmt.Errorf("expected handler to return %v, returned %v instead", daggerRecords, response)
-					}
-					return nil
-				},
-			},
-			{
 				Description:  "(internal) should return http 500 if the handler fails to construct record repository",
 				TypeName:     "dagger",
-				QueryStrings: "filter.environment=test",
+				QueryStrings: "filter.data.environment=test",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
@@ -910,13 +885,13 @@ func TestTypeHandler(t *testing.T) {
 			{
 				Description:  "(internal) should return an http 500 if calling recordRepository.GetAll fails",
 				TypeName:     "dagger",
-				QueryStrings: "filter.environment=test",
+				QueryStrings: "filter.data.environment=test",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, er *mock.TypeRepository, rrf *mock.RecordRepositoryFactory) {
 					er.On("GetByName", ctx, daggerType.Name).Return(daggerType, nil)
 					rr := new(mock.RecordRepository)
 					err := fmt.Errorf("temporarily unavailable")
-					rr.On("GetAll", ctx, map[string][]string{"environment": {"test"}}).Return([]models.Record{}, err)
+					rr.On("GetAll", ctx, map[string][]string{"data.environment": {"test"}}).Return([]models.Record{}, err)
 					rrf.On("For", daggerType).Return(rr, nil)
 				},
 			},

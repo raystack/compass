@@ -216,7 +216,7 @@ func (repo *RecordRepository) termsQuery(filters models.RecordFilter) (io.Reader
 			values = append(values, val)
 		}
 
-		key := fmt.Sprintf("data.%s.keyword", key)
+		key := fmt.Sprintf("%s.keyword", key)
 		termQueries = append(termQueries, elastic.NewTermsQuery(key, values...))
 	}
 	boolQuery := elastic.NewBoolQuery().Must(termQueries...)

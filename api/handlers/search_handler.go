@@ -135,20 +135,6 @@ func newCachingTypeRepo(repo models.TypeRepository) *cachingTypeRepo {
 	}
 }
 
-func filterConfigFromValues(values url.Values) map[string][]string {
-	var filter = make(map[string][]string)
-	for key, fields := range values {
-		// filters are of form "filter.{field}", apart from "filter.type", which is used
-		// for building the type whitelist.
-		if !strings.HasPrefix(key, filterPrefix) || strings.EqualFold(key, whiteListQueryParamKey) {
-			continue
-		}
-		filterKey := strings.TrimPrefix(key, filterPrefix)
-		filter[filterKey] = fields
-	}
-	return filter
-}
-
 func parseTypeWhiteList(values url.Values) (types []string) {
 	for _, typ := range values[whiteListQueryParamKey] {
 		typList := strings.Split(typ, ",")

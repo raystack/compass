@@ -205,24 +205,31 @@ func TestRecordRepository(t *testing.T) {
 				ResultsFile: "./testdata/dagger.json",
 			},
 			{
+				Description: "should handle filter by service",
+				Filter: map[string][]string{
+					"service": {"kafka"},
+				},
+				ResultsFile: "./testdata/dagger-service.json",
+			},
+			{
 				Description: "should support a single value filter",
 				Filter: map[string][]string{
-					"country": {"id"},
+					"data.country": {"id"},
 				},
 				ResultsFile: "./testdata/dagger-id.json",
 			},
 			{
 				Description: "should support multi value filter",
 				Filter: map[string][]string{
-					"country": {"id", "vn"},
+					"data.country": {"id", "vn"},
 				},
 				ResultsFile: "./testdata/dagger-vn-id.json",
 			},
 			{
 				Description: "should support multiple terms",
 				Filter: map[string][]string{
-					"country": {"th"},
-					"title":   {"test_grant2"},
+					"data.country": {"th"},
+					"data.title":   {"test_grant2"},
 				},
 				ResultsFile: "./testdata/dagger-th-deployed.json",
 			},

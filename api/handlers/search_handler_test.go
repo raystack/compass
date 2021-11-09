@@ -9,14 +9,15 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"reflect"
-	"strconv"
 	"testing"
 
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/models"
 
+	"github.com/stretchr/testify/assert"
 	testifyMock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSearchHandler(t *testing.T) {
@@ -24,9 +25,8 @@ func TestSearchHandler(t *testing.T) {
 	// todo: pass testCase to ValidateResponse
 	type testCase struct {
 		Title            string
-		SearchText       string
 		ExpectStatus     int
-		RequestQuery     map[string][]string
+		Querystring      string
 		InitRepo         func(testCase, *mock.TypeRepository)
 		InitSearcher     func(testCase, *mock.RecordSearcher)
 		ValidateResponse func(testCase, io.Reader) error
@@ -56,11 +56,11 @@ func TestSearchHandler(t *testing.T) {
 			Title:            "should return HTTP 400 if 'text' parameter is empty or missing",
 			ExpectStatus:     http.StatusBadRequest,
 			ValidateResponse: func(tc testCase, body io.Reader) error { return nil },
-			SearchText:       "",
+			Querystring:      "",
 		},
 		{
-			Title:      "should report HTTP 500 if record searcher fails",
-			SearchText: "test",
+			Title:       "should report HTTP 500 if record searcher fails",
+			Querystring: "text=test",
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				err := fmt.Errorf("service unavailable")
 				searcher.On("Search", ctx, testifyMock.AnythingOfType("models.SearchConfig")).
@@ -69,8 +69,8 @@ func TestSearchHandler(t *testing.T) {
 			ExpectStatus: http.StatusInternalServerError,
 		},
 		{
-			Title:      "should return an error if looking up an type detail fails",
-			SearchText: "test",
+			Title:       "should return an error if looking up an type detail fails",
+			Querystring: "text=test",
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				results := []models.SearchResult{
 					{
@@ -88,24 +88,15 @@ func TestSearchHandler(t *testing.T) {
 			ExpectStatus: http.StatusInternalServerError,
 		},
 		{
-			Title:      "should pass filter to search config format",
-			SearchText: "resource",
-			RequestQuery: map[string][]string{
-				// "landscape" is not a valid filter key. All filters
-				// begin with the "filter." prefix. Adding this here is just a little
-				// extra check to make sure that the handler correctly parses the filters.
-				"landscape":             {"id", "vn"},
-				"filter.data.landscape": {"th"},
-				"filter.type":           {"topic"},
-				"filter.service":        {"kafka", "rabbitmq"},
-			},
+			Title:       "should pass filter to search config format",
+			Querystring: "text=resource&landscape=id,vn&filter.data.landscape=th&filter.type=topic&filter.service=kafka,rabbitmq",
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				cfg := models.SearchConfig{
-					Text:          tc.SearchText,
-					TypeWhiteList: tc.RequestQuery["filter.type"],
+					Text:          "resource",
+					TypeWhiteList: []string{"topic"},
 					Filters: map[string][]string{
-						"service":        tc.RequestQuery["filter.service"],
-						"data.landscape": tc.RequestQuery["filter.data.landscape"],
+						"service":        {"kafka", "rabbitmq"},
+						"data.landscape": {"th"},
 					},
 				}
 
@@ -117,11 +108,11 @@ func TestSearchHandler(t *testing.T) {
 			},
 		},
 		{
-			Title:      "should return the matched documents",
-			SearchText: "test",
+			Title:       "should return the matched documents",
+			Querystring: "text=test",
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				cfg := models.SearchConfig{
-					Text:    tc.SearchText,
+					Text:    "test",
 					Filters: make(map[string][]string),
 				}
 				response := []models.SearchResult{
@@ -175,17 +166,13 @@ func TestSearchHandler(t *testing.T) {
 			},
 		},
 		{
-			Title: "should return the requested number of records",
-			RequestQuery: map[string][]string{
-				"size": {"15"},
-			},
-			SearchText: "resource",
-			InitRepo:   withTypes(testdata.Type),
+			Title:       "should return the requested number of records",
+			Querystring: "text=resource&size=10",
+			InitRepo:    withTypes(testdata.Type),
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
-				maxResults, _ := strconv.Atoi(tc.RequestQuery["size"][0])
 				cfg := models.SearchConfig{
-					Text:       tc.SearchText,
-					MaxResults: maxResults,
+					Text:       "resource",
+					MaxResults: 10,
 					Filters:    make(map[string][]string),
 				}
 
@@ -224,10 +211,11 @@ func TestSearchHandler(t *testing.T) {
 				if err != nil {
 					return fmt.Errorf("error reading response body: %v", err)
 				}
-				expectedResults, _ := strconv.Atoi(tc.RequestQuery["size"][0])
-				actualResults := len(payload)
-				if expectedResults != actualResults {
-					return fmt.Errorf("expected search request to return %d results, returned %d results instead", expectedResults, actualResults)
+
+				expectedSize := 10
+				actualSize := len(payload)
+				if expectedSize != actualSize {
+					return fmt.Errorf("expected search request to return %d results, returned %d results instead", expectedSize, actualSize)
 				}
 				return nil
 			},
@@ -248,15 +236,9 @@ func TestSearchHandler(t *testing.T) {
 			defer recordSearcher.AssertExpectations(t)
 			defer typeRepo.AssertExpectations(t)
 
-			params := url.Values{}
-			params.Add("text", testCase.SearchText)
-			if testCase.RequestQuery != nil {
-				for key, values := range testCase.RequestQuery {
-					for _, value := range values {
-						params.Add(key, value)
-					}
-				}
-			}
+			params, err := url.ParseQuery(testCase.Querystring)
+			require.NoError(t, err)
+
 			requestURL := "/?" + params.Encode()
 			rr := httptest.NewRequest(http.MethodGet, requestURL, nil)
 			rw := httptest.NewRecorder()
@@ -268,10 +250,7 @@ func TestSearchHandler(t *testing.T) {
 			if expectStatus == 0 {
 				expectStatus = http.StatusOK
 			}
-			if rw.Code != expectStatus {
-				t.Errorf("expected handler to return http status %d, was %d instead", expectStatus, rw.Code)
-				return
-			}
+			assert.Equal(t, expectStatus, rw.Code)
 			if testCase.ValidateResponse != nil {
 				if err := testCase.ValidateResponse(testCase, rw.Body); err != nil {
 					t.Errorf("error validating handler response: %v", err)

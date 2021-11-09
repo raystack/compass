@@ -2,6 +2,7 @@
   {
     "urn": "c-demo-dagger",
     "name": "demo-dagger",
+    "service": "dagger",
     "description": "",
     "data": {
       "urn": "c-demo-dagger",
@@ -14,6 +15,7 @@
   {
     "urn": "f-john-test-001",
     "name": "john_test_001",
+    "service": "dagger",
     "description": "",
     "data": {
       "urn": "f-john-test-001",
@@ -26,6 +28,7 @@
   {
     "urn": "i-undefined-dfgdgd-avi",
     "name": "dfgdgd-avi",
+    "service": "kafka",
     "description": "",
     "data": {
       "urn": "i-undefined-dfgdgd-avi",
