@@ -135,7 +135,6 @@ func initNewRelicMonitor(config Config) *metrics.NewrelicMonitor {
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName(config.NewRelicAppName),
 		newrelic.ConfigLicense(config.NewRelicLicenseKey),
-		newrelic.ConfigDebugLogger(os.Stdout),
 	)
 	if err != nil {
 		log.Fatalf("unable to create New Relic Application: %v", err)
