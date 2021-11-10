@@ -10,6 +10,7 @@ import (
 	"github.com/odpf/columbus/models"
 	"github.com/odpf/columbus/store"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type searchTestData struct {
@@ -238,47 +239,52 @@ func TestSearch(t *testing.T) {
 				},
 			},
 			{
+				Description: "should filter by service if given",
+				Config: models.SearchConfig{
+					Text: "invoice",
+					Filters: map[string][]string{
+						"service": {"rabbitmq", "postgres"},
+					},
+				},
+				Expected: []expectedRow{
+					{Type: "database", RecordID: "au2-microsoft-invoice"},
+					{Type: "topic", RecordID: "transaction"},
+				},
+			},
+			{
 				Description: "should match documents based on filter criteria",
 				Config: models.SearchConfig{
 					Text: "topic",
 					Filters: map[string][]string{
-						"company": {"odpf"},
+						"data.company": {"odpf"},
 					},
 				},
 				Expected: []expectedRow{
 					{Type: "topic", RecordID: "order-topic"},
 					{Type: "topic", RecordID: "consumer-topic"},
 				},
-				MatchTotalRows: true,
 			},
 			{
 				Description: "should not return records without fields specified in filters",
 				Config: models.SearchConfig{
 					Text: "invoice topic",
 					Filters: map[string][]string{
-						"country":     {"id"},
-						"environment": {"production"},
-						"company":     {"odpf"},
+						"data.country":     {"id"},
+						"data.environment": {"production"},
+						"data.company":     {"odpf"},
 					},
 				},
 				Expected: []expectedRow{
 					{Type: "topic", RecordID: "consumer-topic"},
 				},
-				MatchTotalRows: true,
 			},
 		}
 		for _, test := range tests {
 			t.Run(test.Description, func(t *testing.T) {
 				results, err := searcher.Search(ctx, test.Config)
-				if err != nil {
-					t.Error(err)
-					return
-				}
+				require.NoError(t, err)
 
-				if test.MatchTotalRows {
-					assert.Equal(t, len(test.Expected), len(results))
-				}
-
+				assert.Equal(t, len(test.Expected), len(results))
 				for i, res := range test.Expected {
 					assert.Equal(t, res.Type, results[i].TypeName)
 					assert.Equal(t, res.RecordID, results[i].Record.Urn)
