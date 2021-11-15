@@ -5,15 +5,14 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/discovery"
 	"github.com/sirupsen/logrus"
 )
 
 type Config struct {
 	Logger                  logrus.FieldLogger
-	TypeRepository          models.TypeRepository
-	RecordRepositoryFactory models.RecordRepositoryFactory
-	RecordSearcher          models.RecordSearcher
+	RecordRepositoryFactory discovery.RecordRepositoryFactory
+	DiscoveryService        *discovery.Service
 	LineageProvider         handlers.LineageProvider
 }
 
@@ -26,15 +25,14 @@ func RegisterRoutes(router *mux.Router, config Config) {
 	router.UseEncodedPath()
 	router.Use(decodeURLMiddleware(config.Logger))
 
-	typeHandler := handlers.NewTypeHandler(
+	typeHandler := handlers.NewRecordHandler(
 		config.Logger.WithField("reporter", "type-handler"),
-		config.TypeRepository,
+		config.DiscoveryService,
 		config.RecordRepositoryFactory,
 	)
 	searchHandler := handlers.NewSearchHandler(
 		config.Logger.WithField("reporter", "search-handler"),
-		config.RecordSearcher,
-		config.TypeRepository,
+		config.DiscoveryService,
 	)
 
 	lineageHandler := handlers.NewLineageHandler(
@@ -43,7 +41,7 @@ func RegisterRoutes(router *mux.Router, config Config) {
 	)
 
 	router.PathPrefix("/ping").Handler(handlers.NewHeartbeatHandler())
-	setupV1TypeRoutes(router, "/v1/types", typeHandler)
+	setupV1TypeRoutes(router, typeHandler)
 
 	router.Path("/v1/search").
 		Methods(http.MethodGet).
@@ -58,36 +56,21 @@ func RegisterRoutes(router *mux.Router, config Config) {
 		HandlerFunc(lineageHandler.ListLineage)
 }
 
-func setupV1TypeRoutes(router *mux.Router, baseURL string, typeHandler *handlers.TypeHandler) {
-	router.Path(baseURL).
-		Methods(http.MethodGet).
-		HandlerFunc(typeHandler.GetAll)
-
-	router.Path(baseURL+"/{name}").
-		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(typeHandler.GetType)
-
+func setupV1TypeRoutes(router *mux.Router, typeHandler *handlers.RecordHandler) {
+	baseURL := "/v1/types"
 	router.Path(baseURL+"/{name}/records").
 		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(typeHandler.ListTypeRecords)
-
-	router.Path(baseURL).
-		Methods(http.MethodPut).
-		HandlerFunc(typeHandler.CreateOrReplaceType)
-
-	router.Path(baseURL + "/{name}").
-		Methods(http.MethodDelete).
-		HandlerFunc(typeHandler.DeleteType)
+		HandlerFunc(typeHandler.GetByType)
 
 	router.Path(baseURL + "/{name}/records/{id}").
 		Methods(http.MethodDelete).
-		HandlerFunc(typeHandler.DeleteRecord)
+		HandlerFunc(typeHandler.Delete)
 
 	router.Path(baseURL + "/{name}/records").
 		Methods(http.MethodPut).
-		HandlerFunc(typeHandler.IngestRecord)
+		HandlerFunc(typeHandler.UpsertBulk)
 
 	router.Path(baseURL+"/{name}/records/{id}").
 		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(typeHandler.GetTypeRecord)
+		HandlerFunc(typeHandler.GetOneByType)
 }

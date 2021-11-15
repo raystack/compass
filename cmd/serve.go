@@ -15,9 +15,10 @@ import (
 	nrelasticsearch "github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/odpf/columbus/api"
+	"github.com/odpf/columbus/discovery"
+	store "github.com/odpf/columbus/discovery/elasticsearch"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/metrics"
-	"github.com/odpf/columbus/store"
 	"github.com/sirupsen/logrus"
 )
 
@@ -30,6 +31,8 @@ func Serve() {
 	if err := loadConfig(); err != nil {
 		panic(err)
 	}
+
+	fmt.Println("HEHRER")
 
 	rootLogger := initLogger(config.LogLevel)
 	log = rootLogger.WithField("reporter", "main")
@@ -53,17 +56,15 @@ func initRouter(
 	statsdMonitor *metrics.StatsdMonitor,
 	rootLogger logrus.FieldLogger,
 ) *mux.Router {
-	typeRepository := store.NewTypeRepository(esClient)
 	recordRepositoryFactory := store.NewRecordRepositoryFactory(esClient)
 	recordSearcher, err := store.NewSearcher(store.SearcherConfig{
-		Client:        esClient,
-		TypeWhiteList: typeWhiteList(config.TypeWhiteListStr),
+		Client: esClient,
 	})
 	if err != nil {
 		log.Fatalf("error creating searcher: %v", err)
 	}
 
-	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
+	lineageService, err := lineage.NewService(recordRepositoryFactory, lineage.Config{
 		RefreshInterval:    config.LineageRefreshIntervalStr,
 		MetricsMonitor:     statsdMonitor,
 		PerformanceMonitor: nrMonitor,
@@ -89,9 +90,8 @@ func initRouter(
 	))
 	api.RegisterRoutes(router, api.Config{
 		Logger:                  rootLogger,
-		RecordSearcher:          recordSearcher,
+		DiscoveryService:        discovery.NewService(recordRepositoryFactory, recordSearcher),
 		RecordRepositoryFactory: recordRepositoryFactory,
-		TypeRepository:          typeRepository,
 		LineageProvider:         lineageService,
 	})
 
@@ -180,18 +180,11 @@ func esInfo(cli *elasticsearch.Client) (string, error) {
 			Number string `json:"number"`
 		} `json:"version"`
 	}{}
-	json.NewDecoder(res.Body).Decode(&info)
-	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
-}
 
-func typeWhiteList(typeWhiteListStr string) (whiteList []string) {
-	indices := strings.Split(typeWhiteListStr, ",")
-	for _, index := range indices {
-		index = strings.TrimSpace(index)
-		if index == "" {
-			continue
-		}
-		whiteList = append(whiteList, index)
+	err = json.NewDecoder(res.Body).Decode(&info)
+	if err != nil {
+		return "", err
 	}
-	return
+
+	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
 }

@@ -8,7 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/lineage"
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/record"
 	"github.com/sirupsen/logrus"
 )
 
@@ -43,18 +43,24 @@ func (handler *LineageHandler) ListLineage(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	opts := handler.parseOpts(r.URL.Query())
+	query := r.URL.Query()
+	opts, err := handler.parseOpts(query)
+	if err != nil {
+		handler.log.
+			WithField("query", query).
+			Error(err)
+
+		writeJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
+
 	res, err := graph.Query(opts)
 	if err != nil {
 		handler.log.
 			WithField("query", opts).
 			Errorf("error querying graph: %v\ncfg: %v", err, opts)
 
-		status := http.StatusBadRequest
-		if _, ok := err.(models.ErrNoSuchType); ok {
-			status = http.StatusNotFound
-		}
-		writeJSONError(w, status, err.Error())
+		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	writeJSON(w, http.StatusOK, res)
@@ -70,7 +76,16 @@ func (handler *LineageHandler) GetLineage(w http.ResponseWriter, r *http.Request
 	}
 	requestParams := mux.Vars(r)
 
-	opts := handler.parseOpts(r.URL.Query())
+	query := r.URL.Query()
+	opts, err := handler.parseOpts(query)
+	if err != nil {
+		handler.log.
+			WithField("query", query).
+			Error(err)
+
+		writeJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
 	opts.Root = fmt.Sprintf("%s/%s", requestParams["type"], requestParams["id"])
 
 	res, err := graph.Query(opts)
@@ -79,21 +94,30 @@ func (handler *LineageHandler) GetLineage(w http.ResponseWriter, r *http.Request
 			WithField("query", opts).
 			Errorf("error querying graph: %v\ncfg: %v", err, opts)
 
-		status := http.StatusBadRequest
-		if _, ok := err.(models.ErrNoSuchType); ok {
-			status = http.StatusNotFound
-		}
-		writeJSONError(w, status, err.Error())
+		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	writeJSON(w, http.StatusOK, res)
 }
 
-func (handler *LineageHandler) parseOpts(u url.Values) lineage.QueryCfg {
+func (handler *LineageHandler) parseOpts(u url.Values) (cfg lineage.QueryCfg, err error) {
 	collapse, _ := strconv.ParseBool(u.Get("collapse"))
-	return lineage.QueryCfg{
-		TypeWhitelist: u["filter.type"],
+	filterTypes := u["filter.type"]
+	var types []record.Type
+	for _, ft := range filterTypes {
+		var t record.Type
+		t, err = validateType(ft)
+		if err != nil {
+			return
+		}
+		types = append(types, t)
+	}
+
+	cfg = lineage.QueryCfg{
+		TypeWhitelist: types,
 		Collapse:      collapse,
 	}
+
+	return
 }

@@ -4,67 +4,44 @@ import (
 	"context"
 	"io/ioutil"
 
+	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lineage"
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/record"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/mock"
 )
-
-type TypeRepository struct {
-	mock.Mock
-}
-
-func (repo *TypeRepository) CreateOrReplace(ctx context.Context, e models.Type) error {
-	args := repo.Called(ctx, e)
-	return args.Error(0)
-}
-
-func (repo *TypeRepository) GetByName(ctx context.Context, name string) (models.Type, error) {
-	args := repo.Called(ctx, name)
-	return args.Get(0).(models.Type), args.Error(1)
-}
-
-func (repo *TypeRepository) GetAll(ctx context.Context) ([]models.Type, error) {
-	args := repo.Called(ctx)
-	return args.Get(0).([]models.Type), args.Error(1)
-}
-
-func (repo *TypeRepository) Delete(ctx context.Context, typeName string) error {
-	args := repo.Called(ctx, typeName)
-	return args.Error(0)
-}
 
 type RecordRepositoryFactory struct {
 	mock.Mock
 }
 
-func (fac *RecordRepositoryFactory) For(e models.Type) (models.RecordRepository, error) {
+func (fac *RecordRepositoryFactory) For(e record.Type) (discovery.RecordRepository, error) {
 	args := fac.Called(e)
-	return args.Get(0).(models.RecordRepository), args.Error(1)
+	return args.Get(0).(discovery.RecordRepository), args.Error(1)
 }
 
 type RecordRepository struct {
 	mock.Mock
 }
 
-func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []models.Record) error {
+func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []record.Record) error {
 	args := repo.Called(ctx, records)
 	return args.Error(0)
 }
 
-func (repo *RecordRepository) GetAll(ctx context.Context, filter models.RecordFilter) ([]models.Record, error) {
+func (repo *RecordRepository) GetAll(ctx context.Context, filter discovery.RecordFilter) ([]record.Record, error) {
 	args := repo.Called(ctx, filter)
-	return args.Get(0).([]models.Record), args.Error(1)
+	return args.Get(0).([]record.Record), args.Error(1)
 }
 
-func (repo *RecordRepository) GetAllIterator(ctx context.Context) (models.RecordIterator, error) {
+func (repo *RecordRepository) GetAllIterator(ctx context.Context) (discovery.RecordIterator, error) {
 	args := repo.Called(ctx)
-	return args.Get(0).(models.RecordIterator), args.Error(1)
+	return args.Get(0).(discovery.RecordIterator), args.Error(1)
 }
 
-func (repo *RecordRepository) GetByID(ctx context.Context, id string) (models.Record, error) {
+func (repo *RecordRepository) GetByID(ctx context.Context, id string) (record.Record, error) {
 	args := repo.Called(ctx, id)
-	return args.Get(0).(models.Record), args.Error(1)
+	return args.Get(0).(record.Record), args.Error(1)
 }
 
 func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
@@ -81,9 +58,9 @@ func (m *RecordIterator) Scan() bool {
 	return args.Bool(0)
 }
 
-func (m *RecordIterator) Next() []models.Record {
+func (m *RecordIterator) Next() []record.Record {
 	args := m.Called()
-	return args.Get(0).([]models.Record)
+	return args.Get(0).([]record.Record)
 }
 
 func (m *RecordIterator) Close() error {
@@ -95,9 +72,9 @@ type RecordSearcher struct {
 	mock.Mock
 }
 
-func (searcher *RecordSearcher) Search(ctx context.Context, cfg models.SearchConfig) ([]models.SearchResult, error) {
+func (searcher *RecordSearcher) Search(ctx context.Context, cfg discovery.SearchConfig) ([]record.Record, error) {
 	args := searcher.Called(ctx, cfg)
-	return args.Get(0).([]models.SearchResult), args.Error(1)
+	return args.Get(0).([]record.Record), args.Error(1)
 }
 
 type LineageProvider struct {

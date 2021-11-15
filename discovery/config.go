@@ -1,0 +1,25 @@
+package discovery
+
+import "github.com/odpf/columbus/record"
+
+// RecordFilter is a filter intended to be used as a search
+// criteria for operations involving record search
+type RecordFilter = map[string][]string
+
+// SearchConfig represents a search query along
+// with any corresponding filter(s)
+type SearchConfig struct {
+	// Text to search for
+	Text string
+
+	// Filters specifies document level values to look for.
+	// Multiple values can be specified for a single key
+	Filters RecordFilter
+
+	// Number of relevant results to return
+	MaxResults int
+
+	// List of record types to search for
+	// a zero value signifies that all types should be searched
+	TypeWhiteList []record.Type
+}

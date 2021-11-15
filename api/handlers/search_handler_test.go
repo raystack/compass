@@ -12,8 +12,9 @@ import (
 	"testing"
 
 	"github.com/odpf/columbus/api/handlers"
+	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lib/mock"
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/record"
 
 	"github.com/stretchr/testify/assert"
 	testifyMock "github.com/stretchr/testify/mock"
@@ -27,28 +28,8 @@ func TestSearchHandler(t *testing.T) {
 		Title            string
 		ExpectStatus     int
 		Querystring      string
-		InitRepo         func(testCase, *mock.TypeRepository)
 		InitSearcher     func(testCase, *mock.RecordSearcher)
 		ValidateResponse func(testCase, io.Reader) error
-	}
-
-	var testdata = struct {
-		Type models.Type
-	}{
-		Type: models.Type{
-			Name:           "test",
-			Classification: models.TypeClassificationResource,
-		},
-	}
-
-	// helper for creating testcase.InitRepo that initialises the mock repo with the given types
-	var withTypes = func(ents ...models.Type) func(tc testCase, repo *mock.TypeRepository) {
-		return func(tc testCase, repo *mock.TypeRepository) {
-			for _, ent := range ents {
-				repo.On("GetByName", ctx, ent.Name).Return(ent, nil)
-			}
-			return
-		}
 	}
 
 	var testCases = []testCase{
@@ -59,31 +40,18 @@ func TestSearchHandler(t *testing.T) {
 			Querystring:      "",
 		},
 		{
+			Title:        "should return 400 if type is invalid",
+			Querystring:  "text=test&filter.type=random",
+			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {},
+			ExpectStatus: http.StatusBadRequest,
+		},
+		{
 			Title:       "should report HTTP 500 if record searcher fails",
 			Querystring: "text=test",
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				err := fmt.Errorf("service unavailable")
-				searcher.On("Search", ctx, testifyMock.AnythingOfType("models.SearchConfig")).
-					Return([]models.SearchResult{}, err)
-			},
-			ExpectStatus: http.StatusInternalServerError,
-		},
-		{
-			Title:       "should return an error if looking up an type detail fails",
-			Querystring: "text=test",
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
-				results := []models.SearchResult{
-					{
-						TypeName: "test",
-						Record:   models.Record{},
-					},
-				}
-				searcher.On("Search", ctx, testifyMock.AnythingOfType("models.SearchConfig")).
-					Return(results, nil)
-			},
-			InitRepo: func(tc testCase, repo *mock.TypeRepository) {
-				repo.On("GetByName", ctx, testifyMock.AnythingOfType("string")).
-					Return(models.Type{}, models.ErrNoSuchType{})
+				searcher.On("Search", ctx, testifyMock.AnythingOfType("discovery.SearchConfig")).
+					Return([]record.Record{}, err)
 			},
 			ExpectStatus: http.StatusInternalServerError,
 		},
@@ -91,17 +59,16 @@ func TestSearchHandler(t *testing.T) {
 			Title:       "should pass filter to search config format",
 			Querystring: "text=resource&landscape=id,vn&filter.data.landscape=th&filter.type=topic&filter.service=kafka,rabbitmq",
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
-				cfg := models.SearchConfig{
+				cfg := discovery.SearchConfig{
 					Text:          "resource",
-					TypeWhiteList: []string{"topic"},
+					TypeWhiteList: []record.Type{record.TypeTopic},
 					Filters: map[string][]string{
 						"service":        {"kafka", "rabbitmq"},
 						"data.landscape": {"th"},
 					},
 				}
 
-				searcher.On("Search", ctx, cfg).Return([]models.SearchResult{}, nil)
-				return
+				searcher.On("Search", ctx, cfg).Return([]record.Record{}, nil)
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
 				return nil
@@ -111,34 +78,31 @@ func TestSearchHandler(t *testing.T) {
 			Title:       "should return the matched documents",
 			Querystring: "text=test",
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
-				cfg := models.SearchConfig{
+				cfg := discovery.SearchConfig{
 					Text:    "test",
 					Filters: make(map[string][]string),
 				}
-				response := []models.SearchResult{
+				response := []record.Record{
 					{
-						TypeName: "test",
-						Record: models.Record{
-							Urn:         "test-resource",
-							Name:        "test resource",
-							Description: "some description",
-							Service:     "test-service",
-							Data: map[string]interface{}{
-								"id":        "test-resource",
-								"title":     "test resource",
-								"landscape": "id",
-								"entity":    "odpf",
-							},
-							Labels: map[string]string{
-								"entity":    "odpf",
-								"landscape": "id",
-							},
+						Type:        "test",
+						Urn:         "test-resource",
+						Name:        "test resource",
+						Description: "some description",
+						Service:     "test-service",
+						Data: map[string]interface{}{
+							"id":        "test-resource",
+							"title":     "test resource",
+							"landscape": "id",
+							"entity":    "odpf",
+						},
+						Labels: map[string]string{
+							"entity":    "odpf",
+							"landscape": "id",
 						},
 					},
 				}
 				searcher.On("Search", ctx, cfg).Return(response, nil)
 			},
-			InitRepo: withTypes(testdata.Type),
 			ValidateResponse: func(tc testCase, body io.Reader) error {
 				var response []handlers.SearchResponse
 				err := json.NewDecoder(body).Decode(&response)
@@ -168,20 +132,20 @@ func TestSearchHandler(t *testing.T) {
 		{
 			Title:       "should return the requested number of records",
 			Querystring: "text=resource&size=10",
-			InitRepo:    withTypes(testdata.Type),
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
-				cfg := models.SearchConfig{
+				cfg := discovery.SearchConfig{
 					Text:       "resource",
 					MaxResults: 10,
 					Filters:    make(map[string][]string),
 				}
 
-				var results []models.SearchResult
+				var results []record.Record
 				for i := 0; i < cfg.MaxResults; i++ {
 					urn := fmt.Sprintf("resource-%d", i+1)
 					name := fmt.Sprintf("resource %d", i+1)
-					record := models.Record{
+					r := record.Record{
 						Urn:     urn,
+						Type:    record.TypeTable,
 						Name:    name,
 						Service: "kafka",
 						Data: map[string]interface{}{
@@ -195,15 +159,11 @@ func TestSearchHandler(t *testing.T) {
 							"entity":    "odpf",
 						},
 					}
-					result := models.SearchResult{
-						Record:   record,
-						TypeName: testdata.Type.Name,
-					}
-					results = append(results, result)
+
+					results = append(results, r)
 				}
 
 				searcher.On("Search", ctx, cfg).Return(results, nil)
-				return
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
 				var payload []interface{}
@@ -225,16 +185,11 @@ func TestSearchHandler(t *testing.T) {
 		t.Run(testCase.Title, func(t *testing.T) {
 			var (
 				recordSearcher = new(mock.RecordSearcher)
-				typeRepo       = new(mock.TypeRepository)
 			)
-			if testCase.InitRepo != nil {
-				testCase.InitRepo(testCase, typeRepo)
-			}
 			if testCase.InitSearcher != nil {
 				testCase.InitSearcher(testCase, recordSearcher)
 			}
 			defer recordSearcher.AssertExpectations(t)
-			defer typeRepo.AssertExpectations(t)
 
 			params, err := url.ParseQuery(testCase.Querystring)
 			require.NoError(t, err)
@@ -243,7 +198,8 @@ func TestSearchHandler(t *testing.T) {
 			rr := httptest.NewRequest(http.MethodGet, requestURL, nil)
 			rw := httptest.NewRecorder()
 
-			handler := handlers.NewSearchHandler(new(mock.Logger), recordSearcher, typeRepo)
+			service := discovery.NewService(nil, recordSearcher)
+			handler := handlers.NewSearchHandler(new(mock.Logger), service)
 			handler.Search(rw, rr)
 
 			expectStatus := testCase.ExpectStatus

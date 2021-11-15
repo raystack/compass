@@ -1,4 +1,4 @@
-package store_test
+package elasticsearch_test
 
 import (
 	"context"
@@ -11,8 +11,9 @@ import (
 
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/odpf/columbus/models"
-	"github.com/odpf/columbus/store"
+	"github.com/odpf/columbus/discovery"
+	store "github.com/odpf/columbus/discovery/elasticsearch"
+	"github.com/odpf/columbus/record"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,30 +24,15 @@ func TestRecordRepository(t *testing.T) {
 		var testCases = []struct {
 			Title      string
 			ShouldFail bool
-			Setup      func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error
-			PostCheck  func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error
-			Type       models.Type
-			Records    []models.Record
+			Setup      func(cli *elasticsearch.Client, records []record.Record, Type record.Type) error
+			PostCheck  func(cli *elasticsearch.Client, records []record.Record, Type record.Type) error
+			Type       record.Type
+			Records    []record.Record
 		}{
 			{
-				Title:      "should return an error if the type under which the records are inserted does not exist",
-				ShouldFail: true,
-				Type: models.Type{
-					Name: "i-dont-exist",
-				},
-				Records: []models.Record{
-					{
-						Urn: "sample-urn",
-					},
-				},
-			},
-			{
 				Title: "should succesfully write all the documents to the index for a valid type",
-				Type: models.Type{
-					Name:           "dagger",
-					Classification: models.TypeClassificationResource,
-				},
-				Records: []models.Record{
+				Type:  record.TypeJob,
+				Records: []record.Record{
 					{
 						Urn: "dagger1",
 						Data: map[string]interface{}{
@@ -66,12 +52,9 @@ func TestRecordRepository(t *testing.T) {
 						},
 					},
 				},
-				Setup: func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error {
-					return store.NewTypeRepository(cli).CreateOrReplace(ctx, recordType)
-				},
-				PostCheck: func(cli *elasticsearch.Client, records []models.Record, recordType models.Type) error {
+				PostCheck: func(cli *elasticsearch.Client, records []record.Record, recordType record.Type) error {
 					searchReq := esapi.SearchRequest{
-						Index: []string{recordType.Name},
+						Index: []string{string(recordType)},
 						Body:  strings.NewReader(`{"query":{"match_all":{}}}`),
 					}
 					res, err := searchReq.Do(context.Background(), cli)
@@ -133,20 +116,9 @@ func TestRecordRepository(t *testing.T) {
 		}
 	})
 
-	// the following block of code setups
-	// an type repository, initialised with the daggerType
-	// as well as records from the file ./testdata/dagger-populate.json
-	// this is used by test cases of `GetAll` and `GetByID`
 	cli := esTestServer.NewClient()
-	typeRepo := store.NewTypeRepository(cli)
-	err := typeRepo.CreateOrReplace(ctx, daggerType)
-	if err != nil {
-		t.Fatalf("failed to create dagger type: %v", err)
-		return
-	}
-
 	rrf := store.NewRecordRepositoryFactory(cli)
-	recordRepo, err := rrf.For(daggerType)
+	recordRepo, err := rrf.For(record.TypeTopic)
 	if err != nil {
 		t.Fatalf("failed to construct record repository: %v", err)
 		return
@@ -155,15 +127,9 @@ func TestRecordRepository(t *testing.T) {
 	records := insertRecord(ctx, t, recordRepo)
 
 	t.Run("GetAllIterator", func(t *testing.T) {
-		type testCase struct {
-			Description string
-			Filter      models.RecordFilter
-			ResultsFile string
-		}
-
 		t.Run("should return record iterator to iterate records", func(t *testing.T) {
-			expectedResults := []models.Record{}
-			raw, err := ioutil.ReadFile("./testdata/dagger.json")
+			expectedResults := []record.Record{}
+			raw, err := ioutil.ReadFile("./testdata/records.json")
 			if err != nil {
 				t.Fatalf("error reading results file: %v", err)
 				return
@@ -174,7 +140,7 @@ func TestRecordRepository(t *testing.T) {
 				return
 			}
 
-			var actualResults []models.Record
+			var actualResults []record.Record
 			iterator, err := recordRepo.GetAllIterator(ctx)
 			if err != nil {
 				t.Fatalf("error executing GetAllIterator: %v", err)
@@ -194,7 +160,7 @@ func TestRecordRepository(t *testing.T) {
 	t.Run("GetAll", func(t *testing.T) {
 		type testCase struct {
 			Description string
-			Filter      models.RecordFilter
+			Filter      discovery.RecordFilter
 			ResultsFile string
 		}
 
@@ -202,28 +168,35 @@ func TestRecordRepository(t *testing.T) {
 			{
 				Description: "should handle nil filter",
 				Filter:      nil,
-				ResultsFile: "./testdata/dagger.json",
+				ResultsFile: "./testdata/records.json",
 			},
 			{
 				Description: "should handle filter by service",
 				Filter: map[string][]string{
-					"service": {"kafka"},
+					"service": {"rabbitmq"},
 				},
-				ResultsFile: "./testdata/dagger-service.json",
+				ResultsFile: "./testdata/records-service.json",
+			},
+			{
+				Description: "should handle filter by type",
+				Filter: map[string][]string{
+					"type": {"table"},
+				},
+				ResultsFile: "./testdata/records-type.json",
 			},
 			{
 				Description: "should support a single value filter",
 				Filter: map[string][]string{
 					"data.country": {"id"},
 				},
-				ResultsFile: "./testdata/dagger-id.json",
+				ResultsFile: "./testdata/records-id.json",
 			},
 			{
 				Description: "should support multi value filter",
 				Filter: map[string][]string{
 					"data.country": {"id", "vn"},
 				},
-				ResultsFile: "./testdata/dagger-vn-id.json",
+				ResultsFile: "./testdata/records-vn-id.json",
 			},
 			{
 				Description: "should support multiple terms",
@@ -231,13 +204,13 @@ func TestRecordRepository(t *testing.T) {
 					"data.country": {"th"},
 					"data.title":   {"test_grant2"},
 				},
-				ResultsFile: "./testdata/dagger-th-deployed.json",
+				ResultsFile: "./testdata/records-th-deployed.json",
 			},
 		}
 
 		for _, tc := range testCases {
 			t.Run(tc.Description, func(t *testing.T) {
-				expectedResults := []models.Record{}
+				expectedResults := []record.Record{}
 				raw, err := ioutil.ReadFile(tc.ResultsFile)
 				if err != nil {
 					t.Fatalf("error reading results file: %v", err)
@@ -279,14 +252,14 @@ func TestRecordRepository(t *testing.T) {
 		t.Run("should return an error if a non-existent record is requested", func(t *testing.T) {
 			var id = "this-doesnt-exists"
 			_, err := recordRepo.GetByID(ctx, id)
-			_, ok := err.(models.ErrNoSuchRecord)
+			_, ok := err.(record.ErrNoSuchRecord)
 			assert.True(t, ok)
 		})
 	})
 	t.Run("Delete", func(t *testing.T) {
 		t.Run("should delete record from index", func(t *testing.T) {
 			id := "delete-id-01"
-			err := recordRepo.CreateOrReplaceMany(ctx, []models.Record{
+			err := recordRepo.CreateOrReplaceMany(ctx, []record.Record{
 				{
 					Urn:  id,
 					Name: "To be deleted",
@@ -303,24 +276,29 @@ func TestRecordRepository(t *testing.T) {
 			err = recordRepo.Delete(ctx, id)
 			assert.Nil(t, err)
 
-			record, err := recordRepo.GetByID(ctx, id)
+			r, err := recordRepo.GetByID(ctx, id)
 			assert.NotNil(t, err)
-			assert.Equal(t, models.Record{}, record)
+			assert.Equal(t, record.Record{}, r)
 		})
 
 		t.Run("should return custom error when record could not be found", func(t *testing.T) {
 			err := recordRepo.Delete(ctx, "not-found-id")
 			assert.NotNil(t, err)
-			assert.IsType(t, models.ErrNoSuchRecord{}, err)
+			assert.IsType(t, record.ErrNoSuchRecord{}, err)
 		})
 	})
 }
 
-func insertRecord(ctx context.Context, t *testing.T, repo models.RecordRepository) (records []models.Record) {
-	src, err := ioutil.ReadFile("./testdata/dagger.json")
-	err = json.Unmarshal(src, &records)
+func insertRecord(ctx context.Context, t *testing.T, repo discovery.RecordRepository) (records []record.Record) {
+	src, err := ioutil.ReadFile("./testdata/records.json")
 	if err != nil {
 		t.Fatalf("error reading testdata: %v", err)
+		return
+	}
+
+	err = json.Unmarshal(src, &records)
+	if err != nil {
+		t.Fatalf("error unmarshalling testdata: %v", err)
 		return
 	}
 	err = repo.CreateOrReplaceMany(ctx, records)

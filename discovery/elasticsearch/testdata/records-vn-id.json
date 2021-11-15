@@ -1,25 +1,27 @@
 [
   {
-    "urn": "a-dagger-001",
-    "name": "dagger-001",
-    "service": "dagger",
+    "urn": "a-kafka-001",
+    "name": "kafka-001",
+    "service": "kafka",
+    "type": "topic",
     "description": "",
     "data": {
-      "urn": "a-dagger-001",
-      "title": "dagger-001",
+      "urn": "a-kafka-001",
+      "title": "kafka-001",
       "description": "",
       "entity": "odpf",
       "country": "vn"
     }
   },
   {
-    "urn": "c-demo-dagger",
-    "name": "demo-dagger",
-    "service": "dagger",
+    "urn": "c-demo-kafka",
+    "name": "demo-kafka",
+    "service": "kafka",
+    "type": "topic",
     "description": "",
     "data": {
-      "urn": "c-demo-dagger",
-      "title": "demo-dagger",
+      "urn": "c-demo-kafka",
+      "title": "demo-kafka",
       "description": "",
       "entity": "odpf",
       "country": "id"
@@ -28,7 +30,8 @@
   {
     "urn": "d-test-abcsasa",
     "name": "test-abcsasa",
-    "service": "dagger",
+    "service": "kafka",
+    "type": "table",
     "description": "",
     "data": {
       "urn": "d-test-abcsasa",
@@ -41,7 +44,8 @@
   {
     "urn": "f-john-test-001",
     "name": "john_test_001",
-    "service": "dagger",
+    "service": "kafka",
+    "type": "topic",
     "description": "",
     "data": {
       "urn": "f-john-test-001",
@@ -52,12 +56,12 @@
     }
   },
   {
-    "urn": "g-jane-dagger-1a",
-    "name": "jane-dagger-1a",
+    "urn": "g-jane-kafka-1a",
+    "name": "jane-kafka-1a",
     "description": "",
     "data": {
-      "urn": "g-jane-dagger-1a",
-      "title": "jane-dagger-1a",
+      "urn": "g-jane-kafka-1a",
+      "title": "jane-kafka-1a",
       "description": "",
       "entity": "odpf",
       "country": "vn"
@@ -66,7 +70,8 @@
   {
     "urn": "i-undefined-dfgdgd-avi",
     "name": "dfgdgd-avi",
-    "service": "kafka",
+    "service": "rabbitmq",
+    "type": "topic",
     "description": "",
     "data": {
       "urn": "i-undefined-dfgdgd-avi",
@@ -79,7 +84,8 @@
   {
     "urn": "j-xcvcx",
     "name": "xcvcx",
-    "service": "kafka",
+    "service": "rabbitmq",
+    "type": "topic",
     "description": "",
     "data": {
       "urn": "j-xcvcx",

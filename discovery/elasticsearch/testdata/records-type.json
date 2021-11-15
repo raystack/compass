@@ -1,0 +1,16 @@
+[
+  {
+    "urn": "d-test-abcsasa",
+    "name": "test-abcsasa",
+    "service": "kafka",
+    "type": "table",
+    "description": "",
+    "data": {
+      "urn": "d-test-abcsasa",
+      "title": "test-abcsasa",
+      "description": "",
+      "entity": "odpf",
+      "country": "vn"
+    }
+  }
+]

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/discovery"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,7 +29,7 @@ type roundRobinBuilder struct {
 	Index  int
 }
 
-func (builder *roundRobinBuilder) Build(ctx context.Context, er models.TypeRepository, rrf models.RecordRepositoryFactory) (Graph, error) {
+func (builder *roundRobinBuilder) Build(ctx context.Context, rrf discovery.RecordRepositoryFactory) (Graph, error) {
 	index := builder.Index
 	builder.Index = (builder.Index + 1) % len(builder.Graphs)
 	return builder.Graphs[index], nil

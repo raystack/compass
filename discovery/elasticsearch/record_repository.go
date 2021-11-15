@@ -1,4 +1,4 @@
-package store
+package elasticsearch
 
 import (
 	"bytes"
@@ -13,7 +13,8 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/discovery"
+	"github.com/odpf/columbus/record"
 	"github.com/olivere/elastic/v7"
 )
 
@@ -23,25 +24,17 @@ const (
 )
 
 type getResponse struct {
-	Source models.Record `json:"_source"`
+	Source record.Record `json:"_source"`
 }
 
-// RecordRepository implements models.RecordRepository
+// RecordRepository implements record.RecordRepository
 // with elasticsearch as the backing store.
 type RecordRepository struct {
-	recordType models.Type
+	recordType record.Type
 	cli        *elasticsearch.Client
 }
 
-func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []models.Record) error {
-	idxExists, err := indexExists(ctx, repo.cli, repo.recordType.Name)
-	if err != nil {
-		return err
-	}
-	if !idxExists {
-		return models.ErrNoSuchType{TypeName: repo.recordType.Name}
-	}
-
+func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []record.Record) error {
 	requestPayload, err := repo.createBulkInsertPayload(records)
 	if err != nil {
 		return fmt.Errorf("error serialising payload: %w", err)
@@ -61,7 +54,7 @@ func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records [
 	return nil
 }
 
-func (repo *RecordRepository) createBulkInsertPayload(records []models.Record) (io.Reader, error) {
+func (repo *RecordRepository) createBulkInsertPayload(records []record.Record) (io.Reader, error) {
 	payload := bytes.NewBuffer(nil)
 	for _, record := range records {
 		err := repo.writeInsertAction(payload, record)
@@ -76,28 +69,28 @@ func (repo *RecordRepository) createBulkInsertPayload(records []models.Record) (
 	return payload, nil
 }
 
-func (repo *RecordRepository) writeInsertAction(w io.Writer, record models.Record) error {
+func (repo *RecordRepository) writeInsertAction(w io.Writer, record record.Record) error {
 	if strings.TrimSpace(record.Urn) == "" {
 		return fmt.Errorf("URN record field cannot be empty")
 	}
 	type obj map[string]interface{}
 	action := obj{
 		"index": obj{
-			"_index": repo.recordType.Name,
+			"_index": repo.recordType,
 			"_id":    record.Urn,
 		},
 	}
 	return json.NewEncoder(w).Encode(action)
 }
 
-func (repo *RecordRepository) GetAllIterator(ctx context.Context) (models.RecordIterator, error) {
-	body, err := repo.getAllQuery(models.RecordFilter{})
+func (repo *RecordRepository) GetAllIterator(ctx context.Context) (discovery.RecordIterator, error) {
+	body, err := repo.getAllQuery(discovery.RecordFilter{})
 	if err != nil {
 		return nil, fmt.Errorf("error building search query: %w", err)
 	}
 
 	resp, err := repo.cli.Search(
-		repo.cli.Search.WithIndex(repo.recordType.Name),
+		repo.cli.Search.WithIndex(string(repo.recordType)),
 		repo.cli.Search.WithBody(body),
 		repo.cli.Search.WithScroll(defaultScrollTimeout),
 		repo.cli.Search.WithSize(defaultScrollBatchSize),
@@ -125,7 +118,7 @@ func (repo *RecordRepository) GetAllIterator(ctx context.Context) (models.Record
 	return &it, nil
 }
 
-func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordFilter) ([]models.Record, error) {
+func (repo *RecordRepository) GetAll(ctx context.Context, filters discovery.RecordFilter) ([]record.Record, error) {
 	// XXX(Aman): we should probably think about result ordering, if the client
 	// is going to slice the data for pagination. Does ES guarantee the result order?
 	body, err := repo.getAllQuery(filters)
@@ -134,7 +127,7 @@ func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordF
 	}
 
 	resp, err := repo.cli.Search(
-		repo.cli.Search.WithIndex(repo.recordType.Name),
+		repo.cli.Search.WithIndex(string(repo.recordType)),
 		repo.cli.Search.WithBody(body),
 		repo.cli.Search.WithScroll(defaultScrollTimeout),
 		repo.cli.Search.WithSize(defaultScrollBatchSize),
@@ -156,7 +149,7 @@ func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordF
 	var results = repo.toRecordList(response)
 	var scrollID = response.ScrollID
 	for {
-		var nextResults []models.Record
+		var nextResults []record.Record
 		nextResults, scrollID, err = repo.scrollRecords(ctx, scrollID)
 		if err != nil {
 			return nil, fmt.Errorf("error scrolling results: %v", err)
@@ -169,7 +162,7 @@ func (repo *RecordRepository) GetAll(ctx context.Context, filters models.RecordF
 	return results, nil
 }
 
-func (repo *RecordRepository) scrollRecords(ctx context.Context, scrollID string) ([]models.Record, string, error) {
+func (repo *RecordRepository) scrollRecords(ctx context.Context, scrollID string) ([]record.Record, string, error) {
 	resp, err := repo.cli.Scroll(
 		repo.cli.Scroll.WithScrollID(scrollID),
 		repo.cli.Scroll.WithScroll(defaultScrollTimeout),
@@ -191,14 +184,14 @@ func (repo *RecordRepository) scrollRecords(ctx context.Context, scrollID string
 	return repo.toRecordList(response), response.ScrollID, nil
 }
 
-func (repo *RecordRepository) toRecordList(res searchResponse) (records []models.Record) {
+func (repo *RecordRepository) toRecordList(res searchResponse) (records []record.Record) {
 	for _, entry := range res.Hits.Hits {
 		records = append(records, entry.Source)
 	}
 	return
 }
 
-func (repo *RecordRepository) getAllQuery(filters models.RecordFilter) (io.Reader, error) {
+func (repo *RecordRepository) getAllQuery(filters discovery.RecordFilter) (io.Reader, error) {
 	if len(filters) == 0 {
 		return repo.matchAllQuery(), nil
 	}
@@ -209,7 +202,7 @@ func (repo *RecordRepository) matchAllQuery() io.Reader {
 	return strings.NewReader(`{"query":{"match_all":{}}}`)
 }
 
-func (repo *RecordRepository) termsQuery(filters models.RecordFilter) (io.Reader, error) {
+func (repo *RecordRepository) termsQuery(filters discovery.RecordFilter) (io.Reader, error) {
 	var termQueries []elastic.Query
 	for key, rawValues := range filters {
 		var values []interface{}
@@ -235,9 +228,9 @@ func (repo *RecordRepository) termsQuery(filters models.RecordFilter) (io.Reader
 	return payload, json.NewEncoder(payload).Encode(raw)
 }
 
-func (repo *RecordRepository) GetByID(ctx context.Context, id string) (record models.Record, err error) {
+func (repo *RecordRepository) GetByID(ctx context.Context, id string) (r record.Record, err error) {
 	res, err := repo.cli.Get(
-		repo.recordType.Name,
+		string(repo.recordType),
 		url.PathEscape(id),
 		repo.cli.Get.WithContext(ctx),
 	)
@@ -249,7 +242,7 @@ func (repo *RecordRepository) GetByID(ctx context.Context, id string) (record mo
 
 	if res.IsError() {
 		if res.StatusCode == http.StatusNotFound {
-			err = models.ErrNoSuchRecord{RecordID: id}
+			err = record.ErrNoSuchRecord{RecordID: id}
 			return
 		}
 		err = fmt.Errorf("got %s response from elasticsearch: %s", res.Status(), res.String())
@@ -263,13 +256,13 @@ func (repo *RecordRepository) GetByID(ctx context.Context, id string) (record mo
 		return
 	}
 
-	record = response.Source
+	r = response.Source
 	return
 }
 
 func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 	res, err := repo.cli.Delete(
-		repo.recordType.Name,
+		string(repo.recordType),
 		url.PathEscape(id),
 		repo.cli.Delete.WithRefresh("true"),
 		repo.cli.Delete.WithContext(ctx),
@@ -280,7 +273,7 @@ func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 	defer res.Body.Close()
 	if res.IsError() {
 		if res.StatusCode == http.StatusNotFound {
-			return models.ErrNoSuchRecord{RecordID: id}
+			return record.ErrNoSuchRecord{RecordID: id}
 		}
 		return fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
 	}
@@ -288,10 +281,10 @@ func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-// recordIterator is the internal implementation of models.RecordIterator by RecordRepository
+// recordIterator is the internal implementation of record.RecordIterator by RecordRepository
 type recordIterator struct {
 	resp     *esapi.Response
-	records  []models.Record
+	records  []record.Record
 	repo     *RecordRepository
 	scrollID string
 }
@@ -300,7 +293,7 @@ func (it *recordIterator) Scan() bool {
 	return len(strings.TrimSpace(it.scrollID)) > 0
 }
 
-func (it *recordIterator) Next() (prev []models.Record) {
+func (it *recordIterator) Next() (prev []record.Record) {
 	prev = it.records
 	var err error
 	it.records, it.scrollID, err = it.repo.scrollRecords(context.Background(), it.scrollID)
@@ -323,10 +316,10 @@ type RecordRepositoryFactory struct {
 	cli *elasticsearch.Client
 }
 
-func (factory *RecordRepositoryFactory) For(recordType models.Type) (models.RecordRepository, error) {
+func (factory *RecordRepositoryFactory) For(recordType record.Type) (discovery.RecordRepository, error) {
 	return &RecordRepository{
 		cli:        factory.cli,
-		recordType: recordType.Normalise(),
+		recordType: recordType,
 	}, nil
 }
 

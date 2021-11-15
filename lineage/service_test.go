@@ -5,18 +5,19 @@ import (
 	"testing"
 	"time"
 
+	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/lineage"
-	"github.com/odpf/columbus/models"
 	"github.com/stretchr/testify/assert"
 	testifyMock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type stubBuilder struct {
 	testifyMock.Mock
 }
 
-func (b *stubBuilder) Build(ctx context.Context, er models.TypeRepository, rrf models.RecordRepositoryFactory) (lineage.Graph, error) {
+func (b *stubBuilder) Build(ctx context.Context, rrf discovery.RecordRepositoryFactory) (lineage.Graph, error) {
 	return nil, nil
 }
 
@@ -40,10 +41,9 @@ func (pm mockPerformanceMonitor) StartTransaction(ctx context.Context, operation
 func TestService(t *testing.T) {
 	ctx := context.Background()
 	t.Run("smoke test", func(t *testing.T) {
-		entRepo := new(mock.TypeRepository)
-		entRepo.On("GetAll", ctx).Return([]models.Type{}, nil)
 		recordRepoFac := new(mock.RecordRepositoryFactory)
-		lineage.NewService(entRepo, recordRepoFac, lineage.Config{})
+		_, err := lineage.NewService(recordRepoFac, lineage.Config{})
+		require.NoError(t, err)
 	})
 	t.Run("telemetry test", func(t *testing.T) {
 		// Temporarily disabling lineage build on service creation causes this test to fail
@@ -70,8 +70,7 @@ func TestService(t *testing.T) {
 			txnEnd = true
 		})
 
-		lineage.NewService(
-			nil,
+		_, err := lineage.NewService(
 			nil,
 			lineage.Config{
 				MetricsMonitor:     mm,
@@ -80,6 +79,7 @@ func TestService(t *testing.T) {
 				TimeSource:         lineage.TimeSourceFunc(ts),
 			},
 		)
+		assert.NoError(t, err)
 
 		mm.AssertExpectations(t)
 		assert.True(t, txnEnd)

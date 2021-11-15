@@ -13,24 +13,19 @@ import (
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/lib/set"
 	"github.com/odpf/columbus/lineage"
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/record"
 )
 
 func TestLineageHandler(t *testing.T) {
 	t.Run("ListLineage", func(t *testing.T) {
 		t.Run("should return 404 if a non-existent type is requested", func(t *testing.T) {
 			graph := new(mock.Graph)
-			graph.On(
-				"Query",
-				lineage.QueryCfg{TypeWhitelist: []string{"bqtable"}}).Return(lineage.AdjacencyMap{}, models.ErrNoSuchType{"bqtable"})
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
-
 			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
 
 			rr := httptest.NewRequest("GET", "/?filter.type=bqtable", nil)
 			rw := httptest.NewRecorder()
-
 			handler.ListLineage(rw, rr)
 
 			if rw.Code != http.StatusNotFound {
@@ -44,42 +39,37 @@ func TestLineageHandler(t *testing.T) {
 				t.Errorf("error decoding handler response: %v", err)
 				return
 			}
-
-			expectedReason := `no such type: "bqtable"`
-			if response.Reason != expectedReason {
-				t.Errorf("expected handler to report reason %q, was %q instead", expectedReason, response.Reason)
-			}
 		})
 		t.Run("should return graph filtered by type", func(t *testing.T) {
 			var filteredGraph = lineage.AdjacencyMap{
 				"topic/a": lineage.AdjacencyEntry{
-					Type:        "topic",
+					Type:        record.TypeTopic,
 					URN:         "a",
 					Upstreams:   set.NewStringSet(),
-					Downstreams: set.NewStringSet("dagger/ab"),
+					Downstreams: set.NewStringSet("table/ab"),
 				},
 				"topic/b": lineage.AdjacencyEntry{
-					Type:        "topic",
+					Type:        record.TypeTopic,
 					URN:         "a",
-					Upstreams:   set.NewStringSet("dagger/ab"),
+					Upstreams:   set.NewStringSet("table/ab"),
 					Downstreams: set.NewStringSet(),
 				},
-				"dagger/ab": lineage.AdjacencyEntry{
-					Type:        "dagger",
+				"table/ab": lineage.AdjacencyEntry{
+					Type:        record.TypeTable,
 					URN:         "ab",
 					Upstreams:   set.NewStringSet("topic/a"),
 					Downstreams: set.NewStringSet("topic/b"),
 				},
 			}
 			graph := new(mock.Graph)
-			graph.On("Query", lineage.QueryCfg{TypeWhitelist: []string{"topic", "dagger"}}).Return(filteredGraph, nil)
+			graph.On("Query", lineage.QueryCfg{TypeWhitelist: []record.Type{record.TypeTopic, record.TypeTable}}).Return(filteredGraph, nil)
 
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
 
 			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
 
-			rr := httptest.NewRequest("GET", "/?filter.type=topic&filter.type=dagger", nil)
+			rr := httptest.NewRequest("GET", "/?filter.type=topic&filter.type=table", nil)
 			rw := httptest.NewRecorder()
 
 			handler.ListLineage(rw, rr)
@@ -119,19 +109,18 @@ func TestLineageHandler(t *testing.T) {
 			}
 		})
 		t.Run("should return the entire graph if no options are specified", func(t *testing.T) {
-
 			// using the same graph
 			var fullGraph = lineage.AdjacencyMap{
-				"bqtable/raw": lineage.AdjacencyEntry{
-					Type:        "bqtable",
+				"table/raw": lineage.AdjacencyEntry{
+					Type:        record.TypeTable,
 					URN:         "raw",
 					Upstreams:   set.NewStringSet(),
-					Downstreams: set.NewStringSet("s3/std"),
+					Downstreams: set.NewStringSet("topic/std"),
 				},
-				"s3/std": lineage.AdjacencyEntry{
-					Type:        "s3",
+				"topic/std": lineage.AdjacencyEntry{
+					Type:        record.TypeTopic,
 					URN:         "std",
-					Upstreams:   set.NewStringSet("bqtable/raw"),
+					Upstreams:   set.NewStringSet("table/raw"),
 					Downstreams: set.NewStringSet(),
 				},
 			}
@@ -168,20 +157,20 @@ func TestLineageHandler(t *testing.T) {
 	t.Run("GetLineage", func(t *testing.T) {
 		t.Run("should return a graph containing the requested resource, along with it's related resources", func(t *testing.T) {
 			var subGraph = lineage.AdjacencyMap{
-				"bqtable/raw": lineage.AdjacencyEntry{
-					Type:        "bqtable",
+				"table/raw": lineage.AdjacencyEntry{
+					Type:        record.TypeTable,
 					URN:         "raw",
 					Upstreams:   set.NewStringSet(),
-					Downstreams: set.NewStringSet("bqtable/std"),
+					Downstreams: set.NewStringSet("table/std"),
 				},
-				"bqtable/std": lineage.AdjacencyEntry{
-					Type:        "bqtable",
+				"table/std": lineage.AdjacencyEntry{
+					Type:        record.TypeTable,
 					URN:         "std",
-					Upstreams:   set.NewStringSet("bqtable/raw", "bqtable/to-be-removed"),
+					Upstreams:   set.NewStringSet("table/raw", "table/to-be-removed"),
 					Downstreams: set.NewStringSet(),
 				},
-				"bqtable/presentation": lineage.AdjacencyEntry{
-					Type:        "bqtable",
+				"table/presentation": lineage.AdjacencyEntry{
+					Type:        record.TypeTable,
 					URN:         "presentation",
 					Upstreams:   set.NewStringSet(),
 					Downstreams: set.NewStringSet(),
@@ -189,17 +178,17 @@ func TestLineageHandler(t *testing.T) {
 			}
 
 			graph := new(mock.Graph)
-			graph.On("Query", lineage.QueryCfg{Root: "bqtable/raw"}).Return(subGraph, nil)
+			graph.On("Query", lineage.QueryCfg{Root: "table/raw"}).Return(subGraph, nil)
 
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
 
 			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
 
-			rr := httptest.NewRequest("GET", "/v1/lineage/bqtable/raw", nil)
+			rr := httptest.NewRequest("GET", "/v1/lineage/table/raw", nil)
 			rw := httptest.NewRecorder()
 			rr = mux.SetURLVars(rr, map[string]string{
-				"type": "bqtable",
+				"type": record.TypeTable.String(),
 				"id":   "raw",
 			})
 

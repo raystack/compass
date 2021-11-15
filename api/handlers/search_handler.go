@@ -7,11 +7,11 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/discovery"
+	"github.com/odpf/columbus/record"
 )
 
 var (
@@ -20,16 +20,14 @@ var (
 )
 
 type SearchHandler struct {
-	recordSearcher models.RecordSearcher
-	typeRepo       models.TypeRepository
-	log            logrus.FieldLogger
+	discoveryService *discovery.Service
+	log              logrus.FieldLogger
 }
 
-func NewSearchHandler(log logrus.FieldLogger, searcher models.RecordSearcher, repo models.TypeRepository) *SearchHandler {
+func NewSearchHandler(log logrus.FieldLogger, discoveryService *discovery.Service) *SearchHandler {
 	handler := &SearchHandler{
-		recordSearcher: searcher,
-		typeRepo:       repo,
-		log:            log,
+		discoveryService: discoveryService,
+		log:              log,
 	}
 
 	return handler
@@ -42,7 +40,7 @@ func (handler *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	results, err := handler.recordSearcher.Search(ctx, cfg)
+	results, err := handler.discoveryService.Search(ctx, cfg)
 	if err != nil {
 		handler.log.Errorf("error searching records: %w", err)
 		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
@@ -65,7 +63,7 @@ func (handler *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, response)
 }
 
-func (handler *SearchHandler) buildSearchCfg(params url.Values) (cfg models.SearchConfig, err error) {
+func (handler *SearchHandler) buildSearchCfg(params url.Values) (cfg discovery.SearchConfig, err error) {
 	text := strings.TrimSpace(params.Get("text"))
 	if text == "" {
 		err = fmt.Errorf("'text' must be specified")
@@ -74,25 +72,23 @@ func (handler *SearchHandler) buildSearchCfg(params url.Values) (cfg models.Sear
 	cfg.Text = text
 	cfg.MaxResults, _ = strconv.Atoi(params.Get("size"))
 	cfg.Filters = filterConfigFromValues(params)
-	cfg.TypeWhiteList = parseTypeWhiteList(params)
+	cfg.TypeWhiteList, err = parseTypeWhiteList(params)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
-func (handler *SearchHandler) toSearchResponse(ctx context.Context, results []models.SearchResult) (response []SearchResponse, err error) {
-	typeRepo := newCachingTypeRepo(handler.typeRepo)
-	for _, result := range results {
-		recordType, err := typeRepo.GetByName(ctx, result.TypeName)
-		if err != nil {
-			return nil, fmt.Errorf("typeRepository.GetByName: %q: %v", result.TypeName, err)
-		}
-
+func (handler *SearchHandler) toSearchResponse(ctx context.Context, records []record.Record) (response []SearchResponse, err error) {
+	for _, r := range records {
 		res := SearchResponse{
-			Type:        recordType.Name,
-			ID:          result.Record.Urn,
-			Title:       result.Record.Name,
-			Description: result.Record.Description,
-			Labels:      result.Record.Labels,
-			Service:     result.Record.Service,
+			ID:          r.Urn,
+			Title:       r.Name,
+			Description: r.Description,
+			Labels:      r.Labels,
+			Service:     r.Service,
+			Type:        string(r.Type),
 		}
 
 		response = append(response, res)
@@ -100,45 +96,16 @@ func (handler *SearchHandler) toSearchResponse(ctx context.Context, results []mo
 	return
 }
 
-// cachingTypeRepo is a decorator over a models.TypeRepository
-// that caches results of previous read-only operations
-type cachingTypeRepo struct {
-	mu    sync.Mutex
-	cache map[string]models.Type
-	repo  models.TypeRepository
-}
-
-func (decorator *cachingTypeRepo) CreateOrReplace(ctx context.Context, ent models.Type) error {
-	panic("not implemented")
-}
-
-func (decorator *cachingTypeRepo) GetByName(ctx context.Context, name string) (models.Type, error) {
-	ent, exists := decorator.cache[name]
-	if exists {
-		return ent, nil
-	}
-
-	decorator.mu.Lock()
-	defer decorator.mu.Unlock()
-	ent, err := decorator.repo.GetByName(ctx, name)
-	if err != nil {
-		return ent, err
-	}
-	decorator.cache[ent.Name] = ent
-	return ent, nil
-}
-
-func newCachingTypeRepo(repo models.TypeRepository) *cachingTypeRepo {
-	return &cachingTypeRepo{
-		repo:  repo,
-		cache: make(map[string]models.Type),
-	}
-}
-
-func parseTypeWhiteList(values url.Values) (types []string) {
-	for _, typ := range values[whiteListQueryParamKey] {
-		typList := strings.Split(typ, ",")
-		types = append(types, typList...)
+func parseTypeWhiteList(values url.Values) (types []record.Type, err error) {
+	for _, commaSeparatedTypes := range values[whiteListQueryParamKey] {
+		for _, ts := range strings.Split(commaSeparatedTypes, ",") {
+			var t record.Type
+			t, err = validateType(ts)
+			if err != nil {
+				return
+			}
+			types = append(types, t)
+		}
 	}
 	return
 }

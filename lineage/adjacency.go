@@ -5,12 +5,13 @@ import (
 	"strings"
 
 	"github.com/odpf/columbus/lib/set"
+	"github.com/odpf/columbus/record"
 )
 
 // AdjacencyEntry holds metadata about a resource
 // (like it’s name and type) as well it’s relationship to other resources
 type AdjacencyEntry struct {
-	Type        string        `json:"type"`
+	Type        record.Type   `json:"type"`
 	Service     string        `json:"service"`
 	URN         string        `json:"urn"`
 	Upstreams   set.StringSet `json:"upstreams"`
@@ -27,7 +28,7 @@ func (e AdjacencyEntry) getAdjacents(dir dataflowDir) set.StringSet {
 
 func (e AdjacencyEntry) ID() string {
 	var (
-		typ = strings.TrimSpace(e.Type)
+		typ = strings.TrimSpace(string(e.Type))
 		urn = strings.TrimSpace(e.URN)
 	)
 	if typ == "" && urn == "" {

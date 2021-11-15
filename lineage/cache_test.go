@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"reflect"
 	"testing"
 
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/lineage"
+	"github.com/odpf/columbus/record"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCachedGraph(t *testing.T) {
@@ -40,7 +43,10 @@ func TestCachedGraph(t *testing.T) {
 			Description: "simple cache test",
 			Cfg:         lineage.QueryCfg{},
 			Setup: func(tc testCase, g *lineage.CachedGraph) {
-				g.Query(tc.Cfg) // cache the request
+				_, err := g.Query(tc.Cfg) // cache the request
+				if err != nil {
+					log.Fatal(err)
+				}
 			},
 			Graph:        graphFromTestCase,
 			ExpectResult: lineage.AdjacencyMap{},
@@ -49,7 +55,7 @@ func TestCachedGraph(t *testing.T) {
 		{
 			Description: "test error handling",
 			Cfg: lineage.QueryCfg{
-				TypeWhitelist: []string{"A"},
+				TypeWhitelist: []record.Type{record.TypeTable},
 				Collapse:      true,
 			},
 			Graph: func(tc testCase) *mock.Graph {
@@ -83,9 +89,11 @@ func TestCachedGraph(t *testing.T) {
 				)
 				enc.SetIndent("", "  ")
 				fmt.Fprint(msg, "expected: ")
-				enc.Encode(tc.ExpectResult)
+				err = enc.Encode(tc.ExpectResult)
+				require.NoError(t, err)
 				fmt.Fprint(msg, "got: ")
-				enc.Encode(result)
+				err = enc.Encode(result)
+				require.NoError(t, err)
 				t.Error(msg.String())
 				return
 			}

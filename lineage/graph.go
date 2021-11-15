@@ -4,12 +4,12 @@ import (
 	"fmt"
 
 	"github.com/odpf/columbus/lib/set"
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/record"
 	"github.com/pkg/errors"
 )
 
 type QueryCfg struct {
-	TypeWhitelist []string
+	TypeWhitelist []record.Type
 	Collapse      bool
 	Root          string
 }
@@ -20,19 +20,17 @@ type Graph interface {
 
 type InMemoryGraph struct {
 	Supergraph AdjacencyMap
-	typeIdx    map[string]set.StringSet
+	typeIdx    map[record.Type]set.StringSet
 }
 
 func (graph *InMemoryGraph) init() {
-	for id, entry := range graph.Supergraph {
-		values, exists := graph.typeIdx[entry.Type]
-		if !exists {
-			values = make(set.StringSet)
-			graph.typeIdx[entry.Type] = values
-		}
-		values.Add(id)
+	for _, typ := range record.TypeList {
+		graph.typeIdx[typ] = make(set.StringSet)
 	}
-	return
+
+	for id, entry := range graph.Supergraph {
+		graph.typeIdx[entry.Type].Add(id)
+	}
 }
 
 func (graph InMemoryGraph) Query(cfg QueryCfg) (AdjacencyMap, error) {
@@ -41,9 +39,6 @@ func (graph InMemoryGraph) Query(cfg QueryCfg) (AdjacencyMap, error) {
 	if len(cfg.TypeWhitelist) != 0 {
 		var tempSupergraph = make(AdjacencyMap)
 		for _, typ := range cfg.TypeWhitelist {
-			if _, typExists := graph.typeIdx[typ]; !typExists {
-				return nil, models.ErrNoSuchType{TypeName: typ}
-			}
 			for entry := range graph.typeIdx[typ] {
 				tempSupergraph[entry] = supergraph[entry]
 			}
@@ -52,7 +47,11 @@ func (graph InMemoryGraph) Query(cfg QueryCfg) (AdjacencyMap, error) {
 	}
 
 	if cfg.Collapse {
-		graph.collapse(supergraph, set.NewStringSet(cfg.TypeWhitelist...))
+		stringList := []string{}
+		for _, t := range cfg.TypeWhitelist {
+			stringList = append(stringList, string(t))
+		}
+		graph.collapse(supergraph, set.NewStringSet(stringList...))
 	}
 
 	if cfg.Root != "" {
@@ -86,7 +85,6 @@ func (graph InMemoryGraph) collapse(subgraph AdjacencyMap, typeWhitelist set.Str
 		entry.Downstreams = graph.collapseInDir(entry, dataflowDirDownstream, typeWhitelist)
 		subgraph[entry.ID()] = entry
 	}
-	return
 }
 
 func (graph InMemoryGraph) collapseInDir(root AdjacencyEntry, dir dataflowDir, types set.StringSet) set.StringSet {
@@ -104,7 +102,7 @@ func (graph InMemoryGraph) collapseInDir(root AdjacencyEntry, dir dataflowDir, t
 			if !exists {
 				continue
 			}
-			if types[adjEntry.Type] {
+			if types[string(adjEntry.Type)] {
 				collapsed.Add(adjEntry.ID())
 				continue
 			}
@@ -129,38 +127,12 @@ func (graph InMemoryGraph) addAdjacentsInDir(subgraph AdjacencyMap, superGraph A
 			queue = append(queue, adjacentEl)
 		}
 	}
-	return
-}
-
-// remove refs for each entry that don't exist in the built graph
-// during handler.addAdjacentsInDir we follow the declarations to add
-// upstreams/downstreams to the graph. Once that is done, we've constructed the lineage
-// graph for the requested resource. During this step, we remove outgoing refs to any
-// resource that doesn't belong in the graph
-func (graph InMemoryGraph) pruneRefs(subgraph AdjacencyMap) AdjacencyMap {
-	pruned := make(AdjacencyMap)
-	for _, entry := range subgraph {
-		entry.Upstreams = graph.filterRefs(entry.Upstreams, subgraph)
-		entry.Downstreams = graph.filterRefs(entry.Downstreams, subgraph)
-		pruned[entry.ID()] = entry
-	}
-	return pruned
-}
-
-func (graph InMemoryGraph) filterRefs(refs set.StringSet, subgraph AdjacencyMap) set.StringSet {
-	rv := set.NewStringSet()
-	for ref := range refs {
-		if _, exists := subgraph[ref]; exists {
-			rv.Add(ref)
-		}
-	}
-	return rv
 }
 
 func NewInMemoryGraph(data AdjacencyMap) InMemoryGraph {
 	graph := InMemoryGraph{
 		Supergraph: data,
-		typeIdx:    make(map[string]set.StringSet),
+		typeIdx:    make(map[record.Type]set.StringSet),
 	}
 	graph.init()
 
