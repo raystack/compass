@@ -30,7 +30,7 @@ Explore the following resources to get started with Columbus:
 
 ## Requirements
 
-Columbus is written in golang, and requires go version >= 1.13. Please make sure that the go tool chain is available on your machine. See golang’s [documentation](https://golang.org/) for installation instructions.
+Columbus is written in golang, and requires go version >= 1.16. Please make sure that the go tool chain is available on your machine. See golang’s [documentation](https://golang.org/) for installation instructions.
 
 Alternatively, you can use docker to build columbus as a docker image. More on this in the next section.
 
