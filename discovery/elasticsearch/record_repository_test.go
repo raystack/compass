@@ -54,7 +54,7 @@ func TestRecordRepository(t *testing.T) {
 				},
 				PostCheck: func(cli *elasticsearch.Client, records []record.Record, recordType record.Type) error {
 					searchReq := esapi.SearchRequest{
-						Index: []string{string(recordType)},
+						Index: []string{recordType.String()},
 						Body:  strings.NewReader(`{"query":{"match_all":{}}}`),
 					}
 					res, err := searchReq.Do(context.Background(), cli)

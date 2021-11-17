@@ -88,7 +88,7 @@ func (handler *SearchHandler) toSearchResponse(ctx context.Context, records []re
 			Description: r.Description,
 			Labels:      r.Labels,
 			Service:     r.Service,
-			Type:        string(r.Type),
+			Type:        r.Type.String(),
 		}
 
 		response = append(response, res)

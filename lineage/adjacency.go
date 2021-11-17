@@ -28,7 +28,7 @@ func (e AdjacencyEntry) getAdjacents(dir dataflowDir) set.StringSet {
 
 func (e AdjacencyEntry) ID() string {
 	var (
-		typ = strings.TrimSpace(string(e.Type))
+		typ = strings.TrimSpace(e.Type.String())
 		urn = strings.TrimSpace(e.URN)
 	)
 	if typ == "" && urn == "" {

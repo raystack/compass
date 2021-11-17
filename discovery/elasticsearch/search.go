@@ -18,10 +18,10 @@ var (
 	defaultMaxResults = 200
 	defaultMinScore   = 0.01
 	allIndexList      = []string{
-		string(record.TypeTable),
-		string(record.TypeDashboard),
-		string(record.TypeJob),
-		string(record.TypeTopic),
+		record.TypeTable.String(),
+		record.TypeDashboard.String(),
+		record.TypeJob.String(),
+		record.TypeTopic.String(),
 	}
 )
 
@@ -104,8 +104,8 @@ func (sr *Searcher) Search(ctx context.Context, cfg discovery.SearchConfig) (res
 func (sr *Searcher) buildIndices(cfg discovery.SearchConfig) []string {
 	var indices []string
 	if len(cfg.TypeWhiteList) > 0 {
-		for _, index := range cfg.TypeWhiteList {
-			indices = append(indices, string(index))
+		for _, t := range cfg.TypeWhiteList {
+			indices = append(indices, t.String())
 		}
 	} else {
 		indices = allIndexList

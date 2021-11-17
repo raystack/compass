@@ -90,7 +90,7 @@ func (repo *RecordRepository) GetAllIterator(ctx context.Context) (discovery.Rec
 	}
 
 	resp, err := repo.cli.Search(
-		repo.cli.Search.WithIndex(string(repo.recordType)),
+		repo.cli.Search.WithIndex(repo.recordType.String()),
 		repo.cli.Search.WithBody(body),
 		repo.cli.Search.WithScroll(defaultScrollTimeout),
 		repo.cli.Search.WithSize(defaultScrollBatchSize),
@@ -127,7 +127,7 @@ func (repo *RecordRepository) GetAll(ctx context.Context, filters discovery.Reco
 	}
 
 	resp, err := repo.cli.Search(
-		repo.cli.Search.WithIndex(string(repo.recordType)),
+		repo.cli.Search.WithIndex(repo.recordType.String()),
 		repo.cli.Search.WithBody(body),
 		repo.cli.Search.WithScroll(defaultScrollTimeout),
 		repo.cli.Search.WithSize(defaultScrollBatchSize),
@@ -230,7 +230,7 @@ func (repo *RecordRepository) termsQuery(filters discovery.RecordFilter) (io.Rea
 
 func (repo *RecordRepository) GetByID(ctx context.Context, id string) (r record.Record, err error) {
 	res, err := repo.cli.Get(
-		string(repo.recordType),
+		repo.recordType.String(),
 		url.PathEscape(id),
 		repo.cli.Get.WithContext(ctx),
 	)
@@ -262,7 +262,7 @@ func (repo *RecordRepository) GetByID(ctx context.Context, id string) (r record.
 
 func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 	res, err := repo.cli.Delete(
-		string(repo.recordType),
+		repo.recordType.String(),
 		url.PathEscape(id),
 		repo.cli.Delete.WithRefresh("true"),
 		repo.cli.Delete.WithContext(ctx),

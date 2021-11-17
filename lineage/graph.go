@@ -49,7 +49,7 @@ func (graph InMemoryGraph) Query(cfg QueryCfg) (AdjacencyMap, error) {
 	if cfg.Collapse {
 		stringList := []string{}
 		for _, t := range cfg.TypeWhitelist {
-			stringList = append(stringList, string(t))
+			stringList = append(stringList, t.String())
 		}
 		graph.collapse(supergraph, set.NewStringSet(stringList...))
 	}
@@ -102,7 +102,7 @@ func (graph InMemoryGraph) collapseInDir(root AdjacencyEntry, dir dataflowDir, t
 			if !exists {
 				continue
 			}
-			if types[string(adjEntry.Type)] {
+			if types[adjEntry.Type.String()] {
 				collapsed.Add(adjEntry.ID())
 				continue
 			}

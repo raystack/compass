@@ -39,7 +39,7 @@ func (graph *CachedGraph) Query(cfg QueryCfg) (AdjacencyMap, error) {
 func (graph *CachedGraph) hashCfg(cfg QueryCfg) string {
 	var values []string
 	for _, t := range cfg.TypeWhitelist {
-		values = append(values, string(t))
+		values = append(values, t.String())
 	}
 
 	sort.Strings(values)
