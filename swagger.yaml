@@ -443,7 +443,7 @@ paths:
           type: string
           required: true
         - in: query
-          name: template_id
+          name: template_urn
           type: string
       responses:
         200:
@@ -479,7 +479,10 @@ paths:
         - in: body
           name: ""
           required: true
-          schema: 
+          schema:
+            required:
+              - template_urn
+              - tag_values
             $ref: "#/definitions/Tag"
       responses:
         201:
@@ -517,7 +520,10 @@ paths:
         - in: body
           name: ""
           required: true
-          schema: 
+          schema:
+            required:
+              - template_urn
+              - tag_values
             $ref: "#/definitions/Tag"
       responses:
         201:
@@ -553,14 +559,14 @@ paths:
           type: string
           required: true
         - in: query
-          name: template_id
+          name: template_urn
           type: number
           required: true
       responses:
         204:
           description: Removed
         400:
-          description: template_id is required
+          description: template_urn is required
           schema:
             $ref: '#/definitions/ValidationError'
         404:
@@ -592,16 +598,13 @@ definitions:
         type: string
   Tag:
     type: object
-    required:
-      - template_id
-      - tag_values
     properties:
       record_type:
         type: string
       record_urn:
         type: string
-      template_id:
-        type: number
+      template_urn:
+        type: string
       tag_values:
         type: array
         items: 
@@ -632,8 +635,6 @@ definitions:
               type: string
             updated_at:
               type: string
-      template_urn:
-        type: string
       template_display_name:
         type: string
       template_description:
@@ -648,7 +649,41 @@ definitions:
       description:
         type: string
       fields:
-        type: string
+        type: array
+        required:
+          - urn
+          - display_name
+          - description
+          - data_type
+        items:
+          type: object
+          properties: 
+            id:
+              type: number
+            urn:
+              type: string
+            display_name:
+              type: string
+            description:
+              type: string
+            data_type:
+              type: string
+              enum:
+                - string
+                - double
+                - boolean
+                - enumerated
+                - datetime
+            options:
+              type: array
+              items: 
+                type: string
+            required:
+              type: boolean
+            created_at:
+              type: string
+            updated_at:
+              type: string
       created_at:
         type: string
       updated_at:
