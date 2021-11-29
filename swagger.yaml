@@ -1,18 +1,582 @@
 swagger: '2.0'
 info:
-  title: "Universal Search"
-  description: "Universal Search API"
+  title: "Data Discovery and Lineage Service"
+  description: "Data Discovery and Lineage Service"
   version: 0.1.0
-host: localhost:3000
-basePath: "/v1"
-schemes: 
-  - "http"
+paths:
+  "/v1/lineage":
+    get:
+      tags:
+        - Lineage
+      summary: lineage list api
+      description: "Returns the lineage graph, optionally filtered by type. Each entry in the graph describes a record using it's urn and type, and has `downstreams` and `upstreams` fields that declare related records. By default, the returned graph will only show immediate and directly related records. For instance, say that according to the lineage configuration, there exist 3 records R1,  R2 and R3 where data flows from R1 -> R2 -> R3. If the graph is requested with the filter for R1 and R3 , the returned Graph will have a Node R1 that references a downstream R2, but since it was filtered out, it won't be available in the graph. Similarly, R3 will declare a phamtom upstream R2. This can be addressed via the `collapse` feature. If we make the same request with collapse set to true, R1 will declare R3 as its downstream (using trasitive property) and R3 will also have a corresponding upstream declaration of R1."
+      produces:
+        - "application/json"
+      parameters:
+        - in: query
+          name: filter.type
+          type: string
+        - in: query
+          name: collapse
+          type: boolean
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/AdjacencyMap'
+        404:
+          description: record not found
+          schema:
+            $ref: '#/definitions/Error'
+  "/v1/lineage/{type}/{record}":
+    get:
+      tags:
+        - Lineage
+      summary: lineage get api
+      description: "Returns lineage graph of a single record. For BQTable to BQTable lineage, set collapse to true"
+      produces:
+        - "application/json"
+      parameters:
+        - in: query
+          name: collapse
+          type: boolean
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/AdjacencyMap'
+        404:
+          description: invalid type requested
+          schema:
+            $ref: '#/definitions/Error'
+  "/v1/types":
+    get:
+      tags:
+        - Type
+      summary: fetch all types
+      description: used to fetch all types
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Type'
+    put:
+      tags:
+        - Type
+      summary: upsert a type
+      description: used for upserting a type. A type in columbus's nomenclature is a "collection" of documents that belong to a single named type. Type holds metadata about this collection, used when serving search requests
+      produces:
+        - "application/json"
+      parameters:
+        - in: body
+          name: ""
+          schema: 
+            $ref: "#/definitions/Type"
+      responses:
+        201:
+          description: OK
+          schema:
+            $ref: '#/definitions/Type'
+        400:
+          description: invalid type
+          schema:
+            $ref: '#/definitions/Error'
+  "/v1/types/{name}":
+    put:
+      tags:
+        - Record
+      summary: upload documents for a given type.
+      description: Use this API for adding records for a certain type. The document can have any number of fields, however; it must atleast have fields specified by 'title' and 'id' properties on type.record_attributes. The value of these properties must be string and they must be located at the object root.
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+        - in: body
+          name: payload
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Record'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Status'
+        400:
+          description: validation error
+          schema:
+            $ref: '#/definitions/ValidationError'
+    delete:
+      tags:
+        - Type
+      summary: delete a type by its name.
+      description: Use this API to delete a type along with all of its records. This is an idempotent operation.
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+            example: success
+        422:
+          description: reserved type name error
+          schema:
+            $ref: '#/definitions/Error'
+  "/v1/types/{name}/details":
+    get:
+      tags:
+        - Type
+      summary: fetch a type details
+      description: used to fetch type details by its name
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Type'
+        404:
+          description: type not found
+          schema:
+            $ref: '#/definitions/Error'
+  "/v1/types/{name}/records":
+    get:
+      tags:
+        - Record
+      summary: list records for the type
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+        - in: query
+          name: filter.environment
+          type: string
+          description: environment name for filtering the records only for specific environment
+        - in: query
+          name: select
+          type: string
+          description: comma separated list of fields to return per record (only toplevel keys are supported)
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Record'
+        400:
+          description: bad input
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: not found
+          schema:
+            $ref: '#/definitions/Error'
+  "/v1/types/{name}/records/{id}":
+    delete:
+      tags:
+        - Record
+      summary: delete a record in a type by its record ID
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+        - in: path
+          name: id
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+            example: success
+        404:
+          description: type or record cannot be found
+          schema:
+            $ref: '#/definitions/Error'
+  "/v1/types/{name}/{id}":
+    get:
+      tags:
+        - Record
+      summary: get a record by id
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+        - in: path
+          name: id
+          type: string
+          required: true
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Record'
+        404:
+          description: document or type does not exist
+          schema:
+            $ref: '#/definitions/Error'     
+  "/v1/search":
+    get:
+      tags:
+        - Search
+      summary: search for records
+      description: "API for querying documents. 'text' is fuzzy matched against all the available datasets, and matched results are returned. You can specify additional match criteria using 'filter.*' query parameters. You can specify each filter multiple times to specify a set of values for those filters. For instance, to specify two landscape 'vn' and 'th', the query could be `/search/?text=<text>&filter.environment=integration&filter.landscape=vn&filter.landscape=th`"
+      produces:
+        - "application/json"
+      parameters:
+        - in: query
+          name: "text"
+          description: "text to search for (fuzzy)"
+          required: true
+          type: string
+        - in: query
+          description: "number of results to return"
+          name: "size"
+          type: integer
+        - in: query
+          name: "filter.environment"
+          type: string
+          description: "restrict results to specified environment(s) eg, integrated, test, staging, production"
+        - in: query
+          name: "filter.landscape"
+          type: string
+          description: "restrict results to specified landscape(s)"
+        - in: query
+          name: "filter.entity"
+          type: string
+          description: "restrict results to specified organisation"
+        - in: query
+          name: "filter.type"
+          type: string
+          description: 'restrict results to the specified types (as in a Columbus type, for instance "dagger", or "firehose")'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/SearchResult"
+        400:
+          description: misconfigured request parameters
+          schema:
+            $ref: "#/definitions/Error"
+  "/v1/tags/templates":
+    get:
+      tags:
+        - Tag
+      summary: Get all tag templates
+      description: Get all available tag templates
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TagTemplate'
+        500:
+          description: internal server error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+        - Tag
+      summary: Create a template
+      description: Create a new tag template
+      produces:
+        - "application/json"
+      parameters:
+        - in: body
+          name: ""
+          schema:
+            required:
+              - urn
+              - display_name
+              - description
+              - fields
+            $ref: '#/definitions/TagTemplate'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/TagTemplate'
+        400:
+          description: validation error
+          schema:
+            $ref: '#/definitions/ValidationError'
+        409:
+          description: duplicate template
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: internal server error
+          schema:
+            $ref: '#/definitions/Error'
+  "/v1/tags/templates/{template_urn}":
+    get:
+      tags:
+        - Tag
+      summary: Get a tag templates
+      description: Get a single tag templates
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: template_urn
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/TagTemplate'
+        404:
+          description: template not found
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: internal server error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - Tag
+      summary: Update a template
+      description: Update an existing tag template
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: template_urn
+          type: string
+          required: true
+        - in: body
+          name: ""
+          schema:
+            required:
+              - display_name
+              - description
+              - fields
+            $ref: '#/definitions/TagTemplate'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/TagTemplate'
+        400:
+          description: validation error
+          schema:
+            $ref: '#/definitions/ValidationError'
+        404:
+          description: template not found
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: internal server error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Tag
+      summary: Delete a tag templates
+      description: Delete a single tag templates
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: template_urn
+          type: string
+          required: true
+      responses:
+        204:
+          description: Deleted
+          schema:
+            type: string
+            example: "Deleted"
+        404:
+          description: template not found
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: internal server error
+          schema:
+            $ref: '#/definitions/Error'
+  "/v1/tags/types/{type}/records/{record_urn}":
+    get:
+      tags:
+        - Tag
+      summary: Get a record's tags
+      description: Get all tags for a record in a type
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: type
+          type: string
+          required: true
+        - in: path
+          name: record_urn
+          type: string
+          required: true
+        - in: query
+          name: template_id
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Tag'
+        404:
+          description: record is not found
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: internal server error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+        - Tag
+      summary: Tag a record
+      description: Tag a record in a type with a tag template
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: type
+          type: string
+          required: true
+        - in: path
+          name: record_urn
+          type: string
+          required: true
+        - in: body
+          name: ""
+          required: true
+          schema: 
+            $ref: "#/definitions/Tag"
+      responses:
+        201:
+          description: OK
+          schema:
+            $ref: '#/definitions/Tag'
+        400:
+          description: validation error
+          schema:
+            $ref: '#/definitions/ValidationError'
+        409:
+          description: duplicate tags
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: internal server error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - Tag
+      summary: Update a tag on a record
+      description: Update a tag on a record in a type
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: type
+          type: string
+          required: true
+        - in: path
+          name: record_urn
+          type: string
+          required: true
+        - in: body
+          name: ""
+          required: true
+          schema: 
+            $ref: "#/definitions/Tag"
+      responses:
+        201:
+          description: OK
+          schema:
+            $ref: '#/definitions/Tag'
+        400:
+          description: validation error
+          schema:
+            $ref: '#/definitions/ValidationError'
+        404:
+          description: record is not found
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: internal server error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Tag
+      summary: Remove a tag on a record
+      description: Remove a tag on a record in a type
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: type
+          type: string
+          required: true
+        - in: path
+          name: record_urn
+          type: string
+          required: true
+        - in: query
+          name: template_id
+          type: number
+          required: true
+      responses:
+        204:
+          description: Removed
+        400:
+          description: template_id is required
+          schema:
+            $ref: '#/definitions/ValidationError'
+        404:
+          description: record is not found
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: internal server error
+          schema:
+            $ref: '#/definitions/Error'
 definitions:
   Classifications: &CLASSIFICATIONS
     type: string
-    description: "defines the 'class' of the resource"
+    description: "defines the 'class' of the record"
     enum:
-      - resource
+      - record
       - dataset
       - schema
   Record:
@@ -25,6 +589,69 @@ definitions:
       team:
         type: string
       environment:
+        type: string
+  Tag:
+    type: object
+    required:
+      - template_id
+      - tag_values
+    properties:
+      record_type:
+        type: string
+      record_urn:
+        type: string
+      template_id:
+        type: number
+      tag_values:
+        type: array
+        items: 
+          type: object
+          required:
+            - field_id
+            - field_value
+          properties: 
+            field_id:
+              type: number
+            field_value:
+              type: object
+            field_urn:
+              type: string
+            field_display_name:
+              type: string
+            field_description:
+              type: string
+            field_data_type:
+              type: string
+            field_options:
+              type: array
+              items: 
+                type: string
+            field_required:
+              type: boolean
+            created_at:
+              type: string
+            updated_at:
+              type: string
+      template_urn:
+        type: string
+      template_display_name:
+        type: string
+      template_description:
+        type: string
+  TagTemplate:
+    type: object
+    properties:
+      urn:
+        type: string
+      display_name:
+        type: string
+      description:
+        type: string
+      fields:
+        type: string
+      created_at:
+        type: string
+      updated_at:
         type: string
   Status:
     type: object
@@ -85,13 +712,13 @@ definitions:
     properties:
       id:
         type: string
-        description: "URN of the resource"
+        description: "URN of the record"
       title:
         type: string
-        description: "describes the resource in a human readable form"
+        description: "describes the record in a human readable form"
       type:
         type: string
-        description: "the individual type of the resource. For example: dagger, firehose"
+        description: "the individual type of the record. For example: dagger, firehose"
       description:
         type: string
         description: "optional description of the record"
@@ -99,7 +726,7 @@ definitions:
         <<: *CLASSIFICATIONS
       labels:
         type: object
-        description: "key value pairs describing the labels configured for the given type of resource. Example of labels: team, created, owner etc"
+        description: "key value pairs describing the labels configured for the given type of record. Example of labels: team, created, owner etc"
   ValidationError:
     allOf:
       - $ref: '#/definitions/Error'
@@ -108,261 +735,3 @@ definitions:
           details:
             type: object
             description: error details. the keys are integer indices for the records that failed validation, and the value is a string describing the reason why that record fails validation
-paths:
-  "/lineage":
-    get:
-      summary: lineage list api
-      description: "Returns the lineage graph, optionally filtered by type. Each entry in the graph describes a resource using it's urn and type, and has `downstreams` and `upstreams` fields that declare related resources. By default, the returned graph will only show immediate and directly related resources. For instance, say that according to the lineage configuration, there exist 3 resources R1,  R2 and R3 where data flows from R1 -> R2 -> R3. If the graph is requested with the filter for R1 and R3 , the returned Graph will have a Node R1 that references a downstream R2, but since it was filtered out, it won't be available in the graph. Similarly, R3 will declare a phamtom upstream R2. This can be addressed via the `collapse` feature. If we make the same request with collapse set to true, R1 will declare R3 as its downstream (using trasitive property) and R3 will also have a corresponding upstream declaration of R1."
-      produces:
-        - "application/json"
-      parameters:
-        - in: query
-          name: filter.type
-          type: string
-        - in: query
-          name: collapse
-          type: boolean
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/AdjacencyMap'
-        404:
-          description: resource not found
-          schema:
-            $ref: '#/definitions/Error'
-  "/lineage/{type}/{resource}":
-    get:
-      summary: lineage get api
-      description: "Returns lineage graph of a single resource. For BQTable to BQTable lineage, set collapse to true"
-      produces:
-        - "application/json"
-      parameters:
-        - in: query
-          name: collapse
-          type: boolean
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/AdjacencyMap'
-        404:
-          description: invalid type requested
-          schema:
-            $ref: '#/definitions/Error'
-  "/types":
-    get:
-      summary: fetch all types
-      description: used to fetch all types
-      produces:
-        - "application/json"
-      responses:
-        200:
-          description: OK
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Type'
-    put:
-      summary: initialise a type
-      description: used for initialising/update a type. A type in columbus's nomenclature is a "collection" of documents that belong to a single named type. Type holds metadata about this collection, used when serving search requests
-      produces:
-        - "application/json"
-      parameters:
-        - in: body
-          name: ""
-          schema: 
-            $ref: "#/definitions/Type"
-      responses:
-        201:
-          description: OK
-          schema:
-            $ref: '#/definitions/Type'
-        400:
-          description: invalid type
-          schema:
-            $ref: '#/definitions/Error'
-  "/types/{name}":
-    put:
-      summary: upload documents for a given type.
-      description: Use this API for adding records for a certain type. The document can have any number of fields, however; it must atleast have fields specified by 'title' and 'id' properties on type.record_attributes. The value of these properties must be string and they must be located at the object root.
-      produces:
-        - "application/json"
-      parameters:
-        - in: path
-          name: name
-          type: string
-          required: true
-        - in: body
-          name: payload
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Record'
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/Status'
-        400:
-          description: validation error
-          schema:
-            $ref: '#/definitions/ValidationError'
-    delete:
-      summary: delete a type by its name.
-      description: Use this API to delete a type along with all of its records. This is an idempotent operation.
-      produces:
-        - "application/json"
-      parameters:
-        - in: path
-          name: name
-          type: string
-          required: true
-      responses:
-        200:
-          description: OK
-          schema:
-            type: string
-            example: success
-        422:
-          description: reserved type name error
-          schema:
-            $ref: '#/definitions/Error'
-  "/types/{name}/details":
-    get:
-      summary: fetch a type details
-      description: used to fetch type details by its name
-      produces:
-        - "application/json"
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/Type'
-        404:
-          description: type not found
-          schema:
-            $ref: '#/definitions/Error'
-  "/types/{name}/records":
-    get:
-      summary: list documents for the type
-      produces:
-        - "application/json"
-      parameters:
-        - in: path
-          name: name
-          type: string
-          required: true
-        - in: query
-          name: filter.environment
-          type: string
-          description: environment name for filtering the records only for specific environment
-        - in: query
-          name: select
-          type: string
-          description: comma separated list of fields to return per record (only toplevel keys are supported)
-      responses:
-        200:
-          description: OK
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Record'
-        400:
-          description: bad input
-          schema:
-            $ref: '#/definitions/Error'
-        404:
-          description: not found
-          schema:
-            $ref: '#/definitions/Error'
-  "/types/{name}/records/{id}":
-    delete:
-      summary: delete a record in a type by its record ID
-      produces:
-        - "application/json"
-      parameters:
-        - in: path
-          name: name
-          type: string
-          required: true
-        - in: path
-          name: id
-          type: string
-          required: true
-      responses:
-        200:
-          description: OK
-          schema:
-            type: string
-            example: success
-        404:
-          description: type or record cannot be found
-          schema:
-            $ref: '#/definitions/Error'
-  "/types/{name}/{id}":
-    get:
-      summary: get a record by id
-      parameters:
-        - in: path
-          name: name
-          type: string
-          required: true
-        - in: path
-          name: id
-          type: string
-          required: true
-      produces:
-        - "application/json"
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/Record'
-        404:
-          description: document or type does not exist
-          schema:
-            $ref: '#/definitions/Error'     
-  "/search":
-    get:
-      summary: search for resources
-      description: "API for querying documents. 'text' is fuzzy matched against all the available datasets, and matched results are returned. You can specify additional match criteria using 'filter.*' query parameters. You can specify each filter multiple times to specify a set of values for those filters. For instance, to specify two landscape 'vn' and 'th', the query could be `/search/?text=<text>&filter.environment=integration&filter.landscape=vn&filter.landscape=th`"
-      produces:
-        - "application/json"
-      parameters:
-        - in: query
-          name: "text"
-          description: "text to search for (fuzzy)"
-          required: true
-          type: string
-        - in: query
-          description: "number of results to return"
-          name: "size"
-          type: integer
-        - in: query
-          name: "filter.environment"
-          type: string
-          description: "restrict results to specified environment(s) eg, integrated, test, staging, production"
-        - in: query
-          name: "filter.landscape"
-          type: string
-          description: "restrict results to specified landscape(s)"
-        - in: query
-          name: "filter.entity"
-          type: string
-          description: "restrict results to specified organisation"
-        - in: query
-          name: "filter.type"
-          type: string
-          description: 'restrict results to the specified types (as in a Columbus type, for instance "dagger", or "firehose")'
-      responses:
-        200:
-          description: OK
-          schema:
-            type: array
-            items:
-              $ref: "#/definitions/SearchResult"
-        400:
-          description: misconfigured request parameters
-          schema:
-            $ref: "#/definitions/Error"
