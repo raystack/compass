@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/tag"
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,6 +15,8 @@ type Config struct {
 	TypeRepository          models.TypeRepository
 	RecordRepositoryFactory models.RecordRepositoryFactory
 	RecordSearcher          models.RecordSearcher
+	TagService              *tag.Service
+	TagTemplateService      *tag.TemplateService
 	LineageProvider         handlers.LineageProvider
 }
 
@@ -36,14 +39,22 @@ func RegisterRoutes(router *mux.Router, config Config) {
 		config.RecordSearcher,
 		config.TypeRepository,
 	)
-
 	lineageHandler := handlers.NewLineageHandler(
 		config.Logger.WithField("reporter", "lineage-handler"),
 		config.LineageProvider,
 	)
+	tagHandler := handlers.NewTagHandler(
+		config.Logger.WithField("reporter", "tag-handler"),
+		config.TagService,
+	)
+	tagTemplateHandler := handlers.NewTagTemplateHandler(
+		config.Logger.WithField("reporter", "tag-template-handler"),
+		config.TagTemplateService,
+	)
 
 	router.PathPrefix("/ping").Handler(handlers.NewHeartbeatHandler())
 	setupV1TypeRoutes(router, "/v1/types", typeHandler)
+	setupV1TagRoutes(router, "/v1/tags", tagHandler, tagTemplateHandler)
 
 	router.Path("/v1/search").
 		Methods(http.MethodGet).
@@ -90,4 +101,23 @@ func setupV1TypeRoutes(router *mux.Router, baseURL string, typeHandler *handlers
 	router.Path(baseURL+"/{name}/records/{id}").
 		Methods(http.MethodGet, http.MethodHead).
 		HandlerFunc(typeHandler.GetTypeRecord)
+
+}
+
+func setupV1TagRoutes(router *mux.Router, baseURL string, th *handlers.TagHandler, tth *handlers.TagTemplateHandler) {
+	router.Methods(http.MethodPost).Path(baseURL).HandlerFunc(th.Create)
+
+	url := baseURL + "/types/{type}/records/{record_urn}/templates/{template_urn}"
+	router.Methods(http.MethodGet).Path(url).HandlerFunc(th.FindByRecordAndTemplate)
+	router.Methods(http.MethodPut).Path(url).HandlerFunc(th.Update)
+	router.Methods(http.MethodDelete).Path(url).HandlerFunc(th.Delete)
+
+	router.Methods(http.MethodGet).Path(baseURL + "/types/{type}/records/{record_urn}").HandlerFunc(th.GetByRecord)
+
+	templateURL := baseURL + "/templates"
+	router.Methods(http.MethodGet).Path(templateURL).HandlerFunc(tth.Index)
+	router.Methods(http.MethodPost).Path(templateURL).HandlerFunc(tth.Create)
+	router.Methods(http.MethodGet).Path(templateURL + "/{template_urn}").HandlerFunc(tth.Find)
+	router.Methods(http.MethodPut).Path(templateURL + "/{template_urn}").HandlerFunc(tth.Update)
+	router.Methods(http.MethodDelete).Path(templateURL + "/{template_urn}").HandlerFunc(tth.Delete)
 }

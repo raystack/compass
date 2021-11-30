@@ -5,3 +5,12 @@ services:
     image: 'elasticsearch:7.6.1'
     environment:
       discovery.type: single-node
+  postgres:
+    ports:
+      - 5432:5432
+    image: 'postgres:12.3'
+    environment:
+      POSTGRES_USER: columbus
+      POSTGRES_PASSWORD: columbus_password
+      POSTGRES_DB: columbus
+      discovery.type: single-node

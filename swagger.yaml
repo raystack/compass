@@ -283,6 +283,43 @@ paths:
           description: misconfigured request parameters
           schema:
             $ref: "#/definitions/Error"
+  "/v1/tags":
+    post:
+      tags:
+        - Tag
+      summary: Tag a record
+      description: Tag a record in a type with a tag template
+      produces:
+        - "application/json"
+      parameters:
+        - in: body
+          name: ""
+          required: true
+          schema:
+            allOf:
+              - $ref: "#/definitions/Tag"
+              - required:
+                  - record_type
+                  - record_urn
+                  - template_urn
+                  - tag_values
+      responses:
+        201:
+          description: OK
+          schema:
+            $ref: '#/definitions/Tag'
+        400:
+          description: validation error
+          schema:
+            $ref: '#/definitions/ValidationError'
+        409:
+          description: duplicate tags
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: internal server error
+          schema:
+            $ref: '#/definitions/Error'        
   "/v1/tags/templates":
     get:
       tags:
@@ -313,12 +350,13 @@ paths:
         - in: body
           name: ""
           schema:
-            required:
-              - urn
-              - display_name
-              - description
-              - fields
-            $ref: '#/definitions/TagTemplate'
+            allOf:
+              - $ref: "#/definitions/TagTemplate"
+              - required:
+                  - urn
+                  - display_name
+                  - description
+                  - fields
       responses:
         201:
           description: Created
@@ -377,11 +415,12 @@ paths:
         - in: body
           name: ""
           schema:
-            required:
-              - display_name
-              - description
-              - fields
-            $ref: '#/definitions/TagTemplate'
+            allOf:
+              - $ref: "#/definitions/TagTemplate"
+              - required:
+                  - display_name
+                  - description
+                  - fields
       responses:
         200:
           description: OK
@@ -442,9 +481,6 @@ paths:
           name: record_urn
           type: string
           required: true
-        - in: query
-          name: template_urn
-          type: string
       responses:
         200:
           description: OK
@@ -452,19 +488,16 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Tag'
-        404:
-          description: record is not found
-          schema:
-            $ref: '#/definitions/Error'
         500:
           description: internal server error
           schema:
             $ref: '#/definitions/Error'
-    post:
+  "/v1/tags/types/{type}/records/{record_urn}/templates/{template_urn}":
+    get:
       tags:
         - Tag
-      summary: Tag a record
-      description: Tag a record in a type with a tag template
+      summary: Find a tag by record and template
+      description: Find a single tag using record urn and template urn
       produces:
         - "application/json"
       parameters:
@@ -476,25 +509,17 @@ paths:
           name: record_urn
           type: string
           required: true
-        - in: body
-          name: ""
+        - in: path
+          name: template_urn
+          type: string
           required: true
-          schema:
-            required:
-              - template_urn
-              - tag_values
-            $ref: "#/definitions/Tag"
       responses:
-        201:
+        200:
           description: OK
           schema:
             $ref: '#/definitions/Tag'
-        400:
-          description: validation error
-          schema:
-            $ref: '#/definitions/ValidationError'
-        409:
-          description: duplicate tags
+        404:
+          description: record is not found
           schema:
             $ref: '#/definitions/Error'
         500:
@@ -517,14 +542,18 @@ paths:
           name: record_urn
           type: string
           required: true
+        - in: path
+          name: template_urn
+          type: string
+          required: true
         - in: body
           name: ""
           required: true
           schema:
-            required:
-              - template_urn
-              - tag_values
-            $ref: "#/definitions/Tag"
+            allOf:
+              - $ref: "#/definitions/Tag"
+              - required:
+                  - tag_values
       responses:
         201:
           description: OK
@@ -535,7 +564,7 @@ paths:
           schema:
             $ref: '#/definitions/ValidationError'
         404:
-          description: record is not found
+          description: tag is not found
           schema:
             $ref: '#/definitions/Error'
         500:
@@ -558,7 +587,7 @@ paths:
           name: record_urn
           type: string
           required: true
-        - in: query
+        - in: path
           name: template_urn
           type: number
           required: true
@@ -668,13 +697,13 @@ definitions:
         type: string
       fields:
         type: array
-        required:
-          - urn
-          - display_name
-          - description
-          - data_type
         items:
           type: object
+          required:
+            - urn
+            - display_name
+            - description
+            - data_type
           properties: 
             id:
               type: number

@@ -18,6 +18,8 @@ import (
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/metrics"
 	"github.com/odpf/columbus/store"
+	"github.com/odpf/columbus/tag"
+	"github.com/odpf/columbus/tag/sqlstore"
 	"github.com/sirupsen/logrus"
 )
 
@@ -77,6 +79,26 @@ func initRouter(
 		rootLogger.Info("lineage build complete")
 	}()
 
+	pgClient, err := sqlstore.NewPostgreSQLClient(sqlstore.Config{
+		Port:     config.DBPort,
+		Host:     config.DBHost,
+		Name:     config.DBName,
+		User:     config.DBUser,
+		Password: config.DBPassword,
+		SSLMode:  config.DBSSLMode,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	tagRepository := sqlstore.NewTagRepository(pgClient)
+	tagTemplateService := tag.NewTemplateService(
+		sqlstore.NewTemplateRepository(pgClient),
+	)
+	tagService := tag.NewService(
+		tagRepository,
+		tagTemplateService,
+	)
+
 	router := mux.NewRouter()
 	if nrMonitor != nil {
 		nrMonitor.MonitorRouter(router)
@@ -93,6 +115,8 @@ func initRouter(
 		RecordRepositoryFactory: recordRepositoryFactory,
 		TypeRepository:          typeRepository,
 		LineageProvider:         lineageService,
+		TagService:              tagService,
+		TagTemplateService:      tagTemplateService,
 	})
 
 	return router
