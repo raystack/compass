@@ -588,13 +588,31 @@ definitions:
   Record:
     type: object
     properties:
-      name:
-        type: string
       urn:
         type: string
-      team:
+        example: "sample-urn"
+      name:
         type: string
-      environment:
+        example: "sample-name"
+      service:
+        type: string
+        example: "bigquery"
+      description:
+        type: string
+        example: "sample description"
+      data:
+        type: object
+        description: "dynamic object"
+      labels:
+        type: object
+        description: "map of string"
+      upstreams:
+        $ref: '#/definitions/LineageRecord'
+      downstreams:
+        $ref: '#/definitions/LineageRecord'
+      created_at:
+        type: string
+      updated_at:
         type: string
   Tag:
     type: object
@@ -694,6 +712,16 @@ definitions:
       status:
         type: string
         default: success
+  LineageRecord:
+    type: object
+    properties: 
+      urn:
+        type: string
+        example: "sample-urn"
+      type:
+        type: string
+        description: "Columbus registered type"
+        example: "table"
   AdjacencyEntry:
     type: object
     properties:
