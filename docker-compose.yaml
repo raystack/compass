@@ -8,7 +8,7 @@ services:
   postgres:
     ports:
       - 5432:5432
-    image: 'postgres:12.3'
+    image: 'postgres:13'
     environment:
       POSTGRES_USER: columbus
       POSTGRES_PASSWORD: columbus_password
