@@ -42,7 +42,11 @@ func newTemplateValidator() validator.Validator {
 			{
 				Type: Template{},
 				Func: func(sl v.StructLevel) {
-					template := sl.Current().Interface().(Template)
+					template, ok := sl.Current().Interface().(Template)
+					if !ok {
+						sl.ReportError(nil, "struct", "", "is_not_a_template", "")
+					}
+
 					for i, field := range template.Fields {
 						if field.DataType == "enumerated" {
 							if len(field.Options) == 0 {

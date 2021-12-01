@@ -386,7 +386,7 @@ func (s *TagTemplateHandlerTestSuite) TestDelete() {
 		s.Equal(expectedResponseBody, actualResponseBody)
 	})
 
-	s.Run("should return status bad request error and its message if template is not found", func() {
+	s.Run("should return 404 if template is not found", func() {
 		s.Setup()
 		var templateURN string = "governance_policy"
 		request, err := http.NewRequest(http.MethodGet, "/", nil)
@@ -398,15 +398,8 @@ func (s *TagTemplateHandlerTestSuite) TestDelete() {
 			URN: templateURN,
 		}).Return(tag.TemplateNotFoundError{URN: templateURN})
 
-		expectedStatusCode := http.StatusNotFound
-		expectedResponseBody := "{\"reason\":\"could not find template \\\"governance_policy\\\"\"}\n"
-
 		s.handler.Delete(s.recorder, request)
-		actualStatusCode := s.recorder.Result().StatusCode
-		actualResponseBody := s.recorder.Body.String()
-
-		s.Equal(expectedStatusCode, actualStatusCode)
-		s.Equal(expectedResponseBody, actualResponseBody)
+		s.Equal(http.StatusNotFound, s.recorder.Result().StatusCode)
 	})
 
 	s.Run("should return status no content and template if domain template is found", func() {

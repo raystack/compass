@@ -88,10 +88,10 @@ func (h *TagHandler) GetByRecord(w http.ResponseWriter, r *http.Request) {
 	tags, err := h.service.GetByRecord(recordType, recordURN)
 	if err != nil {
 		internalServerError(w, h.logger, fmt.Sprintf("error getting record tags: %s", err.Error()))
-
-	} else {
-		writeJSON(w, http.StatusOK, tags)
+		return
 	}
+
+	writeJSON(w, http.StatusOK, tags)
 }
 
 // FindByRecordAndTemplate handles get tag by record requests
@@ -120,10 +120,10 @@ func (h *TagHandler) FindByRecordAndTemplate(w http.ResponseWriter, r *http.Requ
 	tags, err := h.service.FindByRecordAndTemplate(recordType, recordURN, templateURN)
 	if err != nil {
 		internalServerError(w, h.logger, fmt.Sprintf("error finding a tag with record and template: %s", err.Error()))
-
-	} else {
-		writeJSON(w, http.StatusOK, tags)
+		return
 	}
+
+	writeJSON(w, http.StatusOK, tags)
 }
 
 // Update handles tag update requests
@@ -160,13 +160,12 @@ func (h *TagHandler) Update(w http.ResponseWriter, r *http.Request) {
 	requestBody.RecordType = recordType
 	requestBody.TemplateURN = templateURN
 	err := h.service.Update(&requestBody)
+	if errors.As(err, new(tag.NotFoundError)) {
+		writeJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
 	if err != nil {
-		if errors.As(err, new(tag.NotFoundError)) {
-			writeJSONError(w, http.StatusNotFound, err.Error())
-		}
-
 		internalServerError(w, h.logger, fmt.Sprintf("error updating a template: %s", err.Error()))
-
 		return
 	}
 
@@ -199,8 +198,8 @@ func (h *TagHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	err := h.service.Delete(recordType, recordURN, templateURN)
 	if err != nil {
 		internalServerError(w, h.logger, fmt.Sprintf("error deleting a template: %s", err.Error()))
-
-	} else {
-		writeJSON(w, http.StatusNoContent, nil)
+		return
 	}
+
+	writeJSON(w, http.StatusNoContent, nil)
 }

@@ -43,7 +43,6 @@ func (h *TagTemplateHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		internalServerError(w, h.logger, fmt.Sprintf("error creating tag template: %s", err.Error()))
-
 		return
 	}
 
@@ -59,7 +58,6 @@ func (h *TagTemplateHandler) Index(w http.ResponseWriter, r *http.Request) {
 	listOfDomainTemplate, err := h.service.Index(queryDomainTemplate)
 	if err != nil {
 		internalServerError(w, h.logger, fmt.Sprintf("error finding templates: %s", err.Error()))
-
 		return
 	}
 	writeJSON(w, http.StatusOK, listOfDomainTemplate)
@@ -113,7 +111,6 @@ func (h *TagTemplateHandler) Find(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		internalServerError(w, h.logger, fmt.Sprintf("error finding a template: %s", err.Error()))
-
 		return
 	}
 
@@ -130,15 +127,12 @@ func (h *TagTemplateHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := h.service.Delete(urn)
+	if errors.As(err, new(tag.TemplateNotFoundError)) {
+		writeJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
 	if err != nil {
-		e := new(tag.TemplateNotFoundError)
-		if errors.As(err, e) {
-			writeJSONError(w, http.StatusNotFound, e.Error())
-			return
-		}
-
 		internalServerError(w, h.logger, fmt.Sprintf("error deleting a template: %s", err.Error()))
-
 		return
 	}
 

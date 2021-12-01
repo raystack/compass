@@ -37,13 +37,17 @@ func (r *TagRepository) Create(domainTag *tag.Tag) error {
 	err = r.dbClient.Transaction(func(tx *gorm.DB) error {
 		return r.insertDomainTagToDB(tx, domainTag)
 	})
-	if err == nil {
-		listOfRecordModelTag, err := r.readListOfModelTagFromDB(r.dbClient, domainTag.RecordType, domainTag.RecordURN, domainTemplate)
-		if err == nil {
-			err = r.complementDomainTag(domainTag, domainTemplate, listOfRecordModelTag)
-		}
+	if err != nil {
+		return errors.Wrap(err, "error inserting tag to DB")
 	}
-	return err
+
+	listOfRecordModelTag, err := r.readListOfModelTagFromDB(r.dbClient, domainTag.RecordType, domainTag.RecordURN, domainTemplate)
+	if err == nil {
+		err = r.complementDomainTag(domainTag, domainTemplate, listOfRecordModelTag)
+		return err
+	}
+
+	return nil
 }
 
 // Read reads tags grouped by its template
