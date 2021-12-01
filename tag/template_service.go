@@ -148,9 +148,6 @@ func (s *TemplateService) Delete(urn string) error {
 
 // NewTemplateService initializes service template service
 func NewTemplateService(r TemplateRepository) *TemplateService {
-	if r == nil {
-		panic("repository is nil")
-	}
 	return &TemplateService{
 		validator:  newTemplateValidator(),
 		repository: r,

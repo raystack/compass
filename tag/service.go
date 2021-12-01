@@ -7,13 +7,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	errNilRepository      = errors.New("tag repository is nil")
-	errNilResourceService = errors.New("resource service is nil")
-	errNilTemplateService = errors.New("template service is nil")
-	errNilValidator       = errors.New("validator is nil")
-)
-
 // Service is a type that manages business process
 type Service struct {
 	validator       validator.Validator
@@ -191,12 +184,6 @@ func (s *Service) validateFieldValueIsValid(tag Tag, template Template) error {
 
 // NewService initializes service tag
 func NewService(repository TagRepository, templateService *TemplateService) *Service {
-	if repository == nil {
-		panic(errNilRepository)
-	}
-	if templateService == nil {
-		panic(errNilTemplateService)
-	}
 	return &Service{
 		validator:       newValidator(),
 		repository:      repository,
