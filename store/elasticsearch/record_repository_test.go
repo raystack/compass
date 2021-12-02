@@ -12,8 +12,8 @@ import (
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/odpf/columbus/discovery"
-	store "github.com/odpf/columbus/discovery/elasticsearch"
 	"github.com/odpf/columbus/record"
+	store "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,14 +24,14 @@ func TestRecordRepository(t *testing.T) {
 		var testCases = []struct {
 			Title      string
 			ShouldFail bool
-			Setup      func(cli *elasticsearch.Client, records []record.Record, Type record.Type) error
-			PostCheck  func(cli *elasticsearch.Client, records []record.Record, Type record.Type) error
-			Type       record.Type
+			Setup      func(cli *elasticsearch.Client, records []record.Record, typeName string) error
+			PostCheck  func(cli *elasticsearch.Client, records []record.Record, typeName string) error
+			TypeName   string
 			Records    []record.Record
 		}{
 			{
-				Title: "should succesfully write all the documents to the index for a valid type",
-				Type:  record.TypeJob,
+				Title:    "should succesfully write all the documents to the index for a valid type",
+				TypeName: "job",
 				Records: []record.Record{
 					{
 						Urn: "dagger1",
@@ -52,9 +52,9 @@ func TestRecordRepository(t *testing.T) {
 						},
 					},
 				},
-				PostCheck: func(cli *elasticsearch.Client, records []record.Record, recordType record.Type) error {
+				PostCheck: func(cli *elasticsearch.Client, records []record.Record, typeName string) error {
 					searchReq := esapi.SearchRequest{
-						Index: []string{recordType.String()},
+						Index: []string{typeName},
 						Body:  strings.NewReader(`{"query":{"match_all":{}}}`),
 					}
 					res, err := searchReq.Do(context.Background(), cli)
@@ -88,13 +88,13 @@ func TestRecordRepository(t *testing.T) {
 			t.Run(testCase.Title, func(t *testing.T) {
 				cli := esTestServer.NewClient()
 				if testCase.Setup != nil {
-					err := testCase.Setup(cli, testCase.Records, testCase.Type)
+					err := testCase.Setup(cli, testCase.Records, testCase.TypeName)
 					if err != nil {
 						t.Errorf("error setting up testcase: %v", err)
 					}
 				}
 				factory := store.NewRecordRepositoryFactory(cli)
-				repo, err := factory.For(testCase.Type)
+				repo, err := factory.For(testCase.TypeName)
 				if err != nil {
 					t.Fatalf("error creating record repository: %s", err)
 				}
@@ -107,7 +107,7 @@ func TestRecordRepository(t *testing.T) {
 					return
 				}
 				if testCase.PostCheck != nil {
-					if err := testCase.PostCheck(cli, testCase.Records, testCase.Type); err != nil {
+					if err := testCase.PostCheck(cli, testCase.Records, testCase.TypeName); err != nil {
 						t.Error(err)
 						return
 					}
@@ -118,7 +118,7 @@ func TestRecordRepository(t *testing.T) {
 
 	cli := esTestServer.NewClient()
 	rrf := store.NewRecordRepositoryFactory(cli)
-	recordRepo, err := rrf.For(record.TypeTopic)
+	recordRepo, err := rrf.For("topic")
 	if err != nil {
 		t.Fatalf("failed to construct record repository: %v", err)
 		return
@@ -176,13 +176,6 @@ func TestRecordRepository(t *testing.T) {
 					"service": {"rabbitmq"},
 				},
 				ResultsFile: "./testdata/records-service.json",
-			},
-			{
-				Description: "should handle filter by type",
-				Filter: map[string][]string{
-					"type": {"table"},
-				},
-				ResultsFile: "./testdata/records-type.json",
 			},
 			{
 				Description: "should support a single value filter",

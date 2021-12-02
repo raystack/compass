@@ -12,34 +12,36 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func initialiseRepos(datasets map[record.Type][]record.Record) discovery.RecordRepositoryFactory {
+type dataset struct {
+	Type    record.Type
+	Records []record.Record
+}
+
+func initialiseRepos(datasets []dataset) (record.TypeRepository, discovery.RecordRepositoryFactory) {
 	var (
-		rrf = new(mock.RecordRepositoryFactory)
-		ctx = context.Background()
+		tr      = new(mock.TypeRepository)
+		rrf     = new(mock.RecordRepositoryFactory)
+		typList = []record.Type{}
+		ctx     = context.Background()
 	)
-
-	for _, t := range record.TypeList {
-		var records []record.Record
-		records, ok := datasets[t]
+	for _, dataset := range datasets {
+		typ := dataset.Type.Normalise()
+		tr.On("GetByName", typ.Name).Return(typ, nil)
 		recordIterator := new(mock.RecordIterator)
-		if ok {
-			recordIterator.On("Scan").Return(true).Once()
-			recordIterator.On("Scan").Return(false).Once()
-			recordIterator.On("Next").Return(records)
-		} else {
-			recordIterator.On("Scan").Return(false).Once()
-		}
-
+		recordIterator.On("Scan").Return(true).Once()
+		recordIterator.On("Scan").Return(false).Once()
+		recordIterator.On("Next").Return(dataset.Records)
 		recordIterator.On("Close").Return(nil)
 		recordRepo := new(mock.RecordRepository)
 		recordRepo.On("GetAllIterator", ctx).Return(recordIterator, nil)
-		rrf.On("For", t).Return(recordRepo, nil)
+		rrf.On("For", typ.Name).Return(recordRepo, nil)
+		typList = append(typList, typ)
 	}
-
-	return rrf
+	tr.On("GetAll", ctx).Return(typList, nil)
+	return tr, rrf
 }
 
-func adjEntryWithTypeAndURN(typ record.Type, urn, service string) lineage.AdjacencyEntry {
+func adjEntryWithTypeAndURN(typ, urn, service string) lineage.AdjacencyEntry {
 	return lineage.AdjacencyEntry{
 		Type:        typ,
 		URN:         urn,
@@ -53,7 +55,7 @@ func TestDefaultBuilder(t *testing.T) {
 	t.Run("graph construction algorithm", func(t *testing.T) {
 		type testCase struct {
 			Description string
-			Datasets    map[record.Type][]record.Record
+			Datasets    []dataset
 			Result      lineage.AdjacencyMap
 			QueryCfg    lineage.QueryCfg
 			BuildErr    error
@@ -62,113 +64,131 @@ func TestDefaultBuilder(t *testing.T) {
 		var testCases = []testCase{
 			{
 				Description: "smoke test",
-				Datasets: map[record.Type][]record.Record{
-					record.TypeTable: {
-						{
-							Urn:     "1",
-							Service: "service-A",
-							Type:    record.TypeTable,
+				Datasets: []dataset{
+					{
+						Type: record.Type{
+							Name:           "test",
+							Classification: record.TypeClassificationResource,
 						},
-						{
-							Urn:     "2",
-							Type:    record.TypeTable,
-							Service: "service-A",
+						Records: []record.Record{
+							{
+								Urn:     "1",
+								Service: "service-A",
+							},
+							{
+								Urn:     "2",
+								Service: "service-A",
+							},
 						},
 					},
 				},
 				Result: lineage.AdjacencyMap{
-					"table/1": adjEntryWithTypeAndURN(record.TypeTable, "1", "service-A"),
-					"table/2": adjEntryWithTypeAndURN(record.TypeTable, "2", "service-A"),
+					"test/1": adjEntryWithTypeAndURN("test", "1", "service-A"),
+					"test/2": adjEntryWithTypeAndURN("test", "2", "service-A"),
 				},
 			},
 			{
 				// tests that the builder is able to use type.lineage to populate
 				// related records
 				Description: "internal ref test (simple)",
-				Datasets: map[record.Type][]record.Record{
-					record.TypeJob: {
-						{
-							Urn:     "1",
-							Service: "service-A",
-							Type:    record.TypeJob,
-							Upstreams: []record.LineageRecord{
-								{
-									Urn:  "A",
-									Type: record.TypeDashboard,
+				Datasets: []dataset{
+					{
+						Type: record.Type{
+							Name:           "internal-ref",
+							Classification: record.TypeClassificationResource,
+						},
+						Records: []record.Record{
+							{
+								Urn:     "1",
+								Service: "service-A",
+								Upstreams: []record.LineageRecord{
+									{
+										Urn:  "A",
+										Type: "related-resource-us",
+									},
+									{
+										Urn:  "B",
+										Type: "related-resource-us",
+									},
 								},
-								{
-									Urn:  "B",
-									Type: record.TypeDashboard,
-								},
-							},
-							Downstreams: []record.LineageRecord{
-								{
-									Urn:  "C",
-									Type: record.TypeTopic,
+								Downstreams: []record.LineageRecord{
+									{
+										Urn:  "C",
+										Type: "related-resource-ds",
+									},
 								},
 							},
 						},
 					},
 				},
 				Result: lineage.AdjacencyMap{
-					"job/1": lineage.AdjacencyEntry{
-						Type:        record.TypeJob,
+					"internal-ref/1": lineage.AdjacencyEntry{
+						Type:        "internal-ref",
 						URN:         "1",
 						Service:     "service-A",
-						Downstreams: set.NewStringSet("topic/C"),
-						Upstreams:   set.NewStringSet("dashboard/A", "dashboard/B"),
+						Downstreams: set.NewStringSet("related-resource-ds/C"),
+						Upstreams:   set.NewStringSet("related-resource-us/A", "related-resource-us/B"),
 					},
 				},
 			},
 			{
 				Description: "external ref test",
-				Datasets: map[record.Type][]record.Record{
-					record.TypeTopic: {
-						{
-							Urn:  "data-booking",
-							Type: record.TypeTopic,
+				Datasets: []dataset{
+					{
+						Type: record.Type{
+							Name:           "producer",
+							Classification: record.TypeClassificationResource,
 						},
-					},
-					record.TypeTable: {
-						{
-							Urn:  "booking-aggregator",
-							Type: record.TypeTable,
-							Upstreams: []record.LineageRecord{
-								{
-									Urn:  "data-booking",
-									Type: record.TypeTopic,
-								},
+						Records: []record.Record{
+							{
+								Urn: "data-booking",
 							},
 						},
-						{
-							Urn:  "booking-fraud-detector",
-							Type: record.TypeTable,
-							Upstreams: []record.LineageRecord{
-								{
-									Urn:  "data-booking",
-									Type: record.TypeTopic,
+					},
+					{
+						Type: record.Type{
+							Name:           "consumer",
+							Classification: record.TypeClassificationResource,
+						},
+						Records: []record.Record{
+							{
+								Urn: "booking-aggregator",
+								Upstreams: []record.LineageRecord{
+									{
+										Urn:  "data-booking",
+										Type: "producer",
+									},
+								},
+							},
+							{
+								Urn: "booking-fraud-detector",
+								Upstreams: []record.LineageRecord{
+									{
+										Urn:  "data-booking",
+										Type: "producer",
+									},
 								},
 							},
 						},
 					},
 				},
 				Result: lineage.AdjacencyMap{
-					"topic/data-booking": lineage.AdjacencyEntry{
-						Type:        record.TypeTopic,
+					"producer/data-booking": lineage.AdjacencyEntry{
+						Type:        "producer",
 						URN:         "data-booking",
 						Upstreams:   set.NewStringSet(),
-						Downstreams: set.NewStringSet("table/booking-aggregator", "table/booking-fraud-detector"),
+						Downstreams: set.NewStringSet("consumer/booking-aggregator", "consumer/booking-fraud-detector"),
 					},
-					"table/booking-aggregator": lineage.AdjacencyEntry{
-						Type:        record.TypeTable,
+					"consumer/booking-aggregator": lineage.AdjacencyEntry{
+						Type:        "consumer",
 						URN:         "booking-aggregator",
-						Upstreams:   set.NewStringSet("topic/data-booking"),
+						Upstreams:   set.NewStringSet("producer/data-booking"),
 						Downstreams: set.NewStringSet(),
 					},
-					"table/booking-fraud-detector": lineage.AdjacencyEntry{
-						Type:        record.TypeTable,
+					"consumer/booking-fraud-detector": lineage.AdjacencyEntry{
+						Type:        "consumer",
 						URN:         "booking-fraud-detector",
-						Upstreams:   set.NewStringSet("topic/data-booking"),
+						Upstreams:   set.NewStringSet("producer/data-booking"),
 						Downstreams: set.NewStringSet(),
 					},
 				},
@@ -177,8 +197,8 @@ func TestDefaultBuilder(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.Description, func(t *testing.T) {
-				rrf := initialiseRepos(tc.Datasets)
-				graph, err := lineage.DefaultBuilder.Build(context.Background(), rrf)
+				er, rrf := initialiseRepos(tc.Datasets)
+				graph, err := lineage.DefaultBuilder.Build(context.Background(), er, rrf)
 				if err != nil {
 					if err != tc.BuildErr {
 						t.Errorf("unexpected error when building graph: %v", err)

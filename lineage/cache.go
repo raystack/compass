@@ -38,10 +38,7 @@ func (graph *CachedGraph) Query(cfg QueryCfg) (AdjacencyMap, error) {
 // subject to change in the future.
 func (graph *CachedGraph) hashCfg(cfg QueryCfg) string {
 	var values []string
-	for _, t := range cfg.TypeWhitelist {
-		values = append(values, t.String())
-	}
-
+	copy(values, cfg.TypeWhitelist)
 	sort.Strings(values)
 	values = append(values, cfg.Root+"%")
 	if cfg.Collapse {

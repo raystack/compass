@@ -1,11 +1,8 @@
 package handlers
 
 import (
-	"fmt"
 	"net/url"
 	"strings"
-
-	"github.com/odpf/columbus/record"
 )
 
 func filterConfigFromValues(querystring url.Values) map[string][]string {
@@ -26,14 +23,4 @@ func filterConfigFromValues(querystring url.Values) map[string][]string {
 		filter[filterKey] = filterValues
 	}
 	return filter
-}
-
-func validateType(t string) (record.Type, error) {
-	for _, validType := range record.TypeList {
-		if string(validType) == t {
-			return validType, nil
-		}
-	}
-
-	return record.Type(t), fmt.Errorf("invalid type \"%s\"", t)
 }

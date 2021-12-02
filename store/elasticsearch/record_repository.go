@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
@@ -18,20 +17,15 @@ import (
 	"github.com/olivere/elastic/v7"
 )
 
-const (
-	defaultScrollTimeout   = 30 * time.Second
-	defaultScrollBatchSize = 1000
-)
-
 type getResponse struct {
 	Source record.Record `json:"_source"`
 }
 
-// RecordRepository implements record.RecordRepository
+// RecordRepository implements discovery.RecordRepository
 // with elasticsearch as the backing store.
 type RecordRepository struct {
-	recordType record.Type
-	cli        *elasticsearch.Client
+	typeName string
+	cli      *elasticsearch.Client
 }
 
 func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []record.Record) error {
@@ -76,7 +70,7 @@ func (repo *RecordRepository) writeInsertAction(w io.Writer, record record.Recor
 	type obj map[string]interface{}
 	action := obj{
 		"index": obj{
-			"_index": repo.recordType,
+			"_index": repo.typeName,
 			"_id":    record.Urn,
 		},
 	}
@@ -90,7 +84,7 @@ func (repo *RecordRepository) GetAllIterator(ctx context.Context) (discovery.Rec
 	}
 
 	resp, err := repo.cli.Search(
-		repo.cli.Search.WithIndex(repo.recordType.String()),
+		repo.cli.Search.WithIndex(repo.typeName),
 		repo.cli.Search.WithBody(body),
 		repo.cli.Search.WithScroll(defaultScrollTimeout),
 		repo.cli.Search.WithSize(defaultScrollBatchSize),
@@ -127,7 +121,7 @@ func (repo *RecordRepository) GetAll(ctx context.Context, filters discovery.Reco
 	}
 
 	resp, err := repo.cli.Search(
-		repo.cli.Search.WithIndex(repo.recordType.String()),
+		repo.cli.Search.WithIndex(repo.typeName),
 		repo.cli.Search.WithBody(body),
 		repo.cli.Search.WithScroll(defaultScrollTimeout),
 		repo.cli.Search.WithSize(defaultScrollBatchSize),
@@ -184,11 +178,12 @@ func (repo *RecordRepository) scrollRecords(ctx context.Context, scrollID string
 	return repo.toRecordList(response), response.ScrollID, nil
 }
 
-func (repo *RecordRepository) toRecordList(res searchResponse) (records []record.Record) {
+func (repo *RecordRepository) toRecordList(res searchResponse) []record.Record {
+	records := []record.Record{}
 	for _, entry := range res.Hits.Hits {
 		records = append(records, entry.Source)
 	}
-	return
+	return records
 }
 
 func (repo *RecordRepository) getAllQuery(filters discovery.RecordFilter) (io.Reader, error) {
@@ -230,7 +225,7 @@ func (repo *RecordRepository) termsQuery(filters discovery.RecordFilter) (io.Rea
 
 func (repo *RecordRepository) GetByID(ctx context.Context, id string) (r record.Record, err error) {
 	res, err := repo.cli.Get(
-		repo.recordType.String(),
+		repo.typeName,
 		url.PathEscape(id),
 		repo.cli.Get.WithContext(ctx),
 	)
@@ -245,7 +240,7 @@ func (repo *RecordRepository) GetByID(ctx context.Context, id string) (r record.
 			err = record.ErrNoSuchRecord{RecordID: id}
 			return
 		}
-		err = fmt.Errorf("got %s response from elasticsearch: %s", res.Status(), res.String())
+		err = fmt.Errorf("got %s response from elasticsearch: %s", res.Status(), res)
 		return
 	}
 
@@ -262,7 +257,7 @@ func (repo *RecordRepository) GetByID(ctx context.Context, id string) (r record.
 
 func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 	res, err := repo.cli.Delete(
-		repo.recordType.String(),
+		repo.typeName,
 		url.PathEscape(id),
 		repo.cli.Delete.WithRefresh("true"),
 		repo.cli.Delete.WithContext(ctx),
@@ -316,10 +311,10 @@ type RecordRepositoryFactory struct {
 	cli *elasticsearch.Client
 }
 
-func (factory *RecordRepositoryFactory) For(recordType record.Type) (discovery.RecordRepository, error) {
+func (factory *RecordRepositoryFactory) For(typeName string) (discovery.RecordRepository, error) {
 	return &RecordRepository{
-		cli:        factory.cli,
-		recordType: recordType,
+		cli:      factory.cli,
+		typeName: typeName,
 	}, nil
 }
 

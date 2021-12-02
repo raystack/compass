@@ -2,7 +2,6 @@ package discovery
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/odpf/columbus/record"
 	"github.com/pkg/errors"
@@ -20,10 +19,10 @@ func NewService(factory RecordRepositoryFactory, recordSearcher RecordSearcher) 
 	}
 }
 
-func (s *Service) Upsert(ctx context.Context, t record.Type, records []record.Record) (err error) {
-	repo, err := s.factory.For(t)
+func (s *Service) Upsert(ctx context.Context, typeName string, records []record.Record) (err error) {
+	repo, err := s.factory.For(typeName)
 	if err != nil {
-		return errors.Wrapf(err, "error building repo for type \"%s\"", t)
+		return errors.Wrapf(err, "error building repo for type \"%s\"", typeName)
 	}
 
 	err = repo.CreateOrReplaceMany(ctx, records)
@@ -34,10 +33,10 @@ func (s *Service) Upsert(ctx context.Context, t record.Type, records []record.Re
 	return nil
 }
 
-func (s *Service) DeleteRecord(ctx context.Context, t record.Type, recordURN string) error {
-	repo, err := s.factory.For(t)
+func (s *Service) DeleteRecord(ctx context.Context, typeName string, recordURN string) error {
+	repo, err := s.factory.For(typeName)
 	if err != nil {
-		return errors.Wrapf(err, "error building repo for type \"%s\"", t)
+		return errors.Wrapf(err, "error building repo for type \"%s\"", typeName)
 	}
 
 	err = repo.Delete(ctx, recordURN)
@@ -48,7 +47,6 @@ func (s *Service) DeleteRecord(ctx context.Context, t record.Type, recordURN str
 	return nil
 }
 
-func (s *Service) Search(ctx context.Context, cfg SearchConfig) (records []record.Record, err error) {
-	fmt.Printf("%+v\n", cfg.TypeWhiteList)
+func (s *Service) Search(ctx context.Context, cfg SearchConfig) ([]SearchResult, error) {
 	return s.recordSearcher.Search(ctx, cfg)
 }

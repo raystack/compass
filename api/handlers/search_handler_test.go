@@ -14,7 +14,6 @@ import (
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lib/mock"
-	"github.com/odpf/columbus/record"
 
 	"github.com/stretchr/testify/assert"
 	testifyMock "github.com/stretchr/testify/mock"
@@ -40,18 +39,12 @@ func TestSearchHandler(t *testing.T) {
 			Querystring:      "",
 		},
 		{
-			Title:        "should return 400 if type is invalid",
-			Querystring:  "text=test&filter.type=random",
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {},
-			ExpectStatus: http.StatusBadRequest,
-		},
-		{
 			Title:       "should report HTTP 500 if record searcher fails",
 			Querystring: "text=test",
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				err := fmt.Errorf("service unavailable")
 				searcher.On("Search", ctx, testifyMock.AnythingOfType("discovery.SearchConfig")).
-					Return([]record.Record{}, err)
+					Return([]discovery.SearchResult{}, err)
 			},
 			ExpectStatus: http.StatusInternalServerError,
 		},
@@ -61,14 +54,14 @@ func TestSearchHandler(t *testing.T) {
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				cfg := discovery.SearchConfig{
 					Text:          "resource",
-					TypeWhiteList: []record.Type{record.TypeTopic},
+					TypeWhiteList: []string{"topic"},
 					Filters: map[string][]string{
 						"service":        {"kafka", "rabbitmq"},
 						"data.landscape": {"th"},
 					},
 				}
 
-				searcher.On("Search", ctx, cfg).Return([]record.Record{}, nil)
+				searcher.On("Search", ctx, cfg).Return([]discovery.SearchResult{}, nil)
 			},
 			ValidateResponse: func(tc testCase, body io.Reader) error {
 				return nil
@@ -82,19 +75,13 @@ func TestSearchHandler(t *testing.T) {
 					Text:    "test",
 					Filters: make(map[string][]string),
 				}
-				response := []record.Record{
+				response := []discovery.SearchResult{
 					{
 						Type:        "test",
-						Urn:         "test-resource",
-						Name:        "test resource",
+						ID:          "test-resource",
+						Title:       "test resource",
 						Description: "some description",
 						Service:     "test-service",
-						Data: map[string]interface{}{
-							"id":        "test-resource",
-							"title":     "test resource",
-							"landscape": "id",
-							"entity":    "odpf",
-						},
 						Labels: map[string]string{
 							"entity":    "odpf",
 							"landscape": "id",
@@ -139,21 +126,15 @@ func TestSearchHandler(t *testing.T) {
 					Filters:    make(map[string][]string),
 				}
 
-				var results []record.Record
+				var results []discovery.SearchResult
 				for i := 0; i < cfg.MaxResults; i++ {
 					urn := fmt.Sprintf("resource-%d", i+1)
 					name := fmt.Sprintf("resource %d", i+1)
-					r := record.Record{
-						Urn:     urn,
-						Type:    record.TypeTable,
-						Name:    name,
+					r := discovery.SearchResult{
+						ID:      urn,
+						Type:    "table",
+						Title:   name,
 						Service: "kafka",
-						Data: map[string]interface{}{
-							"id":        urn,
-							"title":     name,
-							"landscape": "id",
-							"entity":    "odpf",
-						},
 						Labels: map[string]string{
 							"landscape": "id",
 							"entity":    "odpf",

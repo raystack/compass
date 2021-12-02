@@ -41,9 +41,9 @@ type RecordRepository interface {
 // RecordRepositoryFactory represents a type capable
 // of constructing a RecordRepository for a certain type
 type RecordRepositoryFactory interface {
-	For(Type record.Type) (RecordRepository, error)
+	For(Type string) (RecordRepository, error)
 }
 
 type RecordSearcher interface {
-	Search(ctx context.Context, cfg SearchConfig) (results []record.Record, err error)
+	Search(ctx context.Context, cfg SearchConfig) (results []SearchResult, err error)
 }

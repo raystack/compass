@@ -22,33 +22,17 @@ import (
 
 func TestRecordHandler(t *testing.T) {
 	var (
-		ctx = tmock.AnythingOfType("*context.valueCtx")
+		ctx      = tmock.AnythingOfType("*context.valueCtx")
+		typeName = "existing-type"
 	)
 
+	tr := new(mock.TypeRepository)
+	tr.On("GetByName", ctx, typeName).Return(record.Type{Name: typeName}, nil)
+	tr.On("GetByName", ctx, "invalid").Return(record.Type{}, record.ErrNoSuchType{TypeName: "invalid"})
+
 	t.Run("UpsertBulk", func(t *testing.T) {
-		t.Run("should return HTTP 404 if type doesn't exist", func(t *testing.T) {
-			rr := httptest.NewRequest("PUT", "/", strings.NewReader("{}"))
-			rw := httptest.NewRecorder()
-			rr = mux.SetURLVars(rr, map[string]string{
-				"name": "invalid",
-			})
+		var validPayload = `[{"urn": "test dagger", "name": "de-dagger-test", "service": "kafka", "data": {}}]`
 
-			handler := handlers.NewRecordHandler(new(mock.Logger), nil, nil)
-			handler.UpsertBulk(rw, rr)
-
-			expectedStatus := http.StatusNotFound
-			if rw.Code != expectedStatus {
-				t.Errorf("expected handler to return HTTP %d, returned HTTP %d instead", expectedStatus, rw.Code)
-				return
-			}
-
-			var response handlers.ErrorResponse
-			err := json.NewDecoder(rw.Body).Decode(&response)
-			if err != nil {
-				t.Fatalf("error parsing handler response: %v", err)
-				return
-			}
-		})
 		t.Run("should return HTTP 400 for invalid payload", func(t *testing.T) {
 			testCases := []struct {
 				payload string
@@ -74,10 +58,10 @@ func TestRecordHandler(t *testing.T) {
 				rw := httptest.NewRecorder()
 				rr := httptest.NewRequest("PUT", "/", strings.NewReader(testCase.payload))
 				rr = mux.SetURLVars(rr, map[string]string{
-					"name": record.TypeTopic.String(),
+					"name": typeName,
 				})
 
-				handler := handlers.NewRecordHandler(new(mock.Logger), nil, nil)
+				handler := handlers.NewRecordHandler(new(mock.Logger), tr, nil, nil)
 				handler.UpsertBulk(rw, rr)
 
 				expectedStatus := http.StatusBadRequest
@@ -87,22 +71,45 @@ func TestRecordHandler(t *testing.T) {
 				}
 			}
 		})
+
+		t.Run("should return HTTP 404 if type doesn't exist", func(t *testing.T) {
+			rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
+			rw := httptest.NewRecorder()
+			rr = mux.SetURLVars(rr, map[string]string{
+				"name": "invalid",
+			})
+
+			handler := handlers.NewRecordHandler(new(mock.Logger), tr, nil, nil)
+			handler.UpsertBulk(rw, rr)
+
+			expectedStatus := http.StatusNotFound
+			if rw.Code != expectedStatus {
+				t.Errorf("expected handler to return HTTP %d, returned HTTP %d instead", expectedStatus, rw.Code)
+				return
+			}
+
+			var response handlers.ErrorResponse
+			err := json.NewDecoder(rw.Body).Decode(&response)
+			if err != nil {
+				t.Fatalf("error parsing handler response: %v", err)
+				return
+			}
+		})
 		t.Run("should return HTTP 500 if the resource creation/update fails", func(t *testing.T) {
 			t.Run("RecordRepositoryFactory fails", func(t *testing.T) {
-				var payload = `[{"urn": "test dagger", "name": "de-dagger-test", "service": "kafka", "data": {}}]`
-				rr := httptest.NewRequest("PUT", "/", strings.NewReader(payload))
+				rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
 				rw := httptest.NewRecorder()
 				rr = mux.SetURLVars(rr, map[string]string{
-					"name": record.TypeTopic.String(),
+					"name": typeName,
 				})
 
 				factoryError := errors.New("unknown error")
 				recordRepoFac := new(mock.RecordRepositoryFactory)
-				recordRepoFac.On("For", record.TypeTopic).Return(new(mock.RecordRepository), factoryError)
+				recordRepoFac.On("For", typeName).Return(new(mock.RecordRepository), factoryError)
 				defer recordRepoFac.AssertExpectations(t)
 
 				service := discovery.NewService(recordRepoFac, nil)
-				handler := handlers.NewRecordHandler(new(mock.Logger), service, recordRepoFac)
+				handler := handlers.NewRecordHandler(new(mock.Logger), tr, service, recordRepoFac)
 				handler.UpsertBulk(rw, rr)
 
 				expectedStatus := http.StatusInternalServerError
@@ -122,7 +129,6 @@ func TestRecordHandler(t *testing.T) {
 				}
 			})
 			t.Run("RecordRepository fails", func(t *testing.T) {
-				payload := `[{"urn": "test dagger", "name": "de-dagger-test", "service": "kafka", "data": {}}]`
 				expectedRecords := []record.Record{
 					{
 						Urn:     "test dagger",
@@ -132,10 +138,10 @@ func TestRecordHandler(t *testing.T) {
 					},
 				}
 
-				rr := httptest.NewRequest("PUT", "/", strings.NewReader(payload))
+				rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
 				rw := httptest.NewRecorder()
 				rr = mux.SetURLVars(rr, map[string]string{
-					"name": record.TypeTopic.String(),
+					"name": typeName,
 				})
 
 				repositoryErr := errors.New("unknown error")
@@ -144,11 +150,11 @@ func TestRecordHandler(t *testing.T) {
 				defer recordRepository.AssertExpectations(t)
 
 				recordRepoFac := new(mock.RecordRepositoryFactory)
-				recordRepoFac.On("For", record.TypeTopic).Return(recordRepository, nil)
+				recordRepoFac.On("For", typeName).Return(recordRepository, nil)
 				defer recordRepoFac.AssertExpectations(t)
 
 				service := discovery.NewService(recordRepoFac, nil)
-				handler := handlers.NewRecordHandler(new(mock.Logger), service, recordRepoFac)
+				handler := handlers.NewRecordHandler(new(mock.Logger), tr, service, recordRepoFac)
 				handler.UpsertBulk(rw, rr)
 
 				expectedStatus := http.StatusInternalServerError
@@ -169,7 +175,6 @@ func TestRecordHandler(t *testing.T) {
 			})
 		})
 		t.Run("should return HTTP 200 if the resource is successfully created/update", func(t *testing.T) {
-			payload := `[{"urn": "test dagger", "name": "de-dagger-test", "service": "kafka", "data": {}}]`
 			expectedRecords := []record.Record{
 				{
 					Urn:     "test dagger",
@@ -178,10 +183,10 @@ func TestRecordHandler(t *testing.T) {
 					Data:    map[string]interface{}{},
 				},
 			}
-			rr := httptest.NewRequest("PUT", "/", strings.NewReader(payload))
+			rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
 			rw := httptest.NewRecorder()
 			rr = mux.SetURLVars(rr, map[string]string{
-				"name": record.TypeTopic.String(),
+				"name": typeName,
 			})
 
 			recordRepo := new(mock.RecordRepository)
@@ -189,11 +194,11 @@ func TestRecordHandler(t *testing.T) {
 			defer recordRepo.AssertExpectations(t)
 
 			recordRepoFac := new(mock.RecordRepositoryFactory)
-			recordRepoFac.On("For", record.TypeTopic).Return(recordRepo, nil)
+			recordRepoFac.On("For", typeName).Return(recordRepo, nil)
 			defer recordRepoFac.AssertExpectations(t)
 
 			service := discovery.NewService(recordRepoFac, nil)
-			handler := handlers.NewRecordHandler(new(mock.Logger), service, recordRepoFac)
+			handler := handlers.NewRecordHandler(new(mock.Logger), tr, service, recordRepoFac)
 			handler.UpsertBulk(rw, rr)
 
 			expectedStatus := http.StatusOK
@@ -221,7 +226,7 @@ func TestRecordHandler(t *testing.T) {
 	t.Run("Delete", func(t *testing.T) {
 		type testCase struct {
 			Description  string
-			Type         record.Type
+			Type         string
 			RecordID     string
 			ExpectStatus int
 			Setup        func(rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository)
@@ -231,11 +236,11 @@ func TestRecordHandler(t *testing.T) {
 		var testCases = []testCase{
 			{
 				Description:  "should return 204 on success",
-				Type:         record.TypeTopic,
+				Type:         typeName,
 				RecordID:     "id-10",
 				ExpectStatus: http.StatusNoContent,
 				Setup: func(rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
-					rrf.On("For", record.TypeTopic).Return(rr, nil)
+					rrf.On("For", typeName).Return(rr, nil)
 					rr.On("Delete", ctx, "id-10").Return(nil)
 				},
 			},
@@ -248,21 +253,21 @@ func TestRecordHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return 404 when record cannot be found",
-				Type:         record.TypeTopic,
+				Type:         typeName,
 				RecordID:     "id-10",
 				ExpectStatus: http.StatusNotFound,
 				Setup: func(rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
-					rrf.On("For", record.TypeTopic).Return(rr, nil)
+					rrf.On("For", typeName).Return(rr, nil)
 					rr.On("Delete", ctx, "id-10").Return(record.ErrNoSuchRecord{RecordID: "id-10"})
 				},
 			},
 			{
 				Description:  "should return 500 on error deleting record",
-				Type:         record.TypeTopic,
+				Type:         typeName,
 				RecordID:     "id-10",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
-					rrf.On("For", record.TypeTopic).Return(rr, nil)
+					rrf.On("For", typeName).Return(rr, nil)
 					rr.On("Delete", ctx, "id-10").Return(errors.New("error deleting record"))
 				},
 			},
@@ -272,7 +277,7 @@ func TestRecordHandler(t *testing.T) {
 				rr := httptest.NewRequest("DELETE", "/", nil)
 				rw := httptest.NewRecorder()
 				rr = mux.SetURLVars(rr, map[string]string{
-					"name": tc.Type.String(),
+					"name": tc.Type,
 					"id":   tc.RecordID,
 				})
 				recordRepo := new(mock.RecordRepository)
@@ -282,7 +287,7 @@ func TestRecordHandler(t *testing.T) {
 				defer recordRepo.AssertExpectations(t)
 
 				service := discovery.NewService(recordRepoFactory, nil)
-				handler := handlers.NewRecordHandler(new(mock.Logger), service, recordRepoFactory)
+				handler := handlers.NewRecordHandler(new(mock.Logger), tr, service, recordRepoFactory)
 				handler.Delete(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {
@@ -295,7 +300,7 @@ func TestRecordHandler(t *testing.T) {
 	t.Run("GetByType", func(t *testing.T) {
 		type testCase struct {
 			Description  string
-			Type         record.Type
+			Type         string
 			QueryStrings string
 			ExpectStatus int
 			Setup        func(tc *testCase, rrf *mock.RecordRepositoryFactory)
@@ -333,18 +338,18 @@ func TestRecordHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return an http 200 irrespective of environment value",
-				Type:         record.TypeTopic,
+				Type:         typeName,
 				QueryStrings: "filter.data.environment=nonexisting",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
 					rr := new(mock.RecordRepository)
 					rr.On("GetAll", ctx, map[string][]string{"data.environment": {"nonexisting"}}).Return(records, nil)
-					rrf.On("For", record.TypeTopic).Return(rr, nil)
+					rrf.On("For", typeName).Return(rr, nil)
 				},
 			},
 			{
 				Description:  "should create filter from querystring",
-				Type:         record.TypeTopic,
+				Type:         typeName,
 				QueryStrings: "filter.service=kafka,rabbitmq&filter.data.company=appel",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
@@ -353,18 +358,18 @@ func TestRecordHandler(t *testing.T) {
 						"service":      {"kafka", "rabbitmq"},
 						"data.company": {"appel"},
 					}).Return(records, nil)
-					rrf.On("For", record.TypeTopic).Return(rr, nil)
+					rrf.On("For", typeName).Return(rr, nil)
 				},
 			},
 			{
 				Description:  "should return all records for an type",
-				Type:         record.TypeTopic,
+				Type:         typeName,
 				QueryStrings: "filter.data.environment=test",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
 					rr := new(mock.RecordRepository)
 					rr.On("GetAll", ctx, map[string][]string{"data.environment": {"test"}}).Return(records, nil)
-					rrf.On("For", record.TypeTopic).Return(rr, nil)
+					rrf.On("For", typeName).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
 					var response []record.Record
@@ -381,13 +386,13 @@ func TestRecordHandler(t *testing.T) {
 			},
 			{
 				Description:  "should return the subset of fields specified via select parameter",
-				Type:         record.TypeTopic,
+				Type:         typeName,
 				QueryStrings: "filter.data.environment=test&select=" + url.QueryEscape("urn,owner"),
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
 					rr := new(mock.RecordRepository)
 					rr.On("GetAll", ctx, map[string][]string{"data.environment": {"test"}}).Return(records, nil)
-					rrf.On("For", record.TypeTopic).Return(rr, nil)
+					rrf.On("For", typeName).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
 					var expectRecords = []record.Record{
@@ -422,25 +427,25 @@ func TestRecordHandler(t *testing.T) {
 			},
 			{
 				Description:  "(internal) should return http 500 if the handler fails to construct record repository",
-				Type:         record.TypeTopic,
+				Type:         typeName,
 				QueryStrings: "filter.data.environment=test",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
 					rr := new(mock.RecordRepository)
 					err := fmt.Errorf("something went wrong")
-					rrf.On("For", record.TypeTopic).Return(rr, err)
+					rrf.On("For", typeName).Return(rr, err)
 				},
 			},
 			{
 				Description:  "(internal) should return an http 500 if calling recordRepository.GetAll fails",
-				Type:         record.TypeTopic,
+				Type:         typeName,
 				QueryStrings: "filter.data.environment=test",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
 					rr := new(mock.RecordRepository)
 					err := fmt.Errorf("temporarily unavailable")
 					rr.On("GetAll", ctx, map[string][]string{"data.environment": {"test"}}).Return([]record.Record{}, err)
-					rrf.On("For", record.TypeTopic).Return(rr, nil)
+					rrf.On("For", typeName).Return(rr, nil)
 				},
 			},
 		}
@@ -449,13 +454,13 @@ func TestRecordHandler(t *testing.T) {
 				rr := httptest.NewRequest("GET", "/?"+tc.QueryStrings, nil)
 				rw := httptest.NewRecorder()
 				rr = mux.SetURLVars(rr, map[string]string{
-					"name": tc.Type.String(),
+					"name": tc.Type,
 				})
 				rrf := new(mock.RecordRepositoryFactory)
 				tc.Setup(&tc, rrf)
 
 				service := discovery.NewService(rrf, nil)
-				handler := handlers.NewRecordHandler(new(mock.Logger), service, rrf)
+				handler := handlers.NewRecordHandler(new(mock.Logger), tr, service, rrf)
 				handler.GetByType(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {
@@ -480,7 +485,7 @@ func TestRecordHandler(t *testing.T) {
 		}
 		type testCase struct {
 			Description  string
-			Type         record.Type
+			Type         string
 			RecordID     string
 			ExpectStatus int
 			Setup        func(rrf *mock.RecordRepositoryFactory)
@@ -490,40 +495,40 @@ func TestRecordHandler(t *testing.T) {
 		var testCases = []testCase{
 			{
 				Description:  `should return http 404 if the record doesn't exist`,
-				Type:         record.TypeTopic,
+				Type:         typeName,
 				RecordID:     "record01",
 				ExpectStatus: http.StatusNotFound,
 				Setup: func(rrf *mock.RecordRepositoryFactory) {
 					recordRepo := new(mock.RecordRepository)
 					recordRepo.On("GetByID", ctx, "record01").Return(record.Record{}, record.ErrNoSuchRecord{RecordID: "record01"})
-					rrf.On("For", record.TypeTopic).Return(recordRepo, nil)
+					rrf.On("For", typeName).Return(recordRepo, nil)
 				},
 			},
 			{
 				Description:  `should return http 404 if the type doesn't exist`,
-				Type:         "nonexistant",
+				Type:         "invalid",
 				RecordID:     "record",
 				ExpectStatus: http.StatusNotFound,
 				Setup:        func(rrf *mock.RecordRepositoryFactory) {},
 			},
 			{
 				Description:  "(internal) should return an http 500 if the handler fails to construct recordRepository",
-				Type:         record.TypeTopic,
+				Type:         typeName,
 				RecordID:     "record",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(rrf *mock.RecordRepositoryFactory) {
-					rrf.On("For", record.TypeTopic).Return(new(mock.RecordRepository), fmt.Errorf("something bad happened"))
+					rrf.On("For", typeName).Return(new(mock.RecordRepository), fmt.Errorf("something bad happened"))
 				},
 			},
 			{
 				Description:  "should return http 200 status along with the record, if found",
-				Type:         record.TypeTopic,
+				Type:         typeName,
 				RecordID:     "deployment01",
 				ExpectStatus: http.StatusOK,
 				Setup: func(rrf *mock.RecordRepositoryFactory) {
 					recordRepo := new(mock.RecordRepository)
 					recordRepo.On("GetByID", ctx, "deployment01").Return(deployment01, nil)
-					rrf.On("For", record.TypeTopic).Return(recordRepo, nil)
+					rrf.On("For", typeName).Return(recordRepo, nil)
 				},
 				PostCheck: func(r *http.Response) error {
 					var record record.Record
@@ -543,7 +548,7 @@ func TestRecordHandler(t *testing.T) {
 				rr := httptest.NewRequest("GET", "/", nil)
 				rw := httptest.NewRecorder()
 				rr = mux.SetURLVars(rr, map[string]string{
-					"name": tc.Type.String(),
+					"name": tc.Type,
 					"id":   tc.RecordID,
 				})
 				recordRepoFac := new(mock.RecordRepositoryFactory)
@@ -552,7 +557,7 @@ func TestRecordHandler(t *testing.T) {
 				}
 
 				service := discovery.NewService(recordRepoFac, nil)
-				handler := handlers.NewRecordHandler(new(mock.Logger), service, recordRepoFac)
+				handler := handlers.NewRecordHandler(new(mock.Logger), tr, service, recordRepoFac)
 				handler.GetOneByType(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {

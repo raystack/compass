@@ -2,16 +2,19 @@ package elasticsearch_test
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"os"
 	"testing"
 
-	store "github.com/odpf/columbus/discovery/elasticsearch"
-	"github.com/odpf/columbus/discovery/elasticsearch/testutil"
+	"github.com/odpf/columbus/record"
+	"github.com/odpf/columbus/store/elasticsearch/testutil"
 )
+
+var daggerType = record.Type{
+	Name:           "dagger",
+	Classification: record.TypeClassificationResource,
+}
 
 var esTestServer *testutil.ElasticsearchTestServer
 
@@ -20,9 +23,6 @@ func TestMain(m *testing.M) {
 	// an elasticsearch server. That means you can't run unit tests
 	// standlone :/
 	esTestServer = testutil.NewElasticsearchTestServer()
-	if err := store.Migrate(context.TODO(), esTestServer.NewClient()); err != nil {
-		log.Fatal(err)
-	}
 	defer esTestServer.Close()
 	os.Exit(m.Run())
 }

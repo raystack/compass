@@ -10,7 +10,6 @@ type Record struct {
 	Urn         string                 `json:"urn"`
 	Name        string                 `json:"name"`
 	Service     string                 `json:"service"`
-	Type        Type                   `json:"type"`
 	Description string                 `json:"description"`
 	Data        map[string]interface{} `json:"data"`
 	Labels      map[string]string      `json:"labels"`
@@ -23,7 +22,7 @@ type Record struct {
 
 type LineageRecord struct {
 	Urn  string `json:"urn"`
-	Type Type   `json:"type"`
+	Type string `json:"type"`
 }
 
 type ErrNoSuchRecord struct {

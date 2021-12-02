@@ -3,7 +3,6 @@
     "urn": "e-test-grant2",
     "name": "test_grant2",
     "service": "kafka",
-    "type": "topic",
     "description": "",
     "data": {
       "urn": "e-test-grant2",

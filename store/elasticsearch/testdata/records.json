@@ -3,7 +3,6 @@
     "urn": "a-kafka-001",
     "name": "kafka-001",
     "service": "kafka",
-    "type": "topic",
     "description": "",
     "data": {
       "urn": "a-kafka-001",
@@ -17,7 +16,6 @@
     "urn": "b-test-kafka",
     "name": "test-kafka",
     "service": "kafka",
-    "type": "topic",
     "description": "",
     "data": {
       "urn": "b-test-kafka",
@@ -31,7 +29,6 @@
     "urn": "c-demo-kafka",
     "name": "demo-kafka",
     "service": "kafka",
-    "type": "topic",
     "description": "",
     "data": {
       "urn": "c-demo-kafka",
@@ -45,7 +42,6 @@
     "urn": "d-test-abcsasa",
     "name": "test-abcsasa",
     "service": "kafka",
-    "type": "table",
     "description": "",
     "data": {
       "urn": "d-test-abcsasa",
@@ -59,7 +55,6 @@
     "urn": "e-test-grant2",
     "name": "test_grant2",
     "service": "kafka",
-    "type": "topic",
     "description": "",
     "data": {
       "urn": "e-test-grant2",
@@ -73,7 +68,6 @@
     "urn": "f-john-test-001",
     "name": "john_test_001",
     "service": "kafka",
-    "type": "topic",
     "description": "",
     "data": {
       "urn": "f-john-test-001",
@@ -111,7 +105,6 @@
     "urn": "i-undefined-dfgdgd-avi",
     "name": "dfgdgd-avi",
     "service": "rabbitmq",
-    "type": "topic",
     "description": "",
     "data": {
       "urn": "i-undefined-dfgdgd-avi",
@@ -125,7 +118,6 @@
     "urn": "j-xcvcx",
     "name": "xcvcx",
     "service": "rabbitmq",
-    "type": "topic",
     "description": "",
     "data": {
       "urn": "j-xcvcx",

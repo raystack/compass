@@ -6,11 +6,13 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/discovery"
+	"github.com/odpf/columbus/record"
 	"github.com/sirupsen/logrus"
 )
 
 type Config struct {
 	Logger                  logrus.FieldLogger
+	TypeRepository          record.TypeRepository
 	RecordRepositoryFactory discovery.RecordRepositoryFactory
 	DiscoveryService        *discovery.Service
 	LineageProvider         handlers.LineageProvider
@@ -25,8 +27,14 @@ func RegisterRoutes(router *mux.Router, config Config) {
 	router.UseEncodedPath()
 	router.Use(decodeURLMiddleware(config.Logger))
 
-	typeHandler := handlers.NewRecordHandler(
+	typeHandler := handlers.NewTypeHandler(
 		config.Logger.WithField("reporter", "type-handler"),
+		config.TypeRepository,
+	)
+
+	recordHandler := handlers.NewRecordHandler(
+		config.Logger.WithField("reporter", "record-handler"),
+		config.TypeRepository,
 		config.DiscoveryService,
 		config.RecordRepositoryFactory,
 	)
@@ -41,7 +49,7 @@ func RegisterRoutes(router *mux.Router, config Config) {
 	)
 
 	router.PathPrefix("/ping").Handler(handlers.NewHeartbeatHandler())
-	setupV1TypeRoutes(router, typeHandler)
+	setupV1TypeRoutes(router, typeHandler, recordHandler)
 
 	router.Path("/v1/search").
 		Methods(http.MethodGet).
@@ -56,21 +64,39 @@ func RegisterRoutes(router *mux.Router, config Config) {
 		HandlerFunc(lineageHandler.ListLineage)
 }
 
-func setupV1TypeRoutes(router *mux.Router, typeHandler *handlers.RecordHandler) {
-	baseURL := "/v1/types"
-	router.Path(baseURL+"/{name}/records").
+func setupV1TypeRoutes(router *mux.Router, th *handlers.TypeHandler, rh *handlers.RecordHandler) {
+	typeURL := "/v1/types"
+
+	router.Path(typeURL).
 		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(typeHandler.GetByType)
+		HandlerFunc(th.Get)
 
-	router.Path(baseURL + "/{name}/records/{id}").
-		Methods(http.MethodDelete).
-		HandlerFunc(typeHandler.Delete)
+	router.Path(typeURL).
+		Methods(http.MethodPut, http.MethodHead).
+		HandlerFunc(th.Upsert)
 
-	router.Path(baseURL + "/{name}/records").
-		Methods(http.MethodPut).
-		HandlerFunc(typeHandler.UpsertBulk)
-
-	router.Path(baseURL+"/{name}/records/{id}").
+	router.Path(typeURL+"/{name}").
 		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(typeHandler.GetOneByType)
+		HandlerFunc(th.Find)
+
+	router.Path(typeURL+"/{name}").
+		Methods(http.MethodDelete, http.MethodHead).
+		HandlerFunc(th.Delete)
+
+	recordURL := "/v1/types/{name}/records"
+	router.Path(recordURL).
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(rh.GetByType)
+
+	router.Path(recordURL+"/{id}").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(rh.GetOneByType)
+
+	router.Path(recordURL+"/{id}").
+		Methods(http.MethodDelete, http.MethodHead).
+		HandlerFunc(rh.Delete)
+
+	router.Path(recordURL).
+		Methods(http.MethodPut, http.MethodHead).
+		HandlerFunc(rh.UpsertBulk)
 }

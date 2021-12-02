@@ -11,7 +11,7 @@ import (
 
 // Builder encapsulates the algorithm for building a graph
 type Builder interface {
-	Build(context.Context, discovery.RecordRepositoryFactory) (Graph, error)
+	Build(context.Context, record.TypeRepository, discovery.RecordRepositoryFactory) (Graph, error)
 }
 
 var DefaultBuilder = defaultBuilder{}
@@ -40,10 +40,15 @@ type defaultBuilder struct{}
 // If any reference'd record is not found in the graph, the algorithm gives up and looks at the next related entry.
 // This has the effect of phantom references in graph: A resource may refer another resource in the graph, but that resource
 // may not be available in the graph
-func (builder defaultBuilder) Build(ctx context.Context, rrf discovery.RecordRepositoryFactory) (Graph, error) {
+func (builder defaultBuilder) Build(ctx context.Context, tr record.TypeRepository, rrf discovery.RecordRepositoryFactory) (Graph, error) {
+	typs, err := tr.GetAll(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error loading type metadata: %w", err)
+	}
+
 	var graph = make(AdjacencyMap)
-	for _, typ := range record.TypeList {
-		if err := builder.populateTypeRecords(ctx, graph, typ, rrf); err != nil {
+	for _, typ := range typs {
+		if err := builder.populateTypeRecords(ctx, graph, typ.Name, rrf); err != nil {
 			return nil, fmt.Errorf("error parsing type records: %w", err)
 		}
 	}
@@ -55,8 +60,8 @@ func (builder defaultBuilder) Build(ctx context.Context, rrf discovery.RecordRep
 // load the records for a type onto the graph
 // if record has a valid "lineage" field
 // it will be used for obtaining the values for downstreams and upstreams.
-func (builder defaultBuilder) populateTypeRecords(ctx context.Context, graph AdjacencyMap, typ record.Type, rrf discovery.RecordRepositoryFactory) error {
-	recordRepository, err := rrf.For(typ)
+func (builder defaultBuilder) populateTypeRecords(ctx context.Context, graph AdjacencyMap, typName string, rrf discovery.RecordRepositoryFactory) error {
+	recordRepository, err := rrf.For(typName)
 	if err != nil {
 		return fmt.Errorf("error obtaing record repository: %w", err)
 	}
@@ -69,7 +74,7 @@ func (builder defaultBuilder) populateTypeRecords(ctx context.Context, graph Adj
 	defer recordIter.Close()
 	for recordIter.Scan() {
 		for _, record := range recordIter.Next() {
-			builder.addRecord(graph, typ, record)
+			builder.addRecord(graph, typName, record)
 		}
 	}
 	return nil
@@ -77,7 +82,7 @@ func (builder defaultBuilder) populateTypeRecords(ctx context.Context, graph Adj
 
 // add the corresponding records to graph.
 // Uses lineageProcessor to obtain information about upstreams/downstreams
-func (builder defaultBuilder) addRecord(graph AdjacencyMap, typeName record.Type, record record.Record) {
+func (builder defaultBuilder) addRecord(graph AdjacencyMap, typeName string, record record.Record) {
 	entry := AdjacencyEntry{
 		Type:        typeName,
 		URN:         record.Urn,
@@ -116,6 +121,8 @@ func (builder defaultBuilder) addBackRef(graph AdjacencyMap, refID string, backR
 	if _, exists := adjacents[refID]; !exists {
 		adjacents.Add(refID)
 	}
+
+	return
 }
 
 func (builder defaultBuilder) buildAdjacents(r record.Record, dir dataflowDir) (adjacents set.StringSet) {

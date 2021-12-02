@@ -11,12 +11,36 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+type TypeRepository struct {
+	mock.Mock
+}
+
+func (repo *TypeRepository) CreateOrReplace(ctx context.Context, e record.Type) error {
+	args := repo.Called(ctx, e)
+	return args.Error(0)
+}
+
+func (repo *TypeRepository) GetByName(ctx context.Context, name string) (record.Type, error) {
+	args := repo.Called(ctx, name)
+	return args.Get(0).(record.Type), args.Error(1)
+}
+
+func (repo *TypeRepository) GetAll(ctx context.Context) ([]record.Type, error) {
+	args := repo.Called(ctx)
+	return args.Get(0).([]record.Type), args.Error(1)
+}
+
+func (repo *TypeRepository) Delete(ctx context.Context, typeName string) error {
+	args := repo.Called(ctx, typeName)
+	return args.Error(0)
+}
+
 type RecordRepositoryFactory struct {
 	mock.Mock
 }
 
-func (fac *RecordRepositoryFactory) For(e record.Type) (discovery.RecordRepository, error) {
-	args := fac.Called(e)
+func (fac *RecordRepositoryFactory) For(typeName string) (discovery.RecordRepository, error) {
+	args := fac.Called(typeName)
 	return args.Get(0).(discovery.RecordRepository), args.Error(1)
 }
 
@@ -72,9 +96,9 @@ type RecordSearcher struct {
 	mock.Mock
 }
 
-func (searcher *RecordSearcher) Search(ctx context.Context, cfg discovery.SearchConfig) ([]record.Record, error) {
+func (searcher *RecordSearcher) Search(ctx context.Context, cfg discovery.SearchConfig) ([]discovery.SearchResult, error) {
 	args := searcher.Called(ctx, cfg)
-	return args.Get(0).([]record.Record), args.Error(1)
+	return args.Get(0).([]discovery.SearchResult), args.Error(1)
 }
 
 type LineageProvider struct {

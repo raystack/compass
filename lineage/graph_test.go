@@ -10,29 +10,28 @@ import (
 	"github.com/odpf/columbus/lib/set"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/record"
-	"github.com/stretchr/testify/require"
 )
 
 func TestInMemoryGraph(t *testing.T) {
 	var sampleGraph = lineage.AdjacencyMap{
-		"topic/instance_a": lineage.AdjacencyEntry{
-			Type:        record.TypeTopic,
+		"type_a/instance_a": lineage.AdjacencyEntry{
+			Type:        "type_a",
 			URN:         "instance_a",
-			Downstreams: set.NewStringSet("table/instance_z"),
+			Downstreams: set.NewStringSet("type_b/instance_z"),
 		},
-		"topic/instance_b": lineage.AdjacencyEntry{
-			Type:      record.TypeTopic,
+		"type_a/instance_b": lineage.AdjacencyEntry{
+			Type:      "type_a",
 			URN:       "instance_b",
-			Upstreams: set.NewStringSet("table/instance_z"),
+			Upstreams: set.NewStringSet("type_b/instance_z"),
 		},
-		"table/instance_z": lineage.AdjacencyEntry{
-			Type:        record.TypeTable,
+		"type_b/instance_z": lineage.AdjacencyEntry{
+			Type:        "type_b",
 			URN:         "instance_z",
-			Upstreams:   set.NewStringSet("topic/instance_a"),
-			Downstreams: set.NewStringSet("topic/instance_b"),
+			Upstreams:   set.NewStringSet("type_a/instance_a"),
+			Downstreams: set.NewStringSet("type_a/instance_b"),
 		},
-		"job/isolated_record": lineage.AdjacencyEntry{
-			Type: record.TypeJob,
+		"isolated_type/isolated_record": lineage.AdjacencyEntry{
+			Type: "isolated_type",
 			URN:  "isolated_record",
 		},
 	}
@@ -55,30 +54,38 @@ func TestInMemoryGraph(t *testing.T) {
 				Description: "filter by type",
 				Supergraph:  sampleGraph,
 				ExpectGraph: lineage.AdjacencyMap{
-					"table/instance_z": sampleGraph["table/instance_z"],
+					"type_b/instance_z": sampleGraph["type_b/instance_z"],
 				},
 				Cfg: lineage.QueryCfg{
-					TypeWhitelist: []record.Type{record.TypeTable},
+					TypeWhitelist: []string{"type_b"},
 				},
+			},
+			{
+				Description: "filter by type error when type not known",
+				Supergraph:  sampleGraph,
+				Cfg: lineage.QueryCfg{
+					TypeWhitelist: []string{"type_c"},
+				},
+				Err: record.ErrNoSuchType{TypeName: "type_c"},
 			},
 			{
 				Description: "collapse relationships",
 				Supergraph:  sampleGraph,
 				Cfg: lineage.QueryCfg{
-					TypeWhitelist: []record.Type{record.TypeTopic},
+					TypeWhitelist: []string{"type_a"},
 					Collapse:      true,
 				},
 				ExpectGraph: lineage.AdjacencyMap{
-					"topic/instance_a": lineage.AdjacencyEntry{
-						Type:        record.TypeTopic,
+					"type_a/instance_a": lineage.AdjacencyEntry{
+						Type:        "type_a",
 						URN:         "instance_a",
-						Downstreams: set.NewStringSet("topic/instance_b"),
+						Downstreams: set.NewStringSet("type_a/instance_b"),
 						Upstreams:   set.NewStringSet(),
 					},
-					"topic/instance_b": lineage.AdjacencyEntry{
-						Type:        record.TypeTopic,
+					"type_a/instance_b": lineage.AdjacencyEntry{
+						Type:        "type_a",
 						URN:         "instance_b",
-						Upstreams:   set.NewStringSet("topic/instance_a"),
+						Upstreams:   set.NewStringSet("type_a/instance_a"),
 						Downstreams: set.NewStringSet(),
 					},
 				},
@@ -87,24 +94,24 @@ func TestInMemoryGraph(t *testing.T) {
 				Description: "build lineage from Root",
 				Supergraph:  sampleGraph,
 				Cfg: lineage.QueryCfg{
-					Root: "topic/instance_a",
+					Root: "type_a/instance_a",
 				},
 				ExpectGraph: lineage.AdjacencyMap{
-					"topic/instance_a": lineage.AdjacencyEntry{
-						Type:        record.TypeTopic,
+					"type_a/instance_a": lineage.AdjacencyEntry{
+						Type:        "type_a",
 						URN:         "instance_a",
-						Downstreams: set.NewStringSet("table/instance_z"),
+						Downstreams: set.NewStringSet("type_b/instance_z"),
 					},
-					"topic/instance_b": lineage.AdjacencyEntry{
-						Type:      record.TypeTopic,
+					"type_a/instance_b": lineage.AdjacencyEntry{
+						Type:      "type_a",
 						URN:       "instance_b",
-						Upstreams: set.NewStringSet("table/instance_z"),
+						Upstreams: set.NewStringSet("type_b/instance_z"),
 					},
-					"table/instance_z": lineage.AdjacencyEntry{
-						Type:        record.TypeTable,
+					"type_b/instance_z": lineage.AdjacencyEntry{
+						Type:        "type_b",
 						URN:         "instance_z",
-						Upstreams:   set.NewStringSet("topic/instance_a"),
-						Downstreams: set.NewStringSet("topic/instance_b"),
+						Upstreams:   set.NewStringSet("type_a/instance_a"),
+						Downstreams: set.NewStringSet("type_a/instance_b"),
 					},
 				},
 			},
@@ -128,11 +135,9 @@ func TestInMemoryGraph(t *testing.T) {
 					)
 					enc.SetIndent("", "  ")
 					fmt.Fprint(msg, "expected: ")
-					err = enc.Encode(tc.ExpectGraph)
-					require.NoError(t, err)
+					enc.Encode(tc.ExpectGraph)
 					fmt.Fprint(msg, "got: ")
-					err = enc.Encode(result)
-					require.NoError(t, err)
+					enc.Encode(result)
 					t.Error(msg.String())
 					return
 				}

@@ -8,14 +8,14 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/odpf/columbus/discovery"
-	store "github.com/odpf/columbus/discovery/elasticsearch"
 	"github.com/odpf/columbus/record"
+	store "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 type searchTestData struct {
-	Type    record.Type     `json:"type"`
+	Type    string          `json:"type"`
 	Records []record.Record `json:"records"`
 }
 
@@ -56,8 +56,8 @@ func TestSearch(t *testing.T) {
 		}
 
 		type expectedRow struct {
-			Type     record.Type `json:"type"`
-			RecordID string      `json:"record_id"`
+			Type     string `json:"type"`
+			RecordID string `json:"record_id"`
 		}
 		type searchTest struct {
 			Description    string
@@ -72,9 +72,9 @@ func TestSearch(t *testing.T) {
 					Text: "topic",
 				},
 				Expected: []expectedRow{
-					{Type: record.TypeTopic, RecordID: "order-topic"},
-					{Type: record.TypeTopic, RecordID: "purchase-topic"},
-					{Type: record.TypeTopic, RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "order-topic"},
+					{Type: "topic", RecordID: "purchase-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
 				},
 			},
 			{
@@ -83,9 +83,9 @@ func TestSearch(t *testing.T) {
 					Text: "tpic",
 				},
 				Expected: []expectedRow{
-					{Type: record.TypeTopic, RecordID: "order-topic"},
-					{Type: record.TypeTopic, RecordID: "purchase-topic"},
-					{Type: record.TypeTopic, RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "order-topic"},
+					{Type: "topic", RecordID: "purchase-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
 				},
 			},
 			{
@@ -94,9 +94,9 @@ func TestSearch(t *testing.T) {
 					Text: "invoice",
 				},
 				Expected: []expectedRow{
-					{Type: record.TypeTable, RecordID: "au2-microsoft-invoice"},
-					{Type: record.TypeTable, RecordID: "us1-apple-invoice"},
-					{Type: record.TypeTopic, RecordID: "transaction"},
+					{Type: "table", RecordID: "au2-microsoft-invoice"},
+					{Type: "table", RecordID: "us1-apple-invoice"},
+					{Type: "topic", RecordID: "transaction"},
 				},
 			},
 			{
@@ -108,8 +108,8 @@ func TestSearch(t *testing.T) {
 					},
 				},
 				Expected: []expectedRow{
-					{Type: record.TypeTable, RecordID: "au2-microsoft-invoice"},
-					{Type: record.TypeTopic, RecordID: "transaction"},
+					{Type: "table", RecordID: "au2-microsoft-invoice"},
+					{Type: "topic", RecordID: "transaction"},
 				},
 			},
 			{
@@ -121,8 +121,8 @@ func TestSearch(t *testing.T) {
 					},
 				},
 				Expected: []expectedRow{
-					{Type: record.TypeTopic, RecordID: "order-topic"},
-					{Type: record.TypeTopic, RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "order-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
 				},
 			},
 			{
@@ -136,7 +136,7 @@ func TestSearch(t *testing.T) {
 					},
 				},
 				Expected: []expectedRow{
-					{Type: record.TypeTopic, RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
 				},
 			},
 		}
@@ -148,7 +148,7 @@ func TestSearch(t *testing.T) {
 				assert.Equal(t, len(test.Expected), len(results))
 				for i, res := range test.Expected {
 					assert.Equal(t, res.Type, results[i].Type)
-					assert.Equal(t, res.RecordID, results[i].Urn)
+					assert.Equal(t, res.RecordID, results[i].ID)
 				}
 			})
 		}

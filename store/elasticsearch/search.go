@@ -9,7 +9,6 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/record"
 	"github.com/olivere/elastic/v7"
 	"github.com/pkg/errors"
 )
@@ -17,12 +16,6 @@ import (
 var (
 	defaultMaxResults = 200
 	defaultMinScore   = 0.01
-	allIndexList      = []string{
-		record.TypeTable.String(),
-		record.TypeDashboard.String(),
-		record.TypeJob.String(),
-		record.TypeTopic.String(),
-	}
 )
 
 type SearcherConfig struct {
@@ -31,7 +24,9 @@ type SearcherConfig struct {
 
 // Searcher is an implementation of record.RecordSearcher
 type Searcher struct {
-	cli *elasticsearch.Client
+	cli              *elasticsearch.Client
+	typeWhiteList    []string
+	typeWhiteListSet map[string]bool
 }
 
 // NewSearcher creates a new instance of Searcher
@@ -57,7 +52,7 @@ func NewSearcher(config SearcherConfig) (*Searcher, error) {
 // Entities searched : {C}
 // GL specified that search can only be done for {A, B, C} types, while LL requested
 // the search for {C, D} types. Since {D} doesn't belong to GL's set, it won't be searched
-func (sr *Searcher) Search(ctx context.Context, cfg discovery.SearchConfig) (results []record.Record, err error) {
+func (sr *Searcher) Search(ctx context.Context, cfg discovery.SearchConfig) (results []discovery.SearchResult, err error) {
 	if strings.TrimSpace(cfg.Text) == "" {
 		err = errors.New("search text cannot be empty")
 		return
@@ -92,26 +87,36 @@ func (sr *Searcher) Search(ctx context.Context, cfg discovery.SearchConfig) (res
 		return
 	}
 
-	results, err = sr.toRecords(response.Hits.Hits)
-	if err != nil {
-		err = errors.Wrap(err, "error building search results")
-		return
-	}
-
+	results = sr.toSearchResults(response.Hits.Hits)
 	return
 }
 
 func (sr *Searcher) buildIndices(cfg discovery.SearchConfig) []string {
-	var indices []string
-	if len(cfg.TypeWhiteList) > 0 {
-		for _, t := range cfg.TypeWhiteList {
-			indices = append(indices, t.String())
+	hasGL := len(sr.typeWhiteList) > 0
+	hasLL := len(cfg.TypeWhiteList) > 0
+	switch {
+	case hasGL && hasLL:
+		var indices []string
+		for _, idx := range cfg.TypeWhiteList {
+			if sr.typeWhiteListSet[idx] {
+				indices = append(indices, idx)
+			}
 		}
-	} else {
-		indices = allIndexList
+		return indices
+	case hasGL || hasLL:
+		return anyValidStringSlice(cfg.TypeWhiteList, sr.typeWhiteList)
+	default:
+		return []string{}
 	}
+}
 
-	return indices
+func anyValidStringSlice(slices ...[]string) []string {
+	for _, slice := range slices {
+		if len(slice) > 0 {
+			return slice
+		}
+	}
+	return nil
 }
 
 func (sr *Searcher) buildQuery(ctx context.Context, cfg discovery.SearchConfig, indices []string) (io.Reader, error) {
@@ -180,11 +185,18 @@ func (sr *Searcher) buildFilterQueries(filters map[string][]string) (filterQueri
 	return
 }
 
-func (sr *Searcher) toRecords(hits []searchHit) (results []record.Record, err error) {
+func (sr *Searcher) toSearchResults(hits []searchHit) []discovery.SearchResult {
+	results := []discovery.SearchResult{}
 	for _, hit := range hits {
 		r := hit.Source
-		r.Type = record.Type(hit.Index)
-		results = append(results, r)
+		results = append(results, discovery.SearchResult{
+			Type:        hit.Index,
+			ID:          r.Urn,
+			Description: r.Description,
+			Title:       r.Name,
+			Service:     r.Service,
+			Labels:      r.Labels,
+		})
 	}
-	return
+	return results
 }

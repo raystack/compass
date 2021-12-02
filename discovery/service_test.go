@@ -16,18 +16,17 @@ func TestServiceUpsert(t *testing.T) {
 	sampleRecord := record.Record{
 		Urn:     "sample-urn",
 		Service: "bigquery",
-		Type:    record.TypeTable,
 	}
 
 	t.Run("should return error if factory returns error", func(t *testing.T) {
 		records := []record.Record{sampleRecord}
 
 		rrf := new(mock.RecordRepositoryFactory)
-		rrf.On("For", record.TypeTable).Return(new(mock.RecordRepository), errors.New("error"))
+		rrf.On("For", "table").Return(new(mock.RecordRepository), errors.New("error"))
 		defer rrf.AssertExpectations(t)
 
 		service := discovery.NewService(rrf, nil)
-		err := service.Upsert(ctx, record.TypeTable, records)
+		err := service.Upsert(ctx, "table", records)
 		assert.Error(t, err)
 	})
 
@@ -38,11 +37,11 @@ func TestServiceUpsert(t *testing.T) {
 		rr.On("CreateOrReplaceMany", ctx, records).Return(errors.New("error"))
 		defer rr.AssertExpectations(t)
 		rrf := new(mock.RecordRepositoryFactory)
-		rrf.On("For", record.TypeTable).Return(rr, nil)
+		rrf.On("For", "table").Return(rr, nil)
 		defer rrf.AssertExpectations(t)
 
 		service := discovery.NewService(rrf, nil)
-		err := service.Upsert(ctx, record.TypeTable, records)
+		err := service.Upsert(ctx, "table", records)
 		assert.Error(t, err)
 	})
 
@@ -53,11 +52,11 @@ func TestServiceUpsert(t *testing.T) {
 		rr.On("CreateOrReplaceMany", ctx, records).Return(nil)
 		defer rr.AssertExpectations(t)
 		rrf := new(mock.RecordRepositoryFactory)
-		rrf.On("For", record.TypeTable).Return(rr, nil)
+		rrf.On("For", "table").Return(rr, nil)
 		defer rrf.AssertExpectations(t)
 
 		service := discovery.NewService(rrf, nil)
-		err := service.Upsert(ctx, record.TypeTable, records)
+		err := service.Upsert(ctx, "table", records)
 		assert.NoError(t, err)
 	})
 }
@@ -68,11 +67,11 @@ func TestServiceDeleteRecord(t *testing.T) {
 
 	t.Run("should return error if factory returns error", func(t *testing.T) {
 		rrf := new(mock.RecordRepositoryFactory)
-		rrf.On("For", record.TypeTable).Return(new(mock.RecordRepository), errors.New("error"))
+		rrf.On("For", "table").Return(new(mock.RecordRepository), errors.New("error"))
 		defer rrf.AssertExpectations(t)
 
 		service := discovery.NewService(rrf, nil)
-		err := service.DeleteRecord(ctx, record.TypeTable, recordURN)
+		err := service.DeleteRecord(ctx, "table", recordURN)
 		assert.Error(t, err)
 	})
 
@@ -81,11 +80,11 @@ func TestServiceDeleteRecord(t *testing.T) {
 		rr.On("Delete", ctx, recordURN).Return(errors.New("error"))
 		defer rr.AssertExpectations(t)
 		rrf := new(mock.RecordRepositoryFactory)
-		rrf.On("For", record.TypeTable).Return(rr, nil)
+		rrf.On("For", "table").Return(rr, nil)
 		defer rrf.AssertExpectations(t)
 
 		service := discovery.NewService(rrf, nil)
-		err := service.DeleteRecord(ctx, record.TypeTable, recordURN)
+		err := service.DeleteRecord(ctx, "table", recordURN)
 		assert.Error(t, err)
 	})
 
@@ -94,11 +93,11 @@ func TestServiceDeleteRecord(t *testing.T) {
 		rr.On("Delete", ctx, recordURN).Return(nil)
 		defer rr.AssertExpectations(t)
 		rrf := new(mock.RecordRepositoryFactory)
-		rrf.On("For", record.TypeTable).Return(rr, nil)
+		rrf.On("For", "table").Return(rr, nil)
 		defer rrf.AssertExpectations(t)
 
 		service := discovery.NewService(rrf, nil)
-		err := service.DeleteRecord(ctx, record.TypeTable, recordURN)
+		err := service.DeleteRecord(ctx, "table", recordURN)
 		assert.NoError(t, err)
 	})
 }
@@ -113,7 +112,7 @@ func TestServiceSearch(t *testing.T) {
 	}
 	t.Run("should return error if searcher fails", func(t *testing.T) {
 		searcher := new(mock.RecordSearcher)
-		searcher.On("Search", ctx, cfg).Return([]record.Record{}, errors.New("error"))
+		searcher.On("Search", ctx, cfg).Return([]discovery.SearchResult{}, errors.New("error"))
 		defer searcher.AssertExpectations(t)
 
 		service := discovery.NewService(nil, searcher)
@@ -123,10 +122,10 @@ func TestServiceSearch(t *testing.T) {
 	})
 
 	t.Run("should return records from searcher", func(t *testing.T) {
-		expected := []record.Record{
-			{Urn: "record-1"},
-			{Urn: "record-2"},
-			{Urn: "record-3"},
+		expected := []discovery.SearchResult{
+			{ID: "record-1"},
+			{ID: "record-2"},
+			{ID: "record-3"},
 		}
 		searcher := new(mock.RecordSearcher)
 		searcher.On("Search", ctx, cfg).Return(expected, nil)

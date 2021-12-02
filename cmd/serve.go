@@ -16,9 +16,9 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/odpf/columbus/api"
 	"github.com/odpf/columbus/discovery"
-	store "github.com/odpf/columbus/discovery/elasticsearch"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/metrics"
+	esStore "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/sirupsen/logrus"
 )
 
@@ -31,8 +31,6 @@ func Serve() {
 	if err := loadConfig(); err != nil {
 		panic(err)
 	}
-
-	fmt.Println("HEHRER")
 
 	rootLogger := initLogger(config.LogLevel)
 	log = rootLogger.WithField("reporter", "main")
@@ -56,15 +54,16 @@ func initRouter(
 	statsdMonitor *metrics.StatsdMonitor,
 	rootLogger logrus.FieldLogger,
 ) *mux.Router {
-	recordRepositoryFactory := store.NewRecordRepositoryFactory(esClient)
-	recordSearcher, err := store.NewSearcher(store.SearcherConfig{
+	typeRepository := esStore.NewTypeRepository(esClient)
+	recordRepositoryFactory := esStore.NewRecordRepositoryFactory(esClient)
+	recordSearcher, err := esStore.NewSearcher(esStore.SearcherConfig{
 		Client: esClient,
 	})
 	if err != nil {
 		log.Fatalf("error creating searcher: %v", err)
 	}
 
-	lineageService, err := lineage.NewService(recordRepositoryFactory, lineage.Config{
+	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
 		RefreshInterval:    config.LineageRefreshIntervalStr,
 		MetricsMonitor:     statsdMonitor,
 		PerformanceMonitor: nrMonitor,
@@ -88,8 +87,10 @@ func initRouter(
 	router.Use(requestLoggerMiddleware(
 		rootLogger.WithField("reporter", "http-middleware").Writer(),
 	))
+
 	api.RegisterRoutes(router, api.Config{
 		Logger:                  rootLogger,
+		TypeRepository:          typeRepository,
 		DiscoveryService:        discovery.NewService(recordRepositoryFactory, recordSearcher),
 		RecordRepositoryFactory: recordRepositoryFactory,
 		LineageProvider:         lineageService,

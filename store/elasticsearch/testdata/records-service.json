@@ -3,7 +3,6 @@
         "urn": "i-undefined-dfgdgd-avi",
         "name": "dfgdgd-avi",
         "service": "rabbitmq",
-        "type": "topic",
         "description": "",
         "data": {
             "urn": "i-undefined-dfgdgd-avi",
@@ -17,7 +16,6 @@
         "urn": "j-xcvcx",
         "name": "xcvcx",
         "service": "rabbitmq",
-        "type": "topic",
         "description": "",
         "data": {
             "urn": "j-xcvcx",
