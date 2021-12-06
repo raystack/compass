@@ -77,6 +77,7 @@ func (handler *SearchHandler) buildSearchCfg(params url.Values) (cfg discovery.S
 	cfg.MaxResults, _ = strconv.Atoi(params.Get("size"))
 	cfg.Filters = filterConfigFromValues(params)
 	cfg.RankBy = params.Get("rankby")
+	cfg.SearchByField = params.Get("searchby")
 	cfg.TypeWhiteList, err = parseTypeWhiteList(params)
 	return
 }

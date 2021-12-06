@@ -143,6 +143,37 @@ func TestSearcherSearch(t *testing.T) {
 					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-1"},
 				},
 			},
+			{
+				Description: "should return order-topic resource if search by description field with text 'submitted order'",
+				Config: discovery.SearchConfig{
+					Text:          "submitted order",
+					SearchByField: "description",
+				},
+				Expected: []expectedRow{
+					{Type: "topic", RecordID: "order-topic"},
+					{Type: "topic", RecordID: "purchase-topic"},
+				},
+			},
+			{
+				Description: "should return 'bigquery::gcpproject/dataset/tablename-1' resource if search by owner name field with text 'unique'",
+				Config: discovery.SearchConfig{
+					Text:          "unique",
+					SearchByField: "owners.name",
+				},
+				Expected: []expectedRow{
+					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-1"},
+				},
+			},
+			{
+				Description: "should return 'bigquery::gcpproject/dataset/tablename-common' resource if search by table column name field with text 'tablename-common-column1'",
+				Config: discovery.SearchConfig{
+					Text:          "common",
+					SearchByField: "data.schema.columns.name",
+				},
+				Expected: []expectedRow{
+					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-common"},
+				},
+			},
 		}
 		for _, test := range tests {
 			t.Run(test.Description, func(t *testing.T) {

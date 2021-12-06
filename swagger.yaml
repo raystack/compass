@@ -276,6 +276,10 @@ paths:
           name: "rankby"
           type: string
           description: 'descendingly sort based on a numeric field in the record. the nested field is written with period separated field name. eg, "data.profile.usage_count"'
+        - in: query
+          name: "searchby"
+          type: string
+          description: 'search on a specific records field. the nested field is written with period separated field name. eg, "data.schema.columns.name"'
       responses:
         200:
           description: OK

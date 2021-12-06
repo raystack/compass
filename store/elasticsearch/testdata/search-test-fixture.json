@@ -1,8 +1,6 @@
-[
-    {
+[{
         "type": "topic",
-        "records": [
-            {
+        "records": [{
                 "urn": "order-topic",
                 "name": "order-topic",
                 "service": "kafka",
@@ -61,8 +59,7 @@
     },
     {
         "type": "table",
-        "records": [
-            {
+        "records": [{
                 "urn": "au2-microsoft-invoice",
                 "name": "microsoft-invoice",
                 "service": "postgres",
@@ -75,8 +72,7 @@
                     "country": "us",
                     "description": "Transaction records for every microsoft purchase",
                     "total_rows": 100,
-                    "schema": [
-                        {
+                    "schema": [{
                             "name": "id"
                         },
                         {
@@ -103,8 +99,7 @@
                     "country": "id",
                     "description": "Transaction records for every Apple purchase",
                     "total_rows": 100,
-                    "schema": [
-                        {
+                    "schema": [{
                             "name": "id"
                         },
                         {
@@ -126,15 +121,13 @@
                 "data": {
                     "preview": {},
                     "profile": {
-                        "common_join": [
-                            {
-                                "conditions": [
-                                    "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
-                                ],
-                                "count": 1,
-                                "urn": "bigquery::gcpproject/dataset/tablename-mid"
-                            }
-                        ],
+                        "common_join": [{
+                            "conditions": [
+                                "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
+                            ],
+                            "count": 1,
+                            "urn": "bigquery::gcpproject/dataset/tablename-mid"
+                        }],
                         "filter_conditions": [
                             "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
                         ],
@@ -152,12 +145,50 @@
                             "owner": "user_1"
                         }
                     },
+                    "schema": {
+                        "columns": [{
+                                "data_type": "STRING",
+                                "is_nullable": true,
+                                "name": "tablename-1-column1",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            },
+                            {
+                                "data_type": "STRING",
+                                "is_nullable": true,
+                                "name": "tablename-1-column2",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            },
+                            {
+                                "data_type": "BIGNUMERIC",
+                                "is_nullable": true,
+                                "name": "tablename-1-column3",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            }
+                        ]
+                    },
                     "resource": {
                         "name": "tablename-1",
                         "service": "bigquery",
                         "urn": "bigquery::gcpproject/dataset/tablename-1"
                     }
-                }
+                },
+                "owners": [{
+                    "urn": "owner::bq/unique",
+                    "name": "Mrs Unique",
+                    "role": "user"
+                }]
             },
             {
                 "urn": "bigquery::gcpproject/dataset/tablename-common",
@@ -167,15 +198,13 @@
                 "data": {
                     "preview": {},
                     "profile": {
-                        "common_join": [
-                            {
-                                "conditions": [
-                                    "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
-                                ],
-                                "count": 1,
-                                "urn": "bigquery::gcpproject/dataset/tablename-mid"
-                            }
-                        ],
+                        "common_join": [{
+                            "conditions": [
+                                "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
+                            ],
+                            "count": 1,
+                            "urn": "bigquery::gcpproject/dataset/tablename-mid"
+                        }],
                         "filter_conditions": [
                             "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
                         ],
@@ -193,12 +222,56 @@
                             "owner": "user_1"
                         }
                     },
+                    "schema": {
+                        "columns": [{
+                                "data_type": "STRING",
+                                "is_nullable": true,
+                                "name": "tablename-common-column1",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            },
+                            {
+                                "data_type": "STRING",
+                                "is_nullable": true,
+                                "name": "tablename-common-column2",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            },
+                            {
+                                "data_type": "BIGNUMERIC",
+                                "is_nullable": true,
+                                "name": "tablename-common-column3",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            }
+                        ]
+                    },
                     "resource": {
                         "name": "tablename-common",
                         "service": "bigquery",
                         "urn": "bigquery::gcpproject/dataset/tablename-common"
                     }
-                }
+                },
+                "owners": [{
+                        "urn": "owner::bq/3",
+                        "name": "Mr.X",
+                        "role": "admin"
+                    },
+                    {
+                        "urn": "owner::bq/4",
+                        "name": "Mrs.Y",
+                        "role": "user"
+                    }
+                ]
             },
             {
                 "urn": "bigquery::gcpproject/dataset/tablename-mid",
@@ -208,8 +281,7 @@
                 "data": {
                     "preview": {},
                     "profile": {
-                        "common_join": [
-                            {
+                        "common_join": [{
                                 "conditions": [
                                     "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
                                 ],
@@ -241,12 +313,56 @@
                             "owner": "user_1"
                         }
                     },
+                    "schema": {
+                        "columns": [{
+                                "data_type": "STRING",
+                                "is_nullable": true,
+                                "name": "tablename-mid-column1",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            },
+                            {
+                                "data_type": "STRING",
+                                "is_nullable": true,
+                                "name": "tablename-mid-column2",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            },
+                            {
+                                "data_type": "BIGNUMERIC",
+                                "is_nullable": true,
+                                "name": "tablename-mid-column3",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            }
+                        ]
+                    },
                     "resource": {
                         "name": "tablename-mid",
                         "service": "bigquery",
                         "urn": "bigquery::gcpproject/dataset/tablename-mid"
                     }
-                }
+                },
+                "owners": [{
+                        "urn": "owner::bq/1",
+                        "name": "John Smith",
+                        "role": "user"
+                    },
+                    {
+                        "urn": "owner::bq/2",
+                        "name": "Paul Smith",
+                        "role": "user"
+                    }
+                ]
             }
         ]
     }

@@ -164,7 +164,7 @@ func anyValidStringSlice(slices ...[]string) []string {
 func (sr *Searcher) buildQuery(ctx context.Context, cfg discovery.SearchConfig, indices []string) (io.Reader, error) {
 	var query elastic.Query
 
-	query = sr.buildTextQuery(ctx, cfg.Text)
+	query = sr.buildTextQuery(ctx, cfg)
 	query = sr.buildFilterQueries(query, cfg.Filters)
 	query = sr.buildFunctionScoreQuery(query, cfg.RankBy)
 
@@ -203,7 +203,20 @@ func (sr *Searcher) buildSuggestQuery(ctx context.Context, cfg discovery.SearchC
 	return payload, err
 }
 
-func (sr *Searcher) buildTextQuery(ctx context.Context, text string) elastic.Query {
+func (sr *Searcher) buildTextQuery(ctx context.Context, cfg discovery.SearchConfig) elastic.Query {
+	if cfg.SearchByField == "" {
+		return sr.buildTextQueryGeneric(ctx, cfg.Text)
+	} else {
+		return sr.buildTextQueryByField(ctx, cfg.Text, cfg.SearchByField)
+	}
+}
+
+func (sr *Searcher) buildTextQueryByField(ctx context.Context, text string, field string) elastic.Query {
+	return elastic.NewMatchQuery(field, text).
+		Fuzziness("AUTO")
+}
+
+func (sr *Searcher) buildTextQueryGeneric(ctx context.Context, text string) elastic.Query {
 	boostedFields := []string{
 		"urn^10",
 		"name^5",
