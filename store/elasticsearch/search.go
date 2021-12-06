@@ -14,8 +14,9 @@ import (
 )
 
 var (
-	defaultMaxResults = 200
-	defaultMinScore   = 0.01
+	defaultMaxResults                  = 200
+	defaultMinScore                    = 0.01
+	defaultFunctionScoreQueryScoreMode = "sum"
 )
 
 type SearcherConfig struct {
@@ -68,6 +69,7 @@ func (sr *Searcher) Search(ctx context.Context, cfg discovery.SearchConfig) (res
 		err = errors.Wrap(err, "error building query")
 		return
 	}
+
 	res, err := sr.cli.Search(
 		sr.cli.Search.WithBody(query),
 		sr.cli.Search.WithIndex(indices...),
@@ -122,9 +124,18 @@ func anyValidStringSlice(slices ...[]string) []string {
 func (sr *Searcher) buildQuery(ctx context.Context, cfg discovery.SearchConfig, indices []string) (io.Reader, error) {
 	textQuery := sr.buildTextQuery(ctx, cfg.Text)
 	filterQueries := sr.buildFilterQueries(cfg.Filters)
-	query := elastic.NewBoolQuery().
+	textQueryWithFilter := elastic.NewBoolQuery().
 		Should(textQuery).
 		Filter(filterQueries...)
+
+	query := sr.buildFunctionScoreQuery(textQueryWithFilter)
+
+	// only boost based on usage_count if bigquery is part of the filter service
+	for _, sf := range cfg.Filters["service"] {
+		if sf == "bigquery" {
+			query = query.AddScoreFunc(sr.buildFieldValueFactorQuery("data.profile.usage_count", "log1p", 1.0, 1.0))
+		}
+	}
 
 	src, err := query.Source()
 	if err != nil {
@@ -183,6 +194,23 @@ func (sr *Searcher) buildFilterQueries(filters map[string][]string) (filterQueri
 		)
 	}
 	return
+}
+
+func (sr *Searcher) buildFieldValueFactorQuery(field string, modifier string, missingValue float64, weight float64) elastic.ScoreFunction {
+	return elastic.NewFieldValueFactorFunction().
+		Field(field).
+		Missing(missingValue).
+		Modifier(modifier).
+		Weight(weight)
+}
+
+func (sr *Searcher) buildFunctionScoreQuery(query elastic.Query) *elastic.FunctionScoreQuery {
+
+	fsQuery := elastic.NewFunctionScoreQuery().
+		Query(query).
+		ScoreMode(defaultFunctionScoreQueryScoreMode)
+
+	return fsQuery
 }
 
 func (sr *Searcher) toSearchResults(hits []searchHit) []discovery.SearchResult {
