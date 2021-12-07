@@ -251,12 +251,20 @@ func (r *TagRepository) readByRecordAndTemplateFromDB(tx *gorm.DB, recordType, r
 	var listOfRecordModelTag []Tag
 	for _, field := range template.Fields {
 		var recordModelTag Tag
-		err := tx.Preload("Field").
+		result := tx.Preload("Field").
 			Where("record_type = ? and record_urn = ? and field_id = ?", recordType, recordURN, field.ID).
-			First(&recordModelTag).Error
-		if err != nil {
-			return tag.Tag{}, fmt.Errorf("no tag record is found for record urn [%s] and template urn [%s]",
-				recordURN, template.URN)
+			First(&recordModelTag)
+		if result.Error != nil {
+			wrappedErr := fmt.Errorf("error looking for record urn [%s] and template urn [%s]: %w", recordURN, template.URN, result.Error)
+
+			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+				wrappedErr = tag.NotFoundError{
+					URN:      recordURN,
+					Type:     recordType,
+					Template: field.TemplateURN,
+				}
+			}
+			return tag.Tag{}, wrappedErr
 		}
 		listOfRecordModelTag = append(listOfRecordModelTag, recordModelTag)
 	}

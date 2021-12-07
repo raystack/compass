@@ -118,6 +118,10 @@ func (h *TagHandler) FindByRecordAndTemplate(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	tags, err := h.service.FindByRecordAndTemplate(recordType, recordURN, templateURN)
+	if errors.As(err, new(tag.NotFoundError)) || errors.As(err, new(tag.TemplateNotFoundError)) {
+		writeJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
 	if err != nil {
 		internalServerError(w, h.logger, fmt.Sprintf("error finding a tag with record and template: %s", err.Error()))
 		return

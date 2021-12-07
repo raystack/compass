@@ -203,8 +203,8 @@ func (r *TagRepositoryTestSuite) TestRead() {
 			TemplateURN: templateURN,
 		}
 
-		expectedErrorMsg := fmt.Sprintf("no tag record is found for record urn [%s] and template urn [%s]",
-			recordURN, templateURN,
+		expectedErrorMsg := fmt.Sprintf("could not find tag with record type: \"%s\", record: \"%s\", template: \"%s\"",
+			recordType, recordURN, templateURN,
 		)
 
 		actualTag, actualError := r.repository.Read(paramDomainTag)

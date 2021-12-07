@@ -63,11 +63,11 @@ func (s *Service) GetByRecord(recordType, recordURN string) ([]Tag, error) {
 func (s *Service) FindByRecordAndTemplate(recordType, recordURN, templateURN string) (Tag, error) {
 	_, err := s.templateService.Find(templateURN)
 	if err != nil {
-		return Tag{}, errors.Wrap(err, "error finding template")
+		return Tag{}, err
 	}
 	listOfTag, err := s.repository.Read(Tag{RecordType: recordType, RecordURN: recordURN, TemplateURN: templateURN})
 	if err != nil {
-		return Tag{}, errors.Wrap(err, "error getting tag list")
+		return Tag{}, err
 	}
 	var output Tag
 	if len(listOfTag) == 0 {
