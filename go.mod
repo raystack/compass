@@ -12,6 +12,8 @@ require (
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.8.0
+	github.com/jackc/pgconn v1.10.0
+	github.com/jackc/pgerrcode v0.0.0-20201024163028-a0d42d470451 // indirect
 	github.com/jeremywohl/flatten v1.0.1
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/mitchellh/mapstructure v1.4.1

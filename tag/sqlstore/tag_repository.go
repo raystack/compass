@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/odpf/columbus/tag"
 	"github.com/pkg/errors"
 
@@ -38,7 +40,7 @@ func (r *TagRepository) Create(domainTag *tag.Tag) error {
 		return r.insertDomainTagToDB(tx, domainTag)
 	})
 	if err != nil {
-		return errors.Wrap(err, "error inserting tag to DB")
+		return err
 	}
 
 	listOfRecordModelTag, err := r.readListOfModelTagFromDB(r.dbClient, domainTag.RecordType, domainTag.RecordURN, domainTemplate)
@@ -366,6 +368,18 @@ func (r *TagRepository) insertDomainTagToDB(tx *gorm.DB, domainTag *tag.Tag) err
 		}
 		createResult := tx.Create(&modelTag)
 		if createResult.Error != nil {
+			fmt.Println(createResult.Error)
+
+			// this is pg driver specific error and not gorm
+			// might not work for DB other than pg
+			var pgErr *pgconn.PgError
+			if errors.As(createResult.Error, &pgErr) {
+				switch pgErr.Code {
+				case pgerrcode.UniqueViolation:
+					return tag.DuplicateTaggingRecordError{RecordURN: domainTag.RecordURN, RecordType: domainTag.RecordType, TemplateURN: domainTag.TemplateURN}
+				}
+			}
+
 			return createResult.Error
 		}
 	}

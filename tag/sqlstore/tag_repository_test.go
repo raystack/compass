@@ -190,7 +190,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		r.ErrorIs(err, tag.TemplateNotFoundError{URN: "governance_policy"})
 	})
 
-	r.Run("should return nil and error if no record found for the specified record and template", func() {
+	r.Run("should return nil and not found error if no record found for the specified record and template", func() {
 		r.Setup()
 		var recordType string = "sample-type"
 		var recordURN string = "sample-urn"
@@ -208,6 +208,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		)
 
 		actualTag, actualError := r.repository.Read(paramDomainTag)
+		r.ErrorAs(actualError, new(tag.NotFoundError))
 		r.EqualError(actualError, expectedErrorMsg)
 		r.Nil(actualTag)
 	})

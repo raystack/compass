@@ -47,7 +47,7 @@ func (s *Service) Create(tag *Tag) error {
 		return err
 	}
 	if err := s.repository.Create(tag); err != nil {
-		return errors.Wrap(err, "error creating tag")
+		return err
 	}
 
 	return nil

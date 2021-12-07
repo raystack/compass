@@ -51,6 +51,10 @@ func (h *TagHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := h.service.Create(&requestBody)
+	if errors.As(err, new(tag.DuplicateTaggingRecordError)) {
+		writeJSONError(w, http.StatusConflict, err.Error())
+		return
+	}
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
