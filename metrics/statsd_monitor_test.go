@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/metrics"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type MockMetricsClient struct {
@@ -35,7 +36,8 @@ func TestNewStatsdMonitor(t *testing.T) {
 		router := mux.NewRouter()
 		monitor.MonitorRouter(router)
 		handler := http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-			res.Write([]byte(""))
+			_, err := res.Write([]byte(""))
+			require.NoError(t, err)
 		})
 		router.Path("/").HandlerFunc(handler)
 

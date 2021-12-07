@@ -1,4 +1,4 @@
-package store_test
+package elasticsearch_test
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/odpf/columbus/models"
-	"github.com/odpf/columbus/store"
+	"github.com/odpf/columbus/record"
+	store "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,9 +22,9 @@ func TestTypeRepository(t *testing.T) {
 	t.Run("CreateOrReplace", func(t *testing.T) {
 		var testCases = []struct {
 			Title      string
-			Type       models.Type
+			Type       record.Type
 			ShouldFail bool
-			Validate   func(cli *elasticsearch.Client, recordType models.Type) error
+			Validate   func(cli *elasticsearch.Client, recordType record.Type) error
 		}{
 			{
 				Title:      "should successfully write the document to elasticsearch",
@@ -35,7 +35,7 @@ func TestTypeRepository(t *testing.T) {
 				Title:      "should create the index ${recordType.Name} in elasticsearch",
 				Type:       daggerType,
 				ShouldFail: false,
-				Validate: func(cli *elasticsearch.Client, recordType models.Type) error {
+				Validate: func(cli *elasticsearch.Client, recordType record.Type) error {
 					idxRequest := &esapi.IndicesExistsRequest{
 						Index: []string{
 							recordType.Name,
@@ -54,24 +54,24 @@ func TestTypeRepository(t *testing.T) {
 			},
 			{
 				Title: "should not accept any type that has the same name as the metadata index",
-				Type: models.Type{
+				Type: record.Type{
 					Name:           "meta", // defaultMetaIndex
-					Classification: models.TypeClassificationResource,
+					Classification: record.TypeClassificationResource,
 				},
 				ShouldFail: true,
 			},
 			{
 				Title: "should not accept any type that has the same name as the search index",
-				Type: models.Type{
+				Type: record.Type{
 					Name:           "universe", // defaultSearchIndex
-					Classification: models.TypeClassificationResource,
+					Classification: record.TypeClassificationResource,
 				},
 				ShouldFail: true,
 			},
 			{
 				Title: "should alias the type to the search index",
 				Type:  daggerType,
-				Validate: func(cli *elasticsearch.Client, recordType models.Type) error {
+				Validate: func(cli *elasticsearch.Client, recordType record.Type) error {
 					searchIndex := "universe"
 					req, err := http.NewRequest("GET", "/_alias/"+searchIndex, nil)
 					if err != nil {
@@ -97,7 +97,7 @@ func TestTypeRepository(t *testing.T) {
 			{
 				Title: "type creation should be idempotent",
 				Type:  daggerType,
-				Validate: func(cli *elasticsearch.Client, recordType models.Type) error {
+				Validate: func(cli *elasticsearch.Client, recordType record.Type) error {
 					// we'll try to save the type again, with the expectation
 					// that it should succeed as normal
 					repo := store.NewTypeRepository(cli)
@@ -111,7 +111,7 @@ func TestTypeRepository(t *testing.T) {
 			{
 				Title: "created index should be able to correctly tokenize CamelCase text",
 				Type:  daggerType,
-				Validate: func(cli *elasticsearch.Client, recordType models.Type) error {
+				Validate: func(cli *elasticsearch.Client, recordType record.Type) error {
 					textToAnalyze := "HelloWorld"
 					analyzerPath := fmt.Sprintf("/%s/_analyze", recordType.Normalise().Name)
 					analyzerPayload := fmt.Sprintf(`{"text": %q}`, textToAnalyze)
@@ -147,118 +147,6 @@ func TestTypeRepository(t *testing.T) {
 
 					if reflect.DeepEqual(expectTokens, analyzedTokens) == false {
 						return fmt.Errorf("expected analyzer to tokenize %q as %v, was %v", textToAnalyze, expectTokens, analyzedTokens)
-					}
-					return nil
-				},
-			},
-			{
-				Title: "created index should have the correct boost configured",
-				Type: models.Type{
-					Name: "foo",
-					Boost: map[string]float64{
-						"name": 2.0,
-					},
-				},
-				Validate: func(cli *elasticsearch.Client, recordType models.Type) error {
-					res, err := cli.Indices.GetMapping(
-						cli.Indices.GetMapping.WithIndex("foo"),
-					)
-					if err != nil {
-						return fmt.Errorf("error obtaining mapping: %v", err)
-					}
-					var response struct {
-						Foo struct {
-							Mapping struct {
-								Properties map[string]interface{} `json:"properties"`
-							} `json:"mappings"`
-						} `json:"foo"`
-					}
-
-					if res.IsError() {
-						return fmt.Errorf("error response from elasticsearch: %v", err)
-					}
-
-					defer res.Body.Close()
-					err = json.NewDecoder(res.Body).Decode(&response)
-					if err != nil {
-						return fmt.Errorf("error parsing mapping response")
-					}
-
-					expectProperties := map[string]interface{}{
-						"name": map[string]interface{}{
-							"type":  "text",
-							"boost": 2.0,
-							"fields": map[string]interface{}{
-								"keyword": map[string]interface{}{
-									"type":         "keyword",
-									"ignore_above": 256.0,
-								},
-							},
-						},
-					}
-					actualProperties := response.Foo.Mapping.Properties
-					if reflect.DeepEqual(expectProperties, actualProperties) == false {
-						return fmt.Errorf("expected created mapping to have properties %v, was %v instead", expectProperties, actualProperties)
-					}
-					return nil
-				},
-			},
-			{
-				Title: "updated index should have the correct boost configured",
-				Type: models.Type{
-					Name: "foo",
-				},
-				Validate: func(cli *elasticsearch.Client, recordType models.Type) error {
-					// update the type definition with boost configuration and run the update
-					recordType.Boost = map[string]float64{
-						"name": 2.0,
-					}
-					repo := store.NewTypeRepository(cli)
-					err := repo.CreateOrReplace(ctx, recordType)
-					if err != nil {
-						return fmt.Errorf("error updating type definition: %v", err)
-					}
-
-					// validate the updated mapping
-					res, err := cli.Indices.GetMapping(
-						cli.Indices.GetMapping.WithIndex("foo"),
-					)
-					if err != nil {
-						return fmt.Errorf("error obtaining mapping: %v", err)
-					}
-					var response struct {
-						Foo struct {
-							Mapping struct {
-								Properties map[string]interface{} `json:"properties"`
-							} `json:"mappings"`
-						} `json:"foo"`
-					}
-
-					if res.IsError() {
-						return fmt.Errorf("error response from elasticsearch: %v", err)
-					}
-
-					defer res.Body.Close()
-					err = json.NewDecoder(res.Body).Decode(&response)
-					if err != nil {
-						return fmt.Errorf("error parsing mapping response")
-					}
-
-					expectProperties := map[string]interface{}{
-						"name": map[string]interface{}{
-							"type":  "text",
-							"boost": 2.0,
-							"fields": map[string]interface{}{
-								"keyword": map[string]interface{}{
-									"type":         "keyword",
-									"ignore_above": 256.0,
-								},
-							},
-						},
-					}
-					actualProperties := response.Foo.Mapping.Properties
-					if reflect.DeepEqual(expectProperties, actualProperties) == false {
-						return fmt.Errorf("expected created mapping to have properties %v, was %v instead", expectProperties, actualProperties)
 					}
 					return nil
 				},
@@ -321,7 +209,7 @@ func TestTypeRepository(t *testing.T) {
 				return
 			}
 
-			assert.Equal(t, []models.Type{}, types)
+			assert.Equal(t, []record.Type{}, types)
 		})
 		t.Run("should return types from elasticsearch", func(t *testing.T) {
 			repo := store.NewTypeRepository(esTestServer.NewClient())
@@ -336,7 +224,7 @@ func TestTypeRepository(t *testing.T) {
 				t.Errorf("error getting type from repository: %v", err)
 				return
 			}
-			var expect = []models.Type{daggerType}
+			var expect = []record.Type{daggerType}
 			assert.Equal(t, expect, types)
 		})
 	})
@@ -350,15 +238,15 @@ func TestTypeRepository(t *testing.T) {
 
 			err = repo.Delete(ctx, "meta")
 			assert.NotNil(t, err)
-			assert.IsType(t, models.ErrReservedTypeName{}, err)
+			assert.IsType(t, record.ErrReservedTypeName{}, err)
 
 			err = repo.Delete(ctx, "universe")
 			assert.NotNil(t, err)
-			assert.IsType(t, models.ErrReservedTypeName{}, err)
+			assert.IsType(t, record.ErrReservedTypeName{}, err)
 		})
 
 		t.Run("should delete type by its name", func(t *testing.T) {
-			err := repo.CreateOrReplace(ctx, models.Type{
+			err := repo.CreateOrReplace(ctx, record.Type{
 				Name: typeName,
 			})
 			if err != nil {
@@ -373,7 +261,7 @@ func TestTypeRepository(t *testing.T) {
 
 			_, err = repo.GetByName(ctx, typeName)
 			assert.NotNil(t, err)
-			assert.IsType(t, models.ErrNoSuchType{}, err)
+			assert.IsType(t, record.ErrNoSuchType{}, err)
 		})
 
 		t.Run("should delete the type's elasticsearch index", func(t *testing.T) {

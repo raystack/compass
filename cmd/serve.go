@@ -15,9 +15,10 @@ import (
 	nrelasticsearch "github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/odpf/columbus/api"
+	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/metrics"
-	"github.com/odpf/columbus/store"
+	esStore "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/sirupsen/logrus"
 )
 
@@ -53,11 +54,10 @@ func initRouter(
 	statsdMonitor *metrics.StatsdMonitor,
 	rootLogger logrus.FieldLogger,
 ) *mux.Router {
-	typeRepository := store.NewTypeRepository(esClient)
-	recordRepositoryFactory := store.NewRecordRepositoryFactory(esClient)
-	recordSearcher, err := store.NewSearcher(store.SearcherConfig{
-		Client:        esClient,
-		TypeWhiteList: typeWhiteList(config.TypeWhiteListStr),
+	typeRepository := esStore.NewTypeRepository(esClient)
+	recordRepositoryFactory := esStore.NewRecordRepositoryFactory(esClient)
+	recordSearcher, err := esStore.NewSearcher(esStore.SearcherConfig{
+		Client: esClient,
 	})
 	if err != nil {
 		log.Fatalf("error creating searcher: %v", err)
@@ -87,11 +87,12 @@ func initRouter(
 	router.Use(requestLoggerMiddleware(
 		rootLogger.WithField("reporter", "http-middleware").Writer(),
 	))
+
 	api.RegisterRoutes(router, api.Config{
 		Logger:                  rootLogger,
-		RecordSearcher:          recordSearcher,
-		RecordRepositoryFactory: recordRepositoryFactory,
 		TypeRepository:          typeRepository,
+		DiscoveryService:        discovery.NewService(recordRepositoryFactory, recordSearcher),
+		RecordRepositoryFactory: recordRepositoryFactory,
 		LineageProvider:         lineageService,
 	})
 
@@ -180,18 +181,11 @@ func esInfo(cli *elasticsearch.Client) (string, error) {
 			Number string `json:"number"`
 		} `json:"version"`
 	}{}
-	json.NewDecoder(res.Body).Decode(&info)
-	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
-}
 
-func typeWhiteList(typeWhiteListStr string) (whiteList []string) {
-	indices := strings.Split(typeWhiteListStr, ",")
-	for _, index := range indices {
-		index = strings.TrimSpace(index)
-		if index == "" {
-			continue
-		}
-		whiteList = append(whiteList, index)
+	err = json.NewDecoder(res.Body).Decode(&info)
+	if err != nil {
+		return "", err
 	}
-	return
+
+	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
 }

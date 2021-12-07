@@ -8,7 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/lineage"
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/record"
 	"github.com/sirupsen/logrus"
 )
 
@@ -51,12 +51,13 @@ func (handler *LineageHandler) ListLineage(w http.ResponseWriter, r *http.Reques
 			Errorf("error querying graph: %v\ncfg: %v", err, opts)
 
 		status := http.StatusBadRequest
-		if _, ok := err.(models.ErrNoSuchType); ok {
+		if _, ok := err.(record.ErrNoSuchType); ok {
 			status = http.StatusNotFound
 		}
 		writeJSONError(w, status, err.Error())
 		return
 	}
+
 	writeJSON(w, http.StatusOK, res)
 }
 
@@ -80,7 +81,7 @@ func (handler *LineageHandler) GetLineage(w http.ResponseWriter, r *http.Request
 			Errorf("error querying graph: %v\ncfg: %v", err, opts)
 
 		status := http.StatusBadRequest
-		if _, ok := err.(models.ErrNoSuchType); ok {
+		if _, ok := err.(record.ErrNoSuchType); ok {
 			status = http.StatusNotFound
 		}
 		writeJSONError(w, status, err.Error())
