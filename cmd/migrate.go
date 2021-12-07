@@ -1,12 +1,18 @@
 package cmd
 
-import "github.com/odpf/columbus/tag/sqlstore"
+import (
+	"fmt"
+
+	"github.com/odpf/columbus/tag/sqlstore"
+)
 
 func Migrate() {
+	fmt.Println("Preparing migration...")
 	if err := loadConfig(); err != nil {
 		panic(err)
 	}
 
+	fmt.Println("Initiating DB client...")
 	pgClient, err := sqlstore.NewPostgreSQLClient(sqlstore.Config{
 		Port:     config.DBPort,
 		Host:     config.DBHost,
@@ -19,6 +25,7 @@ func Migrate() {
 		panic(err)
 	}
 
+	fmt.Println("Migrating DB...")
 	if err := pgClient.AutoMigrate(
 		&sqlstore.Template{},
 		&sqlstore.Field{},
@@ -26,4 +33,6 @@ func Migrate() {
 	); err != nil {
 		panic(err)
 	}
+
+	fmt.Println("Migration done.")
 }
