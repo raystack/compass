@@ -46,7 +46,7 @@ func (s *ServiceTestSuite) TestValidate() {
 		t := s.buildTag()
 		t.RecordURN = ""
 
-		expectedErrorMsg := "error with [record_urn]"
+		expectedErrorMsg := "error with [record_urn : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"record_urn": "cannot be empty",
@@ -63,7 +63,7 @@ func (s *ServiceTestSuite) TestValidate() {
 		t := s.buildTag()
 		t.RecordType = ""
 
-		expectedErrorMsg := "error with [record_type]"
+		expectedErrorMsg := "error with [record_type : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"record_type": "cannot be empty",
@@ -80,7 +80,7 @@ func (s *ServiceTestSuite) TestValidate() {
 		t := s.buildTag()
 		t.TemplateURN = ""
 
-		expectedErrorMsg := "error with [template_urn]"
+		expectedErrorMsg := "error with [template_urn : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"template_urn": "cannot be empty",
@@ -97,7 +97,7 @@ func (s *ServiceTestSuite) TestValidate() {
 		t := s.buildTag()
 		t.TemplateURN = ""
 
-		expectedErrorMsg := "error with [template_urn]"
+		expectedErrorMsg := "error with [template_urn : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"template_urn": "cannot be empty",
@@ -114,7 +114,7 @@ func (s *ServiceTestSuite) TestValidate() {
 		t := s.buildTag()
 		t.TagValues = []tag.TagValue{}
 
-		expectedErrorMsg := "error with [tag_values]"
+		expectedErrorMsg := "error with [tag_values : must be at least 1]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"tag_values": "must be at least 1",
@@ -131,7 +131,7 @@ func (s *ServiceTestSuite) TestValidate() {
 		t := s.buildTag()
 		t.TagValues[1].FieldID = 0
 
-		expectedErrorMsg := "error with [tag_values[1].field_id]"
+		expectedErrorMsg := "error with [tag_values[1].field_id : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"tag_values[1].field_id": "cannot be empty",
@@ -148,7 +148,7 @@ func (s *ServiceTestSuite) TestValidate() {
 		t := s.buildTag()
 		t.TagValues[1].FieldValue = nil
 
-		expectedErrorMsg := "error with [tag_values[1].field_value]"
+		expectedErrorMsg := "error with [tag_values[1].field_value : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"tag_values[1].field_value": "cannot be empty",
@@ -168,7 +168,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		t := s.buildTag()
 		t.RecordURN = ""
 
-		expectedErrorMsg := "error with [record_urn]"
+		expectedErrorMsg := "error with [record_urn : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"record_urn": "cannot be empty",
@@ -198,7 +198,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		template := s.buildTemplate()
 		s.templateRepo.On("Read", s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
 
-		expectedErrorMsg := "error with [fields[0].id]"
+		expectedErrorMsg := "error with [fields[0].id : not part of template [governance_policy]]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields[0].id": fmt.Sprintf("not part of template [%s]", t.TemplateURN),
@@ -219,7 +219,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		template := s.buildTemplate()
 		s.templateRepo.On("Read", s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
 
-		expectedErrorMsg := "error with [fields[1].id]"
+		expectedErrorMsg := "error with [fields[1].id : required by template [governance_policy]]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields[1].id": fmt.Sprintf("required by template [%s]", t.TemplateURN),
@@ -240,7 +240,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		template := s.buildTemplate()
 		s.templateRepo.On("Read", s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
 
-		expectedErrorMsg := "error with [fields[1].value]"
+		expectedErrorMsg := "error with [fields[1].value : template [governance_policy] on field [2] should be boolean]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields[1].value": fmt.Sprintf("template [%s] on field [%d] should be boolean", t.TemplateURN, 2),
@@ -356,7 +356,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 		t := s.buildTag()
 		t.RecordURN = ""
 
-		expectedErrorMsg := "error with [record_urn]"
+		expectedErrorMsg := "error with [record_urn : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"record_urn": "cannot be empty",
@@ -410,7 +410,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 			TemplateURN: t.TemplateURN,
 		}).Return([]tag.Tag{t}, nil)
 
-		expectedErrorMsg := "error with [fields[0].id]"
+		expectedErrorMsg := "error with [fields[0].id : not part of template [governance_policy]]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields[0].id": fmt.Sprintf("not part of template [%s]", t.TemplateURN),
@@ -435,7 +435,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 			TemplateURN: t.TemplateURN,
 		}).Return([]tag.Tag{t}, nil)
 
-		expectedErrorMsg := "error with [fields[1].value]"
+		expectedErrorMsg := "error with [fields[1].value : template [governance_policy] on field [2] should be boolean]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields[1].value": fmt.Sprintf("template [%s] on field [%d] should be boolean", t.TemplateURN, 2),

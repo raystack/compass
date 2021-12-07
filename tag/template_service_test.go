@@ -44,7 +44,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template := s.buildTemplate()
 		template.URN = ""
 
-		expectedErrorMsg := "error with [urn]"
+		expectedErrorMsg := "error with [urn : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"urn": "cannot be empty",
@@ -61,7 +61,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template := s.buildTemplate()
 		template.DisplayName = ""
 
-		expectedErrorMsg := "error with [display_name]"
+		expectedErrorMsg := "error with [display_name : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"display_name": "cannot be empty",
@@ -78,7 +78,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template := s.buildTemplate()
 		template.Description = ""
 
-		expectedErrorMsg := "error with [description]"
+		expectedErrorMsg := "error with [description : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"description": "cannot be empty",
@@ -95,7 +95,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template := s.buildTemplate()
 		template.Fields = nil
 
-		expectedErrorMsg := "error with [fields]"
+		expectedErrorMsg := "error with [fields : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields": "cannot be empty",
@@ -112,7 +112,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template := s.buildTemplate()
 		template.Fields = []tag.Field{}
 
-		expectedErrorMsg := "error with [fields]"
+		expectedErrorMsg := "error with [fields : must be at least 1]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields": "must be at least 1",
@@ -129,7 +129,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template := s.buildTemplate()
 		template.Fields[0].URN = ""
 
-		expectedErrorMsg := "error with [fields[0].urn]"
+		expectedErrorMsg := "error with [fields[0].urn : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields[0].urn": "cannot be empty",
@@ -146,7 +146,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template := s.buildTemplate()
 		template.Fields[0].DisplayName = ""
 
-		expectedErrorMsg := "error with [fields[0].display_name]"
+		expectedErrorMsg := "error with [fields[0].display_name : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields[0].display_name": "cannot be empty",
@@ -163,7 +163,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template := s.buildTemplate()
 		template.Fields[0].Description = ""
 
-		expectedErrorMsg := "error with [fields[0].description]"
+		expectedErrorMsg := "error with [fields[0].description : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields[0].description": "cannot be empty",
@@ -180,7 +180,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template := s.buildTemplate()
 		template.Fields[0].DataType = "Random_Type"
 
-		expectedErrorMsg := "error with [fields[0].data_type]"
+		expectedErrorMsg := "error with [fields[0].data_type : data_type must be one of [string double boolean enumerated datetime]]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields[0].data_type": "data_type must be one of [string double boolean enumerated datetime]",
@@ -197,7 +197,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template := s.buildTemplate()
 		template.Fields[0].Options = nil
 
-		expectedErrorMsg := "error with [fields[0].options]"
+		expectedErrorMsg := "error with [fields[0].options : cannot be empty with data_type [enumerated]]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields[0].options": "cannot be empty with data_type [enumerated]",
@@ -214,7 +214,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template := s.buildTemplate()
 		template.Fields[0].Options = []string{}
 
-		expectedErrorMsg := "error with [fields[0].options]"
+		expectedErrorMsg := "error with [fields[0].options : cannot be empty with data_type [enumerated]]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields[0].options": "cannot be empty with data_type [enumerated]",
@@ -233,7 +233,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 			"Team Owner", "", "Governor Email",
 		}
 
-		expectedErrorMsg := "error with [fields[0].options]"
+		expectedErrorMsg := "error with [fields[0].options : cannot contain empty element]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields[0].options": "cannot contain empty element",
@@ -270,7 +270,7 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 		template := s.buildTemplate()
 		template.Description = ""
 
-		expectedErrorMsg := "error with [description]"
+		expectedErrorMsg := "error with [description : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"description": "cannot be empty",
@@ -383,7 +383,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		template := s.buildTemplate()
 		template.Description = ""
 
-		expectedErrorMsg := "error with [description]"
+		expectedErrorMsg := "error with [description : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"description": "cannot be empty",
@@ -419,7 +419,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		}
 		s.repository.On("Read", filterForExistence).Return([]tag.Template{template}, nil)
 
-		expectedErrorMsg := "error with [fields.[0].id]"
+		expectedErrorMsg := "error with [fields.[0].id : [99] is not part of the template]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields.[0].id": fmt.Sprintf("[%d] is not part of the template",
@@ -445,7 +445,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		}
 		s.repository.On("Read", filterForExistence).Return([]tag.Template{template}, nil)
 
-		expectedErrorMsg := "error with [fields.[0].urn]"
+		expectedErrorMsg := "error with [fields.[0].urn : [team_custodianr] already exists within the template]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
 				"fields.[0].urn": fmt.Sprintf("[%s] already exists within the template",

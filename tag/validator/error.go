@@ -12,8 +12,8 @@ type FieldError map[string]string
 // Error returns error that represent the field error
 func (d FieldError) Error() string {
 	var errFields []string
-	for field := range d {
-		errFields = append(errFields, field)
+	for field, value := range d {
+		errFields = append(errFields, fmt.Sprintf("%s : %s", field, value))
 	}
 	output := fmt.Sprintf("error with [%s]", strings.Join(errFields, ", "))
 	return output
