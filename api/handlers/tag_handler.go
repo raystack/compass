@@ -204,6 +204,10 @@ func (h *TagHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := h.service.Delete(recordType, recordURN, templateURN)
+	if errors.As(err, new(tag.TemplateNotFoundError)) {
+		writeJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
 	if err != nil {
 		internalServerError(w, h.logger, fmt.Sprintf("error deleting a template: %s", err.Error()))
 		return

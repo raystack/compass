@@ -105,6 +105,21 @@ func (s *TagHandlerTestSuite) TestCreate() {
 		s.Equal(http.StatusInternalServerError, s.recorder.Result().StatusCode)
 	})
 
+	s.Run("should return 409 if found duplicated recotd during insert", func() {
+		s.Setup()
+		t := s.buildTag()
+		template := s.buildTemplate()
+		s.templateRepository.On("Read", s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.tagRepository.On("Create", &t).Return(tag.DuplicateTaggingRecordError{})
+
+		body, err := json.Marshal(t)
+		s.Require().NoError(err)
+		request, _ := http.NewRequest(http.MethodGet, "/", strings.NewReader(string(body)))
+
+		s.handler.Create(s.recorder, request)
+		s.Equal(http.StatusConflict, s.recorder.Result().StatusCode)
+	})
+
 	s.Run("should return status created and domain is inserted if found no error", func() {
 		s.Setup()
 		originalDomainTag := s.buildTag()
@@ -127,6 +142,7 @@ func (s *TagHandlerTestSuite) TestCreate() {
 		s.Equal(http.StatusCreated, s.recorder.Result().StatusCode)
 		s.Equal(expectedResponseBody, s.recorder.Body.String())
 	})
+
 }
 
 func (s *TagHandlerTestSuite) TestGetByRecord() {
@@ -275,6 +291,58 @@ func (s *TagHandlerTestSuite) TestFindByRecordAndTemplate() {
 
 		s.Equal(expectedStatusCode, actualStatusCode)
 		s.Equal(expectedResponseBody, actualResponseBody)
+	})
+
+	s.Run("should return 404 if template does not exist", func() {
+		s.Setup()
+		var recordType string = "sample-type"
+		var recordURN string = "sample-urn"
+		template := s.buildTemplate()
+		request, err := http.NewRequest(http.MethodGet, "/", nil)
+		s.Require().NoError(err)
+		request = mux.SetURLVars(request, map[string]string{
+			"type":         recordType,
+			"record_urn":   recordURN,
+			"template_urn": template.URN,
+		})
+
+		s.templateRepository.On("Read", tag.Template{
+			URN: template.URN,
+		}).Return([]tag.Template{}, tag.TemplateNotFoundError{URN: template.URN})
+
+		s.handler.FindByRecordAndTemplate(s.recorder, request)
+		s.Equal(http.StatusNotFound, s.recorder.Result().StatusCode)
+	})
+
+	s.Run("should return 404 if tag does not exist", func() {
+		s.Setup()
+		var recordType string = "sample-type"
+		var recordURN string = "sample-urn"
+		template := s.buildTemplate()
+		request, err := http.NewRequest(http.MethodGet, "/", nil)
+		s.Require().NoError(err)
+		request = mux.SetURLVars(request, map[string]string{
+			"type":         recordType,
+			"record_urn":   recordURN,
+			"template_urn": template.URN,
+		})
+
+		s.templateRepository.On("Read", tag.Template{
+			URN: template.URN,
+		}).Return([]tag.Template{template}, nil)
+
+		s.tagRepository.On("Read", tag.Tag{
+			RecordType:  recordType,
+			RecordURN:   recordURN,
+			TemplateURN: template.URN,
+		}).Return(nil, tag.NotFoundError{
+			URN:      recordURN,
+			Type:     recordType,
+			Template: template.URN,
+		})
+
+		s.handler.FindByRecordAndTemplate(s.recorder, request)
+		s.Equal(http.StatusNotFound, s.recorder.Result().StatusCode)
 	})
 
 	s.Run("should return 500 if found unexpected error", func() {
@@ -622,6 +690,28 @@ func (s *TagHandlerTestSuite) TestDelete() {
 
 		s.Equal(expectedStatusCode, actualStatusCode)
 		s.Equal(expectedResponseBody, actualResponseBody)
+	})
+
+	s.Run("should return status not found error and its message if template does not exist", func() {
+		s.Setup()
+		var recordType string = "sample-type"
+		var recordURN string = "sample-urn"
+		var templateURN string = "template-urn"
+		request, _ := http.NewRequest(http.MethodDelete, "/", nil)
+		request = mux.SetURLVars(request, map[string]string{
+			"type":         recordType,
+			"record_urn":   recordURN,
+			"template_urn": templateURN,
+		})
+		s.templateRepository.On("Read", s.templateQuery(templateURN)).Return([]tag.Template{{}}, nil)
+		s.tagRepository.On("Delete", tag.Tag{
+			RecordType:  recordType,
+			RecordURN:   recordURN,
+			TemplateURN: templateURN,
+		}).Return(tag.TemplateNotFoundError{})
+
+		s.handler.Delete(s.recorder, request)
+		s.Equal(http.StatusNotFound, s.recorder.Result().StatusCode)
 	})
 
 	s.Run("should return 500 if found unexpected error", func() {
