@@ -1,8 +1,6 @@
-[
-    {
+[{
         "type": "topic",
-        "records": [
-            {
+        "records": [{
                 "urn": "order-topic",
                 "name": "order-topic",
                 "service": "kafka",
@@ -61,8 +59,7 @@
     },
     {
         "type": "table",
-        "records": [
-            {
+        "records": [{
                 "urn": "au2-microsoft-invoice",
                 "name": "microsoft-invoice",
                 "service": "postgres",
@@ -76,9 +73,9 @@
                     "description": "Transaction records for every microsoft purchase",
                     "total_rows": 100,
                     "schema": [
-                        {"name": "id"},
-                        {"name": "username", "description": "purchaser username"},
-                        {"name": "item_id", "description": "item identifications"}
+                        { "name": "id" },
+                        { "name": "username", "description": "purchaser username" },
+                        { "name": "item_id", "description": "item identifications" }
                     ]
                 }
             },
@@ -96,12 +93,139 @@
                     "description": "Transaction records for every Apple purchase",
                     "total_rows": 100,
                     "schema": [
-                        {"name": "id"},
-                        {"name": "user_id", "description": "purchaser user idenfitication"},
-                        {"name": "item_id", "description": "item identifications"}
+                        { "name": "id" },
+                        { "name": "user_id", "description": "purchaser user idenfitication" },
+                        { "name": "item_id", "description": "item identifications" }
                     ]
                 }
             }
         ]
+    },
+    {
+        "type": {
+            "name": "table",
+            "classification": "resource"
+        },
+        "records": [{
+            "urn": "bigquery::gcpproject/dataset/tablename-1",
+            "name": "tablename-1",
+            "service": "bigquery",
+            "description": "A sample of table record",
+            "data": {
+                "preview": {},
+                "profile": {
+                    "common_join": [{
+                        "conditions": [
+                            "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
+                        ],
+                        "count": 1,
+                        "urn": "bigquery::gcpproject/dataset/tablename-mid"
+                    }],
+                    "filter_conditions": [
+                        "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
+                    ],
+                    "usage_count": 1
+                },
+                "properties": {
+                    "attributes": {
+                        "dataset": "dataset",
+                        "full_qualified_name": "gcpproject:dataset.tablename-1",
+                        "partition_field": "event_timestamp",
+                        "project": "gcpproject",
+                        "type": "TABLE"
+                    },
+                    "labels": {
+                        "owner": "user_1"
+                    }
+                },
+                "resource": {
+                    "name": "tablename-1",
+                    "service": "bigquery",
+                    "urn": "bigquery::gcpproject/dataset/tablename-1"
+                }
+            }
+        }, {
+            "urn": "bigquery::gcpproject/dataset/tablename-common",
+            "name": "tablename-common",
+            "service": "bigquery",
+            "description": "A sample of table record with high usage",
+            "data": {
+                "preview": {},
+                "profile": {
+                    "common_join": [{
+                        "conditions": [
+                            "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
+                        ],
+                        "count": 1,
+                        "urn": "bigquery::gcpproject/dataset/tablename-mid"
+                    }],
+                    "filter_conditions": [
+                        "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
+                    ],
+                    "usage_count": 10
+                },
+                "properties": {
+                    "attributes": {
+                        "dataset": "dataset",
+                        "full_qualified_name": "gcpproject:dataset.tablename-common",
+                        "partition_field": "event_timestamp",
+                        "project": "gcpproject",
+                        "type": "TABLE"
+                    },
+                    "labels": {
+                        "owner": "user_1"
+                    }
+                },
+                "resource": {
+                    "name": "tablename-common",
+                    "service": "bigquery",
+                    "urn": "bigquery::gcpproject/dataset/tablename-common"
+                }
+            }
+        }, {
+            "urn": "bigquery::gcpproject/dataset/tablename-mid",
+            "name": "tablename-mid",
+            "service": "bigquery",
+            "description": "A sample of table record with mid usage",
+            "data": {
+                "preview": {},
+                "profile": {
+                    "common_join": [{
+                        "conditions": [
+                            "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
+                        ],
+                        "count": 1,
+                        "urn": "bigquery::gcpproject/dataset/tablename-high"
+                    }, {
+                        "conditions": [
+                            "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
+                        ],
+                        "count": 1,
+                        "urn": "bigquery::gcpproject/dataset/tablename-1"
+                    }],
+                    "filter_conditions": [
+                        "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
+                    ],
+                    "usage_count": 5
+                },
+                "properties": {
+                    "attributes": {
+                        "dataset": "dataset",
+                        "full_qualified_name": "gcpproject:dataset.tablename-mid",
+                        "partition_field": "event_timestamp",
+                        "project": "gcpproject",
+                        "type": "TABLE"
+                    },
+                    "labels": {
+                        "owner": "user_1"
+                    }
+                },
+                "resource": {
+                    "name": "tablename-mid",
+                    "service": "bigquery",
+                    "urn": "bigquery::gcpproject/dataset/tablename-mid"
+                }
+            }
+        }]
     }
 ]

@@ -130,12 +130,7 @@ func (sr *Searcher) buildQuery(ctx context.Context, cfg discovery.SearchConfig, 
 
 	query := sr.buildFunctionScoreQuery(textQueryWithFilter)
 
-	// only boost based on usage_count if bigquery is part of the filter service
-	for _, sf := range cfg.Filters["service"] {
-		if sf == "bigquery" {
-			query = query.AddScoreFunc(sr.buildFieldValueFactorQuery("data.profile.usage_count", "log1p", 1.0, 1.0))
-		}
-	}
+	query = sr.addBoostFieldToSort(cfg.SortBy, query)
 
 	src, err := query.Source()
 	if err != nil {
@@ -148,6 +143,14 @@ func (sr *Searcher) buildQuery(ctx context.Context, cfg discovery.SearchConfig, 
 		Query:    src,
 	}
 	return payload, json.NewEncoder(payload).Encode(q)
+}
+
+func (sr *Searcher) addBoostFieldToSort(sortBy string, query *elastic.FunctionScoreQuery) *elastic.FunctionScoreQuery {
+	switch models.ParseSearchSortBy(sortBy) {
+	case models.SearchSortByUsage:
+		return query.AddScoreFunc(sr.buildFieldValueFactorQuery("data.profile.usage_count", "log1p", 1.0, 1.0))
+	}
+	return query
 }
 
 func (sr *Searcher) buildTextQuery(ctx context.Context, text string) elastic.Query {
