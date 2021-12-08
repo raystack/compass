@@ -19,8 +19,8 @@ import (
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/metrics"
 	esStore "github.com/odpf/columbus/store/elasticsearch"
+	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/columbus/tag"
-	"github.com/odpf/columbus/tag/sqlstore"
 	"github.com/sirupsen/logrus"
 )
 
@@ -79,7 +79,7 @@ func initRouter(
 		rootLogger.Info("lineage build complete")
 	}()
 
-	pgClient, err := sqlstore.NewPostgreSQLClient(sqlstore.Config{
+	pgClient, err := postgres.NewClient(postgres.Config{
 		Port:     config.DBPort,
 		Host:     config.DBHost,
 		Name:     config.DBName,
@@ -90,9 +90,9 @@ func initRouter(
 	if err != nil {
 		log.Fatal(err)
 	}
-	tagRepository := sqlstore.NewTagRepository(pgClient)
+	tagRepository := postgres.NewTagRepository(pgClient)
 	tagTemplateService := tag.NewTemplateService(
-		sqlstore.NewTemplateRepository(pgClient),
+		postgres.NewTemplateRepository(pgClient),
 	)
 	tagService := tag.NewService(
 		tagRepository,

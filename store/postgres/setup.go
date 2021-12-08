@@ -1,11 +1,10 @@
-package sqlstore
+package postgres
 
 import (
 	"fmt"
 	"strings"
 
 	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -18,8 +17,8 @@ type Config struct {
 	SSLMode  string
 }
 
-// NewPostgreSQLClient initializes database connection
-func NewPostgreSQLClient(cfg Config) (*gorm.DB, error) {
+// NewClient initializes database connection
+func NewClient(cfg Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
 		"host=%s port=%d dbname=%s user=%s password=%s sslmode=%s",
 		strings.TrimSpace(cfg.Host),
@@ -31,9 +30,4 @@ func NewPostgreSQLClient(cfg Config) (*gorm.DB, error) {
 	)
 
 	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
-}
-
-// NewSQLiteClient initializes database connection
-func NewSQLiteClient(dsn string) (*gorm.DB, error) {
-	return gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 }

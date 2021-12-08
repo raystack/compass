@@ -1,11 +1,11 @@
-package sqlstore_test
+package postgres_test
 
 import (
 	"testing"
 	"time"
 
+	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/columbus/tag"
-	"github.com/odpf/columbus/tag/sqlstore"
 
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
@@ -14,15 +14,15 @@ import (
 type TemplateRepositoryTestSuite struct {
 	suite.Suite
 	dbClient   *gorm.DB
-	repository *sqlstore.TemplateRepository
+	repository *postgres.TemplateRepository
 }
 
 func (r *TemplateRepositoryTestSuite) Setup() {
-	r.dbClient, _ = sqlstore.NewSQLiteClient("file::memory:")
-	r.dbClient.AutoMigrate(&sqlstore.Template{})
-	r.dbClient.AutoMigrate(&sqlstore.Field{})
-	r.dbClient.AutoMigrate(&sqlstore.Tag{})
-	repository := sqlstore.NewTemplateRepository(r.dbClient)
+	r.dbClient, _ = newTestClient("file::memory:")
+	r.dbClient.AutoMigrate(&postgres.Template{})
+	r.dbClient.AutoMigrate(&postgres.Field{})
+	r.dbClient.AutoMigrate(&postgres.Tag{})
+	repository := postgres.NewTemplateRepository(r.dbClient)
 	r.repository = repository
 }
 
@@ -30,7 +30,7 @@ func (r *TemplateRepositoryTestSuite) TestNewRepository() {
 	r.Run("should return repository and nil if db client is not nil", func() {
 		dbClient := &gorm.DB{}
 
-		actualRepository := sqlstore.NewTemplateRepository(dbClient)
+		actualRepository := postgres.NewTemplateRepository(dbClient)
 		r.NotNil(actualRepository)
 	})
 }
@@ -51,7 +51,7 @@ func (r *TemplateRepositoryTestSuite) TestCreate() {
 		domainTemplate := tag.Template{
 			URN: "governance_policy",
 		}
-		repository := &sqlstore.TemplateRepository{}
+		repository := &postgres.TemplateRepository{}
 
 		expectedErrorMsg := "db client is nil"
 
@@ -65,7 +65,7 @@ func (r *TemplateRepositoryTestSuite) TestCreate() {
 		domainTemplate := r.getDomainTemplate()
 
 		actualError := r.repository.Create(&domainTemplate)
-		var actualRecord sqlstore.Template
+		var actualRecord postgres.Template
 		result := r.dbClient.Preload("Fields").First(&actualRecord)
 
 		r.NoError(actualError)
@@ -84,7 +84,7 @@ func (r *TemplateRepositoryTestSuite) TestCreate() {
 		referenceDomainTemplate := r.getDomainTemplate()
 
 		actualError := r.repository.Create(&originalDomainTemplate)
-		var actualRecord sqlstore.Template
+		var actualRecord postgres.Template
 		r.dbClient.Preload("Fields").First(&actualRecord)
 
 		r.NoError(actualError)
@@ -111,7 +111,7 @@ func (r *TemplateRepositoryTestSuite) TestCreate() {
 func (r *TemplateRepositoryTestSuite) TestRead() {
 	r.Run("should return nil and error if db client is nil", func() {
 		domainTemplate := r.getDomainTemplate()
-		repository := &sqlstore.TemplateRepository{}
+		repository := &postgres.TemplateRepository{}
 
 		expectedErrorMsg := "db client is nil"
 
@@ -164,7 +164,7 @@ func (r *TemplateRepositoryTestSuite) TestUpdate() {
 
 	r.Run("should return error if db client is nil", func() {
 		domainTemplate := r.getDomainTemplate()
-		repository := &sqlstore.TemplateRepository{}
+		repository := &postgres.TemplateRepository{}
 
 		expectedErrorMsg := "db client is nil"
 
@@ -200,7 +200,7 @@ func (r *TemplateRepositoryTestSuite) TestUpdate() {
 		actualError := r.repository.Update(&domainTemplate)
 		r.NoError(actualError)
 
-		var recordModelTemplate sqlstore.Template
+		var recordModelTemplate postgres.Template
 		if err := r.dbClient.Preload("Fields").First(&recordModelTemplate).Error; err != nil {
 			panic(err)
 		}
@@ -266,7 +266,7 @@ func (r *TemplateRepositoryTestSuite) TestUpdate() {
 func (r *TemplateRepositoryTestSuite) TestDelete() {
 	r.Run("should return error if db client is nil", func() {
 		domainTemplate := r.getDomainTemplate()
-		repository := &sqlstore.TemplateRepository{}
+		repository := &postgres.TemplateRepository{}
 
 		expectedErrorMsg := "db client is nil"
 
@@ -293,9 +293,9 @@ func (r *TemplateRepositoryTestSuite) TestDelete() {
 		}
 
 		actualError := r.repository.Delete(domainTemplate)
-		var actualModelTemplate sqlstore.Template
+		var actualModelTemplate postgres.Template
 		templateResult := r.dbClient.First(&actualModelTemplate)
-		var actualModelField sqlstore.Field
+		var actualModelField postgres.Field
 		fieldResult := r.dbClient.First(&actualModelField)
 
 		r.NoError(actualError)

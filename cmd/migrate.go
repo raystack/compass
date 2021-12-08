@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/odpf/columbus/tag/sqlstore"
+	"github.com/odpf/columbus/store/postgres"
 )
 
 func Migrate() {
@@ -13,7 +13,7 @@ func Migrate() {
 	}
 
 	fmt.Println("Initiating DB client...")
-	pgClient, err := sqlstore.NewPostgreSQLClient(sqlstore.Config{
+	pgClient, err := postgres.NewClient(postgres.Config{
 		Port:     config.DBPort,
 		Host:     config.DBHost,
 		Name:     config.DBName,
@@ -27,9 +27,9 @@ func Migrate() {
 
 	fmt.Println("Migrating DB...")
 	if err := pgClient.AutoMigrate(
-		&sqlstore.Template{},
-		&sqlstore.Field{},
-		&sqlstore.Tag{},
+		&postgres.Template{},
+		&postgres.Field{},
+		&postgres.Tag{},
 	); err != nil {
 		panic(err)
 	}

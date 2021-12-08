@@ -1,12 +1,12 @@
-package sqlstore_test
+package postgres_test
 
 import (
 	"fmt"
 	"strings"
 	"testing"
 
+	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/columbus/tag"
-	"github.com/odpf/columbus/tag/sqlstore"
 
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
@@ -15,25 +15,25 @@ import (
 type TagRepositoryTestSuite struct {
 	suite.Suite
 	dbClient   *gorm.DB
-	repository *sqlstore.TagRepository
+	repository *postgres.TagRepository
 }
 
 func (r *TagRepositoryTestSuite) TestNewTagRepository() {
 	r.Run("should return repository and nil if db client is not nil", func() {
 		dbClient := &gorm.DB{}
 
-		actualTagRepository := sqlstore.NewTagRepository(dbClient)
+		actualTagRepository := postgres.NewTagRepository(dbClient)
 
 		r.NotNil(actualTagRepository)
 	})
 }
 
 func (r *TagRepositoryTestSuite) Setup() {
-	r.dbClient, _ = sqlstore.NewSQLiteClient("file::memory:")
-	r.dbClient.AutoMigrate(&sqlstore.Template{})
-	r.dbClient.AutoMigrate(&sqlstore.Field{})
-	r.dbClient.AutoMigrate(&sqlstore.Tag{})
-	repository := sqlstore.NewTagRepository(r.dbClient)
+	r.dbClient, _ = newTestClient("file::memory:")
+	r.dbClient.AutoMigrate(&postgres.Template{})
+	r.dbClient.AutoMigrate(&postgres.Field{})
+	r.dbClient.AutoMigrate(&postgres.Tag{})
+	repository := postgres.NewTagRepository(r.dbClient)
 	r.repository = repository
 }
 
@@ -51,7 +51,7 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 
 	r.Run("should return error if db client is nil", func() {
 		domainTag := &tag.Tag{}
-		repository := &sqlstore.TagRepository{}
+		repository := &postgres.TagRepository{}
 
 		expectedErrorMsg := "db client is nil"
 
@@ -78,8 +78,8 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 		r.NoError(actualError)
 
 		for _, value := range domainTag.TagValues {
-			var actualRecord sqlstore.Tag
-			queryResult := r.dbClient.Where(sqlstore.Tag{
+			var actualRecord postgres.Tag
+			queryResult := r.dbClient.Where(postgres.Tag{
 				RecordURN: domainTag.RecordURN,
 				FieldID:   value.FieldID,
 			}).First(&actualRecord)
@@ -106,7 +106,7 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 func (r *TagRepositoryTestSuite) TestRead() {
 	r.Run("should return nil and error if db client is nil", func() {
 		var recordURN string = "sample-urn"
-		repository := &sqlstore.TagRepository{}
+		repository := &postgres.TagRepository{}
 		paramDomainTag := tag.Tag{
 			RecordURN: recordURN,
 		}
@@ -253,7 +253,7 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 
 	r.Run("should return error if db client is nil", func() {
 		domainTag := &tag.Tag{}
-		repository := &sqlstore.TagRepository{}
+		repository := &postgres.TagRepository{}
 
 		expectedErrorMsg := "db client is nil"
 
@@ -283,7 +283,7 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 		r.Require().NoError(actualError)
 
 		for _, value := range domainTag.TagValues {
-			var actualRecord sqlstore.Tag
+			var actualRecord postgres.Tag
 			queryResult := r.dbClient.Where(
 				"record_urn = ? and field_id = ?", domainTag.RecordURN, value.FieldID,
 			).First(&actualRecord)
@@ -313,7 +313,7 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 func (r *TagRepositoryTestSuite) TestDelete() {
 	r.Run("should return error if db client is nil", func() {
 		var recordURN string = "sample-urn"
-		repository := &sqlstore.TagRepository{}
+		repository := &postgres.TagRepository{}
 		paramDomainTag := tag.Tag{
 			RecordURN: recordURN,
 		}
@@ -353,7 +353,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		}
 
 		actualError := r.repository.Delete(paramDomainTag)
-		var listOfRecordModelTag []sqlstore.Tag
+		var listOfRecordModelTag []postgres.Tag
 		err := r.dbClient.Where("record_type = ? and record_urn = ?", domainTag.RecordType, domainTag.RecordURN).
 			Find(&listOfRecordModelTag).Error
 		if err != nil {
@@ -388,7 +388,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		}
 
 		actualError := r.repository.Delete(paramDomainTag)
-		var listOfRecordModelTag []sqlstore.Tag
+		var listOfRecordModelTag []postgres.Tag
 		err := r.dbClient.Where("record_urn = ?", recordURN).Find(&listOfRecordModelTag).Error
 		if err != nil {
 			panic(err)
@@ -400,7 +400,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 }
 
 func (r *TagRepositoryTestSuite) createDomainTemplate(domainTemplate *tag.Template) {
-	listOfModelField := make([]sqlstore.Field, len(domainTemplate.Fields))
+	listOfModelField := make([]postgres.Field, len(domainTemplate.Fields))
 	for i, domainField := range domainTemplate.Fields {
 		var options *string
 		if len(domainField.Options) > 0 {
@@ -408,7 +408,7 @@ func (r *TagRepositoryTestSuite) createDomainTemplate(domainTemplate *tag.Templa
 			strings.Join(domainField.Options, ",")
 			options = &concatenatedOption
 		}
-		listOfModelField[i] = sqlstore.Field{
+		listOfModelField[i] = postgres.Field{
 			ID:          domainField.ID,
 			URN:         domainField.URN,
 			DisplayName: domainField.DisplayName,
@@ -418,7 +418,7 @@ func (r *TagRepositoryTestSuite) createDomainTemplate(domainTemplate *tag.Templa
 			Required:    domainField.Required,
 		}
 	}
-	modelTemplate := sqlstore.Template{
+	modelTemplate := postgres.Template{
 		URN:         domainTemplate.URN,
 		DisplayName: domainTemplate.DisplayName,
 		Description: domainTemplate.Description,

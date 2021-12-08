@@ -1,4 +1,4 @@
-package sqlstore
+package postgres
 
 import "errors"
 
