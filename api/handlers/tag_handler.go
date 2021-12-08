@@ -51,7 +51,7 @@ func (h *TagHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := h.service.Create(&requestBody)
-	if errors.As(err, new(tag.DuplicateTaggingRecordError)) {
+	if errors.As(err, new(tag.DuplicateError)) {
 		writeJSONError(w, http.StatusConflict, err.Error())
 		return
 	}

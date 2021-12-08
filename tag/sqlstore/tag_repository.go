@@ -368,15 +368,13 @@ func (r *TagRepository) insertDomainTagToDB(tx *gorm.DB, domainTag *tag.Tag) err
 		}
 		createResult := tx.Create(&modelTag)
 		if createResult.Error != nil {
-			fmt.Println(createResult.Error)
-
 			// this is pg driver specific error and not gorm
 			// might not work for DB other than pg
 			var pgErr *pgconn.PgError
 			if errors.As(createResult.Error, &pgErr) {
 				switch pgErr.Code {
 				case pgerrcode.UniqueViolation:
-					return tag.DuplicateTaggingRecordError{RecordURN: domainTag.RecordURN, RecordType: domainTag.RecordType, TemplateURN: domainTag.TemplateURN}
+					return tag.DuplicateError{RecordURN: domainTag.RecordURN, RecordType: domainTag.RecordType, TemplateURN: domainTag.TemplateURN}
 				}
 			}
 

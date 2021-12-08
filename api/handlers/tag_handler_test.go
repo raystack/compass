@@ -105,12 +105,12 @@ func (s *TagHandlerTestSuite) TestCreate() {
 		s.Equal(http.StatusInternalServerError, s.recorder.Result().StatusCode)
 	})
 
-	s.Run("should return 409 if found duplicated recotd during insert", func() {
+	s.Run("should return 409 if found duplicated record during insert", func() {
 		s.Setup()
 		t := s.buildTag()
 		template := s.buildTemplate()
 		s.templateRepository.On("Read", s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
-		s.tagRepository.On("Create", &t).Return(tag.DuplicateTaggingRecordError{})
+		s.tagRepository.On("Create", &t).Return(tag.DuplicateError{})
 
 		body, err := json.Marshal(t)
 		s.Require().NoError(err)
