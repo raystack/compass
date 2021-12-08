@@ -1,15 +1,13 @@
-package store
+package elasticsearch
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 
-	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/record"
 )
 
 // used as a utility for generating request payload
@@ -22,7 +20,7 @@ type searchQuery struct {
 
 type searchHit struct {
 	Index  string        `json:"_index"`
-	Source models.Record `json:"_source"`
+	Source record.Record `json:"_source"`
 }
 
 type searchResponse struct {
@@ -49,19 +47,6 @@ func errorReasonFromResponse(res *esapi.Response) string {
 		return fmt.Sprintf("raw response = %s", copy.String())
 	}
 	return response.Error.Reason
-}
-
-// checks for the existence of an index
-func indexExists(ctx context.Context, cli *elasticsearch.Client, name string) (bool, error) {
-	res, err := cli.Indices.Exists(
-		[]string{name},
-		cli.Indices.Exists.WithContext(ctx),
-	)
-	if err != nil {
-		return false, fmt.Errorf("indexExists: %w", elasticSearchError(err))
-	}
-	defer res.Body.Close()
-	return res.StatusCode == 200, nil
 }
 
 // helper for decorating unsuccesful invocations of the es REST API

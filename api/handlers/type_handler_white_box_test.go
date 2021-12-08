@@ -3,13 +3,13 @@ package handlers
 import (
 	"testing"
 
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/record"
 )
 
 func TestTypeHandler(t *testing.T) {
 	t.Run("validateType", func(t *testing.T) {
 		t.Run("should fail", func(t *testing.T) {
-			types := []models.Type{
+			types := []record.Type{
 				{
 					Name: "",
 				},

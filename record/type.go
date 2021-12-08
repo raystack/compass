@@ -1,4 +1,4 @@
-package models
+package record
 
 import (
 	"context"
@@ -46,7 +46,6 @@ var AllTypeClassifications = []TypeClassification{
 type Type struct {
 	Name           string             `json:"name"`
 	Classification TypeClassification `json:"classification"`
-	Boost          map[string]float64 `json:"boost"`
 }
 
 func (e Type) Normalise() Type {

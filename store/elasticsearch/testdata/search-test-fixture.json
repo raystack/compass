@@ -1,9 +1,6 @@
 [
     {
-        "type": {
-            "name" : "topic",
-            "classification" : "resource"
-        },
+        "type": "topic",
         "records": [
             {
                 "urn": "order-topic",
@@ -63,10 +60,7 @@
         ]
     },
     {
-        "type": {
-            "name" : "database",
-            "classification" : "dataset"
-        },
+        "type": "table",
         "records": [
             {
                 "urn": "au2-microsoft-invoice",

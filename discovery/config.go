@@ -1,11 +1,12 @@
-package models
+package discovery
 
-import "context"
+// RecordFilter is a filter intended to be used as a search
+// criteria for operations involving record search
+type RecordFilter = map[string][]string
 
 // SearchConfig represents a search query along
 // with any corresponding filter(s)
 type SearchConfig struct {
-
 	// Text to search for
 	Text string
 
@@ -19,17 +20,4 @@ type SearchConfig struct {
 	// List of record types to search for
 	// a zero value signifies that all types should be searched
 	TypeWhiteList []string
-}
-
-// SearchResult represents an individual result item
-type SearchResult struct {
-	TypeName string
-	Record   Record
-}
-
-// RecordSearcher is an interface representing the ability
-// to search records. The search is intended to be fuzzy over
-// the fields of the records, while also supporting filter criteria
-type RecordSearcher interface {
-	Search(ctx context.Context, cfg SearchConfig) ([]SearchResult, error)
 }

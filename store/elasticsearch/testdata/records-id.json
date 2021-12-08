@@ -1,12 +1,12 @@
 [
   {
-    "urn": "c-demo-dagger",
-    "name": "demo-dagger",
-    "service": "dagger",
+    "urn": "c-demo-kafka",
+    "name": "demo-kafka",
+    "service": "kafka",
     "description": "",
     "data": {
-      "urn": "c-demo-dagger",
-      "title": "demo-dagger",
+      "urn": "c-demo-kafka",
+      "title": "demo-kafka",
       "description": "",
       "entity": "odpf",
       "country": "id"
@@ -15,7 +15,7 @@
   {
     "urn": "f-john-test-001",
     "name": "john_test_001",
-    "service": "dagger",
+    "service": "kafka",
     "description": "",
     "data": {
       "urn": "f-john-test-001",
@@ -28,7 +28,7 @@
   {
     "urn": "i-undefined-dfgdgd-avi",
     "name": "dfgdgd-avi",
-    "service": "kafka",
+    "service": "rabbitmq",
     "description": "",
     "data": {
       "urn": "i-undefined-dfgdgd-avi",

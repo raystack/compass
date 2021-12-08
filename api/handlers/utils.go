@@ -16,9 +16,7 @@ func filterConfigFromValues(querystring url.Values) map[string][]string {
 
 		var filterValues []string
 		for _, value := range values {
-			for _, v := range strings.Split(value, ",") {
-				filterValues = append(filterValues, v)
-			}
+			filterValues = append(filterValues, strings.Split(value, ",")...)
 		}
 
 		filterKey := strings.TrimPrefix(key, filterPrefix)

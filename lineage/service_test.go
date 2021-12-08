@@ -5,9 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/lineage"
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/record"
 	"github.com/stretchr/testify/assert"
 	testifyMock "github.com/stretchr/testify/mock"
 )
@@ -16,7 +17,7 @@ type stubBuilder struct {
 	testifyMock.Mock
 }
 
-func (b *stubBuilder) Build(ctx context.Context, er models.TypeRepository, rrf models.RecordRepositoryFactory) (lineage.Graph, error) {
+func (b *stubBuilder) Build(ctx context.Context, er record.TypeRepository, rrf discovery.RecordRepositoryFactory) (lineage.Graph, error) {
 	return nil, nil
 }
 
@@ -41,7 +42,7 @@ func TestService(t *testing.T) {
 	ctx := context.Background()
 	t.Run("smoke test", func(t *testing.T) {
 		entRepo := new(mock.TypeRepository)
-		entRepo.On("GetAll", ctx).Return([]models.Type{}, nil)
+		entRepo.On("GetAll", ctx).Return([]record.Type{}, nil)
 		recordRepoFac := new(mock.RecordRepositoryFactory)
 		lineage.NewService(entRepo, recordRepoFac, lineage.Config{})
 	})

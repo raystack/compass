@@ -9,9 +9,7 @@ import (
 )
 
 type NewrelicMonitor struct {
-	app       *newrelic.Application
-	prefix    string
-	separator string
+	app *newrelic.Application
 }
 
 func NewNewrelicMonitor(app *newrelic.Application) *NewrelicMonitor {

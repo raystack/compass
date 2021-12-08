@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/odpf/columbus/lib/set"
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/record"
 	"github.com/pkg/errors"
 )
 
@@ -42,7 +42,7 @@ func (graph InMemoryGraph) Query(cfg QueryCfg) (AdjacencyMap, error) {
 		var tempSupergraph = make(AdjacencyMap)
 		for _, typ := range cfg.TypeWhitelist {
 			if _, typExists := graph.typeIdx[typ]; !typExists {
-				return nil, models.ErrNoSuchType{TypeName: typ}
+				return nil, record.ErrNoSuchType{TypeName: typ}
 			}
 			for entry := range graph.typeIdx[typ] {
 				tempSupergraph[entry] = supergraph[entry]

@@ -1,4 +1,4 @@
-package store_test
+package elasticsearch_test
 
 import (
 	"bytes"
@@ -7,13 +7,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/odpf/columbus/models"
-	"github.com/odpf/columbus/store/testutil"
+	"github.com/odpf/columbus/record"
+	"github.com/odpf/columbus/store/elasticsearch/testutil"
 )
 
-var daggerType = models.Type{
+var daggerType = record.Type{
 	Name:           "dagger",
-	Classification: models.TypeClassificationResource,
+	Classification: record.TypeClassificationResource,
 }
 
 var esTestServer *testutil.ElasticsearchTestServer

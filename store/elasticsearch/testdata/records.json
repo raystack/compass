@@ -1,38 +1,38 @@
 [
   {
-    "urn": "a-dagger-001",
-    "name": "dagger-001",
-    "service": "dagger",
+    "urn": "a-kafka-001",
+    "name": "kafka-001",
+    "service": "kafka",
     "description": "",
     "data": {
-      "urn": "a-dagger-001",
-      "title": "dagger-001",
+      "urn": "a-kafka-001",
+      "title": "kafka-001",
       "description": "",
       "entity": "odpf",
       "country": "vn"
     }
   },
   {
-    "urn": "b-test-dagger",
-    "name": "test-dagger",
-    "service": "dagger",
+    "urn": "b-test-kafka",
+    "name": "test-kafka",
+    "service": "kafka",
     "description": "",
     "data": {
-      "urn": "b-test-dagger",
-      "title": "test-dagger",
+      "urn": "b-test-kafka",
+      "title": "test-kafka",
       "description": "",
       "entity": "odpf",
       "country": "th"
     }
   },
   {
-    "urn": "c-demo-dagger",
-    "name": "demo-dagger",
-    "service": "dagger",
+    "urn": "c-demo-kafka",
+    "name": "demo-kafka",
+    "service": "kafka",
     "description": "",
     "data": {
-      "urn": "c-demo-dagger",
-      "title": "demo-dagger",
+      "urn": "c-demo-kafka",
+      "title": "demo-kafka",
       "description": "",
       "entity": "odpf",
       "country": "id"
@@ -41,7 +41,7 @@
   {
     "urn": "d-test-abcsasa",
     "name": "test-abcsasa",
-    "service": "dagger",
+    "service": "kafka",
     "description": "",
     "data": {
       "urn": "d-test-abcsasa",
@@ -54,7 +54,7 @@
   {
     "urn": "e-test-grant2",
     "name": "test_grant2",
-    "service": "dagger",
+    "service": "kafka",
     "description": "",
     "data": {
       "urn": "e-test-grant2",
@@ -67,7 +67,7 @@
   {
     "urn": "f-john-test-001",
     "name": "john_test_001",
-    "service": "dagger",
+    "service": "kafka",
     "description": "",
     "data": {
       "urn": "f-john-test-001",
@@ -78,24 +78,24 @@
     }
   },
   {
-    "urn": "g-jane-dagger-1a",
-    "name": "jane-dagger-1a",
+    "urn": "g-jane-kafka-1a",
+    "name": "jane-kafka-1a",
     "description": "",
     "data": {
-      "urn": "g-jane-dagger-1a",
-      "title": "jane-dagger-1a",
+      "urn": "g-jane-kafka-1a",
+      "title": "jane-kafka-1a",
       "description": "",
       "entity": "odpf",
       "country": "vn"
     }
   },
   {
-    "urn": "h-test-new-dagger-1-a-b-dagger",
-    "name": "test-new-dagger-1-a-b",
+    "urn": "h-test-new-kafka-1-a-b-kafka",
+    "name": "test-new-kafka-1-a-b",
     "description": "",
     "data": {
-      "urn": "h-test-new-dagger-1-a-b-dagger",
-      "title": "test-new-dagger-1-a-b",
+      "urn": "h-test-new-kafka-1-a-b-kafka",
+      "title": "test-new-kafka-1-a-b",
       "description": "",
       "entity": "odpf",
       "country": "th"
@@ -104,7 +104,7 @@
   {
     "urn": "i-undefined-dfgdgd-avi",
     "name": "dfgdgd-avi",
-    "service": "kafka",
+    "service": "rabbitmq",
     "description": "",
     "data": {
       "urn": "i-undefined-dfgdgd-avi",
@@ -117,7 +117,7 @@
   {
     "urn": "j-xcvcx",
     "name": "xcvcx",
-    "service": "kafka",
+    "service": "rabbitmq",
     "description": "",
     "data": {
       "urn": "j-xcvcx",

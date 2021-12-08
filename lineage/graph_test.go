@@ -9,7 +9,7 @@ import (
 
 	"github.com/odpf/columbus/lib/set"
 	"github.com/odpf/columbus/lineage"
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/record"
 )
 
 func TestInMemoryGraph(t *testing.T) {
@@ -66,7 +66,7 @@ func TestInMemoryGraph(t *testing.T) {
 				Cfg: lineage.QueryCfg{
 					TypeWhitelist: []string{"type_c"},
 				},
-				Err: models.ErrNoSuchType{TypeName: "type_c"},
+				Err: record.ErrNoSuchType{TypeName: "type_c"},
 			},
 			{
 				Description: "collapse relationships",

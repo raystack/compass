@@ -4,23 +4,24 @@ import (
 	"context"
 	"testing"
 
+	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/lib/set"
 	"github.com/odpf/columbus/lineage"
-	"github.com/odpf/columbus/models"
+	"github.com/odpf/columbus/record"
 	"github.com/stretchr/testify/assert"
 )
 
 type dataset struct {
-	Type    models.Type
-	Records []models.Record
+	Type    record.Type
+	Records []record.Record
 }
 
-func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordRepositoryFactory) {
+func initialiseRepos(datasets []dataset) (record.TypeRepository, discovery.RecordRepositoryFactory) {
 	var (
 		tr      = new(mock.TypeRepository)
 		rrf     = new(mock.RecordRepositoryFactory)
-		typList = []models.Type{}
+		typList = []record.Type{}
 		ctx     = context.Background()
 	)
 	for _, dataset := range datasets {
@@ -33,7 +34,7 @@ func initialiseRepos(datasets []dataset) (models.TypeRepository, models.RecordRe
 		recordIterator.On("Close").Return(nil)
 		recordRepo := new(mock.RecordRepository)
 		recordRepo.On("GetAllIterator", ctx).Return(recordIterator, nil)
-		rrf.On("For", typ).Return(recordRepo, nil)
+		rrf.On("For", typ.Name).Return(recordRepo, nil)
 		typList = append(typList, typ)
 	}
 	tr.On("GetAll", ctx).Return(typList, nil)
@@ -65,11 +66,11 @@ func TestDefaultBuilder(t *testing.T) {
 				Description: "smoke test",
 				Datasets: []dataset{
 					{
-						Type: models.Type{
+						Type: record.Type{
 							Name:           "test",
-							Classification: models.TypeClassificationResource,
+							Classification: record.TypeClassificationResource,
 						},
-						Records: []models.Record{
+						Records: []record.Record{
 							{
 								Urn:     "1",
 								Service: "service-A",
@@ -92,15 +93,15 @@ func TestDefaultBuilder(t *testing.T) {
 				Description: "internal ref test (simple)",
 				Datasets: []dataset{
 					{
-						Type: models.Type{
+						Type: record.Type{
 							Name:           "internal-ref",
-							Classification: models.TypeClassificationResource,
+							Classification: record.TypeClassificationResource,
 						},
-						Records: []models.Record{
+						Records: []record.Record{
 							{
 								Urn:     "1",
 								Service: "service-A",
-								Upstreams: []models.LineageRecord{
+								Upstreams: []record.LineageRecord{
 									{
 										Urn:  "A",
 										Type: "related-resource-us",
@@ -110,7 +111,7 @@ func TestDefaultBuilder(t *testing.T) {
 										Type: "related-resource-us",
 									},
 								},
-								Downstreams: []models.LineageRecord{
+								Downstreams: []record.LineageRecord{
 									{
 										Urn:  "C",
 										Type: "related-resource-ds",
@@ -134,25 +135,25 @@ func TestDefaultBuilder(t *testing.T) {
 				Description: "external ref test",
 				Datasets: []dataset{
 					{
-						Type: models.Type{
+						Type: record.Type{
 							Name:           "producer",
-							Classification: models.TypeClassificationResource,
+							Classification: record.TypeClassificationResource,
 						},
-						Records: []models.Record{
+						Records: []record.Record{
 							{
 								Urn: "data-booking",
 							},
 						},
 					},
 					{
-						Type: models.Type{
+						Type: record.Type{
 							Name:           "consumer",
-							Classification: models.TypeClassificationResource,
+							Classification: record.TypeClassificationResource,
 						},
-						Records: []models.Record{
+						Records: []record.Record{
 							{
 								Urn: "booking-aggregator",
-								Upstreams: []models.LineageRecord{
+								Upstreams: []record.LineageRecord{
 									{
 										Urn:  "data-booking",
 										Type: "producer",
@@ -161,7 +162,7 @@ func TestDefaultBuilder(t *testing.T) {
 							},
 							{
 								Urn: "booking-fraud-detector",
-								Upstreams: []models.LineageRecord{
+								Upstreams: []record.LineageRecord{
 									{
 										Urn:  "data-booking",
 										Type: "producer",
