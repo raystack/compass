@@ -146,9 +146,8 @@ func (sr *Searcher) buildQuery(ctx context.Context, cfg discovery.SearchConfig, 
 }
 
 func (sr *Searcher) addBoostFieldToSort(sortBy string, query *elastic.FunctionScoreQuery) *elastic.FunctionScoreQuery {
-	switch models.ParseSearchSortBy(sortBy) {
-	case models.SearchSortByUsage:
-		return query.AddScoreFunc(sr.buildFieldValueFactorQuery("data.profile.usage_count", "log1p", 1.0, 1.0))
+	if sortBy != "" {
+		return query.AddScoreFunc(sr.buildFieldValueFactorQuery(sortBy, "log1p", 1.0, 1.0))
 	}
 	return query
 }

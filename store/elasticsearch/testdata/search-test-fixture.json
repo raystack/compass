@@ -102,10 +102,7 @@
         ]
     },
     {
-        "type": {
-            "name": "table",
-            "classification": "resource"
-        },
+        "type": "table",
         "records": [{
             "urn": "bigquery::gcpproject/dataset/tablename-1",
             "name": "tablename-1",

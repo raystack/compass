@@ -155,6 +155,41 @@ func TestSearch(t *testing.T) {
 	})
 }
 
+func TestSearchWithUsageBoosting(t *testing.T) {
+	ctx := context.Background()
+	t.Run("should return a descendingly sorted based on usage count in search results if sortby usage in the config", func(t *testing.T) {
+		esClient := esTestServer.NewClient()
+		testFixture, err := loadTestFixture()
+		if err != nil {
+			t.Error(err)
+		}
+		err = populateSearchData(esClient, testFixture)
+		if err != nil {
+			t.Error(err)
+		}
+		searcher, err := store.NewSearcher(store.SearcherConfig{
+			Client: esClient,
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		searchResults, err := searcher.Search(ctx, discovery.SearchConfig{
+			Text:   "bigquery",
+			SortBy: "data.profile.usage_count",
+		})
+		expectedOrder := []string{"bigquery::gcpproject/dataset/tablename-common", "bigquery::gcpproject/dataset/tablename-mid", "bigquery::gcpproject/dataset/tablename-1"}
+
+		resultsOrder := []string{}
+		for _, r := range searchResults {
+			resultsOrder = append(resultsOrder, r.ID)
+		}
+
+		assert.Nil(t, err)
+		assert.EqualValues(t, expectedOrder, resultsOrder[:3])
+	})
+}
+
 func loadTestFixture() (testFixture []searchTestData, err error) {
 	testFixtureJSON, err := ioutil.ReadFile("./testdata/search-test-fixture.json")
 	if err != nil {
