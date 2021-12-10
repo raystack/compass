@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 
@@ -13,9 +14,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
+const (
 	defaultMaxResults = 200
 	defaultMinScore   = 0.01
+	suggesterName     = "name-phrase-suggest"
 )
 
 type SearcherConfig struct {
@@ -91,6 +93,44 @@ func (sr *Searcher) Search(ctx context.Context, cfg discovery.SearchConfig) (res
 	return
 }
 
+func (sr *Searcher) Suggest(ctx context.Context, config discovery.SearchConfig) (results []string, err error) {
+	maxResults := config.MaxResults
+	if maxResults <= 0 {
+		maxResults = defaultMaxResults
+	}
+
+	indices := sr.buildIndices(config)
+	query, err := sr.buildSuggestQuery(ctx, config, indices)
+	res, err := sr.cli.Search(
+		sr.cli.Search.WithBody(query),
+		sr.cli.Search.WithIndex(indices...),
+		sr.cli.Search.WithSize(maxResults),
+		sr.cli.Search.WithIgnoreUnavailable(true),
+		sr.cli.Search.WithContext(ctx),
+	)
+	if err != nil {
+		err = errors.Wrap(err, "error executing search")
+		return
+	}
+	if res.IsError() {
+		err = fmt.Errorf("error when searching %s", errorReasonFromResponse(res))
+		return
+	}
+
+	var response searchResponse
+	err = json.NewDecoder(res.Body).Decode(&response)
+	if err != nil {
+		err = errors.Wrap(err, "error decoding search response")
+		return
+	}
+	results, err = sr.toSuggestions(response)
+	if err != nil {
+		err = errors.Wrap(err, "error mapping response to suggestion")
+	}
+
+	return
+}
+
 func (sr *Searcher) buildIndices(cfg discovery.SearchConfig) []string {
 	hasGL := len(sr.typeWhiteList) > 0
 	hasLL := len(cfg.TypeWhiteList) > 0
@@ -137,6 +177,28 @@ func (sr *Searcher) buildQuery(ctx context.Context, cfg discovery.SearchConfig, 
 		Query:    src,
 	}
 	return payload, json.NewEncoder(payload).Encode(q)
+}
+
+func (sr *Searcher) buildSuggestQuery(ctx context.Context, cfg discovery.SearchConfig, indices []string) (io.Reader, error) {
+	suggester := elastic.NewPhraseSuggester("name-phrase-suggest").
+		MaxErrors(2).
+		Field("name.suggester").
+		Size(3).
+		Text(cfg.Text)
+	src, err := elastic.NewSearchSource().
+		Suggester(suggester).
+		Source()
+	if err != nil {
+		return nil, errors.Wrap(err, "error building search source")
+	}
+
+	payload := new(bytes.Buffer)
+	err = json.NewEncoder(payload).Encode(src)
+	if err != nil {
+		return payload, errors.Wrap(err, "error building reader")
+	}
+
+	return payload, err
 }
 
 func (sr *Searcher) buildTextQuery(ctx context.Context, text string) elastic.Query {
@@ -188,6 +250,9 @@ func (sr *Searcher) buildFilterQueries(filters map[string][]string) (filterQueri
 func (sr *Searcher) toSearchResults(hits []searchHit) []discovery.SearchResult {
 	results := []discovery.SearchResult{}
 	for _, hit := range hits {
+		if hit.Index == defaultMetaIndex {
+			continue
+		}
 		r := hit.Source
 		results = append(results, discovery.SearchResult{
 			Type:        hit.Index,
@@ -199,4 +264,20 @@ func (sr *Searcher) toSearchResults(hits []searchHit) []discovery.SearchResult {
 		})
 	}
 	return results
+}
+
+func (sr *Searcher) toSuggestions(response searchResponse) (results []string, err error) {
+	suggests, exists := response.Suggest[suggesterName]
+	if !exists {
+		err = errors.New("suggester key does not exist")
+		return
+	}
+	results = []string{}
+	for _, s := range suggests {
+		for _, option := range s.Options {
+			results = append(results, option.Text)
+		}
+	}
+
+	return
 }

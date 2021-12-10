@@ -46,4 +46,5 @@ type RecordRepositoryFactory interface {
 
 type RecordSearcher interface {
 	Search(ctx context.Context, cfg SearchConfig) (results []SearchResult, err error)
+	Suggest(ctx context.Context, cfg SearchConfig) (suggestions []string, err error)
 }

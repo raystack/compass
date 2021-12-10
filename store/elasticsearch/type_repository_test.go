@@ -114,7 +114,7 @@ func TestTypeRepository(t *testing.T) {
 				Validate: func(cli *elasticsearch.Client, recordType record.Type) error {
 					textToAnalyze := "HelloWorld"
 					analyzerPath := fmt.Sprintf("/%s/_analyze", recordType.Normalise().Name)
-					analyzerPayload := fmt.Sprintf(`{"text": %q}`, textToAnalyze)
+					analyzerPayload := fmt.Sprintf(`{"analyzer": "my_analyzer", "text": %q}`, textToAnalyze)
 
 					req, err := http.NewRequest("POST", analyzerPath, strings.NewReader(analyzerPayload))
 					if err != nil {
@@ -139,7 +139,7 @@ func TestTypeRepository(t *testing.T) {
 					if err != nil {
 						return fmt.Errorf("error decoding response: %w", err)
 					}
-					expectTokens := []string{"hello", "world"}
+					expectTokens := []string{"hello", "hello world", "world"}
 					analyzedTokens := []string{}
 					for _, tok := range response.Tokens {
 						analyzedTokens = append(analyzedTokens, tok.Token)

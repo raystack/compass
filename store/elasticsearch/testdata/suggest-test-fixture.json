@@ -1,0 +1,23 @@
+[
+    {
+        "type": "topic",
+        "records": [
+            {"name": "wallet/event", "urn": "wallet/event"},
+            {"name": "wallet-usage", "urn": "wallet-usage"},
+            {"name": "wallet_usage", "urn": "wallet_usage"},
+            {"name": "pay_wall", "urn": "pay_wall"},
+            {"name": "failed_purchase", "urn": "failed_purchase"},
+            {"name": "successful_purchase", "urn": "successful_purchase"}
+        ]
+    },
+    {
+        "type": "table",
+        "records": [
+            {"name": "invoice", "urn": "invoice"},
+            {"name": "user.address", "urn": "user.address"},
+            {"name": "user_wallet", "urn": "user_wallet"},
+            {"name": "product", "urn": "product"},
+            {"name": "product_category", "urn": "product_category"}
+        ]
+    }
+]
