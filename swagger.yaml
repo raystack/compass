@@ -272,6 +272,10 @@ paths:
           name: "filter.type"
           type: string
           description: 'restrict results to the specified types (as in a Columbus type, for instance "dagger", or "firehose")'
+        - in: query
+          name: "sortby"
+          type: string
+          description: 'descendingly sort based on a numeric field in the record. the nested field is written with period separated field name. eg, "data.profile.usage_count"'
       responses:
         200:
           description: OK
