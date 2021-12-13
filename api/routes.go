@@ -55,6 +55,10 @@ func RegisterRoutes(router *mux.Router, config Config) {
 		Methods(http.MethodGet).
 		HandlerFunc(searchHandler.Search)
 
+	router.Path("/v1/search/suggest").
+		Methods(http.MethodGet).
+		HandlerFunc(searchHandler.Suggest)
+
 	router.PathPrefix("/v1/lineage/{type}/{id}").
 		Methods(http.MethodGet).
 		HandlerFunc(lineageHandler.GetLineage)

@@ -40,18 +40,31 @@ func (handler *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 	}
 	results, err := handler.discoveryService.Search(ctx, cfg)
 	if err != nil {
-		handler.log.Errorf("error searching records: %w", err)
-		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		return
-	}
-
-	if err != nil {
-		handler.log.Errorf("error mapping search results: %w", err)
+		handler.log.Errorf("error searching records: %s", err.Error())
 		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}
 
 	writeJSON(w, http.StatusOK, results)
+}
+
+func (handler *SearchHandler) Suggest(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	cfg, err := handler.buildSearchCfg(r.URL.Query())
+	if err != nil {
+		writeJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	suggestions, err := handler.discoveryService.Suggest(ctx, cfg)
+	if err != nil {
+		handler.log.Errorf("error building suggestions: %s", err.Error())
+		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
+	}
+
+	writeJSON(w, http.StatusOK, SuggestResponse{
+		Suggestions: suggestions,
+	})
 }
 
 func (handler *SearchHandler) buildSearchCfg(params url.Values) (cfg discovery.SearchConfig, err error) {
