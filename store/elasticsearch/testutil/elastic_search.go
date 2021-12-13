@@ -94,6 +94,12 @@ func NewElasticsearchTestServer() *ElasticsearchTestServer {
 			Addresses: []string{
 				server.url.String(),
 			},
+			// uncomment below code to debug request and response to elasticsearch
+			// Logger: &estransport.ColorLogger{
+			// 	Output:             os.Stdout,
+			// 	EnableRequestBody:  true,
+			// 	EnableResponseBody: true,
+			// },
 		},
 	)
 	if err != nil {
