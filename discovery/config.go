@@ -21,6 +21,6 @@ type SearchConfig struct {
 	// a zero value signifies that all types should be searched
 	TypeWhiteList []string
 
-	// SortBy is a param to sort based on a specific parameter
-	SortBy string
+	// RankBy is a param to rank based on a specific parameter
+	RankBy string
 }

@@ -130,7 +130,7 @@ func (sr *Searcher) buildQuery(ctx context.Context, cfg discovery.SearchConfig, 
 
 	query := sr.buildFunctionScoreQuery(textQueryWithFilter)
 
-	query = sr.addBoostFieldToSort(cfg.SortBy, query)
+	query = sr.addBoostFieldToSort(cfg.RankBy, query)
 
 	src, err := query.Source()
 	if err != nil {
@@ -145,9 +145,9 @@ func (sr *Searcher) buildQuery(ctx context.Context, cfg discovery.SearchConfig, 
 	return payload, json.NewEncoder(payload).Encode(q)
 }
 
-func (sr *Searcher) addBoostFieldToSort(sortBy string, query *elastic.FunctionScoreQuery) *elastic.FunctionScoreQuery {
-	if sortBy != "" {
-		return query.AddScoreFunc(sr.buildFieldValueFactorQuery(sortBy, "log1p", 1.0, 1.0))
+func (sr *Searcher) addBoostFieldToSort(rankBy string, query *elastic.FunctionScoreQuery) *elastic.FunctionScoreQuery {
+	if rankBy != "" {
+		return query.AddScoreFunc(sr.buildFieldValueFactorQuery(rankBy, "log1p", 1.0, 1.0))
 	}
 	return query
 }

@@ -157,7 +157,7 @@ func TestSearch(t *testing.T) {
 
 func TestSearchWithUsageBoosting(t *testing.T) {
 	ctx := context.Background()
-	t.Run("should return a descendingly sorted based on usage count in search results if sortby usage in the config", func(t *testing.T) {
+	t.Run("should return a descendingly sorted based on usage count in search results if rank by usage in the config", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
 		testFixture, err := loadTestFixture()
 		if err != nil {
@@ -176,7 +176,7 @@ func TestSearchWithUsageBoosting(t *testing.T) {
 		}
 		searchResults, err := searcher.Search(ctx, discovery.SearchConfig{
 			Text:   "bigquery",
-			SortBy: "data.profile.usage_count",
+			RankBy: "data.profile.usage_count",
 		})
 		expectedOrder := []string{"bigquery::gcpproject/dataset/tablename-common", "bigquery::gcpproject/dataset/tablename-mid", "bigquery::gcpproject/dataset/tablename-1"}
 
