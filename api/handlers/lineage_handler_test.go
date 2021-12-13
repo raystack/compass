@@ -22,7 +22,8 @@ func TestLineageHandler(t *testing.T) {
 			graph := new(mock.Graph)
 			graph.On(
 				"Query",
-				lineage.QueryCfg{TypeWhitelist: []string{"bqtable"}}).Return(lineage.AdjacencyMap{}, record.ErrNoSuchType{TypeName: "bqtable"})
+				lineage.QueryCfg{TypeWhitelist: []string{"bqtable"}}).
+				Return(lineage.AdjacencyMap{}, record.ErrNoSuchType{TypeName: "bqtable"})
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
 

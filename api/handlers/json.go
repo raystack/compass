@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 func writeJSON(w http.ResponseWriter, status int, v interface{}) {
@@ -19,6 +22,21 @@ func writeJSON(w http.ResponseWriter, status int, v interface{}) {
 			log.Print(fmt.Sprintf("error writing response with code: %d", code))
 		}
 	}
+}
+
+func internalServerError(w http.ResponseWriter, logger logrus.FieldLogger, msg string) {
+	ref := time.Now().Unix()
+
+	logger.Errorf("ref (%d): %s", ref, msg)
+	response := &ErrorResponse{
+		Reason: fmt.Sprintf(
+			"%s - ref (%d)",
+			http.StatusText(http.StatusInternalServerError),
+			ref,
+		),
+	}
+
+	writeJSON(w, http.StatusInternalServerError, response)
 }
 
 func writeJSONError(w http.ResponseWriter, status int, msg string) {
