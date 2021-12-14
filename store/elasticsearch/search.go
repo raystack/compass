@@ -14,8 +14,9 @@ import (
 )
 
 var (
-	defaultMaxResults = 200
-	defaultMinScore   = 0.01
+	defaultMaxResults                  = 200
+	defaultMinScore                    = 0.01
+	defaultFunctionScoreQueryScoreMode = "sum"
 )
 
 type SearcherConfig struct {
@@ -68,6 +69,7 @@ func (sr *Searcher) Search(ctx context.Context, cfg discovery.SearchConfig) (res
 		err = errors.Wrap(err, "error building query")
 		return
 	}
+
 	res, err := sr.cli.Search(
 		sr.cli.Search.WithBody(query),
 		sr.cli.Search.WithIndex(indices...),
@@ -120,11 +122,11 @@ func anyValidStringSlice(slices ...[]string) []string {
 }
 
 func (sr *Searcher) buildQuery(ctx context.Context, cfg discovery.SearchConfig, indices []string) (io.Reader, error) {
-	textQuery := sr.buildTextQuery(ctx, cfg.Text)
-	filterQueries := sr.buildFilterQueries(cfg.Filters)
-	query := elastic.NewBoolQuery().
-		Should(textQuery).
-		Filter(filterQueries...)
+	var query elastic.Query
+
+	query = sr.buildTextQuery(ctx, cfg.Text)
+	query = sr.buildFilterQueries(query, cfg.Filters)
+	query = sr.buildFunctionScoreQuery(query, cfg.RankBy)
 
 	src, err := query.Source()
 	if err != nil {
@@ -166,7 +168,12 @@ func (sr *Searcher) buildTextQuery(ctx context.Context, text string) elastic.Que
 		)
 }
 
-func (sr *Searcher) buildFilterQueries(filters map[string][]string) (filterQueries []elastic.Query) {
+func (sr *Searcher) buildFilterQueries(query elastic.Query, filters map[string][]string) elastic.Query {
+	if len(filters) == 0 {
+		return query
+	}
+
+	var filterQueries []elastic.Query
 	for key, rawValues := range filters {
 		if len(rawValues) < 1 {
 			continue
@@ -182,7 +189,31 @@ func (sr *Searcher) buildFilterQueries(filters map[string][]string) (filterQueri
 			elastic.NewTermsQuery(key, values...),
 		)
 	}
-	return
+
+	newQuery := elastic.NewBoolQuery().
+		Should(query).
+		Filter(filterQueries...)
+
+	return newQuery
+}
+
+func (sr *Searcher) buildFunctionScoreQuery(query elastic.Query, rankBy string) elastic.Query {
+	if rankBy == "" {
+		return query
+	}
+
+	factorFunc := elastic.NewFieldValueFactorFunction().
+		Field(rankBy).
+		Modifier("log1p").
+		Missing(1.0).
+		Weight(1.0)
+
+	fsQuery := elastic.NewFunctionScoreQuery().
+		ScoreMode(defaultFunctionScoreQueryScoreMode).
+		AddScoreFunc(factorFunc).
+		Query(query)
+
+	return fsQuery
 }
 
 func (sr *Searcher) toSearchResults(hits []searchHit) []discovery.SearchResult {

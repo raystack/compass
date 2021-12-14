@@ -1,4 +1,4 @@
-swagger: '2.0'
+swagger: "2.0"
 info:
   title: "Data Discovery and Lineage Service"
   description: "Data Discovery and Lineage Service"
@@ -23,11 +23,11 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/AdjacencyMap'
+            $ref: "#/definitions/AdjacencyMap"
         404:
           description: record not found
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
   "/v1/lineage/{type}/{record}":
     get:
       tags:
@@ -44,11 +44,11 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/AdjacencyMap'
+            $ref: "#/definitions/AdjacencyMap"
         404:
           description: invalid type requested
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
   "/v1/types":
     get:
       tags:
@@ -63,7 +63,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Type'
+              $ref: "#/definitions/Type"
     put:
       tags:
         - Type
@@ -74,17 +74,17 @@ paths:
       parameters:
         - in: body
           name: ""
-          schema: 
+          schema:
             $ref: "#/definitions/Type"
       responses:
         201:
           description: OK
           schema:
-            $ref: '#/definitions/Type'
+            $ref: "#/definitions/Type"
         400:
           description: invalid type
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
   "/v1/types/{name}":
     put:
       tags:
@@ -103,16 +103,16 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Record'
+              $ref: "#/definitions/Record"
       responses:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/Status'
+            $ref: "#/definitions/Status"
         400:
           description: validation error
           schema:
-            $ref: '#/definitions/ValidationError'
+            $ref: "#/definitions/ValidationError"
     delete:
       tags:
         - Type
@@ -134,7 +134,7 @@ paths:
         422:
           description: reserved type name error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
   "/v1/types/{name}/details":
     get:
       tags:
@@ -147,11 +147,11 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/Type'
+            $ref: "#/definitions/Type"
         404:
           description: type not found
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
   "/v1/types/{name}/records":
     get:
       tags:
@@ -178,15 +178,15 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Record'
+              $ref: "#/definitions/Record"
         400:
           description: bad input
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
         404:
           description: not found
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
   "/v1/types/{name}/records/{id}":
     delete:
       tags:
@@ -212,7 +212,7 @@ paths:
         404:
           description: type or record cannot be found
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
   "/v1/types/{name}/{id}":
     get:
       tags:
@@ -233,11 +233,11 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/Record'
+            $ref: "#/definitions/Record"
         404:
           description: document or type does not exist
           schema:
-            $ref: '#/definitions/Error'     
+            $ref: "#/definitions/Error"
   "/v1/search":
     get:
       tags:
@@ -272,6 +272,10 @@ paths:
           name: "filter.type"
           type: string
           description: 'restrict results to the specified types (as in a Columbus type, for instance "dagger", or "firehose")'
+        - in: query
+          name: "rankby"
+          type: string
+          description: 'descendingly sort based on a numeric field in the record. the nested field is written with period separated field name. eg, "data.profile.usage_count"'
       responses:
         200:
           description: OK
@@ -307,19 +311,19 @@ paths:
         201:
           description: OK
           schema:
-            $ref: '#/definitions/Tag'
+            $ref: "#/definitions/Tag"
         400:
           description: validation error
           schema:
-            $ref: '#/definitions/ValidationError'
+            $ref: "#/definitions/ValidationError"
         409:
           description: duplicate tags
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
         500:
           description: internal server error
           schema:
-            $ref: '#/definitions/Error'        
+            $ref: "#/definitions/Error"
   "/v1/tags/templates":
     get:
       tags:
@@ -334,11 +338,11 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/TagTemplate'
+              $ref: "#/definitions/TagTemplate"
         500:
           description: internal server error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
     post:
       tags:
         - Tag
@@ -361,19 +365,19 @@ paths:
         201:
           description: Created
           schema:
-            $ref: '#/definitions/TagTemplate'
+            $ref: "#/definitions/TagTemplate"
         400:
           description: validation error
           schema:
-            $ref: '#/definitions/ValidationError'
+            $ref: "#/definitions/ValidationError"
         409:
           description: duplicate template
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
         500:
           description: internal server error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
   "/v1/tags/templates/{template_urn}":
     get:
       tags:
@@ -391,15 +395,15 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/TagTemplate'
+            $ref: "#/definitions/TagTemplate"
         404:
           description: template not found
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
         500:
           description: internal server error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
     put:
       tags:
         - Tag
@@ -425,19 +429,19 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/TagTemplate'
+            $ref: "#/definitions/TagTemplate"
         400:
           description: validation error
           schema:
-            $ref: '#/definitions/ValidationError'
+            $ref: "#/definitions/ValidationError"
         404:
           description: template not found
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
         500:
           description: internal server error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
     delete:
       tags:
         - Tag
@@ -459,11 +463,11 @@ paths:
         404:
           description: template not found
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
         500:
           description: internal server error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
   "/v1/tags/types/{type}/records/{record_urn}":
     get:
       tags:
@@ -487,11 +491,11 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Tag'
+              $ref: "#/definitions/Tag"
         500:
           description: internal server error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
   "/v1/tags/types/{type}/records/{record_urn}/templates/{template_urn}":
     get:
       tags:
@@ -517,15 +521,15 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/Tag'
+            $ref: "#/definitions/Tag"
         404:
           description: record is not found
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
         500:
           description: internal server error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
     put:
       tags:
         - Tag
@@ -558,19 +562,19 @@ paths:
         201:
           description: OK
           schema:
-            $ref: '#/definitions/Tag'
+            $ref: "#/definitions/Tag"
         400:
           description: validation error
           schema:
-            $ref: '#/definitions/ValidationError'
+            $ref: "#/definitions/ValidationError"
         404:
           description: tag is not found
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
         500:
           description: internal server error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
     delete:
       tags:
         - Tag
@@ -597,15 +601,15 @@ paths:
         400:
           description: template_urn is required
           schema:
-            $ref: '#/definitions/ValidationError'
+            $ref: "#/definitions/ValidationError"
         404:
           description: record is not found
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
         500:
           description: internal server error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
 definitions:
   Classifications: &CLASSIFICATIONS
     type: string
@@ -636,9 +640,9 @@ definitions:
         type: object
         description: "map of string"
       upstreams:
-        $ref: '#/definitions/LineageRecord'
+        $ref: "#/definitions/LineageRecord"
       downstreams:
-        $ref: '#/definitions/LineageRecord'
+        $ref: "#/definitions/LineageRecord"
       created_at:
         type: string
       updated_at:
@@ -654,12 +658,12 @@ definitions:
         type: string
       tag_values:
         type: array
-        items: 
+        items:
           type: object
           required:
             - field_id
             - field_value
-          properties: 
+          properties:
             field_id:
               type: number
             field_value:
@@ -674,7 +678,7 @@ definitions:
               type: string
             field_options:
               type: array
-              items: 
+              items:
                 type: string
             field_required:
               type: boolean
@@ -704,7 +708,7 @@ definitions:
             - display_name
             - description
             - data_type
-          properties: 
+          properties:
             id:
               type: number
             urn:
@@ -723,7 +727,7 @@ definitions:
                 - datetime
             options:
               type: array
-              items: 
+              items:
                 type: string
             required:
               type: boolean
@@ -743,7 +747,7 @@ definitions:
         default: success
   LineageRecord:
     type: object
-    properties: 
+    properties:
       urn:
         type: string
         example: "sample-urn"
@@ -758,7 +762,7 @@ definitions:
         type: string
       type:
         type: string
-      downstreams: 
+      downstreams:
         type: array
         items:
           type: string
@@ -770,7 +774,7 @@ definitions:
     type: object
     properties:
       "<NodeLabel>":
-        $ref: '#/definitions/AdjacencyEntry'
+        $ref: "#/definitions/AdjacencyEntry"
   Type:
     type: object
     properties:
@@ -781,7 +785,7 @@ definitions:
         <<: *CLASSIFICATIONS
       record_attributes:
         type: object
-        description: defines metadata for the documents that belong to this type. All properties under record_attributes define(s) a mapping of logical purpose, to the name of the key(s) in the documents that hold those information 
+        description: defines metadata for the documents that belong to this type. All properties under record_attributes define(s) a mapping of logical purpose, to the name of the key(s) in the documents that hold those information
         properties:
           id:
             type: string
@@ -821,7 +825,7 @@ definitions:
         description: "key value pairs describing the labels configured for the given type of record. Example of labels: team, created, owner etc"
   ValidationError:
     allOf:
-      - $ref: '#/definitions/Error'
+      - $ref: "#/definitions/Error"
       - type: object
         properties:
           details:
