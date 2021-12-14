@@ -180,7 +180,7 @@ func (sr *Searcher) buildQuery(ctx context.Context, cfg discovery.SearchConfig, 
 }
 
 func (sr *Searcher) buildSuggestQuery(ctx context.Context, cfg discovery.SearchConfig, indices []string) (io.Reader, error) {
-	suggester := elastic.NewPhraseSuggester("name-phrase-suggest").
+	suggester := elastic.NewPhraseSuggester(suggesterName).
 		MaxErrors(2).
 		Field("name.suggester").
 		Size(3).
