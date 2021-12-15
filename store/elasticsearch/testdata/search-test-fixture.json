@@ -187,7 +187,8 @@
                 "owners": [{
                     "urn": "owner::bq/unique",
                     "name": "Mrs Unique",
-                    "role": "user"
+                    "role": "user",
+                    "email": "mrs.unique@email.com"
                 }]
             },
             {
@@ -264,12 +265,14 @@
                 "owners": [{
                         "urn": "owner::bq/3",
                         "name": "Mr.X",
-                        "role": "admin"
+                        "role": "admin",
+                        "email": "mr.x@email.com"
                     },
                     {
                         "urn": "owner::bq/4",
                         "name": "Mrs.Y",
-                        "role": "user"
+                        "role": "user",
+                        "email": "mr.y@email.com"
                     }
                 ]
             },
@@ -355,12 +358,14 @@
                 "owners": [{
                         "urn": "owner::bq/1",
                         "name": "John Smith",
-                        "role": "user"
+                        "role": "user",
+                        "email": "john.smith@email.com"
                     },
                     {
                         "urn": "owner::bq/2",
                         "name": "Paul Smith",
-                        "role": "user"
+                        "role": "user",
+                        "email": "paul.smith@email.com"
                     }
                 ]
             }

@@ -165,6 +165,16 @@ func TestSearcherSearch(t *testing.T) {
 				},
 			},
 			{
+				Description: "should return 'bigquery::gcpproject/dataset/tablename-mid' resource if search by owner email field with text 'john.smith@email.com'",
+				Config: discovery.SearchConfig{
+					Text:          "johnsmith",
+					SearchByField: "owners.email",
+				},
+				Expected: []expectedRow{
+					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-mid"},
+				},
+			},
+			{
 				Description: "should return 'bigquery::gcpproject/dataset/tablename-common' resource if search by table column name field with text 'tablename-common-column1'",
 				Config: discovery.SearchConfig{
 					Text:          "common",
