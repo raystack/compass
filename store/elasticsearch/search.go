@@ -204,16 +204,31 @@ func (sr *Searcher) buildSuggestQuery(ctx context.Context, cfg discovery.SearchC
 }
 
 func (sr *Searcher) buildTextQuery(ctx context.Context, cfg discovery.SearchConfig) elastic.Query {
-	if cfg.SearchByField == "" {
+	if len(cfg.Queries) == 0 {
 		return sr.buildTextQueryGeneric(ctx, cfg.Text)
 	} else {
-		return sr.buildTextQueryByField(ctx, cfg.Text, cfg.SearchByField)
+		return sr.buildTextQueryByField(ctx, cfg.Text, cfg.Queries)
 	}
 }
 
-func (sr *Searcher) buildTextQueryByField(ctx context.Context, text string, field string) elastic.Query {
-	return elastic.NewMatchQuery(field, text).
-		Fuzziness("AUTO")
+func (sr *Searcher) buildTextQueryByField(ctx context.Context, text string, queries map[string]string) elastic.Query {
+	esQueries := []elastic.Query{
+		elastic.
+			NewMultiMatchQuery(
+				text,
+			).
+			Fuzziness("AUTO"),
+	}
+
+	for field, value := range queries {
+		esQueries = append(esQueries,
+			elastic.
+				NewMatchQuery(field, value).
+				Fuzziness("AUTO"))
+	}
+
+	return elastic.NewBoolQuery().
+		Should(esQueries...)
 }
 
 func (sr *Searcher) buildTextQueryGeneric(ctx context.Context, text string) elastic.Query {

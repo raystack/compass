@@ -40,7 +40,13 @@
                     "environment": "production",
                     "country": "id",
                     "partition": 50
-                }
+                },
+                "owners": [{
+                    "urn": "owner::topic/1",
+                    "name": "John Doe",
+                    "role": "user",
+                    "email": "john.doe@email.com"
+                }]
             },
             {
                 "urn": "transaction",

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/estransport"
 )
 
 var (
@@ -95,11 +96,11 @@ func NewElasticsearchTestServer() *ElasticsearchTestServer {
 				server.url.String(),
 			},
 			// uncomment below code to debug request and response to elasticsearch
-			// Logger: &estransport.ColorLogger{
-			// 	Output:             os.Stdout,
-			// 	EnableRequestBody:  true,
-			// 	EnableResponseBody: true,
-			// },
+			Logger: &estransport.ColorLogger{
+				Output:             os.Stdout,
+				EnableRequestBody:  true,
+				EnableResponseBody: true,
+			},
 		},
 	)
 	if err != nil {

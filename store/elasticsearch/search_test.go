@@ -144,44 +144,30 @@ func TestSearcherSearch(t *testing.T) {
 				},
 			},
 			{
-				Description: "should return order-topic resource if search by description field with text 'submitted order'",
+				Description: "should return consumer-topic if search by query description field with text 'customer update' and owners name 'johndoe'",
 				Config: discovery.SearchConfig{
-					Text:          "submitted order",
-					SearchByField: "description",
+					Text: "consumer",
+					Queries: map[string]string{
+						"description": "customer update",
+						"owners.name": "johndoe",
+					},
 				},
 				Expected: []expectedRow{
-					{Type: "topic", RecordID: "order-topic"},
-					{Type: "topic", RecordID: "purchase-topic"},
+					{Type: "topic", RecordID: "consumer-topic"},
 				},
 			},
 			{
-				Description: "should return 'bigquery::gcpproject/dataset/tablename-1' resource if search by owner name field with text 'unique'",
+				Description: "should return 'bigquery::gcpproject/dataset/tablename-common' resource on top if search by query table column name field with text 'tablename-common-column1'",
 				Config: discovery.SearchConfig{
-					Text:          "unique",
-					SearchByField: "owners.name",
-				},
-				Expected: []expectedRow{
-					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-1"},
-				},
-			},
-			{
-				Description: "should return 'bigquery::gcpproject/dataset/tablename-mid' resource if search by owner email field with text 'john.smith@email.com'",
-				Config: discovery.SearchConfig{
-					Text:          "johnsmith",
-					SearchByField: "owners.email",
-				},
-				Expected: []expectedRow{
-					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-mid"},
-				},
-			},
-			{
-				Description: "should return 'bigquery::gcpproject/dataset/tablename-common' resource if search by table column name field with text 'tablename-common-column1'",
-				Config: discovery.SearchConfig{
-					Text:          "common",
-					SearchByField: "data.schema.columns.name",
+					Text: "tablename",
+					Queries: map[string]string{
+						"data.schema.columns.name": "tablename-common-column1",
+					},
 				},
 				Expected: []expectedRow{
 					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-1"},
+					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-mid"},
 				},
 			},
 		}
