@@ -8,6 +8,7 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/odpf/columbus/record"
+	"github.com/olivere/elastic/v7"
 )
 
 // used as a utility for generating request payload
@@ -15,7 +16,7 @@ import (
 // <Q> in {"query": <Q>}
 type searchQuery struct {
 	Query    interface{} `json:"query"`
-	MinScore interface{} `json:"min_score"`
+	MinScore float32     `json:"min_score"`
 }
 
 type searchHit struct {
@@ -28,6 +29,12 @@ type searchResponse struct {
 	Hits     struct {
 		Hits []searchHit `json:"hits"`
 	} `json:"hits"`
+	Suggest map[string][]struct {
+		Text    string                           `json:"text"`
+		Offset  int                              `json:"offset"`
+		Length  float32                          `json:"length"`
+		Options []elastic.SearchSuggestionOption `json:"options"`
+	} `json:"suggest"`
 }
 
 // extract error reason from an elasticsearch response

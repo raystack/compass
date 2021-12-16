@@ -50,3 +50,7 @@ func (s *Service) DeleteRecord(ctx context.Context, typeName string, recordURN s
 func (s *Service) Search(ctx context.Context, cfg SearchConfig) ([]SearchResult, error) {
 	return s.recordSearcher.Search(ctx, cfg)
 }
+
+func (s *Service) Suggest(ctx context.Context, cfg SearchConfig) ([]string, error) {
+	return s.recordSearcher.Suggest(ctx, cfg)
+}

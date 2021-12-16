@@ -138,3 +138,40 @@ func TestServiceSearch(t *testing.T) {
 		assert.Equal(t, expected, actual)
 	})
 }
+
+func TestServiceSuggest(t *testing.T) {
+	ctx := context.TODO()
+	cfg := discovery.SearchConfig{
+		Text: "test",
+		Filters: map[string][]string{
+			"foo": {"bar"},
+		},
+	}
+	t.Run("should return error if searcher fails", func(t *testing.T) {
+		searcher := new(mock.RecordSearcher)
+		searcher.On("Suggest", ctx, cfg).Return([]string{}, errors.New("error"))
+		defer searcher.AssertExpectations(t)
+
+		service := discovery.NewService(nil, searcher)
+		_, err := service.Suggest(ctx, cfg)
+
+		assert.Error(t, err)
+	})
+
+	t.Run("should return records from searcher", func(t *testing.T) {
+		expected := []string{
+			"record-1",
+			"record-2",
+			"record-3",
+		}
+		searcher := new(mock.RecordSearcher)
+		searcher.On("Suggest", ctx, cfg).Return(expected, nil)
+		defer searcher.AssertExpectations(t)
+
+		service := discovery.NewService(nil, searcher)
+		actual, err := service.Suggest(ctx, cfg)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expected, actual)
+	})
+}

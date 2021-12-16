@@ -39,3 +39,8 @@ type SearchResponse struct {
 	Description string            `json:"description"`
 	Labels      map[string]string `json:"labels"`
 }
+
+// SuggestResponse is a response for Suggest API
+type SuggestResponse struct {
+	Suggestions []string `json:"suggestions"`
+}

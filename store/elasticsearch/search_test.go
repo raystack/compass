@@ -19,8 +19,8 @@ type searchTestData struct {
 	Records []record.Record `json:"records"`
 }
 
-func TestSearch(t *testing.T) {
-	ctx := context.Background()
+func TestSearcherSearch(t *testing.T) {
+	ctx := context.TODO()
 	t.Run("should return an error if search string is empty", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
 		searcher, err := store.NewSearcher(store.SearcherConfig{
@@ -39,21 +39,13 @@ func TestSearch(t *testing.T) {
 
 	t.Run("fixtures", func(t *testing.T) {
 		esClient := esTestServer.NewClient()
+		err := loadTestFixture(esClient, "./testdata/search-test-fixture.json")
+		require.NoError(t, err)
 
-		testFixture, err := loadTestFixture()
-		if err != nil {
-			t.Error(err)
-		}
-		err = populateSearchData(esClient, testFixture)
-		if err != nil {
-			t.Error(err)
-		}
 		searcher, err := store.NewSearcher(store.SearcherConfig{
 			Client: esClient,
 		})
-		if err != nil {
-			t.Error(err)
-		}
+		require.NoError(t, err)
 
 		type expectedRow struct {
 			Type     string `json:"type"`
@@ -167,26 +159,62 @@ func TestSearch(t *testing.T) {
 	})
 }
 
-func loadTestFixture() (testFixture []searchTestData, err error) {
-	testFixtureJSON, err := ioutil.ReadFile("./testdata/search-test-fixture.json")
-	if err != nil {
-		return
-	}
-	err = json.Unmarshal(testFixtureJSON, &testFixture)
-	if err != nil {
-		return
-	}
+func TestSearcherSuggest(t *testing.T) {
+	ctx := context.TODO()
+	esClient := esTestServer.NewClient()
+	err := loadTestFixture(esClient, "./testdata/suggest-test-fixture.json")
+	require.NoError(t, err)
 
-	return testFixture, err
+	searcher, err := store.NewSearcher(store.SearcherConfig{
+		Client: esClient,
+	})
+	require.NoError(t, err)
+
+	t.Run("fixtures", func(t *testing.T) {
+		testCases := []struct {
+			term     string
+			expected []string
+		}{
+			{"wallet", []string{"wallet-usage", "wallet/event", "wallet_usage"}},
+			{"wallet_usa", []string{"wallet-usage", "wallet_usage"}},
+			{"test_t", []string{"test_table"}},
+			{"te", []string{"test_table"}},
+		}
+
+		for i, tc := range testCases {
+			config := discovery.SearchConfig{Text: tc.term}
+			actual, err := searcher.Suggest(ctx, config)
+			assert.NoError(t, err)
+
+			assert.Equal(t, tc.expected, actual, "suggestions are not as expected for term: %s and index: %d", tc.term, i)
+		}
+	})
 }
 
-func populateSearchData(esClient *elasticsearch.Client, data []searchTestData) error {
-	for _, sample := range data {
-		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(sample.Type)
-		if err := recordRepo.CreateOrReplaceMany(context.Background(), sample.Records); err != nil {
+func loadTestFixture(esClient *elasticsearch.Client, filePath string) (err error) {
+	testFixtureJSON, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return
+	}
+
+	var data []searchTestData
+	err = json.Unmarshal(testFixtureJSON, &data)
+	if err != nil {
+		return
+	}
+
+	typeRepo := store.NewTypeRepository(esClient)
+
+	ctx := context.TODO()
+	for _, testdata := range data {
+		if err := typeRepo.CreateOrReplace(ctx, record.Type{Name: testdata.Type}); err != nil {
+			return err
+		}
+		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(testdata.Type)
+		if err := recordRepo.CreateOrReplaceMany(ctx, testdata.Records); err != nil {
 			return err
 		}
 	}
 
-	return nil
+	return err
 }

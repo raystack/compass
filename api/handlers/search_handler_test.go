@@ -20,9 +20,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSearchHandler(t *testing.T) {
+func TestSearchHandlerSearch(t *testing.T) {
 	ctx := context.Background()
-	// todo: pass testCase to ValidateResponse
 	type testCase struct {
 		Title            string
 		ExpectStatus     int
@@ -182,6 +181,129 @@ func TestSearchHandler(t *testing.T) {
 			service := discovery.NewService(nil, recordSearcher)
 			handler := handlers.NewSearchHandler(new(mock.Logger), service)
 			handler.Search(rw, rr)
+
+			expectStatus := testCase.ExpectStatus
+			if expectStatus == 0 {
+				expectStatus = http.StatusOK
+			}
+			assert.Equal(t, expectStatus, rw.Code)
+			if testCase.ValidateResponse != nil {
+				if err := testCase.ValidateResponse(testCase, rw.Body); err != nil {
+					t.Errorf("error validating handler response: %v", err)
+					return
+				}
+			}
+		})
+	}
+}
+
+func TestSearchHandlerSuggest(t *testing.T) {
+	ctx := context.Background()
+	type testCase struct {
+		Title            string
+		ExpectStatus     int
+		Querystring      string
+		InitSearcher     func(testCase, *mock.RecordSearcher)
+		ValidateResponse func(testCase, io.Reader) error
+	}
+
+	var testCases = []testCase{
+		{
+			Title:            "should return HTTP 400 if 'text' parameter is empty or missing",
+			ExpectStatus:     http.StatusBadRequest,
+			ValidateResponse: func(tc testCase, body io.Reader) error { return nil },
+			Querystring:      "",
+		},
+		{
+			Title:       "should report HTTP 500 if searcher fails",
+			Querystring: "text=test",
+			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
+				cfg := discovery.SearchConfig{
+					Text:    "test",
+					Filters: map[string][]string{},
+				}
+				searcher.On("Suggest", ctx, cfg).Return([]string{}, fmt.Errorf("service unavailable"))
+			},
+			ExpectStatus: http.StatusInternalServerError,
+		},
+		{
+			Title:       "should pass filter to search config format",
+			Querystring: "text=resource&landscape=id,vn&filter.data.landscape=th&filter.type=topic&filter.service=kafka,rabbitmq",
+			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
+				cfg := discovery.SearchConfig{
+					Text:          "resource",
+					TypeWhiteList: []string{"topic"},
+					Filters: map[string][]string{
+						"service":        {"kafka", "rabbitmq"},
+						"data.landscape": {"th"},
+					},
+				}
+
+				searcher.On("Suggest", ctx, cfg).Return([]string{}, nil)
+			},
+			ValidateResponse: func(tc testCase, body io.Reader) error {
+				return nil
+			},
+		},
+		{
+			Title:       "should return suggestions",
+			Querystring: "text=test",
+			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
+				cfg := discovery.SearchConfig{
+					Text:    "test",
+					Filters: make(map[string][]string),
+				}
+				response := []string{
+					"test",
+					"test2",
+					"t est",
+					"t_est",
+				}
+
+				searcher.On("Suggest", ctx, cfg).Return(response, nil)
+			},
+			ValidateResponse: func(tc testCase, body io.Reader) error {
+				var response handlers.SuggestResponse
+				err := json.NewDecoder(body).Decode(&response)
+				if err != nil {
+					return fmt.Errorf("error reading response body: %v", err)
+				}
+				expectResponse := handlers.SuggestResponse{
+					Suggestions: []string{
+						"test",
+						"test2",
+						"t est",
+						"t_est",
+					},
+				}
+
+				if reflect.DeepEqual(response, expectResponse) == false {
+					return fmt.Errorf("expected handler response to be %#v, was %#v", expectResponse, response)
+				}
+				return nil
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.Title, func(t *testing.T) {
+			var (
+				recordSearcher = new(mock.RecordSearcher)
+			)
+			if testCase.InitSearcher != nil {
+				testCase.InitSearcher(testCase, recordSearcher)
+			}
+			defer recordSearcher.AssertExpectations(t)
+
+			params, err := url.ParseQuery(testCase.Querystring)
+			require.NoError(t, err)
+
+			requestURL := "/?" + params.Encode()
+			rr := httptest.NewRequest(http.MethodGet, requestURL, nil)
+			rw := httptest.NewRecorder()
+
+			service := discovery.NewService(nil, recordSearcher)
+			handler := handlers.NewSearchHandler(new(mock.Logger), service)
+			handler.Suggest(rw, rr)
 
 			expectStatus := testCase.ExpectStatus
 			if expectStatus == 0 {

@@ -101,6 +101,11 @@ func (searcher *RecordSearcher) Search(ctx context.Context, cfg discovery.Search
 	return args.Get(0).([]discovery.SearchResult), args.Error(1)
 }
 
+func (searcher *RecordSearcher) Suggest(ctx context.Context, cfg discovery.SearchConfig) ([]string, error) {
+	args := searcher.Called(ctx, cfg)
+	return args.Get(0).([]string), args.Error(1)
+}
+
 type LineageProvider struct {
 	mock.Mock
 }
