@@ -132,6 +132,18 @@ func TestSearcherSearch(t *testing.T) {
 				},
 			},
 			{
+				Description: "should return 'consumer-topic' if filter owner email with 'john.doe@email.com'",
+				Config: discovery.SearchConfig{
+					Text: "topic",
+					Filters: map[string][]string{
+						"owners.email.keyword": {"john.doe@email.com"},
+					},
+				},
+				Expected: []expectedRow{
+					{Type: "topic", RecordID: "consumer-topic"},
+				},
+			},
+			{
 				Description: "should return a descendingly sorted based on usage count in search results if rank by usage in the config",
 				Config: discovery.SearchConfig{
 					Text:   "bigquery",
