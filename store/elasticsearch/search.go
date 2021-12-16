@@ -164,8 +164,9 @@ func anyValidStringSlice(slices ...[]string) []string {
 func (sr *Searcher) buildQuery(ctx context.Context, cfg discovery.SearchConfig, indices []string) (io.Reader, error) {
 	var query elastic.Query
 
-	query = sr.buildTextQuery(ctx, cfg)
-	query = sr.buildFilterQueries(query, cfg.Filters)
+	query = sr.buildTextQuery(ctx, cfg.Text)
+	query = sr.buildFilterTermQueries(query, cfg.Filters)
+	query = sr.buildFilterMatchQueries(ctx, query, cfg.Queries)
 	query = sr.buildFunctionScoreQuery(query, cfg.RankBy)
 
 	src, err := query.Source()
@@ -203,35 +204,7 @@ func (sr *Searcher) buildSuggestQuery(ctx context.Context, cfg discovery.SearchC
 	return payload, err
 }
 
-func (sr *Searcher) buildTextQuery(ctx context.Context, cfg discovery.SearchConfig) elastic.Query {
-	if len(cfg.Queries) == 0 {
-		return sr.buildTextQueryGeneric(ctx, cfg.Text)
-	} else {
-		return sr.buildTextQueryByField(ctx, cfg.Text, cfg.Queries)
-	}
-}
-
-func (sr *Searcher) buildTextQueryByField(ctx context.Context, text string, queries map[string]string) elastic.Query {
-	esQueries := []elastic.Query{
-		elastic.
-			NewMultiMatchQuery(
-				text,
-			).
-			Fuzziness("AUTO"),
-	}
-
-	for field, value := range queries {
-		esQueries = append(esQueries,
-			elastic.
-				NewMatchQuery(field, value).
-				Fuzziness("AUTO"))
-	}
-
-	return elastic.NewBoolQuery().
-		Should(esQueries...)
-}
-
-func (sr *Searcher) buildTextQueryGeneric(ctx context.Context, text string) elastic.Query {
+func (sr *Searcher) buildTextQuery(ctx context.Context, text string) elastic.Query {
 	boostedFields := []string{
 		"urn^10",
 		"name^5",
@@ -258,7 +231,25 @@ func (sr *Searcher) buildTextQueryGeneric(ctx context.Context, text string) elas
 		)
 }
 
-func (sr *Searcher) buildFilterQueries(query elastic.Query, filters map[string][]string) elastic.Query {
+func (sr *Searcher) buildFilterMatchQueries(ctx context.Context, query elastic.Query, queries map[string]string) elastic.Query {
+	if len(queries) == 0 {
+		return query
+	}
+
+	esQueries := []elastic.Query{}
+	for field, value := range queries {
+		esQueries = append(esQueries,
+			elastic.
+				NewMatchQuery(field, value).
+				Fuzziness("AUTO"))
+	}
+
+	return elastic.NewBoolQuery().
+		Should(query).
+		Filter(esQueries...)
+}
+
+func (sr *Searcher) buildFilterTermQueries(query elastic.Query, filters map[string][]string) elastic.Query {
 	if len(filters) == 0 {
 		return query
 	}

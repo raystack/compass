@@ -32,10 +32,10 @@
                 "urn": "consumer-topic",
                 "name": "consumer-topic",
                 "service": "rabbitmq",
-                "description": "Update on every customer creation/update",
+                "description": "Update on every rabbitmq customer creation/update",
                 "data": {
                     "topic_name": "consumer-topic",
-                    "description": "Update on every customer creation/update",
+                    "description": "Update on every rabbitmq customer creation/update",
                     "company": "odpf",
                     "environment": "production",
                     "country": "id",
@@ -46,6 +46,26 @@
                     "name": "John Doe",
                     "role": "user",
                     "email": "john.doe@email.com"
+                }]
+            },
+            {
+                "urn": "consumer-mq-2",
+                "name": "consumer-mq-2",
+                "service": "rabbitmq",
+                "description": "Another rabbitmq topic",
+                "data": {
+                    "topic_name": "consumer-mq-2",
+                    "description": "Another rabbitmq topic",
+                    "company": "odpf",
+                    "environment": "production",
+                    "country": "id",
+                    "partition": 50
+                },
+                "owners": [{
+                    "urn": "owner::topic/22",
+                    "name": "Mary Jane",
+                    "role": "user",
+                    "email": "mary.jane@email.com"
                 }]
             },
             {

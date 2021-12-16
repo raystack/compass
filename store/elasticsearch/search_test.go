@@ -67,6 +67,7 @@ func TestSearcherSearch(t *testing.T) {
 					{Type: "topic", RecordID: "order-topic"},
 					{Type: "topic", RecordID: "purchase-topic"},
 					{Type: "topic", RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "consumer-mq-2"},
 				},
 			},
 			{
@@ -78,6 +79,7 @@ func TestSearcherSearch(t *testing.T) {
 					{Type: "topic", RecordID: "order-topic"},
 					{Type: "topic", RecordID: "purchase-topic"},
 					{Type: "topic", RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "consumer-mq-2"},
 				},
 			},
 			{
@@ -115,6 +117,7 @@ func TestSearcherSearch(t *testing.T) {
 				Expected: []expectedRow{
 					{Type: "topic", RecordID: "order-topic"},
 					{Type: "topic", RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "consumer-mq-2"},
 				},
 			},
 			{
@@ -129,6 +132,7 @@ func TestSearcherSearch(t *testing.T) {
 				},
 				Expected: []expectedRow{
 					{Type: "topic", RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "consumer-mq-2"},
 				},
 			},
 			{
@@ -156,12 +160,12 @@ func TestSearcherSearch(t *testing.T) {
 				},
 			},
 			{
-				Description: "should return consumer-topic if search by query description field with text 'customer update' and owners name 'johndoe'",
+				Description: "should return consumer-topic if search by query description field with text 'rabbitmq' and owners name 'johndoe'",
 				Config: discovery.SearchConfig{
 					Text: "consumer",
 					Queries: map[string]string{
-						"description": "customer update",
-						"owners.name": "johndoe",
+						"description": "rabbitmq",
+						"owners.name": "john doe",
 					},
 				},
 				Expected: []expectedRow{
@@ -173,13 +177,11 @@ func TestSearcherSearch(t *testing.T) {
 				Config: discovery.SearchConfig{
 					Text: "tablename",
 					Queries: map[string]string{
-						"data.schema.columns.name": "tablename-common-column1",
+						"data.schema.columns.name": "common",
 					},
 				},
 				Expected: []expectedRow{
 					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-common"},
-					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-1"},
-					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-mid"},
 				},
 			},
 		}
