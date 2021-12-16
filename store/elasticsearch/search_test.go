@@ -131,6 +131,18 @@ func TestSearcherSearch(t *testing.T) {
 					{Type: "topic", RecordID: "consumer-topic"},
 				},
 			},
+			{
+				Description: "should return a descendingly sorted based on usage count in search results if rank by usage in the config",
+				Config: discovery.SearchConfig{
+					Text:   "bigquery",
+					RankBy: "data.profile.usage_count",
+				},
+				Expected: []expectedRow{
+					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-mid"},
+					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-1"},
+				},
+			},
 		}
 		for _, test := range tests {
 			t.Run(test.Description, func(t *testing.T) {

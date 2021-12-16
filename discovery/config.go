@@ -20,4 +20,7 @@ type SearchConfig struct {
 	// List of record types to search for
 	// a zero value signifies that all types should be searched
 	TypeWhiteList []string
+
+	// RankBy is a param to rank based on a specific parameter
+	RankBy string
 }
