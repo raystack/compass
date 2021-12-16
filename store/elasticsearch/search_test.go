@@ -163,8 +163,10 @@ func TestSearcherSuggest(t *testing.T) {
 			term     string
 			expected []string
 		}{
-			{"walle", []string{"wallet", "wall"}},
-			{"usag", []string{"user", "usage"}},
+			{"wallet", []string{"wallet-usage", "wallet/event", "wallet_usage"}},
+			{"wallet_usa", []string{"wallet-usage", "wallet_usage"}},
+			{"test_t", []string{"test_table"}},
+			{"te", []string{"test_table"}},
 		}
 
 		for i, tc := range testCases {

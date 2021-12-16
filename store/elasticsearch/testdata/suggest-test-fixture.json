@@ -7,7 +7,8 @@
             {"name": "wallet_usage", "urn": "wallet_usage"},
             {"name": "pay_wall", "urn": "pay_wall"},
             {"name": "failed_purchase", "urn": "failed_purchase"},
-            {"name": "successful_purchase", "urn": "successful_purchase"}
+            {"name": "successful_purchase", "urn": "successful_purchase"},
+            {"name": "test_table", "urn": "test_table"}
         ]
     },
     {

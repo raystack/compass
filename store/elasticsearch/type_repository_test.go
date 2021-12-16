@@ -139,7 +139,7 @@ func TestTypeRepository(t *testing.T) {
 					if err != nil {
 						return fmt.Errorf("error decoding response: %w", err)
 					}
-					expectTokens := []string{"hello", "hello world", "world"}
+					expectTokens := []string{"hello", "world"}
 					analyzedTokens := []string{}
 					for _, tok := range response.Tokens {
 						analyzedTokens = append(analyzedTokens, tok.Token)

@@ -180,10 +180,10 @@ func (sr *Searcher) buildQuery(ctx context.Context, cfg discovery.SearchConfig, 
 }
 
 func (sr *Searcher) buildSuggestQuery(ctx context.Context, cfg discovery.SearchConfig, indices []string) (io.Reader, error) {
-	suggester := elastic.NewPhraseSuggester(suggesterName).
-		MaxErrors(2).
-		Field("name.suggester").
-		Size(3).
+	suggester := elastic.NewCompletionSuggester(suggesterName).
+		Field("name.suggest").
+		SkipDuplicates(true).
+		Size(5).
 		Text(cfg.Text)
 	src, err := elastic.NewSearchSource().
 		Suggester(suggester).
