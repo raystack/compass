@@ -274,6 +274,7 @@ func (sr *Searcher) buildFilterQueries(query elastic.Query, filters map[string][
 			values = append(values, rawVal)
 		}
 
+		key := fmt.Sprintf("%s.keyword", key)
 		filterQueries = append(
 			filterQueries,
 			elastic.NewTermsQuery(key, values...),

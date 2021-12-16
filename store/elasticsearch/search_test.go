@@ -136,7 +136,7 @@ func TestSearcherSearch(t *testing.T) {
 				Config: discovery.SearchConfig{
 					Text: "topic",
 					Filters: map[string][]string{
-						"owners.email.keyword": {"john.doe@email.com"},
+						"owners.email": {"john.doe@email.com"},
 					},
 				},
 				Expected: []expectedRow{
