@@ -58,6 +58,30 @@ func TestSearchHandlerSearch(t *testing.T) {
 						"service":        {"kafka", "rabbitmq"},
 						"data.landscape": {"th"},
 					},
+					Queries: make(map[string]string),
+				}
+
+				searcher.On("Search", ctx, cfg).Return([]discovery.SearchResult{}, nil)
+			},
+			ValidateResponse: func(tc testCase, body io.Reader) error {
+				return nil
+			},
+		},
+		{
+			Title:       "should pass queries to search config format",
+			Querystring: "text=resource&landscape=id,vn&filter.data.landscape=th&filter.type=topic&filter.service=kafka,rabbitmq&query.data.columns.name=timestamp&query.owners.email=john.doe@email.com",
+			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
+				cfg := discovery.SearchConfig{
+					Text:          "resource",
+					TypeWhiteList: []string{"topic"},
+					Filters: map[string][]string{
+						"service":        {"kafka", "rabbitmq"},
+						"data.landscape": {"th"},
+					},
+					Queries: map[string]string{
+						"data.columns.name": "timestamp",
+						"owners.email":      "john.doe@email.com",
+					},
 				}
 
 				searcher.On("Search", ctx, cfg).Return([]discovery.SearchResult{}, nil)
@@ -73,6 +97,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 				cfg := discovery.SearchConfig{
 					Text:    "test",
 					Filters: make(map[string][]string),
+					Queries: make(map[string]string),
 				}
 				response := []discovery.SearchResult{
 					{
@@ -123,6 +148,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 					Text:       "resource",
 					MaxResults: 10,
 					Filters:    make(map[string][]string),
+					Queries:    make(map[string]string),
 				}
 
 				var results []discovery.SearchResult
@@ -221,6 +247,7 @@ func TestSearchHandlerSuggest(t *testing.T) {
 				cfg := discovery.SearchConfig{
 					Text:    "test",
 					Filters: map[string][]string{},
+					Queries: make(map[string]string),
 				}
 				searcher.On("Suggest", ctx, cfg).Return([]string{}, fmt.Errorf("service unavailable"))
 			},
@@ -228,7 +255,7 @@ func TestSearchHandlerSuggest(t *testing.T) {
 		},
 		{
 			Title:       "should pass filter to search config format",
-			Querystring: "text=resource&landscape=id,vn&filter.data.landscape=th&filter.type=topic&filter.service=kafka,rabbitmq",
+			Querystring: "text=resource&landscape=id,vn&query.description=this is my dashboard&filter.data.landscape=th&filter.type=topic&filter.service=kafka,rabbitmq",
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				cfg := discovery.SearchConfig{
 					Text:          "resource",
@@ -236,6 +263,9 @@ func TestSearchHandlerSuggest(t *testing.T) {
 					Filters: map[string][]string{
 						"service":        {"kafka", "rabbitmq"},
 						"data.landscape": {"th"},
+					},
+					Queries: map[string]string{
+						"description": "this is my dashboard",
 					},
 				}
 
@@ -252,6 +282,7 @@ func TestSearchHandlerSuggest(t *testing.T) {
 				cfg := discovery.SearchConfig{
 					Text:    "test",
 					Filters: make(map[string][]string),
+					Queries: make(map[string]string),
 				}
 				response := []string{
 					"test",

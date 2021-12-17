@@ -23,4 +23,7 @@ type SearchConfig struct {
 
 	// RankBy is a param to rank based on a specific parameter
 	RankBy string
+
+	// Queries is a param to search a resource based on record's fields
+	Queries map[string]string
 }

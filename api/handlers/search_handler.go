@@ -15,6 +15,8 @@ import (
 var (
 	filterPrefix           = "filter."
 	whiteListQueryParamKey = "filter.type"
+
+	queryPrefix = "query."
 )
 
 type SearchHandler struct {
@@ -77,6 +79,7 @@ func (handler *SearchHandler) buildSearchCfg(params url.Values) (cfg discovery.S
 	cfg.MaxResults, _ = strconv.Atoi(params.Get("size"))
 	cfg.Filters = filterConfigFromValues(params)
 	cfg.RankBy = params.Get("rankby")
+	cfg.Queries = queryConfigFromValues(params)
 	cfg.TypeWhiteList, err = parseTypeWhiteList(params)
 	return
 }

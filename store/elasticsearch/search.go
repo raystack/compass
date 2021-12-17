@@ -165,7 +165,8 @@ func (sr *Searcher) buildQuery(ctx context.Context, cfg discovery.SearchConfig, 
 	var query elastic.Query
 
 	query = sr.buildTextQuery(ctx, cfg.Text)
-	query = sr.buildFilterQueries(query, cfg.Filters)
+	query = sr.buildFilterTermQueries(query, cfg.Filters)
+	query = sr.buildFilterMatchQueries(ctx, query, cfg.Queries)
 	query = sr.buildFunctionScoreQuery(query, cfg.RankBy)
 
 	src, err := query.Source()
@@ -230,7 +231,25 @@ func (sr *Searcher) buildTextQuery(ctx context.Context, text string) elastic.Que
 		)
 }
 
-func (sr *Searcher) buildFilterQueries(query elastic.Query, filters map[string][]string) elastic.Query {
+func (sr *Searcher) buildFilterMatchQueries(ctx context.Context, query elastic.Query, queries map[string]string) elastic.Query {
+	if len(queries) == 0 {
+		return query
+	}
+
+	esQueries := []elastic.Query{}
+	for field, value := range queries {
+		esQueries = append(esQueries,
+			elastic.
+				NewMatchQuery(field, value).
+				Fuzziness("AUTO"))
+	}
+
+	return elastic.NewBoolQuery().
+		Should(query).
+		Filter(esQueries...)
+}
+
+func (sr *Searcher) buildFilterTermQueries(query elastic.Query, filters map[string][]string) elastic.Query {
 	if len(filters) == 0 {
 		return query
 	}
@@ -246,6 +265,7 @@ func (sr *Searcher) buildFilterQueries(query elastic.Query, filters map[string][
 			values = append(values, rawVal)
 		}
 
+		key := fmt.Sprintf("%s.keyword", key)
 		filterQueries = append(
 			filterQueries,
 			elastic.NewTermsQuery(key, values...),

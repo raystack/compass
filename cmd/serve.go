@@ -130,6 +130,12 @@ func initElasticsearch(config Config) *elasticsearch.Client {
 	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
 		Addresses: brokers,
 		Transport: nrelasticsearch.NewRoundTripper(nil),
+		// uncomment below code to debug request and response to elasticsearch
+		// Logger: &estransport.ColorLogger{
+		// 	Output:             os.Stdout,
+		// 	EnableRequestBody:  true,
+		// 	EnableResponseBody: true,
+		// },
 	})
 	if err != nil {
 		log.Fatalf("error connecting to elasticsearch: %v", err)

@@ -14,6 +14,7 @@ type Record struct {
 	Data        map[string]interface{} `json:"data"`
 	Labels      map[string]string      `json:"labels"`
 	Tags        []string               `json:"tags"`
+	Owners      []Owner                `json:"owners"`
 	Upstreams   []LineageRecord        `json:"upstreams"`
 	Downstreams []LineageRecord        `json:"downstreams"`
 	CreatedAt   time.Time              `json:"created_at"`
@@ -23,6 +24,13 @@ type Record struct {
 type LineageRecord struct {
 	Urn  string `json:"urn"`
 	Type string `json:"type"`
+}
+
+type Owner struct {
+	URN   string `json:"urn"`
+	Name  string `json:"name"`
+	Role  string `json:"role"`
+	Email string `json:"email"`
 }
 
 type ErrNoSuchRecord struct {

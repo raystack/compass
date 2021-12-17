@@ -67,6 +67,7 @@ func TestSearcherSearch(t *testing.T) {
 					{Type: "topic", RecordID: "order-topic"},
 					{Type: "topic", RecordID: "purchase-topic"},
 					{Type: "topic", RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "consumer-mq-2"},
 				},
 			},
 			{
@@ -78,6 +79,7 @@ func TestSearcherSearch(t *testing.T) {
 					{Type: "topic", RecordID: "order-topic"},
 					{Type: "topic", RecordID: "purchase-topic"},
 					{Type: "topic", RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "consumer-mq-2"},
 				},
 			},
 			{
@@ -115,6 +117,7 @@ func TestSearcherSearch(t *testing.T) {
 				Expected: []expectedRow{
 					{Type: "topic", RecordID: "order-topic"},
 					{Type: "topic", RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "consumer-mq-2"},
 				},
 			},
 			{
@@ -125,6 +128,19 @@ func TestSearcherSearch(t *testing.T) {
 						"data.country":     {"id"},
 						"data.environment": {"production"},
 						"data.company":     {"odpf"},
+					},
+				},
+				Expected: []expectedRow{
+					{Type: "topic", RecordID: "consumer-topic"},
+					{Type: "topic", RecordID: "consumer-mq-2"},
+				},
+			},
+			{
+				Description: "should return 'consumer-topic' if filter owner email with 'john.doe@email.com'",
+				Config: discovery.SearchConfig{
+					Text: "topic",
+					Filters: map[string][]string{
+						"owners.email": {"john.doe@email.com"},
 					},
 				},
 				Expected: []expectedRow{
@@ -141,6 +157,31 @@ func TestSearcherSearch(t *testing.T) {
 					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-common"},
 					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-mid"},
 					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-1"},
+				},
+			},
+			{
+				Description: "should return consumer-topic if search by query description field with text 'rabbitmq' and owners name 'johndoe'",
+				Config: discovery.SearchConfig{
+					Text: "consumer",
+					Queries: map[string]string{
+						"description": "rabbitmq",
+						"owners.name": "john doe",
+					},
+				},
+				Expected: []expectedRow{
+					{Type: "topic", RecordID: "consumer-topic"},
+				},
+			},
+			{
+				Description: "should return 'bigquery::gcpproject/dataset/tablename-common' resource on top if search by query table column name field with text 'tablename-common-column1'",
+				Config: discovery.SearchConfig{
+					Text: "tablename",
+					Queries: map[string]string{
+						"data.schema.columns.name": "common",
+					},
+				},
+				Expected: []expectedRow{
+					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-common"},
 				},
 			},
 		}
