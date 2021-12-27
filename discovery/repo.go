@@ -17,9 +17,8 @@ type RecordRepository interface {
 	CreateOrReplaceMany(context.Context, []record.Record) error
 
 	// GetAll returns specific records from storage
-	// RecordFilter is an optional data structure that is
-	// used for return documents matching the search criteria.
-	GetAll(context.Context, RecordFilter) ([]record.Record, error)
+	// GetConfig is used to configure fetching such as filters and offset
+	GetAll(ctx context.Context, cfg GetConfig) (RecordList, error)
 
 	// GetAllIterator returns RecordIterator to iterate records by batches
 	GetAllIterator(context.Context) (RecordIterator, error)
@@ -33,9 +32,6 @@ type RecordRepository interface {
 	// The field that contains this ID is defined by the
 	// type to which this record belongs
 	Delete(context.Context, string) error
-
-	// TODO: we should probably switch to iterator types for returning
-	// records, or we could add options for pagination
 }
 
 // RecordRepositoryFactory represents a type capable
