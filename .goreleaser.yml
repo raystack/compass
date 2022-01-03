@@ -11,6 +11,7 @@ before:
 
 builds:
   - main: ./main.go
+    id: columbus
     binary: columbus
     flags: [-a]
     ldflags:
@@ -52,7 +53,7 @@ dockers:
     goos: linux
     goarch: amd64
     ids:
-      - linux
+      - columbus
     dockerfile: Dockerfile
     image_templates:
       - 'docker.io/odpf/{{.ProjectName}}:latest'
