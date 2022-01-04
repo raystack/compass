@@ -5,8 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v7"
@@ -20,6 +20,8 @@ const (
 
 	// name of the search index
 	defaultSearchIndex = "universe"
+
+	getAllQuery = `{"query":{"match_all":{}}}`
 )
 
 func isReservedName(name string) bool {
@@ -95,7 +97,7 @@ func (repo *TypeRepository) GetByName(ctx context.Context, name string) (record.
 }
 
 func (repo *TypeRepository) GetAll(ctx context.Context) ([]record.Type, error) {
-	body := strings.NewReader(`{"query":{"match_all":{}}}`)
+	body := strings.NewReader(getAllQuery)
 	resp, err := repo.cli.Search(
 		repo.cli.Search.WithIndex(defaultMetaIndex),
 		repo.cli.Search.WithBody(body),
@@ -132,8 +134,38 @@ func (repo *TypeRepository) GetAll(ctx context.Context) ([]record.Type, error) {
 	return results, nil
 }
 
-func (repo *TypeRepository) getAllQuery() io.Reader {
-	return strings.NewReader(`{"query":{"match_all":{}}}`)
+func (repo *TypeRepository) GetRecordsCount(ctx context.Context) (map[string]int, error) {
+	resp, err := repo.cli.Cat.Indices(
+		repo.cli.Cat.Indices.WithFormat("json"),
+		repo.cli.Cat.Indices.WithContext(ctx),
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "error from es client")
+	}
+	defer resp.Body.Close()
+	if resp.IsError() {
+		return nil, fmt.Errorf("error from es server: %s", errorReasonFromResponse(resp))
+	}
+	var indices []esIndex
+	err = json.NewDecoder(resp.Body).Decode(&indices)
+	if err != nil {
+		return nil, errors.Wrap(err, "error decoding es response")
+	}
+
+	results := map[string]int{}
+	for _, index := range indices {
+		if index.Index == defaultMetaIndex {
+			continue
+		}
+
+		count, err := strconv.Atoi(index.DocsCount)
+		if err != nil {
+			return results, errors.Wrap(err, "error converting docs count to a number")
+		}
+		results[index.Index] = count
+	}
+
+	return results, nil
 }
 
 func (repo *TypeRepository) addTypeToMetaIdx(ctx context.Context, recordType record.Type) error {

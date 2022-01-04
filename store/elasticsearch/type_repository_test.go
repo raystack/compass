@@ -14,6 +14,7 @@ import (
 	"github.com/odpf/columbus/record"
 	store "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTypeRepository(t *testing.T) {
@@ -226,6 +227,64 @@ func TestTypeRepository(t *testing.T) {
 			}
 			var expect = []record.Type{daggerType}
 			assert.Equal(t, expect, types)
+		})
+	})
+	t.Run("GetRecordsCount", func(t *testing.T) {
+		t.Run("should return empty map if no type is available", func(t *testing.T) {
+			esClient := esTestServer.NewClient()
+			repo := store.NewTypeRepository(esTestServer.NewClient())
+			_, err := esClient.Indices.Create("meta")
+			require.NoError(t, err)
+
+			counts, err := repo.GetRecordsCount(ctx)
+			require.NoError(t, err)
+
+			assert.Equal(t, map[string]int{}, counts)
+		})
+		t.Run("should return map with 0 count if type has not been populated yet", func(t *testing.T) {
+			typ := record.Type{
+				Name: "test",
+			}
+			repo := store.NewTypeRepository(esTestServer.NewClient())
+			err := repo.CreateOrReplace(ctx, typ)
+			require.NoError(t, err)
+
+			counts, err := repo.GetRecordsCount(ctx)
+			require.NoError(t, err)
+
+			expected := map[string]int{
+				"test": 0,
+			}
+			assert.Equal(t, expected, counts)
+		})
+		t.Run("should return maps of record count with type as its key", func(t *testing.T) {
+			typ := record.Type{
+				Name: "test2",
+			}
+			records := []record.Record{
+				{Urn: "record-1", Name: "record-1"},
+				{Urn: "record-2", Name: "record-2"},
+				{Urn: "record-3", Name: "record-3"},
+			}
+
+			esClient := esTestServer.NewClient()
+			repo := store.NewTypeRepository(esClient)
+			err := repo.CreateOrReplace(ctx, typ)
+			require.NoError(t, err)
+
+			rrf := store.NewRecordRepositoryFactory(esClient)
+			rr, err := rrf.For(typ.Name)
+			require.NoError(t, err)
+			err = rr.CreateOrReplaceMany(ctx, records)
+			require.NoError(t, err)
+
+			counts, err := repo.GetRecordsCount(ctx)
+			require.NoError(t, err)
+
+			expected := map[string]int{
+				"test2": len(records),
+			}
+			assert.Equal(t, expected, counts)
 		})
 	})
 	t.Run("Delete", func(t *testing.T) {
