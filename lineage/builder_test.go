@@ -34,7 +34,7 @@ func initialiseRepos(datasets []dataset) (record.TypeRepository, discovery.Recor
 		recordIterator.On("Close").Return(nil)
 		recordRepo := new(mock.RecordRepository)
 		recordRepo.On("GetAllIterator", ctx).Return(recordIterator, nil)
-		rrf.On("For", string(typ.Name)).Return(recordRepo, nil)
+		rrf.On("For", typ.Name.String()).Return(recordRepo, nil)
 		typList = append(typList, typ)
 	}
 	tr.On("GetAll", ctx).Return(typList, nil)

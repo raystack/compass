@@ -39,7 +39,7 @@ func TestTypeRepository(t *testing.T) {
 				Validate: func(cli *elasticsearch.Client, recordType record.Type) error {
 					idxRequest := &esapi.IndicesExistsRequest{
 						Index: []string{
-							string(recordType.Name),
+							recordType.Name.String(),
 						},
 					}
 					res, err := idxRequest.Do(context.Background(), cli)
@@ -89,7 +89,7 @@ func TestTypeRepository(t *testing.T) {
 					if err != nil {
 						return fmt.Errorf("error decoding elasticsearch response: %w", err)
 					}
-					if _, created := aliases[string(recordType.Name)]; !created {
+					if _, created := aliases[recordType.Name.String()]; !created {
 						return fmt.Errorf("expected %q index to be aliased to %q, but it was not", recordType.Name, searchIndex)
 					}
 					return nil
@@ -185,7 +185,7 @@ func TestTypeRepository(t *testing.T) {
 			return
 		}
 
-		typeFromRepo, err := repo.GetByName(ctx, string(daggerType.Name))
+		typeFromRepo, err := repo.GetByName(ctx, daggerType.Name.String())
 		if err != nil {
 			t.Errorf("error getting type from repository: %v", err)
 			return
@@ -274,7 +274,7 @@ func TestTypeRepository(t *testing.T) {
 			require.NoError(t, err)
 
 			rrf := store.NewRecordRepositoryFactory(esClient)
-			rr, err := rrf.For(typ.Name)
+			rr, err := rrf.For(typ.Name.String())
 			require.NoError(t, err)
 			err = rr.CreateOrReplaceMany(ctx, records)
 			require.NoError(t, err)

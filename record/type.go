@@ -31,6 +31,11 @@ var (
 	TypeNameTopic     TypeName = "topic"
 )
 
+// String cast TypeName to string
+func (tn TypeName) String() string {
+	return string(tn)
+}
+
 // TypeClassification specifies a class for an Type
 type TypeClassification string
 
@@ -41,6 +46,11 @@ var (
 	TypeClassificationSchema   TypeClassification = "schema"
 	TypeClassificationMetric   TypeClassification = "metric"
 )
+
+// String cast TypeClassification to string
+func (tn TypeClassification) String() string {
+	return string(tn)
+}
 
 // AllTypeClassifications holds a list of valid classifications
 var AllTypeClassifications = []TypeClassification{
@@ -60,9 +70,9 @@ type Type struct {
 
 func (e Type) Normalise() Type {
 	normal := e
-	normal.Name = TypeName(strings.ToLower(string(e.Name)))
+	normal.Name = TypeName(strings.ToLower(e.Name.String()))
 	normal.Classification = TypeClassification(
-		strings.ToLower(string(e.Classification)),
+		strings.ToLower(e.Classification.String()),
 	)
 	return normal
 }

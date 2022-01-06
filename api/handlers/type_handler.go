@@ -20,7 +20,7 @@ func init() {
 	clsList := make([]string, len(record.AllTypeClassifications))
 	for idx, cls := range record.AllTypeClassifications {
 		validClassifications[cls] = 0
-		clsList[idx] = string(cls)
+		clsList[idx] = cls.String()
 	}
 	validClassificationsList = strings.Join(clsList, ",")
 }

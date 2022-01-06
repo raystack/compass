@@ -251,7 +251,7 @@ func loadTestFixture(esClient *elasticsearch.Client, filePath string) (err error
 		if err := typeRepo.CreateOrReplace(ctx, record.Type{Name: testdata.Type}); err != nil {
 			return err
 		}
-		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(string(testdata.Type))
+		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(testdata.Type.String())
 		if err := recordRepo.CreateOrReplaceMany(ctx, testdata.Records); err != nil {
 			return err
 		}
