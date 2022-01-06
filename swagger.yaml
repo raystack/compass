@@ -70,28 +70,24 @@ paths:
                     count:
                       type: number
                       example: 1800
-    put:
+  "/v1/types/{name}":
+    get:
       tags:
         - Type
-      summary: upsert a type
-      description: used for upserting a type. A type in columbus's nomenclature is a "collection" of documents that belong to a single named type. Type holds metadata about this collection, used when serving search requests
+      summary: fetch a type details
+      description: used to fetch type details by its name
       produces:
         - "application/json"
-      parameters:
-        - in: body
-          name: ""
-          schema:
-            $ref: "#/definitions/Type"
       responses:
-        201:
+        200:
           description: OK
           schema:
             $ref: "#/definitions/Type"
-        400:
-          description: invalid type
+        404:
+          description: type not found
           schema:
             $ref: "#/definitions/Error"
-  "/v1/types/{name}":
+  "/v1/types/{name}/records":
     put:
       tags:
         - Record
@@ -119,46 +115,6 @@ paths:
           description: validation error
           schema:
             $ref: "#/definitions/ValidationError"
-    delete:
-      tags:
-        - Type
-      summary: delete a type by its name.
-      description: Use this API to delete a type along with all of its records. This is an idempotent operation.
-      produces:
-        - "application/json"
-      parameters:
-        - in: path
-          name: name
-          type: string
-          required: true
-      responses:
-        200:
-          description: OK
-          schema:
-            type: string
-            example: success
-        422:
-          description: reserved type name error
-          schema:
-            $ref: "#/definitions/Error"
-  "/v1/types/{name}/details":
-    get:
-      tags:
-        - Type
-      summary: fetch a type details
-      description: used to fetch type details by its name
-      produces:
-        - "application/json"
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: "#/definitions/Type"
-        404:
-          description: type not found
-          schema:
-            $ref: "#/definitions/Error"
-  "/v1/types/{name}/records":
     get:
       tags:
         - Record
