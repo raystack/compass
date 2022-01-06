@@ -21,6 +21,16 @@ type TypeFields struct {
 	Labels      []string `json:"labels"`
 }
 
+// TypeName specifies a supported type name
+type TypeName string
+
+var (
+	TypeNameTable     TypeName = "table"
+	TypeNameJob       TypeName = "job"
+	TypeNameDashboard TypeName = "dashboard"
+	TypeNameTopic     TypeName = "topic"
+)
+
 // TypeClassification specifies a class for an Type
 type TypeClassification string
 
@@ -44,17 +54,37 @@ var AllTypeClassifications = []TypeClassification{
 // Entities are supposed to represent resources, datasets and schema.
 // XXX(Aman): should Type names be case insensitive?
 type Type struct {
-	Name           string             `json:"name"`
+	Name           TypeName           `json:"name"`
 	Classification TypeClassification `json:"classification"`
 }
 
 func (e Type) Normalise() Type {
 	normal := e
-	normal.Name = strings.ToLower(e.Name)
+	normal.Name = TypeName(strings.ToLower(string(e.Name)))
 	normal.Classification = TypeClassification(
 		strings.ToLower(string(e.Classification)),
 	)
 	return normal
+}
+
+// AllSupportedTypes holds a list of all supported types struct
+var AllSupportedTypes = []Type{
+	{
+		Name:           TypeNameTable,
+		Classification: TypeClassificationResource,
+	},
+	{
+		Name:           TypeNameJob,
+		Classification: TypeClassificationResource,
+	},
+	{
+		Name:           TypeNameDashboard,
+		Classification: TypeClassificationResource,
+	},
+	{
+		Name:           TypeNameTopic,
+		Classification: TypeClassificationResource,
+	},
 }
 
 // TypeRepository is an interface to a storage

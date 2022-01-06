@@ -34,7 +34,7 @@ func initialiseRepos(datasets []dataset) (record.TypeRepository, discovery.Recor
 		recordIterator.On("Close").Return(nil)
 		recordRepo := new(mock.RecordRepository)
 		recordRepo.On("GetAllIterator", ctx).Return(recordIterator, nil)
-		rrf.On("For", typ.Name).Return(recordRepo, nil)
+		rrf.On("For", string(typ.Name)).Return(recordRepo, nil)
 		typList = append(typList, typ)
 	}
 	tr.On("GetAll", ctx).Return(typList, nil)
@@ -67,7 +67,7 @@ func TestDefaultBuilder(t *testing.T) {
 				Datasets: []dataset{
 					{
 						Type: record.Type{
-							Name:           "test",
+							Name:           record.TypeName("test"),
 							Classification: record.TypeClassificationResource,
 						},
 						Records: []record.Record{
@@ -94,7 +94,7 @@ func TestDefaultBuilder(t *testing.T) {
 				Datasets: []dataset{
 					{
 						Type: record.Type{
-							Name:           "internal-ref",
+							Name:           record.TypeName("internal-ref"),
 							Classification: record.TypeClassificationResource,
 						},
 						Records: []record.Record{
@@ -136,7 +136,7 @@ func TestDefaultBuilder(t *testing.T) {
 				Datasets: []dataset{
 					{
 						Type: record.Type{
-							Name:           "producer",
+							Name:           record.TypeName("producer"),
 							Classification: record.TypeClassificationResource,
 						},
 						Records: []record.Record{

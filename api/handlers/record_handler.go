@@ -57,7 +57,7 @@ func (h *RecordHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.discoveryService.DeleteRecord(r.Context(), t.Name, recordID)
+	err = h.discoveryService.DeleteRecord(r.Context(), string(t.Name), recordID)
 	if err != nil {
 		h.logger.
 			Errorf("error deleting record \"%s\": %v", t.Name, err)
@@ -109,7 +109,7 @@ func (h *RecordHandler) UpsertBulk(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.discoveryService.Upsert(r.Context(), t.Name, records); err != nil {
+	if err := h.discoveryService.Upsert(r.Context(), string(t.Name), records); err != nil {
 		h.logger.WithField("type", t.Name).
 			Errorf("error creating/updating records: %v", err)
 
@@ -134,7 +134,7 @@ func (h *RecordHandler) GetByType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	recordRepo, err := h.recordRepositoryFactory.For(t.Name)
+	recordRepo, err := h.recordRepositoryFactory.For(string(t.Name))
 	if err != nil {
 		h.logger.WithField("type", t.Name).
 			Errorf("error constructing record repository: %v", err)
@@ -181,7 +181,7 @@ func (h *RecordHandler) GetOneByType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	recordRepo, err := h.recordRepositoryFactory.For(t.Name)
+	recordRepo, err := h.recordRepositoryFactory.For(string(t.Name))
 	if err != nil {
 		h.logger.WithField("type", t.Name).
 			Errorf("internal: error construing record repository: %v", err)

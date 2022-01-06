@@ -211,7 +211,7 @@ func (h *TypeHandler) validateType(e record.Type) error {
 	// TODO(Aman): add validation for recordType.Lineage
 	trim := strings.TrimSpace
 	switch {
-	case trim(e.Name) == "":
+	case trim(string(e.Name)) == "":
 		return fmt.Errorf("'name' is required")
 	case trim(string(e.Classification)) == "":
 		return fmt.Errorf("'classification' is required")

@@ -15,7 +15,7 @@ import (
 )
 
 type searchTestData struct {
-	Type    string          `json:"type"`
+	Type    record.TypeName `json:"type"`
 	Records []record.Record `json:"records"`
 }
 
@@ -251,7 +251,7 @@ func loadTestFixture(esClient *elasticsearch.Client, filePath string) (err error
 		if err := typeRepo.CreateOrReplace(ctx, record.Type{Name: testdata.Type}); err != nil {
 			return err
 		}
-		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(testdata.Type)
+		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(string(testdata.Type))
 		if err := recordRepo.CreateOrReplaceMany(ctx, testdata.Records); err != nil {
 			return err
 		}

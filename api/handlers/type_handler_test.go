@@ -125,7 +125,7 @@ func TestTypeHandler(t *testing.T) {
 			}
 		})
 		t.Run("should return 422 if type name is reserved", func(t *testing.T) {
-			expectedErr := record.ErrReservedTypeName{TypeName: daggerType.Name}
+			expectedErr := record.ErrReservedTypeName{TypeName: string(daggerType.Name)}
 
 			rr := httptest.NewRequest("PUT", "/", bytes.NewBuffer(validPayloadRaw))
 			rw := httptest.NewRecorder()
@@ -203,7 +203,7 @@ func TestTypeHandler(t *testing.T) {
 				Classification: record.TypeClassificationResource,
 			}
 			expectEnt := *ent
-			expectEnt.Name = strings.ToLower(ent.Name)
+			expectEnt.Name = record.TypeName(strings.ToLower(string(ent.Name)))
 
 			var payload bytes.Buffer
 			err := json.NewEncoder(&payload).Encode(ent)

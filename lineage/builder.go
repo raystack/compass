@@ -48,7 +48,7 @@ func (builder defaultBuilder) Build(ctx context.Context, tr record.TypeRepositor
 
 	var graph = make(AdjacencyMap)
 	for _, typ := range typs {
-		if err := builder.populateTypeRecords(ctx, graph, typ.Name, rrf); err != nil {
+		if err := builder.populateTypeRecords(ctx, graph, string(typ.Name), rrf); err != nil {
 			return nil, fmt.Errorf("error parsing type records: %w", err)
 		}
 	}

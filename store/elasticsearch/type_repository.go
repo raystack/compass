@@ -40,14 +40,14 @@ type TypeRepository struct {
 }
 
 func (repo *TypeRepository) CreateOrReplace(ctx context.Context, recordType record.Type) error {
-	if isReservedName(recordType.Name) {
-		return record.ErrReservedTypeName{TypeName: recordType.Name}
+	if isReservedName(string(recordType.Name)) {
+		return record.ErrReservedTypeName{TypeName: string(recordType.Name)}
 	}
 
 	// checking for the existence of index before adding the metadata
 	// entry, because if this operation fails, we don't have to do a rollback
 	// for the addTypeToMetaIdx()
-	idxExists, err := indexExists(ctx, repo.cli, recordType.Name)
+	idxExists, err := indexExists(ctx, repo.cli, string(recordType.Name))
 	if err != nil {
 		return errors.Wrap(err, "error checking index existance")
 	}
@@ -182,7 +182,7 @@ func (repo *TypeRepository) addTypeToMetaIdx(ctx context.Context, recordType rec
 	res, err := repo.cli.Index(
 		defaultMetaIndex,
 		raw,
-		repo.cli.Index.WithDocumentID(recordType.Name),
+		repo.cli.Index.WithDocumentID(string(recordType.Name)),
 		repo.cli.Index.WithRefresh("true"),
 		repo.cli.Index.WithContext(ctx),
 	)
@@ -199,7 +199,7 @@ func (repo *TypeRepository) addTypeToMetaIdx(ctx context.Context, recordType rec
 func (repo *TypeRepository) createIdx(ctx context.Context, recordType record.Type) error {
 	indexSettings := buildTypeIndexSettings()
 	res, err := repo.cli.Indices.Create(
-		recordType.Name,
+		string(recordType.Name),
 		repo.cli.Indices.Create.WithBody(strings.NewReader(indexSettings)),
 		repo.cli.Indices.Create.WithContext(ctx),
 	)
@@ -216,7 +216,7 @@ func (repo *TypeRepository) createIdx(ctx context.Context, recordType record.Typ
 func (repo *TypeRepository) updateIdx(ctx context.Context, recordType record.Type) error {
 	res, err := repo.cli.Indices.PutMapping(
 		strings.NewReader(typeIndexMapping),
-		repo.cli.Indices.PutMapping.WithIndex(recordType.Name),
+		repo.cli.Indices.PutMapping.WithIndex(string(recordType.Name)),
 		repo.cli.Indices.PutMapping.WithContext(ctx),
 	)
 	if err != nil {
