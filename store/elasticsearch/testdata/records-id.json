@@ -13,19 +13,6 @@
     }
   },
   {
-    "urn": "f-john-test-001",
-    "name": "john_test_001",
-    "service": "kafka",
-    "description": "",
-    "data": {
-      "urn": "f-john-test-001",
-      "title": "john_test_001",
-      "description": "",
-      "entity": "odpf",
-      "country": "id"
-    }
-  },
-  {
     "urn": "i-undefined-dfgdgd-avi",
     "name": "dfgdgd-avi",
     "service": "rabbitmq",
@@ -33,6 +20,19 @@
     "data": {
       "urn": "i-undefined-dfgdgd-avi",
       "title": "dfgdgd-avi",
+      "description": "",
+      "entity": "odpf",
+      "country": "id"
+    }
+  },
+  {
+    "urn": "f-john-test-001",
+    "name": "john_test_001",
+    "service": "kafka",
+    "description": "",
+    "data": {
+      "urn": "f-john-test-001",
+      "title": "john_test_001",
       "description": "",
       "entity": "odpf",
       "country": "id"

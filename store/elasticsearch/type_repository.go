@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/odpf/columbus/record"
@@ -20,6 +21,9 @@ const (
 
 	// name of the search index
 	defaultSearchIndex = "universe"
+
+	defaultScrollTimeout   = 30 * time.Second
+	defaultScrollBatchSize = 20
 )
 
 func isReservedName(name string) bool {

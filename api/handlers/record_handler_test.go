@@ -337,13 +337,17 @@ func TestRecordHandler(t *testing.T) {
 				Setup:        func(tc *testCase, rrf *mock.RecordRepositoryFactory) {},
 			},
 			{
-				Description:  "should return an http 200 irrespective of environment value",
+				Description:  "should get from and size from querystring and pass it to repo",
 				Type:         typeName,
-				QueryStrings: "filter.data.environment=nonexisting",
+				QueryStrings: "from=5&size=10",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
 					rr := new(mock.RecordRepository)
-					rr.On("GetAll", ctx, map[string][]string{"data.environment": {"nonexisting"}}).Return(records, nil)
+					rr.On("GetAll", ctx, discovery.GetConfig{
+						Filters: map[string][]string{},
+						From:    5,
+						Size:    10,
+					}).Return(discovery.RecordList{Data: records}, nil)
 					rrf.On("For", typeName).Return(rr, nil)
 				},
 			},
@@ -354,32 +358,63 @@ func TestRecordHandler(t *testing.T) {
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
 					rr := new(mock.RecordRepository)
-					rr.On("GetAll", ctx, map[string][]string{
-						"service":      {"kafka", "rabbitmq"},
-						"data.company": {"appel"},
-					}).Return(records, nil)
+					rr.On("GetAll", ctx, discovery.GetConfig{
+						Filters: map[string][]string{
+							"service":      {"kafka", "rabbitmq"},
+							"data.company": {"appel"},
+						}}).Return(discovery.RecordList{Data: records}, nil)
 					rrf.On("For", typeName).Return(rr, nil)
 				},
 			},
 			{
-				Description:  "should return all records for an type",
+				Description:  "should return http 500 if the handler fails to construct record repository",
 				Type:         typeName,
 				QueryStrings: "filter.data.environment=test",
+				ExpectStatus: http.StatusInternalServerError,
+				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
+					rr := new(mock.RecordRepository)
+					err := fmt.Errorf("something went wrong")
+					rrf.On("For", typeName).Return(rr, err)
+				},
+			},
+			{
+				Description:  "should return an http 500 if calling recordRepository.GetAll fails",
+				Type:         typeName,
+				QueryStrings: "filter.data.environment=test",
+				ExpectStatus: http.StatusInternalServerError,
+				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
+					rr := new(mock.RecordRepository)
+					err := fmt.Errorf("temporarily unavailable")
+					rr.On("GetAll", ctx, discovery.GetConfig{
+						Filters: map[string][]string{"data.environment": {"test"}},
+					}).Return(discovery.RecordList{Data: []record.Record{}}, err)
+					rrf.On("For", typeName).Return(rr, nil)
+				},
+			},
+			{
+				Description:  "should return 200 on success and RecordList",
+				Type:         typeName,
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
 					rr := new(mock.RecordRepository)
-					rr.On("GetAll", ctx, map[string][]string{"data.environment": {"test"}}).Return(records, nil)
+					rr.On("GetAll", ctx, discovery.GetConfig{
+						Filters: map[string][]string{},
+					}).Return(discovery.RecordList{Data: records}, nil)
 					rrf.On("For", typeName).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
-					var response []record.Record
+					var response discovery.RecordList
 					err := json.NewDecoder(resp.Body).Decode(&response)
 					if err != nil {
 						return fmt.Errorf("error parsing response payload: %v", err)
 					}
-					// TODO: more useful error messages
-					if reflect.DeepEqual(response, records) == false {
-						return fmt.Errorf("expected handler to return %v, returned %v instead", records, response)
+
+					expected := discovery.RecordList{
+						Data: records,
+					}
+
+					if reflect.DeepEqual(response, expected) == false {
+						return fmt.Errorf("expected handler to return %v, returned %v instead", expected, response)
 					}
 					return nil
 				},
@@ -391,61 +426,42 @@ func TestRecordHandler(t *testing.T) {
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
 					rr := new(mock.RecordRepository)
-					rr.On("GetAll", ctx, map[string][]string{"data.environment": {"test"}}).Return(records, nil)
+					rr.On("GetAll", ctx, discovery.GetConfig{
+						Filters: map[string][]string{"data.environment": {"test"}},
+					}).Return(discovery.RecordList{Data: records}, nil)
 					rrf.On("For", typeName).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
-					var expectRecords = []record.Record{
-						{
-							Urn: "test-fh-1",
-							Data: map[string]interface{}{
-								"urn":   "test-fh-1",
-								"owner": "de",
-							},
-						},
-						{
-							Urn: "test-fh-2",
-							Data: map[string]interface{}{
-								"urn":   "test-fh-2",
-								"owner": "de",
-							},
-						},
-					}
-
-					var response []record.Record
+					var response discovery.RecordList
 					err := json.NewDecoder(resp.Body).Decode(&response)
 					if err != nil {
 						return fmt.Errorf("error parsing response payload: %v", err)
 					}
 
-					if reflect.DeepEqual(response, expectRecords) == false {
-						return fmt.Errorf("expected handler to return %v, returned %v instead", expectRecords, response)
+					expected := discovery.RecordList{
+						Data: []record.Record{
+							{
+								Urn: "test-fh-1",
+								Data: map[string]interface{}{
+									"urn":   "test-fh-1",
+									"owner": "de",
+								},
+							},
+							{
+								Urn: "test-fh-2",
+								Data: map[string]interface{}{
+									"urn":   "test-fh-2",
+									"owner": "de",
+								},
+							},
+						},
+					}
+
+					if reflect.DeepEqual(response, expected) == false {
+						return fmt.Errorf("expected handler to return %v, returned %v instead", expected, response)
 					}
 
 					return nil
-				},
-			},
-			{
-				Description:  "(internal) should return http 500 if the handler fails to construct record repository",
-				Type:         typeName,
-				QueryStrings: "filter.data.environment=test",
-				ExpectStatus: http.StatusInternalServerError,
-				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
-					rr := new(mock.RecordRepository)
-					err := fmt.Errorf("something went wrong")
-					rrf.On("For", typeName).Return(rr, err)
-				},
-			},
-			{
-				Description:  "(internal) should return an http 500 if calling recordRepository.GetAll fails",
-				Type:         typeName,
-				QueryStrings: "filter.data.environment=test",
-				ExpectStatus: http.StatusInternalServerError,
-				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
-					rr := new(mock.RecordRepository)
-					err := fmt.Errorf("temporarily unavailable")
-					rr.On("GetAll", ctx, map[string][]string{"data.environment": {"test"}}).Return([]record.Record{}, err)
-					rrf.On("For", typeName).Return(rr, nil)
 				},
 			},
 		}

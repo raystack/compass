@@ -17,64 +17,16 @@ import (
 	"github.com/olivere/elastic/v7"
 )
 
-type getResponse struct {
-	Source record.Record `json:"_source"`
-}
+const (
+	defaultGetSize   = 20
+	defaultSortField = "name.keyword"
+)
 
 // RecordRepository implements discovery.RecordRepository
 // with elasticsearch as the backing store.
 type RecordRepository struct {
 	typeName string
 	cli      *elasticsearch.Client
-}
-
-func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []record.Record) error {
-	requestPayload, err := repo.createBulkInsertPayload(records)
-	if err != nil {
-		return fmt.Errorf("error serialising payload: %w", err)
-	}
-	res, err := repo.cli.Bulk(
-		requestPayload,
-		repo.cli.Bulk.WithRefresh("true"),
-		repo.cli.Bulk.WithContext(ctx),
-	)
-	if err != nil {
-		return elasticSearchError(err)
-	}
-	defer res.Body.Close()
-	if res.IsError() {
-		return fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
-	}
-	return nil
-}
-
-func (repo *RecordRepository) createBulkInsertPayload(records []record.Record) (io.Reader, error) {
-	payload := bytes.NewBuffer(nil)
-	for _, record := range records {
-		err := repo.writeInsertAction(payload, record)
-		if err != nil {
-			return nil, fmt.Errorf("createBulkInsertPayload: %w", err)
-		}
-		err = json.NewEncoder(payload).Encode(record)
-		if err != nil {
-			return nil, fmt.Errorf("error serialising record: %w", err)
-		}
-	}
-	return payload, nil
-}
-
-func (repo *RecordRepository) writeInsertAction(w io.Writer, record record.Record) error {
-	if strings.TrimSpace(record.Urn) == "" {
-		return fmt.Errorf("URN record field cannot be empty")
-	}
-	type obj map[string]interface{}
-	action := obj{
-		"index": obj{
-			"_index": repo.typeName,
-			"_id":    record.Urn,
-		},
-	}
-	return json.NewEncoder(w).Encode(action)
 }
 
 func (repo *RecordRepository) GetAllIterator(ctx context.Context) (discovery.RecordIterator, error) {
@@ -112,48 +64,152 @@ func (repo *RecordRepository) GetAllIterator(ctx context.Context) (discovery.Rec
 	return &it, nil
 }
 
-func (repo *RecordRepository) GetAll(ctx context.Context, filters discovery.RecordFilter) ([]record.Record, error) {
+func (repo *RecordRepository) GetAll(ctx context.Context, cfg discovery.GetConfig) (recordList discovery.RecordList, err error) {
 	// XXX(Aman): we should probably think about result ordering, if the client
 	// is going to slice the data for pagination. Does ES guarantee the result order?
-	body, err := repo.getAllQuery(filters)
+	body, err := repo.getAllQuery(cfg.Filters)
 	if err != nil {
-		return nil, fmt.Errorf("error building search query: %w", err)
+		err = fmt.Errorf("error building search query: %w", err)
+		return
+	}
+	size := cfg.Size
+	if size == 0 {
+		size = defaultGetSize
 	}
 
 	resp, err := repo.cli.Search(
 		repo.cli.Search.WithIndex(repo.typeName),
 		repo.cli.Search.WithBody(body),
-		repo.cli.Search.WithScroll(defaultScrollTimeout),
-		repo.cli.Search.WithSize(defaultScrollBatchSize),
+		repo.cli.Search.WithFrom(cfg.From),
+		repo.cli.Search.WithSize(size),
+		repo.cli.Search.WithSort(defaultSortField),
 		repo.cli.Search.WithContext(ctx),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("error executing search: %w", err)
+		err = fmt.Errorf("error executing search: %w", err)
+		return
 	}
 	defer resp.Body.Close()
 	if resp.IsError() {
-		return nil, fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(resp))
+		err = fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(resp))
+		return
 	}
 
 	var response searchResponse
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding es response: %w", err)
+		err = fmt.Errorf("error decoding es response: %w", err)
+		return
 	}
-	var results = repo.toRecordList(response)
-	var scrollID = response.ScrollID
-	for {
-		var nextResults []record.Record
-		nextResults, scrollID, err = repo.scrollRecords(ctx, scrollID)
+	var records = repo.toRecordList(response)
+
+	recordList.Data = records
+	recordList.Count = len(records)
+	recordList.Total = int(response.Hits.Total.Value)
+
+	return
+}
+
+func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records []record.Record) error {
+	requestPayload, err := repo.createBulkInsertPayload(records)
+	if err != nil {
+		return fmt.Errorf("error serialising payload: %w", err)
+	}
+	res, err := repo.cli.Bulk(
+		requestPayload,
+		repo.cli.Bulk.WithRefresh("true"),
+		repo.cli.Bulk.WithContext(ctx),
+	)
+	if err != nil {
+		return elasticSearchError(err)
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		return fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
+	}
+	return nil
+}
+
+func (repo *RecordRepository) GetByID(ctx context.Context, id string) (r record.Record, err error) {
+	res, err := repo.cli.Get(
+		repo.typeName,
+		url.PathEscape(id),
+		repo.cli.Get.WithContext(ctx),
+	)
+	if err != nil {
+		err = fmt.Errorf("error executing get: %w", err)
+		return
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		if res.StatusCode == http.StatusNotFound {
+			err = record.ErrNoSuchRecord{RecordID: id}
+			return
+		}
+		err = fmt.Errorf("got %s response from elasticsearch: %s", res.Status(), res)
+		return
+	}
+
+	var response searchHit
+	err = json.NewDecoder(res.Body).Decode(&response)
+	if err != nil {
+		err = fmt.Errorf("error parsing response: %w", err)
+		return
+	}
+
+	r = response.Source
+	return
+}
+
+func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
+	res, err := repo.cli.Delete(
+		repo.typeName,
+		url.PathEscape(id),
+		repo.cli.Delete.WithRefresh("true"),
+		repo.cli.Delete.WithContext(ctx),
+	)
+	if err != nil {
+		return fmt.Errorf("error deleting record: %w", err)
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		if res.StatusCode == http.StatusNotFound {
+			return record.ErrNoSuchRecord{RecordID: id}
+		}
+		return fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
+	}
+
+	return nil
+}
+
+func (repo *RecordRepository) createBulkInsertPayload(records []record.Record) (io.Reader, error) {
+	payload := bytes.NewBuffer(nil)
+	for _, record := range records {
+		err := repo.writeInsertAction(payload, record)
 		if err != nil {
-			return nil, fmt.Errorf("error scrolling results: %v", err)
+			return nil, fmt.Errorf("createBulkInsertPayload: %w", err)
 		}
-		if len(nextResults) == 0 {
-			break
+		err = json.NewEncoder(payload).Encode(record)
+		if err != nil {
+			return nil, fmt.Errorf("error serialising record: %w", err)
 		}
-		results = append(results, nextResults...)
 	}
-	return results, nil
+	return payload, nil
+}
+
+func (repo *RecordRepository) writeInsertAction(w io.Writer, record record.Record) error {
+	if strings.TrimSpace(record.Urn) == "" {
+		return fmt.Errorf("URN record field cannot be empty")
+	}
+	type obj map[string]interface{}
+	action := obj{
+		"index": obj{
+			"_index": repo.typeName,
+			"_id":    record.Urn,
+		},
+	}
+	return json.NewEncoder(w).Encode(action)
 }
 
 func (repo *RecordRepository) scrollRecords(ctx context.Context, scrollID string) ([]record.Record, string, error) {
@@ -221,59 +277,6 @@ func (repo *RecordRepository) termsQuery(filters discovery.RecordFilter) (io.Rea
 	}
 	payload := bytes.NewBuffer(nil)
 	return payload, json.NewEncoder(payload).Encode(raw)
-}
-
-func (repo *RecordRepository) GetByID(ctx context.Context, id string) (r record.Record, err error) {
-	res, err := repo.cli.Get(
-		repo.typeName,
-		url.PathEscape(id),
-		repo.cli.Get.WithContext(ctx),
-	)
-	if err != nil {
-		err = fmt.Errorf("error executing get: %w", err)
-		return
-	}
-	defer res.Body.Close()
-
-	if res.IsError() {
-		if res.StatusCode == http.StatusNotFound {
-			err = record.ErrNoSuchRecord{RecordID: id}
-			return
-		}
-		err = fmt.Errorf("got %s response from elasticsearch: %s", res.Status(), res)
-		return
-	}
-
-	var response getResponse
-	err = json.NewDecoder(res.Body).Decode(&response)
-	if err != nil {
-		err = fmt.Errorf("error parsing response: %w", err)
-		return
-	}
-
-	r = response.Source
-	return
-}
-
-func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
-	res, err := repo.cli.Delete(
-		repo.typeName,
-		url.PathEscape(id),
-		repo.cli.Delete.WithRefresh("true"),
-		repo.cli.Delete.WithContext(ctx),
-	)
-	if err != nil {
-		return fmt.Errorf("error deleting record: %w", err)
-	}
-	defer res.Body.Close()
-	if res.IsError() {
-		if res.StatusCode == http.StatusNotFound {
-			return record.ErrNoSuchRecord{RecordID: id}
-		}
-		return fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
-	}
-
-	return nil
 }
 
 // recordIterator is the internal implementation of record.RecordIterator by RecordRepository
