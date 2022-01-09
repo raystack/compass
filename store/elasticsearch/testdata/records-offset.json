@@ -1,0 +1,40 @@
+[
+  {
+    "urn": "g-jane-kafka-1a",
+    "name": "jane-kafka-1a",
+    "description": "",
+    "data": {
+      "urn": "g-jane-kafka-1a",
+      "title": "jane-kafka-1a",
+      "description": "",
+      "entity": "odpf",
+      "country": "vn"
+    }
+  },
+  {
+    "urn": "f-john-test-001",
+    "name": "john_test_001",
+    "service": "kafka",
+    "description": "",
+    "data": {
+      "urn": "f-john-test-001",
+      "title": "john_test_001",
+      "description": "",
+      "entity": "odpf",
+      "country": "id"
+    }
+  },
+  {
+    "urn": "a-kafka-001",
+    "name": "kafka-001",
+    "service": "kafka",
+    "description": "",
+    "data": {
+      "urn": "a-kafka-001",
+      "title": "kafka-001",
+      "description": "",
+      "entity": "odpf",
+      "country": "vn"
+    }
+  }
+]

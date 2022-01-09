@@ -22,6 +22,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         push: true
+        file: "./Dockerfile.dev"
         tags: |
             odpf/columbus:latest
             odpf/columbus:${{ steps.get_version.outputs.version-without-v }}

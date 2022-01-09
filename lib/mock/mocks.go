@@ -58,9 +58,9 @@ func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, records [
 	return args.Error(0)
 }
 
-func (repo *RecordRepository) GetAll(ctx context.Context, filter discovery.RecordFilter) ([]record.Record, error) {
-	args := repo.Called(ctx, filter)
-	return args.Get(0).([]record.Record), args.Error(1)
+func (repo *RecordRepository) GetAll(ctx context.Context, cfg discovery.GetConfig) (discovery.RecordList, error) {
+	args := repo.Called(ctx, cfg)
+	return args.Get(0).(discovery.RecordList), args.Error(1)
 }
 
 func (repo *RecordRepository) GetAllIterator(ctx context.Context) (discovery.RecordIterator, error) {

@@ -159,16 +159,27 @@ func TestRecordRepository(t *testing.T) {
 	})
 	t.Run("GetAll", func(t *testing.T) {
 		type testCase struct {
-			Description string
-			Filter      discovery.RecordFilter
-			ResultsFile string
+			Description   string
+			Filter        discovery.RecordFilter
+			ResultsFile   string
+			From          int
+			Size          int
+			ExpectedTotal int
 		}
 
 		var testCases = []testCase{
 			{
-				Description: "should handle nil filter",
+				Description: "should handle nil filter and default sort by name",
 				Filter:      nil,
-				ResultsFile: "./testdata/records.json",
+				ResultsFile: "./testdata/records-all.json",
+			},
+			{
+				Description:   "should fetch certain offset and size if given",
+				Filter:        nil,
+				From:          2,
+				Size:          3,
+				ResultsFile:   "./testdata/records-offset.json",
+				ExpectedTotal: 10,
 			},
 			{
 				Description: "should handle filter by service",
@@ -215,16 +226,24 @@ func TestRecordRepository(t *testing.T) {
 					return
 				}
 
-				actualResults, err := recordRepo.GetAll(ctx, tc.Filter)
+				recordList, err := recordRepo.GetAll(ctx, discovery.GetConfig{
+					Filters: tc.Filter,
+					From:    tc.From,
+					Size:    tc.Size,
+				})
 				if err != nil {
 					t.Fatalf("error executing GetAll: %v", err)
 					return
 				}
 
-				assert.Equal(t, len(expectedResults), len(actualResults))
-				if reflect.DeepEqual(expectedResults, actualResults) == false {
-					t.Error(incorrectResultsError(expectedResults, actualResults))
+				assert.Equal(t, len(expectedResults), recordList.Count)
+				if reflect.DeepEqual(expectedResults, recordList.Data) == false {
+					t.Error(incorrectResultsError(expectedResults, recordList.Data))
 					return
+				}
+
+				if tc.ExpectedTotal > 0 {
+					assert.Equal(t, tc.ExpectedTotal, recordList.Total)
 				}
 			})
 		}

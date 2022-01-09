@@ -27,7 +27,8 @@ type searchHit struct {
 type searchResponse struct {
 	ScrollID string `json:"_scroll_id"`
 	Hits     struct {
-		Hits []searchHit `json:"hits"`
+		Total elastic.TotalHits `json:"total"`
+		Hits  []searchHit       `json:"hits"`
 	} `json:"hits"`
 	Suggest map[string][]struct {
 		Text    string                           `json:"text"`

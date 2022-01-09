@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -140,9 +142,13 @@ func (h *RecordHandler) GetByType(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, status, message)
 		return
 	}
-	filterCfg := filterConfigFromValues(r.URL.Query())
+	getCfg, err := h.buildGetConfig(r.URL.Query())
+	if err != nil {
+		writeJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
-	records, err := recordRepo.GetAll(r.Context(), filterCfg)
+	recordList, err := recordRepo.GetAll(r.Context(), getCfg)
 	if err != nil {
 		h.logger.WithField("type", t.Name).
 			Errorf("error fetching records: GetAll: %v", err)
@@ -153,9 +159,9 @@ func (h *RecordHandler) GetByType(w http.ResponseWriter, r *http.Request) {
 
 	fieldsToSelect := h.parseSelectQuery(r.URL.Query().Get("select"))
 	if len(fieldsToSelect) > 0 {
-		records = h.selectRecordFields(fieldsToSelect, records)
+		recordList.Data = h.selectRecordFields(fieldsToSelect, recordList.Data)
 	}
-	writeJSON(w, http.StatusOK, records)
+	writeJSON(w, http.StatusOK, recordList)
 }
 
 func (h *RecordHandler) GetOneByType(w http.ResponseWriter, r *http.Request) {
@@ -196,6 +202,25 @@ func (h *RecordHandler) GetOneByType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, record)
+}
+
+func (h *RecordHandler) buildGetConfig(params url.Values) (cfg discovery.GetConfig, err error) {
+	if size := params.Get("size"); size != "" {
+		cfg.Size, err = strconv.Atoi(size)
+		if err != nil {
+			return
+		}
+	}
+	if from := params.Get("from"); from != "" {
+		cfg.From, err = strconv.Atoi(from)
+		if err != nil {
+			return
+		}
+	}
+
+	cfg.Filters = filterConfigFromValues(params)
+
+	return
 }
 
 func (h *RecordHandler) parseSelectQuery(raw string) (fields []string) {
