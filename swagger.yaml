@@ -63,7 +63,13 @@ paths:
           schema:
             type: array
             items:
-              $ref: "#/definitions/Type"
+              allOf:
+                - $ref: "#/definitions/Type"
+                - type: object
+                  properties:
+                    count:
+                      type: number
+                      example: 1800
     put:
       tags:
         - Type
@@ -619,8 +625,8 @@ definitions:
     type: string
     description: "defines the 'class' of the record"
     enum:
-      - record
       - dataset
+      - resource
       - schema
   Record:
     type: object
@@ -787,20 +793,6 @@ definitions:
         description: name of the type (for e.g. dagger, firehose)
       classification:
         <<: *CLASSIFICATIONS
-      record_attributes:
-        type: object
-        description: defines metadata for the documents that belong to this type. All properties under record_attributes define(s) a mapping of logical purpose, to the name of the key(s) in the documents that hold those information
-        properties:
-          id:
-            type: string
-          title:
-            type: string
-          description:
-            type: string
-          labels:
-            type: array
-            items:
-              type: string
   Error:
     type: object
     properties:

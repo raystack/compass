@@ -63,6 +63,9 @@ type TypeRepository interface {
 	CreateOrReplace(context.Context, Type) error
 	GetByName(context.Context, string) (Type, error)
 	GetAll(context.Context) ([]Type, error)
+	// GetRecordsCount fetches records count for all available types
+	// and returns them as a map[type]count
+	GetRecordsCount(context.Context) (map[string]int, error)
 	Delete(context.Context, string) error
 }
 

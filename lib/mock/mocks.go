@@ -30,6 +30,11 @@ func (repo *TypeRepository) GetAll(ctx context.Context) ([]record.Type, error) {
 	return args.Get(0).([]record.Type), args.Error(1)
 }
 
+func (repo *TypeRepository) GetRecordsCount(ctx context.Context) (map[string]int, error) {
+	args := repo.Called(ctx)
+	return args.Get(0).(map[string]int), args.Error(1)
+}
+
 func (repo *TypeRepository) Delete(ctx context.Context, typeName string) error {
 	args := repo.Called(ctx, typeName)
 	return args.Error(0)

@@ -18,6 +18,7 @@ import (
 	"github.com/odpf/columbus/record"
 	"github.com/stretchr/testify/assert"
 	tmock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTypeHandler(t *testing.T) {
@@ -232,40 +233,20 @@ func TestTypeHandler(t *testing.T) {
 
 		var types = []record.Type{
 			{
-				Name:           "bqtable",
+				Name:           "table",
 				Classification: "dataset",
 			},
 			{
-				Name:           "dagger",
+				Name:           "topic",
 				Classification: "dataset",
 			},
 			{
-				Name:           "firehose",
+				Name:           "job",
 				Classification: "dataset",
 			},
 		}
 
 		var testCases = []testCase{
-			{
-				Description:  "should return all types",
-				ExpectStatus: http.StatusOK,
-				Setup: func(tc *testCase, er *mock.TypeRepository) {
-					er.On("GetAll", context.Background()).Return(types, nil)
-				},
-				PostCheck: func(t *testing.T, tc *testCase, resp *http.Response) error {
-					respBody, err := ioutil.ReadAll(resp.Body)
-					if err != nil {
-						return err
-					}
-					var actual []record.Type
-					err = json.Unmarshal(respBody, &actual)
-					if err != nil {
-						return err
-					}
-					assert.Equal(t, types, actual)
-					return nil
-				},
-			},
 			{
 				Description:  "should return 500 status code if failing to fetch types",
 				ExpectStatus: http.StatusInternalServerError,
@@ -273,10 +254,47 @@ func TestTypeHandler(t *testing.T) {
 					er.On("GetAll", context.Background()).Return([]record.Type{}, errors.New("failed to fetch type"))
 				},
 			},
+			{
+				Description:  "should return 500 status code if failing to fetch counts",
+				ExpectStatus: http.StatusInternalServerError,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("GetAll", context.Background()).Return(types, nil)
+					er.On("GetRecordsCount", context.Background()).Return(map[string]int{}, errors.New("failed to fetch records count"))
+				},
+			},
+			{
+				Description:  "should return all types with its record count",
+				ExpectStatus: http.StatusOK,
+				Setup: func(tc *testCase, er *mock.TypeRepository) {
+					er.On("GetAll", context.Background()).Return(types, nil)
+					er.On("GetRecordsCount", context.Background()).Return(map[string]int{
+						"table":         10,
+						"topic":         30,
+						"job":           15,
+						"to_be_ignored": 100,
+					}, nil)
+				},
+				PostCheck: func(t *testing.T, tc *testCase, resp *http.Response) error {
+					actual, err := ioutil.ReadAll(resp.Body)
+					require.NoError(t, err)
+
+					expected, err := json.Marshal([]map[string]interface{}{
+						{"name": "table", "classification": "dataset", "count": 10},
+						{"name": "topic", "classification": "dataset", "count": 30},
+						{"name": "job", "classification": "dataset", "count": 15},
+					})
+					require.NoError(t, err)
+
+					assert.JSONEq(t, string(expected), string(actual))
+
+					return nil
+				},
+			},
 		}
 		for _, tc := range testCases {
 			t.Run(tc.Description, func(t *testing.T) {
 				er := new(mock.TypeRepository)
+				defer er.AssertExpectations(t)
 				tc.Setup(&tc, er)
 
 				handler := handlers.NewTypeHandler(new(mock.Logger), er)
