@@ -8,6 +8,7 @@ import (
 	"github.com/odpf/columbus/record"
 	esStore "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/odpf/columbus/store/postgres"
+	"github.com/pkg/errors"
 )
 
 const esMigrationTimeout = 5 * time.Second
@@ -71,7 +72,7 @@ func migrateElasticsearch() (err error) {
 		defer cancel()
 		err = tr.CreateOrReplace(ctx, supportedType)
 		if err != nil {
-			err = fmt.Errorf("error creating/replacing type: %q, err: %w", supportedType.Name, err)
+			err = errors.Wrapf(err, "error creating/replacing type: %q", supportedType.Name)
 			return
 		}
 		log.Infof("created/updated %q type\n", supportedType.Name)
