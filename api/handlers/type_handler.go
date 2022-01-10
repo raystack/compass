@@ -10,21 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var (
-	validClassifications     map[record.TypeClassification]int
-	validClassificationsList string
-)
-
-func init() {
-	validClassifications = make(map[record.TypeClassification]int)
-	clsList := make([]string, len(record.AllTypeClassifications))
-	for idx, cls := range record.AllTypeClassifications {
-		validClassifications[cls] = 0
-		clsList[idx] = cls.String()
-	}
-	validClassificationsList = strings.Join(clsList, ",")
-}
-
 // TypeHandler exposes a REST interface to types
 type TypeHandler struct {
 	typeRepo record.TypeRepository

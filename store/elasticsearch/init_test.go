@@ -12,8 +12,7 @@ import (
 )
 
 var daggerType = record.Type{
-	Name:           "dagger",
-	Classification: record.TypeClassificationResource,
+	Name: "dagger",
 }
 
 var esTestServer *testutil.ElasticsearchTestServer

@@ -577,13 +577,6 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 definitions:
-  Classifications: &CLASSIFICATIONS
-    type: string
-    description: "defines the 'class' of the record"
-    enum:
-      - dataset
-      - resource
-      - schema
   Record:
     type: object
     properties:
@@ -747,8 +740,6 @@ definitions:
       name:
         type: string
         description: name of the type (for e.g. dagger, firehose)
-      classification:
-        <<: *CLASSIFICATIONS
   Error:
     type: object
     properties:
@@ -770,8 +761,6 @@ definitions:
       description:
         type: string
         description: "optional description of the record"
-      classification:
-        <<: *CLASSIFICATIONS
       labels:
         type: object
         description: "key value pairs describing the labels configured for the given type of record. Example of labels: team, created, owner etc"

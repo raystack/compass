@@ -252,15 +252,6 @@ API for querying documents. 'text' is fuzzy matched against all the available da
 
 ### Models
 
-
-#### Classifications
-
-defines the 'class' of the resource
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| Classifications | string | defines the 'class' of the resource |  |
-
 #### Record
 
 | Name | Type | Description | Required |
@@ -296,7 +287,6 @@ defines the 'class' of the resource
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
 | name | string | name of the type (for e.g. dagger, firehose) | No |
-| classification | string | defines the 'class' of the resource | No |
 | record_attributes | object | defines metadata for the documents that belong to this type. All properties under record_attributes define(s) a mapping of logical purpose, to the name of the key(s) in the documents that hold those information | No |
 
 #### Error
@@ -313,7 +303,6 @@ defines the 'class' of the resource
 | title | string | describes the resource in a human readable form | No |
 | type | string | the individual type of the resource. For example: dagger, firehose | No |
 | description | string | optional description of the record | No |
-| classification | string | defines the 'class' of the resource | No |
 | labels | object | key value pairs describing the labels configured for the given type of resource. Example of labels: team, created, owner etc | No |
 
 #### ValidationError

@@ -14,7 +14,6 @@ curl -XPUT http://${COLUMBUS_HOST} \
     -d '
 {
     "name": "firehose",
-    "classification": "resource",
     "record_attributes": {
         "id": "urn",
         "title": "title",
@@ -37,7 +36,6 @@ curl -XPUT http://${COLUMBUS_HOST} \
 Let’s briefly discuss the type definition:
 
 * name defines the type of the resource.
-* classification defines the logical ‘type’ for a resource. Currently, we have 3 kinds of classifications: ‘resource’ for application deployments, ‘dataset’ for datastores \(like bigquery\) and ‘schema’ for protobuf definitions. This is used as a filter criteria when processing search queries.
 * record\_attributes define the partial schema for a record belonging to the type. 
   * id is the field in the record that is used as the primary ID for a record. \(mandatory\)
   * title is the field containing the human readable name for this resource \(mandatory\)
@@ -55,7 +53,6 @@ A Record is a JSON document that describes a data-point for an type. The schema 
 ```text
 {
     "name": "imaginary-type",
-    "classification": "resource",
     "record_attributes": {
         "id": "urn",
         "title": "name",

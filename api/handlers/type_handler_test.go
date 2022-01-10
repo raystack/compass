@@ -33,16 +33,13 @@ func TestTypeHandler(t *testing.T) {
 
 		var types = []record.Type{
 			{
-				Name:           "table",
-				Classification: "dataset",
+				Name: "table",
 			},
 			{
-				Name:           "topic",
-				Classification: "dataset",
+				Name: "topic",
 			},
 			{
-				Name:           "job",
-				Classification: "dataset",
+				Name: "job",
 			},
 		}
 
@@ -79,9 +76,9 @@ func TestTypeHandler(t *testing.T) {
 					require.NoError(t, err)
 
 					expected, err := json.Marshal([]map[string]interface{}{
-						{"name": "table", "classification": "dataset", "count": 10},
-						{"name": "topic", "classification": "dataset", "count": 30},
-						{"name": "job", "classification": "dataset", "count": 15},
+						{"name": "table", "count": 10},
+						{"name": "topic", "count": 30},
+						{"name": "job", "count": 15},
 					})
 					require.NoError(t, err)
 
@@ -126,8 +123,7 @@ func TestTypeHandler(t *testing.T) {
 		}
 
 		sampleType := record.Type{
-			Name:           "sample",
-			Classification: "dataset",
+			Name: "sample",
 		}
 
 		var testCases = []testCase{

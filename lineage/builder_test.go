@@ -67,8 +67,7 @@ func TestDefaultBuilder(t *testing.T) {
 				Datasets: []dataset{
 					{
 						Type: record.Type{
-							Name:           record.TypeName("test"),
-							Classification: record.TypeClassificationResource,
+							Name: record.TypeName("test"),
 						},
 						Records: []record.Record{
 							{
@@ -94,8 +93,7 @@ func TestDefaultBuilder(t *testing.T) {
 				Datasets: []dataset{
 					{
 						Type: record.Type{
-							Name:           record.TypeName("internal-ref"),
-							Classification: record.TypeClassificationResource,
+							Name: record.TypeName("internal-ref"),
 						},
 						Records: []record.Record{
 							{
@@ -136,8 +134,7 @@ func TestDefaultBuilder(t *testing.T) {
 				Datasets: []dataset{
 					{
 						Type: record.Type{
-							Name:           record.TypeName("producer"),
-							Classification: record.TypeClassificationResource,
+							Name: record.TypeName("producer"),
 						},
 						Records: []record.Record{
 							{
@@ -147,8 +144,7 @@ func TestDefaultBuilder(t *testing.T) {
 					},
 					{
 						Type: record.Type{
-							Name:           "consumer",
-							Classification: record.TypeClassificationResource,
+							Name: "consumer",
 						},
 						Records: []record.Record{
 							{

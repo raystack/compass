@@ -56,16 +56,14 @@ func TestTypeRepository(t *testing.T) {
 			{
 				Title: "should not accept any type that has the same name as the metadata index",
 				Type: record.Type{
-					Name:           "meta", // defaultMetaIndex
-					Classification: record.TypeClassificationResource,
+					Name: "meta", // defaultMetaIndex
 				},
 				ShouldFail: true,
 			},
 			{
 				Title: "should not accept any type that has the same name as the search index",
 				Type: record.Type{
-					Name:           "universe", // defaultSearchIndex
-					Classification: record.TypeClassificationResource,
+					Name: "universe", // defaultSearchIndex
 				},
 				ShouldFail: true,
 			},

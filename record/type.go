@@ -36,64 +36,32 @@ func (tn TypeName) String() string {
 	return string(tn)
 }
 
-// TypeClassification specifies a class for an Type
-type TypeClassification string
-
-// list of valid classifications
-var (
-	TypeClassificationResource TypeClassification = "resource"
-	TypeClassificationDataset  TypeClassification = "dataset"
-	TypeClassificationSchema   TypeClassification = "schema"
-	TypeClassificationMetric   TypeClassification = "metric"
-)
-
-// String cast TypeClassification to string
-func (tn TypeClassification) String() string {
-	return string(tn)
-}
-
-// AllTypeClassifications holds a list of valid classifications
-var AllTypeClassifications = []TypeClassification{
-	TypeClassificationResource,
-	TypeClassificationDataset,
-	TypeClassificationSchema,
-	TypeClassificationMetric,
-}
-
 // Type represents a named collection of records
 // Entities are supposed to represent resources, datasets and schema.
 // XXX(Aman): should Type names be case insensitive?
 type Type struct {
-	Name           TypeName           `json:"name"`
-	Classification TypeClassification `json:"classification"`
+	Name TypeName `json:"name"`
 }
 
 func (e Type) Normalise() Type {
 	normal := e
 	normal.Name = TypeName(strings.ToLower(e.Name.String()))
-	normal.Classification = TypeClassification(
-		strings.ToLower(e.Classification.String()),
-	)
 	return normal
 }
 
 // AllSupportedTypes holds a list of all supported types struct
 var AllSupportedTypes = []Type{
 	{
-		Name:           TypeNameTable,
-		Classification: TypeClassificationResource,
+		Name: TypeNameTable,
 	},
 	{
-		Name:           TypeNameJob,
-		Classification: TypeClassificationResource,
+		Name: TypeNameJob,
 	},
 	{
-		Name:           TypeNameDashboard,
-		Classification: TypeClassificationResource,
+		Name: TypeNameDashboard,
 	},
 	{
-		Name:           TypeNameTopic,
-		Classification: TypeClassificationResource,
+		Name: TypeNameTopic,
 	},
 }
 

@@ -16,7 +16,6 @@ $ curl -XPUT http://localhost:8080/v1/types/ \
   -d '
 {
     "name": "piccolo",
-    "classification": "resource",
     "record_attributes": {
         "id": "deployment_name",
         "title": "name",
@@ -80,7 +79,6 @@ $ curl http://localhost:8080/v1/search?text\=one | jq
     "title": "deployment x 03",
     "id": "03",
     "type": "piccolo",
-    "classification": "resource",
     "description": "the last one",
     "labels": {
       "owner": "kami"
@@ -90,7 +88,6 @@ $ curl http://localhost:8080/v1/search?text\=one | jq
     "title": "deployment x 01",
     "id": "01",
     "type": "piccolo",
-    "classification": "resource",
     "description": "this is the one",
     "labels": {
       "owner": "jhon.doe"
@@ -99,7 +96,7 @@ $ curl http://localhost:8080/v1/search?text\=one | jq
 ]
 ```
 
-The search is run against ALL fields of the records. Notice how your data was transformed into the search results? This transformation is governed by the type definition. Most fields in type.record\_attributes map to one of the search result fields, apart from classification and type which come from the type definitions. labels can be any root level key in the record. Don’t worry if every record does not contain every label field. If any label field is missing from record, it’s just dropped from the search response for that record.
+The search is run against ALL fields of the records. Notice how your data was transformed into the search results? This transformation is governed by the type definition. Most fields in type.record\_attributes map to one of the search result fields, apart from type which come from the type definitions. labels can be any root level key in the record. Don’t worry if every record does not contain every label field. If any label field is missing from record, it’s just dropped from the search response for that record.
 
 Search can be further restricted by specifying a filter criteria. For instance, if you wish to restrict the search to piccolo deployments that belong to `kami`, you can run:
 
@@ -110,7 +107,6 @@ $ curl http://localhost:8080/v1/search?text=one&filter.owner=kami | jq
     "title": "deployment x 03",
     "id": "03",
     "type": "piccolo",
-    "classification": "resource",
     "description": "the last one",
     "labels": {
       "owner": "kami"
@@ -131,7 +127,6 @@ $ curl -XPUT http://localhost:8080/v1/types/ \
   -d '
 {
     "name": "sensu",
-    "classification": "dataset",
     "record_attributes": {
         "id": "id",
         "title": "name",
@@ -174,7 +169,6 @@ $ curl -XPUT http://localhost:8080/v1/types/ \
   -d '
 {
     "name": "piccolo",
-    "classification": "resource",
     "record_attributes": {
         "id": "deployment_name",
         "title": "name",
@@ -293,7 +287,6 @@ $ curl -XPUT http://localhost:8080/v1/types/ \
   -d '
 {
     "name": "piccolo",
-    "classification": "resource",
     "record_attributes": {
         "id": "deployment_name",
         "title": "name",
