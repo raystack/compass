@@ -86,10 +86,6 @@ func setupV1TypeRoutes(router *mux.Router, th *handlers.TypeHandler, rh *handler
 		Methods(http.MethodGet, http.MethodHead).
 		HandlerFunc(th.Get)
 
-	router.Path(typeURL+"/{name}").
-		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(th.Find)
-
 	recordURL := "/v1/types/{name}/records"
 	router.Path(recordURL).
 		Methods(http.MethodPut, http.MethodHead).

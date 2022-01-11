@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/record"
 	"github.com/sirupsen/logrus"
 )
@@ -54,30 +53,6 @@ func (h *TypeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, results)
-}
-
-func (h *TypeHandler) Find(w http.ResponseWriter, r *http.Request) {
-	name := mux.Vars(r)["name"]
-	recordType, err := h.typeRepo.GetByName(r.Context(), name)
-	if err != nil {
-		h.log.
-			Errorf("error fetching type \"%s\": %v", name, err)
-
-		var status int
-		var msg string
-		if _, ok := err.(record.ErrNoSuchType); ok {
-			status = http.StatusNotFound
-			msg = err.Error()
-		} else {
-			status = http.StatusInternalServerError
-			msg = fmt.Sprintf("error fetching type \"%s\"", name)
-		}
-
-		writeJSONError(w, status, msg)
-		return
-	}
-
-	writeJSON(w, http.StatusOK, recordType)
 }
 
 func (h *TypeHandler) parseSelectQuery(raw string) (fields []string) {

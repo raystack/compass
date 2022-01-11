@@ -70,23 +70,6 @@ paths:
                     count:
                       type: number
                       example: 1800
-  "/v1/types/{name}":
-    get:
-      tags:
-        - Type
-      summary: fetch a type details
-      description: used to fetch type details by its name
-      produces:
-        - "application/json"
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: "#/definitions/Type"
-        404:
-          description: type not found
-          schema:
-            $ref: "#/definitions/Error"
   "/v1/types/{name}/records":
     put:
       tags:
