@@ -244,11 +244,9 @@ func loadTestFixture(esClient *elasticsearch.Client, filePath string) (err error
 		return
 	}
 
-	typeRepo := store.NewTypeRepository(esClient)
-
 	ctx := context.TODO()
 	for _, testdata := range data {
-		if err := typeRepo.CreateOrReplace(ctx, testdata.TypeName); err != nil {
+		if err := store.Migrate(ctx, esClient, testdata.TypeName); err != nil {
 			return err
 		}
 		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(testdata.TypeName.String())

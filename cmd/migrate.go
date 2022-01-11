@@ -65,12 +65,11 @@ func migratePostgres() (err error) {
 func migrateElasticsearch() (err error) {
 	log.Info("Initiating ES client...")
 	esClient := initElasticsearch(config)
-	tr := esStore.NewTypeRepository(esClient)
 	for _, supportedTypeName := range record.AllSupportedTypes {
 		log.Infof("Migrating %q type\n", supportedTypeName)
 		ctx, cancel := context.WithTimeout(context.Background(), esMigrationTimeout)
 		defer cancel()
-		err = tr.CreateOrReplace(ctx, supportedTypeName)
+		err = esStore.Migrate(ctx, esClient, supportedTypeName)
 		if err != nil {
 			err = errors.Wrapf(err, "error creating/replacing type: %q", supportedTypeName)
 			return

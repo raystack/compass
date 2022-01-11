@@ -45,10 +45,9 @@ func TestTypeHandler(t *testing.T) {
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
 					er.On("GetAll", context.Background()).Return(map[record.TypeName]int{
-						record.TypeName("table"):         10,
-						record.TypeName("topic"):         30,
-						record.TypeName("job"):           15,
-						record.TypeName("to_be_ignored"): 100,
+						record.TypeName("table"): 10,
+						record.TypeName("topic"): 30,
+						record.TypeName("job"):   15,
 					}, nil)
 				},
 				PostCheck: func(t *testing.T, tc *testCase, resp *http.Response) error {

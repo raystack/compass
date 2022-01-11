@@ -2,13 +2,22 @@ package elasticsearch
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 
+	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/odpf/columbus/record"
 	"github.com/olivere/elastic/v7"
+	"github.com/pkg/errors"
+)
+
+const (
+	// name of the search index
+	defaultSearchIndex = "universe"
 )
 
 // used as a utility for generating request payload
@@ -74,4 +83,90 @@ func errorReasonFromResponse(res *esapi.Response) string {
 // (transport errors)
 func elasticSearchError(err error) error {
 	return fmt.Errorf("elasticsearch error: %w", err)
+}
+
+type Client struct {
+	*elasticsearch.Client
+}
+
+func Migrate(ctx context.Context, cli *elasticsearch.Client, recordTypeName record.TypeName) error {
+	if isReservedName(recordTypeName.String()) {
+		return record.ErrReservedTypeName{TypeName: recordTypeName.String()}
+	}
+
+	// checking for the existence of index before adding the metadata entry
+	idxExists, err := indexExists(ctx, cli, recordTypeName.String())
+	if err != nil {
+		return errors.Wrap(err, "error checking index existance")
+	}
+
+	// update/create the index
+	if idxExists {
+		err = updateIdx(ctx, cli, recordTypeName)
+		if err != nil {
+			err = errors.Wrap(err, "error updating index")
+		}
+	} else {
+		err = createIdx(ctx, cli, recordTypeName)
+		if err != nil {
+			err = errors.Wrap(err, "error creating index")
+		}
+	}
+
+	return err
+}
+
+func createIdx(ctx context.Context, cli *elasticsearch.Client, recordTypeName record.TypeName) error {
+	indexSettings := buildTypeIndexSettings()
+	res, err := cli.Indices.Create(
+		recordTypeName.String(),
+		cli.Indices.Create.WithBody(strings.NewReader(indexSettings)),
+		cli.Indices.Create.WithContext(ctx),
+	)
+	if err != nil {
+		return elasticSearchError(err)
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		return fmt.Errorf("error creating index %q: %s", recordTypeName, errorReasonFromResponse(res))
+	}
+	return nil
+}
+
+func updateIdx(ctx context.Context, cli *elasticsearch.Client, recordTypeName record.TypeName) error {
+	res, err := cli.Indices.PutMapping(
+		strings.NewReader(typeIndexMapping),
+		cli.Indices.PutMapping.WithIndex(recordTypeName.String()),
+		cli.Indices.PutMapping.WithContext(ctx),
+	)
+	if err != nil {
+		return elasticSearchError(err)
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		return fmt.Errorf("error updating index %q: %s", recordTypeName, errorReasonFromResponse(res))
+	}
+	return nil
+}
+
+func buildTypeIndexSettings() string {
+	return fmt.Sprintf(indexSettingsTemplate, typeIndexMapping, defaultSearchIndex)
+}
+
+// checks for the existence of an index
+func indexExists(ctx context.Context, cli *elasticsearch.Client, name string) (bool, error) {
+	res, err := cli.Indices.Exists(
+		[]string{name},
+		cli.Indices.Exists.WithContext(ctx),
+	)
+	if err != nil {
+		return false, fmt.Errorf("indexExists: %w", elasticSearchError(err))
+	}
+	defer res.Body.Close()
+	return res.StatusCode == 200, nil
+}
+
+func isReservedName(name string) bool {
+	name = strings.ToLower(name)
+	return name == defaultSearchIndex
 }

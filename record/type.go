@@ -60,8 +60,6 @@ var AllSupportedTypes = []TypeName{
 // TypeRepository is an interface to a storage
 // system for types.
 type TypeRepository interface {
-	CreateOrReplace(context.Context, TypeName) error
-	GetByName(context.Context, string) (TypeName, error)
 	// GetAll fetches types with records count for all available types
 	// and returns them as a map[typeName]count
 	GetAll(context.Context) (map[TypeName]int, error)

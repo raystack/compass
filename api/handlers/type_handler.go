@@ -38,11 +38,6 @@ func (h *TypeHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	results := []TypeWithCount{}
 	for typName, count := range typesNameMap {
-		if err := typName.IsValid(); err != nil {
-			h.log.
-				WithError(err).Warn("excluding type from the Get Type response")
-			continue
-		}
 		results = append(results, TypeWithCount{
 			Name:  typName.String(),
 			Count: count,
