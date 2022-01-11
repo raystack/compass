@@ -26,7 +26,7 @@ func NewTypeHandler(log logrus.FieldLogger, er record.TypeRepository) *TypeHandl
 }
 
 func (h *TypeHandler) Get(w http.ResponseWriter, r *http.Request) {
-	types, err := h.typeRepo.GetAll(r.Context())
+	typesName, err := h.typeRepo.GetAll(r.Context())
 	if err != nil {
 		internalServerError(w, h.log, "error fetching types")
 		return
@@ -39,16 +39,16 @@ func (h *TypeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type TypeWithCount struct {
-		record.Type
-		Count int `json:"count"`
+		Name  string `json:"name"`
+		Count int    `json:"count"`
 	}
 
 	results := []TypeWithCount{}
-	for _, typ := range types {
-		count, _ := counts[typ.Name.String()]
+	for _, typName := range typesName {
+		count, _ := counts[typName.String()]
 
 		results = append(results, TypeWithCount{
-			Type:  typ,
+			Name:  typName.String(),
 			Count: count,
 		})
 	}

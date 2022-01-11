@@ -3,7 +3,6 @@ package record
 import (
 	"context"
 	"fmt"
-	"strings"
 )
 
 // TypeFields describe what fields of an Type
@@ -36,41 +35,25 @@ func (tn TypeName) String() string {
 	return string(tn)
 }
 
-// Type represents a named collection of records
-// Entities are supposed to represent resources, datasets and schema.
-// XXX(Aman): should Type names be case insensitive?
+// Type represents a typename wrapped in a JSON
 type Type struct {
 	Name TypeName `json:"name"`
 }
 
-func (e Type) Normalise() Type {
-	normal := e
-	normal.Name = TypeName(strings.ToLower(e.Name.String()))
-	return normal
-}
-
 // AllSupportedTypes holds a list of all supported types struct
-var AllSupportedTypes = []Type{
-	{
-		Name: TypeNameTable,
-	},
-	{
-		Name: TypeNameJob,
-	},
-	{
-		Name: TypeNameDashboard,
-	},
-	{
-		Name: TypeNameTopic,
-	},
+var AllSupportedTypes = []TypeName{
+	TypeNameTable,
+	TypeNameJob,
+	TypeNameDashboard,
+	TypeNameTopic,
 }
 
 // TypeRepository is an interface to a storage
 // system for types.
 type TypeRepository interface {
-	CreateOrReplace(context.Context, Type) error
-	GetByName(context.Context, string) (Type, error)
-	GetAll(context.Context) ([]Type, error)
+	CreateOrReplace(context.Context, TypeName) error
+	GetByName(context.Context, string) (TypeName, error)
+	GetAll(context.Context) ([]TypeName, error)
 	// GetRecordsCount fetches records count for all available types
 	// and returns them as a map[type]count
 	GetRecordsCount(context.Context) (map[string]int, error)

@@ -31,16 +31,10 @@ func TestTypeHandler(t *testing.T) {
 			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
 		}
 
-		var types = []record.Type{
-			{
-				Name: "table",
-			},
-			{
-				Name: "topic",
-			},
-			{
-				Name: "job",
-			},
+		var types = []record.TypeName{
+			"table",
+			"topic",
+			"job",
 		}
 
 		var testCases = []testCase{
@@ -48,7 +42,7 @@ func TestTypeHandler(t *testing.T) {
 				Description:  "should return 500 status code if failing to fetch types",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
-					er.On("GetAll", context.Background()).Return([]record.Type{}, errors.New("failed to fetch type"))
+					er.On("GetAll", context.Background()).Return([]record.TypeName{}, errors.New("failed to fetch type"))
 				},
 			},
 			{
@@ -122,9 +116,7 @@ func TestTypeHandler(t *testing.T) {
 			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
 		}
 
-		sampleType := record.Type{
-			Name: "sample",
-		}
+		sampleType := record.TypeName("sample")
 
 		var testCases = []testCase{
 			{
@@ -139,7 +131,7 @@ func TestTypeHandler(t *testing.T) {
 					if err != nil {
 						return err
 					}
-					var actual record.Type
+					var actual record.TypeName
 					err = json.Unmarshal(respBody, &actual)
 					if err != nil {
 						return err
@@ -153,7 +145,7 @@ func TestTypeHandler(t *testing.T) {
 				TypeName:     "sample",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
-					er.On("GetByName", ctx, "sample").Return(record.Type{}, errors.New("failed to fetch type"))
+					er.On("GetByName", ctx, "sample").Return(record.TypeName(""), errors.New("failed to fetch type"))
 				},
 			},
 			{
@@ -161,7 +153,7 @@ func TestTypeHandler(t *testing.T) {
 				TypeName:     "wrong_type",
 				ExpectStatus: http.StatusNotFound,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
-					er.On("GetByName", ctx, "wrong_type").Return(record.Type{}, record.ErrNoSuchType{
+					er.On("GetByName", ctx, "wrong_type").Return(record.TypeName(""), record.ErrNoSuchType{
 						TypeName: "wrong_type",
 					})
 				},

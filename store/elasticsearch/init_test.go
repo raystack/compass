@@ -11,9 +11,7 @@ import (
 	"github.com/odpf/columbus/store/elasticsearch/testutil"
 )
 
-var daggerType = record.Type{
-	Name: "dagger",
-}
+var daggerType = record.TypeName("dagger")
 
 var esTestServer *testutil.ElasticsearchTestServer
 

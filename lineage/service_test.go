@@ -42,7 +42,7 @@ func TestService(t *testing.T) {
 	ctx := context.Background()
 	t.Run("smoke test", func(t *testing.T) {
 		entRepo := new(mock.TypeRepository)
-		entRepo.On("GetAll", ctx).Return([]record.Type{}, nil)
+		entRepo.On("GetAll", ctx).Return([]record.TypeName{}, nil)
 		recordRepoFac := new(mock.RecordRepositoryFactory)
 		lineage.NewService(entRepo, recordRepoFac, lineage.Config{})
 	})

@@ -27,8 +27,8 @@ func TestRecordHandler(t *testing.T) {
 	)
 
 	tr := new(mock.TypeRepository)
-	tr.On("GetByName", ctx, typeName).Return(record.Type{Name: record.TypeName(typeName)}, nil)
-	tr.On("GetByName", ctx, "invalid").Return(record.Type{}, record.ErrNoSuchType{TypeName: "invalid"})
+	tr.On("GetByName", ctx, typeName).Return(record.TypeName(typeName), nil)
+	tr.On("GetByName", ctx, "invalid").Return(record.TypeName(""), record.ErrNoSuchType{TypeName: "invalid"})
 
 	t.Run("UpsertBulk", func(t *testing.T) {
 		var validPayload = `[{"urn": "test dagger", "name": "de-dagger-test", "service": "kafka", "data": {}}]`

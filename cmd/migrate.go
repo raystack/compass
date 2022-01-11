@@ -66,16 +66,16 @@ func migrateElasticsearch() (err error) {
 	log.Info("Initiating ES client...")
 	esClient := initElasticsearch(config)
 	tr := esStore.NewTypeRepository(esClient)
-	for _, supportedType := range record.AllSupportedTypes {
-		log.Infof("Migrating %q type\n", supportedType.Name)
+	for _, supportedTypeName := range record.AllSupportedTypes {
+		log.Infof("Migrating %q type\n", supportedTypeName)
 		ctx, cancel := context.WithTimeout(context.Background(), esMigrationTimeout)
 		defer cancel()
-		err = tr.CreateOrReplace(ctx, supportedType)
+		err = tr.CreateOrReplace(ctx, supportedTypeName)
 		if err != nil {
-			err = errors.Wrapf(err, "error creating/replacing type: %q", supportedType.Name)
+			err = errors.Wrapf(err, "error creating/replacing type: %q", supportedTypeName)
 			return
 		}
-		log.Infof("created/updated %q type\n", supportedType.Name)
+		log.Infof("created/updated %q type\n", supportedTypeName)
 	}
 	return
 }

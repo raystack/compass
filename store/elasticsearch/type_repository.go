@@ -39,32 +39,32 @@ type TypeRepository struct {
 	cli *elasticsearch.Client
 }
 
-func (repo *TypeRepository) CreateOrReplace(ctx context.Context, recordType record.Type) error {
-	if isReservedName(recordType.Name.String()) {
-		return record.ErrReservedTypeName{TypeName: recordType.Name.String()}
+func (repo *TypeRepository) CreateOrReplace(ctx context.Context, recordTypeName record.TypeName) error {
+	if isReservedName(recordTypeName.String()) {
+		return record.ErrReservedTypeName{TypeName: recordTypeName.String()}
 	}
 
 	// checking for the existence of index before adding the metadata
 	// entry, because if this operation fails, we don't have to do a rollback
 	// for the addTypeToMetaIdx()
-	idxExists, err := indexExists(ctx, repo.cli, recordType.Name.String())
+	idxExists, err := indexExists(ctx, repo.cli, recordTypeName.String())
 	if err != nil {
 		return errors.Wrap(err, "error checking index existance")
 	}
 
 	// save the type information to meta index
-	if err := repo.addTypeToMetaIdx(ctx, recordType); err != nil {
+	if err := repo.addTypeToMetaIdx(ctx, recordTypeName); err != nil {
 		return errors.Wrap(err, "error storing type")
 	}
 
 	// update/create the index
 	if idxExists {
-		err = repo.updateIdx(ctx, recordType)
+		err = repo.updateIdx(ctx, recordTypeName)
 		if err != nil {
 			err = errors.Wrap(err, "error updating index")
 		}
 	} else {
-		err = repo.createIdx(ctx, recordType)
+		err = repo.createIdx(ctx, recordTypeName)
 		if err != nil {
 			err = errors.Wrap(err, "error creating index")
 		}
@@ -73,7 +73,7 @@ func (repo *TypeRepository) CreateOrReplace(ctx context.Context, recordType reco
 	return err
 }
 
-func (repo *TypeRepository) GetByName(ctx context.Context, name string) (record.Type, error) {
+func (repo *TypeRepository) GetByName(ctx context.Context, name string) (record.TypeName, error) {
 	res, err := repo.cli.Get(
 		defaultMetaIndex,
 		name,
@@ -81,26 +81,28 @@ func (repo *TypeRepository) GetByName(ctx context.Context, name string) (record.
 		repo.cli.Get.WithContext(ctx),
 	)
 	if err != nil {
-		return record.Type{}, elasticSearchError(err)
+		return record.TypeName(""), elasticSearchError(err)
 	}
 	defer res.Body.Close()
 	if res.IsError() {
 		if res.StatusCode == http.StatusNotFound {
-			return record.Type{}, record.ErrNoSuchType{TypeName: name}
+			return record.TypeName(""), record.ErrNoSuchType{TypeName: name}
 		}
-		return record.Type{}, fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
+		return record.TypeName(""), fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
 	}
 
 	var response = struct {
-		Source record.Type `json:"_source"`
+		Source struct {
+			Name string `json:"name"`
+		} `json:"_source"`
 	}{}
 	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-		return record.Type{}, fmt.Errorf("error parsing elasticsearch response: %w", err)
+		return record.TypeName(""), fmt.Errorf("error parsing elasticsearch response: %w", err)
 	}
-	return response.Source, nil
+	return record.TypeName(response.Source.Name), nil
 }
 
-func (repo *TypeRepository) GetAll(ctx context.Context) ([]record.Type, error) {
+func (repo *TypeRepository) GetAll(ctx context.Context) ([]record.TypeName, error) {
 	body := strings.NewReader(getAllQuery)
 	resp, err := repo.cli.Search(
 		repo.cli.Search.WithIndex(defaultMetaIndex),
@@ -125,7 +127,7 @@ func (repo *TypeRepository) GetAll(ctx context.Context) ([]record.Type, error) {
 	var results = repo.toTypeList(response)
 	var scrollID = response.ScrollID
 	for {
-		var types []record.Type
+		var types []record.TypeName
 		types, scrollID, err = repo.scrollRecord(ctx, scrollID)
 		if err != nil {
 			return nil, fmt.Errorf("error scrolling results: %v", err)
@@ -172,9 +174,9 @@ func (repo *TypeRepository) GetRecordsCount(ctx context.Context) (map[string]int
 	return results, nil
 }
 
-func (repo *TypeRepository) addTypeToMetaIdx(ctx context.Context, recordType record.Type) error {
+func (repo *TypeRepository) addTypeToMetaIdx(ctx context.Context, recordTypeName record.TypeName) error {
 	raw := bytes.NewBuffer(nil)
-	err := json.NewEncoder(raw).Encode(recordType)
+	err := json.NewEncoder(raw).Encode(record.Type{Name: recordTypeName})
 	if err != nil {
 		return fmt.Errorf("error encoding type: %w", err)
 	}
@@ -182,7 +184,7 @@ func (repo *TypeRepository) addTypeToMetaIdx(ctx context.Context, recordType rec
 	res, err := repo.cli.Index(
 		defaultMetaIndex,
 		raw,
-		repo.cli.Index.WithDocumentID(recordType.Name.String()),
+		repo.cli.Index.WithDocumentID(recordTypeName.String()),
 		repo.cli.Index.WithRefresh("true"),
 		repo.cli.Index.WithContext(ctx),
 	)
@@ -196,10 +198,10 @@ func (repo *TypeRepository) addTypeToMetaIdx(ctx context.Context, recordType rec
 	return nil
 }
 
-func (repo *TypeRepository) createIdx(ctx context.Context, recordType record.Type) error {
+func (repo *TypeRepository) createIdx(ctx context.Context, recordTypeName record.TypeName) error {
 	indexSettings := buildTypeIndexSettings()
 	res, err := repo.cli.Indices.Create(
-		recordType.Name.String(),
+		recordTypeName.String(),
 		repo.cli.Indices.Create.WithBody(strings.NewReader(indexSettings)),
 		repo.cli.Indices.Create.WithContext(ctx),
 	)
@@ -208,15 +210,15 @@ func (repo *TypeRepository) createIdx(ctx context.Context, recordType record.Typ
 	}
 	defer res.Body.Close()
 	if res.IsError() {
-		return fmt.Errorf("error creating index %q: %s", recordType.Name, errorReasonFromResponse(res))
+		return fmt.Errorf("error creating index %q: %s", recordTypeName, errorReasonFromResponse(res))
 	}
 	return nil
 }
 
-func (repo *TypeRepository) updateIdx(ctx context.Context, recordType record.Type) error {
+func (repo *TypeRepository) updateIdx(ctx context.Context, recordTypeName record.TypeName) error {
 	res, err := repo.cli.Indices.PutMapping(
 		strings.NewReader(typeIndexMapping),
-		repo.cli.Indices.PutMapping.WithIndex(recordType.Name.String()),
+		repo.cli.Indices.PutMapping.WithIndex(recordTypeName.String()),
 		repo.cli.Indices.PutMapping.WithContext(ctx),
 	)
 	if err != nil {
@@ -224,12 +226,12 @@ func (repo *TypeRepository) updateIdx(ctx context.Context, recordType record.Typ
 	}
 	defer res.Body.Close()
 	if res.IsError() {
-		return fmt.Errorf("error updating index %q: %s", recordType.Name, errorReasonFromResponse(res))
+		return fmt.Errorf("error updating index %q: %s", recordTypeName, errorReasonFromResponse(res))
 	}
 	return nil
 }
 
-func (repo *TypeRepository) scrollRecord(ctx context.Context, scrollID string) ([]record.Type, string, error) {
+func (repo *TypeRepository) scrollRecord(ctx context.Context, scrollID string) ([]record.TypeName, string, error) {
 	resp, err := repo.cli.Scroll(
 		repo.cli.Scroll.WithScrollID(scrollID),
 		repo.cli.Scroll.WithScroll(defaultScrollTimeout),
@@ -253,10 +255,10 @@ func (repo *TypeRepository) scrollRecord(ctx context.Context, scrollID string) (
 	return repo.toTypeList(response), response.ScrollID, nil
 }
 
-func (repo *TypeRepository) toTypeList(response typeResponse) []record.Type {
-	types := []record.Type{}
+func (repo *TypeRepository) toTypeList(response typeResponse) []record.TypeName {
+	types := []record.TypeName{}
 	for _, hit := range response.Hits.Hits {
-		types = append(types, hit.Source)
+		types = append(types, record.TypeName(hit.Source.Name))
 	}
 
 	return types
@@ -323,8 +325,10 @@ type typeResponse struct {
 	ScrollID string `json:"_scroll_id"`
 	Hits     struct {
 		Hits []struct {
-			Index  string      `json:"_index"`
-			Source record.Type `json:"_source"`
+			Index  string `json:"_index"`
+			Source struct {
+				Name string `json:"name"`
+			} `json:"_source"`
 		} `json:"hits"`
 	} `json:"hits"`
 }
