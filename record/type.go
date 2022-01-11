@@ -57,7 +57,6 @@ type TypeRepository interface {
 	// GetRecordsCount fetches records count for all available types
 	// and returns them as a map[type]count
 	GetRecordsCount(context.Context) (map[string]int, error)
-	Delete(context.Context, string) error
 }
 
 type ErrNoSuchType struct {

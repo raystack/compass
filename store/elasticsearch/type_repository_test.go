@@ -54,11 +54,6 @@ func TestTypeRepository(t *testing.T) {
 				},
 			},
 			{
-				Title:      "should not accept any type that has the same name as the metadata index",
-				TypeName:   record.TypeName("meta"), // defaultMetaIndex
-				ShouldFail: true,
-			},
-			{
 				Title:      "should not accept any type that has the same name as the search index",
 				TypeName:   record.TypeName("universe"), // defaultSearchIndex
 				ShouldFail: true,
@@ -191,24 +186,7 @@ func TestTypeRepository(t *testing.T) {
 	})
 
 	t.Run("GetAll", func(t *testing.T) {
-		t.Run("should return empty list if no type is available", func(t *testing.T) {
-			esClient := esTestServer.NewClient()
-			repo := store.NewTypeRepository(esClient)
-			_, err := esClient.Indices.Create("meta")
-			if err != nil {
-				t.Errorf("error creating meta index: %v", err)
-				return
-			}
-
-			types, err := repo.GetAll(ctx)
-			if err != nil {
-				t.Errorf("error getting type from repository: %v", err)
-				return
-			}
-
-			assert.Equal(t, []record.TypeName{}, types)
-		})
-		t.Run("should return types from elasticsearch", func(t *testing.T) {
+		t.Run("should return all supported types", func(t *testing.T) {
 			repo := store.NewTypeRepository(esTestServer.NewClient())
 			err := repo.CreateOrReplace(ctx, daggerType)
 			if err != nil {
@@ -228,16 +206,13 @@ func TestTypeRepository(t *testing.T) {
 
 	t.Run("GetRecordsCount", func(t *testing.T) {
 		t.Run("should return empty map if no type is available", func(t *testing.T) {
-			esClient := esTestServer.NewClient()
 			repo := store.NewTypeRepository(esTestServer.NewClient())
-			_, err := esClient.Indices.Create("meta")
-			require.NoError(t, err)
-
 			counts, err := repo.GetRecordsCount(ctx)
 			require.NoError(t, err)
 
 			assert.Equal(t, map[string]int{}, counts)
 		})
+
 		t.Run("should return map with 0 count if type has not been populated yet", func(t *testing.T) {
 			typ := record.TypeName("test")
 			repo := store.NewTypeRepository(esTestServer.NewClient())
@@ -252,6 +227,7 @@ func TestTypeRepository(t *testing.T) {
 			}
 			assert.Equal(t, expected, counts)
 		})
+
 		t.Run("should return maps of record count with type as its key", func(t *testing.T) {
 			typName := record.TypeName("test2")
 			records := []record.Record{
@@ -278,66 +254,6 @@ func TestTypeRepository(t *testing.T) {
 				"test2": len(records),
 			}
 			assert.Equal(t, expected, counts)
-		})
-	})
-
-	t.Run("Delete", func(t *testing.T) {
-		typeName := "delete-type"
-		esClient := esTestServer.NewClient()
-		repo := store.NewTypeRepository(esClient)
-
-		t.Run("should return error if type name is reserved key", func(t *testing.T) {
-			var err error
-
-			err = repo.Delete(ctx, "meta")
-			assert.NotNil(t, err)
-			assert.IsType(t, record.ErrReservedTypeName{}, err)
-
-			err = repo.Delete(ctx, "universe")
-			assert.NotNil(t, err)
-			assert.IsType(t, record.ErrReservedTypeName{}, err)
-		})
-
-		t.Run("should delete type by its name", func(t *testing.T) {
-			err := repo.CreateOrReplace(ctx, record.TypeName(typeName))
-			if err != nil {
-				t.Errorf("error writing to elasticsearch: %v", err)
-				return
-			}
-			err = repo.Delete(ctx, typeName)
-			if err != nil {
-				t.Errorf("error deleting type: %v", err)
-				return
-			}
-
-			_, err = repo.GetByName(ctx, typeName)
-			assert.NotNil(t, err)
-			assert.IsType(t, record.ErrNoSuchType{}, err)
-		})
-
-		t.Run("should delete the type's elasticsearch index", func(t *testing.T) {
-			_, err := esClient.Indices.Create(typeName)
-			if err != nil {
-				t.Errorf("error creating index: %v", err)
-				return
-			}
-			err = repo.Delete(ctx, typeName)
-			if err != nil {
-				t.Errorf("error deleting type: %v", err)
-				return
-			}
-
-			response, err := esClient.Indices.Get([]string{typeName})
-			if err != nil {
-				t.Errorf("error getting indices type: %v", err)
-				return
-			}
-			var indices map[string]interface{}
-			if err := json.NewDecoder(response.Body).Decode(&indices); err != nil {
-				t.Error(err)
-				return
-			}
-			assert.Nil(t, indices[typeName])
 		})
 	})
 }

@@ -301,9 +301,6 @@ func (sr *Searcher) buildFunctionScoreQuery(query elastic.Query, rankBy string) 
 func (sr *Searcher) toSearchResults(hits []searchHit) []discovery.SearchResult {
 	results := []discovery.SearchResult{}
 	for _, hit := range hits {
-		if hit.Index == defaultMetaIndex {
-			continue
-		}
 		r := hit.Source
 		results = append(results, discovery.SearchResult{
 			Type:        hit.Index,
