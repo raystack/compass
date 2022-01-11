@@ -167,22 +167,36 @@ func TestTypeRepository(t *testing.T) {
 	})
 
 	t.Run("GetByName", func(t *testing.T) {
-		repo := store.NewTypeRepository(esTestServer.NewClient())
-		err := repo.CreateOrReplace(ctx, daggerType)
-		if err != nil {
-			t.Errorf("error writing to elasticsearch: %v", err)
-			return
-		}
+		t.Run("should return valid type if index exist", func(t *testing.T) {
+			repo := store.NewTypeRepository(esTestServer.NewClient())
+			err := repo.CreateOrReplace(ctx, validType)
+			if err != nil {
+				t.Errorf("error writing to elasticsearch: %v", err)
+				return
+			}
 
-		typeFromRepo, err := repo.GetByName(ctx, daggerType.String())
-		if err != nil {
-			t.Errorf("error getting type from repository: %v", err)
-			return
-		}
-		if reflect.DeepEqual(daggerType, typeFromRepo) == false {
-			t.Errorf("expected repository to return %#v, returned %#v instead", daggerType, typeFromRepo)
-			return
-		}
+			typeFromRepo, err := repo.GetByName(ctx, validType.String())
+			if err != nil {
+				t.Errorf("error getting type from repository: %v", err)
+				return
+			}
+			if reflect.DeepEqual(validType, typeFromRepo) == false {
+				t.Errorf("expected repository to return %#v, returned %#v instead", validType, typeFromRepo)
+				return
+			}
+		})
+
+		t.Run("should return error if type is not valid", func(t *testing.T) {
+			repo := store.NewTypeRepository(esTestServer.NewClient())
+			err := repo.CreateOrReplace(ctx, daggerType)
+			if err != nil {
+				t.Errorf("error writing to elasticsearch: %v", err)
+				return
+			}
+
+			_, err = repo.GetByName(ctx, daggerType.String())
+			assert.EqualError(t, err, "invalid type name: dagger")
+		})
 	})
 
 	t.Run("GetAll", func(t *testing.T) {

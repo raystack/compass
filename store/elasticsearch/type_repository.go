@@ -62,6 +62,10 @@ func (repo *TypeRepository) CreateOrReplace(ctx context.Context, recordTypeName 
 }
 
 func (repo *TypeRepository) GetByName(ctx context.Context, name string) (record.TypeName, error) {
+	tName := record.TypeName(name)
+	if err := tName.IsValid(); err != nil {
+		return record.TypeName(""), err
+	}
 	isExist, err := indexExists(ctx, repo.cli, name)
 	if err != nil {
 		return record.TypeName(""), errors.Wrapf(err, "error checking index type existence: %s", name)
