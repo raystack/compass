@@ -15,29 +15,19 @@ type TypeRepository struct {
 	mock.Mock
 }
 
-func (repo *TypeRepository) CreateOrReplace(ctx context.Context, e record.Type) error {
+func (repo *TypeRepository) CreateOrReplace(ctx context.Context, e record.TypeName) error {
 	args := repo.Called(ctx, e)
 	return args.Error(0)
 }
 
-func (repo *TypeRepository) GetByName(ctx context.Context, name string) (record.Type, error) {
+func (repo *TypeRepository) GetByName(ctx context.Context, name string) (record.TypeName, error) {
 	args := repo.Called(ctx, name)
-	return args.Get(0).(record.Type), args.Error(1)
+	return args.Get(0).(record.TypeName), args.Error(1)
 }
 
-func (repo *TypeRepository) GetAll(ctx context.Context) ([]record.Type, error) {
+func (repo *TypeRepository) GetAll(ctx context.Context) (map[record.TypeName]int, error) {
 	args := repo.Called(ctx)
-	return args.Get(0).([]record.Type), args.Error(1)
-}
-
-func (repo *TypeRepository) GetRecordsCount(ctx context.Context) (map[string]int, error) {
-	args := repo.Called(ctx)
-	return args.Get(0).(map[string]int), args.Error(1)
-}
-
-func (repo *TypeRepository) Delete(ctx context.Context, typeName string) error {
-	args := repo.Called(ctx, typeName)
-	return args.Error(0)
+	return args.Get(0).(map[record.TypeName]int), args.Error(1)
 }
 
 type RecordRepositoryFactory struct {

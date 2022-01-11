@@ -15,8 +15,8 @@ import (
 )
 
 type searchTestData struct {
-	Type    string          `json:"type"`
-	Records []record.Record `json:"records"`
+	TypeName record.TypeName `json:"type"`
+	Records  []record.Record `json:"records"`
 }
 
 func TestSearcherSearch(t *testing.T) {
@@ -244,14 +244,12 @@ func loadTestFixture(esClient *elasticsearch.Client, filePath string) (err error
 		return
 	}
 
-	typeRepo := store.NewTypeRepository(esClient)
-
 	ctx := context.TODO()
 	for _, testdata := range data {
-		if err := typeRepo.CreateOrReplace(ctx, record.Type{Name: testdata.Type}); err != nil {
+		if err := store.Migrate(ctx, esClient, testdata.TypeName); err != nil {
 			return err
 		}
-		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(testdata.Type)
+		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(testdata.TypeName.String())
 		if err := recordRepo.CreateOrReplaceMany(ctx, testdata.Records); err != nil {
 			return err
 		}

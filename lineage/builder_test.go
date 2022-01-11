@@ -13,20 +13,19 @@ import (
 )
 
 type dataset struct {
-	Type    record.Type
-	Records []record.Record
+	TypeName record.TypeName
+	Records  []record.Record
 }
 
 func initialiseRepos(datasets []dataset) (record.TypeRepository, discovery.RecordRepositoryFactory) {
 	var (
-		tr      = new(mock.TypeRepository)
-		rrf     = new(mock.RecordRepositoryFactory)
-		typList = []record.Type{}
-		ctx     = context.Background()
+		tr          = new(mock.TypeRepository)
+		rrf         = new(mock.RecordRepositoryFactory)
+		typNameList = map[record.TypeName]int{}
+		ctx         = context.Background()
 	)
 	for _, dataset := range datasets {
-		typ := dataset.Type.Normalise()
-		tr.On("GetByName", typ.Name).Return(typ, nil)
+		tr.On("GetByName", dataset.TypeName).Return(dataset.TypeName, nil)
 		recordIterator := new(mock.RecordIterator)
 		recordIterator.On("Scan").Return(true).Once()
 		recordIterator.On("Scan").Return(false).Once()
@@ -34,10 +33,10 @@ func initialiseRepos(datasets []dataset) (record.TypeRepository, discovery.Recor
 		recordIterator.On("Close").Return(nil)
 		recordRepo := new(mock.RecordRepository)
 		recordRepo.On("GetAllIterator", ctx).Return(recordIterator, nil)
-		rrf.On("For", typ.Name).Return(recordRepo, nil)
-		typList = append(typList, typ)
+		rrf.On("For", dataset.TypeName.String()).Return(recordRepo, nil)
+		typNameList[dataset.TypeName] = 1
 	}
-	tr.On("GetAll", ctx).Return(typList, nil)
+	tr.On("GetAll", ctx).Return(typNameList, nil)
 	return tr, rrf
 }
 
@@ -66,10 +65,7 @@ func TestDefaultBuilder(t *testing.T) {
 				Description: "smoke test",
 				Datasets: []dataset{
 					{
-						Type: record.Type{
-							Name:           "test",
-							Classification: record.TypeClassificationResource,
-						},
+						TypeName: record.TypeName("test"),
 						Records: []record.Record{
 							{
 								Urn:     "1",
@@ -93,10 +89,7 @@ func TestDefaultBuilder(t *testing.T) {
 				Description: "internal ref test (simple)",
 				Datasets: []dataset{
 					{
-						Type: record.Type{
-							Name:           "internal-ref",
-							Classification: record.TypeClassificationResource,
-						},
+						TypeName: record.TypeName("internal-ref"),
 						Records: []record.Record{
 							{
 								Urn:     "1",
@@ -135,10 +128,7 @@ func TestDefaultBuilder(t *testing.T) {
 				Description: "external ref test",
 				Datasets: []dataset{
 					{
-						Type: record.Type{
-							Name:           "producer",
-							Classification: record.TypeClassificationResource,
-						},
+						TypeName: record.TypeName("producer"),
 						Records: []record.Record{
 							{
 								Urn: "data-booking",
@@ -146,10 +136,7 @@ func TestDefaultBuilder(t *testing.T) {
 						},
 					},
 					{
-						Type: record.Type{
-							Name:           "consumer",
-							Classification: record.TypeClassificationResource,
-						},
+						TypeName: record.TypeName("consumer"),
 						Records: []record.Record{
 							{
 								Urn: "booking-aggregator",

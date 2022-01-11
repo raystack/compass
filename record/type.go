@@ -3,7 +3,6 @@ package record
 import (
 	"context"
 	"fmt"
-	"strings"
 )
 
 // TypeFields describe what fields of an Type
@@ -21,52 +20,49 @@ type TypeFields struct {
 	Labels      []string `json:"labels"`
 }
 
-// TypeClassification specifies a class for an Type
-type TypeClassification string
+// TypeName specifies a supported type name
+type TypeName string
 
-// list of valid classifications
 var (
-	TypeClassificationResource TypeClassification = "resource"
-	TypeClassificationDataset  TypeClassification = "dataset"
-	TypeClassificationSchema   TypeClassification = "schema"
-	TypeClassificationMetric   TypeClassification = "metric"
+	TypeNameTable     TypeName = "table"
+	TypeNameJob       TypeName = "job"
+	TypeNameDashboard TypeName = "dashboard"
+	TypeNameTopic     TypeName = "topic"
 )
 
-// AllTypeClassifications holds a list of valid classifications
-var AllTypeClassifications = []TypeClassification{
-	TypeClassificationResource,
-	TypeClassificationDataset,
-	TypeClassificationSchema,
-	TypeClassificationMetric,
+// String cast TypeName to string
+func (tn TypeName) String() string {
+	return string(tn)
 }
 
-// Type represents a named collection of records
-// Entities are supposed to represent resources, datasets and schema.
-// XXX(Aman): should Type names be case insensitive?
+// IsValid will validate whether the typename is valid or not
+func (tn TypeName) IsValid() error {
+	switch tn {
+	case TypeNameTable, TypeNameJob, TypeNameDashboard, TypeNameTopic:
+		return nil
+	}
+	return fmt.Errorf("invalid type name: %s", tn)
+}
+
+// Type represents a typename wrapped in a JSON
 type Type struct {
-	Name           string             `json:"name"`
-	Classification TypeClassification `json:"classification"`
+	Name TypeName `json:"name"`
 }
 
-func (e Type) Normalise() Type {
-	normal := e
-	normal.Name = strings.ToLower(e.Name)
-	normal.Classification = TypeClassification(
-		strings.ToLower(string(e.Classification)),
-	)
-	return normal
+// AllSupportedTypes holds a list of all supported types struct
+var AllSupportedTypes = []TypeName{
+	TypeNameTable,
+	TypeNameJob,
+	TypeNameDashboard,
+	TypeNameTopic,
 }
 
 // TypeRepository is an interface to a storage
 // system for types.
 type TypeRepository interface {
-	CreateOrReplace(context.Context, Type) error
-	GetByName(context.Context, string) (Type, error)
-	GetAll(context.Context) ([]Type, error)
-	// GetRecordsCount fetches records count for all available types
-	// and returns them as a map[type]count
-	GetRecordsCount(context.Context) (map[string]int, error)
-	Delete(context.Context, string) error
+	// GetAll fetches types with records count for all available types
+	// and returns them as a map[typeName]count
+	GetAll(context.Context) (map[TypeName]int, error)
 }
 
 type ErrNoSuchType struct {

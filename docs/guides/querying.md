@@ -44,7 +44,6 @@ This will return a list of search results. Here’s a sample response:
     "title": "g-godata-id-seg-enriched-booking-dagger",
     "id": "g-godata-id-seg-enriched-booking-dagger",
     "type": "dagger",
-    "classification": "resource",
     "description": "",
     "labels": {
       "flink_name": "g-godata-id-playground",
@@ -55,7 +54,6 @@ This will return a list of search results. Here’s a sample response:
     "title": "g-godata-id-booking-bach-test-dagger",
     "id": "g-godata-id-booking-bach-test-dagger",
     "type": "dagger",
-    "classification": "resource",
     "description": "",
     "labels": {
       "flink_name": "g-godata-id-playground",
@@ -66,7 +64,6 @@ This will return a list of search results. Here’s a sample response:
     "title": "g-godata-id-booking-bach-test-3-dagger",
     "id": "g-godata-id-booking-bach-test-3-dagger",
     "type": "dagger",
-    "classification": "resource",
     "description": "",
     "labels": {
       "flink_name": "g-godata-id-playground",

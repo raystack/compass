@@ -23,12 +23,10 @@ import (
 func TestRecordHandler(t *testing.T) {
 	var (
 		ctx      = tmock.AnythingOfType("*context.valueCtx")
-		typeName = "existing-type"
+		typeName = record.TypeNameTable.String()
 	)
 
 	tr := new(mock.TypeRepository)
-	tr.On("GetByName", ctx, typeName).Return(record.Type{Name: typeName}, nil)
-	tr.On("GetByName", ctx, "invalid").Return(record.Type{}, record.ErrNoSuchType{TypeName: "invalid"})
 
 	t.Run("UpsertBulk", func(t *testing.T) {
 		var validPayload = `[{"urn": "test dagger", "name": "de-dagger-test", "service": "kafka", "data": {}}]`
@@ -297,6 +295,7 @@ func TestRecordHandler(t *testing.T) {
 			})
 		}
 	})
+
 	t.Run("GetByType", func(t *testing.T) {
 		type testCase struct {
 			Description  string
