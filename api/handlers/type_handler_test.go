@@ -25,38 +25,30 @@ func TestTypeHandler(t *testing.T) {
 			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
 		}
 
-		var types = []record.TypeName{
-			"table",
-			"topic",
-			"job",
-		}
-
 		var testCases = []testCase{
 			{
 				Description:  "should return 500 status code if failing to fetch types",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
-					er.On("GetAll", context.Background()).Return([]record.TypeName{}, errors.New("failed to fetch type"))
+					er.On("GetAll", context.Background()).Return(map[record.TypeName]int{}, errors.New("failed to fetch type"))
 				},
 			},
 			{
 				Description:  "should return 500 status code if failing to fetch counts",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
-					er.On("GetAll", context.Background()).Return(types, nil)
-					er.On("GetRecordsCount", context.Background()).Return(map[string]int{}, errors.New("failed to fetch records count"))
+					er.On("GetAll", context.Background()).Return(map[record.TypeName]int{}, errors.New("failed to fetch records count"))
 				},
 			},
 			{
-				Description:  "should return all types with its record count",
+				Description:  "should return all valid types with its record count",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
-					er.On("GetAll", context.Background()).Return(types, nil)
-					er.On("GetRecordsCount", context.Background()).Return(map[string]int{
-						"table":         10,
-						"topic":         30,
-						"job":           15,
-						"to_be_ignored": 100,
+					er.On("GetAll", context.Background()).Return(map[record.TypeName]int{
+						record.TypeName("table"):         10,
+						record.TypeName("topic"):         30,
+						record.TypeName("job"):           15,
+						record.TypeName("to_be_ignored"): 100,
 					}, nil)
 				},
 				PostCheck: func(t *testing.T, tc *testCase, resp *http.Response) error {

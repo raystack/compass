@@ -73,7 +73,7 @@ func (repo *TypeRepository) GetByName(ctx context.Context, name string) (record.
 	return record.TypeName(name), nil
 }
 
-func (repo *TypeRepository) GetAll(ctx context.Context) ([]record.TypeName, error) {
+func (repo *TypeRepository) GetAll(ctx context.Context) (map[record.TypeName]int, error) {
 	resp, err := repo.cli.Cat.Indices(
 		repo.cli.Cat.Indices.WithFormat("json"),
 		repo.cli.Cat.Indices.WithContext(ctx),
@@ -91,39 +91,13 @@ func (repo *TypeRepository) GetAll(ctx context.Context) ([]record.TypeName, erro
 		return nil, errors.Wrap(err, "error decoding es response")
 	}
 
-	results := []record.TypeName{}
-	for _, index := range indices {
-		results = append(results, record.TypeName(index.Index))
-	}
-
-	return results, nil
-}
-
-func (repo *TypeRepository) GetRecordsCount(ctx context.Context) (map[string]int, error) {
-	resp, err := repo.cli.Cat.Indices(
-		repo.cli.Cat.Indices.WithFormat("json"),
-		repo.cli.Cat.Indices.WithContext(ctx),
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "error from es client")
-	}
-	defer resp.Body.Close()
-	if resp.IsError() {
-		return nil, fmt.Errorf("error from es server: %s", errorReasonFromResponse(resp))
-	}
-	var indices []esIndex
-	err = json.NewDecoder(resp.Body).Decode(&indices)
-	if err != nil {
-		return nil, errors.Wrap(err, "error decoding es response")
-	}
-
-	results := map[string]int{}
+	results := map[record.TypeName]int{}
 	for _, index := range indices {
 		count, err := strconv.Atoi(index.DocsCount)
 		if err != nil {
 			return results, errors.Wrap(err, "error converting docs count to a number")
 		}
-		results[index.Index] = count
+		results[record.TypeName(index.Index)] = count
 	}
 
 	return results, nil

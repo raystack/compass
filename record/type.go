@@ -35,6 +35,15 @@ func (tn TypeName) String() string {
 	return string(tn)
 }
 
+// IsValid will validate whether the typename is valid or not
+func (tn TypeName) IsValid() error {
+	switch tn {
+	case TypeNameTable, TypeNameJob, TypeNameDashboard, TypeNameTopic:
+		return nil
+	}
+	return fmt.Errorf("invalid type name: %s", tn)
+}
+
 // Type represents a typename wrapped in a JSON
 type Type struct {
 	Name TypeName `json:"name"`
@@ -53,10 +62,9 @@ var AllSupportedTypes = []TypeName{
 type TypeRepository interface {
 	CreateOrReplace(context.Context, TypeName) error
 	GetByName(context.Context, string) (TypeName, error)
-	GetAll(context.Context) ([]TypeName, error)
-	// GetRecordsCount fetches records count for all available types
-	// and returns them as a map[type]count
-	GetRecordsCount(context.Context) (map[string]int, error)
+	// GetAll fetches types with records count for all available types
+	// and returns them as a map[typeName]count
+	GetAll(context.Context) (map[TypeName]int, error)
 }
 
 type ErrNoSuchType struct {

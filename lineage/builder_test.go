@@ -21,7 +21,7 @@ func initialiseRepos(datasets []dataset) (record.TypeRepository, discovery.Recor
 	var (
 		tr          = new(mock.TypeRepository)
 		rrf         = new(mock.RecordRepositoryFactory)
-		typNameList = []record.TypeName{}
+		typNameList = map[record.TypeName]int{}
 		ctx         = context.Background()
 	)
 	for _, dataset := range datasets {
@@ -34,7 +34,7 @@ func initialiseRepos(datasets []dataset) (record.TypeRepository, discovery.Recor
 		recordRepo := new(mock.RecordRepository)
 		recordRepo.On("GetAllIterator", ctx).Return(recordIterator, nil)
 		rrf.On("For", dataset.TypeName.String()).Return(recordRepo, nil)
-		typNameList = append(typNameList, dataset.TypeName)
+		typNameList[dataset.TypeName] = 1
 	}
 	tr.On("GetAll", ctx).Return(typNameList, nil)
 	return tr, rrf

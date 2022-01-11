@@ -25,15 +25,9 @@ func NewTypeHandler(log logrus.FieldLogger, er record.TypeRepository) *TypeHandl
 }
 
 func (h *TypeHandler) Get(w http.ResponseWriter, r *http.Request) {
-	typesName, err := h.typeRepo.GetAll(r.Context())
+	typesNameMap, err := h.typeRepo.GetAll(r.Context())
 	if err != nil {
 		internalServerError(w, h.log, "error fetching types")
-		return
-	}
-
-	counts, err := h.typeRepo.GetRecordsCount(r.Context())
-	if err != nil {
-		internalServerError(w, h.log, "error fetching records counts")
 		return
 	}
 
@@ -43,9 +37,12 @@ func (h *TypeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	results := []TypeWithCount{}
-	for _, typName := range typesName {
-		count, _ := counts[typName.String()]
-
+	for typName, count := range typesNameMap {
+		if err := typName.IsValid(); err != nil {
+			h.log.
+				WithError(err).Warn("excluding type from the Get Type response")
+			continue
+		}
 		results = append(results, TypeWithCount{
 			Name:  typName.String(),
 			Count: count,

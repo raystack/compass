@@ -186,31 +186,12 @@ func TestTypeRepository(t *testing.T) {
 	})
 
 	t.Run("GetAll", func(t *testing.T) {
-		t.Run("should return all supported types", func(t *testing.T) {
-			repo := store.NewTypeRepository(esTestServer.NewClient())
-			err := repo.CreateOrReplace(ctx, daggerType)
-			if err != nil {
-				t.Errorf("error writing to elasticsearch: %v", err)
-				return
-			}
-
-			types, err := repo.GetAll(ctx)
-			if err != nil {
-				t.Errorf("error getting type from repository: %v", err)
-				return
-			}
-			var expect = []record.TypeName{daggerType}
-			assert.Equal(t, expect, types)
-		})
-	})
-
-	t.Run("GetRecordsCount", func(t *testing.T) {
 		t.Run("should return empty map if no type is available", func(t *testing.T) {
 			repo := store.NewTypeRepository(esTestServer.NewClient())
-			counts, err := repo.GetRecordsCount(ctx)
+			counts, err := repo.GetAll(ctx)
 			require.NoError(t, err)
 
-			assert.Equal(t, map[string]int{}, counts)
+			assert.Equal(t, map[record.TypeName]int{}, counts)
 		})
 
 		t.Run("should return map with 0 count if type has not been populated yet", func(t *testing.T) {
@@ -219,11 +200,11 @@ func TestTypeRepository(t *testing.T) {
 			err := repo.CreateOrReplace(ctx, typ)
 			require.NoError(t, err)
 
-			counts, err := repo.GetRecordsCount(ctx)
+			counts, err := repo.GetAll(ctx)
 			require.NoError(t, err)
 
-			expected := map[string]int{
-				"test": 0,
+			expected := map[record.TypeName]int{
+				record.TypeName("test"): 0,
 			}
 			assert.Equal(t, expected, counts)
 		})
@@ -247,11 +228,11 @@ func TestTypeRepository(t *testing.T) {
 			err = rr.CreateOrReplaceMany(ctx, records)
 			require.NoError(t, err)
 
-			counts, err := repo.GetRecordsCount(ctx)
+			counts, err := repo.GetAll(ctx)
 			require.NoError(t, err)
 
-			expected := map[string]int{
-				"test2": len(records),
+			expected := map[record.TypeName]int{
+				record.TypeName("test2"): len(records),
 			}
 			assert.Equal(t, expected, counts)
 		})

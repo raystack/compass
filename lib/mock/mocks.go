@@ -25,14 +25,9 @@ func (repo *TypeRepository) GetByName(ctx context.Context, name string) (record.
 	return args.Get(0).(record.TypeName), args.Error(1)
 }
 
-func (repo *TypeRepository) GetAll(ctx context.Context) ([]record.TypeName, error) {
+func (repo *TypeRepository) GetAll(ctx context.Context) (map[record.TypeName]int, error) {
 	args := repo.Called(ctx)
-	return args.Get(0).([]record.TypeName), args.Error(1)
-}
-
-func (repo *TypeRepository) GetRecordsCount(ctx context.Context) (map[string]int, error) {
-	args := repo.Called(ctx)
-	return args.Get(0).(map[string]int), args.Error(1)
+	return args.Get(0).(map[record.TypeName]int), args.Error(1)
 }
 
 type RecordRepositoryFactory struct {
