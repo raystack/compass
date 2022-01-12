@@ -4,7 +4,7 @@ info:
   description: "Data Discovery and Lineage Service"
   version: 0.1.0
 paths:
-  "/v1/lineage":
+  "/v1beta1/lineage":
     get:
       tags:
         - Lineage
@@ -28,7 +28,7 @@ paths:
           description: record not found
           schema:
             $ref: "#/definitions/Error"
-  "/v1/lineage/{type}/{record}":
+  "/v1beta1/lineage/{type}/{record}":
     get:
       tags:
         - Lineage
@@ -49,7 +49,7 @@ paths:
           description: invalid type requested
           schema:
             $ref: "#/definitions/Error"
-  "/v1/types":
+  "/v1beta1/types":
     get:
       tags:
         - Type
@@ -70,7 +70,7 @@ paths:
                     count:
                       type: number
                       example: 1800
-  "/v1/types/{name}/records":
+  "/v1beta1/types/{name}/records":
     put:
       tags:
         - Record
@@ -132,7 +132,7 @@ paths:
           description: not found
           schema:
             $ref: "#/definitions/Error"
-  "/v1/types/{name}/records/{id}":
+  "/v1beta1/types/{name}/records/{id}":
     delete:
       tags:
         - Record
@@ -158,7 +158,7 @@ paths:
           description: type or record cannot be found
           schema:
             $ref: "#/definitions/Error"
-  "/v1/types/{name}/{id}":
+  "/v1beta1/types/{name}/{id}":
     get:
       tags:
         - Record
@@ -183,7 +183,7 @@ paths:
           description: document or type does not exist
           schema:
             $ref: "#/definitions/Error"
-  "/v1/search":
+  "/v1beta1/search":
     get:
       tags:
         - Search
@@ -236,7 +236,7 @@ paths:
           description: misconfigured request parameters
           schema:
             $ref: "#/definitions/Error"
-  "/v1/tags":
+  "/v1beta1/tags":
     post:
       tags:
         - Tag
@@ -273,7 +273,7 @@ paths:
           description: internal server error
           schema:
             $ref: "#/definitions/Error"
-  "/v1/tags/templates":
+  "/v1beta1/tags/templates":
     get:
       tags:
         - Tag
@@ -327,7 +327,7 @@ paths:
           description: internal server error
           schema:
             $ref: "#/definitions/Error"
-  "/v1/tags/templates/{template_urn}":
+  "/v1beta1/tags/templates/{template_urn}":
     get:
       tags:
         - Tag
@@ -417,7 +417,7 @@ paths:
           description: internal server error
           schema:
             $ref: "#/definitions/Error"
-  "/v1/tags/types/{type}/records/{record_urn}":
+  "/v1beta1/tags/types/{type}/records/{record_urn}":
     get:
       tags:
         - Tag
@@ -445,7 +445,7 @@ paths:
           description: internal server error
           schema:
             $ref: "#/definitions/Error"
-  "/v1/tags/types/{type}/records/{record_urn}/templates/{template_urn}":
+  "/v1beta1/tags/types/{type}/records/{record_urn}/templates/{template_urn}":
     get:
       tags:
         - Tag

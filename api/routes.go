@@ -1,8 +1,6 @@
 package api
 
 import (
-	"net/http"
-
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/discovery"
@@ -21,15 +19,16 @@ type Config struct {
 	LineageProvider         handlers.LineageProvider
 }
 
-func RegisterRoutes(router *mux.Router, config Config) {
-	// By default mux will decode url and then match the decoded url against the route
-	// we reverse the steps by telling mux to use encoded path to match the url
-	// then we manually decode via custom middleware (decodeURLMiddleware).
-	//
-	// This is to allow urn that has "/" to be matched correctly to the route
-	router.UseEncodedPath()
-	router.Use(decodeURLMiddleware(config.Logger))
+type Handlers struct {
+	Type        *handlers.TypeHandler
+	Record      *handlers.RecordHandler
+	Search      *handlers.SearchHandler
+	Lineage     *handlers.LineageHandler
+	Tag         *handlers.TagHandler
+	TagTemplate *handlers.TagTemplateHandler
+}
 
+func initHandlers(config Config) *Handlers {
 	typeHandler := handlers.NewTypeHandler(
 		config.Logger.WithField("reporter", "type-handler"),
 		config.TypeRepository,
@@ -58,68 +57,32 @@ func RegisterRoutes(router *mux.Router, config Config) {
 		config.TagTemplateService,
 	)
 
+	return &Handlers{
+		Type:        typeHandler,
+		Record:      recordHandler,
+		Search:      searchHandler,
+		Lineage:     lineageHandler,
+		Tag:         tagHandler,
+		TagTemplate: tagTemplateHandler,
+	}
+}
+
+func RegisterRoutes(router *mux.Router, config Config) {
+	// By default mux will decode url and then match the decoded url against the route
+	// we reverse the steps by telling mux to use encoded path to match the url
+	// then we manually decode via custom middleware (decodeURLMiddleware).
+	//
+	// This is to allow urn that has "/" to be matched correctly to the route
+	router.UseEncodedPath()
+	router.Use(decodeURLMiddleware(config.Logger))
+
+	handlerCollection := initHandlers(config)
+
 	router.PathPrefix("/ping").Handler(handlers.NewHeartbeatHandler())
-	setupV1TypeRoutes(router, typeHandler, recordHandler)
-	setupV1TagRoutes(router, "/v1/tags", tagHandler, tagTemplateHandler)
 
-	router.Path("/v1/search").
-		Methods(http.MethodGet).
-		HandlerFunc(searchHandler.Search)
+	v1Beta1SubRouter := router.PathPrefix("/v1beta1").Subrouter()
+	setupV1Beta1Router(v1Beta1SubRouter, handlerCollection)
 
-	router.Path("/v1/search/suggest").
-		Methods(http.MethodGet).
-		HandlerFunc(searchHandler.Suggest)
-
-	router.PathPrefix("/v1/lineage/{type}/{id}").
-		Methods(http.MethodGet).
-		HandlerFunc(lineageHandler.GetLineage)
-
-	router.PathPrefix("/v1/lineage").
-		Methods(http.MethodGet).
-		HandlerFunc(lineageHandler.ListLineage)
-}
-
-func setupV1TypeRoutes(router *mux.Router, th *handlers.TypeHandler, rh *handlers.RecordHandler) {
-	typeURL := "/v1/types"
-
-	router.Path(typeURL).
-		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(th.Get)
-
-	recordURL := "/v1/types/{name}/records"
-	router.Path(recordURL).
-		Methods(http.MethodPut, http.MethodHead).
-		HandlerFunc(rh.UpsertBulk)
-
-	router.Path(recordURL).
-		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(rh.GetByType)
-
-	router.Path(recordURL+"/{id}").
-		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(rh.GetOneByType)
-
-	router.Path(recordURL+"/{id}").
-		Methods(http.MethodDelete, http.MethodHead).
-		HandlerFunc(rh.Delete)
-
-}
-
-func setupV1TagRoutes(router *mux.Router, baseURL string, th *handlers.TagHandler, tth *handlers.TagTemplateHandler) {
-	router.Methods(http.MethodPost).Path(baseURL).HandlerFunc(th.Create)
-
-	url := baseURL + "/types/{type}/records/{record_urn}/templates/{template_urn}"
-	router.Methods(http.MethodGet).Path(url).HandlerFunc(th.FindByRecordAndTemplate)
-	router.Methods(http.MethodPut).Path(url).HandlerFunc(th.Update)
-	router.Methods(http.MethodDelete).Path(url).HandlerFunc(th.Delete)
-
-	router.Methods(http.MethodGet).Path(baseURL + "/types/{type}/records/{record_urn}").HandlerFunc(th.GetByRecord)
-
-	templateURL := baseURL + "/templates"
-	router.Methods(http.MethodGet).Path(templateURL).HandlerFunc(tth.Index)
-	router.Methods(http.MethodPost).Path(templateURL).HandlerFunc(tth.Create)
-	router.Methods(http.MethodGet).Path(templateURL + "/{template_urn}").HandlerFunc(tth.Find)
-	router.Methods(http.MethodPut).Path(templateURL + "/{template_urn}").HandlerFunc(tth.Update)
-	router.Methods(http.MethodDelete).Path(templateURL + "/{template_urn}").HandlerFunc(tth.Delete)
-
+	v1SubRouter := router.PathPrefix("/v1").Subrouter()
+	setupV1Beta1Router(v1SubRouter, handlerCollection)
 }
