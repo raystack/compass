@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE TABLE templates (
     urn text PRIMARY KEY,
     display_name text NOT NULL,
@@ -32,3 +34,5 @@ CREATE TABLE tags (
 );
 
 CREATE UNIQUE INDEX tags_idx_record_urn_record_type_field_id ON tags(record_urn,record_type,field_id);
+
+COMMIT;

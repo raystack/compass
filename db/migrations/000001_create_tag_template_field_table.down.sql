@@ -1,5 +1,9 @@
+BEGIN;
+
 DROP TABLE IF EXISTS tags;
 
 DROP TABLE IF EXISTS fields;
 
 DROP TABLE IF EXISTS templates;
+
+COMMIT;

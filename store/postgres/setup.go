@@ -8,15 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type Config struct {
-	Host     string
-	Port     int
-	Name     string
-	User     string
-	Password string
-	SSLMode  string
-}
-
 // NewClient initializes database connection
 func NewClient(cfg Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(

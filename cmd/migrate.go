@@ -5,6 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/golang-migrate/migrate/v4"
+
+	// Register database postgres
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	// Register golang migrate source file
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+
 	"github.com/odpf/columbus/record"
 	esStore "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/odpf/columbus/store/postgres"
@@ -38,27 +45,27 @@ func Migrate() {
 
 func migratePostgres() (err error) {
 	log.Info("Initiating Postgres client...")
-	pgClient, err := postgres.NewClient(postgres.Config{
-		Port:     config.DBPort,
-		Host:     config.DBHost,
-		Name:     config.DBName,
-		User:     config.DBUser,
-		Password: config.DBPassword,
-		SSLMode:  config.DBSSLMode,
-	})
+
+	pgConfig := postgres.NewConfig(config.ServerHost, config.DBPort, config.DBName, config.DBUser, config.DBPassword, config.DBSSLMode)
+
+	m, err := migrate.New(
+		"file://db/migrations",
+		pgConfig.ConnectionURL("postgres"))
 	if err != nil {
+		log.Errorf("failed to prepare migration: %s", err)
 		return err
+
 	}
 
 	log.Info("Migrating DB...")
-	if err := pgClient.AutoMigrate(
-		&postgres.Template{},
-		&postgres.Field{},
-		&postgres.Tag{},
-	); err != nil {
+	if err := m.Up(); err != nil {
+		if err == migrate.ErrNoChange {
+			log.Infof("migration - no changes")
+			return nil
+		}
+		log.Errorf("migration failed: %s", err)
 		return err
 	}
-
 	return nil
 }
 
