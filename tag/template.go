@@ -1,6 +1,7 @@
 package tag
 
 import (
+	"context"
 	"time"
 )
 
@@ -29,8 +30,8 @@ type Field struct {
 
 // TemplateRepository is a contract to communicate with the primary store
 type TemplateRepository interface {
-	Create(template *Template) error
-	Read(filter Template) ([]Template, error)
-	Update(template *Template) error
-	Delete(filter Template) error
+	Create(ctx context.Context, template *Template) error
+	Read(ctx context.Context, filter Template) ([]Template, error)
+	Update(ctx context.Context, template *Template) error
+	Delete(ctx context.Context, filter Template) error
 }

@@ -36,7 +36,7 @@ func (h *TagTemplateHandler) Create(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	err := h.service.Create(&requestBody)
+	err := h.service.Create(r.Context(), &requestBody)
 	if errors.As(err, new(tag.DuplicateTemplateError)) {
 		writeJSONError(w, http.StatusConflict, err.Error())
 		return
@@ -55,7 +55,7 @@ func (h *TagTemplateHandler) Index(w http.ResponseWriter, r *http.Request) {
 	queryDomainTemplate := tag.Template{
 		URN: urn,
 	}
-	listOfDomainTemplate, err := h.service.Index(queryDomainTemplate)
+	listOfDomainTemplate, err := h.service.Index(r.Context(), queryDomainTemplate)
 	if err != nil {
 		internalServerError(w, h.logger, fmt.Sprintf("error finding templates: %s", err.Error()))
 		return
@@ -78,7 +78,7 @@ func (h *TagTemplateHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	requestBody.URN = urn
-	err := h.service.Update(&requestBody)
+	err := h.service.Update(r.Context(), &requestBody)
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
@@ -104,7 +104,7 @@ func (h *TagTemplateHandler) Find(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	domainTemplate, err := h.service.Find(urn)
+	domainTemplate, err := h.service.Find(r.Context(), urn)
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
@@ -126,7 +126,7 @@ func (h *TagTemplateHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.service.Delete(urn)
+	err := h.service.Delete(r.Context(), urn)
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())
 		return

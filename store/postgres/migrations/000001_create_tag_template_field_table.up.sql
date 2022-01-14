@@ -9,7 +9,7 @@ CREATE TABLE templates (
 );
 
 CREATE TABLE fields (
-    id bigint PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     urn text NOT NULL,
     display_name text NOT NULL,
     description text NOT NULL,
@@ -24,10 +24,10 @@ CREATE TABLE fields (
 CREATE UNIQUE INDEX fields_idx_urn_template_urn ON fields(urn,template_urn);
 
 CREATE TABLE tags (
-    id bigint PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     value text NOT NULL,
-    record_type text NOT NULL,
     record_urn text NOT NULL,
+    record_type text NOT NULL,
     field_id bigint NOT NULL REFERENCES fields(id) ON DELETE CASCADE,
     created_at timestamp,
     updated_at timestamp

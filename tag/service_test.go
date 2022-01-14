@@ -1,6 +1,7 @@
 package tag_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -163,6 +164,8 @@ func (s *ServiceTestSuite) TestValidate() {
 }
 
 func (s *ServiceTestSuite) TestCreate() {
+	ctx := context.TODO()
+
 	s.Run("should return error if value validations return error", func() {
 		s.Setup()
 		t := s.buildTag()
@@ -175,7 +178,7 @@ func (s *ServiceTestSuite) TestCreate() {
 			},
 		}
 
-		actualError := s.tagService.Create(&t)
+		actualError := s.tagService.Create(ctx, &t)
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
 	})
@@ -186,7 +189,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		template := s.buildTemplate()
 		s.templateRepo.On("Read", s.templateQuery(template.URN)).Return(nil, errors.New("random error"))
 
-		err := s.tagService.Create(&t)
+		err := s.tagService.Create(ctx, &t)
 		s.Error(err)
 	})
 
@@ -205,7 +208,7 @@ func (s *ServiceTestSuite) TestCreate() {
 			},
 		}
 
-		actualError := s.tagService.Create(&t)
+		actualError := s.tagService.Create(ctx, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
@@ -226,7 +229,7 @@ func (s *ServiceTestSuite) TestCreate() {
 			},
 		}
 
-		actualError := s.tagService.Create(&t)
+		actualError := s.tagService.Create(ctx, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
@@ -247,7 +250,7 @@ func (s *ServiceTestSuite) TestCreate() {
 			},
 		}
 
-		actualError := s.tagService.Create(&t)
+		actualError := s.tagService.Create(ctx, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
@@ -260,7 +263,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		s.templateRepo.On("Read", s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
 		s.repository.On("Create", &t).Return(errors.New("random error"))
 
-		err := s.tagService.Create(&t)
+		err := s.tagService.Create(ctx, &t)
 		s.Error(err)
 	})
 
@@ -272,7 +275,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		s.templateRepo.On("Read", s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
 		s.repository.On("Create", &t).Return(nil)
 
-		actualError := s.tagService.Create(&t)
+		actualError := s.tagService.Create(ctx, &t)
 
 		s.NoError(actualError)
 	})
@@ -299,13 +302,15 @@ func (s *ServiceTestSuite) TestGetByRecord() {
 }
 
 func (s *ServiceTestSuite) TestFindByRecordAndTemplate() {
+	ctx := context.TODO()
+
 	s.Run("should return error if error retrieving template", func() {
 		s.Setup()
 
 		template := s.buildTemplate()
 		s.templateRepo.On("Read", s.templateQuery(template.URN)).Return(nil, errors.New("random error"))
 
-		_, err := s.tagService.FindByRecordAndTemplate("record-type", "record-urn", template.URN)
+		_, err := s.tagService.FindByRecordAndTemplate(ctx, "record-type", "record-urn", template.URN)
 		s.Error(err)
 	})
 
@@ -321,7 +326,7 @@ func (s *ServiceTestSuite) TestFindByRecordAndTemplate() {
 			TemplateURN: template.URN,
 		}).Return([]tag.Tag{}, nil)
 
-		_, err := s.tagService.FindByRecordAndTemplate(recordType, urn, template.URN)
+		_, err := s.tagService.FindByRecordAndTemplate(ctx, recordType, urn, template.URN)
 		s.ErrorIs(err, tag.NotFoundError{
 			Type:     recordType,
 			URN:      urn,
@@ -343,7 +348,7 @@ func (s *ServiceTestSuite) TestFindByRecordAndTemplate() {
 
 		expectedTag := t
 
-		actualTag, actualError := s.tagService.FindByRecordAndTemplate(t.RecordType, t.RecordURN, template.URN)
+		actualTag, actualError := s.tagService.FindByRecordAndTemplate(ctx, t.RecordType, t.RecordURN, template.URN)
 
 		s.EqualValues(expectedTag, actualTag)
 		s.NoError(actualError)
@@ -351,6 +356,8 @@ func (s *ServiceTestSuite) TestFindByRecordAndTemplate() {
 }
 
 func (s *ServiceTestSuite) TestUpdate() {
+	ctx := context.TODO()
+
 	s.Run("should return error if value validations return error", func() {
 		s.Setup()
 		t := s.buildTag()
@@ -362,7 +369,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 				"record_urn": "cannot be empty",
 			},
 		}
-		actualError := s.tagService.Update(&t)
+		actualError := s.tagService.Update(ctx, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
@@ -375,7 +382,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 		template := s.buildTemplate()
 		s.templateRepo.On("Read", s.templateQuery(template.URN)).Return(nil, errors.New("random error"))
 
-		err := s.tagService.Update(&t)
+		err := s.tagService.Update(ctx, &t)
 		s.Error(err)
 	})
 
@@ -391,7 +398,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 			TemplateURN: t.TemplateURN,
 		}).Return([]tag.Tag{}, nil)
 
-		err := s.tagService.Update(&t)
+		err := s.tagService.Update(ctx, &t)
 
 		s.Error(err)
 		s.ErrorIs(err, tag.NotFoundError{URN: t.RecordURN, Type: t.RecordType, Template: t.TemplateURN})
@@ -417,7 +424,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 			},
 		}
 
-		actualError := s.tagService.Update(&t)
+		actualError := s.tagService.Update(ctx, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
@@ -442,7 +449,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 			},
 		}
 
-		actualError := s.tagService.Update(&t)
+		actualError := s.tagService.Update(ctx, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
@@ -461,7 +468,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 		}).Return([]tag.Tag{t}, nil)
 		s.repository.On("Update", &t).Return(errors.New("random error"))
 
-		err := s.tagService.Update(&t)
+		err := s.tagService.Update(ctx, &t)
 		s.Error(err)
 	})
 
@@ -478,20 +485,22 @@ func (s *ServiceTestSuite) TestUpdate() {
 		}).Return([]tag.Tag{t}, nil)
 		s.repository.On("Update", &t).Return(nil)
 
-		actualError := s.tagService.Update(&t)
+		actualError := s.tagService.Update(ctx, &t)
 
 		s.NoError(actualError)
 	})
 }
 
 func (s *ServiceTestSuite) TestDelete() {
+	ctx := context.TODO()
+
 	s.Run("should return error if error retrieving template", func() {
 		s.Setup()
 
 		templateURN := "template-urn"
 		s.templateRepo.On("Read", s.templateQuery(templateURN)).Return(nil, errors.New("random error"))
 
-		err := s.tagService.Delete("record-type", "record-urn", templateURN)
+		err := s.tagService.Delete(ctx, "record-type", "record-urn", templateURN)
 		s.Error(err)
 	})
 
@@ -508,7 +517,7 @@ func (s *ServiceTestSuite) TestDelete() {
 			TemplateURN: template.URN,
 		}).Return(errors.New("random error"))
 
-		err := s.tagService.Delete(recordType, recordURN, template.URN)
+		err := s.tagService.Delete(ctx, recordType, recordURN, template.URN)
 		s.Error(err)
 	})
 }

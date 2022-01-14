@@ -3,6 +3,7 @@
 package mocks
 
 import (
+	"context"
 	tag "github.com/odpf/columbus/tag"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -13,8 +14,8 @@ type TemplateRepository struct {
 }
 
 // Create provides a mock function with given fields: template
-func (_m *TemplateRepository) Create(template *tag.Template) error {
-	ret := _m.Called(template)
+func (_m *TemplateRepository) Create(ctx context.Context,template *tag.Template) error {
+	ret := _m.Called(ctx,template)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(*tag.Template) error); ok {
@@ -27,8 +28,8 @@ func (_m *TemplateRepository) Create(template *tag.Template) error {
 }
 
 // Delete provides a mock function with given fields: filter
-func (_m *TemplateRepository) Delete(filter tag.Template) error {
-	ret := _m.Called(filter)
+func (_m *TemplateRepository) Delete(ctx context.Context, filter tag.Template) error {
+	ret := _m.Called(ctx, filter)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(tag.Template) error); ok {
@@ -41,8 +42,8 @@ func (_m *TemplateRepository) Delete(filter tag.Template) error {
 }
 
 // Read provides a mock function with given fields: filter
-func (_m *TemplateRepository) Read(filter tag.Template) ([]tag.Template, error) {
-	ret := _m.Called(filter)
+func (_m *TemplateRepository) Read(ctx context.Context, filter tag.Template) ([]tag.Template, error) {
+	ret := _m.Called(ctx, filter)
 
 	var r0 []tag.Template
 	if rf, ok := ret.Get(0).(func(tag.Template) []tag.Template); ok {
@@ -64,8 +65,8 @@ func (_m *TemplateRepository) Read(filter tag.Template) ([]tag.Template, error) 
 }
 
 // Update provides a mock function with given fields: template
-func (_m *TemplateRepository) Update(template *tag.Template) error {
-	ret := _m.Called(template)
+func (_m *TemplateRepository) Update(ctx context.Context, template *tag.Template) error {
+	ret := _m.Called(ctx, template)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(*tag.Template) error); ok {

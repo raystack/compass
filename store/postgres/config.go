@@ -1,6 +1,10 @@
 package postgres
 
-import "fmt"
+import (
+	"net"
+	"net/url"
+	"strconv"
+)
 
 type Config struct {
 	Host     string
@@ -12,30 +16,16 @@ type Config struct {
 }
 
 // ConnectionURL
-func (c *Config) ConnectionURL(driver string) string {
-	return fmt.Sprintf("%s://%s:%s@%s:%d/%s?sslmode=disable",
-		driver,
-		c.User,
-		c.Password,
-		c.Host,
-		c.Port,
-		c.Name,
-	)
-}
-
-func NewConfig(
-	host string,
-	port int,
-	name string,
-	user string,
-	password string,
-	sslMode string) Config {
-	return Config{
-		Host:     host,
-		Port:     port,
-		Name:     name,
-		User:     user,
-		Password: password,
-		SSLMode:  sslMode,
+func (c *Config) ConnectionURL() *url.URL {
+	pgURL := &url.URL{
+		Scheme: "postgres",
+		Host:   net.JoinHostPort(c.Host, strconv.Itoa(c.Port)),
+		User:   url.UserPassword(c.User, c.Password),
+		Path:   c.Name,
 	}
+	q := pgURL.Query()
+	q.Add("sslmode", "disable")
+	pgURL.RawQuery = q.Encode()
+
+	return pgURL
 }

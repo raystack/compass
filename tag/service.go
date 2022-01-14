@@ -1,6 +1,7 @@
 package tag
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/odpf/columbus/tag/validator"
@@ -29,11 +30,11 @@ func (s *Service) Validate(tag *Tag) error {
 }
 
 // Create handles business process for create
-func (s *Service) Create(tag *Tag) error {
+func (s *Service) Create(ctx context.Context, tag *Tag) error {
 	if err := s.Validate(tag); err != nil {
 		return err
 	}
-	template, err := s.templateService.Find(tag.TemplateURN)
+	template, err := s.templateService.Find(ctx, tag.TemplateURN)
 	if err != nil {
 		return errors.Wrap(err, "error finding template")
 	}
@@ -60,8 +61,8 @@ func (s *Service) GetByRecord(recordType, recordURN string) ([]Tag, error) {
 }
 
 // FindByRecordAndTemplate handles business process to get tags by its resource id and template id
-func (s *Service) FindByRecordAndTemplate(recordType, recordURN, templateURN string) (Tag, error) {
-	_, err := s.templateService.Find(templateURN)
+func (s *Service) FindByRecordAndTemplate(ctx context.Context, recordType, recordURN, templateURN string) (Tag, error) {
+	_, err := s.templateService.Find(ctx, templateURN)
 	if err != nil {
 		return Tag{}, err
 	}
@@ -79,8 +80,8 @@ func (s *Service) FindByRecordAndTemplate(recordType, recordURN, templateURN str
 }
 
 // Delete handles business process to delete a tag
-func (s *Service) Delete(recordType, recordURN, templateURN string) error {
-	_, err := s.templateService.Find(templateURN)
+func (s *Service) Delete(ctx context.Context, recordType, recordURN, templateURN string) error {
+	_, err := s.templateService.Find(ctx, templateURN)
 	if err != nil {
 		return errors.Wrap(err, "error finding template")
 	}
@@ -95,11 +96,11 @@ func (s *Service) Delete(recordType, recordURN, templateURN string) error {
 }
 
 // Update handles business process for update
-func (s *Service) Update(tag *Tag) error {
+func (s *Service) Update(ctx context.Context, tag *Tag) error {
 	if err := s.Validate(tag); err != nil {
 		return err
 	}
-	template, err := s.templateService.Find(tag.TemplateURN)
+	template, err := s.templateService.Find(ctx, tag.TemplateURN)
 	if err != nil {
 		return errors.Wrap(err, "error finding template")
 	}
