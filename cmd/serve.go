@@ -21,7 +21,6 @@ import (
 	esStore "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/columbus/tag"
-	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -44,12 +43,10 @@ func Serve() {
 	newRelicMonitor := initNewRelicMonitor(config)
 	statsdMonitor := initStatsdMonitor(config)
 	router := initRouter(esClient, newRelicMonitor, statsdMonitor, rootLogger)
-	c := cors.Default()
-	handler := c.Handler(router)
 
 	serverAddr := fmt.Sprintf("%s:%s", config.ServerHost, config.ServerPort)
 	log.Printf("starting http server on %s", serverAddr)
-	if err := http.ListenAndServe(serverAddr, handler); err != nil {
+	if err := http.ListenAndServe(serverAddr, router); err != nil {
 		log.Errorf("listen and serve: %v", err)
 	}
 }
