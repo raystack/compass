@@ -4,7 +4,6 @@ go 1.16
 
 require (
 	github.com/MakeNowJust/heredoc v1.0.0
-	github.com/alecthomas/assert v0.0.0-20170929043011-405dbfeb8e38
 	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/elastic/go-elasticsearch/v7 v7.16.0
 	github.com/etsy/statsd v0.9.0

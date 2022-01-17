@@ -66,8 +66,8 @@ func (s *TagTemplateHandlerTestSuite) TestCreate() {
 		template := s.buildTemplate()
 		body, err := json.Marshal(template)
 		s.Require().NoError(err)
-		s.templateRepository.On("Read", tag.Template{URN: template.URN}).Return(nil, nil)
-		s.templateRepository.On("Create", &template).Return(tag.DuplicateTemplateError{URN: template.URN})
+		s.templateRepository.On("Read", mock.Anything, tag.Template{URN: template.URN}).Return(nil, nil)
+		s.templateRepository.On("Create", mock.Anything, &template).Return(tag.DuplicateTemplateError{URN: template.URN})
 		request, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader(string(body)))
 
 		s.handler.Create(s.recorder, request)
@@ -79,8 +79,8 @@ func (s *TagTemplateHandlerTestSuite) TestCreate() {
 		template := s.buildTemplate()
 		body, err := json.Marshal(template)
 		s.Require().NoError(err)
-		s.templateRepository.On("Read", tag.Template{URN: template.URN}).Return(nil, nil)
-		s.templateRepository.On("Create", &template).Return(errors.New("unexpected error during insert"))
+		s.templateRepository.On("Read", mock.Anything, tag.Template{URN: template.URN}).Return(nil, nil)
+		s.templateRepository.On("Create", mock.Anything, &template).Return(errors.New("unexpected error during insert"))
 		request, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader(string(body)))
 
 		s.handler.Create(s.recorder, request)
@@ -92,8 +92,8 @@ func (s *TagTemplateHandlerTestSuite) TestCreate() {
 		originalDomainTemplate := s.buildTemplate()
 		body, err := json.Marshal(originalDomainTemplate)
 		s.Require().NoError(err)
-		s.templateRepository.On("Read", tag.Template{URN: originalDomainTemplate.URN}).Return(nil, nil)
-		s.templateRepository.On("Create", &originalDomainTemplate).Return(nil)
+		s.templateRepository.On("Read", mock.Anything, tag.Template{URN: originalDomainTemplate.URN}).Return(nil, nil)
+		s.templateRepository.On("Create", mock.Anything, &originalDomainTemplate).Return(nil)
 		request, err := http.NewRequest(http.MethodPost, "/", strings.NewReader(string(body)))
 		s.Require().NoError(err)
 
@@ -116,7 +116,7 @@ func (s *TagTemplateHandlerTestSuite) TestIndex() {
 		s.Setup()
 		request, err := http.NewRequest(http.MethodGet, "/templates?urn=governance_policy", nil)
 		s.Require().NoError(err)
-		s.templateRepository.On("Read", tag.Template{
+		s.templateRepository.On("Read", mock.Anything, tag.Template{
 			URN: "governance_policy",
 		}).Return(nil, errors.New("unexpected error"))
 
@@ -129,7 +129,7 @@ func (s *TagTemplateHandlerTestSuite) TestIndex() {
 		request, err := http.NewRequest(http.MethodGet, "/templates?urn=governance_policy", nil)
 		s.Require().NoError(err)
 		recordDomainTemplate := s.buildTemplate()
-		s.templateRepository.On("Read", tag.Template{
+		s.templateRepository.On("Read", mock.Anything, tag.Template{
 			URN: "governance_policy",
 		}).Return([]tag.Template{recordDomainTemplate}, nil)
 
@@ -203,7 +203,7 @@ func (s *TagTemplateHandlerTestSuite) TestUpdate() {
 		request = mux.SetURLVars(request, map[string]string{
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Read", tag.Template{
+		s.templateRepository.On("Read", mock.Anything, tag.Template{
 			URN: templateURN,
 		}).Return([]tag.Template{}, nil)
 
@@ -222,7 +222,7 @@ func (s *TagTemplateHandlerTestSuite) TestUpdate() {
 		request = mux.SetURLVars(request, map[string]string{
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Read", tag.Template{
+		s.templateRepository.On("Read", mock.Anything, tag.Template{
 			URN: templateURN,
 		}).Return(nil, tag.ValidationError{Err: errors.New("validation error")})
 
@@ -241,7 +241,7 @@ func (s *TagTemplateHandlerTestSuite) TestUpdate() {
 		request = mux.SetURLVars(request, map[string]string{
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Read", tag.Template{
+		s.templateRepository.On("Read", mock.Anything, tag.Template{
 			URN: templateURN,
 		}).Return(nil, errors.New("unexpected error"))
 
@@ -260,11 +260,11 @@ func (s *TagTemplateHandlerTestSuite) TestUpdate() {
 			"template_urn": template.URN,
 		})
 
-		s.templateRepository.On("Read", tag.Template{
+		s.templateRepository.On("Read", mock.Anything, tag.Template{
 			URN: template.URN,
 		}).Return([]tag.Template{template}, nil).Once()
 
-		s.templateRepository.On("Update", &template).Run(func(args mock.Arguments) {
+		s.templateRepository.On("Update", mock.Anything, &template).Run(func(args mock.Arguments) {
 			template.UpdatedAt = time.Now()
 		}).Return(nil)
 
@@ -330,7 +330,7 @@ func (s *TagTemplateHandlerTestSuite) TestFind() {
 		request = mux.SetURLVars(request, map[string]string{
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Read", tag.Template{
+		s.templateRepository.On("Read", mock.Anything, tag.Template{
 			URN: templateURN,
 		}).Return([]tag.Template{}, nil)
 
@@ -348,7 +348,7 @@ func (s *TagTemplateHandlerTestSuite) TestFind() {
 		})
 		template := s.buildTemplate()
 
-		s.templateRepository.On("Read", tag.Template{
+		s.templateRepository.On("Read", mock.Anything, tag.Template{
 			URN: templateURN,
 		}).Return([]tag.Template{template}, nil)
 
@@ -394,7 +394,7 @@ func (s *TagTemplateHandlerTestSuite) TestDelete() {
 		request = mux.SetURLVars(request, map[string]string{
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Delete", tag.Template{
+		s.templateRepository.On("Delete", mock.Anything, tag.Template{
 			URN: templateURN,
 		}).Return(tag.TemplateNotFoundError{URN: templateURN})
 
@@ -410,7 +410,7 @@ func (s *TagTemplateHandlerTestSuite) TestDelete() {
 		request = mux.SetURLVars(request, map[string]string{
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Delete", tag.Template{
+		s.templateRepository.On("Delete", mock.Anything, tag.Template{
 			URN: templateURN,
 		}).Return(nil)
 

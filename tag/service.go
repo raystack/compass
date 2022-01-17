@@ -47,7 +47,7 @@ func (s *Service) Create(ctx context.Context, tag *Tag) error {
 	if err := s.validateFieldValueIsValid(*tag, template); err != nil {
 		return err
 	}
-	if err := s.repository.Create(tag); err != nil {
+	if err := s.repository.Create(ctx, tag); err != nil {
 		return err
 	}
 
@@ -55,9 +55,9 @@ func (s *Service) Create(ctx context.Context, tag *Tag) error {
 }
 
 // GetByRecord handles business process to get tags by its resource urn
-func (s *Service) GetByRecord(recordType, recordURN string) ([]Tag, error) {
+func (s *Service) GetByRecord(ctx context.Context, recordType, recordURN string) ([]Tag, error) {
 	tag := Tag{RecordType: recordType, RecordURN: recordURN}
-	return s.repository.Read(tag)
+	return s.repository.Read(ctx, tag)
 }
 
 // FindByRecordAndTemplate handles business process to get tags by its resource id and template id
@@ -66,7 +66,7 @@ func (s *Service) FindByRecordAndTemplate(ctx context.Context, recordType, recor
 	if err != nil {
 		return Tag{}, err
 	}
-	listOfTag, err := s.repository.Read(Tag{RecordType: recordType, RecordURN: recordURN, TemplateURN: templateURN})
+	listOfTag, err := s.repository.Read(ctx, Tag{RecordType: recordType, RecordURN: recordURN, TemplateURN: templateURN})
 	if err != nil {
 		return Tag{}, err
 	}
@@ -85,11 +85,12 @@ func (s *Service) Delete(ctx context.Context, recordType, recordURN, templateURN
 	if err != nil {
 		return errors.Wrap(err, "error finding template")
 	}
-	if err := s.repository.Delete(Tag{
-		RecordType:  recordType,
-		RecordURN:   recordURN,
-		TemplateURN: templateURN,
-	}); err != nil {
+	if err := s.repository.Delete(ctx,
+		Tag{
+			RecordType:  recordType,
+			RecordURN:   recordURN,
+			TemplateURN: templateURN,
+		}); err != nil {
 		return errors.Wrap(err, "error deleting tag")
 	}
 	return nil
@@ -104,11 +105,12 @@ func (s *Service) Update(ctx context.Context, tag *Tag) error {
 	if err != nil {
 		return errors.Wrap(err, "error finding template")
 	}
-	existingTags, err := s.repository.Read(Tag{
-		RecordType:  tag.RecordType,
-		RecordURN:   tag.RecordURN,
-		TemplateURN: tag.TemplateURN,
-	})
+	existingTags, err := s.repository.Read(ctx,
+		Tag{
+			RecordType:  tag.RecordType,
+			RecordURN:   tag.RecordURN,
+			TemplateURN: tag.TemplateURN,
+		})
 	if err != nil {
 		return errors.Wrap(err, "error finding existing tag")
 	}
@@ -122,7 +124,7 @@ func (s *Service) Update(ctx context.Context, tag *Tag) error {
 	if err := s.validateFieldValueIsValid(*tag, template); err != nil {
 		return err
 	}
-	if err := s.repository.Update(tag); err != nil {
+	if err := s.repository.Update(ctx, tag); err != nil {
 		return errors.Wrap(err, "error updating tag")
 	}
 	return nil

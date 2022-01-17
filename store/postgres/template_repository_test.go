@@ -133,7 +133,7 @@ func (r *TemplateRepositoryTestSuite) TestRead() {
 		actualTemplate, actualError := repository.Read(ctx, domainTemplate)
 
 		r.Empty(actualTemplate)
-		r.NoError(actualError)
+		r.EqualError(actualError, "error fetching templates: could not find template \"governance_policy\"")
 	})
 
 	r.Run("should return template with multiple fields if exist", func() {
@@ -305,8 +305,7 @@ func (r *TemplateRepositoryTestSuite) TestDelete() {
 		r.NoError(err)
 
 		templates, err := repository.Read(ctx, domainTemplate)
-		r.NoError(err)
-
+		r.EqualError(err, "error fetching templates: could not find template \"governance_policy\"")
 		r.Empty(templates)
 	})
 }

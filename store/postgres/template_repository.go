@@ -50,13 +50,7 @@ func (r *TemplateRepository) Create(ctx context.Context, domainTemplate *tag.Tem
 		return err
 	}
 
-	// templates, err := readTemplates(ctx, r.db, domainTemplate.URN)
-	// if err != nil || len(templates) < 1 {
-	// 	return errors.Wrap(err, "failed to reflect newly created template")
-	// }
-
 	r.updateDomainTemplate(domainTemplate, *createdTemplate)
-	// r.updateDomainTemplate(domainTemplate, modelTemplate)
 	return nil
 }
 

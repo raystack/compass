@@ -12,6 +12,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
 	nrelasticsearch "github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/odpf/columbus/api"
@@ -148,7 +149,7 @@ func initElasticsearch(config Config) *elasticsearch.Client {
 	return esClient
 }
 
-func initPostgres(logger logrus.FieldLogger, config Config) *postgres.Client {
+func initPostgres(logger logrus.FieldLogger, config Config) *sqlx.DB {
 	pgClient, err := postgres.NewClient(logger,
 		postgres.Config{
 			Port:     config.DBPort,

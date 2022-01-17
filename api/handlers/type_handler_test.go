@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/odpf/columbus/api/handlers"
@@ -53,7 +55,11 @@ func TestTypeHandler(t *testing.T) {
 				PostCheck: func(t *testing.T, tc *testCase, resp *http.Response) error {
 					actual, err := ioutil.ReadAll(resp.Body)
 					require.NoError(t, err)
+					a := []interface{}{map[string]interface{}{"count": 10, "name": "table"}, map[string]interface{}{"count": 30, "name": "topic"}, map[string]interface{}{"count": 15, "name": "job"}}
 
+					b := []interface{}{map[string]interface{}{"count": 30, "name": "topic"}, map[string]interface{}{"count": 15, "name": "job"}, map[string]interface{}{"count": 10, "name": "table"}}
+					// assert.Equal(t, a, b)
+					fmt.Println(reflect.DeepEqual(a, b))
 					expected, err := json.Marshal([]map[string]interface{}{
 						{"name": "table", "count": 10},
 						{"name": "job", "count": 15},
@@ -61,7 +67,6 @@ func TestTypeHandler(t *testing.T) {
 						{"name": "topic", "count": 30},
 					})
 					require.NoError(t, err)
-
 					assert.JSONEq(t, string(expected), string(actual))
 
 					return nil

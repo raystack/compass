@@ -89,7 +89,7 @@ func (h *TagHandler) GetByRecord(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusBadRequest, errEmptyRecordURN.Error())
 		return
 	}
-	tags, err := h.service.GetByRecord(recordType, recordURN)
+	tags, err := h.service.GetByRecord(r.Context(), recordType, recordURN)
 	if err != nil {
 		internalServerError(w, h.logger, fmt.Sprintf("error getting record tags: %s", err.Error()))
 		return

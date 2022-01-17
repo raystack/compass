@@ -18,7 +18,7 @@ import (
 
 const esMigrationTimeout = 5 * time.Second
 
-func Migrate() {
+func RunMigrate() {
 	fmt.Println("Preparing migration...")
 	if err := loadConfig(); err != nil {
 		panic(err)
@@ -59,7 +59,7 @@ func migratePostgres() (err error) {
 		return err
 	}
 
-	err = conn.Migrate()
+	err = postgres.Migrate(conn, pgConfig)
 	if err != nil {
 		return errors.Wrap(err, "problem with migration")
 
