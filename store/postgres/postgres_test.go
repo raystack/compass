@@ -1,12 +1,11 @@
 package postgres_test
 
 import (
-	"fmt"
+	"context"
 	"strconv"
 	"time"
 
 	_ "github.com/jackc/pgx/stdlib"
-	"github.com/jmoiron/sqlx"
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
@@ -15,12 +14,11 @@ import (
 )
 
 const (
-	defaultDB = "postgres"
+	migrationsFilePath = "file://../../migrations"
 )
 
 var (
-	testDBClient *sqlx.DB
-	pgConfig     = postgres.Config{
+	pgConfig = postgres.Config{
 		Host:     "localhost",
 		User:     "test_user",
 		Password: "test_pass",
@@ -28,7 +26,7 @@ var (
 	}
 )
 
-func newTestClient(logger *logrus.Logger) (*dockertest.Pool, *dockertest.Resource, error) {
+func newTestClient(logger *logrus.Logger) (*postgres.Client, *dockertest.Pool, *dockertest.Resource, error) {
 
 	opts := &dockertest.RunOptions{
 		Repository: "postgres",
@@ -43,7 +41,7 @@ func newTestClient(logger *logrus.Logger) (*dockertest.Pool, *dockertest.Resourc
 	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
 	pool, err := dockertest.NewPool("")
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "Could not create dockertest pool")
+		return nil, nil, nil, errors.Wrap(err, "Could not create dockertest pool")
 	}
 
 	// pulls an image, creates a container based on it and runs it
@@ -53,13 +51,13 @@ func newTestClient(logger *logrus.Logger) (*dockertest.Pool, *dockertest.Resourc
 		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "Could not start resource")
+		return nil, nil, nil, errors.Wrap(err, "Could not start resource")
 	}
 
 	// pgConfig.Host = "localhost"
 	pgConfig.Port, err = strconv.Atoi(resource.GetPort("5432/tcp"))
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "cannot parse external port of container to int")
+		return nil, nil, nil, errors.Wrap(err, "cannot parse external port of container to int")
 	}
 
 	// attach terminal logger to container if exists
@@ -91,57 +89,45 @@ func newTestClient(logger *logrus.Logger) (*dockertest.Pool, *dockertest.Resourc
 
 	resource.Expire(120) // Tell docker to hard kill the container in 120 seconds
 
-	testDBClient, err = postgres.NewClient(logger, pgConfig)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Could not create pg client")
-	}
-
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	pool.MaxWait = 60 * time.Second
 
+	var pgClient *postgres.Client
 	if err = pool.Retry(func() error {
-		testDBClient, err = sqlx.Connect("pgx", pgConfig.ConnectionURL().String())
-		return err
+		pgClient, err = postgres.NewClient(logger, pgConfig)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}); err != nil {
-		return nil, nil, errors.Wrap(err, "Could not connect to docker")
+		return nil, nil, nil, errors.Wrap(err, "Could not connect to docker")
 	}
 
-	err = setup()
+	err = setup(context.Background(), pgClient)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "error migrating DB")
+		logger.Fatal(err)
 	}
-
-	return pool, resource, nil
+	return pgClient, pool, resource, nil
 }
 
-func purgeClient(pool *dockertest.Pool, resource *dockertest.Resource) error {
+func purgeDocker(pool *dockertest.Pool, resource *dockertest.Resource) error {
 	if err := pool.Purge(resource); err != nil {
 		return errors.Wrap(err, "Could not purge resource")
 	}
 	return nil
 }
 
-func setup() (err error) {
-	const testDB = "test_db"
+func setup(ctx context.Context, client *postgres.Client) (err error) {
 	var queries = []string{
-		fmt.Sprintf("DROP SCHEMA public CASCADE"),
-		fmt.Sprintf("CREATE SCHEMA public"),
+		"DROP SCHEMA public CASCADE",
+		"CREATE SCHEMA public",
 	}
-	err = execute(testDBClient, queries)
+	err = client.ExecQueries(ctx, queries)
 	if err != nil {
 		return
 	}
 
-	err = postgres.Migrate(testDBClient, pgConfig)
-	return
-}
-
-func execute(db *sqlx.DB, queries []string) (err error) {
-	for _, query := range queries {
-		_, err = db.Exec(query)
-		if err != nil {
-			return
-		}
-	}
+	err = client.Migrate(pgConfig, migrationsFilePath)
 	return
 }

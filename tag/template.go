@@ -32,6 +32,6 @@ type Field struct {
 type TemplateRepository interface {
 	Create(ctx context.Context, template *Template) error
 	Read(ctx context.Context, filter Template) ([]Template, error)
-	Update(ctx context.Context, template *Template) error
+	Update(ctx context.Context, templateURN string, template *Template) error
 	Delete(ctx context.Context, filter Template) error
 }

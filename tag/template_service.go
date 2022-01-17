@@ -113,7 +113,7 @@ func (s *TemplateService) Update(ctx context.Context, template *Template) error 
 		}
 	}
 
-	err = s.repository.Update(ctx, template)
+	err = s.repository.Update(ctx, template.URN, template)
 	if err != nil {
 		return errors.Wrap(err, "error updating template")
 	}

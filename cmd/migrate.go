@@ -16,7 +16,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-const esMigrationTimeout = 5 * time.Second
+const (
+	esMigrationTimeout = 5 * time.Second
+
+	migrationsFilePath = "file://migrations"
+)
 
 func RunMigrate() {
 	fmt.Println("Preparing migration...")
@@ -53,13 +57,13 @@ func migratePostgres() (err error) {
 		SSLMode:  config.DBSSLMode,
 	}
 
-	conn, err := postgres.NewClient(log, pgConfig)
+	pgClient, err := postgres.NewClient(log, pgConfig)
 	if err != nil {
 		log.Errorf("failed to prepare migration: %s", err)
 		return err
 	}
 
-	err = postgres.Migrate(conn, pgConfig)
+	err = pgClient.Migrate(pgConfig, migrationsFilePath)
 	if err != nil {
 		return errors.Wrap(err, "problem with migration")
 

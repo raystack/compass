@@ -264,7 +264,7 @@ func (s *TagTemplateHandlerTestSuite) TestUpdate() {
 			URN: template.URN,
 		}).Return([]tag.Template{template}, nil).Once()
 
-		s.templateRepository.On("Update", mock.Anything, &template).Run(func(args mock.Arguments) {
+		s.templateRepository.On("Update", mock.Anything, template.URN, &template).Run(func(args mock.Arguments) {
 			template.UpdatedAt = time.Now()
 		}).Return(nil)
 

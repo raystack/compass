@@ -5,11 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strings"
+	"reflect"
 	"testing"
-	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/columbus/tag"
 	"github.com/ory/dockertest/v3"
@@ -19,6 +17,7 @@ import (
 
 type TagRepositoryTestSuite struct {
 	suite.Suite
+	client   *postgres.Client
 	pool     *dockertest.Pool
 	resource *dockertest.Resource
 }
@@ -27,7 +26,7 @@ func (r *TagRepositoryTestSuite) SetupSuite() {
 	var err error
 	logger := logrus.New()
 	// logger.SetLevel(logrus.DebugLevel)
-	r.pool, r.resource, err = newTestClient(logger)
+	r.client, r.pool, r.resource, err = newTestClient(logger)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -35,29 +34,40 @@ func (r *TagRepositoryTestSuite) SetupSuite() {
 
 func (r *TagRepositoryTestSuite) TearDownSuite() {
 	// Clean tests
-	err := testDBClient.Close()
-	err = purgeClient(r.pool, r.resource)
+	err := r.client.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = purgeDocker(r.pool, r.resource)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func (r *TagRepositoryTestSuite) TestNewRepository() {
-	r.Run("should return repository and nil if db client is not nil", func() {
-		dbClient := &sqlx.DB{}
+	r.Run("should return repository and nil if postgres client is not nil", func() {
+		pgClient := &postgres.Client{}
 
-		actualTagRepository := postgres.NewTagRepository(dbClient)
+		actualTagRepository, err := postgres.NewTagRepository(pgClient)
 
 		r.NotNil(actualTagRepository)
+		r.Nil(err)
 	})
 }
 
 func (r *TagRepositoryTestSuite) TestCreate() {
 	ctx := context.TODO()
-	repository := postgres.NewTagRepository(testDBClient)
+	repository, err := postgres.NewTagRepository(r.client)
+	if err != nil {
+		r.T().Fatal(err)
+	}
+	templateRepository, err := postgres.NewTemplateRepository(r.client)
+	if err != nil {
+		r.T().Fatal(err)
+	}
 
 	r.Run("should return error if domain tag is nil", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		var domainTag *tag.Tag = nil
@@ -69,19 +79,8 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	r.Run("should return error if db client is nil", func() {
-		domainTag := &tag.Tag{}
-		repository := &postgres.TagRepository{}
-
-		expectedErrorMsg := "db client is nil"
-
-		actualError := repository.Create(ctx, domainTag)
-
-		r.EqualError(actualError, expectedErrorMsg)
-	})
-
 	r.Run("should return error if template is not found", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 		domain := getDomainTag()
 
@@ -91,11 +90,11 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 	})
 
 	r.Run("should return nil and create tag if no error found", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := getDomainTemplate()
-		err = createDomainTemplate(ctx, domainTemplate)
+		err = templateRepository.Create(ctx, domainTemplate)
 		r.NoError(err)
 		domainTag := getDomainTag()
 
@@ -104,15 +103,16 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 
 		tags, err := repository.Read(ctx, domainTag)
 		r.NoError(err)
-		r.NotNil(tags)
+
+		r.True(reflect.DeepEqual(domainTag, tags[0])) //TODO: unstable
 	})
 
 	r.Run("should return nil and update domain tag if no error found", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := getDomainTemplate()
-		err = createDomainTemplate(ctx, domainTemplate)
+		err = templateRepository.Create(ctx, domainTemplate)
 		r.NoError(err)
 		domainTag := getDomainTag()
 
@@ -127,25 +127,17 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 
 func (r *TagRepositoryTestSuite) TestRead() {
 	ctx := context.TODO()
-	repository := postgres.NewTagRepository(testDBClient)
-
-	r.Run("should return nil and error if db client is nil", func() {
-		var recordURN string = "sample-urn"
-		repository := &postgres.TagRepository{}
-		paramDomainTag := tag.Tag{
-			RecordURN: recordURN,
-		}
-
-		expectedErrorMsg := "db client is nil"
-
-		actualTag, actualError := repository.Read(ctx, paramDomainTag)
-
-		r.Nil(actualTag)
-		r.EqualError(actualError, expectedErrorMsg)
-	})
+	repository, err := postgres.NewTagRepository(r.client)
+	if err != nil {
+		r.T().Fatal(err)
+	}
+	templateRepository, err := postgres.NewTemplateRepository(r.client)
+	if err != nil {
+		r.T().Fatal(err)
+	}
 
 	r.Run("should return error if record type is empty", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		paramDomainTag := tag.Tag{
@@ -162,7 +154,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 	})
 
 	r.Run("should return nil and error if record urn is empty", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		var recordURN string = ""
@@ -179,8 +171,8 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	r.Run("should return empty and nil if no record found for the specified record", func() {
-		err := setup()
+	r.Run("should return nil and not found error error if no record found for the specified record", func() {
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		paramDomainTag := tag.Tag{
@@ -188,12 +180,11 @@ func (r *TagRepositoryTestSuite) TestRead() {
 			RecordURN:  "sample-urn",
 		}
 
-		actualTag, err := repository.Read(ctx, paramDomainTag)
-		// r.NoError( actualError) //TODO: recheck this behaviour
+		actualTag, actualError := repository.Read(ctx, paramDomainTag)
 		r.Empty(actualTag)
 
-		r.True(errors.As(err, new(tag.NotFoundError)))
-		r.EqualError(err, tag.NotFoundError{
+		r.True(errors.As(actualError, new(tag.NotFoundError)))
+		r.EqualError(actualError, tag.NotFoundError{
 			URN:      paramDomainTag.RecordURN,
 			Type:     paramDomainTag.RecordType,
 			Template: paramDomainTag.TemplateURN,
@@ -201,16 +192,16 @@ func (r *TagRepositoryTestSuite) TestRead() {
 	})
 
 	r.Run("should return record if found for the specified record", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := getDomainTemplate()
-		err = createDomainTemplate(ctx, domainTemplate)
-		r.NoError(err)
+		err = templateRepository.Create(ctx, domainTemplate)
+		r.Require().NoError(err)
 
 		domainTag := getDomainTag()
 		err = repository.Create(ctx, &domainTag)
-		r.NoError(err)
+		r.Require().NoError(err)
 
 		tags, err := repository.Read(ctx, tag.Tag{
 			RecordType: domainTag.RecordType,
@@ -222,8 +213,8 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		r.Len(tags[0].TagValues, 2)
 	})
 
-	r.Run("should return nil and error if template urn is not empty but template is not found", func() {
-		err := setup()
+	r.Run("should return nil and not found error error if template urn is not empty but template is not found", func() {
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		paramDomainTag := tag.Tag{
@@ -241,7 +232,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 	})
 
 	r.Run("should return nil and not found error if no record found for the specified record and template", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		var recordType string = "sample-type"
@@ -249,7 +240,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		var templateURN string = "governance_policy"
 
 		domainTemplate := getDomainTemplate()
-		err = createDomainTemplate(ctx, domainTemplate)
+		err = templateRepository.Create(ctx, domainTemplate)
 		r.NoError(err)
 
 		paramDomainTag := tag.Tag{
@@ -263,13 +254,13 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		)
 
 		actualTag, actualError := repository.Read(ctx, paramDomainTag)
+		r.ErrorAs(actualError, new(tag.NotFoundError))
 		r.EqualError(actualError, expectedErrorMsg)
-		r.True(errors.As(actualError, new(tag.NotFoundError)))
 		r.Nil(actualTag)
 	})
 
 	r.Run("should return maximum of one domain tag for the specified record and template", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		var recordType string = "sample-type"
@@ -277,7 +268,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		var templateURN string = "governance_policy"
 
 		domainTemplate := getDomainTemplate()
-		err = createDomainTemplate(ctx, domainTemplate)
+		err = templateRepository.Create(ctx, domainTemplate)
 		r.NoError(err)
 		domainTag := getDomainTag()
 
@@ -301,10 +292,17 @@ func (r *TagRepositoryTestSuite) TestRead() {
 
 func (r *TagRepositoryTestSuite) TestUpdate() {
 	ctx := context.TODO()
-	repository := postgres.NewTagRepository(testDBClient)
+	repository, err := postgres.NewTagRepository(r.client)
+	if err != nil {
+		r.T().Fatal(err)
+	}
+	templateRepository, err := postgres.NewTemplateRepository(r.client)
+	if err != nil {
+		r.T().Fatal(err)
+	}
 
 	r.Run("should return error if domain tag is nil", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		var domainTag *tag.Tag = nil
@@ -316,19 +314,8 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	r.Run("should return error if db client is nil", func() {
-		domainTag := &tag.Tag{}
-		repository := &postgres.TagRepository{}
-
-		expectedErrorMsg := "db client is nil"
-
-		actualError := repository.Update(ctx, domainTag)
-
-		r.EqualError(actualError, expectedErrorMsg)
-	})
-
 	r.Run("should return error if template is not found", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 		t := getDomainTag()
 
@@ -337,11 +324,13 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 	})
 
 	r.Run("should return nil and update tag if no error found", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := getDomainTemplate()
-		createDomainTemplate(ctx, domainTemplate)
+		err = templateRepository.Create(ctx, domainTemplate)
+		r.Require().NoError(err)
+
 		domainTag := getDomainTag()
 		err = repository.Create(ctx, &domainTag)
 		r.Require().NoError(err)
@@ -350,22 +339,23 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 		actualError := repository.Update(ctx, &domainTag)
 		r.Require().NoError(actualError)
 
-		for _, value := range domainTag.TagValues {
-			tags, err := repository.FindModelTag(ctx, postgres.Tag{
-				RecordURN:  domainTag.RecordURN,
-				RecordType: domainTag.RecordType,
-			})
-			r.NoError(err)
-			r.EqualValues(value.UpdatedAt, tags[0].UpdatedAt)
+		updatedTags, err := repository.Read(ctx, domainTag)
+		r.NoError(err)
+
+		for _, updatedTag := range updatedTags {
+			for idx, value := range updatedTag.TagValues {
+				r.NoError(err)
+				r.EqualValues(value.UpdatedAt, domainTag.TagValues[idx].UpdatedAt)
+			}
 		}
 	})
 
 	r.Run("should return nil and update domain tag if no error found", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := getDomainTemplate()
-		err = createDomainTemplate(ctx, domainTemplate)
+		err = templateRepository.Create(ctx, domainTemplate)
 		r.NoError(err)
 		domainTag := getDomainTag()
 
@@ -383,24 +373,17 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 
 func (r *TagRepositoryTestSuite) TestDelete() {
 	ctx := context.TODO()
-	repository := postgres.NewTagRepository(testDBClient)
-
-	r.Run("should return error if db client is nil", func() {
-		var recordURN string = "sample-urn"
-		repository := &postgres.TagRepository{}
-		paramDomainTag := tag.Tag{
-			RecordURN: recordURN,
-		}
-
-		expectedErrorMsg := "db client is nil"
-
-		actualError := repository.Delete(ctx, paramDomainTag)
-
-		r.EqualError(actualError, expectedErrorMsg)
-	})
+	repository, err := postgres.NewTagRepository(r.client)
+	if err != nil {
+		r.T().Fatal(err)
+	}
+	templateRepository, err := postgres.NewTemplateRepository(r.client)
+	if err != nil {
+		r.T().Fatal(err)
+	}
 
 	r.Run("should return error if record urn is empty", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		var recordURN string = ""
@@ -415,12 +398,12 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	r.Run("should delete tags related to the record and return no error if record has one", func() {
-		err := setup()
+	r.Run("should delete tags related to the record and return error if record has none", func() {
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := getDomainTemplate()
-		err = createDomainTemplate(ctx, domainTemplate)
+		err = templateRepository.Create(ctx, domainTemplate)
 		r.NoError(err)
 
 		domainTag := getDomainTag()
@@ -435,21 +418,19 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		}
 
 		actualError := repository.Delete(ctx, paramDomainTag)
+		r.NoError(actualError)
 
-		foundTags, err := repository.FindModelTag(ctx, postgres.Tag{
+		foundTags, err := repository.Read(ctx, tag.Tag{
 			RecordURN:  paramDomainTag.RecordURN,
 			RecordType: paramDomainTag.RecordType,
 		})
-		if err != nil {
-			r.T().Fatal(err)
-		}
 
-		r.NoError(actualError)
+		r.EqualError(err, "could not find tag with record type: \"sample-type\", record: \"sample-urn\", template: \"\"")
 		r.Empty(foundTags)
 	})
 
 	r.Run("should return error if template is not found", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		var recordURN string = "sample-urn"
@@ -464,12 +445,12 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 	})
 
 	r.Run("should delete only the tag for record and template and return no error if record has one", func() {
-		err := setup()
+		err := setup(ctx, r.client)
 		r.NoError(err)
 
 		var recordURN string = "sample-urn"
 		domainTemplate := getDomainTemplate()
-		err = createDomainTemplate(ctx, domainTemplate)
+		err = templateRepository.Create(ctx, domainTemplate)
 		r.NoError(err)
 
 		paramDomainTag := tag.Tag{
@@ -478,47 +459,8 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		}
 
 		actualError := repository.Delete(ctx, paramDomainTag)
-
-		listOfRecordModelTag, err := repository.FindModelTag(ctx, postgres.Tag{
-			RecordURN:  paramDomainTag.RecordURN,
-			RecordType: paramDomainTag.RecordType,
-		})
-		if err != nil {
-			r.T().Fatal(err)
-		}
-
 		r.NoError(actualError)
-		r.Empty(listOfRecordModelTag)
 	})
-}
-
-func createDomainTemplate(ctx context.Context, domainTemplate *tag.Template) error {
-	listOfModelField := make([]postgres.Field, len(domainTemplate.Fields))
-	for i, domainField := range domainTemplate.Fields {
-		var options *string
-		if len(domainField.Options) > 0 {
-			var concatenatedOption string
-			strings.Join(domainField.Options, ",")
-			options = &concatenatedOption
-		}
-		listOfModelField[i] = postgres.Field{
-			ID:          domainField.ID,
-			URN:         domainField.URN,
-			DisplayName: domainField.DisplayName,
-			Description: domainField.Description,
-			DataType:    domainField.DataType,
-			Options:     options,
-			Required:    domainField.Required,
-		}
-	}
-	modelTemplate := postgres.Template{
-		URN:         domainTemplate.URN,
-		DisplayName: domainTemplate.DisplayName,
-		Description: domainTemplate.Description,
-		Fields:      listOfModelField,
-	}
-	_, err := postgres.CreateTemplateTx(ctx, testDBClient, &modelTemplate, time.Now().UTC())
-	return err
 }
 
 func getDomainTemplate() *tag.Template {

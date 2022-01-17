@@ -476,7 +476,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 			URN: newTemplate.URN,
 		}
 		s.repository.On("Read", ctx, filterForExistence).Return([]tag.Template{template}, nil)
-		s.repository.On("Update", ctx, &newTemplate).Return(errors.New("unexpected error"))
+		s.repository.On("Update", ctx, newTemplate.URN, &newTemplate).Return(errors.New("unexpected error"))
 
 		err := s.service.Update(ctx, &newTemplate)
 		s.Error(err)
@@ -491,7 +491,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 			URN: template.URN,
 		}
 		s.repository.On("Read", ctx, filterForExistence).Return([]tag.Template{template}, nil)
-		s.repository.On("Update", ctx, &newTemplate).Run(func(args mock.Arguments) {
+		s.repository.On("Update", ctx, newTemplate.URN, &newTemplate).Run(func(args mock.Arguments) {
 			newTemplate.UpdatedAt = time.Now()
 		}).Return(nil)
 

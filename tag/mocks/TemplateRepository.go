@@ -65,13 +65,13 @@ func (_m *TemplateRepository) Read(ctx context.Context, filter tag.Template) ([]
 	return r0, r1
 }
 
-// Update provides a mock function with given fields: ctx, template
-func (_m *TemplateRepository) Update(ctx context.Context, template *tag.Template) error {
-	ret := _m.Called(ctx, template)
+// Update provides a mock function with given fields: ctx, templateURN, template
+func (_m *TemplateRepository) Update(ctx context.Context, templateURN string, template *tag.Template) error {
+	ret := _m.Called(ctx, templateURN, template)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *tag.Template) error); ok {
-		r0 = rf(ctx, template)
+	if rf, ok := ret.Get(0).(func(context.Context, string, *tag.Template) error); ok {
+		r0 = rf(ctx, templateURN, template)
 	} else {
 		r0 = ret.Error(0)
 	}

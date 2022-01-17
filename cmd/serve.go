@@ -12,7 +12,6 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/jmoiron/sqlx"
 	nrelasticsearch "github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/odpf/columbus/api"
@@ -81,9 +80,16 @@ func initRouter(
 	}()
 
 	pgClient := initPostgres(rootLogger.WithField("reporter", "postgres"), config)
-	tagRepository := postgres.NewTagRepository(pgClient)
+	tagRepository, err := postgres.NewTagRepository(pgClient)
+	if err != nil {
+		log.Fatal(err)
+	}
+	templateRepository, err := postgres.NewTemplateRepository(pgClient)
+	if err != nil {
+		log.Fatal(err)
+	}
 	tagTemplateService := tag.NewTemplateService(
-		postgres.NewTemplateRepository(pgClient),
+		templateRepository,
 	)
 	tagService := tag.NewService(
 		tagRepository,
@@ -149,7 +155,7 @@ func initElasticsearch(config Config) *elasticsearch.Client {
 	return esClient
 }
 
-func initPostgres(logger logrus.FieldLogger, config Config) *sqlx.DB {
+func initPostgres(logger logrus.FieldLogger, config Config) *postgres.Client {
 	pgClient, err := postgres.NewClient(logger,
 		postgres.Config{
 			Port:     config.DBPort,
