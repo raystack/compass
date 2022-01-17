@@ -1,6 +1,8 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/discovery"
@@ -85,4 +87,7 @@ func RegisterRoutes(router *mux.Router, config Config) {
 
 	v1SubRouter := router.PathPrefix("/v1").Subrouter()
 	setupV1Beta1Router(v1SubRouter, handlerCollection)
+
+	router.NotFoundHandler = http.HandlerFunc(handlers.NotFound)
+	router.MethodNotAllowedHandler = http.HandlerFunc(handlers.MethodNotAllowed)
 }
