@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	testDBClient *postgres.Client
+	testDBClient *sqlx.DB
 	pgConfig     = postgres.Config{
 		Host:     "localhost",
 		User:     "test_user",
@@ -100,7 +100,7 @@ func newTestClient(logger *logrus.Logger) (*dockertest.Pool, *dockertest.Resourc
 	pool.MaxWait = 60 * time.Second
 
 	if err = pool.Retry(func() error {
-		testDBClient.Conn, err = sqlx.Connect("pgx", pgConfig.ConnectionURL().String())
+		testDBClient, err = sqlx.Connect("pgx", pgConfig.ConnectionURL().String())
 		return err
 	}); err != nil {
 		return nil, nil, errors.Wrap(err, "Could not connect to docker")
@@ -127,12 +127,12 @@ func setup() (err error) {
 		fmt.Sprintf("DROP SCHEMA public CASCADE"),
 		fmt.Sprintf("CREATE SCHEMA public"),
 	}
-	err = execute(testDBClient.Conn, queries)
+	err = execute(testDBClient, queries)
 	if err != nil {
 		return
 	}
 
-	err = testDBClient.Migrate()
+	err = postgres.Migrate(testDBClient, pgConfig)
 	return
 }
 

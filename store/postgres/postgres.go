@@ -17,38 +17,23 @@ import (
 
 const migrationsFilePath = "file://migrations"
 
-type Client struct {
-	Conn   *sqlx.DB
-	Config Config
-	logger logrus.FieldLogger
-}
-
 // NewClient initializes database connection
-func NewClient(logger logrus.FieldLogger, cfg Config) (*Client, error) {
-	dbConn, err := sqlx.Open("pgx", cfg.ConnectionURL().String())
+func NewClient(logger logrus.FieldLogger, cfg Config) (*sqlx.DB, error) {
+	db, err := sqlx.Open("pgx", cfg.ConnectionURL().String())
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating and connecting DB")
 	}
-	if dbConn == nil {
-		return nil, errors.Wrap(err, "DB connection is nil in the creation")
-	}
-	return &Client{
-		Conn:   dbConn,
-		Config: cfg,
-		logger: logger,
-	}, nil
+	return db, nil
 }
 
-func (c *Client) Migrate() (err error) {
-	m, err := c.initMigration()
+func Migrate(db *sqlx.DB, cfg Config) (err error) {
+	m, err := initMigration(db, cfg)
 	if err != nil {
 		return errors.Wrap(err, "migration failed")
 	}
 
-	c.logger.Info("Migrating DB...")
 	if err := m.Up(); err != nil {
 		if err == migrate.ErrNoChange {
-			c.logger.Infof("migration - no changes")
 			return nil
 		}
 		return errors.Wrap(err, "migration failed")
@@ -56,16 +41,16 @@ func (c *Client) Migrate() (err error) {
 	return nil
 }
 
-func (c *Client) initMigration() (*migrate.Migrate, error) {
-	if c.Conn != nil {
-		driver, err := postgres_migrate.WithInstance(c.Conn.DB, &postgres_migrate.Config{})
+func initMigration(db *sqlx.DB, cfg Config) (*migrate.Migrate, error) {
+	if db != nil {
+		driver, err := postgres_migrate.WithInstance(db.DB, &postgres_migrate.Config{})
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to initiate driver with db connection")
 		}
-		m, err := migrate.NewWithDatabaseInstance(migrationsFilePath, c.Config.Name, driver)
+		m, err := migrate.NewWithDatabaseInstance(migrationsFilePath, cfg.Name, driver)
 		return m, err
 	}
 
-	m, err := migrate.New(migrationsFilePath, c.Config.ConnectionURL().String())
+	m, err := migrate.New(migrationsFilePath, cfg.ConnectionURL().String())
 	return m, err
 }

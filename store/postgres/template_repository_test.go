@@ -4,62 +4,67 @@ import (
 	"context"
 	"errors"
 	"log"
-	"os"
+	"reflect"
 	"testing"
 	"time"
 
-	"github.com/alecthomas/assert"
+	"github.com/jmoiron/sqlx"
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/columbus/tag"
+	"github.com/ory/dockertest/v3"
 	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestMain(m *testing.M) {
-	logger := logrus.New()
-	// logger.SetLevel(logrus.DebugLevel)
-	// _, _, err := newTestClient(logger)
-	p, r, err := newTestClient(logger)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Run tests
-	code := m.Run()
-
-	// Clean tests
-	err = testDBClient.Conn.Close()
-	err = purgeClient(p, r)
-	if err != nil {
-		log.Fatal(err)
-	}
-	os.Exit(code)
+type TemplateRepositoryTestSuite struct {
+	suite.Suite
+	pool     *dockertest.Pool
+	resource *dockertest.Resource
 }
 
-func TestNewRepository(t *testing.T) {
-	t.Run("should return repository and nil if db client is not nil", func(t *testing.T) {
-		dummyDBClient := &postgres.Client{}
+func (r *TemplateRepositoryTestSuite) SetupSuite() {
+	var err error
+	logger := logrus.New()
+	// logger.SetLevel(logrus.DebugLevel)
+	r.pool, r.resource, err = newTestClient(logger)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (r *TemplateRepositoryTestSuite) TearDownSuite() {
+	// Clean tests
+	err := testDBClient.Close()
+	err = purgeClient(r.pool, r.resource)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (r *TemplateRepositoryTestSuite) TestNewRepository() {
+	r.Run("should return repository and nil if db client is not nil", func() {
+		dummyDBClient := &sqlx.DB{}
 
 		actualRepository := postgres.NewTemplateRepository(dummyDBClient)
-		assert.NotNil(t, actualRepository)
+		r.NotNil(actualRepository)
 	})
 }
 
-func TestCreate(t *testing.T) {
+func (r *TemplateRepositoryTestSuite) TestCreate() {
 	ctx := context.TODO()
 	repository := postgres.NewTemplateRepository(testDBClient)
 
-	t.Run("should return error if domain template is nil", func(t *testing.T) {
+	r.Run("should return error if domain template is nil", func() {
 		var domainTemplate *tag.Template = nil
 
 		expectedErrorMsg := "domain template is nil"
 
 		actualError := repository.Create(ctx, domainTemplate)
 
-		assert.EqualError(t, actualError, expectedErrorMsg)
+		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	t.Run("should return error if db client is nil", func(t *testing.T) {
+	r.Run("should return error if db client is nil", func() {
 		domainTemplate := tag.Template{
 			URN: "governance_policy",
 		}
@@ -69,72 +74,72 @@ func TestCreate(t *testing.T) {
 
 		actualError := repository.Create(ctx, &domainTemplate)
 
-		assert.EqualError(t, actualError, expectedErrorMsg)
+		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	t.Run("should return nil and insert new record if no error found", func(t *testing.T) {
-		domainTemplate := getDomainTemplate()
+	r.Run("should return nil and insert new record if no error found", func() {
+		domainTemplate := r.getDomainTemplate()
 
 		err := repository.Create(ctx, &domainTemplate)
-		assert.NoError(t, err)
+		r.NoError(err)
 
 		var actualRecord tag.Template
 		templates, err := repository.Read(ctx, domainTemplate)
-		require.Nil(t, err)
+		r.Nil(err)
 
 		actualRecord = templates[0]
-		assert.Equal(t, domainTemplate.URN, actualRecord.URN)
-		assert.Equal(t, domainTemplate.DisplayName, actualRecord.DisplayName)
-		assert.Equal(t, domainTemplate.Description, actualRecord.Description)
-		assert.Equal(t, len(domainTemplate.Fields), len(actualRecord.Fields))
-		assert.Equal(t, domainTemplate.Fields[0].DisplayName, actualRecord.Fields[0].DisplayName)
-		assert.Equal(t, domainTemplate.Fields[0].URN, actualRecord.Fields[0].URN)
+		r.Equal(domainTemplate.URN, actualRecord.URN)
+		r.Equal(domainTemplate.DisplayName, actualRecord.DisplayName)
+		r.Equal(domainTemplate.Description, actualRecord.Description)
+		r.Equal(len(domainTemplate.Fields), len(actualRecord.Fields))
+		r.Equal(domainTemplate.Fields[0].DisplayName, actualRecord.Fields[0].DisplayName)
+		r.Equal(domainTemplate.Fields[0].URN, actualRecord.Fields[0].URN)
 	})
 
-	t.Run("should return error if encountered uncovered error", func(t *testing.T) {
+	r.Run("should return error if encountered uncovered error", func() {
 		err := setup()
-		require.NoError(t, err)
+		r.NoError(err)
 
-		domainTemplate := getDomainTemplate()
+		domainTemplate := r.getDomainTemplate()
 
 		err = repository.Create(ctx, &domainTemplate)
 		err = repository.Create(ctx, &domainTemplate)
 
-		assert.EqualError(t, errors.Unwrap(err), "failed to insert a template: ERROR: duplicate key value violates unique constraint \"templates_pkey\" (SQLSTATE 23505)")
+		r.EqualError(errors.Unwrap(err), "failed to insert a template: ERROR: duplicate key value violates unique constraint \"templates_pkey\" (SQLSTATE 23505)")
 	})
 }
 
-func TestRead(t *testing.T) {
+func (r *TemplateRepositoryTestSuite) TestRead() {
 	ctx := context.TODO()
 	repository := postgres.NewTemplateRepository(testDBClient)
 
-	t.Run("should return nil and error if db client is nil", func(t *testing.T) {
-		domainTemplate := getDomainTemplate()
+	r.Run("should return nil and error if db client is nil", func() {
+		domainTemplate := r.getDomainTemplate()
 		repository := &postgres.TemplateRepository{}
 
 		expectedErrorMsg := "db client is nil"
 
 		actualTemplate, actualError := repository.Read(ctx, domainTemplate)
 
-		assert.Nil(t, actualTemplate)
-		assert.EqualError(t, actualError, expectedErrorMsg)
+		r.Nil(actualTemplate)
+		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	t.Run("should return empty and nil if no record found", func(t *testing.T) {
+	r.Run("should return empty and nil if no record found", func() {
 		err := setup()
-		require.NoError(t, err)
-		domainTemplate := getDomainTemplate()
+		r.NoError(err)
+		domainTemplate := r.getDomainTemplate()
 
 		actualTemplate, actualError := repository.Read(ctx, domainTemplate)
 
-		assert.Empty(t, actualTemplate)
-		assert.NoError(t, actualError)
+		r.Empty(actualTemplate)
+		r.NoError(actualError)
 	})
 
-	t.Run("should return template with multiple fields if exist", func(t *testing.T) {
+	r.Run("should return template with multiple fields if exist", func() {
 		err := setup()
-		require.NoError(t, err)
-		domainTemplate := getDomainTemplate()
+		r.NoError(err)
+		domainTemplate := r.getDomainTemplate()
 
 		domainTemplate.DisplayName = "Random Display"
 		domainTemplate.Fields[0].DisplayName = "Another Random Display"
@@ -146,58 +151,59 @@ func TestRead(t *testing.T) {
 		})
 
 		err = repository.Create(ctx, &domainTemplate)
-		require.NoError(t, err)
+		r.NoError(err)
 
 		templates, err := repository.Read(ctx, domainTemplate)
 
-		assert.NoError(t, err)
-		assert.Len(t, templates[0].Fields, 2)
-		assert.Equal(t, domainTemplate.DisplayName, templates[0].DisplayName)
-		assert.Equal(t, domainTemplate.UpdatedAt, templates[0].UpdatedAt)
+		r.NoError(err)
+		r.Len(templates[0].Fields, 2)
+		r.Equal(domainTemplate.DisplayName, templates[0].DisplayName)
+		r.Equal(domainTemplate.UpdatedAt, templates[0].UpdatedAt)
 	})
 }
 
-func TestUpdate(t *testing.T) {
+func (r *TemplateRepositoryTestSuite) TestUpdate() {
 	ctx := context.TODO()
 	repository := postgres.NewTemplateRepository(testDBClient)
 
-	t.Run("should return error if domain template is nil", func(t *testing.T) {
+	r.Run("should return error if domain template is nil", func() {
 		var domainTemplate *tag.Template = nil
 
 		expectedErrorMsg := "domain template is nil"
 
 		actualError := repository.Update(ctx, domainTemplate)
 
-		assert.EqualError(t, actualError, expectedErrorMsg)
+		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	t.Run("should return error if db client is nil", func(t *testing.T) {
-		domainTemplate := getDomainTemplate()
+	r.Run("should return error if db client is nil", func() {
+		domainTemplate := r.getDomainTemplate()
 		repository := &postgres.TemplateRepository{}
 
 		expectedErrorMsg := "db client is nil"
 
 		actualError := repository.Update(ctx, &domainTemplate)
 
-		assert.EqualError(t, actualError, expectedErrorMsg)
+		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	t.Run("should return error if record not found", func(t *testing.T) {
+	r.Run("should return error if record not found", func() {
 		err := setup()
-		require.NoError(t, err)
-		domainTemplate := getDomainTemplate()
+		r.NoError(err)
+		domainTemplate := r.getDomainTemplate()
 
 		actualError := repository.Update(ctx, &domainTemplate)
 
-		assert.Error(t, actualError)
+		r.Error(actualError)
 	})
 
-	t.Run("should return nil and updated domain template if update is success", func(t *testing.T) {
+	r.Run("should return nil and updated domain template if update is success", func() {
 		err := setup()
-		require.NoError(t, err)
-		domainTemplate := getDomainTemplate()
+		r.NoError(err)
+
+		domainTemplate := r.getDomainTemplate()
 		err = repository.Create(ctx, &domainTemplate)
-		require.NoError(t, err)
+		r.NoError(err)
 
 		domainTemplate.DisplayName = "Random Display"
 		domainTemplate.Fields[0].DisplayName = "Another Random Display"
@@ -209,23 +215,24 @@ func TestUpdate(t *testing.T) {
 		})
 
 		actualError := repository.Update(ctx, &domainTemplate)
-		assert.NoError(t, actualError)
+		r.NoError(actualError)
 
 		templates, err := repository.Read(ctx, domainTemplate)
-		require.NoError(t, err)
+		r.NoError(err)
 		recordModelTemplate := templates[0]
 
-		assert.Len(t, recordModelTemplate.Fields, 2)
-		assert.Equal(t, domainTemplate.DisplayName, recordModelTemplate.DisplayName)
-		assert.Equal(t, domainTemplate.Fields[0].DisplayName, recordModelTemplate.Fields[0].DisplayName)
-		assert.Equal(t, domainTemplate.UpdatedAt, recordModelTemplate.UpdatedAt)
-		assert.Equal(t, domainTemplate.Fields[0].UpdatedAt, recordModelTemplate.Fields[0].UpdatedAt)
+		r.Len(recordModelTemplate.Fields, 2)
+
+		r.Equal(domainTemplate.DisplayName, recordModelTemplate.DisplayName)
+		r.Equal(domainTemplate.UpdatedAt, recordModelTemplate.UpdatedAt)
+
+		reflect.DeepEqual(domainTemplate.Fields, recordModelTemplate.Fields)
 	})
 
-	t.Run("should return error if trying to update with unrelated field", func(t *testing.T) {
+	r.Run("should return error if trying to update with unrelated field", func() {
 		err := setup()
-		require.NoError(t, err)
-		domainTemplate := getDomainTemplate()
+		r.NoError(err)
+		domainTemplate := r.getDomainTemplate()
 		if err := repository.Create(ctx, &domainTemplate); err != nil {
 			panic(err)
 		}
@@ -233,13 +240,13 @@ func TestUpdate(t *testing.T) {
 
 		actualError := repository.Update(ctx, &domainTemplate)
 
-		assert.EqualError(t, actualError, "error updating template: field not found when updating fields")
+		r.EqualError(actualError, "error updating template: failed updating fields: sql: no rows in result set")
 	})
 
-	t.Run("should return error if trying to update with duplicated field", func(t *testing.T) {
+	r.Run("should return error if trying to update with duplicated field", func() {
 		err := setup()
-		require.NoError(t, err)
-		domainTemplate := getDomainTemplate()
+		r.NoError(err)
+		domainTemplate := r.getDomainTemplate()
 		domainTemplate.Fields = append(domainTemplate.Fields, tag.Field{
 			URN:         "second_field",
 			DisplayName: "Second Field",
@@ -256,55 +263,55 @@ func TestUpdate(t *testing.T) {
 
 		actualError := repository.Update(ctx, &domainTemplate)
 
-		assert.EqualError(t, actualError, "error updating template: failed updating fields: ERROR: duplicate key value violates unique constraint \"fields_idx_urn_template_urn\" (SQLSTATE 23505)")
+		r.EqualError(actualError, "error updating template: failed updating fields: ERROR: duplicate key value violates unique constraint \"fields_idx_urn_template_urn\" (SQLSTATE 23505)")
 	})
 }
 
-func TestDelete(t *testing.T) {
+func (r *TemplateRepositoryTestSuite) TestDelete() {
 	ctx := context.TODO()
 	repository := postgres.NewTemplateRepository(testDBClient)
 
-	t.Run("should return error if db client is nil", func(t *testing.T) {
-		domainTemplate := getDomainTemplate()
+	r.Run("should return error if db client is nil", func() {
+		domainTemplate := r.getDomainTemplate()
 		repository := &postgres.TemplateRepository{}
 
 		expectedErrorMsg := "db client is nil"
 
 		actualError := repository.Delete(ctx, domainTemplate)
 
-		assert.EqualError(t, actualError, expectedErrorMsg)
+		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	t.Run("should return error if record not found", func(t *testing.T) {
+	r.Run("should return error if record not found", func() {
 		err := setup()
-		require.NoError(t, err)
+		r.NoError(err)
 
-		domainTemplate := getDomainTemplate()
+		domainTemplate := r.getDomainTemplate()
 
 		err = repository.Delete(ctx, domainTemplate)
-		assert.EqualError(t, err, "error deleting template: could not find template \"governance_policy\"")
+		r.EqualError(err, "error deleting template: could not find template \"governance_policy\"")
 	})
 
-	t.Run("should return nil if record is deleted", func(t *testing.T) {
+	r.Run("should return nil if record is deleted", func() {
 		err := setup()
-		require.NoError(t, err)
+		r.NoError(err)
 
-		domainTemplate := getDomainTemplate()
+		domainTemplate := r.getDomainTemplate()
 		if err := repository.Create(ctx, &domainTemplate); err != nil {
 			panic(err)
 		}
 
 		err = repository.Delete(ctx, domainTemplate)
-		assert.NoError(t, err)
+		r.NoError(err)
 
 		templates, err := repository.Read(ctx, domainTemplate)
-		require.NoError(t, err)
+		r.NoError(err)
 
-		assert.Empty(t, templates)
+		r.Empty(templates)
 	})
 }
 
-func getDomainTemplate() tag.Template {
+func (r *TemplateRepositoryTestSuite) getDomainTemplate() tag.Template {
 	return tag.Template{
 		URN:         "governance_policy",
 		DisplayName: "Governance Policy",
@@ -323,11 +330,15 @@ func getDomainTemplate() tag.Template {
 	}
 }
 
-func updateTimeForDomainTemplate(domainTemplate *tag.Template, t time.Time) {
+func (r *TemplateRepositoryTestSuite) updateTimeForDomainTemplate(domainTemplate *tag.Template, t time.Time) {
 	domainTemplate.CreatedAt = t
 	domainTemplate.UpdatedAt = t
 	for i := 0; i < len(domainTemplate.Fields); i++ {
 		domainTemplate.Fields[i].CreatedAt = t
 		domainTemplate.Fields[i].UpdatedAt = t
 	}
+}
+
+func TestTemplateRepository(t *testing.T) {
+	suite.Run(t, &TemplateRepositoryTestSuite{})
 }
