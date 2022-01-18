@@ -23,7 +23,6 @@ require (
 	github.com/odpf/salt v0.0.0-20211028100023-de463ef825e1
 	github.com/olivere/elastic/v7 v7.0.12
 	github.com/pkg/errors v0.9.1
-	github.com/rs/cors v1.8.2
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
