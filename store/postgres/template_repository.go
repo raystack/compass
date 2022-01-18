@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"context"
-	"strings"
+	"database/sql"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -29,19 +29,37 @@ func (r *TemplateRepository) Create(ctx context.Context, domainTemplate *tag.Tem
 		return errNilDomainTemplate
 	}
 
-	modelTemplate := r.toModelTemplate(*domainTemplate)
+	modelTemplate := &Template{}
+	modelTemplate.buildFromDomainTemplate(*domainTemplate)
 
 	timestamp := time.Now().UTC()
 	modelTemplate.CreatedAt = timestamp
 	modelTemplate.UpdatedAt = timestamp
 
 	if err := r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
-		return insertTemplateFieldToDBTx(ctx, tx, &modelTemplate)
+		insertedTemplate := *modelTemplate
+		if err := insertTemplateToDBTx(ctx, tx, &insertedTemplate); err != nil {
+			return err
+		}
+
+		for _, field := range modelTemplate.Fields {
+			field.CreatedAt = modelTemplate.CreatedAt
+			field.UpdatedAt = modelTemplate.UpdatedAt
+			field.TemplateURN = modelTemplate.URN
+
+			if err := insertFieldToDBTx(ctx, tx, &field); err != nil {
+				return err
+			}
+
+			insertedTemplate.Fields = append(insertedTemplate.Fields, field)
+		}
+		*modelTemplate = insertedTemplate
+		return nil
 	}); err != nil {
 		return errors.New("failed to insert template")
 	}
 
-	r.updateDomainTemplate(domainTemplate, modelTemplate)
+	*domainTemplate = modelTemplate.toDomainTemplate()
 	return nil
 }
 
@@ -56,7 +74,7 @@ func (r *TemplateRepository) Read(ctx context.Context, filter tag.Template) (out
 	templates := templatesFields.toModelTemplates()
 
 	for _, record := range templates {
-		domainTemplate := r.toDomainTemplate(record)
+		domainTemplate := record.toDomainTemplate()
 		output = append(output, domainTemplate)
 	}
 	return
@@ -67,95 +85,185 @@ func (r *TemplateRepository) Update(ctx context.Context, targetURN string, domai
 	if domainTemplate == nil {
 		return errNilDomainTemplate
 	}
-	modelTemplate := r.toModelTemplate(*domainTemplate)
-	modelTemplate.UpdatedAt = time.Now().UTC()
+
+	modelTemplate := &Template{}
+	modelTemplate.buildFromDomainTemplate(*domainTemplate)
+	updatedModelTemplate := *modelTemplate
 	if err := r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
-		return updateTemplateFieldToDBTx(ctx, tx, targetURN, &modelTemplate)
+		timestamp := time.Now().UTC()
+
+		updatedModelTemplate.UpdatedAt = timestamp
+		if err := updateTemplateToDBTx(ctx, tx, targetURN, &updatedModelTemplate); err != nil {
+			return errors.Wrap(err, "failed to update a field")
+		}
+
+		for _, field := range modelTemplate.Fields {
+			field.TemplateURN = modelTemplate.URN
+			field.UpdatedAt = timestamp
+
+			if field.ID == 0 {
+				field.CreatedAt = timestamp
+				field.TemplateURN = modelTemplate.URN
+
+				if err := insertFieldToDBTx(ctx, tx, &field); err != nil {
+					return errors.Wrap(err, "failed to insert a field")
+				}
+
+				updatedModelTemplate.Fields = append(updatedModelTemplate.Fields, field)
+				continue
+			}
+
+			if err := updateFieldToDBTx(ctx, tx, &field); err != nil {
+				return errors.Wrap(err, "failed to update a field")
+			}
+			updatedModelTemplate.Fields = append(updatedModelTemplate.Fields, field)
+		}
+
+		*modelTemplate = updatedModelTemplate
+		return nil
 	}); err != nil {
 		return errors.Wrap(err, "failed to update template")
 	}
-	*domainTemplate = r.toDomainTemplate(modelTemplate)
+
+	*domainTemplate = updatedModelTemplate.toDomainTemplate()
+
 	return nil
 }
 
 // Delete deletes template and its fields from database
 func (r *TemplateRepository) Delete(ctx context.Context, filter tag.Template) error {
-	if err := deleteTemplateFromDB(ctx, r.client.db, filter.URN); err != nil {
-		return errors.Wrap(err, "error deleting template")
+	res, err := r.client.db.ExecContext(ctx, `
+					DELETE FROM
+						templates 
+					WHERE
+						urn = $1`, filter.URN)
+	if err != nil {
+		return errors.Wrapf(err, "failed to delete template with urn: %s", filter.URN)
+	}
+
+	tmpRowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to get row affected in deleting template")
+	}
+
+	if tmpRowsAffected == 0 {
+		return tag.TemplateNotFoundError{URN: filter.URN}
 	}
 	return nil
 }
 
-func (r *TemplateRepository) updateDomainTemplate(target *tag.Template, source Template) {
-	target.URN = source.URN
-	target.DisplayName = source.DisplayName
-	target.Description = source.Description
-	target.CreatedAt = source.CreatedAt
-	target.UpdatedAt = source.UpdatedAt
-	target.Fields = r.toDomainField(source.Fields)
-}
-
-func (r *TemplateRepository) toDomainTemplate(modelTemplate Template) tag.Template {
-	return tag.Template{
-		URN:         modelTemplate.URN,
-		DisplayName: modelTemplate.DisplayName,
-		Description: modelTemplate.Description,
-		Fields:      r.toDomainField(modelTemplate.Fields),
-		CreatedAt:   modelTemplate.CreatedAt,
-		UpdatedAt:   modelTemplate.UpdatedAt,
+func insertTemplateToDBTx(ctx context.Context, tx *sqlx.Tx, modelTemplate *Template) error {
+	var insertedTemplate Template
+	if err := tx.QueryRowxContext(ctx, `
+					INSERT INTO 
+					templates 
+						(urn,display_name,description,created_at,updated_at) 
+					VALUES 
+						($1,$2,$3,$4,$5)
+					RETURNING *
+				`,
+		modelTemplate.URN, modelTemplate.DisplayName, modelTemplate.Description, modelTemplate.CreatedAt, modelTemplate.UpdatedAt).
+		StructScan(&insertedTemplate); err != nil {
+		return errors.Wrap(err, "failed to insert a template")
 	}
+
+	*modelTemplate = insertedTemplate
+	return nil
 }
 
-func (r *TemplateRepository) toDomainField(listOfModelField []Field) []tag.Field {
-	output := make([]tag.Field, len(listOfModelField))
-	for i, field := range listOfModelField {
-		var options []string
-		if field.Options != nil {
-			options = strings.Split(*field.Options, fieldOptionSeparator)
+func insertFieldToDBTx(ctx context.Context, tx *sqlx.Tx, field *Field) error {
+	var insertedField Field
+	if err := tx.QueryRowxContext(ctx, `
+					INSERT INTO 
+					fields 
+						(urn, display_name, description, data_type, options, required, template_urn, created_at, updated_at)
+					VALUES 
+						($1,$2,$3,$4,$5,$6,$7,$8,$9)
+					RETURNING *
+					`,
+		field.URN, field.DisplayName, field.Description, field.DataType, field.Options, field.Required, field.TemplateURN, field.CreatedAt, field.UpdatedAt).
+		StructScan(&insertedField); err != nil {
+		return errors.Wrap(err, "failed to insert a field")
+	}
+	*field = insertedField
+	return nil
+}
+
+func readTemplatesJoinFieldsFromDB(ctx context.Context, db *sqlx.DB, templateURN string) (templates TemplateFields, err error) {
+	if txErr := db.Select(&templates, `
+		SELECT 
+			t.urn as "templates.urn", t.display_name as "templates.display_name", t.description as "templates.description", 
+			t.created_at as "templates.created_at", t.updated_at as "templates.updated_at", 
+			f.id as "fields.id", f.urn as "fields.urn", f.display_name as "fields.display_name", f.description as "fields.description",
+			f.data_type as "fields.data_type", f.options as "fields.options", f.required as "fields.required", f.template_urn as "fields.template_urn", 
+			f.created_at as "fields.created_at", f.updated_at as "fields.updated_at"
+		FROM 
+			templates t
+		JOIN 
+			fields f
+		ON 
+			f.template_urn = t.urn 
+		WHERE 
+			t.urn = $1`, templateURN); txErr != nil {
+		err = errors.Wrap(txErr, "failed reading templates")
+		return
+	}
+
+	if len(templates) == 0 {
+		err = &tag.TemplateNotFoundError{URN: templateURN}
+		return
+	}
+
+	return
+}
+
+func updateTemplateToDBTx(ctx context.Context, tx *sqlx.Tx, targetTemplateURN string, modelTemplate *Template) error {
+	var updatedTemplate Template
+	if err := tx.QueryRowxContext(ctx, `
+					UPDATE
+						templates 
+					SET
+						urn = $1, display_name = $2, description = $3, updated_at = $4
+					WHERE
+						urn = $5
+					RETURNING *`,
+		modelTemplate.URN, modelTemplate.DisplayName, modelTemplate.Description, modelTemplate.UpdatedAt, targetTemplateURN).
+		StructScan(&updatedTemplate); err != nil {
+		// scan returns sql.ErrNoRows if no rows
+		if errors.Is(err, sql.ErrNoRows) {
+			return tag.TemplateNotFoundError{URN: modelTemplate.URN}
 		}
-		output[i] = tag.Field{
-			ID:          field.ID,
-			URN:         field.URN,
-			DisplayName: field.DisplayName,
-			Description: field.Description,
-			DataType:    field.DataType,
-			Options:     options,
-			Required:    field.Required,
-			CreatedAt:   field.CreatedAt,
-			UpdatedAt:   field.UpdatedAt,
-		}
+		return errors.Wrap(err, "failed building update template sql")
 	}
-	return output
+
+	*modelTemplate = updatedTemplate
+	return nil
 }
 
-func (r *TemplateRepository) toModelTemplate(domainTemplate tag.Template) Template {
-	return Template{
-		URN:         domainTemplate.URN,
-		DisplayName: domainTemplate.DisplayName,
-		Description: domainTemplate.Description,
-		Fields:      r.toModelField(domainTemplate.Fields),
-	}
-}
+func updateFieldToDBTx(ctx context.Context, tx *sqlx.Tx, field *Field) error {
+	var updatedField Field
 
-func (r *TemplateRepository) toModelField(listOfDomainField []tag.Field) []Field {
-	var output []Field
-	for _, field := range listOfDomainField {
-		var options *string
-		if len(field.Options) > 0 {
-			joinedOptions := strings.Join(field.Options, fieldOptionSeparator)
-			options = &joinedOptions
-		}
-		output = append(output, Field{
-			ID:          field.ID,
-			URN:         field.URN,
-			DisplayName: field.DisplayName,
-			Description: field.Description,
-			DataType:    field.DataType,
-			Options:     options,
-			Required:    field.Required,
-		})
+	if err := tx.QueryRowxContext(ctx, `
+					UPDATE
+						fields
+					SET
+						urn = $1, display_name = $2, description = $3, data_type = $4, options = $5, 
+						required = $6, template_urn = $7, updated_at = $8
+					WHERE
+						id = $9 AND template_urn = $7
+					RETURNING *`,
+		field.URN, field.DisplayName, field.Description, field.DataType, field.Options, field.Required,
+		field.TemplateURN, field.UpdatedAt, field.ID).
+		StructScan(&updatedField); err != nil {
+		return errors.Wrap(err, "failed updating fields")
 	}
-	return output
+
+	if updatedField.ID == 0 {
+		return errors.New("field not found when updating fields")
+	}
+
+	*field = updatedField
+	return nil
 }
 
 // NewTemplateRepository initializes template repository clients

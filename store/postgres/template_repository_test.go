@@ -2,6 +2,7 @@ package postgres_test
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"testing"
 	"time"
@@ -237,12 +238,19 @@ func (r *TemplateRepositoryTestSuite) TestUpdate() {
 
 		templates, err := repository.Read(ctx, domainTemplate)
 		r.NoError(err)
+
 		recordModelTemplate := templates[0]
 		r.Len(recordModelTemplate.Fields, 2)
 		r.Equal(domainTemplate.DisplayName, recordModelTemplate.DisplayName)
-		r.Equal(domainTemplate.Fields[0].DisplayName, recordModelTemplate.Fields[0].DisplayName)
-		r.Equal(domainTemplate.UpdatedAt, recordModelTemplate.UpdatedAt)
-		r.Equal(domainTemplate.Fields[0].UpdatedAt, recordModelTemplate.Fields[0].UpdatedAt)
+		r.True(domainTemplate.UpdatedAt.Equal(recordModelTemplate.UpdatedAt))
+
+		expectedFields, err := json.Marshal(recordModelTemplate.Fields)
+		r.NoError(err)
+
+		actualFields, err := json.Marshal(domainTemplate.Fields)
+		r.NoError(err)
+
+		r.JSONEq(string(expectedFields), string(actualFields))
 	})
 
 	r.Run("should return error if trying to update with conflicting existing template", func() {
@@ -321,7 +329,7 @@ func (r *TemplateRepositoryTestSuite) TestDelete() {
 		domainTemplate := r.getDomainTemplate()
 
 		err = repository.Delete(ctx, domainTemplate)
-		r.EqualError(err, "error deleting template: could not find template \"governance_policy\"")
+		r.EqualError(err, "could not find template \"governance_policy\"")
 	})
 
 	r.Run("should return nil if record is deleted", func() {

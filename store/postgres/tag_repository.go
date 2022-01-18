@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"context"
-	"strings"
+	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -26,19 +26,49 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 	if domainTag == nil {
 		return errNilDomainTag
 	}
+
 	modelTemplatesFields, err := readTemplatesJoinFieldsFromDB(ctx, r.client.db, domainTag.TemplateURN)
 	if err != nil {
 		return err
 	}
-	domainTemplates := r.convertToDomainTemplates(modelTemplatesFields)
+
+	domainTemplates := modelTemplatesFields.toDomainTemplates()
 	if len(domainTemplates) < 1 {
 		return tag.TemplateNotFoundError{URN: domainTag.TemplateURN}
 	}
 
 	var insertedModelTags []Tag
 	if err := r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
-		insertedModelTags, err = insertDomainTagToDBTx(ctx, tx, domainTag, time.Now().UTC())
-		return err
+		timestamp := time.Now().UTC()
+
+		for _, tv := range domainTag.TagValues {
+			var insertedTagValue Tag
+			if tv.FieldValue == nil {
+				continue
+			}
+			tag := &Tag{
+				RecordType: domainTag.RecordType,
+				RecordURN:  domainTag.RecordURN,
+				FieldID:    tv.FieldID,
+				Value:      fmt.Sprintf("%v", tv.FieldValue),
+				CreatedAt:  timestamp,
+				UpdatedAt:  timestamp,
+			}
+
+			if err := tx.QueryRowxContext(ctx, `
+						INSERT INTO tags
+							(value, record_urn, record_type, field_id, created_at, updated_at)
+						VALUES
+							($1, $2, $3, $4, $5, $6)
+						RETURNING *`,
+				tag.Value, tag.RecordURN, tag.RecordType, tag.FieldID, tag.CreatedAt, tag.UpdatedAt).
+				StructScan(&insertedTagValue); err != nil {
+				return errors.Wrap(err, "failed to insert a domain tag")
+			}
+
+			insertedModelTags = append(insertedModelTags, insertedTagValue)
+		}
+		return nil
 	}); err != nil {
 		return errors.Wrap(err, "failed to create domain tag")
 	}
@@ -48,8 +78,6 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 
 // Read reads tags grouped by its template
 func (r *TagRepository) Read(ctx context.Context, filter tag.Tag) ([]tag.Tag, error) {
-	tmpltsMap := make(map[string]Template, 0) // template urn as key
-	tagsMap := make(map[uint]Tag, 0)
 
 	if filter.RecordType == "" {
 		return nil, errEmptyRecordType
@@ -58,45 +86,47 @@ func (r *TagRepository) Read(ctx context.Context, filter tag.Tag) ([]tag.Tag, er
 		return nil, errEmptyRecordURN
 	}
 
-	templateTagFields, err := readTemplatesJoinTagsJoinFieldsFromDB(ctx, r.client.db, filter)
-	if err != nil {
-		return nil, err
+	sqlQuery := `
+		SELECT 
+			t.urn as "templates.urn", t.display_name as "templates.display_name", t.description as "templates.description",
+			t.created_at as "templates.created_at", t.updated_at as "templates.updated_at",
+			tg.id as "tags.id", tg.value as "tags.value", tg.record_urn as "tags.record_urn", tg.record_type as "tags.record_type",
+			tg.field_id as "tags.field_id", tg.created_at as "tags.created_at", tg.updated_at as "tags.updated_at",
+			f.id as "fields.id", f.urn as "fields.urn", f.display_name as "fields.display_name", f.description as "fields.description",
+			f.data_type as "fields.data_type", f.options as "fields.options", f.required as "fields.required", f.template_urn as "fields.template_urn",
+			f.created_at as "fields.created_at", f.updated_at as "fields.updated_at"
+		FROM 
+			templates t
+		JOIN 
+			fields f ON f.template_urn = t.urn 
+		JOIN
+			tags tg ON f.id = tg.field_id
+		WHERE
+			tg.record_urn = $1 AND tg.record_type = $2`
+	sqlArgs := []interface{}{filter.RecordURN, filter.RecordType}
+
+	if filter.TemplateURN != "" {
+		// filter by record and template
+		sqlQuery += " AND t.urn = $3"
+		sqlArgs = append(sqlArgs, filter.TemplateURN)
 	}
 
-	for _, ttf := range templateTagFields {
-		// build template
-		if _, ok := tmpltsMap[ttf.Template.URN]; !ok {
-			tmpltsMap[ttf.Template.URN] = ttf.Template
+	var templateTagFields TemplateTagFields
+	if txErr := r.client.db.Select(&templateTagFields, sqlQuery, sqlArgs...); txErr != nil {
+		return nil, errors.Wrap(txErr, "failed reading tag domain")
+	}
+
+	if len(templateTagFields) == 0 {
+		return nil, tag.NotFoundError{
+			URN:      filter.RecordURN,
+			Type:     filter.RecordType,
+			Template: filter.TemplateURN,
 		}
-
-		templatePtr := tmpltsMap[ttf.Template.URN]
-		templatePtr.Fields = append(templatePtr.Fields, ttf.Field)
-		tmpltsMap[ttf.Template.URN] = templatePtr
-
-		if _, ok := tagsMap[ttf.Tag.ID]; !ok {
-			ttf.Tag.Field = ttf.Field
-			tagsMap[ttf.Tag.ID] = ttf.Tag
-		}
 	}
 
-	var templates []Template
-	for _, tmp := range tmpltsMap {
-		templates = append(templates, tmp)
-	}
-	var tags []Tag
-	for _, tg := range tagsMap {
-		tags = append(tags, tg)
-	}
+	templates, tags := templateTagFields.toModelTemplatesAndTags()
 
-	templateByURN := r.mapTemplateByTemplateURN(templates)
-	tagsByTemplateURN := r.mapTagsByTemplateURN(tags)
-
-	output := []tag.Tag{}
-	for templateURN, tags := range tagsByTemplateURN {
-		domainTag := r.convertToDomainTag(filter.RecordType, filter.RecordURN, templateByURN[templateURN], tags)
-		output = append(output, domainTag)
-	}
-	return output, nil
+	return tags.toDomainTags(filter.RecordType, filter.RecordURN, templates), nil
 }
 
 // Update updates tags in the database
@@ -104,19 +134,55 @@ func (r *TagRepository) Update(ctx context.Context, domainTag *tag.Tag) error {
 	if domainTag == nil {
 		return errNilDomainTag
 	}
+
 	modelTemplatesFields, err := readTemplatesJoinFieldsFromDB(ctx, r.client.db, domainTag.TemplateURN)
 	if err != nil {
 		return err
 	}
-	domainTemplates := r.convertToDomainTemplates(modelTemplatesFields)
+
+	domainTemplates := modelTemplatesFields.toDomainTemplates()
 	if len(domainTemplates) < 1 {
 		return tag.TemplateNotFoundError{URN: domainTag.TemplateURN}
 	}
 
 	var updatedModelTags []Tag
 	if err := r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
-		updatedModelTags, err = updateDomainTagToDBTx(ctx, tx, domainTag, time.Now().UTC())
-		return err
+		timestamp := time.Now().UTC()
+
+		for _, value := range domainTag.TagValues {
+			if value.FieldValue == nil || value.FieldValue == "" {
+				continue
+			}
+			valueStr := fmt.Sprintf("%v", value.FieldValue)
+			modelTag := &Tag{
+				Value:      valueStr,
+				RecordURN:  domainTag.RecordURN,
+				RecordType: domainTag.RecordType,
+				FieldID:    value.FieldID,
+				CreatedAt:  timestamp,
+				UpdatedAt:  timestamp,
+			}
+
+			var updatedModelTag Tag
+			if err := tx.QueryRowxContext(ctx, `
+							INSERT INTO
+							tags 
+								(value, record_urn, record_type, field_id, created_at, updated_at)
+							VALUES
+								($1, $2, $3, $4, $5, $6)
+							ON CONFLICT 
+								(record_urn, record_type, field_id)
+							DO UPDATE SET 
+								(value, record_urn, record_type, field_id, created_at, updated_at) = 
+								($1, $2, $3, $4, $5, $6) 
+							RETURNING *`,
+				modelTag.Value, modelTag.RecordURN, modelTag.RecordType, modelTag.FieldID, modelTag.CreatedAt, modelTag.UpdatedAt).
+				StructScan(&updatedModelTag); err != nil {
+				return errors.Wrap(err, "failed to update a domain tag")
+			}
+			updatedModelTags = append(updatedModelTags, updatedModelTag)
+		}
+		return nil
 	}); err != nil {
 		return errors.Wrap(err, "failed to update domain Tag")
 	}
@@ -150,104 +216,21 @@ func (r *TagRepository) Delete(ctx context.Context, domainTag tag.Tag) error {
 			RecordType: domainTag.RecordType,
 		})
 	}
-	return deleteTagsFromDBTx(ctx, r.client.db, deletedModelTags)
-}
 
-func (r *TagRepository) convertToDomainTemplates(modelTemplateFields []TemplateField) []tag.Template {
-	templates := []tag.Template{}
-	templatesMap := map[string]Template{}
-	for _, tf := range modelTemplateFields {
-		// build template
-		if _, ok := templatesMap[tf.Template.URN]; !ok {
-			templatesMap[tf.Template.URN] = tf.Template
+	for _, modelTag := range deletedModelTags {
+		sqlQuery := "DELETE FROM tags WHERE tags.record_urn = $1 AND tags.record_type = $2"
+		sqlArgs := []interface{}{modelTag.RecordURN, modelTag.RecordType}
+
+		if modelTag.FieldID != 0 {
+			sqlQuery += " AND tags.field_id = $3"
+			sqlArgs = append(sqlArgs, modelTag.FieldID)
 		}
 
-		templatePtr := templatesMap[tf.Template.URN]
-		templatePtr.Fields = append(templatePtr.Fields, tf.Field)
-		templatesMap[tf.Template.URN] = templatePtr
-	}
-
-	for _, template := range templatesMap {
-		listOfDomainField := []tag.Field{}
-		for _, field := range template.Fields {
-			var options []string
-			if field.Options != nil {
-				options = strings.Split(*field.Options, ",")
-			}
-			listOfDomainField = append(listOfDomainField, tag.Field{
-				ID:          field.ID,
-				URN:         field.URN,
-				DisplayName: field.DisplayName,
-				Description: field.Description,
-				DataType:    field.DataType,
-				Required:    field.Required,
-				Options:     options,
-				CreatedAt:   field.CreatedAt,
-				UpdatedAt:   field.UpdatedAt,
-			})
+		if _, txErr := r.client.db.ExecContext(ctx, sqlQuery, sqlArgs...); txErr != nil {
+			return errors.Wrapf(txErr, "failed to delete tag with record urn: %s, record type: %s, field id: %d", modelTag.RecordURN, modelTag.RecordType, modelTag.FieldID)
 		}
-
-		templates = append(templates, tag.Template{
-			URN:         template.URN,
-			DisplayName: template.DisplayName,
-			Description: template.Description,
-			Fields:      listOfDomainField,
-			CreatedAt:   template.CreatedAt,
-			UpdatedAt:   template.UpdatedAt,
-		})
 	}
-	return templates
-}
-
-func (r *TagRepository) mapTagsByTemplateURN(tags []Tag) map[string][]Tag {
-	tagsByTemplateURN := make(map[string][]Tag)
-	for _, t := range tags {
-		key := t.Field.TemplateURN
-		if tagsByTemplateURN[key] == nil {
-			tagsByTemplateURN[key] = []Tag{}
-		}
-		tagsByTemplateURN[key] = append(tagsByTemplateURN[key], t)
-	}
-	return tagsByTemplateURN
-}
-
-func (r *TagRepository) mapTemplateByTemplateURN(templates []Template) map[string]Template {
-	templateByURN := make(map[string]Template)
-	for _, t := range templates {
-		templateByURN[t.URN] = t
-	}
-	return templateByURN
-}
-
-func (r *TagRepository) convertToDomainTag(recordType, recordURN string, template Template, tags []Tag) tag.Tag {
-	var listOfDomainTagValue []tag.TagValue
-	for _, t := range tags {
-		var options []string
-		if t.Field.Options != nil {
-			options = strings.Split(*t.Field.Options, ",")
-		}
-		parsedValue, _ := tag.ParseTagValue(template.URN, t.FieldID, t.Field.DataType, t.Value, options)
-		listOfDomainTagValue = append(listOfDomainTagValue, tag.TagValue{
-			FieldID:          t.FieldID,
-			FieldValue:       parsedValue,
-			FieldURN:         t.Field.URN,
-			FieldDisplayName: t.Field.DisplayName,
-			FieldDescription: t.Field.Description,
-			FieldDataType:    t.Field.DataType,
-			FieldOptions:     options,
-			FieldRequired:    t.Field.Required,
-			CreatedAt:        t.CreatedAt,
-			UpdatedAt:        t.UpdatedAt,
-		})
-	}
-	return tag.Tag{
-		RecordType:          recordType,
-		RecordURN:           recordURN,
-		TemplateURN:         template.URN,
-		TagValues:           listOfDomainTagValue,
-		TemplateDisplayName: template.DisplayName,
-		TemplateDescription: template.Description,
-	}
+	return nil
 }
 
 func (r *TagRepository) complementDomainTag(domainTag *tag.Tag, domainTemplate tag.Template, modelTags []Tag) error {
