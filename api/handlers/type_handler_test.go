@@ -56,8 +56,9 @@ func TestTypeHandler(t *testing.T) {
 
 					expected, err := json.Marshal([]map[string]interface{}{
 						{"name": "table", "count": 10},
-						{"name": "topic", "count": 30},
 						{"name": "job", "count": 15},
+						{"name": "dashboard", "count": 0},
+						{"name": "topic", "count": 30},
 					})
 					require.NoError(t, err)
 
