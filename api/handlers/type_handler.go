@@ -37,7 +37,8 @@ func (h *TypeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	results := []TypeWithCount{}
-	for typName, count := range typesNameMap {
+	for _, typName := range record.AllSupportedTypes {
+		count, _ := typesNameMap[typName]
 		results = append(results, TypeWithCount{
 			Name:  typName.String(),
 			Count: count,
