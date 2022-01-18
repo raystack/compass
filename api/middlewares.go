@@ -21,7 +21,6 @@ func decodeURLMiddleware(logger logrus.FieldLogger) mux.MiddlewareFunc {
 
 				newVars[key] = decodedVal
 			}
-
 			r = mux.SetURLVars(r, newVars)
 			h.ServeHTTP(rw, r)
 		})
