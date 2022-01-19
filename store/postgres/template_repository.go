@@ -267,6 +267,8 @@ func updateFieldToDBTx(ctx context.Context, tx *sqlx.Tx, field *Field) error {
 }
 
 // NewTemplateRepository initializes template repository clients
+// all methods in template repository uses passed by reference
+// which will mutate the reference variable in method's argument
 func NewTemplateRepository(c *Client) (*TemplateRepository, error) {
 	if c == nil {
 		return nil, errors.New("postgres client is nil")

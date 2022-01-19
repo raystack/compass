@@ -263,6 +263,8 @@ func (r *TagRepository) complementDomainTag(domainTag *tag.Tag, domainTemplate t
 }
 
 // NewTagRepository initializes tag repository
+// all methods in tag repository uses passed by reference
+// which will mutate the reference variable in method's argument
 func NewTagRepository(client *Client) (*TagRepository, error) {
 	if client == nil {
 		return nil, errors.New("postgres client is nil")
