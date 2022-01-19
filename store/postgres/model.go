@@ -130,6 +130,15 @@ type Field struct {
 
 type Fields []Field
 
+func (fs *Fields) isIDExist(id uint) bool {
+	for _, field := range *fs {
+		if field.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
 func (fs *Fields) toDomainFields() []tag.Field {
 	output := make([]tag.Field, len(*fs))
 	for i, field := range *fs {
@@ -178,15 +187,18 @@ type TemplateFields []TemplateField
 
 func (tfs TemplateFields) toModelTemplates() (templates []Template) {
 	templateMap := make(map[string]Template, 0)
+	// fieldMap := make(map[uint]Field, 0)
 
 	for _, tf := range tfs {
 		if _, ok := templateMap[tf.Template.URN]; !ok {
 			templateMap[tf.Template.URN] = tf.Template
 		}
-
 		templatePtr := templateMap[tf.Template.URN]
-		templatePtr.Fields = append(templatePtr.Fields, tf.Field)
-		templateMap[tf.Template.URN] = templatePtr
+		// check existing field
+		if !templatePtr.Fields.isIDExist(tf.Field.ID) {
+			templatePtr.Fields = append(templatePtr.Fields, tf.Field)
+			templateMap[tf.Template.URN] = templatePtr
+		}
 	}
 
 	for _, t := range templateMap {
@@ -205,8 +217,11 @@ func (tfs TemplateFields) toDomainTemplates() (templates []tag.Template) {
 		}
 
 		templatePtr := templatesMap[tf.Template.URN]
-		templatePtr.Fields = append(templatePtr.Fields, tf.Field)
-		templatesMap[tf.Template.URN] = templatePtr
+		// check existing field
+		if !templatePtr.Fields.isIDExist(tf.Field.ID) {
+			templatePtr.Fields = append(templatePtr.Fields, tf.Field)
+			templatesMap[tf.Template.URN] = templatePtr
+		}
 	}
 
 	for _, template := range templatesMap {
@@ -261,8 +276,11 @@ func (ttfs TemplateTagFields) toModelTemplatesAndTags() (templates Templates, ta
 		}
 
 		templatePtr := tmpltsMap[ttf.Template.URN]
-		templatePtr.Fields = append(templatePtr.Fields, ttf.Field)
-		tmpltsMap[ttf.Template.URN] = templatePtr
+		// check existing field
+		if !templatePtr.Fields.isIDExist(ttf.Field.ID) {
+			templatePtr.Fields = append(templatePtr.Fields, ttf.Field)
+			tmpltsMap[ttf.Template.URN] = templatePtr
+		}
 
 		if _, ok := tagsMap[ttf.Tag.ID]; !ok {
 			ttf.Tag.Field = ttf.Field
