@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/odpf/columbus/tag"
@@ -218,9 +219,15 @@ func TestTemplateTagFields(t *testing.T) {
 		expectedModelTemplates := getModelTemplates()
 		expectedModelTags := getModelTags()
 		actualModelTemplates, actualModelTags := ttfs.toModelTemplatesAndTags()
-
-		assert.EqualValues(t, expectedModelTags[0], actualModelTags[0])
 		assert.EqualValues(t, expectedModelTemplates[0], actualModelTemplates[0])
+
+		sort.Slice(actualModelTags[:], func(i, j int) bool {
+			return actualModelTags[i].ID < actualModelTags[j].ID
+		})
+		sort.Slice(expectedModelTags[:], func(i, j int) bool {
+			return expectedModelTags[i].ID < expectedModelTags[j].ID
+		})
+		assert.EqualValues(t, expectedModelTags[0], actualModelTags[0])
 	})
 }
 

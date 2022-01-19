@@ -2,10 +2,10 @@ package postgres_test
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
+	"sort"
 	"testing"
 
 	"github.com/odpf/columbus/store/postgres"
@@ -112,12 +112,16 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 		r.NotEmpty(domainTag.TagValues)
 		r.NotEmpty(tags[0].TagValues)
 
-		actualTagValues, err := json.Marshal(domainTag.TagValues)
-		r.NoError(err)
+		expectedTagValues := domainTag.TagValues
+		actualTagValues := tags[0].TagValues
 
-		expectedTagValues, err := json.Marshal(tags[0].TagValues)
-		r.NoError(err)
-		r.JSONEq(string(expectedTagValues), string(actualTagValues))
+		sort.Slice(expectedTagValues[:], func(i, j int) bool {
+			return expectedTagValues[i].FieldID < expectedTagValues[j].FieldID
+		})
+		sort.Slice(actualTagValues[:], func(i, j int) bool {
+			return actualTagValues[i].FieldID < actualTagValues[j].FieldID
+		})
+		r.EqualValues(expectedTagValues, actualTagValues)
 	})
 
 	r.Run("should return nil and update domain tag if no error found", func() {

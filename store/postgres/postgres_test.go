@@ -13,10 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	migrationsFilePath = "file://../../migrations"
-)
-
 var (
 	pgConfig = postgres.Config{
 		Host:     "localhost",
@@ -127,6 +123,6 @@ func setup(ctx context.Context, client *postgres.Client) (err error) {
 		return
 	}
 
-	err = client.Migrate(pgConfig, migrationsFilePath)
+	err = client.Migrate(pgConfig)
 	return
 }

@@ -5,11 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	// Register database postgres
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	// Register golang migrate source file
-	_ "github.com/golang-migrate/migrate/v4/source/file"
-
 	"github.com/odpf/columbus/record"
 	esStore "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/odpf/columbus/store/postgres"
@@ -18,8 +13,6 @@ import (
 
 const (
 	esMigrationTimeout = 5 * time.Second
-
-	migrationsFilePath = "file://migrations"
 )
 
 func RunMigrate() {
@@ -63,7 +56,7 @@ func migratePostgres() (err error) {
 		return err
 	}
 
-	err = pgClient.Migrate(pgConfig, migrationsFilePath)
+	err = pgClient.Migrate(pgConfig)
 	if err != nil {
 		return errors.Wrap(err, "problem with migration")
 
