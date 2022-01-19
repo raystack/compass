@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/odpf/salt/log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -9,7 +10,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/record"
-	"github.com/sirupsen/logrus"
 )
 
 // interface to lineage.Service
@@ -19,11 +19,11 @@ type LineageProvider interface {
 }
 
 type LineageHandler struct {
-	log             logrus.FieldLogger
+	log             log.Logger
 	lineageProvider LineageProvider
 }
 
-func NewLineageHandler(log logrus.FieldLogger, provider LineageProvider) *LineageHandler {
+func NewLineageHandler(log log.Logger, provider LineageProvider) *LineageHandler {
 	handler := &LineageHandler{
 		log:             log,
 		lineageProvider: provider,
@@ -35,8 +35,7 @@ func NewLineageHandler(log logrus.FieldLogger, provider LineageProvider) *Lineag
 func (handler *LineageHandler) ListLineage(w http.ResponseWriter, r *http.Request) {
 	graph, err := handler.lineageProvider.Graph()
 	if err != nil {
-		handler.log.
-			Errorf("error requesting graph: %v", err)
+		handler.log.Error("failed to request graph", "error", err)
 
 		status := http.StatusInternalServerError
 		writeJSONError(w, status, http.StatusText(status))
@@ -46,10 +45,7 @@ func (handler *LineageHandler) ListLineage(w http.ResponseWriter, r *http.Reques
 	opts := handler.parseOpts(r.URL.Query())
 	res, err := graph.Query(opts)
 	if err != nil {
-		handler.log.
-			WithField("query", opts).
-			Errorf("error querying graph: %v\ncfg: %v", err, opts)
-
+		handler.log.Error("failed to query graph", "query", opts, "error", err)
 		status := http.StatusBadRequest
 		if _, ok := err.(record.ErrNoSuchType); ok {
 			status = http.StatusNotFound
@@ -64,7 +60,7 @@ func (handler *LineageHandler) ListLineage(w http.ResponseWriter, r *http.Reques
 func (handler *LineageHandler) GetLineage(w http.ResponseWriter, r *http.Request) {
 	graph, err := handler.lineageProvider.Graph()
 	if err != nil {
-		handler.log.Errorf("error requesting graph: %v", err)
+		handler.log.Error("failed to request graph", "error", err)
 		status := http.StatusInternalServerError
 		writeJSONError(w, status, http.StatusText(status))
 		return
@@ -76,10 +72,7 @@ func (handler *LineageHandler) GetLineage(w http.ResponseWriter, r *http.Request
 
 	res, err := graph.Query(opts)
 	if err != nil {
-		handler.log.
-			WithField("query", opts).
-			Errorf("error querying graph: %v\ncfg: %v", err, opts)
-
+		handler.log.Error("failed to query graph", "query", opts, "error", err)
 		status := http.StatusBadRequest
 		if _, ok := err.(record.ErrNoSuchType); ok {
 			status = http.StatusNotFound

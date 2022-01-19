@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/odpf/salt/log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -8,11 +9,10 @@ import (
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/record"
 	"github.com/odpf/columbus/tag"
-	"github.com/sirupsen/logrus"
 )
 
 type Config struct {
-	Logger                  logrus.FieldLogger
+	Logger                  log.Logger
 	TagService              *tag.Service
 	TagTemplateService      *tag.TemplateService
 	TypeRepository          record.TypeRepository
@@ -32,30 +32,30 @@ type Handlers struct {
 
 func initHandlers(config Config) *Handlers {
 	typeHandler := handlers.NewTypeHandler(
-		config.Logger.WithField("reporter", "type-handler"),
+		config.Logger,
 		config.TypeRepository,
 	)
 
 	recordHandler := handlers.NewRecordHandler(
-		config.Logger.WithField("reporter", "record-handler"),
+		config.Logger,
 		config.TypeRepository,
 		config.DiscoveryService,
 		config.RecordRepositoryFactory,
 	)
 	searchHandler := handlers.NewSearchHandler(
-		config.Logger.WithField("reporter", "search-handler"),
+		config.Logger,
 		config.DiscoveryService,
 	)
 	lineageHandler := handlers.NewLineageHandler(
-		config.Logger.WithField("reporter", "lineage-handler"),
+		config.Logger,
 		config.LineageProvider,
 	)
 	tagHandler := handlers.NewTagHandler(
-		config.Logger.WithField("reporter", "tag-handler"),
+		config.Logger,
 		config.TagService,
 	)
 	tagTemplateHandler := handlers.NewTagTemplateHandler(
-		config.Logger.WithField("reporter", "tag-template-handler"),
+		config.Logger,
 		config.TagTemplateService,
 	)
 

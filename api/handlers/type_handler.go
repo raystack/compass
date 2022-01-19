@@ -2,20 +2,20 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/odpf/salt/log"
 	"net/http"
 	"strings"
 
 	"github.com/odpf/columbus/record"
-	"github.com/sirupsen/logrus"
 )
 
 // TypeHandler exposes a REST interface to types
 type TypeHandler struct {
 	typeRepo record.TypeRepository
-	log      logrus.FieldLogger
+	log      log.Logger
 }
 
-func NewTypeHandler(log logrus.FieldLogger, er record.TypeRepository) *TypeHandler {
+func NewTypeHandler(log log.Logger, er record.TypeRepository) *TypeHandler {
 	h := &TypeHandler{
 		typeRepo: er,
 		log:      log,

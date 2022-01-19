@@ -3,13 +3,13 @@ package handlers_test
 import (
 	"encoding/json"
 	"errors"
+	"github.com/odpf/salt/log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/odpf/columbus/api/handlers"
-	libmock "github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/tag"
 	"github.com/odpf/columbus/tag/mocks"
 
@@ -24,11 +24,12 @@ type TagHandlerTestSuite struct {
 	tagRepository      *mocks.TagRepository
 	templateRepository *mocks.TemplateRepository
 	recorder           *httptest.ResponseRecorder
+	log                log.Noop
 }
 
 func (s *TagHandlerTestSuite) TestNewHandler() {
 	s.Run("should return handler and nil if service is not nil", func() {
-		actualHandler := handlers.NewTagHandler(new(libmock.Logger), &tag.Service{})
+		actualHandler := handlers.NewTagHandler(&s.log, &tag.Service{})
 
 		s.NotNil(actualHandler)
 	})
@@ -40,7 +41,7 @@ func (s *TagHandlerTestSuite) Setup() {
 	templateService := tag.NewTemplateService(s.templateRepository)
 	service := tag.NewService(s.tagRepository, templateService)
 
-	s.handler = handlers.NewTagHandler(new(libmock.Logger), service)
+	s.handler = handlers.NewTagHandler(&s.log, service)
 	s.recorder = httptest.NewRecorder()
 }
 

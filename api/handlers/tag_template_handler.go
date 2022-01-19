@@ -4,28 +4,27 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/odpf/salt/log"
 	"net/http"
 
-	"github.com/odpf/columbus/tag"
-	"github.com/sirupsen/logrus"
-
 	"github.com/gorilla/mux"
+	"github.com/odpf/columbus/tag"
 )
 
 // TagTemplateHandler is handler to manage template related requests
 type TagTemplateHandler struct {
 	service *tag.TemplateService
-	logger  logrus.FieldLogger
+	log     log.Logger
 }
 
 // NewTagTemplateHandler initializes template handler based on the service
-func NewTagTemplateHandler(logger logrus.FieldLogger, service *tag.TemplateService) *TagTemplateHandler {
+func NewTagTemplateHandler(log log.Logger, service *tag.TemplateService) *TagTemplateHandler {
 	if service == nil {
 		panic("template service is nil")
 	}
 	return &TagTemplateHandler{
 		service: service,
-		logger:  logger,
+		log:     log,
 	}
 }
 
@@ -42,7 +41,7 @@ func (h *TagTemplateHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		internalServerError(w, h.logger, fmt.Sprintf("error creating tag template: %s", err.Error()))
+		internalServerError(w, h.log, fmt.Sprintf("error creating tag template: %s", err.Error()))
 		return
 	}
 
@@ -54,7 +53,7 @@ func (h *TagTemplateHandler) Index(w http.ResponseWriter, r *http.Request) {
 	urn := r.URL.Query().Get("urn")
 	listOfDomainTemplate, err := h.service.Index(r.Context(), urn)
 	if err != nil {
-		internalServerError(w, h.logger, fmt.Sprintf("error finding templates: %s", err.Error()))
+		internalServerError(w, h.log, fmt.Sprintf("error finding templates: %s", err.Error()))
 		return
 	}
 	writeJSON(w, http.StatusOK, listOfDomainTemplate)
@@ -86,7 +85,7 @@ func (h *TagTemplateHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		internalServerError(w, h.logger, fmt.Sprintf("error updating template: %s", err.Error()))
+		internalServerError(w, h.log, fmt.Sprintf("error updating template: %s", err.Error()))
 		return
 	}
 
@@ -108,7 +107,7 @@ func (h *TagTemplateHandler) Find(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		internalServerError(w, h.logger, fmt.Sprintf("error finding a template: %s", err.Error()))
+		internalServerError(w, h.log, fmt.Sprintf("error finding a template: %s", err.Error()))
 		return
 	}
 
@@ -130,7 +129,7 @@ func (h *TagTemplateHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		internalServerError(w, h.logger, fmt.Sprintf("error deleting a template: %s", err.Error()))
+		internalServerError(w, h.log, fmt.Sprintf("error deleting a template: %s", err.Error()))
 		return
 	}
 

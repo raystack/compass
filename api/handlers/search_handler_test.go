@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/odpf/salt/log"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -191,6 +192,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 		t.Run(testCase.Title, func(t *testing.T) {
 			var (
 				recordSearcher = new(mock.RecordSearcher)
+				logger         = log.NewNoop()
 			)
 			if testCase.InitSearcher != nil {
 				testCase.InitSearcher(testCase, recordSearcher)
@@ -205,7 +207,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 			rw := httptest.NewRecorder()
 
 			service := discovery.NewService(nil, recordSearcher)
-			handler := handlers.NewSearchHandler(new(mock.Logger), service)
+			handler := handlers.NewSearchHandler(logger, service)
 			handler.Search(rw, rr)
 
 			expectStatus := testCase.ExpectStatus
@@ -319,6 +321,7 @@ func TestSearchHandlerSuggest(t *testing.T) {
 		t.Run(testCase.Title, func(t *testing.T) {
 			var (
 				recordSearcher = new(mock.RecordSearcher)
+				logger         = log.NewNoop()
 			)
 			if testCase.InitSearcher != nil {
 				testCase.InitSearcher(testCase, recordSearcher)
@@ -333,7 +336,7 @@ func TestSearchHandlerSuggest(t *testing.T) {
 			rw := httptest.NewRecorder()
 
 			service := discovery.NewService(nil, recordSearcher)
-			handler := handlers.NewSearchHandler(new(mock.Logger), service)
+			handler := handlers.NewSearchHandler(logger, service)
 			handler.Suggest(rw, rr)
 
 			expectStatus := testCase.ExpectStatus
