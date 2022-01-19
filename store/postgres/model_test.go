@@ -1,12 +1,10 @@
 package postgres
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/odpf/columbus/tag"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestModelTag(t *testing.T) {
@@ -221,17 +219,8 @@ func TestTemplateTagFields(t *testing.T) {
 		expectedModelTags := getModelTags()
 		actualModelTemplates, actualModelTags := ttfs.toModelTemplatesAndTags()
 
-		expectedModelTagsByte, err := json.Marshal(expectedModelTags)
-		require.NoError(t, err)
-		expectedModelTemplatesByte, err := json.Marshal(expectedModelTemplates)
-		require.NoError(t, err)
-		actualModelTagsByte, err := json.Marshal(actualModelTags)
-		require.NoError(t, err)
-		actualModelTemplatesByte, err := json.Marshal(actualModelTemplates)
-		require.NoError(t, err)
-
-		assert.JSONEq(t, string(expectedModelTagsByte), string(actualModelTagsByte))
-		assert.JSONEq(t, string(expectedModelTemplatesByte), string(actualModelTemplatesByte))
+		assert.EqualValues(t, expectedModelTags[0], actualModelTags[0])
+		assert.EqualValues(t, expectedModelTemplates[0], actualModelTemplates[0])
 	})
 }
 
