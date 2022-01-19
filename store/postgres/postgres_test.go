@@ -54,7 +54,6 @@ func newTestClient(logger *logrus.Logger) (*postgres.Client, *dockertest.Pool, *
 		return nil, nil, nil, errors.Wrap(err, "Could not start resource")
 	}
 
-	// pgConfig.Host = "localhost"
 	pgConfig.Port, err = strconv.Atoi(resource.GetPort("5432/tcp"))
 	if err != nil {
 		return nil, nil, nil, errors.Wrap(err, "cannot parse external port of container to int")

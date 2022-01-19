@@ -88,9 +88,7 @@ func initRouter(
 	if err != nil {
 		log.Fatal(err)
 	}
-	tagTemplateService := tag.NewTemplateService(
-		templateRepository,
-	)
+	tagTemplateService := tag.NewTemplateService(templateRepository)
 	tagService := tag.NewService(
 		tagRepository,
 		tagTemplateService,

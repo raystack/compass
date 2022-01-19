@@ -85,12 +85,11 @@ func (s *Service) Delete(ctx context.Context, recordType, recordURN, templateURN
 	if err != nil {
 		return errors.Wrap(err, "error finding template")
 	}
-	if err := s.repository.Delete(ctx,
-		Tag{
-			RecordType:  recordType,
-			RecordURN:   recordURN,
-			TemplateURN: templateURN,
-		}); err != nil {
+	if err := s.repository.Delete(ctx, Tag{
+		RecordType:  recordType,
+		RecordURN:   recordURN,
+		TemplateURN: templateURN,
+	}); err != nil {
 		return errors.Wrap(err, "error deleting tag")
 	}
 	return nil
@@ -105,12 +104,11 @@ func (s *Service) Update(ctx context.Context, tag *Tag) error {
 	if err != nil {
 		return errors.Wrap(err, "error finding template")
 	}
-	existingTags, err := s.repository.Read(ctx,
-		Tag{
-			RecordType:  tag.RecordType,
-			RecordURN:   tag.RecordURN,
-			TemplateURN: tag.TemplateURN,
-		})
+	existingTags, err := s.repository.Read(ctx, Tag{
+		RecordType:  tag.RecordType,
+		RecordURN:   tag.RecordURN,
+		TemplateURN: tag.TemplateURN,
+	})
 	if err != nil {
 		return errors.Wrap(err, "error finding existing tag")
 	}
