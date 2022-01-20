@@ -3,7 +3,6 @@ package postgres_test
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"testing"
 	"time"
 
@@ -16,30 +15,40 @@ import (
 
 type TemplateRepositoryTestSuite struct {
 	suite.Suite
-	client   *postgres.Client
-	pool     *dockertest.Pool
-	resource *dockertest.Resource
+	ctx        context.Context
+	client     *postgres.Client
+	repository *postgres.TemplateRepository
+	pool       *dockertest.Pool
+	resource   *dockertest.Resource
 }
 
 func (r *TemplateRepositoryTestSuite) SetupSuite() {
 	var err error
+
 	logger := logrus.New()
 	// logger.SetLevel(logrus.DebugLevel)
 	r.client, r.pool, r.resource, err = newTestClient(logger)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
+
+	r.ctx = context.TODO()
+	r.repository, err = postgres.NewTemplateRepository(r.client)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 }
 
 func (r *TemplateRepositoryTestSuite) TearDownSuite() {
 	// Clean tests
 	err := r.client.Close()
 	if err != nil {
-		log.Fatal(err)
+		r.T().Fatal(err)
 	}
 	err = purgeDocker(r.pool, r.resource)
 	if err != nil {
-		log.Fatal(err)
+		r.T().Fatal(err)
 	}
 }
 
@@ -54,33 +63,28 @@ func (r *TemplateRepositoryTestSuite) TestNewRepository() {
 }
 
 func (r *TemplateRepositoryTestSuite) TestCreate() {
-	ctx := context.TODO()
-	repository, err := postgres.NewTemplateRepository(r.client)
-	if err != nil {
-		r.T().Fatal(err)
-	}
 
 	r.Run("should return error if domain template is nil", func() {
 		var domainTemplate *tag.Template = nil
 
 		expectedErrorMsg := "domain template is nil"
 
-		actualError := repository.Create(ctx, domainTemplate)
+		actualError := r.repository.Create(r.ctx, domainTemplate)
 
 		r.EqualError(actualError, expectedErrorMsg)
 	})
 
 	r.Run("should return nil and insert new record if no error found", func() {
-		err := setup(ctx, r.client)
+		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := r.getDomainTemplate()
 
-		actualError := repository.Create(ctx, &domainTemplate)
+		actualError := r.repository.Create(r.ctx, &domainTemplate)
 		r.NoError(actualError)
 
 		var actualRecord tag.Template
-		templates, err := repository.Read(ctx, domainTemplate)
+		templates, err := r.repository.Read(r.ctx, domainTemplate)
 		r.NoError(err)
 
 		actualRecord = templates[0]
@@ -93,13 +97,13 @@ func (r *TemplateRepositoryTestSuite) TestCreate() {
 	})
 
 	r.Run("should return nil and update domain template", func() {
-		err := setup(ctx, r.client)
+		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		originalDomainTemplate := r.getDomainTemplate()
 		referenceDomainTemplate := r.getDomainTemplate()
 
-		actualError := repository.Create(ctx, &originalDomainTemplate)
+		actualError := r.repository.Create(r.ctx, &originalDomainTemplate)
 		r.NoError(actualError)
 
 		r.Equal(referenceDomainTemplate.URN, originalDomainTemplate.URN)
@@ -112,42 +116,36 @@ func (r *TemplateRepositoryTestSuite) TestCreate() {
 	})
 
 	r.Run("should return error if encountered uncovered error", func() {
-		err := setup(ctx, r.client)
+		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := r.getDomainTemplate()
 
-		repository.Create(ctx, &domainTemplate)
-		actualError := repository.Create(ctx, &domainTemplate)
+		r.repository.Create(r.ctx, &domainTemplate)
+		actualError := r.repository.Create(r.ctx, &domainTemplate)
 
 		r.Error(actualError)
 	})
 }
 
 func (r *TemplateRepositoryTestSuite) TestRead() {
-	ctx := context.TODO()
-	repository, err := postgres.NewTemplateRepository(r.client)
-	if err != nil {
-		r.T().Fatal(err)
-	}
-
 	r.Run("should return empty and nil if no record found", func() {
-		err := setup(ctx, r.client)
+		err := setup(r.ctx, r.client)
 		r.NoError(err)
 		domainTemplate := r.getDomainTemplate()
 
-		actualTemplate, actualError := repository.Read(ctx, domainTemplate)
+		actualTemplate, actualError := r.repository.Read(r.ctx, domainTemplate)
 
 		r.Empty(actualTemplate)
 		r.EqualError(actualError, "error fetching templates: could not find template \"governance_policy\"")
 	})
 
 	r.Run("should return domain templates and nil if found any", func() {
-		err := setup(ctx, r.client)
+		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := r.getDomainTemplate()
-		if err := repository.Create(ctx, &domainTemplate); err != nil {
+		if err := r.repository.Create(r.ctx, &domainTemplate); err != nil {
 			panic(err)
 		}
 		now := time.Now()
@@ -155,14 +153,14 @@ func (r *TemplateRepositoryTestSuite) TestRead() {
 		expectedTemplate := []tag.Template{domainTemplate}
 		r.updateTimeForDomainTemplate(&expectedTemplate[0], now)
 
-		actualTemplate, actualError := repository.Read(ctx, domainTemplate)
+		actualTemplate, actualError := r.repository.Read(r.ctx, domainTemplate)
 		r.updateTimeForDomainTemplate(&actualTemplate[0], now)
 
 		r.EqualValues(expectedTemplate, actualTemplate)
 		r.NoError(actualError)
 	})
 	r.Run("should return template with multiple fields if exist", func() {
-		err := setup(ctx, r.client)
+		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := r.getDomainTemplate()
@@ -176,10 +174,10 @@ func (r *TemplateRepositoryTestSuite) TestRead() {
 			DataType:    "string",
 		})
 
-		err = repository.Create(ctx, &domainTemplate)
+		err = r.repository.Create(r.ctx, &domainTemplate)
 		r.NoError(err)
 
-		templates, err := repository.Read(ctx, domainTemplate)
+		templates, err := r.repository.Read(r.ctx, domainTemplate)
 
 		r.NoError(err)
 		r.Len(templates[0].Fields, 2)
@@ -189,39 +187,33 @@ func (r *TemplateRepositoryTestSuite) TestRead() {
 }
 
 func (r *TemplateRepositoryTestSuite) TestUpdate() {
-	ctx := context.TODO()
-	repository, err := postgres.NewTemplateRepository(r.client)
-	if err != nil {
-		r.T().Fatal(err)
-	}
-
 	r.Run("should return error if domain template is nil", func() {
 		var domainTemplate *tag.Template = nil
 
 		expectedErrorMsg := "domain template is nil"
 
-		actualError := repository.Update(ctx, "", domainTemplate)
+		actualError := r.repository.Update(r.ctx, "", domainTemplate)
 
 		r.EqualError(actualError, expectedErrorMsg)
 	})
 
 	r.Run("should return error if record not found", func() {
-		err := setup(ctx, r.client)
+		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := r.getDomainTemplate()
 
-		actualError := repository.Update(ctx, domainTemplate.URN, &domainTemplate)
+		actualError := r.repository.Update(r.ctx, domainTemplate.URN, &domainTemplate)
 
 		r.Error(actualError)
 	})
 
 	r.Run("should return nil and updated domain template if update is success", func() {
-		err := setup(ctx, r.client)
+		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := r.getDomainTemplate()
-		err = repository.Create(ctx, &domainTemplate)
+		err = r.repository.Create(r.ctx, &domainTemplate)
 		r.NoError(err)
 
 		domainTemplate.DisplayName = "Random Display"
@@ -233,10 +225,10 @@ func (r *TemplateRepositoryTestSuite) TestUpdate() {
 			DataType:    "string",
 		})
 
-		actualError := repository.Update(ctx, domainTemplate.URN, &domainTemplate)
+		actualError := r.repository.Update(r.ctx, domainTemplate.URN, &domainTemplate)
 		r.NoError(actualError)
 
-		templates, err := repository.Read(ctx, domainTemplate)
+		templates, err := r.repository.Read(r.ctx, domainTemplate)
 		r.NoError(err)
 
 		recordModelTemplate := templates[0]
@@ -254,44 +246,44 @@ func (r *TemplateRepositoryTestSuite) TestUpdate() {
 	})
 
 	r.Run("should return error if trying to update with conflicting existing template", func() {
-		err := setup(ctx, r.client)
+		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate1 := r.getDomainTemplate()
 		domainTemplate1.URN = "hello1"
-		if err := repository.Create(ctx, &domainTemplate1); err != nil {
+		if err := r.repository.Create(r.ctx, &domainTemplate1); err != nil {
 			panic(err)
 		}
 		domainTemplate2 := r.getDomainTemplate()
 		domainTemplate2.URN = "hello2"
-		if err := repository.Create(ctx, &domainTemplate2); err != nil {
+		if err := r.repository.Create(r.ctx, &domainTemplate2); err != nil {
 			panic(err)
 		}
 		targetURN := domainTemplate2.URN
 		domainTemplate2.URN = "hello1"
 
-		actualError := repository.Update(ctx, targetURN, &domainTemplate2)
+		actualError := r.repository.Update(r.ctx, targetURN, &domainTemplate2)
 
 		r.Error(actualError)
 	})
 
 	r.Run("should return error if trying to update with unrelated field", func() {
-		err := setup(ctx, r.client)
+		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := r.getDomainTemplate()
-		if err := repository.Create(ctx, &domainTemplate); err != nil {
+		if err := r.repository.Create(r.ctx, &domainTemplate); err != nil {
 			panic(err)
 		}
 		domainTemplate.Fields[0].ID = 2
 
-		actualError := repository.Update(ctx, domainTemplate.URN, &domainTemplate)
+		actualError := r.repository.Update(r.ctx, domainTemplate.URN, &domainTemplate)
 
 		r.Error(actualError)
 	})
 
 	r.Run("should return error if trying to update with duplicated field", func() {
-		err := setup(ctx, r.client)
+		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := r.getDomainTemplate()
@@ -303,48 +295,42 @@ func (r *TemplateRepositoryTestSuite) TestUpdate() {
 			Required:    false,
 		})
 
-		if err := repository.Create(ctx, &domainTemplate); err != nil {
+		if err := r.repository.Create(r.ctx, &domainTemplate); err != nil {
 			panic(err)
 		}
 
 		domainTemplate.Fields[1].URN = domainTemplate.Fields[0].URN
 
-		actualError := repository.Update(ctx, domainTemplate.URN, &domainTemplate)
+		actualError := r.repository.Update(r.ctx, domainTemplate.URN, &domainTemplate)
 
 		r.Error(actualError)
 	})
 }
 
 func (r *TemplateRepositoryTestSuite) TestDelete() {
-	ctx := context.TODO()
-	repository, err := postgres.NewTemplateRepository(r.client)
-	if err != nil {
-		r.T().Fatal(err)
-	}
-
 	r.Run("should return error if record not found", func() {
-		err := setup(ctx, r.client)
+		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := r.getDomainTemplate()
 
-		err = repository.Delete(ctx, domainTemplate)
+		err = r.repository.Delete(r.ctx, domainTemplate)
 		r.EqualError(err, "could not find template \"governance_policy\"")
 	})
 
 	r.Run("should return nil if record is deleted", func() {
-		err := setup(ctx, r.client)
+		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		domainTemplate := r.getDomainTemplate()
-		if err := repository.Create(ctx, &domainTemplate); err != nil {
+		if err := r.repository.Create(r.ctx, &domainTemplate); err != nil {
 			panic(err)
 		}
 
-		actualError := repository.Delete(ctx, domainTemplate)
+		actualError := r.repository.Delete(r.ctx, domainTemplate)
 		r.NoError(actualError)
 
-		templates, err := repository.Read(ctx, domainTemplate)
+		templates, err := r.repository.Read(r.ctx, domainTemplate)
 		r.Error(err)
 		r.Empty(templates)
 	})
