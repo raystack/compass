@@ -17,7 +17,7 @@ import (
 	// Register golang migrate source
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 
-	_ "github.com/jackc/pgx/stdlib"
+	_ "github.com/jackc/pgx/v4/stdlib"
 
 	"github.com/jmoiron/sqlx"
 )
