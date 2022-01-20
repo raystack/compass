@@ -24,14 +24,14 @@ type TagTemplateHandlerTestSuite struct {
 	handler            *handlers.TagTemplateHandler
 	templateRepository *mocks.TemplateRepository
 	recorder           *httptest.ResponseRecorder
-	log                log.Noop
+	logger             log.Noop
 }
 
 func (s *TagTemplateHandlerTestSuite) TestNewHandler() {
 	s.Run("should return handler and nil if service is not nil", func() {
 		service := &tag.TemplateService{}
 
-		actualHandler := handlers.NewTagTemplateHandler(&s.log, service)
+		actualHandler := handlers.NewTagTemplateHandler(&s.logger, service)
 		s.NotNil(actualHandler)
 	})
 }
@@ -40,7 +40,7 @@ func (s *TagTemplateHandlerTestSuite) Setup() {
 	s.templateRepository = new(mocks.TemplateRepository)
 	service := tag.NewTemplateService(s.templateRepository)
 
-	s.handler = handlers.NewTagTemplateHandler(&s.log, service)
+	s.handler = handlers.NewTagTemplateHandler(&s.logger, service)
 	s.recorder = httptest.NewRecorder()
 }
 

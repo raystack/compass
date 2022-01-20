@@ -19,13 +19,13 @@ type LineageProvider interface {
 }
 
 type LineageHandler struct {
-	log             log.Logger
+	logger          log.Logger
 	lineageProvider LineageProvider
 }
 
-func NewLineageHandler(log log.Logger, provider LineageProvider) *LineageHandler {
+func NewLineageHandler(logger log.Logger, provider LineageProvider) *LineageHandler {
 	handler := &LineageHandler{
-		log:             log,
+		logger:          logger,
 		lineageProvider: provider,
 	}
 
@@ -35,7 +35,7 @@ func NewLineageHandler(log log.Logger, provider LineageProvider) *LineageHandler
 func (handler *LineageHandler) ListLineage(w http.ResponseWriter, r *http.Request) {
 	graph, err := handler.lineageProvider.Graph()
 	if err != nil {
-		handler.log.Error("failed to request graph", "error", err)
+		handler.logger.Error("error requesting graph", "error", err)
 
 		status := http.StatusInternalServerError
 		writeJSONError(w, status, http.StatusText(status))
@@ -45,7 +45,7 @@ func (handler *LineageHandler) ListLineage(w http.ResponseWriter, r *http.Reques
 	opts := handler.parseOpts(r.URL.Query())
 	res, err := graph.Query(opts)
 	if err != nil {
-		handler.log.Error("failed to query graph", "query", opts, "error", err)
+		handler.logger.Error("error querying graph", "query", opts, "error", err)
 		status := http.StatusBadRequest
 		if _, ok := err.(record.ErrNoSuchType); ok {
 			status = http.StatusNotFound
@@ -60,7 +60,7 @@ func (handler *LineageHandler) ListLineage(w http.ResponseWriter, r *http.Reques
 func (handler *LineageHandler) GetLineage(w http.ResponseWriter, r *http.Request) {
 	graph, err := handler.lineageProvider.Graph()
 	if err != nil {
-		handler.log.Error("failed to request graph", "error", err)
+		handler.logger.Error("error requesting graph", "error", err)
 		status := http.StatusInternalServerError
 		writeJSONError(w, status, http.StatusText(status))
 		return
@@ -72,7 +72,7 @@ func (handler *LineageHandler) GetLineage(w http.ResponseWriter, r *http.Request
 
 	res, err := graph.Query(opts)
 	if err != nil {
-		handler.log.Error("failed to query graph", "query", opts, "error", err)
+		handler.logger.Error("error querying graph", "query", opts, "error", err)
 		status := http.StatusBadRequest
 		if _, ok := err.(record.ErrNoSuchType); ok {
 			status = http.StatusNotFound

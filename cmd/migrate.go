@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/odpf/salt/log"
 	"time"
 
 	"github.com/odpf/columbus/record"
@@ -21,24 +22,23 @@ func RunMigrate() {
 		panic(err)
 	}
 
-	rootLogger := initLogger(config.LogLevel)
-	log = rootLogger.WithField("reporter", "main")
-	log.Infof("columbus %s is migrating", Version)
+	logger := initLogger(config.LogLevel)
+	logger.Info("columbus is migrating", "version", Version)
 
-	log.Info("Migrating Postgres...")
-	if err := migratePostgres(); err != nil {
+	logger.Info("Migrating Postgres...")
+	if err := migratePostgres(logger); err != nil {
 		panic(err)
 	}
-	log.Info("Migration Postgres done.")
+	logger.Info("Migration Postgres done.")
 
-	log.Info("Migrating ES...")
-	if err := migrateElasticsearch(); err != nil {
+	logger.Info("Migrating ES...")
+	if err := migrateElasticsearch(logger); err != nil {
 		panic(err)
 	}
-	log.Info("Migration ES done.")
+	logger.Info("Migration ES done.")
 }
 
-func migratePostgres() (err error) {
+func migratePostgres(log log.Logger) (err error) {
 	log.Info("Initiating Postgres client...")
 
 	pgConfig := postgres.Config{
@@ -65,11 +65,11 @@ func migratePostgres() (err error) {
 	return nil
 }
 
-func migrateElasticsearch() (err error) {
+func migrateElasticsearch(log log.Logger) (err error) {
 	log.Info("Initiating ES client...")
-	esClient := initElasticsearch(config)
+	esClient := initElasticsearch(config, log)
 	for _, supportedTypeName := range record.AllSupportedTypes {
-		log.Infof("Migrating %q type\n", supportedTypeName)
+		log.Info("Migrating type\n", "type", supportedTypeName)
 		ctx, cancel := context.WithTimeout(context.Background(), esMigrationTimeout)
 		defer cancel()
 		err = esStore.Migrate(ctx, esClient, supportedTypeName)
@@ -77,7 +77,7 @@ func migrateElasticsearch() (err error) {
 			err = errors.Wrapf(err, "error creating/replacing type: %q", supportedTypeName)
 			return
 		}
-		log.Infof("created/updated %q type\n", supportedTypeName)
+		log.Info("created/updated type\n", "type", supportedTypeName)
 	}
 	return
 }

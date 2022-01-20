@@ -41,7 +41,7 @@ func (handler *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 	}
 	results, err := handler.discoveryService.Search(ctx, cfg)
 	if err != nil {
-		handler.log.Error("failed to search records", "error", err.Error())
+		handler.log.Error("error searching records", "error", err.Error())
 		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}
@@ -58,7 +58,7 @@ func (handler *SearchHandler) Suggest(w http.ResponseWriter, r *http.Request) {
 	}
 	suggestions, err := handler.discoveryService.Suggest(ctx, cfg)
 	if err != nil {
-		handler.log.Error("failed to build suggestions", "error", err.Error())
+		handler.log.Error("error building suggestions", "error", err.Error())
 		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}

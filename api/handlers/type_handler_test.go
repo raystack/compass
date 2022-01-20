@@ -72,11 +72,11 @@ func TestTypeHandler(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.Description, func(t *testing.T) {
 				er := new(mock.TypeRepository)
-				l := log.NewNoop()
+				logger := log.NewNoop()
 				defer er.AssertExpectations(t)
 				tc.Setup(&tc, er)
 
-				handler := handlers.NewTypeHandler(l, er)
+				handler := handlers.NewTypeHandler(logger, er)
 				rr := httptest.NewRequest("GET", "/", nil)
 				rw := httptest.NewRecorder()
 

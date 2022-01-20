@@ -21,18 +21,18 @@ var (
 // TagHandler is handler to manage tag related requests
 type TagHandler struct {
 	service *tag.Service
-	log     log.Logger
+	logger  log.Logger
 }
 
 // NewTagHandler initializes tag handler based on the service
-func NewTagHandler(log log.Logger, service *tag.Service) *TagHandler {
+func NewTagHandler(logger log.Logger, service *tag.Service) *TagHandler {
 	if service == nil {
 		panic("cannot create TagHandler with nil tag.Service")
 	}
 
 	return &TagHandler{
 		service: service,
-		log:     log,
+		logger:  logger,
 	}
 }
 
@@ -63,7 +63,7 @@ func (h *TagHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		internalServerError(w, h.log, fmt.Sprintf("error creating tag: %s", err.Error()))
+		internalServerError(w, h.logger, fmt.Sprintf("error creating tag: %s", err.Error()))
 		return
 	}
 
@@ -90,7 +90,7 @@ func (h *TagHandler) GetByRecord(w http.ResponseWriter, r *http.Request) {
 	}
 	tags, err := h.service.GetByRecord(r.Context(), recordType, recordURN)
 	if err != nil {
-		internalServerError(w, h.log, fmt.Sprintf("error getting record tags: %s", err.Error()))
+		internalServerError(w, h.logger, fmt.Sprintf("error getting record tags: %s", err.Error()))
 		return
 	}
 
@@ -126,7 +126,7 @@ func (h *TagHandler) FindByRecordAndTemplate(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	if err != nil {
-		internalServerError(w, h.log, fmt.Sprintf("error finding a tag with record and template: %s", err.Error()))
+		internalServerError(w, h.logger, fmt.Sprintf("error finding a tag with record and template: %s", err.Error()))
 		return
 	}
 
@@ -172,7 +172,7 @@ func (h *TagHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		internalServerError(w, h.log, fmt.Sprintf("error updating a template: %s", err.Error()))
+		internalServerError(w, h.logger, fmt.Sprintf("error updating a template: %s", err.Error()))
 		return
 	}
 
@@ -208,7 +208,7 @@ func (h *TagHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		internalServerError(w, h.log, fmt.Sprintf("error deleting a template: %s", err.Error()))
+		internalServerError(w, h.logger, fmt.Sprintf("error deleting a template: %s", err.Error()))
 		return
 	}
 

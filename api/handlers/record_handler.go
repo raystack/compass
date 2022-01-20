@@ -19,11 +19,11 @@ type RecordHandler struct {
 	typeRepository          record.TypeRepository
 	recordRepositoryFactory discovery.RecordRepositoryFactory
 	discoveryService        *discovery.Service
-	log                     log.Logger
+	logger                  log.Logger
 }
 
 func NewRecordHandler(
-	log log.Logger,
+	logger log.Logger,
 	typeRepository record.TypeRepository,
 	discoveryService *discovery.Service,
 	rrf discovery.RecordRepositoryFactory) *RecordHandler {
@@ -31,7 +31,7 @@ func NewRecordHandler(
 		recordRepositoryFactory: rrf,
 		discoveryService:        discoveryService,
 		typeRepository:          typeRepository,
-		log:                     log,
+		logger:                  logger,
 	}
 
 	return handler
@@ -54,7 +54,7 @@ func (h *RecordHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	err := h.discoveryService.DeleteRecord(r.Context(), typName.String(), recordID)
 	if err != nil {
-		h.log.Error("error deleting record", "type", typName, "error", err)
+		h.logger.Error("error deleting record", "type", typName, "error", err)
 
 		if _, ok := err.(record.ErrNoSuchRecord); ok {
 			statusCode = http.StatusNotFound
@@ -65,7 +65,7 @@ func (h *RecordHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.log.Info("deleted record", "record id", recordID, "type", typName)
+	h.logger.Info("deleted record", "record id", recordID, "type", typName)
 	writeJSON(w, http.StatusNoContent, "success")
 }
 
@@ -88,7 +88,7 @@ func (h *RecordHandler) UpsertBulk(w http.ResponseWriter, r *http.Request) {
 	var failedRecords = make(map[int]string)
 	for idx, record := range records {
 		if err := h.validateRecord(record); err != nil {
-			h.log.Error("failed to validate record", "type", typName, "record", record, "error", err)
+			h.logger.Error("error validating record", "type", typName, "record", record, "error", err)
 			failedRecords[idx] = err.Error()
 		}
 	}
@@ -98,12 +98,12 @@ func (h *RecordHandler) UpsertBulk(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.discoveryService.Upsert(r.Context(), typName.String(), records); err != nil {
-		h.log.Error("error creating/updating records", "type", typName, "error", err)
+		h.logger.Error("error creating/updating records", "type", typName, "error", err)
 		status := http.StatusInternalServerError
 		writeJSONError(w, status, http.StatusText(status))
 		return
 	}
-	h.log.Info("created/updated records", "record count", len(records), "type", typName)
+	h.logger.Info("created/updated records", "record count", len(records), "type", typName)
 	writeJSON(w, http.StatusOK, StatusResponse{Status: "success"})
 }
 
@@ -118,7 +118,7 @@ func (h *RecordHandler) GetByType(w http.ResponseWriter, r *http.Request) {
 
 	recordRepo, err := h.recordRepositoryFactory.For(typName.String())
 	if err != nil {
-		h.log.Error("failed to construct record repository", "type", typName, "error", err)
+		h.logger.Error("error constructing record repository", "type", typName, "error", err)
 		status, message := h.responseStatusForError(err)
 		writeJSONError(w, status, message)
 		return
@@ -131,7 +131,7 @@ func (h *RecordHandler) GetByType(w http.ResponseWriter, r *http.Request) {
 
 	recordList, err := recordRepo.GetAll(r.Context(), getCfg)
 	if err != nil {
-		h.log.Error("failed to fetch records: GetAll", "type", typName, "error", err)
+		h.logger.Error("error fetching records: GetAll", "type", typName, "error", err)
 		status, message := h.responseStatusForError(err)
 		writeJSONError(w, status, message)
 		return
@@ -159,7 +159,7 @@ func (h *RecordHandler) GetOneByType(w http.ResponseWriter, r *http.Request) {
 
 	recordRepo, err := h.recordRepositoryFactory.For(typName.String())
 	if err != nil {
-		h.log.Error("internal: failed to construe record repository", "type", typName, "error", err)
+		h.logger.Error("internal: error construing record repository", "type", typName, "error", err)
 		status := http.StatusInternalServerError
 		writeJSONError(w, status, http.StatusText(status))
 		return
@@ -167,7 +167,7 @@ func (h *RecordHandler) GetOneByType(w http.ResponseWriter, r *http.Request) {
 
 	record, err := recordRepo.GetByID(r.Context(), recordID)
 	if err != nil {
-		h.log.Error("failed to fetch record", "type", typName, "record id", recordID, "error", err)
+		h.logger.Error("error fetching record", "type", typName, "record id", recordID, "error", err)
 		status, message := h.responseStatusForError(err)
 		writeJSONError(w, status, message)
 		return

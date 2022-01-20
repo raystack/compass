@@ -21,32 +21,30 @@ import (
 	esStore "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/columbus/tag"
-	"github.com/sirupsen/logrus"
+	"github.com/odpf/salt/log"
 )
 
 // Version of the current build. overridden by the build system.
 // see "Makefile" for more information
 var Version string
-var log *logrus.Entry
 
 func Serve() {
 	if err := loadConfig(); err != nil {
 		panic(err)
 	}
 
-	rootLogger := initLogger(config.LogLevel)
-	log = rootLogger.WithField("reporter", "main")
-	log.Infof("columbus %s starting", Version)
+	logger := initLogger(config.LogLevel)
+	logger.Info("columbus starting", "version", Version)
 
-	esClient := initElasticsearch(config)
-	newRelicMonitor := initNewRelicMonitor(config)
-	statsdMonitor := initStatsdMonitor(config)
-	router := initRouter(esClient, newRelicMonitor, statsdMonitor, rootLogger)
+	esClient := initElasticsearch(config, logger)
+	newRelicMonitor := initNewRelicMonitor(config, logger)
+	statsdMonitor := initStatsdMonitor(config, logger)
+	router := initRouter(esClient, newRelicMonitor, statsdMonitor, logger)
 
 	serverAddr := fmt.Sprintf("%s:%s", config.ServerHost, config.ServerPort)
-	log.Printf("starting http server on %s", serverAddr)
+	logger.Info(fmt.Sprintf("starting http server on %s", serverAddr))
 	if err := http.ListenAndServe(serverAddr, router); err != nil {
-		log.Errorf("listen and serve: %v", err)
+		logger.Error("listen and serve", "error", err)
 	}
 }
 
@@ -54,7 +52,7 @@ func initRouter(
 	esClient *elasticsearch.Client,
 	nrMonitor *metrics.NewrelicMonitor,
 	statsdMonitor *metrics.StatsdMonitor,
-	rootLogger logrus.FieldLogger,
+	log log.Logger,
 ) *mux.Router {
 	typeRepository := esStore.NewTypeRepository(esClient)
 	recordRepositoryFactory := esStore.NewRecordRepositoryFactory(esClient)
@@ -62,7 +60,7 @@ func initRouter(
 		Client: esClient,
 	})
 	if err != nil {
-		log.Fatalf("error creating searcher: %v", err)
+		log.Fatal("error creating searcher", "error", err)
 	}
 
 	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
@@ -71,12 +69,12 @@ func initRouter(
 		PerformanceMonitor: nrMonitor,
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("failed to create service", "error", err)
 	}
 	// build lineage asynchronously
 	go func() {
 		lineageService.ForceBuild()
-		rootLogger.Info("lineage build complete")
+		log.Info("lineage build complete")
 	}()
 
 	pgClient := initPostgres(rootLogger.WithField("reporter", "postgres"), config)
@@ -102,11 +100,11 @@ func initRouter(
 		statsdMonitor.MonitorRouter(router)
 	}
 	router.Use(requestLoggerMiddleware(
-		rootLogger.WithField("reporter", "http-middleware").Writer(),
+		log.Writer(),
 	))
 
 	api.RegisterRoutes(router, api.Config{
-		Logger:                  rootLogger,
+		Logger:                  log,
 		TypeRepository:          typeRepository,
 		DiscoveryService:        discovery.NewService(recordRepositoryFactory, recordSearcher),
 		RecordRepositoryFactory: recordRepositoryFactory,
@@ -118,18 +116,15 @@ func initRouter(
 	return router
 }
 
-func initLogger(logLevel string) *logrus.Logger {
-	logger := logrus.New()
-	lvl, err := logrus.ParseLevel(logLevel)
-	if err != nil {
-		log.Fatalf("error parsing log level: %v", err)
-	}
-	logger.SetOutput(os.Stdout)
-	logger.SetLevel(lvl)
+func initLogger(logLevel string) log.Logger {
+	logger := log.NewLogrus(
+		log.LogrusWithLevel(logLevel),
+		log.LogrusWithWriter(os.Stdout),
+	)
 	return logger
 }
 
-func initElasticsearch(config Config) *elasticsearch.Client {
+func initElasticsearch(config Config, log log.Logger) *elasticsearch.Client {
 	brokers := strings.Split(config.ElasticSearchBrokers, ",")
 	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
 		Addresses: brokers,
@@ -142,13 +137,13 @@ func initElasticsearch(config Config) *elasticsearch.Client {
 		// },
 	})
 	if err != nil {
-		log.Fatalf("error connecting to elasticsearch: %v", err)
+		log.Fatal("error connecting to elasticsearch", "error", err)
 	}
 	info, err := esInfo(esClient)
 	if err != nil {
-		log.Fatalf("error obtaining elasticsearch info: %v", err)
+		log.Fatal("error obtaining elasticsearch info", "error", err)
 	}
-	log.Infof("connected to elasticsearch cluster %s", info)
+	log.Info("connected to elasticsearch cluster", "config", info)
 
 	return esClient
 }
@@ -171,9 +166,9 @@ func initPostgres(logger logrus.FieldLogger, config Config) *postgres.Client {
 	return pgClient
 }
 
-func initNewRelicMonitor(config Config) *metrics.NewrelicMonitor {
+func initNewRelicMonitor(config Config, log log.Logger) *metrics.NewrelicMonitor {
 	if !config.NewRelicEnabled {
-		log.Infof("New Relic monitoring is disabled.")
+		log.Info("New Relic monitoring is disabled.")
 		return nil
 	}
 	app, err := newrelic.NewApplication(
@@ -181,24 +176,24 @@ func initNewRelicMonitor(config Config) *metrics.NewrelicMonitor {
 		newrelic.ConfigLicense(config.NewRelicLicenseKey),
 	)
 	if err != nil {
-		log.Fatalf("unable to create New Relic Application: %v", err)
+		log.Fatal("unable to create New Relic Application", "error", err)
 	}
-	log.Infof("New Relic monitoring is enabled for: %s", config.NewRelicAppName)
+	log.Info("New Relic monitoring is enabled for", "config", config.NewRelicAppName)
 
 	monitor := metrics.NewNewrelicMonitor(app)
 	return monitor
 }
 
-func initStatsdMonitor(config Config) *metrics.StatsdMonitor {
+func initStatsdMonitor(config Config, log log.Logger) *metrics.StatsdMonitor {
 	var metricsMonitor *metrics.StatsdMonitor
 	if !config.StatsdEnabled {
-		log.Infof("statsd metrics monitoring is disabled.")
+		log.Info("statsd metrics monitoring is disabled.")
 		return nil
 	}
 	metricsSeparator := "."
 	statsdClient := metrics.NewStatsdClient(config.StatsdAddress)
 	metricsMonitor = metrics.NewStatsdMonitor(statsdClient, config.StatsdPrefix, metricsSeparator)
-	log.Infof("statsd metrics monitoring is enabled. (%s)", config.StatsdAddress)
+	log.Info("statsd metrics monitoring is enabled", "statsd address", config.StatsdAddress)
 
 	return metricsMonitor
 }
