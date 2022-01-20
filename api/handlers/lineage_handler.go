@@ -36,7 +36,6 @@ func (handler *LineageHandler) ListLineage(w http.ResponseWriter, r *http.Reques
 	graph, err := handler.lineageProvider.Graph()
 	if err != nil {
 		handler.logger.Error("error requesting graph", "error", err)
-
 		status := http.StatusInternalServerError
 		writeJSONError(w, status, http.StatusText(status))
 		return

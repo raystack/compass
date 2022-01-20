@@ -20,13 +20,13 @@ var (
 
 type SearchHandler struct {
 	discoveryService *discovery.Service
-	log              log.Logger
+	logger           log.Logger
 }
 
-func NewSearchHandler(log log.Logger, discoveryService *discovery.Service) *SearchHandler {
+func NewSearchHandler(logger log.Logger, discoveryService *discovery.Service) *SearchHandler {
 	handler := &SearchHandler{
 		discoveryService: discoveryService,
-		log:              log,
+		logger:           logger,
 	}
 
 	return handler
@@ -41,7 +41,7 @@ func (handler *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 	}
 	results, err := handler.discoveryService.Search(ctx, cfg)
 	if err != nil {
-		handler.log.Error("error searching records", "error", err.Error())
+		handler.logger.Error("error searching records", "error", err.Error())
 		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}
@@ -58,7 +58,7 @@ func (handler *SearchHandler) Suggest(w http.ResponseWriter, r *http.Request) {
 	}
 	suggestions, err := handler.discoveryService.Suggest(ctx, cfg)
 	if err != nil {
-		handler.log.Error("error building suggestions", "error", err.Error())
+		handler.logger.Error("error building suggestions", "error", err.Error())
 		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}

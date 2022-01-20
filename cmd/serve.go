@@ -52,7 +52,7 @@ func initRouter(
 	esClient *elasticsearch.Client,
 	nrMonitor *metrics.NewrelicMonitor,
 	statsdMonitor *metrics.StatsdMonitor,
-	log log.Logger,
+	logger log.Logger,
 ) *mux.Router {
 	typeRepository := esStore.NewTypeRepository(esClient)
 	recordRepositoryFactory := esStore.NewRecordRepositoryFactory(esClient)
@@ -60,7 +60,7 @@ func initRouter(
 		Client: esClient,
 	})
 	if err != nil {
-		log.Fatal("error creating searcher", "error", err)
+		logger.Fatal("error creating searcher", "error", err)
 	}
 
 	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
@@ -69,12 +69,12 @@ func initRouter(
 		PerformanceMonitor: nrMonitor,
 	})
 	if err != nil {
-		log.Fatal("failed to create service", "error", err)
+		logger.Fatal("failed to create service", "error", err)
 	}
 	// build lineage asynchronously
 	go func() {
 		lineageService.ForceBuild()
-		log.Info("lineage build complete")
+		logger.Info("lineage build complete")
 	}()
 
 	pgClient := initPostgres(rootLogger.WithField("reporter", "postgres"), config)
@@ -100,11 +100,11 @@ func initRouter(
 		statsdMonitor.MonitorRouter(router)
 	}
 	router.Use(requestLoggerMiddleware(
-		log.Writer(),
+		logger.Writer(),
 	))
 
 	api.RegisterRoutes(router, api.Config{
-		Logger:                  log,
+		Logger:                  logger,
 		TypeRepository:          typeRepository,
 		DiscoveryService:        discovery.NewService(recordRepositoryFactory, recordSearcher),
 		RecordRepositoryFactory: recordRepositoryFactory,
@@ -124,7 +124,7 @@ func initLogger(logLevel string) log.Logger {
 	return logger
 }
 
-func initElasticsearch(config Config, log log.Logger) *elasticsearch.Client {
+func initElasticsearch(config Config, logger log.Logger) *elasticsearch.Client {
 	brokers := strings.Split(config.ElasticSearchBrokers, ",")
 	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
 		Addresses: brokers,
@@ -137,13 +137,13 @@ func initElasticsearch(config Config, log log.Logger) *elasticsearch.Client {
 		// },
 	})
 	if err != nil {
-		log.Fatal("error connecting to elasticsearch", "error", err)
+		logger.Fatal("error connecting to elasticsearch", "error", err)
 	}
 	info, err := esInfo(esClient)
 	if err != nil {
-		log.Fatal("error obtaining elasticsearch info", "error", err)
+		logger.Fatal("error obtaining elasticsearch info", "error", err)
 	}
-	log.Info("connected to elasticsearch cluster", "config", info)
+	logger.Info("connected to elasticsearch cluster", "config", info)
 
 	return esClient
 }
@@ -166,9 +166,9 @@ func initPostgres(logger logrus.FieldLogger, config Config) *postgres.Client {
 	return pgClient
 }
 
-func initNewRelicMonitor(config Config, log log.Logger) *metrics.NewrelicMonitor {
+func initNewRelicMonitor(config Config, logger log.Logger) *metrics.NewrelicMonitor {
 	if !config.NewRelicEnabled {
-		log.Info("New Relic monitoring is disabled.")
+		logger.Info("New Relic monitoring is disabled.")
 		return nil
 	}
 	app, err := newrelic.NewApplication(
@@ -176,24 +176,24 @@ func initNewRelicMonitor(config Config, log log.Logger) *metrics.NewrelicMonitor
 		newrelic.ConfigLicense(config.NewRelicLicenseKey),
 	)
 	if err != nil {
-		log.Fatal("unable to create New Relic Application", "error", err)
+		logger.Fatal("unable to create New Relic Application", "error", err)
 	}
-	log.Info("New Relic monitoring is enabled for", "config", config.NewRelicAppName)
+	logger.Info("New Relic monitoring is enabled for", "config", config.NewRelicAppName)
 
 	monitor := metrics.NewNewrelicMonitor(app)
 	return monitor
 }
 
-func initStatsdMonitor(config Config, log log.Logger) *metrics.StatsdMonitor {
+func initStatsdMonitor(config Config, logger log.Logger) *metrics.StatsdMonitor {
 	var metricsMonitor *metrics.StatsdMonitor
 	if !config.StatsdEnabled {
-		log.Info("statsd metrics monitoring is disabled.")
+		logger.Info("statsd metrics monitoring is disabled.")
 		return nil
 	}
 	metricsSeparator := "."
 	statsdClient := metrics.NewStatsdClient(config.StatsdAddress)
 	metricsMonitor = metrics.NewStatsdMonitor(statsdClient, config.StatsdPrefix, metricsSeparator)
-	log.Info("statsd metrics monitoring is enabled", "statsd address", config.StatsdAddress)
+	logger.Info("statsd metrics monitoring is enabled", "statsd address", config.StatsdAddress)
 
 	return metricsMonitor
 }

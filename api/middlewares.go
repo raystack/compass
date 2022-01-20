@@ -8,14 +8,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func decodeURLMiddleware(log log.Logger) mux.MiddlewareFunc {
+func decodeURLMiddleware(logger log.Logger) mux.MiddlewareFunc {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			newVars := map[string]string{}
 			for key, val := range mux.Vars(r) {
 				decodedVal, err := url.QueryUnescape(val)
 				if err != nil {
-					log.Warn("error decoding url", "value", val)
+					logger.Warn("error decoding url", "value", val)
 					decodedVal = val
 				}
 
