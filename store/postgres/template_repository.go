@@ -30,8 +30,7 @@ func (r *TemplateRepository) Create(ctx context.Context, domainTemplate *tag.Tem
 		return errNilDomainTemplate
 	}
 
-	modelTemplate := &Template{}
-	modelTemplate.buildFromDomainTemplate(*domainTemplate)
+	modelTemplate := newModelTemplate(domainTemplate)
 
 	timestamp := time.Now().UTC()
 	modelTemplate.CreatedAt = timestamp
@@ -87,8 +86,7 @@ func (r *TemplateRepository) Update(ctx context.Context, targetURN string, domai
 		return errNilDomainTemplate
 	}
 
-	modelTemplate := &Template{}
-	modelTemplate.buildFromDomainTemplate(*domainTemplate)
+	modelTemplate := newModelTemplate(domainTemplate)
 	updatedModelTemplate := *modelTemplate
 	if err := r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		timestamp := time.Now().UTC()

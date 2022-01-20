@@ -99,7 +99,7 @@ func TestModelTemplate(t *testing.T) {
 
 		domainTemplate := getDomainTemplate()
 		option := "Public,Restricted"
-		expectedModelTemplate := Template{
+		expectedModelTemplate := &Template{
 			URN:         "governance_policy",
 			DisplayName: "Governance Policy",
 			Description: "Template that is mandatory to be used.",
@@ -124,8 +124,7 @@ func TestModelTemplate(t *testing.T) {
 			},
 		}
 
-		modelTemplate := Template{}
-		modelTemplate.buildFromDomainTemplate(*domainTemplate)
+		modelTemplate := newModelTemplate(domainTemplate)
 
 		assert.EqualValues(t, expectedModelTemplate, modelTemplate)
 	})
@@ -161,7 +160,7 @@ func TestModelFields(t *testing.T) {
 	t.Run("successfully build model fields from domain fields", func(t *testing.T) {
 		domainFields := modelFields.toDomainFields()
 		option := "Public,Restricted"
-		expectedModelFields := &Fields{
+		expectedModelFields := Fields{
 			{
 				ID:          1,
 				URN:         "classification",
@@ -181,8 +180,7 @@ func TestModelFields(t *testing.T) {
 			},
 		}
 
-		actualModelFields := &Fields{}
-		actualModelFields.buildFromDomainFields(domainFields)
+		actualModelFields := newSliceOfModelField(domainFields)
 
 		assert.EqualValues(t, expectedModelFields, actualModelFields)
 	})

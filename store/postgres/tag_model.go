@@ -93,14 +93,15 @@ func (tmp *Template) toDomainTemplate() tag.Template {
 	}
 }
 
-func (tmp *Template) buildFromDomainTemplate(domainTemplate tag.Template) {
-	modelFields := &Fields{}
-	modelFields.buildFromDomainFields(domainTemplate.Fields)
+func newModelTemplate(domainTemplate *tag.Template) *Template {
+	modelFields := newSliceOfModelField(domainTemplate.Fields)
 
-	tmp.URN = domainTemplate.URN
-	tmp.DisplayName = domainTemplate.DisplayName
-	tmp.Description = domainTemplate.Description
-	tmp.Fields = *modelFields
+	return &Template{
+		URN:         domainTemplate.URN,
+		DisplayName: domainTemplate.DisplayName,
+		Description: domainTemplate.Description,
+		Fields:      modelFields,
+	}
 }
 
 type Templates []Template
@@ -161,7 +162,7 @@ func (fs *Fields) toDomainFields() []tag.Field {
 	return output
 }
 
-func (fs *Fields) buildFromDomainFields(listOfDomainField []tag.Field) {
+func newSliceOfModelField(listOfDomainField []tag.Field) Fields {
 	newFields := Fields{}
 	for _, field := range listOfDomainField {
 		var options *string
@@ -179,7 +180,7 @@ func (fs *Fields) buildFromDomainFields(listOfDomainField []tag.Field) {
 			Required:    field.Required,
 		})
 	}
-	*fs = newFields
+	return newFields
 }
 
 // TemplateFields is a slice of placeholder for joined template and field
