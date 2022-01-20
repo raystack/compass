@@ -3,11 +3,12 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/odpf/columbus/tag"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -67,7 +68,7 @@ func (r *TemplateRepository) Create(ctx context.Context, domainTemplate *tag.Tem
 func (r *TemplateRepository) Read(ctx context.Context, filter tag.Template) (output []tag.Template, err error) {
 	templatesFields, err := readTemplatesJoinFieldsFromDB(ctx, r.client.db, filter.URN)
 	if err != nil {
-		err = errors.Wrap(err, "error fetching templates")
+		err = fmt.Errorf("error fetching templates: %w", err)
 		return
 	}
 
@@ -94,7 +95,7 @@ func (r *TemplateRepository) Update(ctx context.Context, targetURN string, domai
 
 		updatedModelTemplate.UpdatedAt = timestamp
 		if err := updateTemplateToDBTx(ctx, tx, targetURN, &updatedModelTemplate); err != nil {
-			return errors.Wrap(err, "failed to update a field")
+			return fmt.Errorf("failed to update a field: %w", err)
 		}
 
 		for _, field := range modelTemplate.Fields {
@@ -106,7 +107,7 @@ func (r *TemplateRepository) Update(ctx context.Context, targetURN string, domai
 				field.TemplateURN = modelTemplate.URN
 
 				if err := insertFieldToDBTx(ctx, tx, &field); err != nil {
-					return errors.Wrap(err, "failed to insert a field")
+					return fmt.Errorf("failed to insert a field: %w", err)
 				}
 
 				updatedModelTemplate.Fields = append(updatedModelTemplate.Fields, field)
@@ -114,7 +115,7 @@ func (r *TemplateRepository) Update(ctx context.Context, targetURN string, domai
 			}
 
 			if err := updateFieldToDBTx(ctx, tx, &field); err != nil {
-				return errors.Wrap(err, "failed to update a field")
+				return fmt.Errorf("failed to update a field: %w", err)
 			}
 			updatedModelTemplate.Fields = append(updatedModelTemplate.Fields, field)
 		}
@@ -122,7 +123,7 @@ func (r *TemplateRepository) Update(ctx context.Context, targetURN string, domai
 		*modelTemplate = updatedModelTemplate
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "failed to update template")
+		return fmt.Errorf("failed to update template: %w", err)
 	}
 
 	*domainTemplate = updatedModelTemplate.toDomainTemplate()
@@ -138,12 +139,12 @@ func (r *TemplateRepository) Delete(ctx context.Context, filter tag.Template) er
 					WHERE
 						urn = $1`, filter.URN)
 	if err != nil {
-		return errors.Wrapf(err, "failed to delete template with urn: %s", filter.URN)
+		return fmt.Errorf("failed to delete template with urn: %w", err)
 	}
 
 	tmpRowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return errors.Wrap(err, "failed to get row affected in deleting template")
+		return fmt.Errorf("failed to get row affected in deleting template: %w", err)
 	}
 
 	if tmpRowsAffected == 0 {
@@ -164,7 +165,7 @@ func insertTemplateToDBTx(ctx context.Context, tx *sqlx.Tx, modelTemplate *Templ
 				`,
 		modelTemplate.URN, modelTemplate.DisplayName, modelTemplate.Description, modelTemplate.CreatedAt, modelTemplate.UpdatedAt).
 		StructScan(&insertedTemplate); err != nil {
-		return errors.Wrap(err, "failed to insert a template")
+		return fmt.Errorf("failed to insert a template: %w", err)
 	}
 
 	*modelTemplate = insertedTemplate
@@ -183,7 +184,7 @@ func insertFieldToDBTx(ctx context.Context, tx *sqlx.Tx, field *Field) error {
 					`,
 		field.URN, field.DisplayName, field.Description, field.DataType, field.Options, field.Required, field.TemplateURN, field.CreatedAt, field.UpdatedAt).
 		StructScan(&insertedField); err != nil {
-		return errors.Wrap(err, "failed to insert a field")
+		return fmt.Errorf("failed to insert a field: %w", err)
 	}
 	*field = insertedField
 	return nil
@@ -205,7 +206,7 @@ func readTemplatesJoinFieldsFromDB(ctx context.Context, db *sqlx.DB, templateURN
 			f.template_urn = t.urn 
 		WHERE 
 			t.urn = $1`, templateURN); txErr != nil {
-		err = errors.Wrap(txErr, "failed reading templates")
+		err = fmt.Errorf("failed reading templates: %w", err)
 		return
 	}
 
@@ -233,7 +234,7 @@ func updateTemplateToDBTx(ctx context.Context, tx *sqlx.Tx, targetTemplateURN st
 		if errors.Is(err, sql.ErrNoRows) {
 			return tag.TemplateNotFoundError{URN: modelTemplate.URN}
 		}
-		return errors.Wrap(err, "failed building update template sql")
+		return fmt.Errorf("failed building update template sql: %w", err)
 	}
 
 	*modelTemplate = updatedTemplate
@@ -255,7 +256,7 @@ func updateFieldToDBTx(ctx context.Context, tx *sqlx.Tx, field *Field) error {
 		field.URN, field.DisplayName, field.Description, field.DataType, field.Options, field.Required,
 		field.TemplateURN, field.UpdatedAt, field.ID).
 		StructScan(&updatedField); err != nil {
-		return errors.Wrap(err, "failed updating fields")
+		return fmt.Errorf("failed updating fields: %w", err)
 	}
 
 	if updatedField.ID == 0 {

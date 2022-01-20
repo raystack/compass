@@ -2,6 +2,7 @@ package postgres_test
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,7 +37,7 @@ func newTestClient(logger *logrus.Logger) (*postgres.Client, *dockertest.Pool, *
 	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
 	pool, err := dockertest.NewPool("")
 	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "Could not create dockertest pool")
+		return nil, nil, nil, fmt.Errorf("Could not create dockertest pool: %w", err)
 	}
 
 	// pulls an image, creates a container based on it and runs it
@@ -47,12 +47,12 @@ func newTestClient(logger *logrus.Logger) (*postgres.Client, *dockertest.Pool, *
 		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})
 	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "Could not start resource")
+		return nil, nil, nil, fmt.Errorf("Could not start resource: %w", err)
 	}
 
 	pgConfig.Port, err = strconv.Atoi(resource.GetPort("5432/tcp"))
 	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "cannot parse external port of container to int")
+		return nil, nil, nil, fmt.Errorf("cannot parse external port of container to int: %w", err)
 	}
 
 	// attach terminal logger to container if exists
@@ -96,7 +96,7 @@ func newTestClient(logger *logrus.Logger) (*postgres.Client, *dockertest.Pool, *
 
 		return nil
 	}); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "Could not connect to docker")
+		return nil, nil, nil, fmt.Errorf("Could not connect to docker: %w", err)
 	}
 
 	err = setup(context.Background(), pgClient)
@@ -108,7 +108,7 @@ func newTestClient(logger *logrus.Logger) (*postgres.Client, *dockertest.Pool, *
 
 func purgeDocker(pool *dockertest.Pool, resource *dockertest.Resource) error {
 	if err := pool.Purge(resource); err != nil {
-		return errors.Wrap(err, "Could not purge resource")
+		return fmt.Errorf("Could not purge resource: %w", err)
 	}
 	return nil
 }

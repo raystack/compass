@@ -2,12 +2,12 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/odpf/columbus/tag"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -63,14 +63,14 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 						RETURNING *`,
 				tag.Value, tag.RecordURN, tag.RecordType, tag.FieldID, tag.CreatedAt, tag.UpdatedAt).
 				StructScan(&insertedTagValue); err != nil {
-				return errors.Wrap(err, "failed to insert a domain tag")
+				return fmt.Errorf("failed to insert a domain tag: %w", err)
 			}
 
 			insertedModelTags = append(insertedModelTags, insertedTagValue)
 		}
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "failed to create domain tag")
+		return fmt.Errorf("failed to create domain tag: %w", err)
 	}
 
 	return r.complementDomainTag(domainTag, domainTemplates[0], insertedModelTags)
@@ -112,8 +112,8 @@ func (r *TagRepository) Read(ctx context.Context, filter tag.Tag) ([]tag.Tag, er
 	}
 
 	var templateTagFields TemplateTagFields
-	if txErr := r.client.db.Select(&templateTagFields, sqlQuery, sqlArgs...); txErr != nil {
-		return nil, errors.Wrap(txErr, "failed reading tag domain")
+	if err := r.client.db.Select(&templateTagFields, sqlQuery, sqlArgs...); err != nil {
+		return nil, fmt.Errorf("failed reading domain tag: %w", err)
 	}
 
 	if len(templateTagFields) == 0 {
@@ -178,13 +178,13 @@ func (r *TagRepository) Update(ctx context.Context, domainTag *tag.Tag) error {
 							RETURNING *`,
 				modelTag.Value, modelTag.RecordURN, modelTag.RecordType, modelTag.FieldID, modelTag.CreatedAt, modelTag.UpdatedAt).
 				StructScan(&updatedModelTag); err != nil {
-				return errors.Wrap(err, "failed to update a domain tag")
+				return err
 			}
 			updatedModelTags = append(updatedModelTags, updatedModelTag)
 		}
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "failed to update domain Tag")
+		return fmt.Errorf("failed to update a domain tag: %w", err)
 	}
 
 	return r.complementDomainTag(domainTag, domainTemplates[0], updatedModelTags)
@@ -226,8 +226,8 @@ func (r *TagRepository) Delete(ctx context.Context, domainTag tag.Tag) error {
 			sqlArgs = append(sqlArgs, modelTag.FieldID)
 		}
 
-		if _, txErr := r.client.db.ExecContext(ctx, sqlQuery, sqlArgs...); txErr != nil {
-			return errors.Wrapf(txErr, "failed to delete tag with record urn: %s, record type: %s, field id: %d", modelTag.RecordURN, modelTag.RecordType, modelTag.FieldID)
+		if _, err := r.client.db.ExecContext(ctx, sqlQuery, sqlArgs...); err != nil {
+			return fmt.Errorf("failed to delete a domain tag: %w", err)
 		}
 	}
 	return nil

@@ -20,7 +20,6 @@ import (
 	_ "github.com/jackc/pgx/stdlib"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/pkg/errors"
 )
 
 //go:embed migrations/*.sql
@@ -33,7 +32,7 @@ type Client struct {
 func (c *Client) RunWithinTx(ctx context.Context, f func(tx *sqlx.Tx) error) error {
 	tx, err := c.db.BeginTxx(ctx, nil)
 	if err != nil {
-		return errors.Wrap(err, "starting transaction")
+		return fmt.Errorf("starting transaction: %w", err)
 	}
 
 	if err := f(tx); err != nil {
@@ -44,7 +43,7 @@ func (c *Client) RunWithinTx(ctx context.Context, f func(tx *sqlx.Tx) error) err
 	}
 
 	if err := tx.Commit(); err != nil {
-		return errors.Wrap(err, "committing transaction")
+		return fmt.Errorf("committing transaction: %w", err)
 	}
 
 	return nil
@@ -53,14 +52,14 @@ func (c *Client) RunWithinTx(ctx context.Context, f func(tx *sqlx.Tx) error) err
 func (c *Client) Migrate(cfg Config) (err error) {
 	m, err := initMigration(cfg)
 	if err != nil {
-		return errors.Wrap(err, "migration failed")
+		return fmt.Errorf("migration failed: %w", err)
 	}
 
 	if err := m.Up(); err != nil {
 		if err == migrate.ErrNoChange {
 			return nil
 		}
-		return errors.Wrap(err, "migration failed")
+		return fmt.Errorf("migration failed: %w", err)
 	}
 	return nil
 }
@@ -84,7 +83,7 @@ func (c *Client) Close() error {
 func NewClient(logger logrus.FieldLogger, cfg Config) (*Client, error) {
 	db, err := sqlx.Connect("pgx", cfg.ConnectionURL().String())
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating and connecting DB")
+		return nil, fmt.Errorf("error creating and connecting DB: %w", err)
 	}
 	if db == nil {
 		return nil, errNilDBClient
