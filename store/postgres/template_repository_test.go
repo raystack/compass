@@ -64,12 +64,12 @@ func (r *TemplateRepositoryTestSuite) TestNewRepository() {
 
 func (r *TemplateRepositoryTestSuite) TestCreate() {
 
-	r.Run("should return error if domain template is nil", func() {
-		var domainTemplate *tag.Template = nil
+	r.Run("should return error if template is nil", func() {
+		var template *tag.Template = nil
 
-		expectedErrorMsg := "domain template is nil"
+		expectedErrorMsg := "template is nil"
 
-		actualError := r.repository.Create(r.ctx, domainTemplate)
+		actualError := r.repository.Create(r.ctx, template)
 
 		r.EqualError(actualError, expectedErrorMsg)
 	})
@@ -78,51 +78,51 @@ func (r *TemplateRepositoryTestSuite) TestCreate() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := r.getDomainTemplate()
+		template := r.getTemplate()
 
-		actualError := r.repository.Create(r.ctx, &domainTemplate)
+		actualError := r.repository.Create(r.ctx, &template)
 		r.NoError(actualError)
 
 		var actualRecord tag.Template
-		templates, err := r.repository.Read(r.ctx, domainTemplate)
+		templates, err := r.repository.Read(r.ctx, template)
 		r.NoError(err)
 
 		actualRecord = templates[0]
-		r.Equal(domainTemplate.URN, actualRecord.URN)
-		r.Equal(domainTemplate.DisplayName, actualRecord.DisplayName)
-		r.Equal(domainTemplate.Description, actualRecord.Description)
-		r.Equal(len(domainTemplate.Fields), len(actualRecord.Fields))
-		r.Equal(domainTemplate.Fields[0].DisplayName, actualRecord.Fields[0].DisplayName)
-		r.Equal(domainTemplate.Fields[0].URN, actualRecord.Fields[0].URN)
+		r.Equal(template.URN, actualRecord.URN)
+		r.Equal(template.DisplayName, actualRecord.DisplayName)
+		r.Equal(template.Description, actualRecord.Description)
+		r.Equal(len(template.Fields), len(actualRecord.Fields))
+		r.Equal(template.Fields[0].DisplayName, actualRecord.Fields[0].DisplayName)
+		r.Equal(template.Fields[0].URN, actualRecord.Fields[0].URN)
 	})
 
-	r.Run("should return nil and update domain template", func() {
+	r.Run("should return nil and update template", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		originalDomainTemplate := r.getDomainTemplate()
-		referenceDomainTemplate := r.getDomainTemplate()
+		originalTemplate := r.getTemplate()
+		referenceTemplate := r.getTemplate()
 
-		actualError := r.repository.Create(r.ctx, &originalDomainTemplate)
+		actualError := r.repository.Create(r.ctx, &originalTemplate)
 		r.NoError(actualError)
 
-		r.Equal(referenceDomainTemplate.URN, originalDomainTemplate.URN)
-		r.NotEqual(referenceDomainTemplate.CreatedAt, originalDomainTemplate.CreatedAt)
-		r.NotEqual(referenceDomainTemplate.UpdatedAt, originalDomainTemplate.UpdatedAt)
-		r.Equal(referenceDomainTemplate.Fields[0].ID, originalDomainTemplate.Fields[0].ID)
-		r.Equal(referenceDomainTemplate.Fields[0].URN, originalDomainTemplate.Fields[0].URN)
-		r.NotEqual(referenceDomainTemplate.Fields[0].CreatedAt, originalDomainTemplate.Fields[0].CreatedAt)
-		r.NotEqual(referenceDomainTemplate.Fields[0].UpdatedAt, originalDomainTemplate.Fields[0].UpdatedAt)
+		r.Equal(referenceTemplate.URN, originalTemplate.URN)
+		r.NotEqual(referenceTemplate.CreatedAt, originalTemplate.CreatedAt)
+		r.NotEqual(referenceTemplate.UpdatedAt, originalTemplate.UpdatedAt)
+		r.Equal(referenceTemplate.Fields[0].ID, originalTemplate.Fields[0].ID)
+		r.Equal(referenceTemplate.Fields[0].URN, originalTemplate.Fields[0].URN)
+		r.NotEqual(referenceTemplate.Fields[0].CreatedAt, originalTemplate.Fields[0].CreatedAt)
+		r.NotEqual(referenceTemplate.Fields[0].UpdatedAt, originalTemplate.Fields[0].UpdatedAt)
 	})
 
 	r.Run("should return error if encountered uncovered error", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := r.getDomainTemplate()
+		template := r.getTemplate()
 
-		r.repository.Create(r.ctx, &domainTemplate)
-		actualError := r.repository.Create(r.ctx, &domainTemplate)
+		r.repository.Create(r.ctx, &template)
+		actualError := r.repository.Create(r.ctx, &template)
 
 		r.Error(actualError)
 	})
@@ -132,29 +132,29 @@ func (r *TemplateRepositoryTestSuite) TestRead() {
 	r.Run("should return empty and nil if no record found", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
-		domainTemplate := r.getDomainTemplate()
+		template := r.getTemplate()
 
-		actualTemplate, actualError := r.repository.Read(r.ctx, domainTemplate)
+		actualTemplate, actualError := r.repository.Read(r.ctx, template)
 
 		r.Empty(actualTemplate)
 		r.EqualError(actualError, "error fetching templates: could not find template \"governance_policy\"")
 	})
 
-	r.Run("should return domain templates and nil if found any", func() {
+	r.Run("should return templates and nil if found any", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := r.getDomainTemplate()
-		if err := r.repository.Create(r.ctx, &domainTemplate); err != nil {
+		template := r.getTemplate()
+		if err := r.repository.Create(r.ctx, &template); err != nil {
 			panic(err)
 		}
 		now := time.Now()
 
-		expectedTemplate := []tag.Template{domainTemplate}
-		r.updateTimeForDomainTemplate(&expectedTemplate[0], now)
+		expectedTemplate := []tag.Template{template}
+		r.updateTimeForTemplate(&expectedTemplate[0], now)
 
-		actualTemplate, actualError := r.repository.Read(r.ctx, domainTemplate)
-		r.updateTimeForDomainTemplate(&actualTemplate[0], now)
+		actualTemplate, actualError := r.repository.Read(r.ctx, template)
+		r.updateTimeForTemplate(&actualTemplate[0], now)
 
 		r.EqualValues(expectedTemplate, actualTemplate)
 		r.NoError(actualError)
@@ -163,36 +163,36 @@ func (r *TemplateRepositoryTestSuite) TestRead() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := r.getDomainTemplate()
+		template := r.getTemplate()
 
-		domainTemplate.DisplayName = "Random Display"
-		domainTemplate.Fields[0].DisplayName = "Another Random Display"
-		domainTemplate.Fields = append(domainTemplate.Fields, tag.Field{
+		template.DisplayName = "Random Display"
+		template.Fields[0].DisplayName = "Another Random Display"
+		template.Fields = append(template.Fields, tag.Field{
 			URN:         "new_field",
 			DisplayName: "New Field",
 			Description: "This field is a new addition.",
 			DataType:    "string",
 		})
 
-		err = r.repository.Create(r.ctx, &domainTemplate)
+		err = r.repository.Create(r.ctx, &template)
 		r.NoError(err)
 
-		templates, err := r.repository.Read(r.ctx, domainTemplate)
+		templates, err := r.repository.Read(r.ctx, template)
 
 		r.NoError(err)
 		r.Len(templates[0].Fields, 2)
-		r.Equal(domainTemplate.DisplayName, templates[0].DisplayName)
-		r.Equal(domainTemplate.UpdatedAt, templates[0].UpdatedAt)
+		r.Equal(template.DisplayName, templates[0].DisplayName)
+		r.Equal(template.UpdatedAt, templates[0].UpdatedAt)
 	})
 }
 
 func (r *TemplateRepositoryTestSuite) TestUpdate() {
-	r.Run("should return error if domain template is nil", func() {
-		var domainTemplate *tag.Template = nil
+	r.Run("should return error if template is nil", func() {
+		var template *tag.Template = nil
 
-		expectedErrorMsg := "domain template is nil"
+		expectedErrorMsg := "template is nil"
 
-		actualError := r.repository.Update(r.ctx, "", domainTemplate)
+		actualError := r.repository.Update(r.ctx, "", template)
 
 		r.EqualError(actualError, expectedErrorMsg)
 	})
@@ -201,45 +201,45 @@ func (r *TemplateRepositoryTestSuite) TestUpdate() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := r.getDomainTemplate()
+		template := r.getTemplate()
 
-		actualError := r.repository.Update(r.ctx, domainTemplate.URN, &domainTemplate)
+		actualError := r.repository.Update(r.ctx, template.URN, &template)
 
 		r.Error(actualError)
 	})
 
-	r.Run("should return nil and updated domain template if update is success", func() {
+	r.Run("should return nil and updated template if update is success", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := r.getDomainTemplate()
-		err = r.repository.Create(r.ctx, &domainTemplate)
+		template := r.getTemplate()
+		err = r.repository.Create(r.ctx, &template)
 		r.NoError(err)
 
-		domainTemplate.DisplayName = "Random Display"
-		domainTemplate.Fields[0].DisplayName = "Another Random Display"
-		domainTemplate.Fields = append(domainTemplate.Fields, tag.Field{
+		template.DisplayName = "Random Display"
+		template.Fields[0].DisplayName = "Another Random Display"
+		template.Fields = append(template.Fields, tag.Field{
 			URN:         "new_field",
 			DisplayName: "New Field",
 			Description: "This field is a new addition.",
 			DataType:    "string",
 		})
 
-		actualError := r.repository.Update(r.ctx, domainTemplate.URN, &domainTemplate)
+		actualError := r.repository.Update(r.ctx, template.URN, &template)
 		r.NoError(actualError)
 
-		templates, err := r.repository.Read(r.ctx, domainTemplate)
+		templates, err := r.repository.Read(r.ctx, template)
 		r.NoError(err)
 
 		recordModelTemplate := templates[0]
 		r.Len(recordModelTemplate.Fields, 2)
-		r.Equal(domainTemplate.DisplayName, recordModelTemplate.DisplayName)
-		r.True(domainTemplate.UpdatedAt.Equal(recordModelTemplate.UpdatedAt))
+		r.Equal(template.DisplayName, recordModelTemplate.DisplayName)
+		r.True(template.UpdatedAt.Equal(recordModelTemplate.UpdatedAt))
 
 		expectedFields, err := json.Marshal(recordModelTemplate.Fields)
 		r.NoError(err)
 
-		actualFields, err := json.Marshal(domainTemplate.Fields)
+		actualFields, err := json.Marshal(template.Fields)
 		r.NoError(err)
 
 		r.JSONEq(string(expectedFields), string(actualFields))
@@ -249,20 +249,20 @@ func (r *TemplateRepositoryTestSuite) TestUpdate() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate1 := r.getDomainTemplate()
-		domainTemplate1.URN = "hello1"
-		if err := r.repository.Create(r.ctx, &domainTemplate1); err != nil {
+		template1 := r.getTemplate()
+		template1.URN = "hello1"
+		if err := r.repository.Create(r.ctx, &template1); err != nil {
 			panic(err)
 		}
-		domainTemplate2 := r.getDomainTemplate()
-		domainTemplate2.URN = "hello2"
-		if err := r.repository.Create(r.ctx, &domainTemplate2); err != nil {
+		template2 := r.getTemplate()
+		template2.URN = "hello2"
+		if err := r.repository.Create(r.ctx, &template2); err != nil {
 			panic(err)
 		}
-		targetURN := domainTemplate2.URN
-		domainTemplate2.URN = "hello1"
+		targetURN := template2.URN
+		template2.URN = "hello1"
 
-		actualError := r.repository.Update(r.ctx, targetURN, &domainTemplate2)
+		actualError := r.repository.Update(r.ctx, targetURN, &template2)
 
 		r.Error(actualError)
 	})
@@ -271,13 +271,13 @@ func (r *TemplateRepositoryTestSuite) TestUpdate() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := r.getDomainTemplate()
-		if err := r.repository.Create(r.ctx, &domainTemplate); err != nil {
+		template := r.getTemplate()
+		if err := r.repository.Create(r.ctx, &template); err != nil {
 			panic(err)
 		}
-		domainTemplate.Fields[0].ID = 2
+		template.Fields[0].ID = 2
 
-		actualError := r.repository.Update(r.ctx, domainTemplate.URN, &domainTemplate)
+		actualError := r.repository.Update(r.ctx, template.URN, &template)
 
 		r.Error(actualError)
 	})
@@ -286,8 +286,8 @@ func (r *TemplateRepositoryTestSuite) TestUpdate() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := r.getDomainTemplate()
-		domainTemplate.Fields = append(domainTemplate.Fields, tag.Field{
+		template := r.getTemplate()
+		template.Fields = append(template.Fields, tag.Field{
 			URN:         "second_field",
 			DisplayName: "Second Field",
 			Description: "Random description for the second field.",
@@ -295,13 +295,13 @@ func (r *TemplateRepositoryTestSuite) TestUpdate() {
 			Required:    false,
 		})
 
-		if err := r.repository.Create(r.ctx, &domainTemplate); err != nil {
+		if err := r.repository.Create(r.ctx, &template); err != nil {
 			panic(err)
 		}
 
-		domainTemplate.Fields[1].URN = domainTemplate.Fields[0].URN
+		template.Fields[1].URN = template.Fields[0].URN
 
-		actualError := r.repository.Update(r.ctx, domainTemplate.URN, &domainTemplate)
+		actualError := r.repository.Update(r.ctx, template.URN, &template)
 
 		r.Error(actualError)
 	})
@@ -312,9 +312,9 @@ func (r *TemplateRepositoryTestSuite) TestDelete() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := r.getDomainTemplate()
+		template := r.getTemplate()
 
-		err = r.repository.Delete(r.ctx, domainTemplate)
+		err = r.repository.Delete(r.ctx, template)
 		r.EqualError(err, "could not find template \"governance_policy\"")
 	})
 
@@ -322,21 +322,21 @@ func (r *TemplateRepositoryTestSuite) TestDelete() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := r.getDomainTemplate()
-		if err := r.repository.Create(r.ctx, &domainTemplate); err != nil {
+		template := r.getTemplate()
+		if err := r.repository.Create(r.ctx, &template); err != nil {
 			panic(err)
 		}
 
-		actualError := r.repository.Delete(r.ctx, domainTemplate)
+		actualError := r.repository.Delete(r.ctx, template)
 		r.NoError(actualError)
 
-		templates, err := r.repository.Read(r.ctx, domainTemplate)
+		templates, err := r.repository.Read(r.ctx, template)
 		r.Error(err)
 		r.Empty(templates)
 	})
 }
 
-func (r *TemplateRepositoryTestSuite) getDomainTemplate() tag.Template {
+func (r *TemplateRepositoryTestSuite) getTemplate() tag.Template {
 	return tag.Template{
 		URN:         "governance_policy",
 		DisplayName: "Governance Policy",
@@ -355,12 +355,12 @@ func (r *TemplateRepositoryTestSuite) getDomainTemplate() tag.Template {
 	}
 }
 
-func (r *TemplateRepositoryTestSuite) updateTimeForDomainTemplate(domainTemplate *tag.Template, t time.Time) {
-	domainTemplate.CreatedAt = t
-	domainTemplate.UpdatedAt = t
-	for i := 0; i < len(domainTemplate.Fields); i++ {
-		domainTemplate.Fields[i].CreatedAt = t
-		domainTemplate.Fields[i].UpdatedAt = t
+func (r *TemplateRepositoryTestSuite) updateTimeForTemplate(template *tag.Template, t time.Time) {
+	template.CreatedAt = t
+	template.UpdatedAt = t
+	for i := 0; i < len(template.Fields); i++ {
+		template.Fields[i].CreatedAt = t
+		template.Fields[i].UpdatedAt = t
 	}
 }
 

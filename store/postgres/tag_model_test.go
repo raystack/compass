@@ -8,15 +8,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestModelTag(t *testing.T) {
+func TestTagModel(t *testing.T) {
 
 	recordType := "sample-type"
 	recordURN := "sample-urn"
 
-	templates := getModelTemplates()
-	tags := getModelTags()
+	templates := getTemplateModels()
+	tags := getTagModels()
 
-	t.Run("successfully build map of tags by template URN", func(t *testing.T) {
+	t.Run("successfully build map of tags model by template URN", func(t *testing.T) {
 		expectedTagsMap := map[string][]Tag{
 			"governance_policy": {tags[0], tags[1]},
 		}
@@ -25,9 +25,9 @@ func TestModelTag(t *testing.T) {
 		assert.EqualValues(t, expectedTagsMap, tagsMap)
 
 	})
-	t.Run("successfully build domain tags from model tags", func(t *testing.T) {
+	t.Run("successfully build tags from tags model", func(t *testing.T) {
 
-		expectedDomainTags := []tag.Tag{
+		expectedTagDomains := []tag.Tag{
 			{
 				RecordType:  "sample-type",
 				RecordURN:   "sample-urn",
@@ -55,18 +55,18 @@ func TestModelTag(t *testing.T) {
 				TemplateDescription: "Template that is mandatory to be used.",
 			}}
 
-		actualDomainTags := tags.toDomainTags(recordType, recordURN, templates)
+		actualTagDomains := tags.toTags(recordType, recordURN, templates)
 
-		assert.EqualValues(t, expectedDomainTags, actualDomainTags)
+		assert.EqualValues(t, expectedTagDomains, actualTagDomains)
 	})
 }
 
-func TestModelTemplate(t *testing.T) {
+func TestTemplateModel(t *testing.T) {
 
-	templates := getModelTemplates()
+	templates := getTemplateModels()
 
-	t.Run("successfully convert model template to domain template", func(t *testing.T) {
-		expectedDomainTemplate := tag.Template{
+	t.Run("successfully convert template model to template", func(t *testing.T) {
+		expectedTemplate := tag.Template{
 			URN:         "governance_policy",
 			DisplayName: "Governance Policy",
 			Description: "Template that is mandatory to be used.",
@@ -90,16 +90,16 @@ func TestModelTemplate(t *testing.T) {
 				},
 			},
 		}
-		actualDomainTemplate := templates[0].toDomainTemplate()
+		actualTemplate := templates[0].toTemplate()
 
-		assert.EqualValues(t, expectedDomainTemplate, actualDomainTemplate)
+		assert.EqualValues(t, expectedTemplate, actualTemplate)
 	})
 
-	t.Run("successfully build from model template from domain template", func(t *testing.T) {
+	t.Run("successfully build from template model from template", func(t *testing.T) {
 
-		domainTemplate := getDomainTemplate()
+		template := getTemplate()
 		option := "Public,Restricted"
-		expectedModelTemplate := &Template{
+		expectedTemplateModel := &Template{
 			URN:         "governance_policy",
 			DisplayName: "Governance Policy",
 			Description: "Template that is mandatory to be used.",
@@ -124,15 +124,15 @@ func TestModelTemplate(t *testing.T) {
 			},
 		}
 
-		modelTemplate := newModelTemplate(domainTemplate)
+		templateModel := newTemplateModel(template)
 
-		assert.EqualValues(t, expectedModelTemplate, modelTemplate)
+		assert.EqualValues(t, expectedTemplateModel, templateModel)
 	})
 }
 
-func TestModelFields(t *testing.T) {
-	modelFields := getModelFields()
-	t.Run("successfully convert model fields to domain fields", func(t *testing.T) {
+func TestFieldModels(t *testing.T) {
+	fieldModels := getFieldModels()
+	t.Run("successfully convert fields model to fields", func(t *testing.T) {
 		expectedDomainFields := []tag.Field{
 			{
 				ID:          1,
@@ -152,15 +152,15 @@ func TestModelFields(t *testing.T) {
 				Required:    true,
 			},
 		}
-		actualDomainFields := modelFields.toDomainFields()
+		actualDomainFields := fieldModels.toDomainFields()
 
 		assert.EqualValues(t, expectedDomainFields, actualDomainFields)
 	})
 
-	t.Run("successfully build model fields from domain fields", func(t *testing.T) {
-		domainFields := modelFields.toDomainFields()
+	t.Run("successfully build fields model from fields", func(t *testing.T) {
+		domainFields := fieldModels.toDomainFields()
 		option := "Public,Restricted"
-		expectedModelFields := Fields{
+		expectedFieldModels := Fields{
 			{
 				ID:          1,
 				URN:         "classification",
@@ -180,56 +180,56 @@ func TestModelFields(t *testing.T) {
 			},
 		}
 
-		actualModelFields := newSliceOfModelField(domainFields)
+		actualFieldModels := newSliceOfFieldModel(domainFields)
 
-		assert.EqualValues(t, expectedModelFields, actualModelFields)
+		assert.EqualValues(t, expectedFieldModels, actualFieldModels)
 	})
 
-	t.Run("return true if ID exist in fields", func(t *testing.T) {
-		assert.True(t, modelFields.isIDExist(1))
+	t.Run("return true if ID exist in slice of fields model", func(t *testing.T) {
+		assert.True(t, fieldModels.isIDExist(1))
 	})
-	t.Run("return false if ID exist in fields", func(t *testing.T) {
-		assert.False(t, modelFields.isIDExist(100))
+	t.Run("return false if ID exist in slice of field model", func(t *testing.T) {
+		assert.False(t, fieldModels.isIDExist(100))
 	})
 }
 
 func TestTemplateFields(t *testing.T) {
-	tfs := getTemplateFields()
-	modelTemplates := getModelTemplates()
-	domainTemplates := getDomainTemplate()
-	t.Run("successfully build model templates", func(t *testing.T) {
+	tfs := getTemplateFieldModels()
+	templateModels := getTemplateModels()
+	templates := getTemplate()
+	t.Run("successfully build template models", func(t *testing.T) {
 
-		actualModelTemplates := tfs.toModelTemplates()
+		actualTemplateModels := tfs.toTemplateModels()
 
-		assert.EqualValues(t, modelTemplates[0], actualModelTemplates[0])
+		assert.EqualValues(t, templateModels[0], actualTemplateModels[0])
 	})
-	t.Run("successfully build domain templates", func(t *testing.T) {
-		actualDomainTemplates := tfs.toDomainTemplates()
+	t.Run("successfully build templates", func(t *testing.T) {
+		actualTemplates := tfs.toTemplates()
 
-		assert.EqualValues(t, *domainTemplates, actualDomainTemplates[0])
+		assert.EqualValues(t, *templates, actualTemplates[0])
 	})
 }
 
 func TestTemplateTagFields(t *testing.T) {
-	ttfs := getTemplateTagFields()
-	t.Run("successfully build model templates and tags", func(t *testing.T) {
+	ttfs := getTemplateTagFieldModels()
+	t.Run("successfully build templates model and tags model", func(t *testing.T) {
 
-		expectedModelTemplates := getModelTemplates()
-		expectedModelTags := getModelTags()
-		actualModelTemplates, actualModelTags := ttfs.toModelTemplatesAndTags()
-		assert.EqualValues(t, expectedModelTemplates[0], actualModelTemplates[0])
+		expectedTemplateModels := getTemplateModels()
+		expectedTagModels := getTagModels()
+		actualTemplateModels, actualTagModels := ttfs.toTemplateAndTagModels()
+		assert.EqualValues(t, expectedTemplateModels[0], actualTemplateModels[0])
 
-		sort.Slice(actualModelTags[:], func(i, j int) bool {
-			return actualModelTags[i].ID < actualModelTags[j].ID
+		sort.Slice(actualTagModels[:], func(i, j int) bool {
+			return actualTagModels[i].ID < actualTagModels[j].ID
 		})
-		sort.Slice(expectedModelTags[:], func(i, j int) bool {
-			return expectedModelTags[i].ID < expectedModelTags[j].ID
+		sort.Slice(expectedTagModels[:], func(i, j int) bool {
+			return expectedTagModels[i].ID < expectedTagModels[j].ID
 		})
-		assert.EqualValues(t, expectedModelTags[0], actualModelTags[0])
+		assert.EqualValues(t, expectedTagModels[0], actualTagModels[0])
 	})
 }
 
-func getModelFields() Fields {
+func getFieldModels() Fields {
 	option := "Public,Restricted"
 	return Fields{
 		{
@@ -255,7 +255,7 @@ func getModelFields() Fields {
 	}
 }
 
-func getDomainTemplate() *tag.Template {
+func getTemplate() *tag.Template {
 	return &tag.Template{
 		URN:         "governance_policy",
 		DisplayName: "Governance Policy",
@@ -282,8 +282,8 @@ func getDomainTemplate() *tag.Template {
 	}
 }
 
-func getModelTemplates() Templates {
-	fields := getModelFields()
+func getTemplateModels() Templates {
+	fields := getFieldModels()
 	return Templates{
 		{
 			URN:         "governance_policy",
@@ -294,8 +294,8 @@ func getModelTemplates() Templates {
 	}
 }
 
-func getModelTags() Tags {
-	fields := getModelFields()
+func getTagModels() Tags {
+	fields := getFieldModels()
 	return Tags{
 		{
 			ID:         1,
@@ -316,8 +316,8 @@ func getModelTags() Tags {
 	}
 }
 
-func getTemplateFields() TemplateFields {
-	templates := getModelTemplates()
+func getTemplateFieldModels() TemplateFields {
+	templates := getTemplateModels()
 	return TemplateFields{
 		{
 			Template: templates[0],
@@ -330,9 +330,9 @@ func getTemplateFields() TemplateFields {
 	}
 }
 
-func getTemplateTagFields() TemplateTagFields {
-	templates := getModelTemplates()
-	tags := getModelTags()
+func getTemplateTagFieldModels() TemplateTagFields {
+	templates := getTemplateModels()
+	tags := getTagModels()
 	return TemplateTagFields{
 		{
 			Template: templates[0],

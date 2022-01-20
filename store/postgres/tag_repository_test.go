@@ -69,13 +69,13 @@ func (r *TagRepositoryTestSuite) TestNewRepository() {
 }
 
 func (r *TagRepositoryTestSuite) TestCreate() {
-	r.Run("should return error if domain tag is nil", func() {
+	r.Run("should return error if tag is nil", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		var domainTag *tag.Tag = nil
 
-		expectedErrorMsg := "domain tag is nil"
+		expectedErrorMsg := "tag is nil"
 
 		actualError := r.repository.Create(r.ctx, domainTag)
 
@@ -96,7 +96,7 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := getDomainTemplate()
+		domainTemplate := getTemplate()
 		err = r.templateRepository.Create(r.ctx, domainTemplate)
 		r.NoError(err)
 		domainTag := getDomainTag()
@@ -127,11 +127,11 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 		r.EqualValues(expectedTagValues, actualTagValues)
 	})
 
-	r.Run("should return nil and update domain tag if no error found", func() {
+	r.Run("should return nil and update tag if no error found", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := getDomainTemplate()
+		domainTemplate := getTemplate()
 		err = r.templateRepository.Create(r.ctx, domainTemplate)
 		r.NoError(err)
 		domainTag := getDomainTag()
@@ -205,7 +205,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := getDomainTemplate()
+		domainTemplate := getTemplate()
 		err = r.templateRepository.Create(r.ctx, domainTemplate)
 		r.Require().NoError(err)
 
@@ -249,7 +249,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		var recordURN string = "sample-urn"
 		var templateURN string = "governance_policy"
 
-		domainTemplate := getDomainTemplate()
+		domainTemplate := getTemplate()
 		err = r.templateRepository.Create(r.ctx, domainTemplate)
 		r.NoError(err)
 
@@ -269,7 +269,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		r.Nil(actualTag)
 	})
 
-	r.Run("should return maximum of one domain tag for the specified record and template", func() {
+	r.Run("should return maximum of one tag for the specified record and template", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
@@ -277,7 +277,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		var recordURN string = "sample-urn"
 		var templateURN string = "governance_policy"
 
-		domainTemplate := getDomainTemplate()
+		domainTemplate := getTemplate()
 		err = r.templateRepository.Create(r.ctx, domainTemplate)
 		r.NoError(err)
 		domainTag := getDomainTag()
@@ -301,13 +301,13 @@ func (r *TagRepositoryTestSuite) TestRead() {
 }
 
 func (r *TagRepositoryTestSuite) TestUpdate() {
-	r.Run("should return error if domain tag is nil", func() {
+	r.Run("should return error if tag is nil", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		var domainTag *tag.Tag = nil
 
-		expectedErrorMsg := "domain tag is nil"
+		expectedErrorMsg := "tag is nil"
 
 		actualError := r.repository.Update(r.ctx, domainTag)
 
@@ -327,7 +327,7 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := getDomainTemplate()
+		domainTemplate := getTemplate()
 		err = r.templateRepository.Create(r.ctx, domainTemplate)
 		r.Require().NoError(err)
 
@@ -350,11 +350,11 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 		}
 	})
 
-	r.Run("should return nil and update domain tag if no error found", func() {
+	r.Run("should return nil and update tag if no error found", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := getDomainTemplate()
+		domainTemplate := getTemplate()
 		err = r.templateRepository.Create(r.ctx, domainTemplate)
 		r.NoError(err)
 		domainTag := getDomainTag()
@@ -392,7 +392,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		domainTemplate := getDomainTemplate()
+		domainTemplate := getTemplate()
 		err = r.templateRepository.Create(r.ctx, domainTemplate)
 		r.NoError(err)
 
@@ -439,7 +439,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		r.NoError(err)
 
 		var recordURN string = "sample-urn"
-		domainTemplate := getDomainTemplate()
+		domainTemplate := getTemplate()
 		err = r.templateRepository.Create(r.ctx, domainTemplate)
 		r.NoError(err)
 
@@ -453,7 +453,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 	})
 }
 
-func getDomainTemplate() *tag.Template {
+func getTemplate() *tag.Template {
 	return &tag.Template{
 		URN:         "governance_policy",
 		DisplayName: "Governance Policy",

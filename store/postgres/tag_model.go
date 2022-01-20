@@ -33,21 +33,21 @@ func (ts Tags) buildMapByTemplateURN() map[string][]Tag {
 	return tagsByTemplateURN
 }
 
-func (ts Tags) toDomainTags(recordType, recordURN string, templates Templates) []tag.Tag {
+func (ts Tags) toTags(recordType, recordURN string, templates Templates) []tag.Tag {
 	templateByURN := templates.buildMapByURN()
 	tagsByTemplateURN := ts.buildMapByTemplateURN()
 
 	output := []tag.Tag{}
-	for templateURN, modelTags := range tagsByTemplateURN {
-		var listOfDomainTagValue []tag.TagValue
-		modelTemplate := templateByURN[templateURN]
-		for _, t := range modelTags {
+	for templateURN, tagModels := range tagsByTemplateURN {
+		var listOfTagValue []tag.TagValue
+		templateModel := templateByURN[templateURN]
+		for _, t := range tagModels {
 			var options []string
 			if t.Field.Options != nil {
 				options = strings.Split(*t.Field.Options, ",")
 			}
-			parsedValue, _ := tag.ParseTagValue(modelTemplate.URN, t.FieldID, t.Field.DataType, t.Value, options)
-			listOfDomainTagValue = append(listOfDomainTagValue, tag.TagValue{
+			parsedValue, _ := tag.ParseTagValue(templateModel.URN, t.FieldID, t.Field.DataType, t.Value, options)
+			listOfTagValue = append(listOfTagValue, tag.TagValue{
 				FieldID:          t.FieldID,
 				FieldValue:       parsedValue,
 				FieldURN:         t.Field.URN,
@@ -63,10 +63,10 @@ func (ts Tags) toDomainTags(recordType, recordURN string, templates Templates) [
 		output = append(output, tag.Tag{
 			RecordType:          recordType,
 			RecordURN:           recordURN,
-			TemplateURN:         modelTemplate.URN,
-			TagValues:           listOfDomainTagValue,
-			TemplateDisplayName: modelTemplate.DisplayName,
-			TemplateDescription: modelTemplate.Description,
+			TemplateURN:         templateModel.URN,
+			TagValues:           listOfTagValue,
+			TemplateDisplayName: templateModel.DisplayName,
+			TemplateDescription: templateModel.Description,
 		})
 	}
 	return output
@@ -82,7 +82,7 @@ type Template struct {
 	Fields      Fields    `db:"-"`
 }
 
-func (tmp *Template) toDomainTemplate() tag.Template {
+func (tmp *Template) toTemplate() tag.Template {
 	return tag.Template{
 		URN:         tmp.URN,
 		DisplayName: tmp.DisplayName,
@@ -93,14 +93,14 @@ func (tmp *Template) toDomainTemplate() tag.Template {
 	}
 }
 
-func newModelTemplate(domainTemplate *tag.Template) *Template {
-	modelFields := newSliceOfModelField(domainTemplate.Fields)
+func newTemplateModel(template *tag.Template) *Template {
+	fieldModels := newSliceOfFieldModel(template.Fields)
 
 	return &Template{
-		URN:         domainTemplate.URN,
-		DisplayName: domainTemplate.DisplayName,
-		Description: domainTemplate.Description,
-		Fields:      modelFields,
+		URN:         template.URN,
+		DisplayName: template.DisplayName,
+		Description: template.Description,
+		Fields:      fieldModels,
 	}
 }
 
@@ -162,7 +162,7 @@ func (fs *Fields) toDomainFields() []tag.Field {
 	return output
 }
 
-func newSliceOfModelField(listOfDomainField []tag.Field) Fields {
+func newSliceOfFieldModel(listOfDomainField []tag.Field) Fields {
 	newFields := Fields{}
 	for _, field := range listOfDomainField {
 		var options *string
@@ -186,9 +186,8 @@ func newSliceOfModelField(listOfDomainField []tag.Field) Fields {
 // TemplateFields is a slice of placeholder for joined template and field
 type TemplateFields []TemplateField
 
-func (tfs TemplateFields) toModelTemplates() (templates []Template) {
+func (tfs TemplateFields) toTemplateModels() (templates []Template) {
 	templateMap := make(map[string]Template, 0)
-	// fieldMap := make(map[uint]Field, 0)
 
 	for _, tf := range tfs {
 		if _, ok := templateMap[tf.Template.URN]; !ok {
@@ -209,7 +208,7 @@ func (tfs TemplateFields) toModelTemplates() (templates []Template) {
 	return
 }
 
-func (tfs TemplateFields) toDomainTemplates() (templates []tag.Template) {
+func (tfs TemplateFields) toTemplates() (templates []tag.Template) {
 	templatesMap := map[string]Template{}
 	for _, tf := range tfs {
 		// build template
@@ -266,7 +265,7 @@ type TemplateField struct {
 // TemplateTagFields is a slice of placeholder for joined template, tag, and field
 type TemplateTagFields []TemplateTagField
 
-func (ttfs TemplateTagFields) toModelTemplatesAndTags() (templates Templates, tags Tags) {
+func (ttfs TemplateTagFields) toTemplateAndTagModels() (templates Templates, tags Tags) {
 	tmpltsMap := make(map[string]Template, 0) // template urn as key
 	tagsMap := make(map[uint]Tag, 0)
 
