@@ -34,7 +34,7 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 
 	templates := templateFieldModels.toTemplates()
 	if len(templates) < 1 {
-		return tag.TemplateNotFoundError{URN: domainTag.TemplateURN}
+		return tag.ErrTemplateNotFound{URN: domainTag.TemplateURN}
 	}
 
 	var insertedModelTags []Tag
@@ -117,7 +117,7 @@ func (r *TagRepository) Read(ctx context.Context, filter tag.Tag) ([]tag.Tag, er
 	}
 
 	if len(templateTagFields) == 0 {
-		return nil, tag.NotFoundError{
+		return nil, tag.ErrNotFound{
 			URN:      filter.RecordURN,
 			Type:     filter.RecordType,
 			Template: filter.TemplateURN,
@@ -142,7 +142,7 @@ func (r *TagRepository) Update(ctx context.Context, domainTag *tag.Tag) error {
 
 	templates := templateFieldModels.toTemplates()
 	if len(templates) < 1 {
-		return tag.TemplateNotFoundError{URN: domainTag.TemplateURN}
+		return tag.ErrTemplateNotFound{URN: domainTag.TemplateURN}
 	}
 
 	var updatedModelTags []Tag

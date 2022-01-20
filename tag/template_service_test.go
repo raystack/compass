@@ -46,7 +46,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template.URN = ""
 
 		expectedErrorMsg := "error with [urn : cannot be empty]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"urn": "cannot be empty",
 			},
@@ -55,7 +55,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if display name is empty", func() {
@@ -63,7 +63,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template.DisplayName = ""
 
 		expectedErrorMsg := "error with [display_name : cannot be empty]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"display_name": "cannot be empty",
 			},
@@ -72,7 +72,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if description is empty", func() {
@@ -80,7 +80,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template.Description = ""
 
 		expectedErrorMsg := "error with [description : cannot be empty]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"description": "cannot be empty",
 			},
@@ -89,7 +89,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if fields is nil", func() {
@@ -97,7 +97,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template.Fields = nil
 
 		expectedErrorMsg := "error with [fields : cannot be empty]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"fields": "cannot be empty",
 			},
@@ -106,7 +106,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if fields is empty", func() {
@@ -114,7 +114,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template.Fields = []tag.Field{}
 
 		expectedErrorMsg := "error with [fields : must be at least 1]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"fields": "must be at least 1",
 			},
@@ -123,7 +123,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if fields urn is empty", func() {
@@ -131,7 +131,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template.Fields[0].URN = ""
 
 		expectedErrorMsg := "error with [fields[0].urn : cannot be empty]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"fields[0].urn": "cannot be empty",
 			},
@@ -140,7 +140,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if fields display name is empty", func() {
@@ -148,7 +148,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template.Fields[0].DisplayName = ""
 
 		expectedErrorMsg := "error with [fields[0].display_name : cannot be empty]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"fields[0].display_name": "cannot be empty",
 			},
@@ -157,7 +157,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if fields description is empty", func() {
@@ -165,7 +165,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template.Fields[0].Description = ""
 
 		expectedErrorMsg := "error with [fields[0].description : cannot be empty]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"fields[0].description": "cannot be empty",
 			},
@@ -174,7 +174,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if fields data type is invalid", func() {
@@ -182,7 +182,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template.Fields[0].DataType = "Random_Type"
 
 		expectedErrorMsg := "error with [fields[0].data_type : data_type must be one of [string double boolean enumerated datetime]]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"fields[0].data_type": "data_type must be one of [string double boolean enumerated datetime]",
 			},
@@ -191,7 +191,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if fields data type enumerated but options nil", func() {
@@ -199,7 +199,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template.Fields[0].Options = nil
 
 		expectedErrorMsg := "error with [fields[0].options : cannot be empty with data_type [enumerated]]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"fields[0].options": "cannot be empty with data_type [enumerated]",
 			},
@@ -208,7 +208,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if fields data type enumerated but options empty", func() {
@@ -216,7 +216,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		template.Fields[0].Options = []string{}
 
 		expectedErrorMsg := "error with [fields[0].options : cannot be empty with data_type [enumerated]]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"fields[0].options": "cannot be empty with data_type [enumerated]",
 			},
@@ -225,7 +225,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if fields data type enumerated but options contains empty", func() {
@@ -235,7 +235,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		}
 
 		expectedErrorMsg := "error with [fields[0].options : cannot contain empty element]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"fields[0].options": "cannot contain empty element",
 			},
@@ -244,7 +244,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return nil if fields data type not enumerated and options empty", func() {
@@ -274,7 +274,7 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 		template.Description = ""
 
 		expectedErrorMsg := "error with [description : cannot be empty]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"description": "cannot be empty",
 			},
@@ -283,7 +283,7 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 		actualError := s.service.Create(ctx, &template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if error encountered when checking for duplication", func() {
@@ -307,7 +307,7 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 		s.repository.On("Read", ctx, filterForExistence).Return([]tag.Template{{}}, nil)
 
 		err := s.service.Create(ctx, &template)
-		s.Equal(tag.DuplicateTemplateError{URN: template.URN}, err)
+		s.Equal(tag.ErrDuplicateTemplate{URN: template.URN}, err)
 	})
 
 	s.Run("should return error if found error during create", func() {
@@ -391,7 +391,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		template.Description = ""
 
 		expectedErrorMsg := "error with [description : cannot be empty]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"description": "cannot be empty",
 			},
@@ -400,7 +400,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		actualError := s.service.Update(ctx, &template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if encountered unexpected error during read for existence", func() {
@@ -427,7 +427,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		s.repository.On("Read", ctx, filterForExistence).Return([]tag.Template{template}, nil)
 
 		expectedErrorMsg := "error with [fields.[0].id : [99] is not part of the template]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"fields.[0].id": fmt.Sprintf("[%d] is not part of the template",
 					newTemplate.Fields[0].ID,
@@ -438,7 +438,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		actualError := s.service.Update(ctx, &newTemplate)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if trying to update field urn that already exist", func() {
@@ -453,7 +453,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		s.repository.On("Read", ctx, filterForExistence).Return([]tag.Template{template}, nil)
 
 		expectedErrorMsg := "error with [fields.[0].urn : [team_custodianr] already exists within the template]"
-		expectedFieldError := tag.ValidationError{
+		expectedFieldError := tag.ErrValidation{
 			validator.FieldError{
 				"fields.[0].urn": fmt.Sprintf("[%s] already exists within the template",
 					newTemplate.Fields[0].URN,
@@ -464,7 +464,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		actualError := s.service.Update(ctx, &newTemplate)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
 	})
 
 	s.Run("should return error if found error during update", func() {
@@ -519,7 +519,7 @@ func (s *TemplateServiceTestSuite) TestFind() {
 
 		_, err := s.service.Find(ctx, urn)
 		s.Error(err)
-		s.ErrorIs(err, tag.TemplateNotFoundError{URN: urn})
+		s.ErrorIs(err, tag.ErrTemplateNotFound{URN: urn})
 	})
 
 	s.Run("should return domain template and nil if record is found", func() {

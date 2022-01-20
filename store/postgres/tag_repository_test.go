@@ -89,7 +89,7 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 
 		err = r.repository.Create(r.ctx, &domain)
 
-		r.EqualError(err, tag.TemplateNotFoundError{URN: domain.TemplateURN}.Error())
+		r.EqualError(err, tag.ErrTemplateNotFound{URN: domain.TemplateURN}.Error())
 	})
 
 	r.Run("should return nil and create tag if no error found", func() {
@@ -193,8 +193,8 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		actualTag, actualError := r.repository.Read(r.ctx, paramDomainTag)
 		r.Empty(actualTag)
 
-		r.True(errors.As(actualError, new(tag.NotFoundError)))
-		r.EqualError(actualError, tag.NotFoundError{
+		r.True(errors.As(actualError, new(tag.ErrNotFound)))
+		r.EqualError(actualError, tag.ErrNotFound{
 			URN:      paramDomainTag.RecordURN,
 			Type:     paramDomainTag.RecordType,
 			Template: paramDomainTag.TemplateURN,
@@ -234,7 +234,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		}
 
 		_, err = r.repository.Read(r.ctx, paramDomainTag)
-		r.EqualError(err, tag.NotFoundError{
+		r.EqualError(err, tag.ErrNotFound{
 			URN:      paramDomainTag.RecordURN,
 			Type:     paramDomainTag.RecordType,
 			Template: paramDomainTag.TemplateURN,
@@ -264,7 +264,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		)
 
 		actualTag, actualError := r.repository.Read(r.ctx, paramDomainTag)
-		r.ErrorAs(actualError, new(tag.NotFoundError))
+		r.ErrorAs(actualError, new(tag.ErrNotFound))
 		r.EqualError(actualError, expectedErrorMsg)
 		r.Nil(actualTag)
 	})
@@ -320,7 +320,7 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 		t := getDomainTag()
 
 		err = r.repository.Update(r.ctx, &t)
-		r.EqualError(err, tag.TemplateNotFoundError{URN: t.TemplateURN}.Error())
+		r.EqualError(err, tag.ErrTemplateNotFound{URN: t.TemplateURN}.Error())
 	})
 
 	r.Run("should return nil and update tag if no error found", func() {
@@ -431,7 +431,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		}
 
 		err = r.repository.Delete(r.ctx, paramDomainTag)
-		r.EqualError(err, tag.TemplateNotFoundError{URN: templateURN}.Error())
+		r.EqualError(err, tag.ErrTemplateNotFound{URN: templateURN}.Error())
 	})
 
 	r.Run("should delete only the tag for record and template and return no error if record has one", func() {

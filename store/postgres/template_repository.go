@@ -65,13 +65,13 @@ func (r *TemplateRepository) Create(ctx context.Context, templateDomain *tag.Tem
 
 // Read reads template from database
 func (r *TemplateRepository) Read(ctx context.Context, filter tag.Template) (output []tag.Template, err error) {
-	templatesFields, err := readTemplatesJoinFieldsFromDB(ctx, r.client.db, filter.URN)
+	templatesFieldModels, err := readTemplatesJoinFieldsFromDB(ctx, r.client.db, filter.URN)
 	if err != nil {
 		err = fmt.Errorf("error fetching templates: %w", err)
 		return
 	}
 
-	templates := templatesFields.toTemplateModels()
+	templates := templatesFieldModels.toTemplateModels()
 
 	for _, record := range templates {
 		templateDomain := record.toTemplate()
@@ -146,7 +146,7 @@ func (r *TemplateRepository) Delete(ctx context.Context, filter tag.Template) er
 	}
 
 	if tmpRowsAffected == 0 {
-		return tag.TemplateNotFoundError{URN: filter.URN}
+		return tag.ErrTemplateNotFound{URN: filter.URN}
 	}
 	return nil
 }
@@ -209,7 +209,7 @@ func readTemplatesJoinFieldsFromDB(ctx context.Context, db *sqlx.DB, templateURN
 	}
 
 	if len(templates) == 0 {
-		err = &tag.TemplateNotFoundError{URN: templateURN}
+		err = &tag.ErrTemplateNotFound{URN: templateURN}
 		return
 	}
 
@@ -230,7 +230,7 @@ func updateTemplateToDBTx(ctx context.Context, tx *sqlx.Tx, targetTemplateURN st
 		StructScan(&updatedTemplate); err != nil {
 		// scan returns sql.ErrNoRows if no rows
 		if errors.Is(err, sql.ErrNoRows) {
-			return tag.TemplateNotFoundError{URN: templateModel.URN}
+			return tag.ErrTemplateNotFound{URN: templateModel.URN}
 		}
 		return fmt.Errorf("failed building update template sql: %w", err)
 	}

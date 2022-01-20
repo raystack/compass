@@ -67,7 +67,7 @@ func (s *TagTemplateHandlerTestSuite) TestCreate() {
 		body, err := json.Marshal(template)
 		s.Require().NoError(err)
 		s.templateRepository.On("Read", mock.Anything, tag.Template{URN: template.URN}).Return(nil, nil)
-		s.templateRepository.On("Create", mock.Anything, &template).Return(tag.DuplicateTemplateError{URN: template.URN})
+		s.templateRepository.On("Create", mock.Anything, &template).Return(tag.ErrDuplicateTemplate{URN: template.URN})
 		request, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader(string(body)))
 
 		s.handler.Create(s.recorder, request)
@@ -224,7 +224,7 @@ func (s *TagTemplateHandlerTestSuite) TestUpdate() {
 		})
 		s.templateRepository.On("Read", mock.Anything, tag.Template{
 			URN: templateURN,
-		}).Return(nil, tag.ValidationError{Err: errors.New("validation error")})
+		}).Return(nil, tag.ErrValidation{Err: errors.New("validation error")})
 
 		s.handler.Update(s.recorder, request)
 		s.Equal(http.StatusUnprocessableEntity, s.recorder.Result().StatusCode)
@@ -396,7 +396,7 @@ func (s *TagTemplateHandlerTestSuite) TestDelete() {
 		})
 		s.templateRepository.On("Delete", mock.Anything, tag.Template{
 			URN: templateURN,
-		}).Return(tag.TemplateNotFoundError{URN: templateURN})
+		}).Return(tag.ErrTemplateNotFound{URN: templateURN})
 
 		s.handler.Delete(s.recorder, request)
 		s.Equal(http.StatusNotFound, s.recorder.Result().StatusCode)
