@@ -42,10 +42,7 @@ func (s *TemplateService) Create(ctx context.Context, template *Template) error 
 		return err
 	}
 
-	filterForExistence := Template{
-		URN: template.URN,
-	}
-	templateRecords, err := s.repository.Read(ctx, filterForExistence)
+	templateRecords, err := s.repository.Read(ctx, template.URN)
 	if err != nil {
 		return errors.Wrap(err, "error checking template existence")
 	}
@@ -62,8 +59,15 @@ func (s *TemplateService) Create(ctx context.Context, template *Template) error 
 }
 
 // Index handles read business operation for template
-func (s *TemplateService) Index(ctx context.Context, template Template) ([]Template, error) {
-	output, err := s.repository.Read(ctx, template)
+func (s *TemplateService) Index(ctx context.Context, templateURN string) ([]Template, error) {
+	if templateURN == "" {
+		output, err := s.repository.ReadAll(ctx)
+		if err != nil {
+			return nil, errors.Wrap(err, "error fetching templates")
+		}
+		return output, nil
+	}
+	output, err := s.repository.Read(ctx, templateURN)
 	if err != nil {
 		return nil, errors.Wrap(err, "error fetching templates")
 	}
@@ -71,7 +75,7 @@ func (s *TemplateService) Index(ctx context.Context, template Template) ([]Templ
 }
 
 // Update handles update business operation for template
-func (s *TemplateService) Update(ctx context.Context, template *Template) error {
+func (s *TemplateService) Update(ctx context.Context, templateURN string, template *Template) error {
 	if template == nil {
 		return errors.New("template is nil")
 	}
@@ -79,15 +83,12 @@ func (s *TemplateService) Update(ctx context.Context, template *Template) error 
 	if err != nil {
 		return err
 	}
-	filterForExistence := Template{
-		URN: template.URN,
-	}
-	templateRecords, err := s.repository.Read(ctx, filterForExistence)
+	templateRecords, err := s.repository.Read(ctx, templateURN)
 	if err != nil {
 		return errors.Wrap(err, "error checking template existence")
 	}
 	if len(templateRecords) == 0 {
-		return ErrTemplateNotFound{URN: template.URN}
+		return ErrTemplateNotFound{URN: templateURN}
 	}
 
 	// check for duplication
@@ -113,7 +114,7 @@ func (s *TemplateService) Update(ctx context.Context, template *Template) error 
 		}
 	}
 
-	err = s.repository.Update(ctx, template.URN, template)
+	err = s.repository.Update(ctx, templateURN, template)
 	if err != nil {
 		return errors.Wrap(err, "error updating template")
 	}
@@ -122,10 +123,7 @@ func (s *TemplateService) Update(ctx context.Context, template *Template) error 
 
 // Find handles request to get template by urn
 func (s *TemplateService) Find(ctx context.Context, urn string) (Template, error) {
-	queryDomainTemplate := Template{
-		URN: urn,
-	}
-	listOfDomainTemplate, err := s.repository.Read(ctx, queryDomainTemplate)
+	listOfDomainTemplate, err := s.repository.Read(ctx, urn)
 	if err != nil {
 		return Template{}, errors.Wrap(err, "error reading repository")
 	}
@@ -137,10 +135,7 @@ func (s *TemplateService) Find(ctx context.Context, urn string) (Template, error
 
 // Delete handles request to delete template by urn
 func (s *TemplateService) Delete(ctx context.Context, urn string) error {
-	template := Template{
-		URN: urn,
-	}
-	err := s.repository.Delete(ctx, template)
+	err := s.repository.Delete(ctx, urn)
 	if err != nil {
 		return errors.Wrap(err, "error deleting template")
 	}

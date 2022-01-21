@@ -37,7 +37,6 @@ func (r *TemplateRepositoryTestSuite) SetupSuite() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-
 }
 
 func (r *TemplateRepositoryTestSuite) TearDownSuite() {
@@ -84,7 +83,7 @@ func (r *TemplateRepositoryTestSuite) TestCreate() {
 		r.NoError(actualError)
 
 		var actualRecord tag.Template
-		templates, err := r.repository.Read(r.ctx, template)
+		templates, err := r.repository.Read(r.ctx, template.URN)
 		r.NoError(err)
 
 		actualRecord = templates[0]
@@ -129,15 +128,15 @@ func (r *TemplateRepositoryTestSuite) TestCreate() {
 }
 
 func (r *TemplateRepositoryTestSuite) TestRead() {
-	r.Run("should return empty and nil if no record found", func() {
+	r.Run("should return empty and no error if no record found", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 		template := r.getTemplate()
 
-		actualTemplate, actualError := r.repository.Read(r.ctx, template)
+		actualTemplate, actualError := r.repository.Read(r.ctx, template.URN)
 
 		r.Empty(actualTemplate)
-		r.EqualError(actualError, "error fetching templates: could not find template \"governance_policy\"")
+		r.NoError(actualError)
 	})
 
 	r.Run("should return templates and nil if found any", func() {
@@ -153,7 +152,7 @@ func (r *TemplateRepositoryTestSuite) TestRead() {
 		expectedTemplate := []tag.Template{template}
 		r.updateTimeForTemplate(&expectedTemplate[0], now)
 
-		actualTemplate, actualError := r.repository.Read(r.ctx, template)
+		actualTemplate, actualError := r.repository.Read(r.ctx, template.URN)
 		r.updateTimeForTemplate(&actualTemplate[0], now)
 
 		r.EqualValues(expectedTemplate, actualTemplate)
@@ -177,7 +176,63 @@ func (r *TemplateRepositoryTestSuite) TestRead() {
 		err = r.repository.Create(r.ctx, &template)
 		r.NoError(err)
 
-		templates, err := r.repository.Read(r.ctx, template)
+		templates, err := r.repository.Read(r.ctx, template.URN)
+
+		r.NoError(err)
+		r.Len(templates[0].Fields, 2)
+		r.Equal(template.DisplayName, templates[0].DisplayName)
+		r.Equal(template.UpdatedAt, templates[0].UpdatedAt)
+	})
+}
+
+func (r *TemplateRepositoryTestSuite) TestReadAll() {
+	r.Run("should return empty and no error if no record found", func() {
+		err := setup(r.ctx, r.client)
+		r.NoError(err)
+		actualTemplate, actualError := r.repository.ReadAll(r.ctx)
+
+		r.Empty(actualTemplate)
+		r.NoError(actualError)
+	})
+
+	r.Run("should return templates and nil if found any", func() {
+		err := setup(r.ctx, r.client)
+		r.NoError(err)
+
+		template := r.getTemplate()
+		if err := r.repository.Create(r.ctx, &template); err != nil {
+			panic(err)
+		}
+		now := time.Now()
+
+		expectedTemplate := []tag.Template{template}
+		r.updateTimeForTemplate(&expectedTemplate[0], now)
+
+		actualTemplate, actualError := r.repository.ReadAll(r.ctx)
+		r.updateTimeForTemplate(&actualTemplate[0], now)
+
+		r.EqualValues(expectedTemplate, actualTemplate)
+		r.NoError(actualError)
+	})
+	r.Run("should return template with multiple fields if exist", func() {
+		err := setup(r.ctx, r.client)
+		r.NoError(err)
+
+		template := r.getTemplate()
+
+		template.DisplayName = "Random Display"
+		template.Fields[0].DisplayName = "Another Random Display"
+		template.Fields = append(template.Fields, tag.Field{
+			URN:         "new_field",
+			DisplayName: "New Field",
+			Description: "This field is a new addition.",
+			DataType:    "string",
+		})
+
+		err = r.repository.Create(r.ctx, &template)
+		r.NoError(err)
+
+		templates, err := r.repository.ReadAll(r.ctx)
 
 		r.NoError(err)
 		r.Len(templates[0].Fields, 2)
@@ -228,7 +283,7 @@ func (r *TemplateRepositoryTestSuite) TestUpdate() {
 		actualError := r.repository.Update(r.ctx, template.URN, &template)
 		r.NoError(actualError)
 
-		templates, err := r.repository.Read(r.ctx, template)
+		templates, err := r.repository.Read(r.ctx, template.URN)
 		r.NoError(err)
 
 		recordModelTemplate := templates[0]
@@ -314,7 +369,7 @@ func (r *TemplateRepositoryTestSuite) TestDelete() {
 
 		template := r.getTemplate()
 
-		err = r.repository.Delete(r.ctx, template)
+		err = r.repository.Delete(r.ctx, template.URN)
 		r.EqualError(err, "could not find template \"governance_policy\"")
 	})
 
@@ -327,11 +382,11 @@ func (r *TemplateRepositoryTestSuite) TestDelete() {
 			panic(err)
 		}
 
-		actualError := r.repository.Delete(r.ctx, template)
+		actualError := r.repository.Delete(r.ctx, template.URN)
 		r.NoError(actualError)
 
-		templates, err := r.repository.Read(r.ctx, template)
-		r.Error(err)
+		templates, err := r.repository.Read(r.ctx, template.URN)
+		r.NoError(err)
 		r.Empty(templates)
 	})
 }

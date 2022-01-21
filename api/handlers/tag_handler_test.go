@@ -65,7 +65,7 @@ func (s *TagHandlerTestSuite) TestCreate() {
 		s.Setup()
 		t := s.buildTag()
 		template := s.buildTemplate()
-		s.templateRepository.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepository.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.tagRepository.On("Create", mock.Anything, &t).Return(tag.ErrTemplateNotFound{URN: t.TemplateURN})
 
 		body, err := json.Marshal(t)
@@ -80,7 +80,7 @@ func (s *TagHandlerTestSuite) TestCreate() {
 		s.Setup()
 		t := s.buildTag()
 		template := s.buildTemplate()
-		s.templateRepository.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepository.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.tagRepository.On("Create", mock.Anything, &t).Return(tag.ErrValidation{Err: errors.New("validation error")})
 
 		body, err := json.Marshal(t)
@@ -95,7 +95,7 @@ func (s *TagHandlerTestSuite) TestCreate() {
 		s.Setup()
 		t := s.buildTag()
 		template := s.buildTemplate()
-		s.templateRepository.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepository.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.tagRepository.On("Create", mock.Anything, &t).Return(errors.New("unexpected error during insert"))
 
 		body, err := json.Marshal(t)
@@ -110,7 +110,7 @@ func (s *TagHandlerTestSuite) TestCreate() {
 		s.Setup()
 		t := s.buildTag()
 		template := s.buildTemplate()
-		s.templateRepository.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepository.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.tagRepository.On("Create", mock.Anything, &t).Return(tag.ErrDuplicate{})
 
 		body, err := json.Marshal(t)
@@ -126,7 +126,7 @@ func (s *TagHandlerTestSuite) TestCreate() {
 		originalDomainTag := s.buildTag()
 
 		template := s.buildTemplate()
-		s.templateRepository.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepository.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.tagRepository.On("Create", mock.Anything, &originalDomainTag).Return(nil)
 
 		body, err := json.Marshal(originalDomainTag)
@@ -307,9 +307,7 @@ func (s *TagHandlerTestSuite) TestFindByRecordAndTemplate() {
 			"template_urn": template.URN,
 		})
 
-		s.templateRepository.On("Read", mock.Anything, tag.Template{
-			URN: template.URN,
-		}).Return([]tag.Template{}, tag.ErrTemplateNotFound{URN: template.URN})
+		s.templateRepository.On("Read", mock.Anything, template.URN).Return([]tag.Template{}, tag.ErrTemplateNotFound{URN: template.URN})
 
 		s.handler.FindByRecordAndTemplate(s.recorder, request)
 		s.Equal(http.StatusNotFound, s.recorder.Result().StatusCode)
@@ -328,9 +326,7 @@ func (s *TagHandlerTestSuite) TestFindByRecordAndTemplate() {
 			"template_urn": template.URN,
 		})
 
-		s.templateRepository.On("Read", mock.Anything, tag.Template{
-			URN: template.URN,
-		}).Return([]tag.Template{template}, nil)
+		s.templateRepository.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 
 		s.tagRepository.On("Read", mock.Anything, tag.Tag{
 			RecordType:  recordType,
@@ -360,9 +356,7 @@ func (s *TagHandlerTestSuite) TestFindByRecordAndTemplate() {
 			"template_urn": templateURN,
 		})
 
-		s.templateRepository.On("Read", mock.Anything, tag.Template{
-			URN: templateURN,
-		}).Return([]tag.Template{template}, nil)
+		s.templateRepository.On("Read", mock.Anything, templateURN).Return([]tag.Template{template}, nil)
 
 		s.tagRepository.On("Read", mock.Anything, tag.Tag{
 			RecordType:  recordType,
@@ -386,9 +380,7 @@ func (s *TagHandlerTestSuite) TestFindByRecordAndTemplate() {
 			"template_urn": t.TemplateURN,
 		})
 
-		s.templateRepository.On("Read", mock.Anything, tag.Template{
-			URN: t.TemplateURN,
-		}).Return([]tag.Template{template}, nil)
+		s.templateRepository.On("Read", mock.Anything, t.TemplateURN).Return([]tag.Template{template}, nil)
 
 		s.tagRepository.On("Read", mock.Anything, tag.Tag{
 			RecordType:  t.RecordType,
@@ -520,7 +512,7 @@ func (s *TagHandlerTestSuite) TestUpdate() {
 		s.Setup()
 		t := s.buildTag()
 		template := s.buildTemplate()
-		s.templateRepository.On("Read", mock.Anything, s.templateQuery(t.TemplateURN)).Return([]tag.Template{template}, nil)
+		s.templateRepository.On("Read", mock.Anything, t.TemplateURN).Return([]tag.Template{template}, nil)
 		s.tagRepository.On("Read", mock.Anything, tag.Tag{
 			RecordType:  t.RecordType,
 			RecordURN:   t.RecordURN,
@@ -546,7 +538,7 @@ func (s *TagHandlerTestSuite) TestUpdate() {
 		s.Setup()
 		t := s.buildTag()
 		template := s.buildTemplate()
-		s.templateRepository.On("Read", mock.Anything, s.templateQuery(t.TemplateURN)).Return([]tag.Template{template}, nil)
+		s.templateRepository.On("Read", mock.Anything, t.TemplateURN).Return([]tag.Template{template}, nil)
 		s.tagRepository.On("Read", mock.Anything, tag.Tag{
 			RecordType:  t.RecordType,
 			RecordURN:   t.RecordURN,
@@ -572,7 +564,7 @@ func (s *TagHandlerTestSuite) TestUpdate() {
 		s.Setup()
 		originalDomainTag := s.buildTag()
 		template := s.buildTemplate()
-		s.templateRepository.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepository.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.tagRepository.On("Read", mock.Anything, tag.Tag{
 			RecordType:  originalDomainTag.RecordType,
 			RecordURN:   originalDomainTag.RecordURN,
@@ -704,7 +696,7 @@ func (s *TagHandlerTestSuite) TestDelete() {
 			"record_urn":   recordURN,
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Read", mock.Anything, s.templateQuery(templateURN)).Return([]tag.Template{{}}, nil)
+		s.templateRepository.On("Read", mock.Anything, templateURN).Return([]tag.Template{{}}, nil)
 		s.tagRepository.On("Delete", mock.Anything, tag.Tag{
 			RecordType:  recordType,
 			RecordURN:   recordURN,
@@ -727,7 +719,7 @@ func (s *TagHandlerTestSuite) TestDelete() {
 			"record_urn":   recordURN,
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Read", mock.Anything, s.templateQuery(templateURN)).Return([]tag.Template{{}}, nil)
+		s.templateRepository.On("Read", mock.Anything, templateURN).Return([]tag.Template{{}}, nil)
 		s.tagRepository.On("Delete", mock.Anything, tag.Tag{
 			RecordType:  recordType,
 			RecordURN:   recordURN,
@@ -749,7 +741,7 @@ func (s *TagHandlerTestSuite) TestDelete() {
 			"record_urn":   recordURN,
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Read", mock.Anything, s.templateQuery(templateURN)).Return([]tag.Template{{}}, nil)
+		s.templateRepository.On("Read", mock.Anything, templateURN).Return([]tag.Template{{}}, nil)
 		s.tagRepository.On("Delete", mock.Anything, tag.Tag{
 			RecordType:  recordType,
 			RecordURN:   recordURN,
@@ -759,12 +751,6 @@ func (s *TagHandlerTestSuite) TestDelete() {
 		s.handler.Delete(s.recorder, request)
 		s.Equal(http.StatusNoContent, s.recorder.Result().StatusCode)
 	})
-}
-
-func (s *TagHandlerTestSuite) templateQuery(template_urn string) tag.Template {
-	return tag.Template{
-		URN: template_urn,
-	}
 }
 
 func (s *TagHandlerTestSuite) buildTemplate() tag.Template {

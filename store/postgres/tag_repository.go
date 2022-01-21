@@ -27,15 +27,16 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 		return errNilTag
 	}
 
-	templateFieldModels, err := readTemplatesJoinFieldsFromDB(ctx, r.client.db, domainTag.TemplateURN)
+	templateFieldModels, err := readTemplatesByURNFromDB(ctx, r.client.db, domainTag.TemplateURN)
 	if err != nil {
 		return err
 	}
 
-	templates := templateFieldModels.toTemplates()
-	if len(templates) < 1 {
+	if len(templateFieldModels) < 1 {
 		return tag.ErrTemplateNotFound{URN: domainTag.TemplateURN}
 	}
+
+	templates := templateFieldModels.toTemplates()
 
 	var insertedModelTags []Tag
 	if err := r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
@@ -135,15 +136,15 @@ func (r *TagRepository) Update(ctx context.Context, domainTag *tag.Tag) error {
 		return errNilTag
 	}
 
-	templateFieldModels, err := readTemplatesJoinFieldsFromDB(ctx, r.client.db, domainTag.TemplateURN)
+	templateFieldModels, err := readTemplatesByURNFromDB(ctx, r.client.db, domainTag.TemplateURN)
 	if err != nil {
 		return err
 	}
-
-	templates := templateFieldModels.toTemplates()
-	if len(templates) < 1 {
+	if len(templateFieldModels) < 1 {
 		return tag.ErrTemplateNotFound{URN: domainTag.TemplateURN}
 	}
+
+	templates := templateFieldModels.toTemplates()
 
 	var updatedModelTags []Tag
 	if err := r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
@@ -198,9 +199,12 @@ func (r *TagRepository) Delete(ctx context.Context, domainTag tag.Tag) error {
 	deletedModelTags := []Tag{}
 	fieldIDMap := map[uint]bool{}
 	if domainTag.TemplateURN != "" {
-		recordTemplatesFields, err := readTemplatesJoinFieldsFromDB(ctx, r.client.db, domainTag.TemplateURN)
+		recordTemplatesFields, err := readTemplatesByURNFromDB(ctx, r.client.db, domainTag.TemplateURN)
 		if err != nil {
 			return err
+		}
+		if len(recordTemplatesFields) < 1 {
+			return tag.ErrTemplateNotFound{URN: domainTag.TemplateURN}
 		}
 		for _, tf := range recordTemplatesFields {
 			fieldIDMap[tf.Field.ID] = true

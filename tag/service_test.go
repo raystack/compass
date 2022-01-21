@@ -188,7 +188,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		s.Setup()
 		t := s.buildTag()
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return(nil, errors.New("random error"))
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return(nil, errors.New("random error"))
 
 		err := s.tagService.Create(ctx, &t)
 		s.Error(err)
@@ -200,7 +200,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		t.TagValues[0].FieldID = 5
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 
 		expectedErrorMsg := "error with [fields[0].id : not part of template [governance_policy]]"
 		expectedFieldError := tag.ErrValidation{
@@ -221,7 +221,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		t.TagValues = t.TagValues[:1]
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 
 		expectedErrorMsg := "error with [fields[1].id : required by template [governance_policy]]"
 		expectedFieldError := tag.ErrValidation{
@@ -242,7 +242,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		t.TagValues[1].FieldValue = "hello"
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 
 		expectedErrorMsg := "error with [fields[1].value : template [governance_policy] on field [2] should be boolean]"
 		expectedFieldError := tag.ErrValidation{
@@ -261,7 +261,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		s.Setup()
 		t := s.buildTag()
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.repository.On("Create", mock.Anything, &t).Return(errors.New("random error"))
 
 		err := s.tagService.Create(ctx, &t)
@@ -273,7 +273,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		t := s.buildTag()
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.repository.On("Create", mock.Anything, &t).Return(nil)
 
 		actualError := s.tagService.Create(ctx, &t)
@@ -291,7 +291,7 @@ func (s *ServiceTestSuite) TestGetByRecord() {
 		template := s.buildTemplate()
 		expectedTag := []tag.Tag{t}
 
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.repository.On("Read", mock.Anything, tag.Tag{
 			RecordType: t.RecordType,
 			RecordURN:  t.RecordURN,
@@ -311,7 +311,7 @@ func (s *ServiceTestSuite) TestFindByRecordAndTemplate() {
 		s.Setup()
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return(nil, errors.New("random error"))
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return(nil, errors.New("random error"))
 
 		_, err := s.tagService.FindByRecordAndTemplate(ctx, "record-type", "record-urn", template.URN)
 		s.Error(err)
@@ -322,7 +322,7 @@ func (s *ServiceTestSuite) TestFindByRecordAndTemplate() {
 		var recordType string = "record-type"
 		var urn string = "record-urn"
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.repository.On("Read", mock.Anything, tag.Tag{
 			RecordType:  recordType,
 			RecordURN:   urn,
@@ -342,7 +342,7 @@ func (s *ServiceTestSuite) TestFindByRecordAndTemplate() {
 		t := s.buildTag()
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.repository.On("Read", mock.Anything, tag.Tag{
 			RecordType:  t.RecordType,
 			RecordURN:   t.RecordURN,
@@ -383,7 +383,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 		t := s.buildTag()
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return(nil, errors.New("random error"))
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return(nil, errors.New("random error"))
 
 		err := s.tagService.Update(ctx, &t)
 		s.Error(err)
@@ -394,7 +394,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 		t := s.buildTag()
 		template := s.buildTemplate()
 
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.repository.On("Read", mock.Anything, tag.Tag{
 			RecordType:  t.RecordType,
 			RecordURN:   t.RecordURN,
@@ -413,7 +413,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 		t.TagValues[0].FieldID = 5
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.repository.On("Read", mock.Anything, tag.Tag{
 			RecordType:  t.RecordType,
 			RecordURN:   t.RecordURN,
@@ -438,7 +438,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 		t.TagValues[1].FieldValue = "hello"
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.repository.On("Read", mock.Anything, tag.Tag{
 			RecordType:  t.RecordType,
 			RecordURN:   t.RecordURN,
@@ -463,7 +463,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 		t := s.buildTag()
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.repository.On("Read", mock.Anything, tag.Tag{
 			RecordType:  t.RecordType,
 			RecordURN:   t.RecordURN,
@@ -480,7 +480,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 		t := s.buildTag()
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.repository.On("Read", mock.Anything, tag.Tag{
 			RecordType:  t.RecordType,
 			RecordURN:   t.RecordURN,
@@ -501,7 +501,7 @@ func (s *ServiceTestSuite) TestDelete() {
 		s.Setup()
 
 		templateURN := "template-urn"
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(templateURN)).Return(nil, errors.New("random error"))
+		s.templateRepo.On("Read", mock.Anything, templateURN).Return(nil, errors.New("random error"))
 
 		err := s.tagService.Delete(ctx, "record-type", "record-urn", templateURN)
 		s.Error(err)
@@ -513,7 +513,7 @@ func (s *ServiceTestSuite) TestDelete() {
 		recordURN := "sample-urn"
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, s.templateQuery(template.URN)).Return([]tag.Template{template}, nil)
+		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.repository.On("Delete", mock.Anything, tag.Tag{
 			RecordType:  recordType,
 			RecordURN:   recordURN,
@@ -581,10 +581,6 @@ func (s *ServiceTestSuite) buildTag() tag.Tag {
 			},
 		},
 	}
-}
-
-func (s *ServiceTestSuite) templateQuery(urn string) tag.Template {
-	return tag.Template{URN: urn}
 }
 
 func TestService(t *testing.T) {

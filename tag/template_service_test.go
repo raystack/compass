@@ -289,10 +289,7 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 	s.Run("should return error if error encountered when checking for duplication", func() {
 		s.Setup()
 		template := s.buildTemplate()
-		filterForExistence := tag.Template{
-			URN: template.URN,
-		}
-		s.repository.On("Read", ctx, filterForExistence).Return(nil, errors.New("unexpected error"))
+		s.repository.On("Read", ctx, template.URN).Return(nil, errors.New("unexpected error"))
 
 		err := s.service.Create(ctx, &template)
 		s.Error(err)
@@ -301,10 +298,7 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 	s.Run("should return error if template specified by the urn already exists", func() {
 		s.Setup()
 		template := s.buildTemplate()
-		filterForExistence := tag.Template{
-			URN: template.URN,
-		}
-		s.repository.On("Read", ctx, filterForExistence).Return([]tag.Template{{}}, nil)
+		s.repository.On("Read", ctx, template.URN).Return([]tag.Template{{}}, nil)
 
 		err := s.service.Create(ctx, &template)
 		s.Equal(tag.ErrDuplicateTemplate{URN: template.URN}, err)
@@ -316,10 +310,8 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 		originalDomainTemplate := s.buildTemplate()
 		referenceDomainTemplate := s.buildTemplate()
 		referenceDomainTemplate.CreatedAt = now
-		filterForExistence := tag.Template{
-			URN: originalDomainTemplate.URN,
-		}
-		s.repository.On("Read", ctx, filterForExistence).Return([]tag.Template{}, nil)
+
+		s.repository.On("Read", ctx, originalDomainTemplate.URN).Return([]tag.Template{}, nil)
 		s.repository.On("Create", ctx, &originalDomainTemplate).Return(errors.New("unexpected error"))
 
 		err := s.service.Create(ctx, &originalDomainTemplate)
@@ -332,10 +324,8 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 		originalDomainTemplate := s.buildTemplate()
 		referenceDomainTemplate := s.buildTemplate()
 		referenceDomainTemplate.CreatedAt = now
-		filterForExistence := tag.Template{
-			URN: originalDomainTemplate.URN,
-		}
-		s.repository.On("Read", ctx, filterForExistence).Return([]tag.Template{}, nil)
+
+		s.repository.On("Read", ctx, originalDomainTemplate.URN).Return([]tag.Template{}, nil)
 		s.repository.On("Create", ctx, &originalDomainTemplate).Run(func(args mock.Arguments) {
 			tmplt := args.Get(1).(*tag.Template)
 			tmplt.CreatedAt = now
@@ -354,20 +344,20 @@ func (s *TemplateServiceTestSuite) TestIndex() {
 	s.Run("should return nil and error if encountered unexpected error during read", func() {
 		s.Setup()
 		template := s.buildTemplate()
-		s.repository.On("Read", ctx, template).Return(nil, errors.New("unexpected error"))
+		s.repository.On("Read", ctx, template.URN).Return(nil, errors.New("unexpected error"))
 
-		_, err := s.service.Index(ctx, template)
+		_, err := s.service.Index(ctx, template.URN)
 		s.Error(err)
 	})
 
 	s.Run("should return domain templates and nil if no error found", func() {
 		s.Setup()
 		template := s.buildTemplate()
-		s.repository.On("Read", ctx, template).Return([]tag.Template{template}, nil)
+		s.repository.On("Read", ctx, template.URN).Return([]tag.Template{template}, nil)
 
 		expectedTemplate := []tag.Template{template}
 
-		actualTemplate, actualError := s.service.Index(ctx, template)
+		actualTemplate, actualError := s.service.Index(ctx, template.URN)
 
 		s.EqualValues(expectedTemplate, actualTemplate)
 		s.NoError(actualError)
@@ -381,7 +371,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		s.Setup()
 		var template *tag.Template = nil
 
-		err := s.service.Update(ctx, template)
+		err := s.service.Update(ctx, "", template)
 		s.EqualError(err, "template is nil")
 	})
 
@@ -397,7 +387,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 			},
 		}
 
-		actualError := s.service.Update(ctx, &template)
+		actualError := s.service.Update(ctx, template.URN, &template)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
@@ -406,12 +396,10 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 	s.Run("should return error if encountered unexpected error during read for existence", func() {
 		s.Setup()
 		template := s.buildTemplate()
-		filterForExistence := tag.Template{
-			URN: template.URN,
-		}
-		s.repository.On("Read", ctx, filterForExistence).Return(nil, errors.New("unexpected error"))
 
-		err := s.service.Update(ctx, &template)
+		s.repository.On("Read", ctx, template.URN).Return(nil, errors.New("unexpected error"))
+
+		err := s.service.Update(ctx, template.URN, &template)
 		s.Error(err)
 	})
 
@@ -421,10 +409,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		newTemplate := s.buildTemplate()
 		newTemplate.Fields[0].ID = 99
 
-		filterForExistence := tag.Template{
-			URN: newTemplate.URN,
-		}
-		s.repository.On("Read", ctx, filterForExistence).Return([]tag.Template{template}, nil)
+		s.repository.On("Read", ctx, newTemplate.URN).Return([]tag.Template{template}, nil)
 
 		expectedErrorMsg := "error with [fields.[0].id : [99] is not part of the template]"
 		expectedFieldError := tag.ErrValidation{
@@ -435,7 +420,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 			},
 		}
 
-		actualError := s.service.Update(ctx, &newTemplate)
+		actualError := s.service.Update(ctx, newTemplate.URN, &newTemplate)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
@@ -447,10 +432,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		newTemplate := s.buildTemplate()
 		newTemplate.Fields[0].URN = template.Fields[1].URN
 
-		filterForExistence := tag.Template{
-			URN: newTemplate.URN,
-		}
-		s.repository.On("Read", ctx, filterForExistence).Return([]tag.Template{template}, nil)
+		s.repository.On("Read", ctx, newTemplate.URN).Return([]tag.Template{template}, nil)
 
 		expectedErrorMsg := "error with [fields.[0].urn : [team_custodianr] already exists within the template]"
 		expectedFieldError := tag.ErrValidation{
@@ -461,7 +443,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 			},
 		}
 
-		actualError := s.service.Update(ctx, &newTemplate)
+		actualError := s.service.Update(ctx, template.URN, &newTemplate)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ErrValidation))
@@ -472,13 +454,10 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		template := s.buildTemplate()
 		newTemplate := s.buildTemplate()
 
-		filterForExistence := tag.Template{
-			URN: newTemplate.URN,
-		}
-		s.repository.On("Read", ctx, filterForExistence).Return([]tag.Template{template}, nil)
+		s.repository.On("Read", ctx, newTemplate.URN).Return([]tag.Template{template}, nil)
 		s.repository.On("Update", ctx, newTemplate.URN, &newTemplate).Return(errors.New("unexpected error"))
 
-		err := s.service.Update(ctx, &newTemplate)
+		err := s.service.Update(ctx, template.URN, &newTemplate)
 		s.Error(err)
 	})
 
@@ -487,15 +466,12 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		template := s.buildTemplate()
 		newTemplate := s.buildTemplate()
 
-		filterForExistence := tag.Template{
-			URN: template.URN,
-		}
-		s.repository.On("Read", ctx, filterForExistence).Return([]tag.Template{template}, nil)
+		s.repository.On("Read", ctx, template.URN).Return([]tag.Template{template}, nil)
 		s.repository.On("Update", ctx, newTemplate.URN, &newTemplate).Run(func(args mock.Arguments) {
 			newTemplate.UpdatedAt = time.Now()
 		}).Return(nil)
 
-		actualError := s.service.Update(ctx, &newTemplate)
+		actualError := s.service.Update(ctx, template.URN, &newTemplate)
 		s.NoError(actualError)
 	})
 }
@@ -506,7 +482,7 @@ func (s *TemplateServiceTestSuite) TestFind() {
 	s.Run("should return empty and error if found unexpected error", func() {
 		s.Setup()
 		var urn string = "sample-urn"
-		s.repository.On("Read", ctx, mock.Anything).Return(nil, errors.New("unexpected error"))
+		s.repository.On("Read", ctx, urn).Return(nil, errors.New("unexpected error"))
 
 		_, err := s.service.Find(ctx, urn)
 		s.Error(err)
@@ -515,7 +491,7 @@ func (s *TemplateServiceTestSuite) TestFind() {
 	s.Run("should return not found error if template is not found", func() {
 		s.Setup()
 		var urn string = "sample-urn"
-		s.repository.On("Read", ctx, mock.Anything).Return([]tag.Template{}, nil)
+		s.repository.On("Read", ctx, urn).Return([]tag.Template{}, nil)
 
 		_, err := s.service.Find(ctx, urn)
 		s.Error(err)
@@ -526,7 +502,7 @@ func (s *TemplateServiceTestSuite) TestFind() {
 		s.Setup()
 		var urn string = "sample-urn"
 		template := s.buildTemplate()
-		s.repository.On("Read", ctx, mock.Anything).Return([]tag.Template{template}, nil)
+		s.repository.On("Read", ctx, urn).Return([]tag.Template{template}, nil)
 
 		expectedTemplate := template
 

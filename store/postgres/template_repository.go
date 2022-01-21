@@ -63,21 +63,43 @@ func (r *TemplateRepository) Create(ctx context.Context, templateDomain *tag.Tem
 	return nil
 }
 
-// Read reads template from database
-func (r *TemplateRepository) Read(ctx context.Context, filter tag.Template) (output []tag.Template, err error) {
-	templatesFieldModels, err := readTemplatesJoinFieldsFromDB(ctx, r.client.db, filter.URN)
+// Read reads template from database by URN
+func (r *TemplateRepository) Read(ctx context.Context, templateURN string) ([]tag.Template, error) {
+	templates := []tag.Template{}
+	var templatesFieldModels TemplateFields
+
+	// return empty with nil error if not found
+	templatesFieldModels, err := readTemplatesByURNFromDB(ctx, r.client.db, templateURN)
 	if err != nil {
-		err = fmt.Errorf("error fetching templates: %w", err)
-		return
+		return nil, err
 	}
 
-	templates := templatesFieldModels.toTemplateModels()
+	templateModels := templatesFieldModels.toTemplateModels()
 
-	for _, record := range templates {
+	for _, record := range templateModels {
 		templateDomain := record.toTemplate()
-		output = append(output, templateDomain)
+		templates = append(templates, templateDomain)
 	}
-	return
+	return templates, nil
+}
+
+// Read reads all template from database
+func (r *TemplateRepository) ReadAll(ctx context.Context) ([]tag.Template, error) {
+	templates := []tag.Template{}
+	var templatesFieldModels TemplateFields
+	// return empty with nil error if not found
+	templatesFieldModels, err := readAllTemplatesFromDB(ctx, r.client.db)
+	if err != nil {
+		return nil, err
+	}
+
+	templateModels := templatesFieldModels.toTemplateModels()
+
+	for _, record := range templateModels {
+		templateDomain := record.toTemplate()
+		templates = append(templates, templateDomain)
+	}
+	return templates, nil
 }
 
 // Update updates template into database
@@ -130,12 +152,12 @@ func (r *TemplateRepository) Update(ctx context.Context, targetURN string, templ
 }
 
 // Delete deletes template and its fields from database
-func (r *TemplateRepository) Delete(ctx context.Context, filter tag.Template) error {
+func (r *TemplateRepository) Delete(ctx context.Context, templateURN string) error {
 	res, err := r.client.db.ExecContext(ctx, `
 					DELETE FROM
 						templates 
 					WHERE
-						urn = $1`, filter.URN)
+						urn = $1`, templateURN)
 	if err != nil {
 		return fmt.Errorf("failed to delete template with urn: %w", err)
 	}
@@ -146,7 +168,7 @@ func (r *TemplateRepository) Delete(ctx context.Context, filter tag.Template) er
 	}
 
 	if tmpRowsAffected == 0 {
-		return tag.ErrTemplateNotFound{URN: filter.URN}
+		return tag.ErrTemplateNotFound{URN: templateURN}
 	}
 	return nil
 }
@@ -188,32 +210,50 @@ func insertFieldToDBTx(ctx context.Context, tx *sqlx.Tx, field *Field) error {
 	return nil
 }
 
-func readTemplatesJoinFieldsFromDB(ctx context.Context, db *sqlx.DB, templateURN string) (templates TemplateFields, err error) {
-	if txErr := db.Select(&templates, `
-		SELECT 
-			t.urn as "templates.urn", t.display_name as "templates.display_name", t.description as "templates.description", 
-			t.created_at as "templates.created_at", t.updated_at as "templates.updated_at", 
+func readAllTemplatesFromDB(ctx context.Context, db *sqlx.DB) (TemplateFields, error) {
+	var templateFields TemplateFields
+	// return empty with nil error if not found
+	if err := db.Select(&templateFields, `
+		SELECT
+			t.urn as "templates.urn", t.display_name as "templates.display_name", t.description as "templates.description",
+			t.created_at as "templates.created_at", t.updated_at as "templates.updated_at",
 			f.id as "fields.id", f.urn as "fields.urn", f.display_name as "fields.display_name", f.description as "fields.description",
-			f.data_type as "fields.data_type", f.options as "fields.options", f.required as "fields.required", f.template_urn as "fields.template_urn", 
+			f.data_type as "fields.data_type", f.options as "fields.options", f.required as "fields.required", f.template_urn as "fields.template_urn",
 			f.created_at as "fields.created_at", f.updated_at as "fields.updated_at"
-		FROM 
+		FROM
 			templates t
-		JOIN 
+		JOIN
 			fields f
-		ON 
-			f.template_urn = t.urn 
-		WHERE 
-			t.urn = $1`, templateURN); txErr != nil {
-		err = fmt.Errorf("failed reading templates: %w", err)
-		return
+		ON
+			f.template_urn = t.urn`); err != nil {
+		return nil, fmt.Errorf("templates: failed to read all from DB %w", err)
 	}
 
-	if len(templates) == 0 {
-		err = &tag.ErrTemplateNotFound{URN: templateURN}
-		return
+	return templateFields, nil
+}
+
+func readTemplatesByURNFromDB(ctx context.Context, db *sqlx.DB, templateURN string) (TemplateFields, error) {
+	var templateFields TemplateFields
+	// return empty with nil error if not found
+	if err := db.Select(&templateFields, `
+		SELECT
+			t.urn as "templates.urn", t.display_name as "templates.display_name", t.description as "templates.description",
+			t.created_at as "templates.created_at", t.updated_at as "templates.updated_at",
+			f.id as "fields.id", f.urn as "fields.urn", f.display_name as "fields.display_name", f.description as "fields.description",
+			f.data_type as "fields.data_type", f.options as "fields.options", f.required as "fields.required", f.template_urn as "fields.template_urn",
+			f.created_at as "fields.created_at", f.updated_at as "fields.updated_at"
+		FROM
+			templates t
+		JOIN
+			fields f
+		ON
+			f.template_urn = t.urn
+		WHERE
+			t.urn = $1`, templateURN); err != nil {
+		return nil, fmt.Errorf("templates: failed to read from DB %w", err)
 	}
 
-	return
+	return templateFields, nil
 }
 
 func updateTemplateToDBTx(ctx context.Context, tx *sqlx.Tx, targetTemplateURN string, templateModel *Template) error {

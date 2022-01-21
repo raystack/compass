@@ -431,7 +431,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		}
 
 		err = r.repository.Delete(r.ctx, paramDomainTag)
-		r.EqualError(err, tag.ErrTemplateNotFound{URN: templateURN}.Error())
+		r.ErrorIs(err, tag.ErrTemplateNotFound{URN: templateURN})
 	})
 
 	r.Run("should delete only the tag for record and template and return no error if record has one", func() {
