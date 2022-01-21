@@ -2,7 +2,6 @@ package postgres_test
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sort"
 	"testing"
@@ -181,7 +180,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	r.Run("should return nil and not found error error if no record found for the specified record", func() {
+	r.Run("should return empty and nil if no record found for the specified record", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
@@ -191,14 +190,8 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		}
 
 		actualTag, actualError := r.repository.Read(r.ctx, paramDomainTag)
+		r.NoError(actualError)
 		r.Empty(actualTag)
-
-		r.True(errors.As(actualError, new(tag.ErrNotFound)))
-		r.EqualError(actualError, tag.ErrNotFound{
-			URN:      paramDomainTag.RecordURN,
-			Type:     paramDomainTag.RecordType,
-			Template: paramDomainTag.TemplateURN,
-		}.Error())
 	})
 
 	r.Run("should return record if found for the specified record", func() {
@@ -221,24 +214,6 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		r.NoError(err)
 		r.NotEmpty(tags)
 		r.Len(tags[0].TagValues, 2)
-	})
-
-	r.Run("should return nil and not found error error if template urn is not empty but template is not found", func() {
-		err := setup(r.ctx, r.client)
-		r.NoError(err)
-
-		paramDomainTag := tag.Tag{
-			RecordURN:   "sample-urn",
-			RecordType:  "sample-type",
-			TemplateURN: "governance_policy",
-		}
-
-		_, err = r.repository.Read(r.ctx, paramDomainTag)
-		r.EqualError(err, tag.ErrNotFound{
-			URN:      paramDomainTag.RecordURN,
-			Type:     paramDomainTag.RecordType,
-			Template: paramDomainTag.TemplateURN,
-		}.Error())
 	})
 
 	r.Run("should return nil and not found error if no record found for the specified record and template", func() {
@@ -388,7 +363,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	r.Run("should delete tags related to the record and return error if record has none", func() {
+	r.Run("should delete tags related to the record and return error if record has one", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
@@ -414,8 +389,10 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 			RecordURN:  paramDomainTag.RecordURN,
 			RecordType: paramDomainTag.RecordType,
 		})
+		if err != nil {
+			r.T().Fatal(err)
+		}
 
-		r.EqualError(err, "could not find tag with record type: \"sample-type\", record: \"sample-urn\", template: \"\"")
 		r.Empty(foundTags)
 	})
 

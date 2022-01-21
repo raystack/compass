@@ -75,6 +75,7 @@ func (h *TagTemplateHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	requestBody.URN = targetTemplateURN
 	err := h.service.Update(r.Context(), targetTemplateURN, &requestBody)
 	if errors.As(err, new(tag.ErrTemplateNotFound)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())

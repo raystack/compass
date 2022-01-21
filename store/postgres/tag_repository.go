@@ -47,7 +47,7 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 			if tv.FieldValue == nil {
 				continue
 			}
-			tag := &Tag{
+			tagToInsert := &Tag{
 				RecordType: domainTag.RecordType,
 				RecordURN:  domainTag.RecordURN,
 				FieldID:    tv.FieldID,
@@ -62,8 +62,15 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 						VALUES
 							($1, $2, $3, $4, $5, $6)
 						RETURNING *`,
-				tag.Value, tag.RecordURN, tag.RecordType, tag.FieldID, tag.CreatedAt, tag.UpdatedAt).
+				tagToInsert.Value, tagToInsert.RecordURN, tagToInsert.RecordType, tagToInsert.FieldID, tagToInsert.CreatedAt, tagToInsert.UpdatedAt).
 				StructScan(&insertedTagValue); err != nil {
+				if err := checkPostgresError(err); errors.Is(err, errDuplicateKey) {
+					return tag.ErrDuplicate{
+						RecordURN:   tagToInsert.RecordURN,
+						RecordType:  tagToInsert.RecordType,
+						TemplateURN: domainTag.TemplateURN,
+					}
+				}
 				return fmt.Errorf("failed to insert a domain tag: %w", err)
 			}
 
@@ -71,7 +78,7 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 		}
 		return nil
 	}); err != nil {
-		return fmt.Errorf("failed to create domain tag: %w", err)
+		return err
 	}
 
 	return r.complementTag(domainTag, templates[0], insertedModelTags)
@@ -117,7 +124,9 @@ func (r *TagRepository) Read(ctx context.Context, filter tag.Tag) ([]tag.Tag, er
 		return nil, fmt.Errorf("failed reading domain tag: %w", err)
 	}
 
-	if len(templateTagFields) == 0 {
+	// (nil, not found error) if no record and template urn = ""
+	// (empty, nil) if no record and template urn != ""
+	if len(templateTagFields) == 0 && filter.TemplateURN != "" {
 		return nil, tag.ErrNotFound{
 			URN:      filter.RecordURN,
 			Type:     filter.RecordType,

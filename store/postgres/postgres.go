@@ -6,6 +6,7 @@ package postgres
 import (
 	"context"
 	"embed"
+	"errors"
 	"fmt"
 	"log"
 
@@ -17,6 +18,8 @@ import (
 	// Register golang migrate source
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	_ "github.com/jackc/pgx/v4/stdlib"
 
 	"github.com/jmoiron/sqlx"
@@ -101,4 +104,15 @@ func initMigration(cfg Config) (*migrate.Migrate, error) {
 		log.Fatal(err)
 	}
 	return m, nil
+}
+
+func checkPostgresError(err error) error {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		switch pgErr.Code {
+		case pgerrcode.UniqueViolation:
+			return fmt.Errorf("%w [%s]", errDuplicateKey, pgErr.Detail)
+		}
+	}
+	return err
 }
