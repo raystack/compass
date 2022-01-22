@@ -37,7 +37,7 @@ func (h *TagTemplateHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err := h.service.Create(r.Context(), &requestBody)
-	if errors.As(err, new(tag.ErrDuplicateTemplate)) {
+	if errors.As(err, new(tag.DuplicateTemplateError)) {
 		writeJSONError(w, http.StatusConflict, err.Error())
 		return
 	}
@@ -77,11 +77,11 @@ func (h *TagTemplateHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	requestBody.URN = targetTemplateURN
 	err := h.service.Update(r.Context(), targetTemplateURN, &requestBody)
-	if errors.As(err, new(tag.ErrTemplateNotFound)) {
+	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}
-	if errors.As(err, new(tag.ErrValidation)) {
+	if errors.As(err, new(tag.ValidationError)) {
 		writeJSONError(w, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
@@ -103,7 +103,7 @@ func (h *TagTemplateHandler) Find(w http.ResponseWriter, r *http.Request) {
 	}
 
 	domainTemplate, err := h.service.Find(r.Context(), urn)
-	if errors.As(err, new(tag.ErrTemplateNotFound)) {
+	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}
@@ -125,7 +125,7 @@ func (h *TagTemplateHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := h.service.Delete(r.Context(), urn)
-	if errors.As(err, new(tag.ErrTemplateNotFound)) {
+	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}

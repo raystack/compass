@@ -168,7 +168,7 @@ func (r *TemplateRepository) Delete(ctx context.Context, templateURN string) err
 	}
 
 	if tmpRowsAffected == 0 {
-		return tag.ErrTemplateNotFound{URN: templateURN}
+		return tag.TemplateNotFoundError{URN: templateURN}
 	}
 	return nil
 }
@@ -270,7 +270,7 @@ func updateTemplateToDBTx(ctx context.Context, tx *sqlx.Tx, targetTemplateURN st
 		StructScan(&updatedTemplate); err != nil {
 		// scan returns sql.ErrNoRows if no rows
 		if errors.Is(err, sql.ErrNoRows) {
-			return tag.ErrTemplateNotFound{URN: templateModel.URN}
+			return tag.TemplateNotFoundError{URN: templateModel.URN}
 		}
 		return fmt.Errorf("failed building update template sql: %w", err)
 	}

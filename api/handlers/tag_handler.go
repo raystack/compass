@@ -51,15 +51,15 @@ func (h *TagHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := h.service.Create(r.Context(), &requestBody)
-	if errors.As(err, new(tag.ErrDuplicate)) {
+	if errors.As(err, new(tag.DuplicateError)) {
 		writeJSONError(w, http.StatusConflict, err.Error())
 		return
 	}
-	if errors.As(err, new(tag.ErrTemplateNotFound)) {
+	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}
-	if errors.As(err, new(tag.ErrValidation)) {
+	if errors.As(err, new(tag.ValidationError)) {
 		writeJSONError(w, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
@@ -122,7 +122,7 @@ func (h *TagHandler) FindByRecordAndTemplate(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	tags, err := h.service.FindByRecordAndTemplate(r.Context(), recordType, recordURN, templateURN)
-	if errors.As(err, new(tag.ErrNotFound)) || errors.As(err, new(tag.ErrTemplateNotFound)) {
+	if errors.As(err, new(tag.NotFoundError)) || errors.As(err, new(tag.TemplateNotFoundError)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}
@@ -168,7 +168,7 @@ func (h *TagHandler) Update(w http.ResponseWriter, r *http.Request) {
 	requestBody.RecordType = recordType
 	requestBody.TemplateURN = templateURN
 	err := h.service.Update(r.Context(), &requestBody)
-	if errors.As(err, new(tag.ErrNotFound)) {
+	if errors.As(err, new(tag.NotFoundError)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}
@@ -204,7 +204,7 @@ func (h *TagHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := h.service.Delete(r.Context(), recordType, recordURN, templateURN)
-	if errors.As(err, new(tag.ErrTemplateNotFound)) {
+	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}

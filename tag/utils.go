@@ -10,7 +10,7 @@ import (
 )
 
 func buildFieldError(key string, message string) error {
-	return ErrValidation{
+	return ValidationError{
 		validator.FieldError{
 			key: message,
 		},

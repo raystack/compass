@@ -23,7 +23,7 @@ func (s *Service) Validate(tag *Tag) error {
 
 	err := s.validator.Validate(*tag)
 	if err != nil {
-		err = ErrValidation{err}
+		err = ValidationError{err}
 	}
 
 	return err
@@ -72,7 +72,7 @@ func (s *Service) FindByRecordAndTemplate(ctx context.Context, recordType, recor
 	}
 	var output Tag
 	if len(listOfTag) == 0 {
-		return Tag{}, ErrNotFound{Type: recordType, URN: recordURN, Template: templateURN}
+		return Tag{}, NotFoundError{Type: recordType, URN: recordURN, Template: templateURN}
 	}
 
 	output = listOfTag[0]
@@ -113,7 +113,7 @@ func (s *Service) Update(ctx context.Context, tag *Tag) error {
 		return errors.Wrap(err, "error finding existing tag")
 	}
 	if len(existingTags) == 0 {
-		return ErrNotFound{URN: tag.RecordURN, Type: tag.RecordType, Template: tag.TemplateURN}
+		return NotFoundError{URN: tag.RecordURN, Type: tag.RecordType, Template: tag.TemplateURN}
 	}
 
 	if err = s.validateFieldIsMemberOfTemplate(*tag, template); err != nil {

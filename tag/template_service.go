@@ -26,7 +26,7 @@ type TemplateService struct {
 func (s *TemplateService) Validate(template Template) error {
 	err := s.validator.Validate(template)
 	if err != nil {
-		err = ErrValidation{err}
+		err = ValidationError{err}
 	}
 
 	return err
@@ -47,7 +47,7 @@ func (s *TemplateService) Create(ctx context.Context, template *Template) error 
 		return errors.Wrap(err, "error checking template existence")
 	}
 	if len(templateRecords) > 0 {
-		return ErrDuplicateTemplate{URN: template.URN}
+		return DuplicateTemplateError{URN: template.URN}
 	}
 
 	err = s.repository.Create(ctx, template)
@@ -88,7 +88,7 @@ func (s *TemplateService) Update(ctx context.Context, templateURN string, templa
 		return errors.Wrap(err, "error checking template existence")
 	}
 	if len(templateRecords) == 0 {
-		return ErrTemplateNotFound{URN: templateURN}
+		return TemplateNotFoundError{URN: templateURN}
 	}
 
 	// check for duplication
@@ -128,7 +128,7 @@ func (s *TemplateService) Find(ctx context.Context, urn string) (Template, error
 		return Template{}, errors.Wrap(err, "error reading repository")
 	}
 	if len(listOfDomainTemplate) == 0 {
-		return Template{}, ErrTemplateNotFound{URN: urn}
+		return Template{}, TemplateNotFoundError{URN: urn}
 	}
 	return listOfDomainTemplate[0], nil
 }

@@ -4,13 +4,13 @@ import (
 	"fmt"
 )
 
-type ErrNotFound struct {
+type NotFoundError struct {
 	URN      string
 	Type     string
 	Template string
 }
 
-func (e ErrNotFound) Error() string {
+func (e NotFoundError) Error() string {
 	return fmt.Sprintf(
 		"could not find tag with record type: \"%s\", record: \"%s\", template: \"%s\"",
 		e.Type,
@@ -19,36 +19,36 @@ func (e ErrNotFound) Error() string {
 	)
 }
 
-type ErrTemplateNotFound struct {
+type TemplateNotFoundError struct {
 	URN string
 }
 
-func (e ErrTemplateNotFound) Error() string {
+func (e TemplateNotFoundError) Error() string {
 	return fmt.Sprintf("could not find template \"%s\"", e.URN)
 }
 
-type ErrDuplicate struct {
+type DuplicateError struct {
 	RecordURN   string
 	RecordType  string
 	TemplateURN string
 }
 
-func (e ErrDuplicate) Error() string {
+func (e DuplicateError) Error() string {
 	return fmt.Sprintf("tag of record URN \"%s\" with type \"%s\" and template URN \"%s\" already exists", e.RecordURN, e.RecordType, e.TemplateURN)
 }
 
-type ErrDuplicateTemplate struct {
+type DuplicateTemplateError struct {
 	URN string
 }
 
-func (e ErrDuplicateTemplate) Error() string {
+func (e DuplicateTemplateError) Error() string {
 	return fmt.Sprintf("template \"%s\" already exists", e.URN)
 }
 
-type ErrValidation struct {
+type ValidationError struct {
 	Err error
 }
 
-func (e ErrValidation) Error() string {
+func (e ValidationError) Error() string {
 	return e.Err.Error()
 }

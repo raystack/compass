@@ -33,7 +33,7 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 	}
 
 	if len(templateFieldModels) < 1 {
-		return tag.ErrTemplateNotFound{URN: domainTag.TemplateURN}
+		return tag.TemplateNotFoundError{URN: domainTag.TemplateURN}
 	}
 
 	templates := templateFieldModels.toTemplates()
@@ -65,7 +65,7 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 				tagToInsert.Value, tagToInsert.RecordURN, tagToInsert.RecordType, tagToInsert.FieldID, tagToInsert.CreatedAt, tagToInsert.UpdatedAt).
 				StructScan(&insertedTagValue); err != nil {
 				if err := checkPostgresError(err); errors.Is(err, errDuplicateKey) {
-					return tag.ErrDuplicate{
+					return tag.DuplicateError{
 						RecordURN:   tagToInsert.RecordURN,
 						RecordType:  tagToInsert.RecordType,
 						TemplateURN: domainTag.TemplateURN,
@@ -127,7 +127,7 @@ func (r *TagRepository) Read(ctx context.Context, filter tag.Tag) ([]tag.Tag, er
 	// (nil, not found error) if no record and template urn = ""
 	// (empty, nil) if no record and template urn != ""
 	if len(templateTagFields) == 0 && filter.TemplateURN != "" {
-		return nil, tag.ErrNotFound{
+		return nil, tag.NotFoundError{
 			URN:      filter.RecordURN,
 			Type:     filter.RecordType,
 			Template: filter.TemplateURN,
@@ -150,7 +150,7 @@ func (r *TagRepository) Update(ctx context.Context, domainTag *tag.Tag) error {
 		return err
 	}
 	if len(templateFieldModels) < 1 {
-		return tag.ErrTemplateNotFound{URN: domainTag.TemplateURN}
+		return tag.TemplateNotFoundError{URN: domainTag.TemplateURN}
 	}
 
 	templates := templateFieldModels.toTemplates()
@@ -213,7 +213,7 @@ func (r *TagRepository) Delete(ctx context.Context, domainTag tag.Tag) error {
 			return err
 		}
 		if len(recordTemplatesFields) < 1 {
-			return tag.ErrTemplateNotFound{URN: domainTag.TemplateURN}
+			return tag.TemplateNotFoundError{URN: domainTag.TemplateURN}
 		}
 		for _, tf := range recordTemplatesFields {
 			fieldIDMap[tf.Field.ID] = true

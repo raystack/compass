@@ -66,7 +66,7 @@ func (s *TagHandlerTestSuite) TestCreate() {
 		t := s.buildTag()
 		template := s.buildTemplate()
 		s.templateRepository.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.tagRepository.On("Create", mock.Anything, &t).Return(tag.ErrTemplateNotFound{URN: t.TemplateURN})
+		s.tagRepository.On("Create", mock.Anything, &t).Return(tag.TemplateNotFoundError{URN: t.TemplateURN})
 
 		body, err := json.Marshal(t)
 		s.Require().NoError(err)
@@ -81,7 +81,7 @@ func (s *TagHandlerTestSuite) TestCreate() {
 		t := s.buildTag()
 		template := s.buildTemplate()
 		s.templateRepository.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.tagRepository.On("Create", mock.Anything, &t).Return(tag.ErrValidation{Err: errors.New("validation error")})
+		s.tagRepository.On("Create", mock.Anything, &t).Return(tag.ValidationError{Err: errors.New("validation error")})
 
 		body, err := json.Marshal(t)
 		s.Require().NoError(err)
@@ -111,7 +111,7 @@ func (s *TagHandlerTestSuite) TestCreate() {
 		t := s.buildTag()
 		template := s.buildTemplate()
 		s.templateRepository.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.tagRepository.On("Create", mock.Anything, &t).Return(tag.ErrDuplicate{})
+		s.tagRepository.On("Create", mock.Anything, &t).Return(tag.DuplicateError{})
 
 		body, err := json.Marshal(t)
 		s.Require().NoError(err)
@@ -307,7 +307,7 @@ func (s *TagHandlerTestSuite) TestFindByRecordAndTemplate() {
 			"template_urn": template.URN,
 		})
 
-		s.templateRepository.On("Read", mock.Anything, template.URN).Return([]tag.Template{}, tag.ErrTemplateNotFound{URN: template.URN})
+		s.templateRepository.On("Read", mock.Anything, template.URN).Return([]tag.Template{}, tag.TemplateNotFoundError{URN: template.URN})
 
 		s.handler.FindByRecordAndTemplate(s.recorder, request)
 		s.Equal(http.StatusNotFound, s.recorder.Result().StatusCode)
@@ -332,7 +332,7 @@ func (s *TagHandlerTestSuite) TestFindByRecordAndTemplate() {
 			RecordType:  recordType,
 			RecordURN:   recordURN,
 			TemplateURN: template.URN,
-		}).Return(nil, tag.ErrNotFound{
+		}).Return(nil, tag.NotFoundError{
 			URN:      recordURN,
 			Type:     recordType,
 			Template: template.URN,
@@ -701,7 +701,7 @@ func (s *TagHandlerTestSuite) TestDelete() {
 			RecordType:  recordType,
 			RecordURN:   recordURN,
 			TemplateURN: templateURN,
-		}).Return(tag.ErrTemplateNotFound{})
+		}).Return(tag.TemplateNotFoundError{})
 
 		s.handler.Delete(s.recorder, request)
 		s.Equal(http.StatusNotFound, s.recorder.Result().StatusCode)
