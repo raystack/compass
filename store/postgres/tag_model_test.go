@@ -17,7 +17,7 @@ func TestTagModel(t *testing.T) {
 	tags := getTagModels()
 
 	t.Run("successfully build map of tags model by template URN", func(t *testing.T) {
-		expectedTagsMap := map[string][]Tag{
+		expectedTagsMap := map[string][]TagModel{
 			"governance_policy": {tags[0], tags[1]},
 		}
 		tagsMap := tags.buildMapByTemplateURN()
@@ -99,11 +99,11 @@ func TestTemplateModel(t *testing.T) {
 
 		template := getTemplate()
 		option := "Public,Restricted"
-		expectedTemplateModel := &Template{
+		expectedTemplateModel := &TagTemplateModel{
 			URN:         "governance_policy",
 			DisplayName: "Governance Policy",
 			Description: "Template that is mandatory to be used.",
-			Fields: Fields{
+			Fields: TagTemplateFieldModels{
 				{
 					ID:          1,
 					URN:         "classification",
@@ -160,7 +160,7 @@ func TestFieldModels(t *testing.T) {
 	t.Run("successfully build fields model from fields", func(t *testing.T) {
 		domainFields := fieldModels.toDomainFields()
 		option := "Public,Restricted"
-		expectedFieldModels := Fields{
+		expectedFieldModels := TagTemplateFieldModels{
 			{
 				ID:          1,
 				URN:         "classification",
@@ -229,9 +229,9 @@ func TestTemplateTagFields(t *testing.T) {
 	})
 }
 
-func getFieldModels() Fields {
+func getFieldModels() TagTemplateFieldModels {
 	option := "Public,Restricted"
-	return Fields{
+	return TagTemplateFieldModels{
 		{
 			ID:          1,
 			URN:         "classification",
@@ -282,9 +282,9 @@ func getTemplate() *tag.Template {
 	}
 }
 
-func getTemplateModels() Templates {
+func getTemplateModels() TagTemplateModels {
 	fields := getFieldModels()
-	return Templates{
+	return TagTemplateModels{
 		{
 			URN:         "governance_policy",
 			DisplayName: "Governance Policy",
@@ -294,9 +294,9 @@ func getTemplateModels() Templates {
 	}
 }
 
-func getTagModels() Tags {
+func getTagModels() TagModels {
 	fields := getFieldModels()
-	return Tags{
+	return TagModels{
 		{
 			ID:         1,
 			Value:      "Public",
@@ -316,9 +316,9 @@ func getTagModels() Tags {
 	}
 }
 
-func getTemplateFieldModels() TemplateFields {
+func getTemplateFieldModels() TagJoinTemplateFieldModels {
 	templates := getTemplateModels()
-	return TemplateFields{
+	return TagJoinTemplateFieldModels{
 		{
 			Template: templates[0],
 			Field:    templates[0].Fields[0],
@@ -330,10 +330,10 @@ func getTemplateFieldModels() TemplateFields {
 	}
 }
 
-func getTemplateTagFieldModels() TemplateTagFields {
+func getTemplateTagFieldModels() TagJoinTemplateTagFieldModels {
 	templates := getTemplateModels()
 	tags := getTagModels()
-	return TemplateTagFields{
+	return TagJoinTemplateTagFieldModels{
 		{
 			Template: templates[0],
 			Tag:      tags[0],

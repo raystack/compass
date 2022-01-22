@@ -13,16 +13,16 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type TemplateRepositoryTestSuite struct {
+type TagTemplateRepositoryTestSuite struct {
 	suite.Suite
 	ctx        context.Context
 	client     *postgres.Client
-	repository *postgres.TemplateRepository
+	repository *postgres.TagTemplateRepository
 	pool       *dockertest.Pool
 	resource   *dockertest.Resource
 }
 
-func (r *TemplateRepositoryTestSuite) SetupSuite() {
+func (r *TagTemplateRepositoryTestSuite) SetupSuite() {
 	var err error
 
 	logger := logrus.New()
@@ -33,13 +33,13 @@ func (r *TemplateRepositoryTestSuite) SetupSuite() {
 	}
 
 	r.ctx = context.TODO()
-	r.repository, err = postgres.NewTemplateRepository(r.client)
+	r.repository, err = postgres.NewTagTemplateRepository(r.client)
 	if err != nil {
 		logger.Fatal(err)
 	}
 }
 
-func (r *TemplateRepositoryTestSuite) TearDownSuite() {
+func (r *TagTemplateRepositoryTestSuite) TearDownSuite() {
 	// Clean tests
 	err := r.client.Close()
 	if err != nil {
@@ -51,17 +51,17 @@ func (r *TemplateRepositoryTestSuite) TearDownSuite() {
 	}
 }
 
-func (r *TemplateRepositoryTestSuite) TestNewRepository() {
+func (r *TagTemplateRepositoryTestSuite) TestNewRepository() {
 	r.Run("should return repository and nil if postgres client is not nil", func() {
 		pgClient := &postgres.Client{}
 
-		actualRepository, err := postgres.NewTemplateRepository(pgClient)
+		actualRepository, err := postgres.NewTagTemplateRepository(pgClient)
 		r.NotNil(actualRepository)
 		r.Nil(err)
 	})
 }
 
-func (r *TemplateRepositoryTestSuite) TestCreate() {
+func (r *TagTemplateRepositoryTestSuite) TestCreate() {
 
 	r.Run("should return error if template is nil", func() {
 		var template *tag.Template = nil
@@ -127,7 +127,7 @@ func (r *TemplateRepositoryTestSuite) TestCreate() {
 	})
 }
 
-func (r *TemplateRepositoryTestSuite) TestRead() {
+func (r *TagTemplateRepositoryTestSuite) TestRead() {
 	r.Run("should return empty and no error if no record found", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
@@ -185,7 +185,7 @@ func (r *TemplateRepositoryTestSuite) TestRead() {
 	})
 }
 
-func (r *TemplateRepositoryTestSuite) TestReadAll() {
+func (r *TagTemplateRepositoryTestSuite) TestReadAll() {
 	r.Run("should return empty and no error if no record found", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
@@ -241,7 +241,7 @@ func (r *TemplateRepositoryTestSuite) TestReadAll() {
 	})
 }
 
-func (r *TemplateRepositoryTestSuite) TestUpdate() {
+func (r *TagTemplateRepositoryTestSuite) TestUpdate() {
 	r.Run("should return error if template is nil", func() {
 		var template *tag.Template = nil
 
@@ -362,7 +362,7 @@ func (r *TemplateRepositoryTestSuite) TestUpdate() {
 	})
 }
 
-func (r *TemplateRepositoryTestSuite) TestDelete() {
+func (r *TagTemplateRepositoryTestSuite) TestDelete() {
 	r.Run("should return error if record not found", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
@@ -391,7 +391,7 @@ func (r *TemplateRepositoryTestSuite) TestDelete() {
 	})
 }
 
-func (r *TemplateRepositoryTestSuite) getTemplate() tag.Template {
+func (r *TagTemplateRepositoryTestSuite) getTemplate() tag.Template {
 	return tag.Template{
 		URN:         "governance_policy",
 		DisplayName: "Governance Policy",
@@ -410,7 +410,7 @@ func (r *TemplateRepositoryTestSuite) getTemplate() tag.Template {
 	}
 }
 
-func (r *TemplateRepositoryTestSuite) updateTimeForTemplate(template *tag.Template, t time.Time) {
+func (r *TagTemplateRepositoryTestSuite) updateTimeForTemplate(template *tag.Template, t time.Time) {
 	template.CreatedAt = t
 	template.UpdatedAt = t
 	for i := 0; i < len(template.Fields); i++ {
@@ -419,6 +419,6 @@ func (r *TemplateRepositoryTestSuite) updateTimeForTemplate(template *tag.Templa
 	}
 }
 
-func TestTemplateRepository(t *testing.T) {
-	suite.Run(t, &TemplateRepositoryTestSuite{})
+func TestTagTemplateRepository(t *testing.T) {
+	suite.Run(t, &TagTemplateRepositoryTestSuite{})
 }

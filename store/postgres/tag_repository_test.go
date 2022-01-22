@@ -18,7 +18,7 @@ type TagRepositoryTestSuite struct {
 	ctx                context.Context
 	client             *postgres.Client
 	repository         *postgres.TagRepository
-	templateRepository *postgres.TemplateRepository
+	templateRepository *postgres.TagTemplateRepository
 	pool               *dockertest.Pool
 	resource           *dockertest.Resource
 }
@@ -38,7 +38,7 @@ func (r *TagRepositoryTestSuite) SetupSuite() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-	r.templateRepository, err = postgres.NewTemplateRepository(r.client)
+	r.templateRepository, err = postgres.NewTagTemplateRepository(r.client)
 	if err != nil {
 		logger.Fatal(err)
 	}

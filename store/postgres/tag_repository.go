@@ -38,16 +38,16 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 
 	templates := templateFieldModels.toTemplates()
 
-	var insertedModelTags []Tag
+	var insertedModelTags []TagModel
 	if err := r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		timestamp := time.Now().UTC()
 
 		for _, tv := range domainTag.TagValues {
-			var insertedTagValue Tag
+			var insertedTagValue TagModel
 			if tv.FieldValue == nil {
 				continue
 			}
-			tagToInsert := &Tag{
+			tagToInsert := &TagModel{
 				RecordType: domainTag.RecordType,
 				RecordURN:  domainTag.RecordURN,
 				FieldID:    tv.FieldID,
@@ -96,17 +96,17 @@ func (r *TagRepository) Read(ctx context.Context, filter tag.Tag) ([]tag.Tag, er
 
 	sqlQuery := `
 		SELECT 
-			t.urn as "templates.urn", t.display_name as "templates.display_name", t.description as "templates.description",
-			t.created_at as "templates.created_at", t.updated_at as "templates.updated_at",
+			t.urn as "tag_templates.urn", t.display_name as "tag_templates.display_name", t.description as "tag_templates.description",
+			t.created_at as "tag_templates.created_at", t.updated_at as "tag_templates.updated_at",
 			tg.id as "tags.id", tg.value as "tags.value", tg.record_urn as "tags.record_urn", tg.record_type as "tags.record_type",
 			tg.field_id as "tags.field_id", tg.created_at as "tags.created_at", tg.updated_at as "tags.updated_at",
-			f.id as "fields.id", f.urn as "fields.urn", f.display_name as "fields.display_name", f.description as "fields.description",
-			f.data_type as "fields.data_type", f.options as "fields.options", f.required as "fields.required", f.template_urn as "fields.template_urn",
-			f.created_at as "fields.created_at", f.updated_at as "fields.updated_at"
+			f.id as "tag_template_fields.id", f.urn as "tag_template_fields.urn", f.display_name as "tag_template_fields.display_name", f.description as "tag_template_fields.description",
+			f.data_type as "tag_template_fields.data_type", f.options as "tag_template_fields.options", f.required as "tag_template_fields.required", f.template_urn as "tag_template_fields.template_urn",
+			f.created_at as "tag_template_fields.created_at", f.updated_at as "tag_template_fields.updated_at"
 		FROM 
-			templates t
+			tag_templates t
 		JOIN 
-			fields f ON f.template_urn = t.urn 
+			tag_template_fields f ON f.template_urn = t.urn 
 		JOIN
 			tags tg ON f.id = tg.field_id
 		WHERE
@@ -119,7 +119,7 @@ func (r *TagRepository) Read(ctx context.Context, filter tag.Tag) ([]tag.Tag, er
 		sqlArgs = append(sqlArgs, filter.TemplateURN)
 	}
 
-	var templateTagFields TemplateTagFields
+	var templateTagFields TagJoinTemplateTagFieldModels
 	if err := r.client.db.Select(&templateTagFields, sqlQuery, sqlArgs...); err != nil {
 		return nil, fmt.Errorf("failed reading domain tag: %w", err)
 	}
@@ -155,7 +155,7 @@ func (r *TagRepository) Update(ctx context.Context, domainTag *tag.Tag) error {
 
 	templates := templateFieldModels.toTemplates()
 
-	var updatedModelTags []Tag
+	var updatedModelTags []TagModel
 	if err := r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		timestamp := time.Now().UTC()
 
@@ -164,7 +164,7 @@ func (r *TagRepository) Update(ctx context.Context, domainTag *tag.Tag) error {
 				continue
 			}
 			valueStr := fmt.Sprintf("%v", value.FieldValue)
-			tagModel := &Tag{
+			tagModel := &TagModel{
 				Value:      valueStr,
 				RecordURN:  domainTag.RecordURN,
 				RecordType: domainTag.RecordType,
@@ -173,7 +173,7 @@ func (r *TagRepository) Update(ctx context.Context, domainTag *tag.Tag) error {
 				UpdatedAt:  timestamp,
 			}
 
-			var updatedModelTag Tag
+			var updatedModelTag TagModel
 			if err := tx.QueryRowxContext(ctx, `
 							INSERT INTO
 							tags 
@@ -205,7 +205,7 @@ func (r *TagRepository) Delete(ctx context.Context, domainTag tag.Tag) error {
 	if domainTag.RecordURN == "" {
 		return errEmptyRecordURN
 	}
-	deletedModelTags := []Tag{}
+	deletedModelTags := []TagModel{}
 	fieldIDMap := map[uint]bool{}
 	if domainTag.TemplateURN != "" {
 		recordTemplatesFields, err := readTemplatesByURNFromDB(ctx, r.client.db, domainTag.TemplateURN)
@@ -217,14 +217,14 @@ func (r *TagRepository) Delete(ctx context.Context, domainTag tag.Tag) error {
 		}
 		for _, tf := range recordTemplatesFields {
 			fieldIDMap[tf.Field.ID] = true
-			deletedModelTags = append(deletedModelTags, Tag{
+			deletedModelTags = append(deletedModelTags, TagModel{
 				RecordURN:  domainTag.RecordURN,
 				RecordType: domainTag.RecordType,
 				FieldID:    tf.Field.ID,
 			})
 		}
 	} else {
-		deletedModelTags = append(deletedModelTags, Tag{
+		deletedModelTags = append(deletedModelTags, TagModel{
 			RecordURN:  domainTag.RecordURN,
 			RecordType: domainTag.RecordType,
 		})
@@ -246,8 +246,8 @@ func (r *TagRepository) Delete(ctx context.Context, domainTag tag.Tag) error {
 	return nil
 }
 
-func (r *TagRepository) complementTag(domainTag *tag.Tag, template tag.Template, tagModels []Tag) error {
-	tagByFieldID := make(map[uint]Tag)
+func (r *TagRepository) complementTag(domainTag *tag.Tag, template tag.Template, tagModels []TagModel) error {
+	tagByFieldID := make(map[uint]TagModel)
 	for _, t := range tagModels {
 		tagByFieldID[t.FieldID] = t
 	}

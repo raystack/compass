@@ -19,7 +19,7 @@ var validDomainFieldDataType = []string{
 // Service is a type of service that manages business process
 type TemplateService struct {
 	validator  validator.Validator
-	repository TemplateRepository
+	repository TagTemplateRepository
 }
 
 // Validate validates domain template based on the business rule
@@ -143,7 +143,7 @@ func (s *TemplateService) Delete(ctx context.Context, urn string) error {
 }
 
 // NewTemplateService initializes service template service
-func NewTemplateService(r TemplateRepository) *TemplateService {
+func NewTemplateService(r TagTemplateRepository) *TemplateService {
 	return &TemplateService{
 		validator:  newTemplateValidator(),
 		repository: r,

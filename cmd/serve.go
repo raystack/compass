@@ -82,13 +82,13 @@ func initRouter(
 	pgClient := initPostgres(rootLogger.WithField("reporter", "postgres"), config)
 	tagRepository, err := postgres.NewTagRepository(pgClient)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to create new tag repository: %v", err)
 	}
-	templateRepository, err := postgres.NewTemplateRepository(pgClient)
+	tagTemplateRepository, err := postgres.NewTagTemplateRepository(pgClient)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to create new tag template repository: %v", err)
 	}
-	tagTemplateService := tag.NewTemplateService(templateRepository)
+	tagTemplateService := tag.NewTemplateService(tagTemplateRepository)
 	tagService := tag.NewService(
 		tagRepository,
 		tagTemplateService,

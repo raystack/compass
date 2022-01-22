@@ -28,8 +28,8 @@ type Field struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-// TemplateRepository is a contract to communicate with the primary store
-type TemplateRepository interface {
+// TagTemplateRepository is a contract to communicate with the primary store
+type TagTemplateRepository interface {
 	Create(ctx context.Context, template *Template) error
 	Read(ctx context.Context, templateURN string) ([]Template, error)
 	ReadAll(ctx context.Context) ([]Template, error)

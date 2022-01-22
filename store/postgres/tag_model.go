@@ -7,33 +7,33 @@ import (
 	"github.com/odpf/columbus/tag"
 )
 
-// Tag is a model for tag value in database table
-type Tag struct {
-	ID         uint      `db:"id"`
-	Value      string    `db:"value"`
-	RecordURN  string    `db:"record_urn"`
-	RecordType string    `db:"record_type"`
-	FieldID    uint      `db:"field_id"`
-	CreatedAt  time.Time `db:"created_at"`
-	UpdatedAt  time.Time `db:"updated_at"`
-	Field      Field     `db:"-"`
+// TagModel is a model for tag value in database table
+type TagModel struct {
+	ID         uint                  `db:"id"`
+	Value      string                `db:"value"`
+	RecordURN  string                `db:"record_urn"`
+	RecordType string                `db:"record_type"`
+	FieldID    uint                  `db:"field_id"`
+	CreatedAt  time.Time             `db:"created_at"`
+	UpdatedAt  time.Time             `db:"updated_at"`
+	Field      TagTemplateFieldModel `db:"-"`
 }
 
-type Tags []Tag
+type TagModels []TagModel
 
-func (ts Tags) buildMapByTemplateURN() map[string][]Tag {
-	tagsByTemplateURN := make(map[string][]Tag)
+func (ts TagModels) buildMapByTemplateURN() map[string][]TagModel {
+	tagsByTemplateURN := make(map[string][]TagModel)
 	for _, t := range ts {
 		key := t.Field.TemplateURN
 		if tagsByTemplateURN[key] == nil {
-			tagsByTemplateURN[key] = []Tag{}
+			tagsByTemplateURN[key] = []TagModel{}
 		}
 		tagsByTemplateURN[key] = append(tagsByTemplateURN[key], t)
 	}
 	return tagsByTemplateURN
 }
 
-func (ts Tags) toTags(recordType, recordURN string, templates Templates) []tag.Tag {
+func (ts TagModels) toTags(recordType, recordURN string, templates TagTemplateModels) []tag.Tag {
 	templateByURN := templates.buildMapByURN()
 	tagsByTemplateURN := ts.buildMapByTemplateURN()
 
@@ -72,17 +72,17 @@ func (ts Tags) toTags(recordType, recordURN string, templates Templates) []tag.T
 	return output
 }
 
-// Template is a model for template database table
-type Template struct {
-	URN         string    `db:"urn"`
-	DisplayName string    `db:"display_name"`
-	Description string    `db:"description"`
-	CreatedAt   time.Time `db:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at"`
-	Fields      Fields    `db:"-"`
+// TagTemplateModel is a model for template database table
+type TagTemplateModel struct {
+	URN         string                 `db:"urn"`
+	DisplayName string                 `db:"display_name"`
+	Description string                 `db:"description"`
+	CreatedAt   time.Time              `db:"created_at"`
+	UpdatedAt   time.Time              `db:"updated_at"`
+	Fields      TagTemplateFieldModels `db:"-"`
 }
 
-func (tmp *Template) toTemplate() tag.Template {
+func (tmp *TagTemplateModel) toTemplate() tag.Template {
 	return tag.Template{
 		URN:         tmp.URN,
 		DisplayName: tmp.DisplayName,
@@ -93,10 +93,10 @@ func (tmp *Template) toTemplate() tag.Template {
 	}
 }
 
-func newTemplateModel(template *tag.Template) *Template {
+func newTemplateModel(template *tag.Template) *TagTemplateModel {
 	fieldModels := newSliceOfFieldModel(template.Fields)
 
-	return &Template{
+	return &TagTemplateModel{
 		URN:         template.URN,
 		DisplayName: template.DisplayName,
 		Description: template.Description,
@@ -104,34 +104,34 @@ func newTemplateModel(template *tag.Template) *Template {
 	}
 }
 
-type Templates []Template
+type TagTemplateModels []TagTemplateModel
 
-func (tmps Templates) buildMapByURN() map[string]Template {
-	templateByURN := make(map[string]Template)
+func (tmps TagTemplateModels) buildMapByURN() map[string]TagTemplateModel {
+	templateByURN := make(map[string]TagTemplateModel)
 	for _, t := range tmps {
 		templateByURN[t.URN] = t
 	}
 	return templateByURN
 }
 
-// Field is a model for field tag in database table
-type Field struct {
-	ID          uint      `db:"id"`
-	URN         string    `db:"urn"`
-	DisplayName string    `db:"display_name"`
-	Description string    `db:"description"`
-	DataType    string    `db:"data_type"`
-	Options     *string   `db:"options"`
-	Required    bool      `db:"required"`
-	TemplateURN string    `db:"template_urn"`
-	CreatedAt   time.Time `db:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at"`
-	Template    Template  `db:"-"`
+// TagTemplateFieldModel is a model for field tag in database table
+type TagTemplateFieldModel struct {
+	ID          uint             `db:"id"`
+	URN         string           `db:"urn"`
+	DisplayName string           `db:"display_name"`
+	Description string           `db:"description"`
+	DataType    string           `db:"data_type"`
+	Options     *string          `db:"options"`
+	Required    bool             `db:"required"`
+	TemplateURN string           `db:"template_urn"`
+	CreatedAt   time.Time        `db:"created_at"`
+	UpdatedAt   time.Time        `db:"updated_at"`
+	Template    TagTemplateModel `db:"-"`
 }
 
-type Fields []Field
+type TagTemplateFieldModels []TagTemplateFieldModel
 
-func (fs *Fields) isIDExist(id uint) bool {
+func (fs *TagTemplateFieldModels) isIDExist(id uint) bool {
 	for _, field := range *fs {
 		if field.ID == id {
 			return true
@@ -140,7 +140,7 @@ func (fs *Fields) isIDExist(id uint) bool {
 	return false
 }
 
-func (fs *Fields) toDomainFields() []tag.Field {
+func (fs *TagTemplateFieldModels) toDomainFields() []tag.Field {
 	output := make([]tag.Field, len(*fs))
 	for i, field := range *fs {
 		var options []string
@@ -162,15 +162,15 @@ func (fs *Fields) toDomainFields() []tag.Field {
 	return output
 }
 
-func newSliceOfFieldModel(listOfDomainField []tag.Field) Fields {
-	newFields := Fields{}
+func newSliceOfFieldModel(listOfDomainField []tag.Field) TagTemplateFieldModels {
+	newFields := TagTemplateFieldModels{}
 	for _, field := range listOfDomainField {
 		var options *string
 		if len(field.Options) > 0 {
 			joinedOptions := strings.Join(field.Options, fieldOptionSeparator)
 			options = &joinedOptions
 		}
-		newFields = append(newFields, Field{
+		newFields = append(newFields, TagTemplateFieldModel{
 			ID:          field.ID,
 			URN:         field.URN,
 			DisplayName: field.DisplayName,
@@ -183,11 +183,17 @@ func newSliceOfFieldModel(listOfDomainField []tag.Field) Fields {
 	return newFields
 }
 
-// TemplateFields is a slice of placeholder for joined template and field
-type TemplateFields []TemplateField
+// TagJoinTemplateFieldModel is a placeholder for joined template and field
+type TagJoinTemplateFieldModel struct {
+	Template TagTemplateModel      `db:"tag_templates"`
+	Field    TagTemplateFieldModel `db:"tag_template_fields"`
+}
 
-func (tfs TemplateFields) toTemplateModels() (templates []Template) {
-	templateMap := make(map[string]Template, 0)
+// TagJoinTemplateFieldModels is a slice of placeholder for joined template and field
+type TagJoinTemplateFieldModels []TagJoinTemplateFieldModel
+
+func (tfs TagJoinTemplateFieldModels) toTemplateModels() (templates []TagTemplateModel) {
+	templateMap := make(map[string]TagTemplateModel, 0)
 
 	for _, tf := range tfs {
 		if _, ok := templateMap[tf.Template.URN]; !ok {
@@ -208,8 +214,8 @@ func (tfs TemplateFields) toTemplateModels() (templates []Template) {
 	return
 }
 
-func (tfs TemplateFields) toTemplates() (templates []tag.Template) {
-	templatesMap := map[string]Template{}
+func (tfs TagJoinTemplateFieldModels) toTemplates() (templates []tag.Template) {
+	templatesMap := map[string]TagTemplateModel{}
 	for _, tf := range tfs {
 		// build template
 		if _, ok := templatesMap[tf.Template.URN]; !ok {
@@ -256,18 +262,19 @@ func (tfs TemplateFields) toTemplates() (templates []tag.Template) {
 	return
 }
 
-// TemplateField is a placeholder for joined template and field
-type TemplateField struct {
-	Template Template `db:"templates"`
-	Field    Field    `db:"fields"`
+// TemplateField is a placeholder for joined template, tag, and field
+type TagJoinTemplateTagFieldModel struct {
+	Template TagTemplateModel      `db:"tag_templates"`
+	Tag      TagModel              `db:"tags"`
+	Field    TagTemplateFieldModel `db:"tag_template_fields"`
 }
 
-// TemplateTagFields is a slice of placeholder for joined template, tag, and field
-type TemplateTagFields []TemplateTagField
+// TagJoinTemplateTagFieldModels is a slice of placeholder for joined template, tag, and field
+type TagJoinTemplateTagFieldModels []TagJoinTemplateTagFieldModel
 
-func (ttfs TemplateTagFields) toTemplateAndTagModels() (templates Templates, tags Tags) {
-	tmpltsMap := make(map[string]Template, 0) // template urn as key
-	tagsMap := make(map[uint]Tag, 0)
+func (ttfs TagJoinTemplateTagFieldModels) toTemplateAndTagModels() (templates TagTemplateModels, tags TagModels) {
+	tmpltsMap := make(map[string]TagTemplateModel, 0) // template urn as key
+	tagsMap := make(map[uint]TagModel, 0)
 
 	for _, ttf := range ttfs {
 		// build template
@@ -296,11 +303,4 @@ func (ttfs TemplateTagFields) toTemplateAndTagModels() (templates Templates, tag
 		tags = append(tags, tg)
 	}
 	return
-}
-
-// TemplateField is a placeholder for joined template, tag, and field
-type TemplateTagField struct {
-	Template Template `db:"templates"`
-	Tag      Tag      `db:"tags"`
-	Field    Field    `db:"fields"`
 }
