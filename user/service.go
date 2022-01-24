@@ -13,7 +13,7 @@ func (s *Service) GetID(ctx context.Context, email string) (string, error) {
 }
 
 // Create handles create business operation for user
-func (s *Service) Create(ctx context.Context, user *User) error {
+func (s *Service) Create(ctx context.Context, user *User) (string, error) {
 	return s.repository.Create(ctx, user)
 }
 

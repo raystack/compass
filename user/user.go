@@ -15,5 +15,5 @@ type User struct {
 
 type Repository interface {
 	GetID(ctx context.Context, email string) (string, error)
-	Create(ctx context.Context, u *User) error
+	Create(ctx context.Context, u *User) (string, error)
 }

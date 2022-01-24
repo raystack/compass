@@ -54,13 +54,15 @@ func (r *UserRepositoryTestSuite) TearDownSuite() {
 func (r *UserRepositoryTestSuite) TestCreate() {
 	r.Run("return no error if succesfully create user", func() {
 		user := getUser()
-		err := r.repository.Create(r.ctx, user)
+		id, err := r.repository.Create(r.ctx, user)
 		r.NoError(err)
+		r.Equal(lengthOfString(id), 36) // uuid
 	})
 
 	r.Run("return ErrNilUser if user is nil", func() {
-		err := r.repository.Create(r.ctx, nil)
+		id, err := r.repository.Create(r.ctx, nil)
 		r.ErrorIs(err, user.ErrNilUser)
+		r.Empty(id)
 	})
 
 	r.Run("return ErrDuplicateRecord if user is already exist", func() {
@@ -68,10 +70,13 @@ func (r *UserRepositoryTestSuite) TestCreate() {
 		r.NoError(err)
 
 		ud := getUser()
-		err = r.repository.Create(r.ctx, ud)
+		id, err := r.repository.Create(r.ctx, ud)
 		r.NoError(err)
-		err = r.repository.Create(r.ctx, ud)
+		r.Equal(lengthOfString(id), 36) // uuid
+
+		id, err = r.repository.Create(r.ctx, ud)
 		r.ErrorAs(err, new(user.DuplicateRecordError))
+		r.Empty(id)
 	})
 }
 
@@ -87,12 +92,12 @@ func (r *UserRepositoryTestSuite) TestGetID() {
 		r.NoError(err)
 
 		user := getUser()
-		err = r.repository.Create(r.ctx, user)
+		id, err := r.repository.Create(r.ctx, user)
 		r.NoError(err)
+		r.Equal(lengthOfString(id), 36) // uuid
 
 		uid, err := r.repository.GetID(r.ctx, user.Email)
 		r.NoError(err)
-
 		r.NotEmpty(uid)
 	})
 }
@@ -107,6 +112,10 @@ func getUser() *user.User {
 		CreatedAt: timestamp,
 		UpdatedAt: timestamp,
 	}
+}
+
+func lengthOfString(s string) int {
+	return len([]rune(s))
 }
 
 func TestUserRepository(t *testing.T) {

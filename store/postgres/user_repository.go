@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/odpf/columbus/user"
 )
@@ -14,27 +15,31 @@ type UserRepository struct {
 }
 
 // Create insert a user to the database
-func (r *UserRepository) Create(ctx context.Context, ud *user.User) error {
+func (r *UserRepository) Create(ctx context.Context, ud *user.User) (string, error) {
+	var userID string
 	if ud == nil {
-		return user.ErrNilUser
+		return "", user.ErrNilUser
 	}
 
 	// either success inserting a row or return error
 	// no need to check rows affected
-	if _, err := r.client.db.ExecContext(ctx, `
+	if err := r.client.db.QueryRowxContext(ctx, `
 					INSERT INTO 
 					users 
 						(email, provider)
 					VALUES 
 						($1, $2)
-					RETURNING *
-					`, ud.Email, ud.Provider); err != nil {
+					RETURNING id
+					`, ud.Email, ud.Provider).Scan(&userID); err != nil {
 		err := checkPostgresError(err)
 		if errors.Is(err, errDuplicateKey) {
-			return user.DuplicateRecordError{ID: ud.ID, Email: ud.Email}
+			return "", user.DuplicateRecordError{ID: ud.ID, Email: ud.Email}
 		}
 	}
-	return nil
+	if userID == "" {
+		return "", fmt.Errorf("error User ID is empty from DB")
+	}
+	return userID, nil
 }
 
 // GetID  retrieves user UUID given the email
