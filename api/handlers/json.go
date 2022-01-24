@@ -3,9 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/odpf/salt/log"
 	"net/http"
 	"time"
+
+	"github.com/odpf/salt/log"
 )
 
 func writeJSON(w http.ResponseWriter, status int, v interface{}) {

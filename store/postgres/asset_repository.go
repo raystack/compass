@@ -13,10 +13,6 @@ import (
 	"github.com/odpf/columbus/user"
 )
 
-const (
-	DEFAULT_MAX_RESULT_SIZE = 100
-)
-
 // AssetRepository is a type that manages user operation to the primary database
 type AssetRepository struct {
 	client            *Client
@@ -102,25 +98,27 @@ func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Ass
 // Upsert creates a new asset if it does not exist yet.
 // It updates if asset does exist.
 // Checking existance is done using "urn", "type", and "service" fields.
-func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) error {
-	assetID, err := r.getID(ctx, ast)
+func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string, error) {
+	assetID, err := r.GetIDByURN(ctx, ast)
+	if errors.As(err, new(asset.NotFoundError)) {
+		err = nil
+	}
 	if err != nil {
-		return fmt.Errorf("error getting asset ID: %w", err)
+		return "", fmt.Errorf("error getting asset ID: %w", err)
 	}
 	if assetID == "" {
 		assetID, err = r.insert(ctx, ast)
 		if err != nil {
-			return fmt.Errorf("error inserting asset to DB: %w", err)
+			return assetID, fmt.Errorf("error inserting asset to DB: %w", err)
 		}
 	} else {
 		err = r.update(ctx, assetID, ast)
 		if err != nil {
-			return fmt.Errorf("error updating asset to DB: %w", err)
+			return "", fmt.Errorf("error updating asset to DB: %w", err)
 		}
 	}
 
-	ast.ID = assetID
-	return nil
+	return assetID, nil
 }
 
 // Delete removes asset using its ID
@@ -315,11 +313,29 @@ func (r *AssetRepository) createOrFetchOwnersID(ctx context.Context, tx *sqlx.Tx
 	return
 }
 
-func (r *AssetRepository) getID(ctx context.Context, ast *asset.Asset) (id string, err error) {
-	query := `SELECT id FROM assets WHERE urn = $1 AND type = $2 AND service = $3;`
-	err = r.client.db.GetContext(ctx, &id, query, ast.URN, ast.Type, ast.Service)
+func (r *AssetRepository) GetIDByURN(ctx context.Context, ast *asset.Asset) (id string, err error) {
+	if vErr := ast.Validate(); vErr != nil {
+		err = vErr
+		return
+	}
+
+	builder := sq.Select("id").From("assets").
+		PlaceholderFormat(sq.Dollar).
+		Where("urn = ?", ast.URN).
+		Where("type = ?", ast.Type)
+
+	if ast.Service != "" {
+		builder = builder.Where("service = ?", ast.Service)
+	}
+	query, args, err := builder.ToSql()
+	if err != nil {
+		err = fmt.Errorf("error building query: %w", err)
+		return
+	}
+
+	err = r.client.db.GetContext(ctx, &id, query, args...)
 	if errors.Is(err, sql.ErrNoRows) {
-		err = nil
+		err = asset.NotFoundError{AssetURN: ast.URN, AssetType: ast.Type.String()}
 	}
 	if err != nil {
 		err = fmt.Errorf(

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -13,6 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
+	"github.com/odpf/columbus/star"
 )
 
 // RecordHandler exposes a REST interface to types
@@ -20,6 +22,7 @@ type RecordHandler struct {
 	typeRepository          discovery.TypeRepository
 	recordRepositoryFactory discovery.RecordRepositoryFactory
 	discoveryService        *discovery.Service
+	starService             *star.Service
 	logger                  log.Logger
 }
 
@@ -27,12 +30,14 @@ func NewRecordHandler(
 	logger log.Logger,
 	typeRepository discovery.TypeRepository,
 	discoveryService *discovery.Service,
-	rrf discovery.RecordRepositoryFactory) *RecordHandler {
+	rrf discovery.RecordRepositoryFactory,
+	starSvc *star.Service) *RecordHandler {
 	handler := &RecordHandler{
-		recordRepositoryFactory: rrf,
+		logger:                  logger,
 		discoveryService:        discoveryService,
 		typeRepository:          typeRepository,
-		logger:                  logger,
+		recordRepositoryFactory: rrf,
+		starService:             starSvc,
 	}
 
 	return handler
@@ -174,6 +179,33 @@ func (h *RecordHandler) GetOneByType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, record)
+}
+
+func (h *RecordHandler) GetStargazers(w http.ResponseWriter, r *http.Request) {
+	starCfg := buildStarConfig(h.logger, r.URL.Query())
+
+	pathParams := mux.Vars(r)
+	ast := asset.Asset{
+		Type: asset.Type(pathParams["name"]),
+		URN:  pathParams["id"],
+	}
+	starring := &star.Star{Asset: ast}
+
+	users, err := h.starService.GetStargazersByURN(r.Context(), starCfg, starring)
+	if err != nil {
+		if errors.As(err, new(star.InvalidError)) || errors.As(err, new(asset.InvalidError)) {
+			WriteJSONError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		if errors.As(err, new(star.NotFoundError)) || errors.As(err, new(asset.NotFoundError)) {
+			WriteJSONError(w, http.StatusNotFound, err.Error())
+			return
+		}
+		internalServerError(w, h.logger, err.Error())
+		return
+	}
+
+	writeJSON(w, http.StatusOK, users)
 }
 
 func (h *RecordHandler) buildGetConfig(params url.Values) (cfg discovery.GetConfig, err error) {

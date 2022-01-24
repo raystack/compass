@@ -18,12 +18,12 @@ import (
 type TemplateServiceTestSuite struct {
 	suite.Suite
 	service    *tag.TemplateService
-	repository *mocks.TemplateRepository
+	repository *mocks.TagTemplateRepository
 }
 
 func (s *TemplateServiceTestSuite) TestNewTemplateService() {
 	s.Run("should return service and nil no error found", func() {
-		r := &mocks.TemplateRepository{}
+		r := &mocks.TagTemplateRepository{}
 
 		actualService := tag.NewTemplateService(r)
 		s.NotNil(actualService)
@@ -31,14 +31,14 @@ func (s *TemplateServiceTestSuite) TestNewTemplateService() {
 }
 
 func (s *TemplateServiceTestSuite) Setup() {
-	s.repository = &mocks.TemplateRepository{}
+	s.repository = &mocks.TagTemplateRepository{}
 	var err error
 	s.service = tag.NewTemplateService(s.repository)
 	s.Require().NoError(err)
 }
 
 func (s *TemplateServiceTestSuite) TestValidate() {
-	r := &mocks.TemplateRepository{}
+	r := &mocks.TagTemplateRepository{}
 	service := tag.NewTemplateService(r)
 
 	s.Run("should return error if urn is empty", func() {

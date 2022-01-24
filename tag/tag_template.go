@@ -1,5 +1,7 @@
 package tag
 
+//go:generate mockery --name TagTemplateRepository --outpkg mocks --output ../lib/mocks/ --structname TagTemplateRepository --filename tag_template_repository.go
+
 import (
 	"context"
 	"time"

@@ -25,25 +25,6 @@ func (r *UserRepository) CreateWithTx(ctx context.Context, tx *sqlx.Tx, ud *user
 	return r.create(ctx, tx, ud)
 }
 
-// GetID  retrieves user UUID given the email
-func (r *UserRepository) GetID(ctx context.Context, email string) (string, error) {
-	var userID string
-	if err := r.client.db.GetContext(ctx, &userID, `
-		SELECT 
-			id
-		FROM
-			users
-		WHERE
-			email = $1
-	`, email); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return "", user.NotFoundError{Email: email}
-		}
-		return "", err
-	}
-	return userID, nil
-}
-
 func (r *UserRepository) create(ctx context.Context, querier sqlx.QueryerContext, ud *user.User) (string, error) {
 	var userID string
 
@@ -51,9 +32,7 @@ func (r *UserRepository) create(ctx context.Context, querier sqlx.QueryerContext
 		return "", err
 	}
 
-	// either success inserting a row or return error
-	// no need to check rows affected
-	if err := querier.QueryRowxContext(ctx, `
+	if err := r.client.db.QueryRowxContext(ctx, `
 					INSERT INTO 
 					users 
 						(email, provider)
@@ -73,10 +52,29 @@ func (r *UserRepository) create(ctx context.Context, querier sqlx.QueryerContext
 	return userID, nil
 }
 
+// GetID retrieves user UUID given the email
+func (r *UserRepository) GetID(ctx context.Context, email string) (string, error) {
+	var userID string
+	if err := r.client.db.GetContext(ctx, &userID, `
+		SELECT 
+			id
+		FROM
+			users
+		WHERE
+			email = $1
+	`, email); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", user.NotFoundError{Email: email}
+		}
+		return "", err
+	}
+	return userID, nil
+}
+
 // NewUserRepository initializes user repository clients
 func NewUserRepository(c *Client) (*UserRepository, error) {
 	if c == nil {
-		return nil, errors.New("postgres client is nil")
+		return nil, errNilPostgresClient
 	}
 	return &UserRepository{
 		client: c,

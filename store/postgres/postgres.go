@@ -25,9 +25,20 @@ import (
 //go:embed migrations/*.sql
 var fs embed.FS
 
+const (
+	DEFAULT_MAX_RESULT_SIZE = 100
+)
+
 type Client struct {
 	db *sqlx.DB
 }
+
+const (
+	columnNameCreatedAt     = "created_at"
+	columnNameUpdatedAt     = "updated_at"
+	sortDirectionAscending  = "ASC"
+	sortDirectionDescending = "DESC"
+)
 
 func (c *Client) RunWithinTx(ctx context.Context, f func(tx *sqlx.Tx) error) error {
 	tx, err := c.db.BeginTxx(ctx, nil)
@@ -111,6 +122,8 @@ func checkPostgresError(err error) error {
 			return fmt.Errorf("%w [%s]", errDuplicateKey, pgErr.Detail)
 		case pgerrcode.CheckViolation:
 			return fmt.Errorf("%w [%s]", errCheckViolation, pgErr.Detail)
+		case pgerrcode.ForeignKeyViolation:
+			return fmt.Errorf("%w [%s]", errForeignKeyViolation, pgErr.Detail)
 		}
 	}
 	return err

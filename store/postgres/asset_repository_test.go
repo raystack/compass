@@ -30,7 +30,6 @@ func (r *AssetRepositoryTestSuite) SetupSuite() {
 	var err error
 
 	logger := log.NewLogrus()
-	// logger.SetLevel(logrus.DebugLevel)
 	r.client, r.pool, r.resource, err = newTestClient(logger)
 	if err != nil {
 		r.T().Fatal(err)
@@ -79,8 +78,10 @@ func (r *AssetRepositoryTestSuite) TestGet() {
 			Type:    typ,
 			Service: service,
 		}
-		err := r.repository.Upsert(r.ctx, &ast)
+		id, err := r.repository.Upsert(r.ctx, &ast)
 		r.Require().NoError(err)
+		r.Require().Equal(r.lengthOfString(id), 36)
+		ast.ID = id
 		assets = append(assets, ast)
 	}
 
@@ -146,8 +147,10 @@ func (r *AssetRepositoryTestSuite) TestGetCount() {
 			Type:    typ,
 			Service: service,
 		}
-		err := r.repository.Upsert(r.ctx, &ast)
+		id, err := r.repository.Upsert(r.ctx, &ast)
 		r.Require().NoError(err)
+		r.Require().Equal(r.lengthOfString(id), 36)
+		ast.ID = id
 	}
 
 	r.Run("should return total assets with filter", func() {
@@ -186,10 +189,15 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 		}
 
 		var err error
-		err = r.repository.Upsert(r.ctx, &asset1)
+		id, err := r.repository.Upsert(r.ctx, &asset1)
 		r.Require().NoError(err)
-		err = r.repository.Upsert(r.ctx, &asset2)
+		r.Require().Equal(r.lengthOfString(id), 36)
+		asset1.ID = id
+
+		id, err = r.repository.Upsert(r.ctx, &asset2)
 		r.Require().NoError(err)
+		r.Require().Equal(r.lengthOfString(id), 36)
+		asset2.ID = id
 
 		result, err := r.repository.GetByID(r.ctx, asset2.ID)
 		r.NoError(err)
@@ -222,8 +230,10 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 			},
 		}
 
-		err = r.repository.Upsert(r.ctx, &ast)
+		id, err := r.repository.Upsert(r.ctx, &ast)
 		r.Require().NoError(err)
+		r.Require().Equal(r.lengthOfString(id), 36)
+		ast.ID = id
 
 		result, err := r.repository.GetByID(r.ctx, ast.ID)
 		r.NoError(err)
@@ -257,8 +267,11 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				Type:    "table",
 				Service: "bigquery",
 			}
-			err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, &ast)
 			r.NoError(err)
+			r.Require().Equal(r.lengthOfString(id), 36)
+			ast.ID = id
+
 			r.Equal(r.lengthOfString(ast.ID), 36) // uuid
 
 			assetInDB, err := r.repository.GetByID(r.ctx, ast.ID)
@@ -277,8 +290,10 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				},
 			}
 
-			err = r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, &ast)
 			r.Require().NoError(err)
+			r.Require().Equal(r.lengthOfString(id), 36)
+			ast.ID = id
 
 			actual, err := r.repository.GetByID(r.ctx, ast.ID)
 			r.NoError(err)
@@ -299,8 +314,10 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				},
 			}
 
-			err = r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, &ast)
 			r.Require().NoError(err)
+			r.Require().Equal(r.lengthOfString(id), 36)
+			ast.ID = id
 
 			actual, err := r.repository.GetByID(r.ctx, ast.ID)
 			r.NoError(err)
@@ -323,10 +340,15 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			identicalAsset := ast
 			identicalAsset.Name = "some-name"
 
-			err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, &ast)
 			r.Require().NoError(err)
-			err = r.repository.Upsert(r.ctx, &identicalAsset)
+			r.Require().Equal(r.lengthOfString(id), 36)
+			ast.ID = id
+
+			id, err = r.repository.Upsert(r.ctx, &identicalAsset)
 			r.Require().NoError(err)
+			r.Require().Equal(r.lengthOfString(id), 36)
+			identicalAsset.ID = id
 
 			r.Equal(ast.ID, identicalAsset.ID)
 		})
@@ -346,10 +368,15 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				user2,
 			}
 
-			err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, &ast)
 			r.Require().NoError(err)
-			err = r.repository.Upsert(r.ctx, &newAsset)
+			r.Require().Equal(r.lengthOfString(id), 36)
+			ast.ID = id
+
+			id, err = r.repository.Upsert(r.ctx, &newAsset)
 			r.Require().NoError(err)
+			r.Require().Equal(r.lengthOfString(id), 36)
+			newAsset.ID = id
 
 			actual, err := r.repository.GetByID(r.ctx, ast.ID)
 			r.NoError(err)
@@ -374,10 +401,15 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				user2,
 			}
 
-			err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, &ast)
 			r.Require().NoError(err)
-			err = r.repository.Upsert(r.ctx, &newAsset)
+			r.Require().Equal(r.lengthOfString(id), 36)
+			ast.ID = id
+
+			id, err = r.repository.Upsert(r.ctx, &newAsset)
 			r.Require().NoError(err)
+			r.Require().Equal(r.lengthOfString(id), 36)
+			newAsset.ID = id
 
 			actual, err := r.repository.GetByID(r.ctx, ast.ID)
 			r.NoError(err)
@@ -402,10 +434,15 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				{Email: "newuser@example.com", Provider: "shield"},
 			}
 
-			err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, &ast)
 			r.Require().NoError(err)
-			err = r.repository.Upsert(r.ctx, &newAsset)
+			r.Require().Equal(r.lengthOfString(id), 36)
+			ast.ID = id
+
+			id, err = r.repository.Upsert(r.ctx, &newAsset)
 			r.Require().NoError(err)
+			r.Require().Equal(r.lengthOfString(id), 36)
+			newAsset.ID = id
 
 			actual, err := r.repository.GetByID(r.ctx, ast.ID)
 			r.NoError(err)
@@ -444,10 +481,15 @@ func (r *AssetRepositoryTestSuite) TestDelete() {
 		}
 
 		var err error
-		err = r.repository.Upsert(r.ctx, &asset1)
+		id, err := r.repository.Upsert(r.ctx, &asset1)
 		r.Require().NoError(err)
-		err = r.repository.Upsert(r.ctx, &asset2)
+		r.Require().Equal(r.lengthOfString(id), 36)
+		asset1.ID = id
+
+		id, err = r.repository.Upsert(r.ctx, &asset2)
 		r.Require().NoError(err)
+		r.Require().Equal(r.lengthOfString(id), 36)
+		asset2.ID = id
 
 		err = r.repository.Delete(r.ctx, asset1.ID)
 		r.NoError(err)

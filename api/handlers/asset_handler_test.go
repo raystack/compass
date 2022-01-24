@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -18,8 +20,10 @@ import (
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/lib/mocks"
+	"github.com/odpf/columbus/star"
+	"github.com/odpf/columbus/user"
 	"github.com/stretchr/testify/assert"
-	tmock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -70,7 +74,7 @@ func TestAssetHandlerUpsert(t *testing.T) {
 				rw := httptest.NewRecorder()
 				rr := httptest.NewRequest("PUT", "/", strings.NewReader(testCase.payload))
 
-				handler := handlers.NewAssetHandler(logger, nil, nil)
+				handler := handlers.NewAssetHandler(logger, nil, nil, nil)
 				handler.Upsert(rw, rr)
 
 				expectedStatus := http.StatusBadRequest
@@ -89,11 +93,11 @@ func TestAssetHandlerUpsert(t *testing.T) {
 			expectedErr := errors.New("unknown error")
 
 			ar := new(mocks.AssetRepository)
-			ar.On("Upsert", rr.Context(), tmock.AnythingOfType("*asset.Asset")).Return(expectedErr)
+			ar.On("Upsert", rr.Context(), mock.AnythingOfType("*asset.Asset")).Return("1234-5678", expectedErr)
 			defer ar.AssertExpectations(t)
 
 			rr.Context()
-			handler := handlers.NewAssetHandler(logger, ar, nil)
+			handler := handlers.NewAssetHandler(logger, ar, nil, nil)
 			handler.Upsert(rw, rr)
 
 			assert.Equal(t, http.StatusInternalServerError, rw.Code)
@@ -109,15 +113,15 @@ func TestAssetHandlerUpsert(t *testing.T) {
 			expectedErr := errors.New("unknown error")
 
 			ar := new(mocks.AssetRepository)
-			ar.On("Upsert", rr.Context(), tmock.AnythingOfType("*asset.Asset")).Return(nil)
+			ar.On("Upsert", rr.Context(), mock.AnythingOfType("*asset.Asset")).Return("1234-5678", nil)
 			defer ar.AssertExpectations(t)
 
 			dr := new(mocks.DiscoveryRepository)
-			dr.On("Upsert", rr.Context(), tmock.AnythingOfType("asset.Asset")).Return(expectedErr)
+			dr.On("Upsert", rr.Context(), mock.AnythingOfType("asset.Asset")).Return(expectedErr)
 			defer dr.AssertExpectations(t)
 
 			rr.Context()
-			handler := handlers.NewAssetHandler(logger, ar, dr)
+			handler := handlers.NewAssetHandler(logger, ar, dr, nil)
 			handler.Upsert(rw, rr)
 
 			assert.Equal(t, http.StatusInternalServerError, rw.Code)
@@ -142,7 +146,7 @@ func TestAssetHandlerUpsert(t *testing.T) {
 		rw := httptest.NewRecorder()
 
 		ar := new(mocks.AssetRepository)
-		ar.On("Upsert", rr.Context(), &ast).Return(nil).Run(func(args tmock.Arguments) {
+		ar.On("Upsert", rr.Context(), &ast).Return(assetWithID.ID, nil).Run(func(args mock.Arguments) {
 			argAsset := args.Get(1).(*asset.Asset)
 			argAsset.ID = assetWithID.ID
 		})
@@ -152,7 +156,7 @@ func TestAssetHandlerUpsert(t *testing.T) {
 		dr.On("Upsert", rr.Context(), assetWithID).Return(nil)
 		defer dr.AssertExpectations(t)
 
-		handler := handlers.NewAssetHandler(logger, ar, dr)
+		handler := handlers.NewAssetHandler(logger, ar, dr, nil)
 		handler.Upsert(rw, rr)
 
 		assert.Equal(t, http.StatusOK, rw.Code)
@@ -224,7 +228,7 @@ func TestAssetHandlerDelete(t *testing.T) {
 			tc.Setup(rr.Context(), ar, dr)
 			defer ar.AssertExpectations(t)
 
-			handler := handlers.NewAssetHandler(logger, ar, dr)
+			handler := handlers.NewAssetHandler(logger, ar, dr, nil)
 			handler.Delete(rw, rr)
 
 			if rw.Code != tc.ExpectStatus {
@@ -294,7 +298,7 @@ func TestAssetHandlerGetByID(t *testing.T) {
 			ar := new(mocks.AssetRepository)
 			tc.Setup(rr.Context(), ar)
 
-			handler := handlers.NewAssetHandler(logger, ar, nil)
+			handler := handlers.NewAssetHandler(logger, ar, nil, nil)
 			handler.GetByID(rw, rr)
 
 			if rw.Code != tc.ExpectStatus {
@@ -438,7 +442,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			ar := new(mocks.AssetRepository)
 			tc.Setup(rr.Context(), ar)
 
-			handler := handlers.NewAssetHandler(logger, ar, nil)
+			handler := handlers.NewAssetHandler(logger, ar, nil, nil)
 			handler.Get(rw, rr)
 
 			if rw.Code != tc.ExpectStatus {
@@ -451,6 +455,104 @@ func TestAssetHandlerGet(t *testing.T) {
 					return
 				}
 			}
+		})
+	}
+}
+
+func TestAssetHandlerGetStargazers(t *testing.T) {
+	type testCase struct {
+		Description   string
+		ExpectStatus  int
+		Setup         func(tc *testCase, sr *mocks.StarRepository)
+		MutateRequest func(req *http.Request) *http.Request
+	}
+
+	offset := 10
+	size := 20
+	defaultStarCfg := star.Config{Offset: offset, Size: size}
+	assetID := "dummy-asset-id"
+
+	var testCases = []testCase{
+		{
+			Description:  "should return 500 status code if failed to fetch star repository",
+			ExpectStatus: http.StatusInternalServerError,
+			MutateRequest: func(req *http.Request) *http.Request {
+				req.URL.Path += fmt.Sprintf("/%s/stargazers", assetID)
+				params := url.Values{}
+				params.Add("offset", strconv.Itoa(offset))
+				params.Add("size", strconv.Itoa(size))
+				req.URL.RawQuery = params.Encode()
+				return req
+			},
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {
+				sr.On("GetStargazers", mock.Anything, defaultStarCfg, assetID).Return(nil, errors.New("some error"))
+			},
+		},
+		{
+			Description:  "should return 400 status code if star repository return invalid error",
+			ExpectStatus: http.StatusBadRequest,
+			MutateRequest: func(req *http.Request) *http.Request {
+				req.URL.Path += fmt.Sprintf("/%s/stargazers", assetID)
+				params := url.Values{}
+				params.Add("offset", strconv.Itoa(offset))
+				params.Add("size", strconv.Itoa(size))
+				req.URL.RawQuery = params.Encode()
+				return req
+			},
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {
+				sr.On("GetStargazers", mock.Anything, defaultStarCfg, assetID).Return(nil, star.InvalidError{})
+			},
+		},
+		{
+			Description:  "should return 404 status code if star repository return not found error",
+			ExpectStatus: http.StatusNotFound,
+			MutateRequest: func(req *http.Request) *http.Request {
+				req.URL.Path += fmt.Sprintf("/%s/stargazers", assetID)
+				params := url.Values{}
+				params.Add("offset", strconv.Itoa(offset))
+				params.Add("size", strconv.Itoa(size))
+				req.URL.RawQuery = params.Encode()
+				return req
+			},
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {
+				sr.On("GetStargazers", mock.Anything, defaultStarCfg, assetID).Return(nil, star.NotFoundError{})
+			},
+		},
+		{
+			Description:  "should return 200 ok if star repository return nil error",
+			ExpectStatus: http.StatusOK,
+			MutateRequest: func(req *http.Request) *http.Request {
+				req.URL.Path += fmt.Sprintf("/%s/stargazers", assetID)
+				params := url.Values{}
+				params.Add("offset", strconv.Itoa(offset))
+				params.Add("size", strconv.Itoa(size))
+				req.URL.RawQuery = params.Encode()
+				return req
+			},
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {
+				sr.On("GetStargazers", mock.Anything, defaultStarCfg, assetID).Return([]user.User{{ID: "1"}, {ID: "2"}, {ID: "3"}}, nil)
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			sr := new(mocks.StarRepository)
+			logger := log.NewNoop()
+			defer sr.AssertExpectations(t)
+			tc.Setup(&tc, sr)
+			starSvc := star.NewService(sr, nil)
+
+			handler := handlers.NewAssetHandler(logger, nil, nil, starSvc)
+			router := mux.NewRouter()
+			router.Path("/assets/{id}/stargazers").Methods("GET").HandlerFunc(handler.GetStargazers)
+			rr := httptest.NewRequest("GET", "/assets", nil)
+			rw := httptest.NewRecorder()
+
+			if tc.MutateRequest != nil {
+				rr = tc.MutateRequest(rr)
+			}
+
+			router.ServeHTTP(rw, rr)
 		})
 	}
 }

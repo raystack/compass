@@ -23,7 +23,7 @@ type TagHandlerTestSuite struct {
 	suite.Suite
 	handler            *handlers.TagHandler
 	tagRepository      *mocks.TagRepository
-	templateRepository *mocks.TemplateRepository
+	templateRepository *mocks.TagTemplateRepository
 	recorder           *httptest.ResponseRecorder
 	logger             log.Noop
 }
@@ -38,7 +38,7 @@ func (s *TagHandlerTestSuite) TestNewHandler() {
 
 func (s *TagHandlerTestSuite) Setup() {
 	s.tagRepository = new(mocks.TagRepository)
-	s.templateRepository = new(mocks.TemplateRepository)
+	s.templateRepository = new(mocks.TagTemplateRepository)
 	templateService := tag.NewTemplateService(s.templateRepository)
 	service := tag.NewService(s.tagRepository, templateService)
 

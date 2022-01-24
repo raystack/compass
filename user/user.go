@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// User is a basic entity of a user
 type User struct {
 	ID        string    `json:"id"`
 	Email     string    `json:"email"`
@@ -27,7 +28,8 @@ func (u *User) Validate() error {
 	return nil
 }
 
+// Repository contains interface of supported methods
 type Repository interface {
-	GetID(ctx context.Context, email string) (string, error)
 	Create(ctx context.Context, u *User) (string, error)
+	GetID(ctx context.Context, email string) (string, error)
 }

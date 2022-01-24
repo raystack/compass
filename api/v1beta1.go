@@ -32,6 +32,11 @@ func setupV1Beta1Router(router *mux.Router, handlers *Handlers) *mux.Router {
 	// Deprecated: Use setupV1Beta1AssetRoutes instead
 	setupV1Beta1TypeRoutes(router, handlers.Type, handlers.Record)
 
+	userRouter := router.PathPrefix("/user").Subrouter()
+	setupUserRoutes(userRouter, handlers.User)
+
+	usersRouter := router.PathPrefix("/users").Subrouter()
+	setupUsersRoutes(usersRouter, handlers.User)
 	return router
 }
 
@@ -53,6 +58,10 @@ func setupV1Beta1AssetRoutes(router *mux.Router, ah *handlers.AssetHandler) {
 	router.Path(url+"/{id}").
 		Methods(http.MethodDelete, http.MethodHead).
 		HandlerFunc(ah.Delete)
+
+	router.Path(url+"/{id}/stargazers").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(ah.GetStargazers)
 }
 
 func setupV1Beta1TypeRoutes(router *mux.Router, th *handlers.TypeHandler, rh *handlers.RecordHandler) {
@@ -78,6 +87,10 @@ func setupV1Beta1TypeRoutes(router *mux.Router, th *handlers.TypeHandler, rh *ha
 	router.Path(recordURL+"/{id}").
 		Methods(http.MethodDelete, http.MethodHead).
 		HandlerFunc(rh.Delete)
+
+	router.Path(recordURL+"/{id}/stargazers").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(rh.GetStargazers)
 }
 
 func setupV1Beta1TagRoutes(router *mux.Router, baseURL string, th *handlers.TagHandler, tth *handlers.TagTemplateHandler) {
@@ -96,5 +109,23 @@ func setupV1Beta1TagRoutes(router *mux.Router, baseURL string, th *handlers.TagH
 	router.Methods(http.MethodGet).Path(templateURL + "/{template_urn}").HandlerFunc(tth.Find)
 	router.Methods(http.MethodPut).Path(templateURL + "/{template_urn}").HandlerFunc(tth.Update)
 	router.Methods(http.MethodDelete).Path(templateURL + "/{template_urn}").HandlerFunc(tth.Delete)
+}
 
+func setupUserRoutes(router *mux.Router, ush *handlers.UserHandler) {
+
+	router.Path("/starred").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(ush.GetStarredAssetsWithHeader)
+
+	userAssetsURL := "/starred/{asset_type}/{asset_urn}"
+	router.Methods(http.MethodPut).Path(userAssetsURL).HandlerFunc(ush.StarAsset)
+	router.Methods(http.MethodGet).Path(userAssetsURL).HandlerFunc(ush.GetStarredAsset)
+	router.Methods(http.MethodDelete).Path(userAssetsURL).HandlerFunc(ush.UnstarAsset)
+}
+
+func setupUsersRoutes(router *mux.Router, ush *handlers.UserHandler) {
+
+	router.Path("/{user_id}/starred").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(ush.GetStarredAssetsWithPath)
 }

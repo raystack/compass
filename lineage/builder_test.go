@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/odpf/columbus/lib/mocks"
 	"github.com/odpf/columbus/lib/set"
 	"github.com/odpf/columbus/lineage"
-	"github.com/odpf/columbus/lineage/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -100,7 +100,7 @@ func TestDefaultBuilder(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.Description, func(t *testing.T) {
 				ctx := context.Background()
-				repo := new(mocks.Repository)
+				repo := new(mocks.LineageRepository)
 				repo.On("GetEdges", ctx).Return(tc.Edges, nil)
 				defer repo.AssertExpectations(t)
 

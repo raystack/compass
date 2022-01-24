@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,23 +13,27 @@ import (
 
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
+	"github.com/odpf/columbus/star"
 )
 
 // AssetHandler exposes a REST interface to types
 type AssetHandler struct {
+	logger          log.Logger
 	assetRepository asset.Repository
 	discoveryRepo   discovery.Repository
-	logger          log.Logger
+	starService     *star.Service
 }
 
 func NewAssetHandler(
 	logger log.Logger,
 	assetRepository asset.Repository,
-	discoveryRepo discovery.Repository) *AssetHandler {
+	discoveryRepo discovery.Repository,
+	starService *star.Service) *AssetHandler {
 	handler := &AssetHandler{
+		logger:          logger,
 		assetRepository: assetRepository,
 		discoveryRepo:   discoveryRepo,
-		logger:          logger,
+		starService:     starService,
 	}
 
 	return handler
@@ -92,10 +97,13 @@ func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.assetRepository.Upsert(r.Context(), &ast); err != nil {
+	var assetID string
+	if assetID, err = h.assetRepository.Upsert(r.Context(), &ast); err != nil {
 		internalServerError(w, h.logger, err.Error())
 		return
 	}
+
+	ast.ID = assetID
 	if err := h.discoveryRepo.Upsert(r.Context(), ast); err != nil {
 		internalServerError(w, h.logger, err.Error())
 		return
@@ -125,6 +133,29 @@ func (h *AssetHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusNoContent, nil)
+}
+
+func (h *AssetHandler) GetStargazers(w http.ResponseWriter, r *http.Request) {
+	starCfg := buildStarConfig(h.logger, r.URL.Query())
+
+	pathParams := mux.Vars(r)
+	assetID := pathParams["id"]
+
+	users, err := h.starService.GetStargazersByID(r.Context(), starCfg, assetID)
+	if err != nil {
+		if errors.As(err, new(star.InvalidError)) {
+			WriteJSONError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		if errors.As(err, new(star.NotFoundError)) {
+			WriteJSONError(w, http.StatusNotFound, err.Error())
+			return
+		}
+		internalServerError(w, h.logger, err.Error())
+		return
+	}
+
+	writeJSON(w, http.StatusOK, users)
 }
 
 func (h *AssetHandler) validateAsset(ast asset.Asset) error {
