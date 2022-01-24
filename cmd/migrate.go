@@ -42,7 +42,7 @@ func migratePostgres() (err error) {
 	log.Info("Initiating Postgres client...")
 
 	pgConfig := postgres.Config{
-		Host:     config.ServerHost,
+		Host:     config.DBHost,
 		Port:     config.DBPort,
 		Name:     config.DBName,
 		User:     config.DBUser,
