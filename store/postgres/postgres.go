@@ -11,8 +11,6 @@ import (
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/sirupsen/logrus"
-
 	// Register database postgres
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	// Register golang migrate source
@@ -21,7 +19,6 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	_ "github.com/jackc/pgx/v4/stdlib"
-
 	"github.com/jmoiron/sqlx"
 )
 
@@ -83,7 +80,7 @@ func (c *Client) Close() error {
 }
 
 // NewClient initializes database connection
-func NewClient(logger logrus.FieldLogger, cfg Config) (*Client, error) {
+func NewClient(cfg Config) (*Client, error) {
 	db, err := sqlx.Connect("pgx", cfg.ConnectionURL().String())
 	if err != nil {
 		return nil, fmt.Errorf("error creating and connecting DB: %w", err)

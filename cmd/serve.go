@@ -77,14 +77,14 @@ func initRouter(
 		logger.Info("lineage build complete")
 	}()
 
-	pgClient := initPostgres(rootLogger.WithField("reporter", "postgres"), config)
+	pgClient := initPostgres(logger, config)
 	tagRepository, err := postgres.NewTagRepository(pgClient)
 	if err != nil {
-		log.Fatalf("failed to create new tag repository: %v", err)
+		logger.Fatal("failed to create new tag repository", "error", err)
 	}
 	tagTemplateRepository, err := postgres.NewTagTemplateRepository(pgClient)
 	if err != nil {
-		log.Fatalf("failed to create new tag template repository: %v", err)
+		logger.Fatal("failed to create new tag template repository", "error", err)
 	}
 	tagTemplateService := tag.NewTemplateService(tagTemplateRepository)
 	tagService := tag.NewService(
@@ -148,8 +148,8 @@ func initElasticsearch(config Config, logger log.Logger) *elasticsearch.Client {
 	return esClient
 }
 
-func initPostgres(logger logrus.FieldLogger, config Config) *postgres.Client {
-	pgClient, err := postgres.NewClient(logger,
+func initPostgres(logger log.Logger, config Config) *postgres.Client {
+	pgClient, err := postgres.NewClient(
 		postgres.Config{
 			Port:     config.DBPort,
 			Host:     config.DBHost,
@@ -159,9 +159,9 @@ func initPostgres(logger logrus.FieldLogger, config Config) *postgres.Client {
 			SSLMode:  config.DBSSLMode,
 		})
 	if err != nil {
-		logger.Fatalf("error creating postgres client: %v", err)
+		logger.Fatal("error creating postgres client", "error", err)
 	}
-	logger.Infof("connected to postgres server %s:%d", config.DBHost, config.DBPort)
+	logger.Info("connected to postgres server %s:%d", "host", config.DBHost, "port", config.DBPort)
 
 	return pgClient
 }

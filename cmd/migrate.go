@@ -38,8 +38,8 @@ func RunMigrate() {
 	logger.Info("Migration ES done.")
 }
 
-func migratePostgres(log log.Logger) (err error) {
-	log.Info("Initiating Postgres client...")
+func migratePostgres(logger log.Logger) (err error) {
+	logger.Info("Initiating Postgres client...")
 
 	pgConfig := postgres.Config{
 		Host:     config.ServerHost,
@@ -50,9 +50,9 @@ func migratePostgres(log log.Logger) (err error) {
 		SSLMode:  config.DBSSLMode,
 	}
 
-	pgClient, err := postgres.NewClient(log, pgConfig)
+	pgClient, err := postgres.NewClient(pgConfig)
 	if err != nil {
-		log.Errorf("failed to prepare migration: %s", err)
+		logger.Error("failed to prepare migration", "error", err)
 		return err
 	}
 
