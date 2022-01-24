@@ -90,7 +90,6 @@ func (builder defaultBuilder) addRecord(graph AdjacencyMap, typeName string, rec
 		Downstreams: builder.buildAdjacents(record, dataflowDirDownstream),
 		Upstreams:   builder.buildAdjacents(record, dataflowDirUpstream),
 	}
-
 	graph[entry.ID()] = entry
 }
 
@@ -121,8 +120,6 @@ func (builder defaultBuilder) addBackRef(graph AdjacencyMap, refID string, backR
 	if _, exists := adjacents[refID]; !exists {
 		adjacents.Add(refID)
 	}
-
-	return
 }
 
 func (builder defaultBuilder) buildAdjacents(r record.Record, dir dataflowDir) (adjacents set.StringSet) {

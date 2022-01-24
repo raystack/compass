@@ -103,6 +103,10 @@ func (sr *Searcher) Suggest(ctx context.Context, config discovery.SearchConfig) 
 
 	indices := sr.buildIndices(config)
 	query, err := sr.buildSuggestQuery(ctx, config, indices)
+	if err != nil {
+		err = fmt.Errorf("error building query: %s", err)
+		return
+	}
 	res, err := sr.cli.Search(
 		sr.cli.Search.WithBody(query),
 		sr.cli.Search.WithIndex(indices...),

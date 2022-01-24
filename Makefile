@@ -20,3 +20,7 @@ test-coverage: test
 
 dist:
 	@bash ./scripts/build.sh
+
+lint:
+	golangci-lint run
+

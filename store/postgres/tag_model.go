@@ -193,7 +193,7 @@ type TagJoinTemplateFieldModel struct {
 type TagJoinTemplateFieldModels []TagJoinTemplateFieldModel
 
 func (tfs TagJoinTemplateFieldModels) toTemplateModels() (templates []TagTemplateModel) {
-	templateMap := make(map[string]TagTemplateModel, 0)
+	templateMap := make(map[string]TagTemplateModel)
 
 	for _, tf := range tfs {
 		if _, ok := templateMap[tf.Template.URN]; !ok {
@@ -273,8 +273,8 @@ type TagJoinTemplateTagFieldModel struct {
 type TagJoinTemplateTagFieldModels []TagJoinTemplateTagFieldModel
 
 func (ttfs TagJoinTemplateTagFieldModels) toTemplateAndTagModels() (templates TagTemplateModels, tags TagModels) {
-	tmpltsMap := make(map[string]TagTemplateModel, 0) // template urn as key
-	tagsMap := make(map[uint]TagModel, 0)
+	tmpltsMap := make(map[string]TagTemplateModel) // template urn as key
+	tagsMap := make(map[uint]TagModel)
 
 	for _, ttf := range ttfs {
 		// build template

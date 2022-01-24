@@ -8,14 +8,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var validDomainFieldDataType = []string{
-	"string",
-	"double",
-	"boolean",
-	"enumerated",
-	"datetime",
-}
-
 // Service is a type of service that manages business process
 type TemplateService struct {
 	validator  validator.Validator
