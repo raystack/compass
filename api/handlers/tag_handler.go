@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/odpf/salt/log"
 	"net/http"
+
+	"github.com/odpf/salt/log"
 
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/tag"
@@ -39,27 +40,27 @@ func NewTagHandler(logger log.Logger, service *tag.Service) *TagHandler {
 // Create handles tag creation requests
 func (h *TagHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if h.service == nil {
-		writeJSONError(w, http.StatusInternalServerError, errNilTagService.Error())
+		WriteJSONError(w, http.StatusInternalServerError, errNilTagService.Error())
 		return
 	}
 
 	var requestBody tag.Tag
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	err := h.service.Create(r.Context(), &requestBody)
 	if errors.As(err, new(tag.DuplicateError)) {
-		writeJSONError(w, http.StatusConflict, err.Error())
+		WriteJSONError(w, http.StatusConflict, err.Error())
 		return
 	}
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
-		writeJSONError(w, http.StatusNotFound, err.Error())
+		WriteJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}
 	if errors.As(err, new(tag.ValidationError)) {
-		writeJSONError(w, http.StatusUnprocessableEntity, err.Error())
+		WriteJSONError(w, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 	if err != nil {
@@ -73,19 +74,19 @@ func (h *TagHandler) Create(w http.ResponseWriter, r *http.Request) {
 // GetByRecord handles get tag by record requests
 func (h *TagHandler) GetByRecord(w http.ResponseWriter, r *http.Request) {
 	if h.service == nil {
-		writeJSONError(w, http.StatusInternalServerError, errNilTagService.Error())
+		WriteJSONError(w, http.StatusInternalServerError, errNilTagService.Error())
 		return
 	}
 
 	muxVar := mux.Vars(r)
 	recordType, exists := muxVar["type"]
 	if !exists || recordType == "" {
-		writeJSONError(w, http.StatusBadRequest, errEmptyRecordType.Error())
+		WriteJSONError(w, http.StatusBadRequest, errEmptyRecordType.Error())
 		return
 	}
 	recordURN, exists := muxVar["record_urn"]
 	if !exists || recordURN == "" {
-		writeJSONError(w, http.StatusBadRequest, errEmptyRecordURN.Error())
+		WriteJSONError(w, http.StatusBadRequest, errEmptyRecordURN.Error())
 		return
 	}
 	tags, err := h.service.GetByRecord(r.Context(), recordType, recordURN)
@@ -100,29 +101,29 @@ func (h *TagHandler) GetByRecord(w http.ResponseWriter, r *http.Request) {
 // FindByRecordAndTemplate handles get tag by record requests
 func (h *TagHandler) FindByRecordAndTemplate(w http.ResponseWriter, r *http.Request) {
 	if h.service == nil {
-		writeJSONError(w, http.StatusInternalServerError, errNilTagService.Error())
+		WriteJSONError(w, http.StatusInternalServerError, errNilTagService.Error())
 		return
 	}
 
 	muxVar := mux.Vars(r)
 	recordType, exists := muxVar["type"]
 	if !exists || recordType == "" {
-		writeJSONError(w, http.StatusBadRequest, errEmptyRecordType.Error())
+		WriteJSONError(w, http.StatusBadRequest, errEmptyRecordType.Error())
 		return
 	}
 	recordURN, exists := muxVar["record_urn"]
 	if !exists || recordURN == "" {
-		writeJSONError(w, http.StatusBadRequest, errEmptyRecordURN.Error())
+		WriteJSONError(w, http.StatusBadRequest, errEmptyRecordURN.Error())
 		return
 	}
 	templateURN, exists := muxVar["template_urn"]
 	if !exists || templateURN == "" {
-		writeJSONError(w, http.StatusBadRequest, errEmptyTemplateURN.Error())
+		WriteJSONError(w, http.StatusBadRequest, errEmptyTemplateURN.Error())
 		return
 	}
 	tags, err := h.service.FindByRecordAndTemplate(r.Context(), recordType, recordURN, templateURN)
 	if errors.As(err, new(tag.NotFoundError)) || errors.As(err, new(tag.TemplateNotFoundError)) {
-		writeJSONError(w, http.StatusNotFound, err.Error())
+		WriteJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}
 	if err != nil {
@@ -136,30 +137,30 @@ func (h *TagHandler) FindByRecordAndTemplate(w http.ResponseWriter, r *http.Requ
 // Update handles tag update requests
 func (h *TagHandler) Update(w http.ResponseWriter, r *http.Request) {
 	if h.service == nil {
-		writeJSONError(w, http.StatusInternalServerError, errNilTagService.Error())
+		WriteJSONError(w, http.StatusInternalServerError, errNilTagService.Error())
 		return
 	}
 
 	muxVar := mux.Vars(r)
 	recordURN, exists := muxVar["record_urn"]
 	if !exists || recordURN == "" {
-		writeJSONError(w, http.StatusBadRequest, errEmptyRecordURN.Error())
+		WriteJSONError(w, http.StatusBadRequest, errEmptyRecordURN.Error())
 		return
 	}
 	recordType, exists := muxVar["type"]
 	if !exists || recordType == "" {
-		writeJSONError(w, http.StatusBadRequest, errEmptyRecordType.Error())
+		WriteJSONError(w, http.StatusBadRequest, errEmptyRecordType.Error())
 		return
 	}
 	templateURN, exists := muxVar["template_urn"]
 	if !exists || templateURN == "" {
-		writeJSONError(w, http.StatusBadRequest, errEmptyTemplateURN.Error())
+		WriteJSONError(w, http.StatusBadRequest, errEmptyTemplateURN.Error())
 		return
 	}
 
 	var requestBody tag.Tag
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -168,7 +169,7 @@ func (h *TagHandler) Update(w http.ResponseWriter, r *http.Request) {
 	requestBody.TemplateURN = templateURN
 	err := h.service.Update(r.Context(), &requestBody)
 	if errors.As(err, new(tag.NotFoundError)) {
-		writeJSONError(w, http.StatusNotFound, err.Error())
+		WriteJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}
 	if err != nil {
@@ -182,29 +183,29 @@ func (h *TagHandler) Update(w http.ResponseWriter, r *http.Request) {
 // Delete handles delete tag by record and template requests
 func (h *TagHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if h.service == nil {
-		writeJSONError(w, http.StatusInternalServerError, errNilTagService.Error())
+		WriteJSONError(w, http.StatusInternalServerError, errNilTagService.Error())
 		return
 	}
 	muxVar := mux.Vars(r)
 	recordType, exists := muxVar["type"]
 	if !exists || recordType == "" {
-		writeJSONError(w, http.StatusBadRequest, errEmptyRecordType.Error())
+		WriteJSONError(w, http.StatusBadRequest, errEmptyRecordType.Error())
 		return
 	}
 	recordURN, exists := muxVar["record_urn"]
 	if !exists || recordURN == "" {
-		writeJSONError(w, http.StatusBadRequest, errEmptyRecordURN.Error())
+		WriteJSONError(w, http.StatusBadRequest, errEmptyRecordURN.Error())
 		return
 	}
 	templateURN, exists := muxVar["template_urn"]
 	if !exists || templateURN == "" {
-		writeJSONError(w, http.StatusBadRequest, errEmptyTemplateURN.Error())
+		WriteJSONError(w, http.StatusBadRequest, errEmptyTemplateURN.Error())
 		return
 	}
 
 	err := h.service.Delete(r.Context(), recordType, recordURN, templateURN)
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
-		writeJSONError(w, http.StatusNotFound, err.Error())
+		WriteJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}
 	if err != nil {

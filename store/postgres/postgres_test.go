@@ -8,10 +8,12 @@ import (
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/odpf/columbus/store/postgres"
+	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/sirupsen/logrus"
 )
+
+const logLevelDebug = "debug"
 
 var (
 	pgConfig = postgres.Config{
@@ -22,7 +24,7 @@ var (
 	}
 )
 
-func newTestClient(logger *logrus.Logger) (*postgres.Client, *dockertest.Pool, *dockertest.Resource, error) {
+func newTestClient(logger log.Logger) (*postgres.Client, *dockertest.Pool, *dockertest.Resource, error) {
 
 	opts := &dockertest.RunOptions{
 		Repository: "postgres",
@@ -57,7 +59,7 @@ func newTestClient(logger *logrus.Logger) (*postgres.Client, *dockertest.Pool, *
 
 	// attach terminal logger to container if exists
 	// for debugging purpose
-	if logger.Level == logrus.DebugLevel {
+	if logger.Level() == logLevelDebug {
 		logWaiter, err := pool.Client.AttachToContainerNonBlocking(docker.AttachToContainerOptions{
 			Container:    resource.Container.ID,
 			OutputStream: logger.Writer(),
@@ -67,17 +69,17 @@ func newTestClient(logger *logrus.Logger) (*postgres.Client, *dockertest.Pool, *
 			Stream:       true,
 		})
 		if err != nil {
-			logger.WithError(err).Fatal("Could not connect to postgres container log output")
+			logger.Fatal("Could not connect to postgres container log output", "error", err)
 		}
 		defer func() {
 			err = logWaiter.Close()
 			if err != nil {
-				logger.WithError(err).Error("Could not close container log")
+				logger.Fatal("Could not close container log", "error", err)
 			}
 
 			err = logWaiter.Wait()
 			if err != nil {
-				logger.WithError(err).Error("Could not wait for container log to close")
+				logger.Fatal("Could not wait for container log to close", "error", err)
 			}
 		}()
 	}
@@ -104,7 +106,7 @@ func newTestClient(logger *logrus.Logger) (*postgres.Client, *dockertest.Pool, *
 
 	err = setup(context.Background(), pgClient)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatal("failed to setup and migrate DB", "error", err)
 	}
 	return pgClient, pool, resource, nil
 }

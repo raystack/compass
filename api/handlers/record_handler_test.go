@@ -17,19 +17,19 @@ import (
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/lib/mock"
-	tmock "github.com/stretchr/testify/mock"
+	"github.com/odpf/columbus/lib/mocks"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
 func TestRecordHandler(t *testing.T) {
 	var (
-		ctx      = tmock.AnythingOfType("*context.valueCtx")
+		ctx      = mock.AnythingOfType("*context.valueCtx")
 		typeName = asset.TypeTable.String()
 		logger   = log.NewNoop()
 	)
 
-	tr := new(mock.TypeRepository)
+	tr := new(mocks.TypeRepository)
 
 	t.Run("UpsertBulk", func(t *testing.T) {
 		var validPayload = `[{"urn": "test dagger", "name": "de-dagger-test", "service": "kafka", "data": {}}]`
@@ -105,8 +105,8 @@ func TestRecordHandler(t *testing.T) {
 				})
 
 				factoryError := errors.New("unknown error")
-				recordRepoFac := new(mock.RecordRepositoryFactory)
-				recordRepoFac.On("For", typeName).Return(new(mock.RecordRepository), factoryError)
+				recordRepoFac := new(mocks.RecordRepositoryFactory)
+				recordRepoFac.On("For", typeName).Return(new(mocks.RecordRepository), factoryError)
 				defer recordRepoFac.AssertExpectations(t)
 
 				service := discovery.NewService(recordRepoFac, nil)
@@ -146,11 +146,11 @@ func TestRecordHandler(t *testing.T) {
 				})
 
 				repositoryErr := errors.New("unknown error")
-				recordRepository := new(mock.RecordRepository)
+				recordRepository := new(mocks.RecordRepository)
 				recordRepository.On("CreateOrReplaceMany", ctx, expectedAssets).Return(repositoryErr)
 				defer recordRepository.AssertExpectations(t)
 
-				recordRepoFac := new(mock.RecordRepositoryFactory)
+				recordRepoFac := new(mocks.RecordRepositoryFactory)
 				recordRepoFac.On("For", typeName).Return(recordRepository, nil)
 				defer recordRepoFac.AssertExpectations(t)
 
@@ -190,11 +190,11 @@ func TestRecordHandler(t *testing.T) {
 				"name": typeName,
 			})
 
-			recordRepo := new(mock.RecordRepository)
+			recordRepo := new(mocks.RecordRepository)
 			recordRepo.On("CreateOrReplaceMany", ctx, expectedAssets).Return(nil)
 			defer recordRepo.AssertExpectations(t)
 
-			recordRepoFac := new(mock.RecordRepositoryFactory)
+			recordRepoFac := new(mocks.RecordRepositoryFactory)
 			recordRepoFac.On("For", typeName).Return(recordRepo, nil)
 			defer recordRepoFac.AssertExpectations(t)
 
@@ -230,7 +230,7 @@ func TestRecordHandler(t *testing.T) {
 			Type         string
 			AssetID      string
 			ExpectStatus int
-			Setup        func(rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository)
+			Setup        func(rrf *mocks.RecordRepositoryFactory, rr *mocks.RecordRepository)
 			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
 		}
 
@@ -240,7 +240,7 @@ func TestRecordHandler(t *testing.T) {
 				Type:         typeName,
 				AssetID:      "id-10",
 				ExpectStatus: http.StatusNoContent,
-				Setup: func(rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+				Setup: func(rrf *mocks.RecordRepositoryFactory, rr *mocks.RecordRepository) {
 					rrf.On("For", typeName).Return(rr, nil)
 					rr.On("Delete", ctx, "id-10").Return(nil)
 				},
@@ -250,14 +250,14 @@ func TestRecordHandler(t *testing.T) {
 				Type:         "invalid",
 				AssetID:      "id-10",
 				ExpectStatus: http.StatusNotFound,
-				Setup:        func(rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {},
+				Setup:        func(rrf *mocks.RecordRepositoryFactory, rr *mocks.RecordRepository) {},
 			},
 			{
 				Description:  "should return 404 when record cannot be found",
 				Type:         typeName,
 				AssetID:      "id-10",
 				ExpectStatus: http.StatusNotFound,
-				Setup: func(rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+				Setup: func(rrf *mocks.RecordRepositoryFactory, rr *mocks.RecordRepository) {
 					rrf.On("For", typeName).Return(rr, nil)
 					rr.On("Delete", ctx, "id-10").Return(asset.NotFoundError{AssetID: "id-10"})
 				},
@@ -267,7 +267,7 @@ func TestRecordHandler(t *testing.T) {
 				Type:         typeName,
 				AssetID:      "id-10",
 				ExpectStatus: http.StatusInternalServerError,
-				Setup: func(rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
+				Setup: func(rrf *mocks.RecordRepositoryFactory, rr *mocks.RecordRepository) {
 					rrf.On("For", typeName).Return(rr, nil)
 					rr.On("Delete", ctx, "id-10").Return(errors.New("error deleting record"))
 				},
@@ -281,8 +281,8 @@ func TestRecordHandler(t *testing.T) {
 					"name": tc.Type,
 					"id":   tc.AssetID,
 				})
-				recordRepo := new(mock.RecordRepository)
-				recordRepoFactory := new(mock.RecordRepositoryFactory)
+				recordRepo := new(mocks.RecordRepository)
+				recordRepoFactory := new(mocks.RecordRepositoryFactory)
 				tc.Setup(recordRepoFactory, recordRepo)
 				defer recordRepoFactory.AssertExpectations(t)
 				defer recordRepo.AssertExpectations(t)
@@ -305,7 +305,7 @@ func TestRecordHandler(t *testing.T) {
 			Type         string
 			QueryStrings string
 			ExpectStatus int
-			Setup        func(tc *testCase, rrf *mock.RecordRepositoryFactory)
+			Setup        func(tc *testCase, rrf *mocks.RecordRepositoryFactory)
 			PostCheck    func(tc *testCase, resp *http.Response) error
 		}
 
@@ -336,15 +336,15 @@ func TestRecordHandler(t *testing.T) {
 				Type:         "invalid",
 				QueryStrings: "filter.environment=test",
 				ExpectStatus: http.StatusNotFound,
-				Setup:        func(tc *testCase, rrf *mock.RecordRepositoryFactory) {},
+				Setup:        func(tc *testCase, rrf *mocks.RecordRepositoryFactory) {},
 			},
 			{
 				Description:  "should get from and size from querystring and pass it to repo",
 				Type:         typeName,
 				QueryStrings: "from=5&size=10",
 				ExpectStatus: http.StatusOK,
-				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
-					rr := new(mock.RecordRepository)
+				Setup: func(tc *testCase, rrf *mocks.RecordRepositoryFactory) {
+					rr := new(mocks.RecordRepository)
 					rr.On("GetAll", ctx, discovery.GetConfig{
 						Filters: map[string][]string{},
 						From:    5,
@@ -358,8 +358,8 @@ func TestRecordHandler(t *testing.T) {
 				Type:         typeName,
 				QueryStrings: "filter.service=kafka,rabbitmq&filter.data.company=appel",
 				ExpectStatus: http.StatusOK,
-				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
-					rr := new(mock.RecordRepository)
+				Setup: func(tc *testCase, rrf *mocks.RecordRepositoryFactory) {
+					rr := new(mocks.RecordRepository)
 					rr.On("GetAll", ctx, discovery.GetConfig{
 						Filters: map[string][]string{
 							"service":      {"kafka", "rabbitmq"},
@@ -373,8 +373,8 @@ func TestRecordHandler(t *testing.T) {
 				Type:         typeName,
 				QueryStrings: "filter.data.environment=test",
 				ExpectStatus: http.StatusInternalServerError,
-				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
-					rr := new(mock.RecordRepository)
+				Setup: func(tc *testCase, rrf *mocks.RecordRepositoryFactory) {
+					rr := new(mocks.RecordRepository)
 					err := fmt.Errorf("something went wrong")
 					rrf.On("For", typeName).Return(rr, err)
 				},
@@ -384,8 +384,8 @@ func TestRecordHandler(t *testing.T) {
 				Type:         typeName,
 				QueryStrings: "filter.data.environment=test",
 				ExpectStatus: http.StatusInternalServerError,
-				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
-					rr := new(mock.RecordRepository)
+				Setup: func(tc *testCase, rrf *mocks.RecordRepositoryFactory) {
+					rr := new(mocks.RecordRepository)
 					err := fmt.Errorf("temporarily unavailable")
 					rr.On("GetAll", ctx, discovery.GetConfig{
 						Filters: map[string][]string{"data.environment": {"test"}},
@@ -397,8 +397,8 @@ func TestRecordHandler(t *testing.T) {
 				Description:  "should return 200 on success and RecordList",
 				Type:         typeName,
 				ExpectStatus: http.StatusOK,
-				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
-					rr := new(mock.RecordRepository)
+				Setup: func(tc *testCase, rrf *mocks.RecordRepositoryFactory) {
+					rr := new(mocks.RecordRepository)
 					rr.On("GetAll", ctx, discovery.GetConfig{
 						Filters: map[string][]string{},
 					}).Return(discovery.RecordList{Data: assets}, nil)
@@ -426,8 +426,8 @@ func TestRecordHandler(t *testing.T) {
 				Type:         typeName,
 				QueryStrings: "filter.data.environment=test&select=" + url.QueryEscape("urn,owner"),
 				ExpectStatus: http.StatusOK,
-				Setup: func(tc *testCase, rrf *mock.RecordRepositoryFactory) {
-					rr := new(mock.RecordRepository)
+				Setup: func(tc *testCase, rrf *mocks.RecordRepositoryFactory) {
+					rr := new(mocks.RecordRepository)
 					rr.On("GetAll", ctx, discovery.GetConfig{
 						Filters: map[string][]string{"data.environment": {"test"}},
 					}).Return(discovery.RecordList{Data: assets}, nil)
@@ -474,7 +474,7 @@ func TestRecordHandler(t *testing.T) {
 				rr = mux.SetURLVars(rr, map[string]string{
 					"name": tc.Type,
 				})
-				rrf := new(mock.RecordRepositoryFactory)
+				rrf := new(mocks.RecordRepositoryFactory)
 				tc.Setup(&tc, rrf)
 
 				service := discovery.NewService(rrf, nil)
@@ -506,7 +506,7 @@ func TestRecordHandler(t *testing.T) {
 			Type         string
 			AssetID      string
 			ExpectStatus int
-			Setup        func(rrf *mock.RecordRepositoryFactory)
+			Setup        func(rrf *mocks.RecordRepositoryFactory)
 			PostCheck    func(resp *http.Response) error
 		}
 
@@ -516,8 +516,8 @@ func TestRecordHandler(t *testing.T) {
 				Type:         typeName,
 				AssetID:      "record01",
 				ExpectStatus: http.StatusNotFound,
-				Setup: func(rrf *mock.RecordRepositoryFactory) {
-					recordRepo := new(mock.RecordRepository)
+				Setup: func(rrf *mocks.RecordRepositoryFactory) {
+					recordRepo := new(mocks.RecordRepository)
 					recordRepo.On("GetByID", ctx, "record01").Return(asset.Asset{}, asset.NotFoundError{AssetID: "record01"})
 					rrf.On("For", typeName).Return(recordRepo, nil)
 				},
@@ -527,15 +527,15 @@ func TestRecordHandler(t *testing.T) {
 				Type:         "invalid",
 				AssetID:      "record",
 				ExpectStatus: http.StatusNotFound,
-				Setup:        func(rrf *mock.RecordRepositoryFactory) {},
+				Setup:        func(rrf *mocks.RecordRepositoryFactory) {},
 			},
 			{
 				Description:  "(internal) should return an http 500 if the handler fails to construct recordRepository",
 				Type:         typeName,
 				AssetID:      "record",
 				ExpectStatus: http.StatusInternalServerError,
-				Setup: func(rrf *mock.RecordRepositoryFactory) {
-					rrf.On("For", typeName).Return(new(mock.RecordRepository), fmt.Errorf("something bad happened"))
+				Setup: func(rrf *mocks.RecordRepositoryFactory) {
+					rrf.On("For", typeName).Return(new(mocks.RecordRepository), fmt.Errorf("something bad happened"))
 				},
 			},
 			{
@@ -543,8 +543,8 @@ func TestRecordHandler(t *testing.T) {
 				Type:         typeName,
 				AssetID:      "deployment01",
 				ExpectStatus: http.StatusOK,
-				Setup: func(rrf *mock.RecordRepositoryFactory) {
-					recordRepo := new(mock.RecordRepository)
+				Setup: func(rrf *mocks.RecordRepositoryFactory) {
+					recordRepo := new(mocks.RecordRepository)
 					recordRepo.On("GetByID", ctx, "deployment01").Return(deployment01, nil)
 					rrf.On("For", typeName).Return(recordRepo, nil)
 				},
@@ -569,7 +569,7 @@ func TestRecordHandler(t *testing.T) {
 					"name": tc.Type,
 					"id":   tc.AssetID,
 				})
-				recordRepoFac := new(mock.RecordRepositoryFactory)
+				recordRepoFac := new(mocks.RecordRepositoryFactory)
 				if tc.Setup != nil {
 					tc.Setup(recordRepoFac)
 				}

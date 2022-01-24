@@ -14,7 +14,7 @@ func TestUserModel(t *testing.T) {
 	t.Run("should return user domain entitiy", func(t *testing.T) {
 		id := uuid.New()
 		timestamp := time.Now().UTC()
-		um := User{
+		um := UserModel{
 			ID:        id.String(),
 			Email:     "user@odpf.io",
 			Provider:  "columbus",

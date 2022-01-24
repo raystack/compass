@@ -36,7 +36,7 @@ func (handler *LineageHandler) GetLineage(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		handler.logger.Error("error requesting graph", "error", err)
 		status := http.StatusInternalServerError
-		writeJSONError(w, status, http.StatusText(status))
+		WriteJSONError(w, status, http.StatusText(status))
 		return
 	}
 	requestParams := mux.Vars(r)
@@ -48,7 +48,7 @@ func (handler *LineageHandler) GetLineage(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		handler.logger.Error("error querying graph", "query", opts, "error", err)
 		status := http.StatusBadRequest
-		writeJSONError(w, status, err.Error())
+		WriteJSONError(w, status, err.Error())
 		return
 	}
 

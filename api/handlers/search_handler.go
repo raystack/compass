@@ -36,13 +36,13 @@ func (handler *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	cfg, err := handler.buildSearchCfg(r.URL.Query())
 	if err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	results, err := handler.discoveryService.Search(ctx, cfg)
 	if err != nil {
-		handler.logger.Error("error searching assets", "error", err.Error())
-		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		handler.logger.Error("error searching records", "error", err)
+		WriteJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}
 
@@ -53,13 +53,13 @@ func (handler *SearchHandler) Suggest(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	cfg, err := handler.buildSearchCfg(r.URL.Query())
 	if err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	suggestions, err := handler.discoveryService.Suggest(ctx, cfg)
 	if err != nil {
-		handler.logger.Error("error building suggestions", "error", err.Error())
-		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		handler.logger.Error("error building suggestions", "error", err)
+		WriteJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}
 

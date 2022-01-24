@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
+	"github.com/odpf/columbus/api/middleware"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/tag"
@@ -19,6 +20,7 @@ type Config struct {
 	TagService          *tag.Service
 	TagTemplateService  *tag.TemplateService
 	LineageProvider     handlers.LineageProvider
+	MiddlewareConfig    middleware.Config
 
 	// Deprecated
 	DiscoveryService        *discovery.Service
@@ -89,13 +91,14 @@ func RegisterRoutes(router *mux.Router, config Config) {
 	//
 	// This is to allow urn that has "/" to be matched correctly to the route
 	router.UseEncodedPath()
-	router.Use(decodeURLMiddleware(config.Logger))
+	router.Use(middleware.DecodeURL(config.MiddlewareConfig))
 
 	handlerCollection := initHandlers(config)
 
 	router.PathPrefix("/ping").Handler(handlers.NewHeartbeatHandler())
 
 	v1Beta1SubRouter := router.PathPrefix("/v1beta1").Subrouter()
+	v1Beta1SubRouter.Use(middleware.ValidateUser(config.MiddlewareConfig, config.UserService))
 	setupV1Beta1Router(v1Beta1SubRouter, handlerCollection)
 
 	v1SubRouter := router.PathPrefix("/v1").Subrouter()

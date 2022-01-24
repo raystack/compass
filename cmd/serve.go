@@ -15,12 +15,14 @@ import (
 	nrelasticsearch "github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/odpf/columbus/api"
+	"github.com/odpf/columbus/api/middleware"
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/metrics"
 	esStore "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/columbus/tag"
+	"github.com/odpf/columbus/user"
 	"github.com/odpf/salt/log"
 )
 
@@ -64,6 +66,8 @@ func initRouter(
 	}
 
 	pgClient := initPostgres(logger, config)
+
+	// init tag
 	tagRepository, err := postgres.NewTagRepository(pgClient)
 	if err != nil {
 		logger.Fatal("failed to create new tag repository", "error", err)
@@ -73,10 +77,15 @@ func initRouter(
 		logger.Fatal("failed to create new tag template repository", "error", err)
 	}
 	tagTemplateService := tag.NewTemplateService(tagTemplateRepository)
-	tagService := tag.NewService(
-		tagRepository,
-		tagTemplateService,
-	)
+	tagService := tag.NewService(tagRepository, tagTemplateService)
+	// init user
+	userRepository, err := postgres.NewUserRepository(pgClient)
+	if err != nil {
+		logger.Fatal("failed to create new user repository", "error", err)
+	}
+	userService := user.NewService(user.Config{
+		IdentityProviderDefaultName: config.IdentityProviderDefaultName,
+	}, userRepository)
 
 	userRepository, err := postgres.NewUserRepository(pgClient)
 	if err != nil {
@@ -117,6 +126,11 @@ func initRouter(
 		logger.Writer(),
 	))
 
+	middlewareCfg := middleware.Config{
+		Logger:         logger,
+		IdentityHeader: config.IdentityHeader,
+	}
+
 	api.RegisterRoutes(router, api.Config{
 		Logger:                  logger,
 		AssetRepository:         assetRepository,
@@ -127,6 +141,8 @@ func initRouter(
 		LineageProvider:         lineageService,
 		TagService:              tagService,
 		TagTemplateService:      tagTemplateService,
+		UserService:             userService,
+		MiddlewareConfig:        middlewareCfg,
 	})
 
 	return router

@@ -109,6 +109,8 @@ func checkPostgresError(err error) error {
 		switch pgErr.Code {
 		case pgerrcode.UniqueViolation:
 			return fmt.Errorf("%w [%s]", errDuplicateKey, pgErr.Detail)
+		case pgerrcode.CheckViolation:
+			return fmt.Errorf("%w [%s]", errCheckViolation, pgErr.Detail)
 		}
 	}
 	return err

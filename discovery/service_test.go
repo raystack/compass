@@ -7,7 +7,7 @@ import (
 
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/lib/mock"
+	"github.com/odpf/columbus/lib/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,8 +21,8 @@ func TestServiceUpsert(t *testing.T) {
 	t.Run("should return error if factory returns error", func(t *testing.T) {
 		assets := []asset.Asset{sampleRecord}
 
-		rrf := new(mock.RecordRepositoryFactory)
-		rrf.On("For", "table").Return(new(mock.RecordRepository), errors.New("error"))
+		rrf := new(mocks.RecordRepositoryFactory)
+		rrf.On("For", "table").Return(new(mocks.RecordRepository), errors.New("error"))
 		defer rrf.AssertExpectations(t)
 
 		service := discovery.NewService(rrf, nil)
@@ -33,10 +33,10 @@ func TestServiceUpsert(t *testing.T) {
 	t.Run("should return error if repo returns error", func(t *testing.T) {
 		assets := []asset.Asset{sampleRecord}
 
-		rr := new(mock.RecordRepository)
-		rr.On("CreateOrReplaceMany", ctx, assets).Return(errors.New("error"))
+		rr := new(mocks.RecordRepository)
+		rr.On("CreateOrReplaceMany", ctx, records).Return(errors.New("error"))
 		defer rr.AssertExpectations(t)
-		rrf := new(mock.RecordRepositoryFactory)
+		rrf := new(mocks.RecordRepositoryFactory)
 		rrf.On("For", "table").Return(rr, nil)
 		defer rrf.AssertExpectations(t)
 
@@ -48,10 +48,10 @@ func TestServiceUpsert(t *testing.T) {
 	t.Run("should return no error on success", func(t *testing.T) {
 		assets := []asset.Asset{sampleRecord}
 
-		rr := new(mock.RecordRepository)
-		rr.On("CreateOrReplaceMany", ctx, assets).Return(nil)
+		rr := new(mocks.RecordRepository)
+		rr.On("CreateOrReplaceMany", ctx, records).Return(nil)
 		defer rr.AssertExpectations(t)
-		rrf := new(mock.RecordRepositoryFactory)
+		rrf := new(mocks.RecordRepositoryFactory)
 		rrf.On("For", "table").Return(rr, nil)
 		defer rrf.AssertExpectations(t)
 
@@ -66,8 +66,8 @@ func TestServiceDeleteRecord(t *testing.T) {
 	recordURN := "sample-urn"
 
 	t.Run("should return error if factory returns error", func(t *testing.T) {
-		rrf := new(mock.RecordRepositoryFactory)
-		rrf.On("For", "table").Return(new(mock.RecordRepository), errors.New("error"))
+		rrf := new(mocks.RecordRepositoryFactory)
+		rrf.On("For", "table").Return(new(mocks.RecordRepository), errors.New("error"))
 		defer rrf.AssertExpectations(t)
 
 		service := discovery.NewService(rrf, nil)
@@ -76,10 +76,10 @@ func TestServiceDeleteRecord(t *testing.T) {
 	})
 
 	t.Run("should return error if repo returns error", func(t *testing.T) {
-		rr := new(mock.RecordRepository)
+		rr := new(mocks.RecordRepository)
 		rr.On("Delete", ctx, recordURN).Return(errors.New("error"))
 		defer rr.AssertExpectations(t)
-		rrf := new(mock.RecordRepositoryFactory)
+		rrf := new(mocks.RecordRepositoryFactory)
 		rrf.On("For", "table").Return(rr, nil)
 		defer rrf.AssertExpectations(t)
 
@@ -89,10 +89,10 @@ func TestServiceDeleteRecord(t *testing.T) {
 	})
 
 	t.Run("should delete record", func(t *testing.T) {
-		rr := new(mock.RecordRepository)
+		rr := new(mocks.RecordRepository)
 		rr.On("Delete", ctx, recordURN).Return(nil)
 		defer rr.AssertExpectations(t)
-		rrf := new(mock.RecordRepositoryFactory)
+		rrf := new(mocks.RecordRepositoryFactory)
 		rrf.On("For", "table").Return(rr, nil)
 		defer rrf.AssertExpectations(t)
 
@@ -111,7 +111,7 @@ func TestServiceSearch(t *testing.T) {
 		},
 	}
 	t.Run("should return error if searcher fails", func(t *testing.T) {
-		searcher := new(mock.RecordSearcher)
+		searcher := new(mocks.RecordSearcher)
 		searcher.On("Search", ctx, cfg).Return([]discovery.SearchResult{}, errors.New("error"))
 		defer searcher.AssertExpectations(t)
 
@@ -127,7 +127,7 @@ func TestServiceSearch(t *testing.T) {
 			{ID: "record-2"},
 			{ID: "record-3"},
 		}
-		searcher := new(mock.RecordSearcher)
+		searcher := new(mocks.RecordSearcher)
 		searcher.On("Search", ctx, cfg).Return(expected, nil)
 		defer searcher.AssertExpectations(t)
 
@@ -148,7 +148,7 @@ func TestServiceSuggest(t *testing.T) {
 		},
 	}
 	t.Run("should return error if searcher fails", func(t *testing.T) {
-		searcher := new(mock.RecordSearcher)
+		searcher := new(mocks.RecordSearcher)
 		searcher.On("Suggest", ctx, cfg).Return([]string{}, errors.New("error"))
 		defer searcher.AssertExpectations(t)
 
@@ -164,7 +164,7 @@ func TestServiceSuggest(t *testing.T) {
 			"record-2",
 			"record-3",
 		}
-		searcher := new(mock.RecordSearcher)
+		searcher := new(mocks.RecordSearcher)
 		searcher.On("Suggest", ctx, cfg).Return(expected, nil)
 		defer searcher.AssertExpectations(t)
 

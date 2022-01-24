@@ -1,0 +1,45 @@
+package user
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestValidate(t *testing.T) {
+	type testCase struct {
+		Title       string
+		User        *User
+		ExpectError error
+	}
+
+	var testCases = []testCase{
+		{
+			Title:       "should return error no user information if user is nil",
+			User:        nil,
+			ExpectError: ErrNoUserInformation,
+		},
+		{
+			Title:       "should return error invalid if email is empty",
+			User:        &User{Provider: "provider"},
+			ExpectError: InvalidError{Provider: "provider"},
+		},
+		{
+			Title:       "should return error invalid if provider is empty",
+			User:        &User{Email: "email"},
+			ExpectError: InvalidError{Email: "email"},
+		},
+		{
+			Title:       "should return nil if user is valid",
+			User:        &User{Email: "email", Provider: "provider"},
+			ExpectError: nil,
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.Title, func(t *testing.T) {
+
+			err := testCase.User.Validate()
+			assert.Equal(t, testCase.ExpectError, err)
+		})
+	}
+}

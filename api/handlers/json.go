@@ -38,7 +38,7 @@ func internalServerError(w http.ResponseWriter, logger log.Logger, msg string) {
 	writeJSON(w, http.StatusInternalServerError, response)
 }
 
-func writeJSONError(w http.ResponseWriter, status int, msg string) {
+func WriteJSONError(w http.ResponseWriter, status int, msg string) {
 	response := &ErrorResponse{
 		Reason: msg,
 	}

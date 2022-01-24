@@ -6,7 +6,7 @@ import (
 	"github.com/odpf/columbus/user"
 )
 
-type User struct {
+type UserModel struct {
 	ID        string    `db:"id"`
 	Email     string    `db:"email"`
 	Provider  string    `db:"provider"`
@@ -14,7 +14,7 @@ type User struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-func (u *User) toUser() *user.User {
+func (u *UserModel) toUser() *user.User {
 	return &user.User{
 		ID:        u.ID,
 		Email:     u.Email,
@@ -24,8 +24,8 @@ func (u *User) toUser() *user.User {
 	}
 }
 
-func newUserModel(u *user.User) *User {
-	return &User{
+func newUserModel(u *user.User) *UserModel {
+	return &UserModel{
 		ID:        u.ID,
 		Email:     u.Email,
 		Provider:  u.Provider,
