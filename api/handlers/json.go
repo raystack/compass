@@ -3,14 +3,13 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"github.com/odpf/salt/log"
 	"net/http"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 func writeJSON(w http.ResponseWriter, status int, v interface{}) {
+	logger := log.NewLogrus()
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(status)
 	err := json.NewEncoder(w).Encode(v)
@@ -19,15 +18,15 @@ func writeJSON(w http.ResponseWriter, status int, v interface{}) {
 		w.WriteHeader(status)
 		code, err := w.Write([]byte("error encoding response to json"))
 		if err != nil {
-			log.Print(fmt.Sprintf("error writing response with code: %d", code))
+			logger.Info(fmt.Sprintf("error writing response with code: %d", code))
 		}
 	}
 }
 
-func internalServerError(w http.ResponseWriter, logger logrus.FieldLogger, msg string) {
+func internalServerError(w http.ResponseWriter, logger log.Logger, msg string) {
 	ref := time.Now().Unix()
 
-	logger.Errorf("ref (%d): %s", ref, msg)
+	logger.Error("time format", "ref", ref, "msg", msg)
 	response := &ErrorResponse{
 		Reason: fmt.Sprintf(
 			"%s - ref (%d)",

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/odpf/salt/log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -24,6 +25,7 @@ func TestRecordHandler(t *testing.T) {
 	var (
 		ctx      = tmock.AnythingOfType("*context.valueCtx")
 		typeName = record.TypeNameTable.String()
+		logger   = log.NewNoop()
 	)
 
 	tr := new(mock.TypeRepository)
@@ -59,7 +61,7 @@ func TestRecordHandler(t *testing.T) {
 					"name": typeName,
 				})
 
-				handler := handlers.NewRecordHandler(new(mock.Logger), tr, nil, nil)
+				handler := handlers.NewRecordHandler(logger, tr, nil, nil)
 				handler.UpsertBulk(rw, rr)
 
 				expectedStatus := http.StatusBadRequest
@@ -77,7 +79,7 @@ func TestRecordHandler(t *testing.T) {
 				"name": "invalid",
 			})
 
-			handler := handlers.NewRecordHandler(new(mock.Logger), tr, nil, nil)
+			handler := handlers.NewRecordHandler(logger, tr, nil, nil)
 			handler.UpsertBulk(rw, rr)
 
 			expectedStatus := http.StatusNotFound
@@ -107,7 +109,7 @@ func TestRecordHandler(t *testing.T) {
 				defer recordRepoFac.AssertExpectations(t)
 
 				service := discovery.NewService(recordRepoFac, nil)
-				handler := handlers.NewRecordHandler(new(mock.Logger), tr, service, recordRepoFac)
+				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac)
 				handler.UpsertBulk(rw, rr)
 
 				expectedStatus := http.StatusInternalServerError
@@ -152,7 +154,7 @@ func TestRecordHandler(t *testing.T) {
 				defer recordRepoFac.AssertExpectations(t)
 
 				service := discovery.NewService(recordRepoFac, nil)
-				handler := handlers.NewRecordHandler(new(mock.Logger), tr, service, recordRepoFac)
+				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac)
 				handler.UpsertBulk(rw, rr)
 
 				expectedStatus := http.StatusInternalServerError
@@ -196,7 +198,7 @@ func TestRecordHandler(t *testing.T) {
 			defer recordRepoFac.AssertExpectations(t)
 
 			service := discovery.NewService(recordRepoFac, nil)
-			handler := handlers.NewRecordHandler(new(mock.Logger), tr, service, recordRepoFac)
+			handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac)
 			handler.UpsertBulk(rw, rr)
 
 			expectedStatus := http.StatusOK
@@ -285,7 +287,7 @@ func TestRecordHandler(t *testing.T) {
 				defer recordRepo.AssertExpectations(t)
 
 				service := discovery.NewService(recordRepoFactory, nil)
-				handler := handlers.NewRecordHandler(new(mock.Logger), tr, service, recordRepoFactory)
+				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFactory)
 				handler.Delete(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {
@@ -475,7 +477,7 @@ func TestRecordHandler(t *testing.T) {
 				tc.Setup(&tc, rrf)
 
 				service := discovery.NewService(rrf, nil)
-				handler := handlers.NewRecordHandler(new(mock.Logger), tr, service, rrf)
+				handler := handlers.NewRecordHandler(logger, tr, service, rrf)
 				handler.GetByType(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {
@@ -572,7 +574,7 @@ func TestRecordHandler(t *testing.T) {
 				}
 
 				service := discovery.NewService(recordRepoFac, nil)
-				handler := handlers.NewRecordHandler(new(mock.Logger), tr, service, recordRepoFac)
+				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac)
 				handler.GetOneByType(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {

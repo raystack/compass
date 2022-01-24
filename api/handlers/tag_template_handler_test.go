@@ -3,6 +3,7 @@ package handlers_test
 import (
 	"encoding/json"
 	"errors"
+	"github.com/odpf/salt/log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -14,7 +15,6 @@ import (
 	"github.com/odpf/columbus/tag/mocks"
 
 	"github.com/gorilla/mux"
-	libMock "github.com/odpf/columbus/lib/mock"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -24,13 +24,14 @@ type TagTemplateHandlerTestSuite struct {
 	handler            *handlers.TagTemplateHandler
 	templateRepository *mocks.TemplateRepository
 	recorder           *httptest.ResponseRecorder
+	logger             log.Noop
 }
 
 func (s *TagTemplateHandlerTestSuite) TestNewHandler() {
 	s.Run("should return handler and nil if service is not nil", func() {
 		service := &tag.TemplateService{}
 
-		actualHandler := handlers.NewTagTemplateHandler(new(libMock.Logger), service)
+		actualHandler := handlers.NewTagTemplateHandler(&s.logger, service)
 		s.NotNil(actualHandler)
 	})
 }
@@ -39,7 +40,7 @@ func (s *TagTemplateHandlerTestSuite) Setup() {
 	s.templateRepository = new(mocks.TemplateRepository)
 	service := tag.NewTemplateService(s.templateRepository)
 
-	s.handler = handlers.NewTagTemplateHandler(new(libMock.Logger), service)
+	s.handler = handlers.NewTagTemplateHandler(&s.logger, service)
 	s.recorder = httptest.NewRecorder()
 }
 

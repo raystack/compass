@@ -7,9 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/odpf/columbus/discovery"
+	"github.com/odpf/salt/log"
 )
 
 var (
@@ -21,13 +20,13 @@ var (
 
 type SearchHandler struct {
 	discoveryService *discovery.Service
-	log              logrus.FieldLogger
+	logger           log.Logger
 }
 
-func NewSearchHandler(log logrus.FieldLogger, discoveryService *discovery.Service) *SearchHandler {
+func NewSearchHandler(logger log.Logger, discoveryService *discovery.Service) *SearchHandler {
 	handler := &SearchHandler{
 		discoveryService: discoveryService,
-		log:              log,
+		logger:           logger,
 	}
 
 	return handler
@@ -42,7 +41,7 @@ func (handler *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 	}
 	results, err := handler.discoveryService.Search(ctx, cfg)
 	if err != nil {
-		handler.log.Errorf("error searching records: %s", err.Error())
+		handler.logger.Error("error searching records", "error", err.Error())
 		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}
@@ -59,7 +58,7 @@ func (handler *SearchHandler) Suggest(w http.ResponseWriter, r *http.Request) {
 	}
 	suggestions, err := handler.discoveryService.Suggest(ctx, cfg)
 	if err != nil {
-		handler.log.Errorf("error building suggestions: %s", err.Error())
+		handler.logger.Error("error building suggestions", "error", err.Error())
 		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}

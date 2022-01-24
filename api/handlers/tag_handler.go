@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/odpf/salt/log"
 	"net/http"
 
-	"github.com/odpf/columbus/tag"
-	"github.com/sirupsen/logrus"
-
 	"github.com/gorilla/mux"
+	"github.com/odpf/columbus/tag"
 )
 
 var (
@@ -22,11 +21,11 @@ var (
 // TagHandler is handler to manage tag related requests
 type TagHandler struct {
 	service *tag.Service
-	logger  logrus.FieldLogger
+	logger  log.Logger
 }
 
 // NewTagHandler initializes tag handler based on the service
-func NewTagHandler(logger logrus.FieldLogger, service *tag.Service) *TagHandler {
+func NewTagHandler(logger log.Logger, service *tag.Service) *TagHandler {
 	if service == nil {
 		panic("cannot create TagHandler with nil tag.Service")
 	}

@@ -2,23 +2,23 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/odpf/salt/log"
 	"net/http"
 	"strings"
 
 	"github.com/odpf/columbus/record"
-	"github.com/sirupsen/logrus"
 )
 
 // TypeHandler exposes a REST interface to types
 type TypeHandler struct {
 	typeRepo record.TypeRepository
-	log      logrus.FieldLogger
+	logger   log.Logger
 }
 
-func NewTypeHandler(log logrus.FieldLogger, er record.TypeRepository) *TypeHandler {
+func NewTypeHandler(logger log.Logger, er record.TypeRepository) *TypeHandler {
 	h := &TypeHandler{
 		typeRepo: er,
-		log:      log,
+		logger:   logger,
 	}
 
 	return h
@@ -27,7 +27,7 @@ func NewTypeHandler(log logrus.FieldLogger, er record.TypeRepository) *TypeHandl
 func (h *TypeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	typesNameMap, err := h.typeRepo.GetAll(r.Context())
 	if err != nil {
-		internalServerError(w, h.log, "error fetching types")
+		internalServerError(w, h.logger, "error fetching types")
 		return
 	}
 

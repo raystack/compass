@@ -2,12 +2,9 @@ package mock
 
 import (
 	"context"
-	"io/ioutil"
-
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/record"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -118,39 +115,3 @@ func (graph *Graph) Query(cfg lineage.QueryCfg) (lineage.AdjacencyMap, error) {
 	args := graph.Called(cfg)
 	return args.Get(0).(lineage.AdjacencyMap), args.Error(1)
 }
-
-type Logger struct{}
-
-func (l Logger) WithField(key string, value interface{}) *logrus.Entry {
-	return logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard})
-}
-func (l Logger) WithFields(fields logrus.Fields) *logrus.Entry {
-	return logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard})
-}
-func (l Logger) WithError(err error) *logrus.Entry {
-	return logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard})
-}
-func (l Logger) Debugf(format string, args ...interface{})   {}
-func (l Logger) Infof(format string, args ...interface{})    {}
-func (l Logger) Printf(format string, args ...interface{})   {}
-func (l Logger) Warnf(format string, args ...interface{})    {}
-func (l Logger) Warningf(format string, args ...interface{}) {}
-func (l Logger) Errorf(format string, args ...interface{})   {}
-func (l Logger) Fatalf(format string, args ...interface{})   {}
-func (l Logger) Panicf(format string, args ...interface{})   {}
-func (l Logger) Debug(args ...interface{})                   {}
-func (l Logger) Info(args ...interface{})                    {}
-func (l Logger) Print(args ...interface{})                   {}
-func (l Logger) Warn(args ...interface{})                    {}
-func (l Logger) Warning(args ...interface{})                 {}
-func (l Logger) Error(args ...interface{})                   {}
-func (l Logger) Fatal(args ...interface{})                   {}
-func (l Logger) Panic(args ...interface{})                   {}
-func (l Logger) Debugln(args ...interface{})                 {}
-func (l Logger) Infoln(args ...interface{})                  {}
-func (l Logger) Println(args ...interface{})                 {}
-func (l Logger) Warnln(args ...interface{})                  {}
-func (l Logger) Warningln(args ...interface{})               {}
-func (l Logger) Errorln(args ...interface{})                 {}
-func (l Logger) Fatalln(args ...interface{})                 {}
-func (l Logger) Panicln(args ...interface{})                 {}

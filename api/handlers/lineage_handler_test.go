@@ -3,6 +3,7 @@ package handlers_test
 import (
 	"encoding/json"
 	"errors"
+	"github.com/odpf/salt/log"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -17,6 +18,7 @@ import (
 )
 
 func TestLineageHandler(t *testing.T) {
+	logger := log.NewNoop()
 	t.Run("ListLineage", func(t *testing.T) {
 		t.Run("should return 404 if a non-existent type is requested", func(t *testing.T) {
 			graph := new(mock.Graph)
@@ -27,7 +29,7 @@ func TestLineageHandler(t *testing.T) {
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
 
-			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
+			handler := handlers.NewLineageHandler(logger, lp)
 			rr := httptest.NewRequest("GET", "/?filter.type=bqtable", nil)
 			rw := httptest.NewRecorder()
 			handler.ListLineage(rw, rr)
@@ -71,7 +73,7 @@ func TestLineageHandler(t *testing.T) {
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
 
-			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
+			handler := handlers.NewLineageHandler(logger, lp)
 
 			rr := httptest.NewRequest("GET", "/?filter.type=topic&filter.type=table", nil)
 			rw := httptest.NewRecorder()
@@ -101,7 +103,7 @@ func TestLineageHandler(t *testing.T) {
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, errNoGraph)
 
-			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
+			handler := handlers.NewLineageHandler(logger, lp)
 
 			rr := httptest.NewRequest("GET", "/", nil)
 			rw := httptest.NewRecorder()
@@ -134,7 +136,7 @@ func TestLineageHandler(t *testing.T) {
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
 
-			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
+			handler := handlers.NewLineageHandler(logger, lp)
 
 			rr := httptest.NewRequest("GET", "/", nil)
 			rw := httptest.NewRecorder()
@@ -187,7 +189,7 @@ func TestLineageHandler(t *testing.T) {
 			lp := new(mock.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
 
-			handler := handlers.NewLineageHandler(new(mock.Logger), lp)
+			handler := handlers.NewLineageHandler(logger, lp)
 
 			rr := httptest.NewRequest("GET", "/v1/lineage/table/raw", nil)
 			rw := httptest.NewRecorder()

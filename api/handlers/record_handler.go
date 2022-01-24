@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/odpf/salt/log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -11,7 +12,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/record"
-	"github.com/sirupsen/logrus"
 )
 
 // RecordHandler exposes a REST interface to types
@@ -19,11 +19,11 @@ type RecordHandler struct {
 	typeRepository          record.TypeRepository
 	recordRepositoryFactory discovery.RecordRepositoryFactory
 	discoveryService        *discovery.Service
-	logger                  logrus.FieldLogger
+	logger                  log.Logger
 }
 
 func NewRecordHandler(
-	logger logrus.FieldLogger,
+	logger log.Logger,
 	typeRepository record.TypeRepository,
 	discoveryService *discovery.Service,
 	rrf discovery.RecordRepositoryFactory) *RecordHandler {
@@ -54,8 +54,7 @@ func (h *RecordHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	err := h.discoveryService.DeleteRecord(r.Context(), typName.String(), recordID)
 	if err != nil {
-		h.logger.
-			Errorf("error deleting record \"%s\": %v", typName, err)
+		h.logger.Error("error deleting record", "type", typName, "error", err)
 
 		if _, ok := err.(record.ErrNoSuchRecord); ok {
 			statusCode = http.StatusNotFound
@@ -66,7 +65,7 @@ func (h *RecordHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.logger.Infof("deleted record \"%s\" with type \"%s\"", recordID, typName)
+	h.logger.Info("deleted record", "record id", recordID, "type", typName)
 	writeJSON(w, http.StatusNoContent, "success")
 }
 
@@ -89,9 +88,7 @@ func (h *RecordHandler) UpsertBulk(w http.ResponseWriter, r *http.Request) {
 	var failedRecords = make(map[int]string)
 	for idx, record := range records {
 		if err := h.validateRecord(record); err != nil {
-			h.logger.WithField("type", typName).
-				WithField("record", record).
-				Errorf("error validating record: %v", err)
+			h.logger.Error("error validating record", "type", typName, "record", record, "error", err)
 			failedRecords[idx] = err.Error()
 		}
 	}
@@ -101,14 +98,12 @@ func (h *RecordHandler) UpsertBulk(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.discoveryService.Upsert(r.Context(), typName.String(), records); err != nil {
-		h.logger.WithField("type", typName).
-			Errorf("error creating/updating records: %v", err)
-
+		h.logger.Error("error creating/updating records", "type", typName, "error", err)
 		status := http.StatusInternalServerError
 		writeJSONError(w, status, http.StatusText(status))
 		return
 	}
-	h.logger.Infof("created/updated %d records for %q type", len(records), typName)
+	h.logger.Info("created/updated records", "record count", len(records), "type", typName)
 	writeJSON(w, http.StatusOK, StatusResponse{Status: "success"})
 }
 
@@ -123,8 +118,7 @@ func (h *RecordHandler) GetByType(w http.ResponseWriter, r *http.Request) {
 
 	recordRepo, err := h.recordRepositoryFactory.For(typName.String())
 	if err != nil {
-		h.logger.WithField("type", typName).
-			Errorf("error constructing record repository: %v", err)
+		h.logger.Error("error constructing record repository", "type", typName, "error", err)
 		status, message := h.responseStatusForError(err)
 		writeJSONError(w, status, message)
 		return
@@ -137,8 +131,7 @@ func (h *RecordHandler) GetByType(w http.ResponseWriter, r *http.Request) {
 
 	recordList, err := recordRepo.GetAll(r.Context(), getCfg)
 	if err != nil {
-		h.logger.WithField("type", typName).
-			Errorf("error fetching records: GetAll: %v", err)
+		h.logger.Error("error fetching records: GetAll", "type", typName, "error", err)
 		status, message := h.responseStatusForError(err)
 		writeJSONError(w, status, message)
 		return
@@ -166,9 +159,7 @@ func (h *RecordHandler) GetOneByType(w http.ResponseWriter, r *http.Request) {
 
 	recordRepo, err := h.recordRepositoryFactory.For(typName.String())
 	if err != nil {
-		h.logger.WithField("type", typName).
-			Errorf("internal: error construing record repository: %v", err)
-
+		h.logger.Error("internal: error construing record repository", "type", typName, "error", err)
 		status := http.StatusInternalServerError
 		writeJSONError(w, status, http.StatusText(status))
 		return
@@ -176,10 +167,7 @@ func (h *RecordHandler) GetOneByType(w http.ResponseWriter, r *http.Request) {
 
 	record, err := recordRepo.GetByID(r.Context(), recordID)
 	if err != nil {
-		h.logger.WithField("type", typName).
-			WithField("record", recordID).
-			Errorf("error fetching record: %v", err)
-
+		h.logger.Error("error fetching record", "type", typName, "record id", recordID, "error", err)
 		status, message := h.responseStatusForError(err)
 		writeJSONError(w, status, message)
 		return

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/odpf/salt/log"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -71,10 +72,11 @@ func TestTypeHandler(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.Description, func(t *testing.T) {
 				er := new(mock.TypeRepository)
+				logger := log.NewNoop()
 				defer er.AssertExpectations(t)
 				tc.Setup(&tc, er)
 
-				handler := handlers.NewTypeHandler(new(mock.Logger), er)
+				handler := handlers.NewTypeHandler(logger, er)
 				rr := httptest.NewRequest("GET", "/", nil)
 				rw := httptest.NewRecorder()
 

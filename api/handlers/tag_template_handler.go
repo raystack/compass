@@ -4,22 +4,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/odpf/salt/log"
 	"net/http"
 
-	"github.com/odpf/columbus/tag"
-	"github.com/sirupsen/logrus"
-
 	"github.com/gorilla/mux"
+	"github.com/odpf/columbus/tag"
 )
 
 // TagTemplateHandler is handler to manage template related requests
 type TagTemplateHandler struct {
 	service *tag.TemplateService
-	logger  logrus.FieldLogger
+	logger  log.Logger
 }
 
 // NewTagTemplateHandler initializes template handler based on the service
-func NewTagTemplateHandler(logger logrus.FieldLogger, service *tag.TemplateService) *TagTemplateHandler {
+func NewTagTemplateHandler(logger log.Logger, service *tag.TemplateService) *TagTemplateHandler {
 	if service == nil {
 		panic("template service is nil")
 	}

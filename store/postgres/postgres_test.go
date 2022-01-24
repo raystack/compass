@@ -89,7 +89,7 @@ func newTestClient(logger *logrus.Logger) (*postgres.Client, *dockertest.Pool, *
 
 	var pgClient *postgres.Client
 	if err = pool.Retry(func() error {
-		pgClient, err = postgres.NewClient(logger, pgConfig)
+		pgClient, err = postgres.NewClient(pgConfig)
 		if err != nil {
 			return err
 		}
