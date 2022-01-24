@@ -1,12 +1,9 @@
 package handlers
 
 import (
-	"fmt"
+	"github.com/odpf/columbus/record"
 	"github.com/odpf/salt/log"
 	"net/http"
-	"strings"
-
-	"github.com/odpf/columbus/record"
 )
 
 // TypeHandler exposes a REST interface to types
