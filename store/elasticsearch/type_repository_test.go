@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/odpf/columbus/record"
+	"github.com/odpf/columbus/asset"
 	store "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,11 +19,11 @@ func TestTypeRepository(t *testing.T) {
 			counts, err := repo.GetAll(ctx)
 			require.NoError(t, err)
 
-			assert.Equal(t, map[record.TypeName]int{}, counts)
+			assert.Equal(t, map[asset.Type]int{}, counts)
 		})
 
 		t.Run("should return map with 0 count if type has not been populated yet", func(t *testing.T) {
-			typ := record.TypeNameTable
+			typ := asset.TypeTable
 			cli := esTestServer.NewClient()
 
 			err := store.Migrate(ctx, cli, typ)
@@ -33,26 +33,26 @@ func TestTypeRepository(t *testing.T) {
 			counts, err := repo.GetAll(ctx)
 			require.NoError(t, err)
 
-			expected := map[record.TypeName]int{
-				record.TypeNameTable: 0,
+			expected := map[asset.Type]int{
+				asset.TypeTable: 0,
 			}
 			assert.Equal(t, expected, counts)
 		})
 
-		t.Run("should return maps of record count with valid type as its key", func(t *testing.T) {
-			typName := record.TypeNameDashboard
-			records := []record.Record{
-				{Urn: "record-1", Name: "record-1"},
-				{Urn: "record-2", Name: "record-2"},
-				{Urn: "record-3", Name: "record-3"},
+		t.Run("should return maps of asset count with valid type as its key", func(t *testing.T) {
+			typName := asset.TypeDashboard
+			assets := []asset.Asset{
+				{URN: "asset-1", Name: "asset-1"},
+				{URN: "asset-2", Name: "asset-2"},
+				{URN: "asset-3", Name: "asset-3"},
 			}
 
 			esClient := esTestServer.NewClient()
-			err := store.Migrate(ctx, esClient, record.TypeNameDashboard)
+			err := store.Migrate(ctx, esClient, asset.TypeDashboard)
 			require.NoError(t, err)
 
-			invalidTypeName := "invalid-type"
-			err = store.Migrate(ctx, esClient, record.TypeName(invalidTypeName))
+			invalidType := "invalid-type"
+			err = store.Migrate(ctx, esClient, asset.Type(invalidType))
 			require.NoError(t, err)
 
 			repo := store.NewTypeRepository(esClient)
@@ -62,19 +62,19 @@ func TestTypeRepository(t *testing.T) {
 			rrf := store.NewRecordRepositoryFactory(esClient)
 			rr, err := rrf.For(typName.String())
 			require.NoError(t, err)
-			err = rr.CreateOrReplaceMany(ctx, records)
+			err = rr.CreateOrReplaceMany(ctx, assets)
 			require.NoError(t, err)
 
-			rr, err = rrf.For(invalidTypeName)
+			rr, err = rrf.For(invalidType)
 			require.NoError(t, err)
-			err = rr.CreateOrReplaceMany(ctx, records)
+			err = rr.CreateOrReplaceMany(ctx, assets)
 			require.NoError(t, err)
 
 			counts, err = repo.GetAll(ctx)
 			require.NoError(t, err)
 
-			expected := map[record.TypeName]int{
-				record.TypeNameDashboard: len(records),
+			expected := map[asset.Type]int{
+				asset.TypeDashboard: len(assets),
 			}
 			assert.Equal(t, expected, counts)
 		})

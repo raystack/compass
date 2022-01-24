@@ -19,13 +19,15 @@ func setupV1Beta1Router(router *mux.Router, handlers *Handlers) *mux.Router {
 		Methods(http.MethodGet).
 		HandlerFunc(handlers.Search.Suggest)
 
+	// Deprecated: This route will be removed in the future.
+	// Use /lineage/{id} instead
 	router.PathPrefix("/lineage/{type}/{id}").
 		Methods(http.MethodGet).
 		HandlerFunc(handlers.Lineage.GetLineage)
 
-	router.PathPrefix("/lineage").
+	router.PathPrefix("/lineage/{id}").
 		Methods(http.MethodGet).
-		HandlerFunc(handlers.Lineage.ListLineage)
+		HandlerFunc(handlers.Lineage.GetLineage)
 
 	return router
 }

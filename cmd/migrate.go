@@ -3,10 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/odpf/salt/log"
 	"time"
 
-	"github.com/odpf/columbus/record"
+	"github.com/odpf/salt/log"
+
+	"github.com/odpf/columbus/asset"
 	esStore "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/pkg/errors"
@@ -68,16 +69,16 @@ func migratePostgres(logger log.Logger) (err error) {
 func migrateElasticsearch(logger log.Logger) (err error) {
 	logger.Info("Initiating ES client...")
 	esClient := initElasticsearch(config, logger)
-	for _, supportedTypeName := range record.AllSupportedTypes {
-		logger.Info("Migrating type\n", "type", supportedTypeName)
+	for _, supportedType := range asset.AllSupportedTypes {
+		logger.Info("Migrating type\n", "type", supportedType)
 		ctx, cancel := context.WithTimeout(context.Background(), esMigrationTimeout)
 		defer cancel()
-		err = esStore.Migrate(ctx, esClient, supportedTypeName)
+		err = esStore.Migrate(ctx, esClient, supportedType)
 		if err != nil {
-			err = errors.Wrapf(err, "error creating/replacing type: %q", supportedTypeName)
+			err = errors.Wrapf(err, "error creating/replacing type: %q", supportedType)
 			return
 		}
-		logger.Info("created/updated type\n", "type", supportedTypeName)
+		logger.Info("created/updated type\n", "type", supportedType)
 	}
 	return
 }

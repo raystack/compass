@@ -1,13 +1,13 @@
 package api
 
 import (
-	"github.com/odpf/salt/log"
 	"net/http"
+
+	"github.com/odpf/salt/log"
 
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/record"
 	"github.com/odpf/columbus/tag"
 )
 
@@ -15,7 +15,7 @@ type Config struct {
 	Logger                  log.Logger
 	TagService              *tag.Service
 	TagTemplateService      *tag.TemplateService
-	TypeRepository          record.TypeRepository
+	TypeRepository          discovery.TypeRepository
 	RecordRepositoryFactory discovery.RecordRepositoryFactory
 	DiscoveryService        *discovery.Service
 	LineageProvider         handlers.LineageProvider

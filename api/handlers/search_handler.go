@@ -41,7 +41,7 @@ func (handler *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 	}
 	results, err := handler.discoveryService.Search(ctx, cfg)
 	if err != nil {
-		handler.logger.Error("error searching records", "error", err.Error())
+		handler.logger.Error("error searching assets", "error", err.Error())
 		writeJSONError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}

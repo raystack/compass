@@ -10,7 +10,7 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
-	"github.com/odpf/columbus/record"
+	"github.com/odpf/columbus/asset"
 	"github.com/olivere/elastic/v7"
 	"github.com/pkg/errors"
 )
@@ -29,8 +29,8 @@ type searchQuery struct {
 }
 
 type searchHit struct {
-	Index  string        `json:"_index"`
-	Source record.Record `json:"_source"`
+	Index  string      `json:"_index"`
+	Source asset.Asset `json:"_source"`
 }
 
 type searchResponse struct {
@@ -89,25 +89,21 @@ type Client struct {
 	*elasticsearch.Client
 }
 
-func Migrate(ctx context.Context, cli *elasticsearch.Client, recordTypeName record.TypeName) error {
-	if isReservedName(recordTypeName.String()) {
-		return record.ErrReservedTypeName{TypeName: recordTypeName.String()}
-	}
-
+func Migrate(ctx context.Context, cli *elasticsearch.Client, recordType asset.Type) error {
 	// checking for the existence of index before adding the metadata entry
-	idxExists, err := indexExists(ctx, cli, recordTypeName.String())
+	idxExists, err := indexExists(ctx, cli, recordType.String())
 	if err != nil {
 		return errors.Wrap(err, "error checking index existance")
 	}
 
 	// update/create the index
 	if idxExists {
-		err = updateIdx(ctx, cli, recordTypeName)
+		err = updateIdx(ctx, cli, recordType)
 		if err != nil {
 			err = errors.Wrap(err, "error updating index")
 		}
 	} else {
-		err = createIdx(ctx, cli, recordTypeName)
+		err = createIdx(ctx, cli, recordType)
 		if err != nil {
 			err = errors.Wrap(err, "error creating index")
 		}
@@ -116,10 +112,10 @@ func Migrate(ctx context.Context, cli *elasticsearch.Client, recordTypeName reco
 	return err
 }
 
-func createIdx(ctx context.Context, cli *elasticsearch.Client, recordTypeName record.TypeName) error {
+func createIdx(ctx context.Context, cli *elasticsearch.Client, recordType asset.Type) error {
 	indexSettings := buildTypeIndexSettings()
 	res, err := cli.Indices.Create(
-		recordTypeName.String(),
+		recordType.String(),
 		cli.Indices.Create.WithBody(strings.NewReader(indexSettings)),
 		cli.Indices.Create.WithContext(ctx),
 	)
@@ -128,15 +124,15 @@ func createIdx(ctx context.Context, cli *elasticsearch.Client, recordTypeName re
 	}
 	defer res.Body.Close()
 	if res.IsError() {
-		return fmt.Errorf("error creating index %q: %s", recordTypeName, errorReasonFromResponse(res))
+		return fmt.Errorf("error creating index %q: %s", recordType, errorReasonFromResponse(res))
 	}
 	return nil
 }
 
-func updateIdx(ctx context.Context, cli *elasticsearch.Client, recordTypeName record.TypeName) error {
+func updateIdx(ctx context.Context, cli *elasticsearch.Client, recordType asset.Type) error {
 	res, err := cli.Indices.PutMapping(
 		strings.NewReader(typeIndexMapping),
-		cli.Indices.PutMapping.WithIndex(recordTypeName.String()),
+		cli.Indices.PutMapping.WithIndex(recordType.String()),
 		cli.Indices.PutMapping.WithContext(ctx),
 	)
 	if err != nil {
@@ -144,7 +140,7 @@ func updateIdx(ctx context.Context, cli *elasticsearch.Client, recordTypeName re
 	}
 	defer res.Body.Close()
 	if res.IsError() {
-		return fmt.Errorf("error updating index %q: %s", recordTypeName, errorReasonFromResponse(res))
+		return fmt.Errorf("error updating index %q: %s", recordType, errorReasonFromResponse(res))
 	}
 	return nil
 }

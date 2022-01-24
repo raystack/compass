@@ -4,14 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lib/set"
-	"github.com/odpf/columbus/record"
 )
 
 // Builder encapsulates the algorithm for building a graph
 type Builder interface {
-	Build(context.Context, record.TypeRepository, discovery.RecordRepositoryFactory) (Graph, error)
+	Build(context.Context, Repository) (Graph, error)
 }
 
 var DefaultBuilder = defaultBuilder{}
@@ -22,7 +20,7 @@ type defaultBuilder struct{}
 // The graph construction algorithm works roughly as follows:
 // Given,
 //   AT = collection of all types
-//   ER = collection of records belonging to a particular type
+//   ER = collection of assets belonging to a particular type
 // We can express the algorithm as below (pseudo-code):
 //   graph = {}
 //   for type in AT
@@ -35,109 +33,91 @@ type defaultBuilder struct{}
 // Explanation:
 // We process every record once. If it has a proper lineage metadata configured, it will
 // be used for obtaining the IDs of related resources. These are called internal or forward-refs. Once all document-refs are resolved
-// and all records have been added to the graph, we follow these links and check if the referred entry has a
+// and all assets have been added to the graph, we follow these links and check if the referred entry has a
 // corresponding entry pointing back (called an external or back-ref). If not we add it.
 // If any reference'd record is not found in the graph, the algorithm gives up and looks at the next related entry.
 // This has the effect of phantom references in graph: A resource may refer another resource in the graph, but that resource
 // may not be available in the graph
-func (builder defaultBuilder) Build(ctx context.Context, tr record.TypeRepository, rrf discovery.RecordRepositoryFactory) (Graph, error) {
-	typs, err := tr.GetAll(ctx)
+func (builder defaultBuilder) Build(ctx context.Context, repo Repository) (Graph, error) {
+	edges, err := repo.GetEdges(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error loading type metadata: %w", err)
+		return nil, fmt.Errorf("error getting edges: %w", err)
 	}
 
 	var graph = make(AdjacencyMap)
-	for typName := range typs {
-		if err := builder.populateTypeRecords(ctx, graph, typName.String(), rrf); err != nil {
-			return nil, fmt.Errorf("error parsing type records: %w", err)
-		}
-	}
+	builder.populateGraph(ctx, graph, edges)
 
-	builder.addBackRefs(graph)
 	return NewCachedGraph(NewInMemoryGraph(graph)), nil
 }
 
-// load the records for a type onto the graph
+// load the assets for a type onto the graph
 // if record has a valid "lineage" field
 // it will be used for obtaining the values for downstreams and upstreams.
-func (builder defaultBuilder) populateTypeRecords(ctx context.Context, graph AdjacencyMap, typName string, rrf discovery.RecordRepositoryFactory) error {
-	recordRepository, err := rrf.For(typName)
-	if err != nil {
-		return fmt.Errorf("error obtaing record repository: %w", err)
+func (builder defaultBuilder) populateGraph(ctx context.Context, graph AdjacencyMap, edges []Edge) {
+	nodes := builder.buildNodes(edges)
+	for _, node := range nodes {
+		builder.setEntry(graph, node)
 	}
-
-	recordIter, err := recordRepository.GetAllIterator(ctx)
-	if err != nil {
-		return fmt.Errorf("error getting record iterator: %w", err)
-	}
-
-	defer recordIter.Close()
-	for recordIter.Scan() {
-		for _, record := range recordIter.Next() {
-			builder.addRecord(graph, typName, record)
-		}
-	}
-	return nil
 }
 
-// add the corresponding records to graph.
+func (builder defaultBuilder) buildNodes(edges []Edge) []Node {
+	nodes := []Node{}
+	nodesIndex := map[string]int{}
+	for _, edge := range edges {
+		sourceIndex, exists := nodesIndex[edge.SourceID]
+		if !exists {
+			newSource := edge.Source
+			newSource.ID = edge.SourceID
+			nodes = append(nodes, newSource)
+			sourceIndex = len(nodes) - 1
+			nodesIndex[newSource.ID] = sourceIndex
+		}
+		targetIndex, exists := nodesIndex[edge.TargetID]
+		if !exists {
+			newTarget := edge.Target
+			newTarget.ID = edge.TargetID
+			nodes = append(nodes, newTarget)
+			targetIndex = len(nodes) - 1
+			nodesIndex[newTarget.ID] = targetIndex
+		}
+
+		source := &nodes[sourceIndex]
+		target := &nodes[targetIndex]
+
+		source.Downstreams = append(source.Downstreams, *target)
+		target.Upstreams = append(target.Upstreams, *source)
+	}
+
+	return nodes
+}
+
+// add the corresponding assets to graph.
 // Uses lineageProcessor to obtain information about upstreams/downstreams
-func (builder defaultBuilder) addRecord(graph AdjacencyMap, typeName string, record record.Record) {
+func (builder defaultBuilder) setEntry(graph AdjacencyMap, node Node) {
 	entry := AdjacencyEntry{
-		Type:        typeName,
-		URN:         record.Urn,
-		Service:     record.Service,
-		Downstreams: builder.buildAdjacents(record, dataflowDirDownstream),
-		Upstreams:   builder.buildAdjacents(record, dataflowDirUpstream),
+		ID:          node.ID,
+		URN:         node.URN,
+		Type:        node.Type.String(),
+		Service:     node.Service,
+		Downstreams: builder.buildAdjacents(node, dataflowDirDownstream),
+		Upstreams:   builder.buildAdjacents(node, dataflowDirUpstream),
 	}
 
-	graph[entry.ID()] = entry
+	graph[entry.ID] = entry
 }
 
-// Follow and validate all references, adding back-refs where needed
-func (builder defaultBuilder) addBackRefs(graph AdjacencyMap) {
-	for _, entry := range graph {
-		// for {upstream, downstream}, find adjacents and
-		// validate refs on both nodes. If any node is missing
-		// a corresponding entry, add it.
-
-		entryID := entry.ID()
-		for upstream := range entry.Upstreams {
-			builder.addBackRef(graph, entryID, upstream, dataflowDirDownstream)
-		}
-		for downstream := range entry.Downstreams {
-			builder.addBackRef(graph, entryID, downstream, dataflowDirUpstream)
-		}
-	}
-}
-
-func (builder defaultBuilder) addBackRef(graph AdjacencyMap, refID string, backRefID string, dir dataflowDir) {
-	backRefEntry, exists := graph[backRefID]
-	if !exists {
-		return
-	}
-
-	adjacents := backRefEntry.getAdjacents(dir)
-	if _, exists := adjacents[refID]; !exists {
-		adjacents.Add(refID)
-	}
-
-	return
-}
-
-func (builder defaultBuilder) buildAdjacents(r record.Record, dir dataflowDir) (adjacents set.StringSet) {
+func (builder defaultBuilder) buildAdjacents(node Node, dir dataflowDir) (adjacents set.StringSet) {
 	adjacents = set.NewStringSet()
 
-	var lineageRecords []record.LineageRecord
+	var nodes []Node
 	if dir == dataflowDirUpstream {
-		lineageRecords = r.Upstreams
+		nodes = node.Upstreams
 	} else {
-		lineageRecords = r.Downstreams
+		nodes = node.Downstreams
 	}
 
-	for _, lr := range lineageRecords {
-		urnWithType := fmt.Sprintf("%s/%s", lr.Type, lr.Urn)
-		adjacents.Add(urnWithType)
+	for _, n := range nodes {
+		adjacents.Add(n.ID)
 	}
 
 	return

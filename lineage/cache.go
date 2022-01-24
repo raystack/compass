@@ -2,8 +2,6 @@ package lineage
 
 import (
 	"fmt"
-	"sort"
-	"strings"
 	"sync"
 )
 
@@ -37,15 +35,12 @@ func (graph *CachedGraph) Query(cfg QueryCfg) (AdjacencyMap, error) {
 // a hashing function for obtaining the idtype of a queryCfg object
 // subject to change in the future.
 func (graph *CachedGraph) hashCfg(cfg QueryCfg) string {
-	var values []string
-	copy(values, cfg.TypeWhitelist)
-	sort.Strings(values)
-	values = append(values, cfg.Root+"%")
+	var collapseFlag string = ""
 	if cfg.Collapse {
-		values = append(values, "@")
+		collapseFlag = "@"
 	}
 
-	return strings.Join(values, ",")
+	return fmt.Sprintf("%s%s%s", cfg.Root, "%", collapseFlag)
 }
 
 func NewCachedGraph(g Graph) *CachedGraph {

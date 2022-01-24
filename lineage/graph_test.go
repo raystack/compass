@@ -9,30 +9,25 @@ import (
 
 	"github.com/odpf/columbus/lib/set"
 	"github.com/odpf/columbus/lineage"
-	"github.com/odpf/columbus/record"
 )
 
 func TestInMemoryGraph(t *testing.T) {
 	var sampleGraph = lineage.AdjacencyMap{
-		"type_a/instance_a": lineage.AdjacencyEntry{
-			Type:        "type_a",
-			URN:         "instance_a",
-			Downstreams: set.NewStringSet("type_b/instance_z"),
+		"node-1": lineage.AdjacencyEntry{
+			ID:          "node-1",
+			Downstreams: set.NewStringSet("node-2"),
 		},
-		"type_a/instance_b": lineage.AdjacencyEntry{
-			Type:      "type_a",
-			URN:       "instance_b",
-			Upstreams: set.NewStringSet("type_b/instance_z"),
+		"node-3": lineage.AdjacencyEntry{
+			ID:        "node-3",
+			Upstreams: set.NewStringSet("node-2"),
 		},
-		"type_b/instance_z": lineage.AdjacencyEntry{
-			Type:        "type_b",
-			URN:         "instance_z",
-			Upstreams:   set.NewStringSet("type_a/instance_a"),
-			Downstreams: set.NewStringSet("type_a/instance_b"),
+		"node-2": lineage.AdjacencyEntry{
+			ID:          "node-2",
+			Upstreams:   set.NewStringSet("node-1"),
+			Downstreams: set.NewStringSet("node-3"),
 		},
-		"isolated_type/isolated_record": lineage.AdjacencyEntry{
-			Type: "isolated_type",
-			URN:  "isolated_record",
+		"node-99": lineage.AdjacencyEntry{
+			ID: "node-99",
 		},
 	}
 	t.Run("Query", func(t *testing.T) {
@@ -51,67 +46,24 @@ func TestInMemoryGraph(t *testing.T) {
 				ExpectGraph: sampleGraph,
 			},
 			{
-				Description: "filter by type",
-				Supergraph:  sampleGraph,
-				ExpectGraph: lineage.AdjacencyMap{
-					"type_b/instance_z": sampleGraph["type_b/instance_z"],
-				},
-				Cfg: lineage.QueryCfg{
-					TypeWhitelist: []string{"type_b"},
-				},
-			},
-			{
-				Description: "filter by type error when type not known",
-				Supergraph:  sampleGraph,
-				Cfg: lineage.QueryCfg{
-					TypeWhitelist: []string{"type_c"},
-				},
-				Err: record.ErrNoSuchType{TypeName: "type_c"},
-			},
-			{
-				Description: "collapse relationships",
-				Supergraph:  sampleGraph,
-				Cfg: lineage.QueryCfg{
-					TypeWhitelist: []string{"type_a"},
-					Collapse:      true,
-				},
-				ExpectGraph: lineage.AdjacencyMap{
-					"type_a/instance_a": lineage.AdjacencyEntry{
-						Type:        "type_a",
-						URN:         "instance_a",
-						Downstreams: set.NewStringSet("type_a/instance_b"),
-						Upstreams:   set.NewStringSet(),
-					},
-					"type_a/instance_b": lineage.AdjacencyEntry{
-						Type:        "type_a",
-						URN:         "instance_b",
-						Upstreams:   set.NewStringSet("type_a/instance_a"),
-						Downstreams: set.NewStringSet(),
-					},
-				},
-			},
-			{
 				Description: "build lineage from Root",
 				Supergraph:  sampleGraph,
 				Cfg: lineage.QueryCfg{
-					Root: "type_a/instance_a",
+					Root: "node-1",
 				},
 				ExpectGraph: lineage.AdjacencyMap{
-					"type_a/instance_a": lineage.AdjacencyEntry{
-						Type:        "type_a",
-						URN:         "instance_a",
-						Downstreams: set.NewStringSet("type_b/instance_z"),
+					"node-1": lineage.AdjacencyEntry{
+						ID:          "node-1",
+						Downstreams: set.NewStringSet("node-2"),
 					},
-					"type_a/instance_b": lineage.AdjacencyEntry{
-						Type:      "type_a",
-						URN:       "instance_b",
-						Upstreams: set.NewStringSet("type_b/instance_z"),
+					"node-3": lineage.AdjacencyEntry{
+						ID:        "node-3",
+						Upstreams: set.NewStringSet("node-2"),
 					},
-					"type_b/instance_z": lineage.AdjacencyEntry{
-						Type:        "type_b",
-						URN:         "instance_z",
-						Upstreams:   set.NewStringSet("type_a/instance_a"),
-						Downstreams: set.NewStringSet("type_a/instance_b"),
+					"node-2": lineage.AdjacencyEntry{
+						ID:          "node-2",
+						Upstreams:   set.NewStringSet("node-1"),
+						Downstreams: set.NewStringSet("node-3"),
 					},
 				},
 			},

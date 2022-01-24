@@ -7,17 +7,17 @@ import (
 	"strconv"
 
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/odpf/columbus/record"
+	"github.com/odpf/columbus/asset"
 	"github.com/pkg/errors"
 )
 
-// TypeRepository is an implementation of record.TypeRepository
+// TypeRepository is an implementation of discovery.TypeRepository
 // that uses elasticsearch as a backing store
 type TypeRepository struct {
 	cli *elasticsearch.Client
 }
 
-func (repo *TypeRepository) GetAll(ctx context.Context) (map[record.TypeName]int, error) {
+func (repo *TypeRepository) GetAll(ctx context.Context) (map[asset.Type]int, error) {
 	resp, err := repo.cli.Cat.Indices(
 		repo.cli.Cat.Indices.WithFormat("json"),
 		repo.cli.Cat.Indices.WithContext(ctx),
@@ -35,13 +35,13 @@ func (repo *TypeRepository) GetAll(ctx context.Context) (map[record.TypeName]int
 		return nil, errors.Wrap(err, "error decoding es response")
 	}
 
-	results := map[record.TypeName]int{}
+	results := map[asset.Type]int{}
 	for _, index := range indices {
 		count, err := strconv.Atoi(index.DocsCount)
 		if err != nil {
 			return results, errors.Wrap(err, "error converting docs count to a number")
 		}
-		typName := record.TypeName(index.Index)
+		typName := asset.Type(index.Index)
 		if err := typName.IsValid(); err != nil {
 			continue
 		}

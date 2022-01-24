@@ -63,20 +63,6 @@ func initRouter(
 		logger.Fatal("error creating searcher", "error", err)
 	}
 
-	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
-		RefreshInterval:    config.LineageRefreshIntervalStr,
-		MetricsMonitor:     statsdMonitor,
-		PerformanceMonitor: nrMonitor,
-	})
-	if err != nil {
-		logger.Fatal("failed to create service", "error", err)
-	}
-	// build lineage asynchronously
-	go func() {
-		lineageService.ForceBuild()
-		logger.Info("lineage build complete")
-	}()
-
 	pgClient := initPostgres(logger, config)
 	tagRepository, err := postgres.NewTagRepository(pgClient)
 	if err != nil {
@@ -91,6 +77,24 @@ func initRouter(
 		tagRepository,
 		tagTemplateService,
 	)
+
+	lineageRepo, err := postgres.NewLineageRepository(pgClient)
+	if err != nil {
+		logger.Fatal("failed to create new lineage repository", "error", err)
+	}
+	lineageService, err := lineage.NewService(lineageRepo, lineage.Config{
+		RefreshInterval:    config.LineageRefreshIntervalStr,
+		MetricsMonitor:     statsdMonitor,
+		PerformanceMonitor: nrMonitor,
+	})
+	if err != nil {
+		logger.Fatal("failed to create service", "error", err)
+	}
+	// build lineage asynchronously
+	go func() {
+		lineageService.ForceBuild()
+		logger.Info("lineage build complete")
+	}()
 
 	router := mux.NewRouter()
 	if nrMonitor != nil {

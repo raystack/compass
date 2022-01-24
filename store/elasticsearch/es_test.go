@@ -11,7 +11,7 @@ import (
 
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/odpf/columbus/record"
+	"github.com/odpf/columbus/asset"
 	store "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,45 +21,45 @@ func TestElasticsearch(t *testing.T) {
 	t.Run("CreateOrReplace", func(t *testing.T) {
 		var testCases = []struct {
 			Title      string
-			TypeName   record.TypeName
+			Type       asset.Type
 			ShouldFail bool
-			Validate   func(cli *elasticsearch.Client, recordTypeName record.TypeName) error
+			Validate   func(cli *elasticsearch.Client, recordType asset.Type) error
 		}{
 			{
 				Title:      "should successfully write the document to elasticsearch",
-				TypeName:   daggerType,
+				Type:       daggerType,
 				ShouldFail: false,
 			},
 			{
 				Title:      "should create the index ${recordType.Name} in elasticsearch",
-				TypeName:   daggerType,
+				Type:       daggerType,
 				ShouldFail: false,
-				Validate: func(cli *elasticsearch.Client, recordTypeName record.TypeName) error {
+				Validate: func(cli *elasticsearch.Client, recordType asset.Type) error {
 					idxRequest := &esapi.IndicesExistsRequest{
 						Index: []string{
-							recordTypeName.String(),
+							recordType.String(),
 						},
 					}
 					res, err := idxRequest.Do(context.Background(), cli)
 					if err != nil {
-						return fmt.Errorf("failed to query elasticsearch for index %q: %v", recordTypeName, err)
+						return fmt.Errorf("failed to query elasticsearch for index %q: %v", recordType, err)
 					}
 					defer res.Body.Close()
 					if res.IsError() {
-						return fmt.Errorf("elasticsearch: error querying existence of %q index: %s", recordTypeName, res.Status())
+						return fmt.Errorf("elasticsearch: error querying existence of %q index: %s", recordType, res.Status())
 					}
 					return nil
 				},
 			},
 			{
 				Title:      "should not accept any type that has the same name as the search index",
-				TypeName:   record.TypeName("universe"), // defaultSearchIndex
+				Type:       asset.Type("universe"), // defaultSearchIndex
 				ShouldFail: true,
 			},
 			{
-				Title:    "should alias the type to the search index",
-				TypeName: daggerType,
-				Validate: func(cli *elasticsearch.Client, recordTypeName record.TypeName) error {
+				Title: "should alias the type to the search index",
+				Type:  daggerType,
+				Validate: func(cli *elasticsearch.Client, recordType asset.Type) error {
 					searchIndex := "universe"
 					req, err := http.NewRequest("GET", "/_alias/"+searchIndex, nil)
 					if err != nil {
@@ -76,16 +76,16 @@ func TestElasticsearch(t *testing.T) {
 					if err != nil {
 						return fmt.Errorf("error decoding elasticsearch response: %w", err)
 					}
-					if _, created := aliases[recordTypeName.String()]; !created {
-						return fmt.Errorf("expected %q index to be aliased to %q, but it was not", recordTypeName, searchIndex)
+					if _, created := aliases[recordType.String()]; !created {
+						return fmt.Errorf("expected %q index to be aliased to %q, but it was not", recordType, searchIndex)
 					}
 					return nil
 				},
 			},
 			{
-				Title:    "type creation should be idempotent",
-				TypeName: daggerType,
-				Validate: func(cli *elasticsearch.Client, recordTypeName record.TypeName) error {
+				Title: "type creation should be idempotent",
+				Type:  daggerType,
+				Validate: func(cli *elasticsearch.Client, recordType asset.Type) error {
 					// we'll try to save the type again, with the expectation
 					// that it should succeed as normal
 					err := store.Migrate(ctx, cli, daggerType)
@@ -96,11 +96,11 @@ func TestElasticsearch(t *testing.T) {
 				},
 			},
 			{
-				Title:    "created index should be able to correctly tokenize CamelCase text",
-				TypeName: daggerType,
-				Validate: func(cli *elasticsearch.Client, recordTypeName record.TypeName) error {
+				Title: "created index should be able to correctly tokenize CamelCase text",
+				Type:  daggerType,
+				Validate: func(cli *elasticsearch.Client, recordType asset.Type) error {
 					textToAnalyze := "HelloWorld"
-					analyzerPath := fmt.Sprintf("/%s/_analyze", recordTypeName)
+					analyzerPath := fmt.Sprintf("/%s/_analyze", recordType)
 					analyzerPayload := fmt.Sprintf(`{"analyzer": "my_analyzer", "text": %q}`, textToAnalyze)
 
 					req, err := http.NewRequest("POST", analyzerPath, strings.NewReader(analyzerPayload))
@@ -143,7 +143,7 @@ func TestElasticsearch(t *testing.T) {
 		for _, testCase := range testCases {
 			t.Run(testCase.Title, func(t *testing.T) {
 				cli := esTestServer.NewClient()
-				err := store.Migrate(ctx, cli, testCase.TypeName)
+				err := store.Migrate(ctx, cli, testCase.Type)
 				if testCase.ShouldFail {
 					assert.Error(t, err)
 					return
@@ -153,7 +153,7 @@ func TestElasticsearch(t *testing.T) {
 				}
 
 				if testCase.Validate != nil {
-					if err := testCase.Validate(cli, testCase.TypeName); err != nil {
+					if err := testCase.Validate(cli, testCase.Type); err != nil {
 						t.Error(err)
 						return
 					}

@@ -3,7 +3,7 @@ package discovery
 import (
 	"context"
 
-	"github.com/odpf/columbus/record"
+	"github.com/odpf/columbus/asset"
 	"github.com/pkg/errors"
 )
 
@@ -19,15 +19,15 @@ func NewService(factory RecordRepositoryFactory, recordSearcher RecordSearcher) 
 	}
 }
 
-func (s *Service) Upsert(ctx context.Context, typeName string, records []record.Record) (err error) {
+func (s *Service) Upsert(ctx context.Context, typeName string, assets []asset.Asset) (err error) {
 	repo, err := s.factory.For(typeName)
 	if err != nil {
 		return errors.Wrapf(err, "error building repo for type \"%s\"", typeName)
 	}
 
-	err = repo.CreateOrReplaceMany(ctx, records)
+	err = repo.CreateOrReplaceMany(ctx, assets)
 	if err != nil {
-		return errors.Wrap(err, "error upserting records")
+		return errors.Wrap(err, "error upserting assets")
 	}
 
 	return nil

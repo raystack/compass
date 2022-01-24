@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/odpf/salt/log"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"reflect"
 	"testing"
+
+	"github.com/odpf/salt/log"
 
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/discovery"
@@ -142,7 +143,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 			},
 		},
 		{
-			Title:       "should return the requested number of records",
+			Title:       "should return the requested number of assets",
 			Querystring: "text=resource&size=10",
 			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
 				cfg := discovery.SearchConfig{

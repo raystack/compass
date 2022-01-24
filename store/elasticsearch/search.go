@@ -25,7 +25,7 @@ type SearcherConfig struct {
 	Client *elasticsearch.Client
 }
 
-// Searcher is an implementation of record.RecordSearcher
+// Searcher is an implementation of asset.AssetSearcher
 type Searcher struct {
 	cli              *elasticsearch.Client
 	typeWhiteList    []string
@@ -304,7 +304,7 @@ func (sr *Searcher) toSearchResults(hits []searchHit) []discovery.SearchResult {
 		r := hit.Source
 		results = append(results, discovery.SearchResult{
 			Type:        hit.Index,
-			ID:          r.Urn,
+			ID:          r.URN,
 			Description: r.Description,
 			Title:       r.Name,
 			Service:     r.Service,

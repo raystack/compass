@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/odpf/salt/log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -12,11 +11,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/odpf/salt/log"
+
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
+	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lib/mock"
-	"github.com/odpf/columbus/record"
 	tmock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +25,7 @@ import (
 func TestRecordHandler(t *testing.T) {
 	var (
 		ctx      = tmock.AnythingOfType("*context.valueCtx")
-		typeName = record.TypeNameTable.String()
+		typeName = asset.TypeTable.String()
 		logger   = log.NewNoop()
 	)
 
@@ -129,9 +130,9 @@ func TestRecordHandler(t *testing.T) {
 				}
 			})
 			t.Run("RecordRepository fails", func(t *testing.T) {
-				expectedRecords := []record.Record{
+				expectedAssets := []asset.Asset{
 					{
-						Urn:     "test dagger",
+						URN:     "test dagger",
 						Name:    "de-dagger-test",
 						Service: "kafka",
 						Data:    map[string]interface{}{},
@@ -146,7 +147,7 @@ func TestRecordHandler(t *testing.T) {
 
 				repositoryErr := errors.New("unknown error")
 				recordRepository := new(mock.RecordRepository)
-				recordRepository.On("CreateOrReplaceMany", ctx, expectedRecords).Return(repositoryErr)
+				recordRepository.On("CreateOrReplaceMany", ctx, expectedAssets).Return(repositoryErr)
 				defer recordRepository.AssertExpectations(t)
 
 				recordRepoFac := new(mock.RecordRepositoryFactory)
@@ -175,9 +176,9 @@ func TestRecordHandler(t *testing.T) {
 			})
 		})
 		t.Run("should return HTTP 200 if the resource is successfully created/update", func(t *testing.T) {
-			expectedRecords := []record.Record{
+			expectedAssets := []asset.Asset{
 				{
-					Urn:     "test dagger",
+					URN:     "test dagger",
 					Name:    "de-dagger-test",
 					Service: "kafka",
 					Data:    map[string]interface{}{},
@@ -190,7 +191,7 @@ func TestRecordHandler(t *testing.T) {
 			})
 
 			recordRepo := new(mock.RecordRepository)
-			recordRepo.On("CreateOrReplaceMany", ctx, expectedRecords).Return(nil)
+			recordRepo.On("CreateOrReplaceMany", ctx, expectedAssets).Return(nil)
 			defer recordRepo.AssertExpectations(t)
 
 			recordRepoFac := new(mock.RecordRepositoryFactory)
@@ -227,7 +228,7 @@ func TestRecordHandler(t *testing.T) {
 		type testCase struct {
 			Description  string
 			Type         string
-			RecordID     string
+			AssetID      string
 			ExpectStatus int
 			Setup        func(rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository)
 			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
@@ -237,7 +238,7 @@ func TestRecordHandler(t *testing.T) {
 			{
 				Description:  "should return 204 on success",
 				Type:         typeName,
-				RecordID:     "id-10",
+				AssetID:      "id-10",
 				ExpectStatus: http.StatusNoContent,
 				Setup: func(rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
 					rrf.On("For", typeName).Return(rr, nil)
@@ -247,24 +248,24 @@ func TestRecordHandler(t *testing.T) {
 			{
 				Description:  "should return 404 if type cannot be found",
 				Type:         "invalid",
-				RecordID:     "id-10",
+				AssetID:      "id-10",
 				ExpectStatus: http.StatusNotFound,
 				Setup:        func(rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {},
 			},
 			{
 				Description:  "should return 404 when record cannot be found",
 				Type:         typeName,
-				RecordID:     "id-10",
+				AssetID:      "id-10",
 				ExpectStatus: http.StatusNotFound,
 				Setup: func(rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
 					rrf.On("For", typeName).Return(rr, nil)
-					rr.On("Delete", ctx, "id-10").Return(record.ErrNoSuchRecord{RecordID: "id-10"})
+					rr.On("Delete", ctx, "id-10").Return(asset.NotFoundError{AssetID: "id-10"})
 				},
 			},
 			{
 				Description:  "should return 500 on error deleting record",
 				Type:         typeName,
-				RecordID:     "id-10",
+				AssetID:      "id-10",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(rrf *mock.RecordRepositoryFactory, rr *mock.RecordRepository) {
 					rrf.On("For", typeName).Return(rr, nil)
@@ -278,7 +279,7 @@ func TestRecordHandler(t *testing.T) {
 				rw := httptest.NewRecorder()
 				rr = mux.SetURLVars(rr, map[string]string{
 					"name": tc.Type,
-					"id":   tc.RecordID,
+					"id":   tc.AssetID,
 				})
 				recordRepo := new(mock.RecordRepository)
 				recordRepoFactory := new(mock.RecordRepositoryFactory)
@@ -308,9 +309,9 @@ func TestRecordHandler(t *testing.T) {
 			PostCheck    func(tc *testCase, resp *http.Response) error
 		}
 
-		var records = []record.Record{
+		var assets = []asset.Asset{
 			{
-				Urn: "test-fh-1",
+				URN: "test-fh-1",
 				Data: map[string]interface{}{
 					"urn":         "test-fh-1",
 					"owner":       "de",
@@ -319,7 +320,7 @@ func TestRecordHandler(t *testing.T) {
 				},
 			},
 			{
-				Urn: "test-fh-2",
+				URN: "test-fh-2",
 				Data: map[string]interface{}{
 					"urn":         "test-fh-2",
 					"owner":       "de",
@@ -348,7 +349,7 @@ func TestRecordHandler(t *testing.T) {
 						Filters: map[string][]string{},
 						From:    5,
 						Size:    10,
-					}).Return(discovery.RecordList{Data: records}, nil)
+					}).Return(discovery.RecordList{Data: assets}, nil)
 					rrf.On("For", typeName).Return(rr, nil)
 				},
 			},
@@ -363,7 +364,7 @@ func TestRecordHandler(t *testing.T) {
 						Filters: map[string][]string{
 							"service":      {"kafka", "rabbitmq"},
 							"data.company": {"appel"},
-						}}).Return(discovery.RecordList{Data: records}, nil)
+						}}).Return(discovery.RecordList{Data: assets}, nil)
 					rrf.On("For", typeName).Return(rr, nil)
 				},
 			},
@@ -388,7 +389,7 @@ func TestRecordHandler(t *testing.T) {
 					err := fmt.Errorf("temporarily unavailable")
 					rr.On("GetAll", ctx, discovery.GetConfig{
 						Filters: map[string][]string{"data.environment": {"test"}},
-					}).Return(discovery.RecordList{Data: []record.Record{}}, err)
+					}).Return(discovery.RecordList{Data: []asset.Asset{}}, err)
 					rrf.On("For", typeName).Return(rr, nil)
 				},
 			},
@@ -400,7 +401,7 @@ func TestRecordHandler(t *testing.T) {
 					rr := new(mock.RecordRepository)
 					rr.On("GetAll", ctx, discovery.GetConfig{
 						Filters: map[string][]string{},
-					}).Return(discovery.RecordList{Data: records}, nil)
+					}).Return(discovery.RecordList{Data: assets}, nil)
 					rrf.On("For", typeName).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
@@ -411,7 +412,7 @@ func TestRecordHandler(t *testing.T) {
 					}
 
 					expected := discovery.RecordList{
-						Data: records,
+						Data: assets,
 					}
 
 					if reflect.DeepEqual(response, expected) == false {
@@ -429,7 +430,7 @@ func TestRecordHandler(t *testing.T) {
 					rr := new(mock.RecordRepository)
 					rr.On("GetAll", ctx, discovery.GetConfig{
 						Filters: map[string][]string{"data.environment": {"test"}},
-					}).Return(discovery.RecordList{Data: records}, nil)
+					}).Return(discovery.RecordList{Data: assets}, nil)
 					rrf.On("For", typeName).Return(rr, nil)
 				},
 				PostCheck: func(tc *testCase, resp *http.Response) error {
@@ -440,16 +441,16 @@ func TestRecordHandler(t *testing.T) {
 					}
 
 					expected := discovery.RecordList{
-						Data: []record.Record{
+						Data: []asset.Asset{
 							{
-								Urn: "test-fh-1",
+								URN: "test-fh-1",
 								Data: map[string]interface{}{
 									"urn":   "test-fh-1",
 									"owner": "de",
 								},
 							},
 							{
-								Urn: "test-fh-2",
+								URN: "test-fh-2",
 								Data: map[string]interface{}{
 									"urn":   "test-fh-2",
 									"owner": "de",
@@ -494,8 +495,8 @@ func TestRecordHandler(t *testing.T) {
 		}
 	})
 	t.Run("GetOneByType", func(t *testing.T) {
-		var deployment01 = record.Record{
-			Urn: "id-1",
+		var deployment01 = asset.Asset{
+			URN: "id-1",
 			Data: map[string]interface{}{
 				"contents": "data",
 			},
@@ -503,7 +504,7 @@ func TestRecordHandler(t *testing.T) {
 		type testCase struct {
 			Description  string
 			Type         string
-			RecordID     string
+			AssetID      string
 			ExpectStatus int
 			Setup        func(rrf *mock.RecordRepositoryFactory)
 			PostCheck    func(resp *http.Response) error
@@ -513,25 +514,25 @@ func TestRecordHandler(t *testing.T) {
 			{
 				Description:  `should return http 404 if the record doesn't exist`,
 				Type:         typeName,
-				RecordID:     "record01",
+				AssetID:      "record01",
 				ExpectStatus: http.StatusNotFound,
 				Setup: func(rrf *mock.RecordRepositoryFactory) {
 					recordRepo := new(mock.RecordRepository)
-					recordRepo.On("GetByID", ctx, "record01").Return(record.Record{}, record.ErrNoSuchRecord{RecordID: "record01"})
+					recordRepo.On("GetByID", ctx, "record01").Return(asset.Asset{}, asset.NotFoundError{AssetID: "record01"})
 					rrf.On("For", typeName).Return(recordRepo, nil)
 				},
 			},
 			{
 				Description:  `should return http 404 if the type doesn't exist`,
 				Type:         "invalid",
-				RecordID:     "record",
+				AssetID:      "record",
 				ExpectStatus: http.StatusNotFound,
 				Setup:        func(rrf *mock.RecordRepositoryFactory) {},
 			},
 			{
 				Description:  "(internal) should return an http 500 if the handler fails to construct recordRepository",
 				Type:         typeName,
-				RecordID:     "record",
+				AssetID:      "record",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(rrf *mock.RecordRepositoryFactory) {
 					rrf.On("For", typeName).Return(new(mock.RecordRepository), fmt.Errorf("something bad happened"))
@@ -540,7 +541,7 @@ func TestRecordHandler(t *testing.T) {
 			{
 				Description:  "should return http 200 status along with the record, if found",
 				Type:         typeName,
-				RecordID:     "deployment01",
+				AssetID:      "deployment01",
 				ExpectStatus: http.StatusOK,
 				Setup: func(rrf *mock.RecordRepositoryFactory) {
 					recordRepo := new(mock.RecordRepository)
@@ -548,7 +549,7 @@ func TestRecordHandler(t *testing.T) {
 					rrf.On("For", typeName).Return(recordRepo, nil)
 				},
 				PostCheck: func(r *http.Response) error {
-					var record record.Record
+					var record asset.Asset
 					err := json.NewDecoder(r.Body).Decode(&record)
 					if err != nil {
 						return fmt.Errorf("error reading response body: %w", err)
@@ -566,7 +567,7 @@ func TestRecordHandler(t *testing.T) {
 				rw := httptest.NewRecorder()
 				rr = mux.SetURLVars(rr, map[string]string{
 					"name": tc.Type,
-					"id":   tc.RecordID,
+					"id":   tc.AssetID,
 				})
 				recordRepoFac := new(mock.RecordRepositoryFactory)
 				if tc.Setup != nil {

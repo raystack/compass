@@ -7,9 +7,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-
-	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/record"
 )
 
 const (
@@ -32,8 +29,7 @@ func (tsf TimeSourceFunc) Now() time.Time {
 // an interval at which it'll construct the graph, while
 // serving an old copy in between ticks.
 type Service struct {
-	typeRepo           record.TypeRepository
-	recordRepoFactory  discovery.RecordRepositoryFactory
+	repo               Repository
 	metricsMonitor     MetricsMonitor
 	performanceMonitor PerformanceMonitor
 	builder            Builder
@@ -56,7 +52,7 @@ func (srv *Service) build() {
 	defer endTxn()
 
 	startTime := srv.timeSource.Now()
-	graph, err := srv.builder.Build(ctx, srv.typeRepo, srv.recordRepoFactory)
+	graph, err := srv.builder.Build(ctx, srv.repo)
 	now := srv.timeSource.Now()
 	srv.metricsMonitor.Duration("lineageBuildTime", int(now.Sub(startTime)/time.Millisecond))
 	srv.mu.Lock()
@@ -93,11 +89,10 @@ func (srv *Service) requestRefresh() {
 	}
 }
 
-func NewService(er record.TypeRepository, rrf discovery.RecordRepositoryFactory, config Config) (*Service, error) {
+func NewService(repo Repository, config Config) (*Service, error) {
 	srv := &Service{
 		builder:            DefaultBuilder,
-		typeRepo:           er,
-		recordRepoFactory:  rrf,
+		repo:               repo,
 		refreshInterval:    time.Minute,
 		timeSource:         TimeSourceFunc(time.Now),
 		metricsMonitor:     dummyMetricMonitor{},

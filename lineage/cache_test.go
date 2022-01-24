@@ -49,8 +49,7 @@ func TestCachedGraph(t *testing.T) {
 		{
 			Description: "test error handling",
 			Cfg: lineage.QueryCfg{
-				TypeWhitelist: []string{"A"},
-				Collapse:      true,
+				Collapse: true,
 			},
 			Graph: func(tc testCase) *mock.Graph {
 				g := new(mock.Graph)

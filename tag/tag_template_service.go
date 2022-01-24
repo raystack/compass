@@ -42,11 +42,11 @@ func (s *TemplateService) Create(ctx context.Context, template *Template) error 
 		return err
 	}
 
-	templateRecords, err := s.repository.Read(ctx, template.URN)
+	templateAssets, err := s.repository.Read(ctx, template.URN)
 	if err != nil {
 		return errors.Wrap(err, "error checking template existence")
 	}
-	if len(templateRecords) > 0 {
+	if len(templateAssets) > 0 {
 		return DuplicateTemplateError{URN: template.URN}
 	}
 
@@ -83,16 +83,16 @@ func (s *TemplateService) Update(ctx context.Context, templateURN string, templa
 	if err != nil {
 		return err
 	}
-	templateRecords, err := s.repository.Read(ctx, templateURN)
+	templateAssets, err := s.repository.Read(ctx, templateURN)
 	if err != nil {
 		return errors.Wrap(err, "error checking template existence")
 	}
-	if len(templateRecords) == 0 {
+	if len(templateAssets) == 0 {
 		return TemplateNotFoundError{URN: templateURN}
 	}
 
 	// check for duplication
-	templateFromDB := templateRecords[0]
+	templateFromDB := templateAssets[0]
 	isFieldIDPartOfTemplateMap := make(map[uint]bool)
 	fieldURNToIDMap := make(map[string]uint)
 	for _, f := range templateFromDB.Fields {
