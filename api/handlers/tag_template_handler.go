@@ -36,7 +36,7 @@ func (h *TagTemplateHandler) Create(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	err := h.service.Create(&requestBody)
+	err := h.service.Create(r.Context(), &requestBody)
 	if errors.As(err, new(tag.DuplicateTemplateError)) {
 		writeJSONError(w, http.StatusConflict, err.Error())
 		return
@@ -52,10 +52,7 @@ func (h *TagTemplateHandler) Create(w http.ResponseWriter, r *http.Request) {
 // Index handles template read requests
 func (h *TagTemplateHandler) Index(w http.ResponseWriter, r *http.Request) {
 	urn := r.URL.Query().Get("urn")
-	queryDomainTemplate := tag.Template{
-		URN: urn,
-	}
-	listOfDomainTemplate, err := h.service.Index(queryDomainTemplate)
+	listOfDomainTemplate, err := h.service.Index(r.Context(), urn)
 	if err != nil {
 		internalServerError(w, h.logger, fmt.Sprintf("error finding templates: %s", err.Error()))
 		return
@@ -66,8 +63,8 @@ func (h *TagTemplateHandler) Index(w http.ResponseWriter, r *http.Request) {
 // Update handles template update requests
 func (h *TagTemplateHandler) Update(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	urn, ok := params["template_urn"]
-	if !ok || urn == "" {
+	targetTemplateURN, ok := params["template_urn"]
+	if !ok || targetTemplateURN == "" {
 		writeJSONError(w, http.StatusBadRequest, errEmptyTemplateURN.Error())
 		return
 	}
@@ -77,8 +74,9 @@ func (h *TagTemplateHandler) Update(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	requestBody.URN = urn
-	err := h.service.Update(&requestBody)
+
+	requestBody.URN = targetTemplateURN
+	err := h.service.Update(r.Context(), targetTemplateURN, &requestBody)
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
@@ -104,7 +102,7 @@ func (h *TagTemplateHandler) Find(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	domainTemplate, err := h.service.Find(urn)
+	domainTemplate, err := h.service.Find(r.Context(), urn)
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())
 		return
@@ -126,7 +124,7 @@ func (h *TagTemplateHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.service.Delete(urn)
+	err := h.service.Delete(r.Context(), urn)
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		writeJSONError(w, http.StatusNotFound, err.Error())
 		return

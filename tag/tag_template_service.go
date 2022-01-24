@@ -1,6 +1,7 @@
 package tag
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/odpf/columbus/tag/validator"
@@ -18,7 +19,7 @@ var validDomainFieldDataType = []string{
 // Service is a type of service that manages business process
 type TemplateService struct {
 	validator  validator.Validator
-	repository TemplateRepository
+	repository TagTemplateRepository
 }
 
 // Validate validates domain template based on the business rule
@@ -32,7 +33,7 @@ func (s *TemplateService) Validate(template Template) error {
 }
 
 // Create handles create business operation for template
-func (s *TemplateService) Create(template *Template) error {
+func (s *TemplateService) Create(ctx context.Context, template *Template) error {
 	if template == nil {
 		return errors.New("template is nil")
 	}
@@ -41,10 +42,7 @@ func (s *TemplateService) Create(template *Template) error {
 		return err
 	}
 
-	filterForExistence := Template{
-		URN: template.URN,
-	}
-	templateRecords, err := s.repository.Read(filterForExistence)
+	templateRecords, err := s.repository.Read(ctx, template.URN)
 	if err != nil {
 		return errors.Wrap(err, "error checking template existence")
 	}
@@ -52,7 +50,7 @@ func (s *TemplateService) Create(template *Template) error {
 		return DuplicateTemplateError{URN: template.URN}
 	}
 
-	err = s.repository.Create(template)
+	err = s.repository.Create(ctx, template)
 	if err != nil {
 		return errors.Wrap(err, "error creating template")
 	}
@@ -61,8 +59,15 @@ func (s *TemplateService) Create(template *Template) error {
 }
 
 // Index handles read business operation for template
-func (s *TemplateService) Index(template Template) ([]Template, error) {
-	output, err := s.repository.Read(template)
+func (s *TemplateService) Index(ctx context.Context, templateURN string) ([]Template, error) {
+	if templateURN == "" {
+		output, err := s.repository.ReadAll(ctx)
+		if err != nil {
+			return nil, errors.Wrap(err, "error fetching templates")
+		}
+		return output, nil
+	}
+	output, err := s.repository.Read(ctx, templateURN)
 	if err != nil {
 		return nil, errors.Wrap(err, "error fetching templates")
 	}
@@ -70,7 +75,7 @@ func (s *TemplateService) Index(template Template) ([]Template, error) {
 }
 
 // Update handles update business operation for template
-func (s *TemplateService) Update(template *Template) error {
+func (s *TemplateService) Update(ctx context.Context, templateURN string, template *Template) error {
 	if template == nil {
 		return errors.New("template is nil")
 	}
@@ -78,15 +83,12 @@ func (s *TemplateService) Update(template *Template) error {
 	if err != nil {
 		return err
 	}
-	filterForExistence := Template{
-		URN: template.URN,
-	}
-	templateRecords, err := s.repository.Read(filterForExistence)
+	templateRecords, err := s.repository.Read(ctx, templateURN)
 	if err != nil {
 		return errors.Wrap(err, "error checking template existence")
 	}
 	if len(templateRecords) == 0 {
-		return TemplateNotFoundError{URN: template.URN}
+		return TemplateNotFoundError{URN: templateURN}
 	}
 
 	// check for duplication
@@ -112,7 +114,7 @@ func (s *TemplateService) Update(template *Template) error {
 		}
 	}
 
-	err = s.repository.Update(template)
+	err = s.repository.Update(ctx, templateURN, template)
 	if err != nil {
 		return errors.Wrap(err, "error updating template")
 	}
@@ -120,11 +122,8 @@ func (s *TemplateService) Update(template *Template) error {
 }
 
 // Find handles request to get template by urn
-func (s *TemplateService) Find(urn string) (Template, error) {
-	queryDomainTemplate := Template{
-		URN: urn,
-	}
-	listOfDomainTemplate, err := s.repository.Read(queryDomainTemplate)
+func (s *TemplateService) Find(ctx context.Context, urn string) (Template, error) {
+	listOfDomainTemplate, err := s.repository.Read(ctx, urn)
 	if err != nil {
 		return Template{}, errors.Wrap(err, "error reading repository")
 	}
@@ -135,11 +134,8 @@ func (s *TemplateService) Find(urn string) (Template, error) {
 }
 
 // Delete handles request to delete template by urn
-func (s *TemplateService) Delete(urn string) error {
-	template := Template{
-		URN: urn,
-	}
-	err := s.repository.Delete(template)
+func (s *TemplateService) Delete(ctx context.Context, urn string) error {
+	err := s.repository.Delete(ctx, urn)
 	if err != nil {
 		return errors.Wrap(err, "error deleting template")
 	}
@@ -147,7 +143,7 @@ func (s *TemplateService) Delete(urn string) error {
 }
 
 // NewTemplateService initializes service template service
-func NewTemplateService(r TemplateRepository) *TemplateService {
+func NewTemplateService(r TagTemplateRepository) *TemplateService {
 	return &TemplateService{
 		validator:  newTemplateValidator(),
 		repository: r,

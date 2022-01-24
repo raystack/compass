@@ -22,7 +22,6 @@ import (
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/columbus/tag"
 	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 )
 
 // Version of the current build. overridden by the build system.
@@ -80,11 +79,16 @@ func initRouter(
 		rootLogger.Info("lineage build complete")
 	}()
 
-	pgClient := initPostgres(config)
-	tagRepository := postgres.NewTagRepository(pgClient)
-	tagTemplateService := tag.NewTemplateService(
-		postgres.NewTemplateRepository(pgClient),
-	)
+	pgClient := initPostgres(rootLogger.WithField("reporter", "postgres"), config)
+	tagRepository, err := postgres.NewTagRepository(pgClient)
+	if err != nil {
+		log.Fatalf("failed to create new tag repository: %v", err)
+	}
+	tagTemplateRepository, err := postgres.NewTagTemplateRepository(pgClient)
+	if err != nil {
+		log.Fatalf("failed to create new tag template repository: %v", err)
+	}
+	tagTemplateService := tag.NewTemplateService(tagTemplateRepository)
 	tagService := tag.NewService(
 		tagRepository,
 		tagTemplateService,
@@ -149,19 +153,20 @@ func initElasticsearch(config Config) *elasticsearch.Client {
 	return esClient
 }
 
-func initPostgres(config Config) *gorm.DB {
-	pgClient, err := postgres.NewClient(postgres.Config{
-		Port:     config.DBPort,
-		Host:     config.DBHost,
-		Name:     config.DBName,
-		User:     config.DBUser,
-		Password: config.DBPassword,
-		SSLMode:  config.DBSSLMode,
-	})
+func initPostgres(logger logrus.FieldLogger, config Config) *postgres.Client {
+	pgClient, err := postgres.NewClient(logger,
+		postgres.Config{
+			Port:     config.DBPort,
+			Host:     config.DBHost,
+			Name:     config.DBName,
+			User:     config.DBUser,
+			Password: config.DBPassword,
+			SSLMode:  config.DBSSLMode,
+		})
 	if err != nil {
-		log.Fatalf("error creating postgres client: %v", err)
+		logger.Fatalf("error creating postgres client: %v", err)
 	}
-	log.Infof("connected to postgres server %s:%d", config.DBHost, config.DBPort)
+	logger.Infof("connected to postgres server %s:%d", config.DBHost, config.DBPort)
 
 	return pgClient
 }

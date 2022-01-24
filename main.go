@@ -89,7 +89,7 @@ func migrateCmd() *cobra.Command {
 			"group:core": "true",
 		},
 		RunE: func(command *cobra.Command, args []string) error {
-			cmd.Migrate()
+			cmd.RunMigrate()
 
 			return nil
 		},

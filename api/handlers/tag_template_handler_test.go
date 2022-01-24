@@ -66,8 +66,8 @@ func (s *TagTemplateHandlerTestSuite) TestCreate() {
 		template := s.buildTemplate()
 		body, err := json.Marshal(template)
 		s.Require().NoError(err)
-		s.templateRepository.On("Read", tag.Template{URN: template.URN}).Return(nil, nil)
-		s.templateRepository.On("Create", &template).Return(tag.DuplicateTemplateError{URN: template.URN})
+		s.templateRepository.On("Read", mock.Anything, template.URN).Return(nil, nil)
+		s.templateRepository.On("Create", mock.Anything, &template).Return(tag.DuplicateTemplateError{URN: template.URN})
 		request, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader(string(body)))
 
 		s.handler.Create(s.recorder, request)
@@ -79,8 +79,8 @@ func (s *TagTemplateHandlerTestSuite) TestCreate() {
 		template := s.buildTemplate()
 		body, err := json.Marshal(template)
 		s.Require().NoError(err)
-		s.templateRepository.On("Read", tag.Template{URN: template.URN}).Return(nil, nil)
-		s.templateRepository.On("Create", &template).Return(errors.New("unexpected error during insert"))
+		s.templateRepository.On("Read", mock.Anything, template.URN).Return(nil, nil)
+		s.templateRepository.On("Create", mock.Anything, &template).Return(errors.New("unexpected error during insert"))
 		request, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader(string(body)))
 
 		s.handler.Create(s.recorder, request)
@@ -92,8 +92,8 @@ func (s *TagTemplateHandlerTestSuite) TestCreate() {
 		originalDomainTemplate := s.buildTemplate()
 		body, err := json.Marshal(originalDomainTemplate)
 		s.Require().NoError(err)
-		s.templateRepository.On("Read", tag.Template{URN: originalDomainTemplate.URN}).Return(nil, nil)
-		s.templateRepository.On("Create", &originalDomainTemplate).Return(nil)
+		s.templateRepository.On("Read", mock.Anything, originalDomainTemplate.URN).Return(nil, nil)
+		s.templateRepository.On("Create", mock.Anything, &originalDomainTemplate).Return(nil)
 		request, err := http.NewRequest(http.MethodPost, "/", strings.NewReader(string(body)))
 		s.Require().NoError(err)
 
@@ -116,9 +116,7 @@ func (s *TagTemplateHandlerTestSuite) TestIndex() {
 		s.Setup()
 		request, err := http.NewRequest(http.MethodGet, "/templates?urn=governance_policy", nil)
 		s.Require().NoError(err)
-		s.templateRepository.On("Read", tag.Template{
-			URN: "governance_policy",
-		}).Return(nil, errors.New("unexpected error"))
+		s.templateRepository.On("Read", mock.Anything, "governance_policy").Return(nil, errors.New("unexpected error"))
 
 		s.handler.Index(s.recorder, request)
 		s.Equal(http.StatusInternalServerError, s.recorder.Result().StatusCode)
@@ -129,9 +127,7 @@ func (s *TagTemplateHandlerTestSuite) TestIndex() {
 		request, err := http.NewRequest(http.MethodGet, "/templates?urn=governance_policy", nil)
 		s.Require().NoError(err)
 		recordDomainTemplate := s.buildTemplate()
-		s.templateRepository.On("Read", tag.Template{
-			URN: "governance_policy",
-		}).Return([]tag.Template{recordDomainTemplate}, nil)
+		s.templateRepository.On("Read", mock.Anything, "governance_policy").Return([]tag.Template{recordDomainTemplate}, nil)
 
 		expectedStatusCode := http.StatusOK
 		rsp, err := json.Marshal([]tag.Template{recordDomainTemplate})
@@ -145,6 +141,27 @@ func (s *TagTemplateHandlerTestSuite) TestIndex() {
 		s.Equal(expectedStatusCode, actualStatusCode)
 		s.Equal(expectedResponseBody, actualResponseBody)
 	})
+
+	s.Run("should return all templates if no urn query params", func() {
+		s.Setup()
+		request, err := http.NewRequest(http.MethodGet, "/templates", nil)
+		s.Require().NoError(err)
+		recordDomainTemplate := s.buildTemplate()
+		s.templateRepository.On("ReadAll", mock.Anything).Return([]tag.Template{recordDomainTemplate}, nil)
+
+		expectedStatusCode := http.StatusOK
+		rsp, err := json.Marshal([]tag.Template{recordDomainTemplate})
+		s.Require().NoError(err)
+		expectedResponseBody := string(rsp) + "\n"
+
+		s.handler.Index(s.recorder, request)
+		actualStatusCode := s.recorder.Result().StatusCode
+		actualResponseBody := s.recorder.Body.String()
+
+		s.Equal(expectedStatusCode, actualStatusCode)
+		s.Equal(expectedResponseBody, actualResponseBody)
+	})
+
 }
 
 func (s *TagTemplateHandlerTestSuite) TestUpdate() {
@@ -203,9 +220,7 @@ func (s *TagTemplateHandlerTestSuite) TestUpdate() {
 		request = mux.SetURLVars(request, map[string]string{
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Read", tag.Template{
-			URN: templateURN,
-		}).Return([]tag.Template{}, nil)
+		s.templateRepository.On("Read", mock.Anything, templateURN).Return([]tag.Template{}, nil)
 
 		s.handler.Update(s.recorder, request)
 		s.Equal(http.StatusNotFound, s.recorder.Result().StatusCode)
@@ -222,9 +237,7 @@ func (s *TagTemplateHandlerTestSuite) TestUpdate() {
 		request = mux.SetURLVars(request, map[string]string{
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Read", tag.Template{
-			URN: templateURN,
-		}).Return(nil, tag.ValidationError{Err: errors.New("validation error")})
+		s.templateRepository.On("Read", mock.Anything, templateURN).Return(nil, tag.ValidationError{Err: errors.New("validation error")})
 
 		s.handler.Update(s.recorder, request)
 		s.Equal(http.StatusUnprocessableEntity, s.recorder.Result().StatusCode)
@@ -241,9 +254,7 @@ func (s *TagTemplateHandlerTestSuite) TestUpdate() {
 		request = mux.SetURLVars(request, map[string]string{
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Read", tag.Template{
-			URN: templateURN,
-		}).Return(nil, errors.New("unexpected error"))
+		s.templateRepository.On("Read", mock.Anything, templateURN).Return(nil, errors.New("unexpected error"))
 
 		s.handler.Update(s.recorder, request)
 		s.Equal(http.StatusInternalServerError, s.recorder.Result().StatusCode)
@@ -260,11 +271,9 @@ func (s *TagTemplateHandlerTestSuite) TestUpdate() {
 			"template_urn": template.URN,
 		})
 
-		s.templateRepository.On("Read", tag.Template{
-			URN: template.URN,
-		}).Return([]tag.Template{template}, nil).Once()
+		s.templateRepository.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil).Once()
 
-		s.templateRepository.On("Update", &template).Run(func(args mock.Arguments) {
+		s.templateRepository.On("Update", mock.Anything, template.URN, &template).Run(func(args mock.Arguments) {
 			template.UpdatedAt = time.Now()
 		}).Return(nil)
 
@@ -330,9 +339,7 @@ func (s *TagTemplateHandlerTestSuite) TestFind() {
 		request = mux.SetURLVars(request, map[string]string{
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Read", tag.Template{
-			URN: templateURN,
-		}).Return([]tag.Template{}, nil)
+		s.templateRepository.On("Read", mock.Anything, templateURN).Return([]tag.Template{}, nil)
 
 		s.handler.Find(s.recorder, request)
 		s.Equal(http.StatusNotFound, s.recorder.Result().StatusCode)
@@ -348,9 +355,7 @@ func (s *TagTemplateHandlerTestSuite) TestFind() {
 		})
 		template := s.buildTemplate()
 
-		s.templateRepository.On("Read", tag.Template{
-			URN: templateURN,
-		}).Return([]tag.Template{template}, nil)
+		s.templateRepository.On("Read", mock.Anything, templateURN).Return([]tag.Template{template}, nil)
 
 		expectedStatusCode := http.StatusOK
 		rsp, err := json.Marshal(template)
@@ -394,9 +399,7 @@ func (s *TagTemplateHandlerTestSuite) TestDelete() {
 		request = mux.SetURLVars(request, map[string]string{
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Delete", tag.Template{
-			URN: templateURN,
-		}).Return(tag.TemplateNotFoundError{URN: templateURN})
+		s.templateRepository.On("Delete", mock.Anything, templateURN).Return(tag.TemplateNotFoundError{URN: templateURN})
 
 		s.handler.Delete(s.recorder, request)
 		s.Equal(http.StatusNotFound, s.recorder.Result().StatusCode)
@@ -410,9 +413,7 @@ func (s *TagTemplateHandlerTestSuite) TestDelete() {
 		request = mux.SetURLVars(request, map[string]string{
 			"template_urn": templateURN,
 		})
-		s.templateRepository.On("Delete", tag.Template{
-			URN: templateURN,
-		}).Return(nil)
+		s.templateRepository.On("Delete", mock.Anything, templateURN).Return(nil)
 
 		s.handler.Delete(s.recorder, request)
 		s.Equal(http.StatusNoContent, s.recorder.Result().StatusCode)

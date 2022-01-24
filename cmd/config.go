@@ -68,14 +68,14 @@ func loadConfig() error {
 	defaults.SetDefaults(&config)
 	err = viper.Unmarshal(&config)
 	if err != nil {
-		return fmt.Errorf("unable to unmarshal config to struct: %v\n", err)
+		return fmt.Errorf("unable to unmarshal config to struct: %w", err)
 	}
 
 	return nil
 }
 
 func bindEnvVars() {
-	err, configKeys := getFlattenedStructKeys(Config{})
+	configKeys, err := getFlattenedStructKeys(Config{})
 	if err != nil {
 		panic(err)
 	}
@@ -89,16 +89,16 @@ func bindEnvVars() {
 	}
 }
 
-func getFlattenedStructKeys(config Config) (error, []string) {
+func getFlattenedStructKeys(config Config) ([]string, error) {
 	var structMap map[string]interface{}
 	err := mapstructure.Decode(config, &structMap)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	flat, err := flatten.Flatten(structMap, "", flatten.DotStyle)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	keys := make([]string, 0, len(flat))
@@ -106,5 +106,5 @@ func getFlattenedStructKeys(config Config) (error, []string) {
 		keys = append(keys, k)
 	}
 
-	return nil, keys
+	return keys, nil
 }

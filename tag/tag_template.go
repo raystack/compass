@@ -1,6 +1,7 @@
 package tag
 
 import (
+	"context"
 	"time"
 )
 
@@ -27,10 +28,11 @@ type Field struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-// TemplateRepository is a contract to communicate with the primary store
-type TemplateRepository interface {
-	Create(template *Template) error
-	Read(filter Template) ([]Template, error)
-	Update(template *Template) error
-	Delete(filter Template) error
+// TagTemplateRepository is a contract to communicate with the primary store
+type TagTemplateRepository interface {
+	Create(ctx context.Context, template *Template) error
+	Read(ctx context.Context, templateURN string) ([]Template, error)
+	ReadAll(ctx context.Context) ([]Template, error)
+	Update(ctx context.Context, templateURN string, template *Template) error
+	Delete(ctx context.Context, templateURN string) error
 }

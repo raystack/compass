@@ -1,0 +1,9 @@
+BEGIN;
+
+DROP TABLE IF EXISTS tags;
+
+DROP TABLE IF EXISTS tag_template_fields;
+
+DROP TABLE IF EXISTS tag_templates;
+
+COMMIT;

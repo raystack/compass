@@ -1,6 +1,7 @@
 package tag
 
 import (
+	"context"
 	"time"
 )
 
@@ -30,8 +31,8 @@ type TagValue struct {
 
 // TagRepository is a contract to communicate with the primary store
 type TagRepository interface {
-	Create(tag *Tag) error
-	Read(filter Tag) ([]Tag, error)
-	Update(tag *Tag) error
-	Delete(filter Tag) error
+	Create(ctx context.Context, tag *Tag) error
+	Read(ctx context.Context, filter Tag) ([]Tag, error)
+	Update(ctx context.Context, tag *Tag) error
+	Delete(ctx context.Context, filter Tag) error
 }

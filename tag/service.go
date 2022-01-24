@@ -1,6 +1,7 @@
 package tag
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/odpf/columbus/tag/validator"
@@ -29,11 +30,11 @@ func (s *Service) Validate(tag *Tag) error {
 }
 
 // Create handles business process for create
-func (s *Service) Create(tag *Tag) error {
+func (s *Service) Create(ctx context.Context, tag *Tag) error {
 	if err := s.Validate(tag); err != nil {
 		return err
 	}
-	template, err := s.templateService.Find(tag.TemplateURN)
+	template, err := s.templateService.Find(ctx, tag.TemplateURN)
 	if err != nil {
 		return errors.Wrap(err, "error finding template")
 	}
@@ -46,7 +47,7 @@ func (s *Service) Create(tag *Tag) error {
 	if err := s.validateFieldValueIsValid(*tag, template); err != nil {
 		return err
 	}
-	if err := s.repository.Create(tag); err != nil {
+	if err := s.repository.Create(ctx, tag); err != nil {
 		return err
 	}
 
@@ -54,18 +55,18 @@ func (s *Service) Create(tag *Tag) error {
 }
 
 // GetByRecord handles business process to get tags by its resource urn
-func (s *Service) GetByRecord(recordType, recordURN string) ([]Tag, error) {
+func (s *Service) GetByRecord(ctx context.Context, recordType, recordURN string) ([]Tag, error) {
 	tag := Tag{RecordType: recordType, RecordURN: recordURN}
-	return s.repository.Read(tag)
+	return s.repository.Read(ctx, tag)
 }
 
 // FindByRecordAndTemplate handles business process to get tags by its resource id and template id
-func (s *Service) FindByRecordAndTemplate(recordType, recordURN, templateURN string) (Tag, error) {
-	_, err := s.templateService.Find(templateURN)
+func (s *Service) FindByRecordAndTemplate(ctx context.Context, recordType, recordURN, templateURN string) (Tag, error) {
+	_, err := s.templateService.Find(ctx, templateURN)
 	if err != nil {
 		return Tag{}, err
 	}
-	listOfTag, err := s.repository.Read(Tag{RecordType: recordType, RecordURN: recordURN, TemplateURN: templateURN})
+	listOfTag, err := s.repository.Read(ctx, Tag{RecordType: recordType, RecordURN: recordURN, TemplateURN: templateURN})
 	if err != nil {
 		return Tag{}, err
 	}
@@ -79,12 +80,12 @@ func (s *Service) FindByRecordAndTemplate(recordType, recordURN, templateURN str
 }
 
 // Delete handles business process to delete a tag
-func (s *Service) Delete(recordType, recordURN, templateURN string) error {
-	_, err := s.templateService.Find(templateURN)
+func (s *Service) Delete(ctx context.Context, recordType, recordURN, templateURN string) error {
+	_, err := s.templateService.Find(ctx, templateURN)
 	if err != nil {
 		return errors.Wrap(err, "error finding template")
 	}
-	if err := s.repository.Delete(Tag{
+	if err := s.repository.Delete(ctx, Tag{
 		RecordType:  recordType,
 		RecordURN:   recordURN,
 		TemplateURN: templateURN,
@@ -95,15 +96,15 @@ func (s *Service) Delete(recordType, recordURN, templateURN string) error {
 }
 
 // Update handles business process for update
-func (s *Service) Update(tag *Tag) error {
+func (s *Service) Update(ctx context.Context, tag *Tag) error {
 	if err := s.Validate(tag); err != nil {
 		return err
 	}
-	template, err := s.templateService.Find(tag.TemplateURN)
+	template, err := s.templateService.Find(ctx, tag.TemplateURN)
 	if err != nil {
 		return errors.Wrap(err, "error finding template")
 	}
-	existingTags, err := s.repository.Read(Tag{
+	existingTags, err := s.repository.Read(ctx, Tag{
 		RecordType:  tag.RecordType,
 		RecordURN:   tag.RecordURN,
 		TemplateURN: tag.TemplateURN,
@@ -121,7 +122,7 @@ func (s *Service) Update(tag *Tag) error {
 	if err := s.validateFieldValueIsValid(*tag, template); err != nil {
 		return err
 	}
-	if err := s.repository.Update(tag); err != nil {
+	if err := s.repository.Update(ctx, tag); err != nil {
 		return errors.Wrap(err, "error updating tag")
 	}
 	return nil
