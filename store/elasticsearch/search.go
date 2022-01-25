@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -11,7 +12,6 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/odpf/columbus/discovery"
 	"github.com/olivere/elastic/v7"
-	"github.com/pkg/errors"
 )
 
 const (

@@ -2,10 +2,9 @@ package tag
 
 import (
 	"context"
+	"errors"
 	"fmt"
-
 	"github.com/odpf/columbus/tag/validator"
-	"github.com/pkg/errors"
 )
 
 // Service is a type of service that manages business process
