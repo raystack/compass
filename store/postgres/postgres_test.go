@@ -82,7 +82,10 @@ func newTestClient(logger *logrus.Logger) (*postgres.Client, *dockertest.Pool, *
 		}()
 	}
 
-	resource.Expire(120) // Tell docker to hard kill the container in 120 seconds
+	// Tell docker to hard kill the container in 120 seconds
+	if err := resource.Expire(120); err != nil {
+		return nil, nil, nil, err
+	}
 
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	pool.MaxWait = 60 * time.Second

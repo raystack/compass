@@ -407,7 +407,7 @@ func TestRecordHandler(t *testing.T) {
 					var response discovery.RecordList
 					err := json.NewDecoder(resp.Body).Decode(&response)
 					if err != nil {
-						return fmt.Errorf("error parsing response payload: %v", err)
+						return fmt.Errorf("error parsing response payload: %w", err)
 					}
 
 					expected := discovery.RecordList{
@@ -436,7 +436,7 @@ func TestRecordHandler(t *testing.T) {
 					var response discovery.RecordList
 					err := json.NewDecoder(resp.Body).Decode(&response)
 					if err != nil {
-						return fmt.Errorf("error parsing response payload: %v", err)
+						return fmt.Errorf("error parsing response payload: %w", err)
 					}
 
 					expected := discovery.RecordList{

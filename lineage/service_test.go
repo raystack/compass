@@ -13,27 +13,25 @@ import (
 	testifyMock "github.com/stretchr/testify/mock"
 )
 
-type stubBuilder struct {
-	testifyMock.Mock
-}
+type stubBuilder struct{} //nolint:unused
 
-func (b *stubBuilder) Build(ctx context.Context, er record.TypeRepository, rrf discovery.RecordRepositoryFactory) (lineage.Graph, error) {
+func (b *stubBuilder) Build(_ context.Context, _ record.TypeRepository, _ discovery.RecordRepositoryFactory) (lineage.Graph, error) { //nolint:unused
 	return nil, nil
 }
 
-type mockMetricsMonitor struct {
+type mockMetricsMonitor struct { //nolint:unused
 	testifyMock.Mock
 }
 
-func (mm *mockMetricsMonitor) Duration(op string, d int) {
+func (mm *mockMetricsMonitor) Duration(op string, d int) { //nolint:unused
 	mm.Called(op, d)
 }
 
-type mockPerformanceMonitor struct {
+type mockPerformanceMonitor struct { //nolint:unused
 	testifyMock.Mock
 }
 
-func (pm mockPerformanceMonitor) StartTransaction(ctx context.Context, operation string) (context.Context, func()) {
+func (pm *mockPerformanceMonitor) StartTransaction(ctx context.Context, operation string) (context.Context, func()) { //nolint:unused
 	args := pm.Called(ctx, operation)
 	return args.Get(0).(context.Context), args.Get(1).(func())
 }
@@ -44,7 +42,9 @@ func TestService(t *testing.T) {
 		entRepo := new(mock.TypeRepository)
 		entRepo.On("GetAll", ctx).Return([]record.TypeName{}, nil)
 		recordRepoFac := new(mock.RecordRepositoryFactory)
-		lineage.NewService(entRepo, recordRepoFac, lineage.Config{})
+		if _, err := lineage.NewService(entRepo, recordRepoFac, lineage.Config{}); err != nil {
+			t.Fatal(err)
+		}
 	})
 	t.Run("telemetry test", func(t *testing.T) {
 		// Temporarily disabling lineage build on service creation causes this test to fail
@@ -71,7 +71,7 @@ func TestService(t *testing.T) {
 			txnEnd = true
 		})
 
-		lineage.NewService(
+		if _, err := lineage.NewService(
 			nil,
 			nil,
 			lineage.Config{
@@ -80,7 +80,9 @@ func TestService(t *testing.T) {
 				Builder:            builder,
 				TimeSource:         lineage.TimeSourceFunc(ts),
 			},
-		)
+		); err != nil {
+			t.Fatal(err)
+		}
 
 		mm.AssertExpectations(t)
 		assert.True(t, txnEnd)

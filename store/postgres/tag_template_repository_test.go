@@ -120,7 +120,9 @@ func (r *TagTemplateRepositoryTestSuite) TestCreate() {
 
 		template := r.getTemplate()
 
-		r.repository.Create(r.ctx, &template)
+		if err := r.repository.Create(r.ctx, &template); err != nil {
+			r.Error(err)
+		}
 		actualError := r.repository.Create(r.ctx, &template)
 
 		r.Error(actualError)

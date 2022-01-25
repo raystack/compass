@@ -12,7 +12,6 @@ import (
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/odpf/columbus/record"
 	"github.com/olivere/elastic/v7"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -97,19 +96,19 @@ func Migrate(ctx context.Context, cli *elasticsearch.Client, recordTypeName reco
 	// checking for the existence of index before adding the metadata entry
 	idxExists, err := indexExists(ctx, cli, recordTypeName.String())
 	if err != nil {
-		return errors.Wrap(err, "error checking index existance")
+		return fmt.Errorf("error checking index existence: %w", err)
 	}
 
 	// update/create the index
 	if idxExists {
 		err = updateIdx(ctx, cli, recordTypeName)
 		if err != nil {
-			err = errors.Wrap(err, "error updating index")
+			err = fmt.Errorf("error updating index: %w", err)
 		}
 	} else {
 		err = createIdx(ctx, cli, recordTypeName)
 		if err != nil {
-			err = errors.Wrap(err, "error creating index")
+			err = fmt.Errorf("error creating index: %w", err)
 		}
 	}
 

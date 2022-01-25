@@ -12,7 +12,6 @@ import (
 )
 
 var daggerType = record.TypeName("dagger")
-var validType = record.TypeNameTable
 
 var esTestServer *testutil.ElasticsearchTestServer
 

@@ -9,7 +9,6 @@ import (
 	"github.com/odpf/columbus/record"
 	esStore "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/odpf/columbus/store/postgres"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -58,8 +57,7 @@ func migratePostgres(logger log.Logger) (err error) {
 
 	err = pgClient.Migrate(pgConfig)
 	if err != nil {
-		return errors.Wrap(err, "problem with migration")
-
+		return fmt.Errorf("problem with migration %w", err)
 	}
 
 	return nil
@@ -74,7 +72,7 @@ func migrateElasticsearch(logger log.Logger) (err error) {
 		defer cancel()
 		err = esStore.Migrate(ctx, esClient, supportedTypeName)
 		if err != nil {
-			err = errors.Wrapf(err, "error creating/replacing type: %q", supportedTypeName)
+			err = fmt.Errorf("error creating/replacing type %q: %w", supportedTypeName, err)
 			return
 		}
 		logger.Info("created/updated type\n", "type", supportedTypeName)

@@ -135,9 +135,13 @@ func TestInMemoryGraph(t *testing.T) {
 					)
 					enc.SetIndent("", "  ")
 					fmt.Fprint(msg, "expected: ")
-					enc.Encode(tc.ExpectGraph)
+					if err := enc.Encode(tc.ExpectGraph); err != nil {
+						t.Fatal(err)
+					}
 					fmt.Fprint(msg, "got: ")
-					enc.Encode(result)
+					if err := enc.Encode(result); err != nil {
+						t.Fatal(err)
+					}
 					t.Error(msg.String())
 					return
 				}

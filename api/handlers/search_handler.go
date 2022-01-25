@@ -85,9 +85,7 @@ func (handler *SearchHandler) buildSearchCfg(params url.Values) (cfg discovery.S
 
 func parseTypeWhiteList(values url.Values) (types []string, err error) {
 	for _, commaSeparatedTypes := range values[whiteListQueryParamKey] {
-		for _, ts := range strings.Split(commaSeparatedTypes, ",") {
-			types = append(types, ts)
-		}
+		types = append(types, strings.Split(commaSeparatedTypes, ",")...)
 	}
 	return
 }
