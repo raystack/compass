@@ -57,7 +57,7 @@ func (graph InMemoryGraph) Query(cfg QueryCfg) (AdjacencyMap, error) {
 		var err error
 		supergraph, err = graph.buildSubgraphFromRoot(supergraph, cfg.Root)
 		if err != nil {
-			return supergraph, fmt.Errorf("error building subgraph %s", err)
+			return supergraph, fmt.Errorf("error building subgraph: %w", err)
 		}
 	}
 

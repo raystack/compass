@@ -36,7 +36,7 @@ func (s *TemplateService) Create(ctx context.Context, template *Template) error 
 
 	templateRecords, err := s.repository.Read(ctx, template.URN)
 	if err != nil {
-		return errors.Wrap(err, "error checking template existence")
+		return fmt.Errorf("error checking template existence: %w", err)
 	}
 	if len(templateRecords) > 0 {
 		return DuplicateTemplateError{URN: template.URN}
@@ -44,7 +44,7 @@ func (s *TemplateService) Create(ctx context.Context, template *Template) error 
 
 	err = s.repository.Create(ctx, template)
 	if err != nil {
-		return errors.Wrap(err, "error creating template")
+		return fmt.Errorf("error creating template: %w", err)
 	}
 
 	return nil
@@ -55,13 +55,13 @@ func (s *TemplateService) Index(ctx context.Context, templateURN string) ([]Temp
 	if templateURN == "" {
 		output, err := s.repository.ReadAll(ctx)
 		if err != nil {
-			return nil, errors.Wrap(err, "error fetching templates")
+			return nil, fmt.Errorf("error fetching templates: %w", err)
 		}
 		return output, nil
 	}
 	output, err := s.repository.Read(ctx, templateURN)
 	if err != nil {
-		return nil, errors.Wrap(err, "error fetching templates")
+		return nil, fmt.Errorf("error fetching templates: %w", err)
 	}
 	return output, nil
 }
@@ -77,7 +77,7 @@ func (s *TemplateService) Update(ctx context.Context, templateURN string, templa
 	}
 	templateRecords, err := s.repository.Read(ctx, templateURN)
 	if err != nil {
-		return errors.Wrap(err, "error checking template existence")
+		return fmt.Errorf("error checking template existence: %w", err)
 	}
 	if len(templateRecords) == 0 {
 		return TemplateNotFoundError{URN: templateURN}
@@ -108,7 +108,7 @@ func (s *TemplateService) Update(ctx context.Context, templateURN string, templa
 
 	err = s.repository.Update(ctx, templateURN, template)
 	if err != nil {
-		return errors.Wrap(err, "error updating template")
+		return fmt.Errorf("error updating template: %w", err)
 	}
 	return nil
 }
@@ -117,7 +117,7 @@ func (s *TemplateService) Update(ctx context.Context, templateURN string, templa
 func (s *TemplateService) Find(ctx context.Context, urn string) (Template, error) {
 	listOfDomainTemplate, err := s.repository.Read(ctx, urn)
 	if err != nil {
-		return Template{}, errors.Wrap(err, "error reading repository")
+		return Template{}, fmt.Errorf("error reading repository: %w", err)
 	}
 	if len(listOfDomainTemplate) == 0 {
 		return Template{}, TemplateNotFoundError{URN: urn}
@@ -129,7 +129,7 @@ func (s *TemplateService) Find(ctx context.Context, urn string) (Template, error
 func (s *TemplateService) Delete(ctx context.Context, urn string) error {
 	err := s.repository.Delete(ctx, urn)
 	if err != nil {
-		return errors.Wrap(err, "error deleting template")
+		return fmt.Errorf("error deleting template: %w", err)
 	}
 	return nil
 }

@@ -68,7 +68,7 @@ func (sr *Searcher) Search(ctx context.Context, cfg discovery.SearchConfig) (res
 	}
 	query, err := sr.buildQuery(ctx, cfg, indices)
 	if err != nil {
-		err = errors.Wrap(err, "error building query")
+		err = fmt.Errorf("error building query %w", err)
 		return
 	}
 
@@ -80,14 +80,14 @@ func (sr *Searcher) Search(ctx context.Context, cfg discovery.SearchConfig) (res
 		sr.cli.Search.WithContext(ctx),
 	)
 	if err != nil {
-		err = errors.Wrap(err, "error executing search")
+		err = fmt.Errorf("error executing search %w", err)
 		return
 	}
 
 	var response searchResponse
 	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
-		err = errors.Wrap(err, "error decoding search response")
+		err = fmt.Errorf("error decoding search response %w", err)
 		return
 	}
 
@@ -115,7 +115,7 @@ func (sr *Searcher) Suggest(ctx context.Context, config discovery.SearchConfig) 
 		sr.cli.Search.WithContext(ctx),
 	)
 	if err != nil {
-		err = errors.Wrap(err, "error executing search")
+		err = fmt.Errorf("error executing search %w", err)
 		return
 	}
 	if res.IsError() {
@@ -126,12 +126,12 @@ func (sr *Searcher) Suggest(ctx context.Context, config discovery.SearchConfig) 
 	var response searchResponse
 	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
-		err = errors.Wrap(err, "error decoding search response")
+		err = fmt.Errorf("error decoding search response %w", err)
 		return
 	}
 	results, err = sr.toSuggestions(response)
 	if err != nil {
-		err = errors.Wrap(err, "error mapping response to suggestion")
+		err = fmt.Errorf("error mapping response to suggestion %w", err)
 	}
 
 	return
@@ -196,13 +196,13 @@ func (sr *Searcher) buildSuggestQuery(ctx context.Context, cfg discovery.SearchC
 		Suggester(suggester).
 		Source()
 	if err != nil {
-		return nil, errors.Wrap(err, "error building search source")
+		return nil, fmt.Errorf("error building search source %w", err)
 	}
 
 	payload := new(bytes.Buffer)
 	err = json.NewEncoder(payload).Encode(src)
 	if err != nil {
-		return payload, errors.Wrap(err, "error building reader")
+		return payload, fmt.Errorf("error building reader %w", err)
 	}
 
 	return payload, err

@@ -8,7 +8,6 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/odpf/columbus/record"
-	"github.com/pkg/errors"
 )
 
 // TypeRepository is an implementation of record.TypeRepository
@@ -23,7 +22,7 @@ func (repo *TypeRepository) GetAll(ctx context.Context) (map[record.TypeName]int
 		repo.cli.Cat.Indices.WithContext(ctx),
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "error from es client")
+		return nil, fmt.Errorf("error from es client %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.IsError() {
@@ -32,14 +31,14 @@ func (repo *TypeRepository) GetAll(ctx context.Context) (map[record.TypeName]int
 	var indices []esIndex
 	err = json.NewDecoder(resp.Body).Decode(&indices)
 	if err != nil {
-		return nil, errors.Wrap(err, "error decoding es response")
+		return nil, fmt.Errorf("error decoding es response %w", err)
 	}
 
 	results := map[record.TypeName]int{}
 	for _, index := range indices {
 		count, err := strconv.Atoi(index.DocsCount)
 		if err != nil {
-			return results, errors.Wrap(err, "error converting docs count to a number")
+			return results, fmt.Errorf("error converting docs count to a number: %w", err)
 		}
 		typName := record.TypeName(index.Index)
 		if err := typName.IsValid(); err != nil {
