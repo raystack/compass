@@ -7,21 +7,27 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
+	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/tag"
 )
 
 type Config struct {
-	Logger                  log.Logger
-	TagService              *tag.Service
-	TagTemplateService      *tag.TemplateService
+	Logger              log.Logger
+	AssetRepository     asset.Repository
+	DiscoveryRepository discovery.Repository
+	TagService          *tag.Service
+	TagTemplateService  *tag.TemplateService
+	LineageProvider     handlers.LineageProvider
+
+	// Deprecated
+	DiscoveryService        *discovery.Service
 	TypeRepository          discovery.TypeRepository
 	RecordRepositoryFactory discovery.RecordRepositoryFactory
-	DiscoveryService        *discovery.Service
-	LineageProvider         handlers.LineageProvider
 }
 
 type Handlers struct {
+	Asset       *handlers.AssetHandler
 	Type        *handlers.TypeHandler
 	Record      *handlers.RecordHandler
 	Search      *handlers.SearchHandler
@@ -34,6 +40,12 @@ func initHandlers(config Config) *Handlers {
 	typeHandler := handlers.NewTypeHandler(
 		config.Logger,
 		config.TypeRepository,
+	)
+
+	assetHandler := handlers.NewAssetHandler(
+		config.Logger,
+		config.AssetRepository,
+		config.DiscoveryRepository,
 	)
 
 	recordHandler := handlers.NewRecordHandler(
@@ -60,6 +72,7 @@ func initHandlers(config Config) *Handlers {
 	)
 
 	return &Handlers{
+		Asset:       assetHandler,
 		Type:        typeHandler,
 		Record:      recordHandler,
 		Search:      searchHandler,

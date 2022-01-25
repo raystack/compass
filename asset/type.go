@@ -1,9 +1,5 @@
 package asset
 
-import (
-	"fmt"
-)
-
 const (
 	TypeTable     Type = "table"
 	TypeJob       Type = "job"
@@ -28,10 +24,10 @@ func (t Type) String() string {
 }
 
 // IsValid will validate whether the typename is valid or not
-func (t Type) IsValid() error {
+func (t Type) IsValid() bool {
 	switch t {
 	case TypeTable, TypeJob, TypeDashboard, TypeTopic:
-		return nil
+		return true
 	}
-	return fmt.Errorf("invalid type name: %s", t)
+	return false
 }

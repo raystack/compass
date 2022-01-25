@@ -48,8 +48,8 @@ func (h *RecordHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	)
 
 	typName := asset.Type(typeName)
-	if err := typName.IsValid(); err != nil {
-		writeJSONError(w, http.StatusNotFound, err.Error())
+	if !typName.IsValid() {
+		writeJSONError(w, http.StatusNotFound, "type is invalid")
 		return
 	}
 
@@ -81,8 +81,8 @@ func (h *RecordHandler) UpsertBulk(w http.ResponseWriter, r *http.Request) {
 	}
 
 	typName := asset.Type(typeName)
-	if err := typName.IsValid(); err != nil {
-		writeJSONError(w, http.StatusNotFound, err.Error())
+	if !typName.IsValid() {
+		writeJSONError(w, http.StatusNotFound, "type is invalid")
 		return
 	}
 
@@ -112,8 +112,8 @@ func (h *RecordHandler) GetByType(w http.ResponseWriter, r *http.Request) {
 	typeName := mux.Vars(r)["name"]
 
 	typName := asset.Type(typeName)
-	if err := typName.IsValid(); err != nil {
-		writeJSONError(w, http.StatusNotFound, err.Error())
+	if !typName.IsValid() {
+		writeJSONError(w, http.StatusNotFound, "type is invalid")
 		return
 	}
 
@@ -153,8 +153,8 @@ func (h *RecordHandler) GetOneByType(w http.ResponseWriter, r *http.Request) {
 	)
 
 	typName := asset.Type(typeName)
-	if err := typName.IsValid(); err != nil {
-		writeJSONError(w, http.StatusNotFound, err.Error())
+	if !typName.IsValid() {
+		writeJSONError(w, http.StatusNotFound, "type is invalid")
 		return
 	}
 

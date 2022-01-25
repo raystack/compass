@@ -78,6 +78,11 @@ func initRouter(
 		tagTemplateService,
 	)
 
+	assetRepository, err := postgres.NewAssetRepository(pgClient, 0)
+	if err != nil {
+		logger.Fatal("failed to create new asset repository", "error", err)
+	}
+
 	lineageRepo, err := postgres.NewLineageRepository(pgClient)
 	if err != nil {
 		logger.Fatal("failed to create new lineage repository", "error", err)
@@ -109,6 +114,7 @@ func initRouter(
 
 	api.RegisterRoutes(router, api.Config{
 		Logger:                  logger,
+		AssetRepository:         assetRepository,
 		TypeRepository:          typeRepository,
 		DiscoveryService:        discovery.NewService(recordRepositoryFactory, recordSearcher),
 		RecordRepositoryFactory: recordRepositoryFactory,

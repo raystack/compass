@@ -42,7 +42,7 @@ func (repo *TypeRepository) GetAll(ctx context.Context) (map[asset.Type]int, err
 			return results, errors.Wrap(err, "error converting docs count to a number")
 		}
 		typName := asset.Type(index.Index)
-		if err := typName.IsValid(); err != nil {
+		if !typName.IsValid() {
 			continue
 		}
 		results[typName] = count

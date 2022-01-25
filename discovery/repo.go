@@ -6,10 +6,9 @@ import (
 	"github.com/odpf/columbus/asset"
 )
 
-type RecordIterator interface {
-	Scan() bool
-	Next() []asset.Asset
-	Close() error
+type Repository interface {
+	Upsert(context.Context, asset.Asset) error
+	Delete(ctx context.Context, assetID string) error
 }
 
 // RecordRepository is an abstract storage for Assets
