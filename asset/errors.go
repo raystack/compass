@@ -6,7 +6,8 @@ import (
 )
 
 var (
-	ErrEmptyID = errors.New("asset does not have ID")
+	ErrEmptyID     = errors.New("asset does not have ID")
+	ErrUnknownType = errors.New("unknown type")
 )
 
 type NotFoundError struct {

@@ -9,20 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
 	"github.com/olivere/elastic/v7"
-)
-
-const (
-	defaultGetSize   = 20
-	defaultSortField = "name.keyword"
-
-	defaultScrollTimeout   = 30 * time.Second
-	defaultScrollBatchSize = 20
 )
 
 // RecordRepository implements discovery.RecordRepository

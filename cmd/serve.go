@@ -83,6 +83,7 @@ func initRouter(
 		logger.Fatal("failed to create new asset repository", "error", err)
 	}
 
+	discoveryRepo := esStore.NewDiscoveryRepository(esClient)
 	lineageRepo, err := postgres.NewLineageRepository(pgClient)
 	if err != nil {
 		logger.Fatal("failed to create new lineage repository", "error", err)
@@ -115,6 +116,7 @@ func initRouter(
 	api.RegisterRoutes(router, api.Config{
 		Logger:                  logger,
 		AssetRepository:         assetRepository,
+		DiscoveryRepository:     discoveryRepo,
 		TypeRepository:          typeRepository,
 		DiscoveryService:        discovery.NewService(recordRepositoryFactory, recordSearcher),
 		RecordRepositoryFactory: recordRepositoryFactory,
