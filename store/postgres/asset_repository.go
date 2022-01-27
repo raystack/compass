@@ -38,6 +38,17 @@ func (r *AssetRepository) Get(ctx context.Context, config asset.GetConfig) (asse
 	return
 }
 
+// Get retrieves list of assets with filters via config
+func (r *AssetRepository) GetCount(ctx context.Context, config asset.GetConfig) (total int, err error) {
+	query, args := r.buildGetCountQuery(config)
+	err = r.client.db.GetContext(ctx, &total, query, args...)
+	if err != nil {
+		err = fmt.Errorf("error getting asset list: %w", err)
+	}
+
+	return
+}
+
 // GetByID retrieves asset by its ID
 func (r *AssetRepository) GetByID(ctx context.Context, id string) (asset.Asset, error) {
 	query := `SELECT * FROM assets WHERE id = $1 LIMIT 1;`
@@ -126,6 +137,35 @@ func (r *AssetRepository) buildGetQuery(config asset.GetConfig) (query string, a
 		query += "WHERE " + strings.Join(whereClauses, " AND ") + " "
 	}
 	query += fmt.Sprintf("LIMIT $%d OFFSET $%d;", totalWhereClauses+1, totalWhereClauses+2)
+
+	return
+}
+
+func (r *AssetRepository) buildGetCountQuery(config asset.GetConfig) (query string, args []interface{}) {
+	whereFields := []string{}
+	args = []interface{}{}
+
+	if config.Type != "" {
+		whereFields = append(whereFields, "type")
+		args = append(args, config.Type)
+	}
+	if config.Service != "" {
+		whereFields = append(whereFields, "service")
+		args = append(args, config.Service)
+	}
+
+	args = append(args)
+
+	whereClauses := []string{}
+	for i, field := range whereFields {
+		whereClauses = append(whereClauses, fmt.Sprintf("%s = $%d", field, i+1))
+	}
+	totalWhereClauses := len(whereClauses)
+
+	query = "SELECT count(1) FROM assets "
+	if totalWhereClauses > 0 {
+		query += "WHERE " + strings.Join(whereClauses, " AND ") + " "
+	}
 
 	return
 }

@@ -322,6 +322,15 @@ func TestAssetHandlerGet(t *testing.T) {
 			},
 		},
 		{
+			Description:  `should return http 500 if fetching total fails`,
+			Querystring:  "?with_total=1",
+			ExpectStatus: http.StatusInternalServerError,
+			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
+				ar.On("Get", ctx, asset.GetConfig{}).Return([]asset.Asset{}, nil)
+				ar.On("GetCount", ctx, asset.GetConfig{}).Return(0, errors.New("unknown error"))
+			},
+		},
+		{
 			Description:  `should parse querystring to get config`,
 			Querystring:  "?text=asd&type=table&service=bigquery&size=30&offset=50",
 			ExpectStatus: http.StatusOK,
@@ -345,17 +354,70 @@ func TestAssetHandlerGet(t *testing.T) {
 				}, nil)
 			},
 			PostCheck: func(r *http.Response) error {
-				expected := []asset.Asset{
-					{ID: "testid-1"},
-					{ID: "testid-2"},
+				type responsePayload struct {
+					Data []asset.Asset `json:"data"`
 				}
-				var responsePayload []asset.Asset
-				err := json.NewDecoder(r.Body).Decode(&responsePayload)
+				expected := responsePayload{
+					Data: []asset.Asset{
+						{ID: "testid-1"},
+						{ID: "testid-2"},
+					},
+				}
+
+				var actual responsePayload
+				err := json.NewDecoder(r.Body).Decode(&actual)
 				if err != nil {
 					return fmt.Errorf("error reading response body: %w", err)
 				}
-				if reflect.DeepEqual(responsePayload, expected) == false {
-					return fmt.Errorf("expected payload to be to be %+v, was %+v", expected, responsePayload)
+				if reflect.DeepEqual(actual, expected) == false {
+					return fmt.Errorf("expected payload to be to be %+v, was %+v", expected, actual)
+				}
+				return nil
+			},
+		},
+		{
+			Description:  "should return total in the payload if with_total flag is given",
+			ExpectStatus: http.StatusOK,
+			Querystring:  "?with_total=true&text=dsa&type=job&service=kafka&size=10&offset=5",
+			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
+				ar.On("Get", ctx, asset.GetConfig{
+					Text:    "dsa",
+					Type:    "job",
+					Service: "kafka",
+					Size:    10,
+					Offset:  5,
+				}).Return([]asset.Asset{
+					{ID: "testid-1"},
+					{ID: "testid-2"},
+					{ID: "testid-3"},
+				}, nil)
+				ar.On("GetCount", ctx, asset.GetConfig{
+					Text:    "dsa",
+					Type:    "job",
+					Service: "kafka",
+				}).Return(150, nil)
+			},
+			PostCheck: func(r *http.Response) error {
+				type responsePayload struct {
+					Total int           `json:"total"`
+					Data  []asset.Asset `json:"data"`
+				}
+				expected := responsePayload{
+					Total: 150,
+					Data: []asset.Asset{
+						{ID: "testid-1"},
+						{ID: "testid-2"},
+						{ID: "testid-3"},
+					},
+				}
+
+				var actual responsePayload
+				err := json.NewDecoder(r.Body).Decode(&actual)
+				if err != nil {
+					return fmt.Errorf("error reading response body: %w", err)
+				}
+				if reflect.DeepEqual(actual, expected) == false {
+					return fmt.Errorf("expected payload to be to be %+v, was %+v", expected, actual)
 				}
 				return nil
 			},

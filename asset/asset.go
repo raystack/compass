@@ -24,6 +24,7 @@ type Asset struct {
 
 type Repository interface {
 	Get(context.Context, GetConfig) ([]Asset, error)
+	GetCount(context.Context, GetConfig) (int, error)
 	GetByID(ctx context.Context, id string) (Asset, error)
 	Upsert(context.Context, *Asset) error
 	Delete(ctx context.Context, id string) error

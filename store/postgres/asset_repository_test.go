@@ -130,6 +130,31 @@ func (r *AssetRepositoryTestSuite) TestGet() {
 	})
 }
 
+func (r *AssetRepositoryTestSuite) TestGetCount() {
+	// populate assets
+	total := 12
+	typ := asset.TypeJob
+	service := "service-getcount"
+	for i := 0; i < total; i++ {
+		ast := asset.Asset{
+			URN:     fmt.Sprintf("urn-getcount-%d", i),
+			Type:    typ,
+			Service: service,
+		}
+		err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+	}
+
+	r.Run("should return total assets with filter", func() {
+		actual, err := r.repository.GetCount(r.ctx, asset.GetConfig{
+			Type:    typ,
+			Service: service,
+		})
+		r.Require().NoError(err)
+		r.Equal(total, actual)
+	})
+}
+
 func (r *AssetRepositoryTestSuite) TestGetByID() {
 	r.Run("return error from client if any", func() {
 		_, err := r.repository.GetByID(r.ctx, "invalid-uuid")

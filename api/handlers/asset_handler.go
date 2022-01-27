@@ -36,13 +36,31 @@ func NewAssetHandler(
 
 func (h *AssetHandler) Get(w http.ResponseWriter, r *http.Request) {
 	config := h.buildGetConfig(r.URL.Query())
-	ast, err := h.assetRepository.Get(r.Context(), config)
+	assets, err := h.assetRepository.Get(r.Context(), config)
 	if err != nil {
 		internalServerError(w, h.logger, err.Error())
 		return
 	}
 
-	writeJSON(w, http.StatusOK, ast)
+	payload := map[string]interface{}{
+		"data": assets,
+	}
+
+	withTotal, ok := r.URL.Query()["with_total"]
+	if ok && len(withTotal) > 0 && withTotal[0] != "false" && withTotal[0] != "0" {
+		total, err := h.assetRepository.GetCount(r.Context(), asset.GetConfig{
+			Type:    config.Type,
+			Service: config.Service,
+			Text:    config.Text,
+		})
+		if err != nil {
+			internalServerError(w, h.logger, err.Error())
+			return
+		}
+		payload["total"] = total
+	}
+
+	writeJSON(w, http.StatusOK, payload)
 }
 
 func (h *AssetHandler) GetByID(w http.ResponseWriter, r *http.Request) {
