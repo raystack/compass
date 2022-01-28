@@ -308,7 +308,7 @@ func (sr *Searcher) toSearchResults(hits []searchHit) []discovery.SearchResult {
 		}
 		results = append(results, discovery.SearchResult{
 			Type:        hit.Index,
-			ID:          r.ID,
+			ID:          id,
 			URN:         r.URN,
 			Description: r.Description,
 			Title:       r.Name,

@@ -43,7 +43,6 @@
                 },
                 "owners": [{
                     "urn": "owner::topic/1",
-                    "name": "John Doe",
                     "role": "user",
                     "email": "john.doe@email.com"
                 }]
@@ -63,7 +62,6 @@
                 },
                 "owners": [{
                     "urn": "owner::topic/22",
-                    "name": "Mary Jane",
                     "role": "user",
                     "email": "mary.jane@email.com"
                 }]

@@ -164,8 +164,8 @@ func TestSearcherSearch(t *testing.T) {
 				Config: discovery.SearchConfig{
 					Text: "consumer",
 					Queries: map[string]string{
-						"description": "rabbitmq",
-						"owners.name": "john doe",
+						"description":  "rabbitmq",
+						"owners.email": "john.doe",
 					},
 				},
 				Expected: []expectedRow{
