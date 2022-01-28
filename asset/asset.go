@@ -17,7 +17,7 @@ type Asset struct {
 	Description string                 `json:"description"`
 	Data        map[string]interface{} `json:"data"`
 	Labels      map[string]string      `json:"labels"`
-	Owners      []user.User            `json:"owners"`
+	Owners      []user.User            `json:"owners,omitempty"`
 	CreatedAt   time.Time              `json:"created_at"`
 	UpdatedAt   time.Time              `json:"updated_at"`
 }

@@ -78,7 +78,8 @@ func initRouter(
 		tagTemplateService,
 	)
 
-	assetRepository, err := postgres.NewAssetRepository(pgClient, 0)
+	userRepository, err := postgres.NewUserRepository(pgClient)
+	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0)
 	if err != nil {
 		logger.Fatal("failed to create new asset repository", "error", err)
 	}

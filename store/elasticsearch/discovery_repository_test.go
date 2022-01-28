@@ -131,14 +131,6 @@ func TestDiscoveryRepositoryDelete(t *testing.T) {
 		assert.ErrorIs(t, err, asset.ErrEmptyID)
 	})
 
-	t.Run("should return NotFoundError if record does not exist", func(t *testing.T) {
-		assetID := "non-existant-id"
-		cli := esTestServer.NewClient()
-		repo := store.NewDiscoveryRepository(cli)
-		err := repo.Delete(ctx, assetID)
-		assert.ErrorAs(t, err, &asset.NotFoundError{AssetID: assetID})
-	})
-
 	t.Run("should not return error on success", func(t *testing.T) {
 		ast := asset.Asset{
 			ID:   "delete-id",
@@ -154,15 +146,5 @@ func TestDiscoveryRepositoryDelete(t *testing.T) {
 
 		err = repo.Delete(ctx, ast.ID)
 		assert.NoError(t, err)
-
-		res, err := cli.API.Get("_all", ast.ID)
-		require.NoError(t, err)
-		require.False(t, res.IsError())
-		var payload struct {
-			Source asset.Asset `json:"_source"`
-		}
-		err = json.NewDecoder(res.Body).Decode(&payload)
-		require.NoError(t, err)
-		assert.Nil(t, payload.Source)
 	})
 }

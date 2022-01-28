@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/odpf/salt/log"
 
@@ -81,7 +82,7 @@ func TestAssetHandlerUpsert(t *testing.T) {
 			})
 		}
 	})
-	t.Run("should return HTTP 500 if the resource creation/update fails", func(t *testing.T) {
+	t.Run("should return HTTP 500 if the asset creation/update fails", func(t *testing.T) {
 		t.Run("AssetRepository fails", func(t *testing.T) {
 			rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
 			rw := httptest.NewRecorder()
@@ -127,35 +128,42 @@ func TestAssetHandlerUpsert(t *testing.T) {
 			assert.Contains(t, response.Reason, "Internal Server Error")
 		})
 	})
-	t.Run("should return HTTP 200 if the resource is successfully created/updated", func(t *testing.T) {
-		expectedAssets := asset.Asset{
+	t.Run("should return HTTP 200 and asset's ID if the asset is successfully created/updated", func(t *testing.T) {
+		ast := asset.Asset{
 			URN:     "test dagger",
 			Type:    asset.TypeTable,
 			Name:    "de-dagger-test",
 			Service: "kafka",
 			Data:    map[string]interface{}{},
 		}
+		assetWithID := ast
+		assetWithID.ID = uuid.New().String()
+
 		rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
 		rw := httptest.NewRecorder()
 
 		ar := new(assetMocks.Repository)
-		ar.On("Upsert", rr.Context(), &expectedAssets).Return(nil)
+		ar.On("Upsert", rr.Context(), &ast).Return(nil).Run(func(args tmock.Arguments) {
+			argAsset := args.Get(1).(*asset.Asset)
+			argAsset.ID = assetWithID.ID
+		})
 		defer ar.AssertExpectations(t)
 
 		dr := new(discoveryMocks.Repository)
-		dr.On("Upsert", rr.Context(), expectedAssets).Return(nil)
+		dr.On("Upsert", rr.Context(), assetWithID).Return(nil)
 		defer dr.AssertExpectations(t)
 
 		handler := handlers.NewAssetHandler(logger, ar, dr)
 		handler.Upsert(rw, rr)
 
 		assert.Equal(t, http.StatusOK, rw.Code)
-		var response handlers.StatusResponse
+		var response map[string]interface{}
 		err := json.NewDecoder(rw.Body).Decode(&response)
 		require.NoError(t, err)
-		assert.Equal(t, handlers.StatusResponse{
-			Status: "success",
-		}, response)
+
+		assetID, exists := response["id"]
+		assert.True(t, exists)
+		assert.Equal(t, assetWithID.ID, assetID)
 	})
 }
 

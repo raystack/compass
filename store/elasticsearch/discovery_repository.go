@@ -6,8 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
-	"net/url"
+	"strings"
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
@@ -73,20 +72,16 @@ func (repo *DiscoveryRepository) Delete(ctx context.Context, assetID string) err
 		return asset.ErrEmptyID
 	}
 
-	res, err := repo.cli.Delete(
-		"_all",
-		url.PathEscape(assetID),
-		repo.cli.Delete.WithRefresh("true"),
-		repo.cli.Delete.WithContext(ctx),
+	res, err := repo.cli.DeleteByQuery(
+		[]string{"_all"},
+		strings.NewReader(fmt.Sprintf(`{"query":{"terms":{"_id": ["%s"]}}}`, assetID)),
+		repo.cli.DeleteByQuery.WithContext(ctx),
 	)
 	if err != nil {
 		return fmt.Errorf("error deleting record: %w", err)
 	}
 	defer res.Body.Close()
 	if res.IsError() {
-		if res.StatusCode == http.StatusNotFound {
-			return asset.NotFoundError{AssetID: assetID}
-		}
 		return fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
 	}
 

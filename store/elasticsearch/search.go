@@ -302,9 +302,14 @@ func (sr *Searcher) toSearchResults(hits []searchHit) []discovery.SearchResult {
 	results := []discovery.SearchResult{}
 	for _, hit := range hits {
 		r := hit.Source
+		id := r.ID
+		if id == "" { // this is for backward compatibility for asset without ID
+			id = r.URN
+		}
 		results = append(results, discovery.SearchResult{
 			Type:        hit.Index,
-			ID:          r.URN,
+			ID:          r.ID,
+			URN:         r.URN,
 			Description: r.Description,
 			Title:       r.Name,
 			Service:     r.Service,

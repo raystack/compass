@@ -7,6 +7,7 @@ import (
 
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/store/postgres"
+	"github.com/odpf/columbus/user"
 	"github.com/ory/dockertest/v3"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
@@ -36,7 +37,11 @@ func (r *AssetRepositoryTestSuite) SetupSuite() {
 	}
 
 	r.ctx = context.TODO()
-	r.repository, err = postgres.NewAssetRepository(r.client, defaultGetMaxSize)
+	userRepo, err := postgres.NewUserRepository(r.client)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	r.repository, err = postgres.NewAssetRepository(r.client, userRepo, defaultGetMaxSize)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -159,7 +164,7 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 	r.Run("return error from client if any", func() {
 		_, err := r.repository.GetByID(r.ctx, "invalid-uuid")
 		r.Error(err)
-		r.Contains(err.Error(), "error getting asset with ID = \"invalid-uuid\" from DB")
+		r.Contains(err.Error(), "error getting asset with ID = \"invalid-uuid\"")
 	})
 
 	r.Run("return NotFoundError if asset does not exist", func() {
@@ -190,9 +195,61 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 		r.NoError(err)
 		r.Equal(asset2, result)
 	})
+
+	r.Run("return owners if any", func() {
+		// create users
+		user1 := user.User{Email: "johndoe@example.com"}
+		user2 := user.User{Email: "janedoe@example.com"}
+		userRepo, err := postgres.NewUserRepository(r.client)
+		r.Require().NoError(err)
+		user1.ID, err = userRepo.Create(r.ctx, &user1)
+		r.Require().NoError(err)
+		user2.ID, err = userRepo.Create(r.ctx, &user2)
+		r.Require().NoError(err)
+		// clean up
+		defer func() {
+			err = r.client.ExecQueries(r.ctx, []string{"DELETE from users"})
+			r.Require().NoError(err)
+		}()
+
+		ast := asset.Asset{
+			URN:     "urn-gbi-3",
+			Type:    "table",
+			Service: "bigquery",
+			Owners: []user.User{
+				user1,
+				user2,
+			},
+		}
+
+		err = r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+
+		result, err := r.repository.GetByID(r.ctx, ast.ID)
+		r.NoError(err)
+		r.Len(result.Owners, len(ast.Owners))
+		for i, owner := range result.Owners {
+			r.Equal(ast.Owners[i].ID, owner.ID)
+		}
+	})
 }
 
 func (r *AssetRepositoryTestSuite) TestUpsert() {
+	// create users
+	user1 := user.User{Email: "johndoe@example.com"}
+	user2 := user.User{Email: "janedoe@example.com"}
+	userRepo, err := postgres.NewUserRepository(r.client)
+	r.Require().NoError(err)
+	user1.ID, err = userRepo.Create(r.ctx, &user1)
+	r.Require().NoError(err)
+	user2.ID, err = userRepo.Create(r.ctx, &user2)
+	r.Require().NoError(err)
+	// clean up
+	defer func() {
+		err = r.client.ExecQueries(r.ctx, []string{"DELETE from users"})
+		r.Require().NoError(err)
+	}()
+
 	r.Run("set ID to asset on inserting", func() {
 		ast := asset.Asset{
 			URN:     "urn-u-1",
@@ -210,7 +267,7 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 
 	r.Run("should not create but update existing asset if urn, type and service match", func() {
 		ast := asset.Asset{
-			URN:     "urn-u-1",
+			URN:     "urn-u-2",
 			Type:    "table",
 			Service: "bigquery",
 		}
@@ -223,6 +280,137 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 		r.Require().NoError(err)
 
 		r.Equal(ast.ID, identicalAsset.ID)
+	})
+
+	r.Run("should store owners if any during insert", func() {
+		ast := asset.Asset{
+			URN:     "urn-u-3",
+			Type:    "table",
+			Service: "bigquery",
+			Owners: []user.User{
+				user1,
+				user2,
+			},
+		}
+
+		err = r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+
+		actual, err := r.repository.GetByID(r.ctx, ast.ID)
+		r.NoError(err)
+
+		r.Len(actual.Owners, len(ast.Owners))
+		for i, owner := range actual.Owners {
+			r.Equal(ast.Owners[i].ID, owner.ID)
+		}
+	})
+
+	r.Run("should create owners as users if they do not exist yet on creation", func() {
+		ast := asset.Asset{
+			URN:     "urn-u-3a",
+			Type:    "table",
+			Service: "bigquery",
+			Owners: []user.User{
+				{Email: "newuser@example.com"},
+			},
+		}
+
+		err = r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+
+		actual, err := r.repository.GetByID(r.ctx, ast.ID)
+		r.NoError(err)
+
+		r.Len(actual.Owners, len(ast.Owners))
+		for i, owner := range actual.Owners {
+			r.Equal(ast.Owners[i].Email, owner.Email)
+			r.Equal(r.lengthOfString(owner.ID), 36) // uuid
+		}
+	})
+
+	r.Run("should delete old owners if it does not exist on new asset during update", func() {
+		ast := asset.Asset{
+			URN:     "urn-u-4",
+			Type:    "table",
+			Service: "bigquery",
+			Owners: []user.User{
+				user1,
+				user2,
+			},
+		}
+		newAsset := ast
+		newAsset.Owners = []user.User{
+			user2,
+		}
+
+		err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+		err = r.repository.Upsert(r.ctx, &newAsset)
+		r.Require().NoError(err)
+
+		actual, err := r.repository.GetByID(r.ctx, ast.ID)
+		r.NoError(err)
+		r.Len(actual.Owners, len(newAsset.Owners))
+		for i, owner := range actual.Owners {
+			r.Equal(newAsset.Owners[i].ID, owner.ID)
+		}
+	})
+
+	r.Run("should create new owners if it does not exist on old asset during update", func() {
+		ast := asset.Asset{
+			URN:     "urn-u-4",
+			Type:    "table",
+			Service: "bigquery",
+			Owners: []user.User{
+				user1,
+			},
+		}
+		newAsset := ast
+		newAsset.Owners = []user.User{
+			user1,
+			user2,
+		}
+
+		err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+		err = r.repository.Upsert(r.ctx, &newAsset)
+		r.Require().NoError(err)
+
+		actual, err := r.repository.GetByID(r.ctx, ast.ID)
+		r.NoError(err)
+		r.Len(actual.Owners, len(newAsset.Owners))
+		for i, owner := range actual.Owners {
+			r.Equal(newAsset.Owners[i].ID, owner.ID)
+		}
+	})
+
+	r.Run("should create users from owners if owner emails do not exist yet", func() {
+		ast := asset.Asset{
+			URN:     "urn-u-4a",
+			Type:    "table",
+			Service: "bigquery",
+			Owners: []user.User{
+				user1,
+			},
+		}
+		newAsset := ast
+		newAsset.Owners = []user.User{
+			user1,
+			{Email: "newuser@example.com"},
+		}
+
+		err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+		err = r.repository.Upsert(r.ctx, &newAsset)
+		r.Require().NoError(err)
+
+		actual, err := r.repository.GetByID(r.ctx, ast.ID)
+		r.NoError(err)
+		r.Len(actual.Owners, len(newAsset.Owners))
+		for i, owner := range actual.Owners {
+			r.Equal(newAsset.Owners[i].Email, owner.Email)
+			r.Equal(r.lengthOfString(owner.ID), 36) // uuid
+		}
 	})
 }
 

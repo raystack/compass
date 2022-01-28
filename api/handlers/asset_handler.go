@@ -101,7 +101,9 @@ func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, StatusResponse{Status: "success"})
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"id": ast.ID,
+	})
 }
 
 func (h *AssetHandler) Delete(w http.ResponseWriter, r *http.Request) {

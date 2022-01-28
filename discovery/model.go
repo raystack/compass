@@ -9,6 +9,7 @@ type RecordFilter = map[string][]string
 // SearchResult represents an item/result in a list of search results
 type SearchResult struct {
 	ID          string            `json:"id"`
+	URN         string            `json:"urn"`
 	Title       string            `json:"title"`
 	Type        string            `json:"type"`
 	Service     string            `json:"service"`

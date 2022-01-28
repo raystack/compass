@@ -23,7 +23,7 @@ type Asset struct {
 	UpdatedAt   time.Time `db:"updated_at"`
 }
 
-func (a *Asset) toDomain() asset.Asset {
+func (a *Asset) toAsset() asset.Asset {
 	return asset.Asset{
 		ID:          a.ID,
 		URN:         a.URN,
