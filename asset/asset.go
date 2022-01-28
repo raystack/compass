@@ -23,14 +23,14 @@ type Asset struct {
 }
 
 type Repository interface {
-	Get(context.Context, GetConfig) ([]Asset, error)
-	GetCount(context.Context, GetConfig) (int, error)
+	Get(context.Context, Config) ([]Asset, error)
+	GetCount(context.Context, Config) (int, error)
 	GetByID(ctx context.Context, id string) (Asset, error)
 	Upsert(context.Context, *Asset) error
 	Delete(ctx context.Context, id string) error
 }
 
-type GetConfig struct {
+type Config struct {
 	Text    string `json:"text"`
 	Type    Type   `json:"type"`
 	Service string `json:"service"`

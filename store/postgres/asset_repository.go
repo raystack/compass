@@ -24,7 +24,7 @@ type AssetRepository struct {
 }
 
 // Get retrieves list of assets with filters via config
-func (r *AssetRepository) Get(ctx context.Context, config asset.GetConfig) (assets []asset.Asset, err error) {
+func (r *AssetRepository) Get(ctx context.Context, config asset.Config) (assets []asset.Asset, err error) {
 	query, args := r.buildGetQuery(config)
 	ams := []*Asset{}
 	err = r.client.db.SelectContext(ctx, &ams, query, args...)
@@ -42,7 +42,7 @@ func (r *AssetRepository) Get(ctx context.Context, config asset.GetConfig) (asse
 }
 
 // Get retrieves list of assets with filters via config
-func (r *AssetRepository) GetCount(ctx context.Context, config asset.GetConfig) (total int, err error) {
+func (r *AssetRepository) GetCount(ctx context.Context, config asset.Config) (total int, err error) {
 	query, args := r.buildGetCountQuery(config)
 	err = r.client.db.GetContext(ctx, &total, query, args...)
 	if err != nil {
@@ -120,7 +120,7 @@ func (r *AssetRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *AssetRepository) buildGetQuery(config asset.GetConfig) (query string, args []interface{}) {
+func (r *AssetRepository) buildGetQuery(config asset.Config) (query string, args []interface{}) {
 	whereFields := []string{}
 	args = []interface{}{}
 
@@ -154,7 +154,7 @@ func (r *AssetRepository) buildGetQuery(config asset.GetConfig) (query string, a
 	return
 }
 
-func (r *AssetRepository) buildGetCountQuery(config asset.GetConfig) (query string, args []interface{}) {
+func (r *AssetRepository) buildGetCountQuery(config asset.Config) (query string, args []interface{}) {
 	whereFields := []string{}
 	args = []interface{}{}
 

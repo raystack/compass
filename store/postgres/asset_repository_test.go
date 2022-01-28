@@ -85,7 +85,7 @@ func (r *AssetRepositoryTestSuite) TestGet() {
 	}
 
 	r.Run("should return all assets limited by default size", func() {
-		results, err := r.repository.Get(r.ctx, asset.GetConfig{})
+		results, err := r.repository.Get(r.ctx, asset.Config{})
 		r.Require().NoError(err)
 		r.Require().Len(results, defaultGetMaxSize)
 		r.Equal(assets[:defaultGetMaxSize], results)
@@ -93,7 +93,7 @@ func (r *AssetRepositoryTestSuite) TestGet() {
 
 	r.Run("should override default size using GetConfig.Size", func() {
 		size := 8
-		results, err := r.repository.Get(r.ctx, asset.GetConfig{
+		results, err := r.repository.Get(r.ctx, asset.Config{
 			Size: size,
 		})
 		r.Require().NoError(err)
@@ -103,7 +103,7 @@ func (r *AssetRepositoryTestSuite) TestGet() {
 
 	r.Run("should fetch assets by offset defined in GetConfig.Offset", func() {
 		offset := 2
-		results, err := r.repository.Get(r.ctx, asset.GetConfig{
+		results, err := r.repository.Get(r.ctx, asset.Config{
 			Offset: offset,
 		})
 		r.Require().NoError(err)
@@ -111,7 +111,7 @@ func (r *AssetRepositoryTestSuite) TestGet() {
 	})
 
 	r.Run("should filter using type", func() {
-		results, err := r.repository.Get(r.ctx, asset.GetConfig{
+		results, err := r.repository.Get(r.ctx, asset.Config{
 			Type: asset.TypeDashboard,
 			Size: total,
 		})
@@ -123,7 +123,7 @@ func (r *AssetRepositoryTestSuite) TestGet() {
 	})
 
 	r.Run("should filter using service", func() {
-		results, err := r.repository.Get(r.ctx, asset.GetConfig{
+		results, err := r.repository.Get(r.ctx, asset.Config{
 			Service: "postgres",
 			Size:    total,
 		})
@@ -151,7 +151,7 @@ func (r *AssetRepositoryTestSuite) TestGetCount() {
 	}
 
 	r.Run("should return total assets with filter", func() {
-		actual, err := r.repository.GetCount(r.ctx, asset.GetConfig{
+		actual, err := r.repository.GetCount(r.ctx, asset.Config{
 			Type:    typ,
 			Service: service,
 		})

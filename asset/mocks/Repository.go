@@ -30,11 +30,11 @@ func (_m *Repository) Delete(ctx context.Context, id string) error {
 }
 
 // Get provides a mock function with given fields: _a0, _a1
-func (_m *Repository) Get(_a0 context.Context, _a1 asset.GetConfig) ([]asset.Asset, error) {
+func (_m *Repository) Get(_a0 context.Context, _a1 asset.Config) ([]asset.Asset, error) {
 	ret := _m.Called(_a0, _a1)
 
 	var r0 []asset.Asset
-	if rf, ok := ret.Get(0).(func(context.Context, asset.GetConfig) []asset.Asset); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, asset.Config) []asset.Asset); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
@@ -43,7 +43,7 @@ func (_m *Repository) Get(_a0 context.Context, _a1 asset.GetConfig) ([]asset.Ass
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, asset.GetConfig) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, asset.Config) error); ok {
 		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
@@ -74,18 +74,18 @@ func (_m *Repository) GetByID(ctx context.Context, id string) (asset.Asset, erro
 }
 
 // GetCount provides a mock function with given fields: _a0, _a1
-func (_m *Repository) GetCount(_a0 context.Context, _a1 asset.GetConfig) (int, error) {
+func (_m *Repository) GetCount(_a0 context.Context, _a1 asset.Config) (int, error) {
 	ret := _m.Called(_a0, _a1)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, asset.GetConfig) int); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, asset.Config) int); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, asset.GetConfig) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, asset.Config) error); ok {
 		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)

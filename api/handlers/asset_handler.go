@@ -48,7 +48,7 @@ func (h *AssetHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	withTotal, ok := r.URL.Query()["with_total"]
 	if ok && len(withTotal) > 0 && withTotal[0] != "false" && withTotal[0] != "0" {
-		total, err := h.assetRepository.GetCount(r.Context(), asset.GetConfig{
+		total, err := h.assetRepository.GetCount(r.Context(), asset.Config{
 			Type:    config.Type,
 			Service: config.Service,
 			Text:    config.Text,
@@ -162,8 +162,8 @@ func (h *AssetHandler) validateAsset(ast asset.Asset) error {
 	return nil
 }
 
-func (h *AssetHandler) buildGetConfig(query url.Values) asset.GetConfig {
-	config := asset.GetConfig{
+func (h *AssetHandler) buildGetConfig(query url.Values) asset.Config {
+	config := asset.Config{
 		Text:    query.Get("text"),
 		Type:    asset.Type(query.Get("type")),
 		Service: query.Get("service"),

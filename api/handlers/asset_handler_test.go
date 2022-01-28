@@ -326,7 +326,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Description:  `should return http 500 if fetching fails`,
 			ExpectStatus: http.StatusInternalServerError,
 			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
-				ar.On("Get", ctx, asset.GetConfig{}).Return([]asset.Asset{}, errors.New("unknown error"))
+				ar.On("Get", ctx, asset.Config{}).Return([]asset.Asset{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -334,8 +334,8 @@ func TestAssetHandlerGet(t *testing.T) {
 			Querystring:  "?with_total=1",
 			ExpectStatus: http.StatusInternalServerError,
 			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
-				ar.On("Get", ctx, asset.GetConfig{}).Return([]asset.Asset{}, nil)
-				ar.On("GetCount", ctx, asset.GetConfig{}).Return(0, errors.New("unknown error"))
+				ar.On("Get", ctx, asset.Config{}).Return([]asset.Asset{}, nil)
+				ar.On("GetCount", ctx, asset.Config{}).Return(0, errors.New("unknown error"))
 			},
 		},
 		{
@@ -343,7 +343,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Querystring:  "?text=asd&type=table&service=bigquery&size=30&offset=50",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
-				ar.On("Get", ctx, asset.GetConfig{
+				ar.On("Get", ctx, asset.Config{
 					Text:    "asd",
 					Type:    "table",
 					Service: "bigquery",
@@ -356,7 +356,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Description:  "should return http 200 status along with list of assets",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
-				ar.On("Get", ctx, asset.GetConfig{}).Return([]asset.Asset{
+				ar.On("Get", ctx, asset.Config{}).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 				}, nil)
@@ -388,7 +388,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			ExpectStatus: http.StatusOK,
 			Querystring:  "?with_total=true&text=dsa&type=job&service=kafka&size=10&offset=5",
 			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
-				ar.On("Get", ctx, asset.GetConfig{
+				ar.On("Get", ctx, asset.Config{
 					Text:    "dsa",
 					Type:    "job",
 					Service: "kafka",
@@ -399,7 +399,7 @@ func TestAssetHandlerGet(t *testing.T) {
 					{ID: "testid-2"},
 					{ID: "testid-3"},
 				}, nil)
-				ar.On("GetCount", ctx, asset.GetConfig{
+				ar.On("GetCount", ctx, asset.Config{
 					Text:    "dsa",
 					Type:    "job",
 					Service: "kafka",
