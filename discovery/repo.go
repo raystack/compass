@@ -6,6 +6,7 @@ import (
 	"github.com/odpf/columbus/asset"
 )
 
+//go:generate mockery --name Repository --outpkg mock --output ../lib/mock/ --structname DiscoveryRepository --filename discovery_repository.go
 type Repository interface {
 	Upsert(context.Context, asset.Asset) error
 	Delete(ctx context.Context, assetID string) error

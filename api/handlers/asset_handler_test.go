@@ -17,8 +17,7 @@ import (
 
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/asset"
-	assetMocks "github.com/odpf/columbus/asset/mocks"
-	discoveryMocks "github.com/odpf/columbus/discovery/mocks"
+	"github.com/odpf/columbus/lib/mock"
 	"github.com/stretchr/testify/assert"
 	tmock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -89,7 +88,7 @@ func TestAssetHandlerUpsert(t *testing.T) {
 
 			expectedErr := errors.New("unknown error")
 
-			ar := new(assetMocks.Repository)
+			ar := new(mock.AssetRepository)
 			ar.On("Upsert", rr.Context(), tmock.AnythingOfType("*asset.Asset")).Return(expectedErr)
 			defer ar.AssertExpectations(t)
 
@@ -109,11 +108,11 @@ func TestAssetHandlerUpsert(t *testing.T) {
 
 			expectedErr := errors.New("unknown error")
 
-			ar := new(assetMocks.Repository)
+			ar := new(mock.AssetRepository)
 			ar.On("Upsert", rr.Context(), tmock.AnythingOfType("*asset.Asset")).Return(nil)
 			defer ar.AssertExpectations(t)
 
-			dr := new(discoveryMocks.Repository)
+			dr := new(mock.DiscoveryRepository)
 			dr.On("Upsert", rr.Context(), tmock.AnythingOfType("asset.Asset")).Return(expectedErr)
 			defer dr.AssertExpectations(t)
 
@@ -142,14 +141,14 @@ func TestAssetHandlerUpsert(t *testing.T) {
 		rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
 		rw := httptest.NewRecorder()
 
-		ar := new(assetMocks.Repository)
+		ar := new(mock.AssetRepository)
 		ar.On("Upsert", rr.Context(), &ast).Return(nil).Run(func(args tmock.Arguments) {
 			argAsset := args.Get(1).(*asset.Asset)
 			argAsset.ID = assetWithID.ID
 		})
 		defer ar.AssertExpectations(t)
 
-		dr := new(discoveryMocks.Repository)
+		dr := new(mock.DiscoveryRepository)
 		dr.On("Upsert", rr.Context(), assetWithID).Return(nil)
 		defer dr.AssertExpectations(t)
 
@@ -172,7 +171,7 @@ func TestAssetHandlerDelete(t *testing.T) {
 		Description  string
 		AssetID      string
 		ExpectStatus int
-		Setup        func(context.Context, *assetMocks.Repository, *discoveryMocks.Repository)
+		Setup        func(context.Context, *mock.AssetRepository, *mock.DiscoveryRepository)
 		PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
 	}
 
@@ -181,7 +180,7 @@ func TestAssetHandlerDelete(t *testing.T) {
 			Description:  "should return 404 when asset cannot be found",
 			AssetID:      "id-10",
 			ExpectStatus: http.StatusNotFound,
-			Setup: func(ctx context.Context, ar *assetMocks.Repository, dr *discoveryMocks.Repository) {
+			Setup: func(ctx context.Context, ar *mock.AssetRepository, dr *mock.DiscoveryRepository) {
 				ar.On("Delete", ctx, "id-10").Return(asset.NotFoundError{AssetID: "id-10"})
 			},
 		},
@@ -189,7 +188,7 @@ func TestAssetHandlerDelete(t *testing.T) {
 			Description:  "should return 500 on error deleting asset",
 			AssetID:      "id-10",
 			ExpectStatus: http.StatusInternalServerError,
-			Setup: func(ctx context.Context, ar *assetMocks.Repository, dr *discoveryMocks.Repository) {
+			Setup: func(ctx context.Context, ar *mock.AssetRepository, dr *mock.DiscoveryRepository) {
 				ar.On("Delete", ctx, "id-10").Return(errors.New("error deleting asset"))
 			},
 		},
@@ -197,7 +196,7 @@ func TestAssetHandlerDelete(t *testing.T) {
 			Description:  "should return 500 on error deleting asset from discovery",
 			AssetID:      "id-10",
 			ExpectStatus: http.StatusInternalServerError,
-			Setup: func(ctx context.Context, ar *assetMocks.Repository, dr *discoveryMocks.Repository) {
+			Setup: func(ctx context.Context, ar *mock.AssetRepository, dr *mock.DiscoveryRepository) {
 				ar.On("Delete", ctx, "id-10").Return(nil)
 				dr.On("Delete", ctx, "id-10").Return(asset.NotFoundError{AssetID: "id-10"})
 			},
@@ -206,7 +205,7 @@ func TestAssetHandlerDelete(t *testing.T) {
 			Description:  "should return 204 on success",
 			AssetID:      "id-10",
 			ExpectStatus: http.StatusNoContent,
-			Setup: func(ctx context.Context, ar *assetMocks.Repository, dr *discoveryMocks.Repository) {
+			Setup: func(ctx context.Context, ar *mock.AssetRepository, dr *mock.DiscoveryRepository) {
 				ar.On("Delete", ctx, "id-10").Return(nil)
 				dr.On("Delete", ctx, "id-10").Return(nil)
 			},
@@ -220,8 +219,8 @@ func TestAssetHandlerDelete(t *testing.T) {
 				"id": tc.AssetID,
 			})
 
-			ar := new(assetMocks.Repository)
-			dr := new(discoveryMocks.Repository)
+			ar := new(mock.AssetRepository)
+			dr := new(mock.DiscoveryRepository)
 			tc.Setup(rr.Context(), ar, dr)
 			defer ar.AssertExpectations(t)
 
@@ -247,7 +246,7 @@ func TestAssetHandlerGetByID(t *testing.T) {
 	type testCase struct {
 		Description  string
 		ExpectStatus int
-		Setup        func(context.Context, *assetMocks.Repository)
+		Setup        func(context.Context, *mock.AssetRepository)
 		PostCheck    func(resp *http.Response) error
 	}
 
@@ -255,21 +254,21 @@ func TestAssetHandlerGetByID(t *testing.T) {
 		{
 			Description:  `should return http 404 if asset doesn't exist`,
 			ExpectStatus: http.StatusNotFound,
-			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
+			Setup: func(ctx context.Context, ar *mock.AssetRepository) {
 				ar.On("GetByID", ctx, assetID).Return(asset.Asset{}, asset.NotFoundError{AssetID: assetID})
 			},
 		},
 		{
 			Description:  `should return http 500 if fetching fails`,
 			ExpectStatus: http.StatusInternalServerError,
-			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
+			Setup: func(ctx context.Context, ar *mock.AssetRepository) {
 				ar.On("GetByID", ctx, assetID).Return(asset.Asset{}, errors.New("unknown error"))
 			},
 		},
 		{
 			Description:  "should return http 200 status along with the asset, if found",
 			ExpectStatus: http.StatusOK,
-			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
+			Setup: func(ctx context.Context, ar *mock.AssetRepository) {
 				ar.On("GetByID", ctx, assetID).Return(ast, nil)
 			},
 			PostCheck: func(r *http.Response) error {
@@ -292,7 +291,7 @@ func TestAssetHandlerGetByID(t *testing.T) {
 			rr = mux.SetURLVars(rr, map[string]string{
 				"id": assetID,
 			})
-			ar := new(assetMocks.Repository)
+			ar := new(mock.AssetRepository)
 			tc.Setup(rr.Context(), ar)
 
 			handler := handlers.NewAssetHandler(logger, ar, nil)
@@ -317,7 +316,7 @@ func TestAssetHandlerGet(t *testing.T) {
 		Description  string
 		Querystring  string
 		ExpectStatus int
-		Setup        func(context.Context, *assetMocks.Repository)
+		Setup        func(context.Context, *mock.AssetRepository)
 		PostCheck    func(resp *http.Response) error
 	}
 
@@ -325,7 +324,7 @@ func TestAssetHandlerGet(t *testing.T) {
 		{
 			Description:  `should return http 500 if fetching fails`,
 			ExpectStatus: http.StatusInternalServerError,
-			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
+			Setup: func(ctx context.Context, ar *mock.AssetRepository) {
 				ar.On("Get", ctx, asset.Config{}).Return([]asset.Asset{}, errors.New("unknown error"))
 			},
 		},
@@ -333,7 +332,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Description:  `should return http 500 if fetching total fails`,
 			Querystring:  "?with_total=1",
 			ExpectStatus: http.StatusInternalServerError,
-			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
+			Setup: func(ctx context.Context, ar *mock.AssetRepository) {
 				ar.On("Get", ctx, asset.Config{}).Return([]asset.Asset{}, nil)
 				ar.On("GetCount", ctx, asset.Config{}).Return(0, errors.New("unknown error"))
 			},
@@ -342,7 +341,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Description:  `should parse querystring to get config`,
 			Querystring:  "?text=asd&type=table&service=bigquery&size=30&offset=50",
 			ExpectStatus: http.StatusOK,
-			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
+			Setup: func(ctx context.Context, ar *mock.AssetRepository) {
 				ar.On("Get", ctx, asset.Config{
 					Text:    "asd",
 					Type:    "table",
@@ -355,7 +354,7 @@ func TestAssetHandlerGet(t *testing.T) {
 		{
 			Description:  "should return http 200 status along with list of assets",
 			ExpectStatus: http.StatusOK,
-			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
+			Setup: func(ctx context.Context, ar *mock.AssetRepository) {
 				ar.On("Get", ctx, asset.Config{}).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
@@ -387,7 +386,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Description:  "should return total in the payload if with_total flag is given",
 			ExpectStatus: http.StatusOK,
 			Querystring:  "?with_total=true&text=dsa&type=job&service=kafka&size=10&offset=5",
-			Setup: func(ctx context.Context, ar *assetMocks.Repository) {
+			Setup: func(ctx context.Context, ar *mock.AssetRepository) {
 				ar.On("Get", ctx, asset.Config{
 					Text:    "dsa",
 					Type:    "job",
@@ -436,7 +435,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			rr := httptest.NewRequest("GET", "/"+tc.Querystring, nil)
 			rw := httptest.NewRecorder()
 
-			ar := new(assetMocks.Repository)
+			ar := new(mock.AssetRepository)
 			tc.Setup(rr.Context(), ar)
 
 			handler := handlers.NewAssetHandler(logger, ar, nil)
