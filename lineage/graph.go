@@ -2,8 +2,6 @@ package lineage
 
 import (
 	"fmt"
-
-	"github.com/pkg/errors"
 )
 
 type QueryCfg struct {
@@ -26,7 +24,7 @@ func (graph InMemoryGraph) Query(cfg QueryCfg) (AdjacencyMap, error) {
 		var err error
 		supergraph, err = graph.buildSubgraphFromRoot(supergraph, cfg.Root)
 		if err != nil {
-			return supergraph, errors.Wrap(err, "error building subgraph")
+			return supergraph, fmt.Errorf("error building subgraph: %w", err)
 		}
 	}
 
@@ -62,6 +60,7 @@ func (graph InMemoryGraph) addAdjacentsInDir(subgraph AdjacencyMap, superGraph A
 			queue = append(queue, adjacentEl)
 		}
 	}
+
 	return
 }
 

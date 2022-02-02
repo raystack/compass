@@ -40,7 +40,10 @@ func TestCachedGraph(t *testing.T) {
 			Description: "simple cache test",
 			Cfg:         lineage.QueryCfg{},
 			Setup: func(tc testCase, g *lineage.CachedGraph) {
-				g.Query(tc.Cfg) // cache the request
+				// cache the request
+				if _, err := g.Query(tc.Cfg); err != nil {
+					t.Fatal(err)
+				}
 			},
 			Graph:        graphFromTestCase,
 			ExpectResult: lineage.AdjacencyMap{},
@@ -82,9 +85,13 @@ func TestCachedGraph(t *testing.T) {
 				)
 				enc.SetIndent("", "  ")
 				fmt.Fprint(msg, "expected: ")
-				enc.Encode(tc.ExpectResult)
+				if err := enc.Encode(tc.ExpectResult); err != nil {
+					t.Fatal(err)
+				}
 				fmt.Fprint(msg, "got: ")
-				enc.Encode(result)
+				if err := enc.Encode(result); err != nil {
+					t.Fatal(err)
+				}
 				t.Error(msg.String())
 				return
 			}

@@ -11,27 +11,25 @@ import (
 	testifyMock "github.com/stretchr/testify/mock"
 )
 
-type stubBuilder struct {
-	testifyMock.Mock
-}
+type stubBuilder struct{} //nolint:unused
 
-func (b *stubBuilder) Build(ctx context.Context, repo lineage.Repository) (lineage.Graph, error) {
+func (b *stubBuilder) Build(ctx context.Context, repo lineage.Repository) (lineage.Graph, error) { //nolint:unused
 	return nil, nil
 }
 
-type mockMetricsMonitor struct {
+type mockMetricsMonitor struct { //nolint:unused
 	testifyMock.Mock
 }
 
-func (mm *mockMetricsMonitor) Duration(op string, d int) {
+func (mm *mockMetricsMonitor) Duration(op string, d int) { //nolint:unused
 	mm.Called(op, d)
 }
 
-type mockPerformanceMonitor struct {
+type mockPerformanceMonitor struct { //nolint:unused
 	testifyMock.Mock
 }
 
-func (pm mockPerformanceMonitor) StartTransaction(ctx context.Context, operation string) (context.Context, func()) {
+func (pm *mockPerformanceMonitor) StartTransaction(ctx context.Context, operation string) (context.Context, func()) { //nolint:unused
 	args := pm.Called(ctx, operation)
 	return args.Get(0).(context.Context), args.Get(1).(func())
 }
@@ -68,7 +66,7 @@ func TestService(t *testing.T) {
 			txnEnd = true
 		})
 
-		lineage.NewService(
+		if _, err := lineage.NewService(
 			nil,
 			lineage.Config{
 				MetricsMonitor:     mm,
@@ -76,7 +74,9 @@ func TestService(t *testing.T) {
 				Builder:            builder,
 				TimeSource:         lineage.TimeSourceFunc(ts),
 			},
-		)
+		); err != nil {
+			t.Fatal(err)
+		}
 
 		mm.AssertExpectations(t)
 		assert.True(t, txnEnd)

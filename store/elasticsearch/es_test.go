@@ -42,7 +42,7 @@ func TestElasticsearch(t *testing.T) {
 					}
 					res, err := idxRequest.Do(context.Background(), cli)
 					if err != nil {
-						return fmt.Errorf("failed to query elasticsearch for index %q: %v", recordType, err)
+						return fmt.Errorf("failed to query elasticsearch for index %q: %w", recordType, err)
 					}
 					defer res.Body.Close()
 					if res.IsError() {

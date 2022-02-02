@@ -120,7 +120,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 				var response []handlers.SearchResponse
 				err := json.NewDecoder(body).Decode(&response)
 				if err != nil {
-					return fmt.Errorf("error reading response body: %v", err)
+					return fmt.Errorf("error reading response body: %w", err)
 				}
 				expectResponse := []handlers.SearchResponse{
 					{
@@ -177,7 +177,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 				var payload []interface{}
 				err := json.NewDecoder(body).Decode(&payload)
 				if err != nil {
-					return fmt.Errorf("error reading response body: %v", err)
+					return fmt.Errorf("error reading response body: %w", err)
 				}
 
 				expectedSize := 10
@@ -300,7 +300,7 @@ func TestSearchHandlerSuggest(t *testing.T) {
 				var response handlers.SuggestResponse
 				err := json.NewDecoder(body).Decode(&response)
 				if err != nil {
-					return fmt.Errorf("error reading response body: %v", err)
+					return fmt.Errorf("error reading response body: %w", err)
 				}
 				expectResponse := handlers.SuggestResponse{
 					Suggestions: []string{

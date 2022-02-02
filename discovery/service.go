@@ -2,9 +2,9 @@ package discovery
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/odpf/columbus/asset"
-	"github.com/pkg/errors"
 )
 
 type Service struct {
@@ -22,12 +22,12 @@ func NewService(factory RecordRepositoryFactory, recordSearcher RecordSearcher) 
 func (s *Service) Upsert(ctx context.Context, typeName string, assets []asset.Asset) (err error) {
 	repo, err := s.factory.For(typeName)
 	if err != nil {
-		return errors.Wrapf(err, "error building repo for type \"%s\"", typeName)
+		return fmt.Errorf("error building repo for type \"%s\": %w", typeName, err)
 	}
 
 	err = repo.CreateOrReplaceMany(ctx, assets)
 	if err != nil {
-		return errors.Wrap(err, "error upserting assets")
+		return fmt.Errorf("error upserting assets: %w", err)
 	}
 
 	return nil
@@ -36,7 +36,7 @@ func (s *Service) Upsert(ctx context.Context, typeName string, assets []asset.As
 func (s *Service) DeleteRecord(ctx context.Context, typeName string, recordURN string) error {
 	repo, err := s.factory.For(typeName)
 	if err != nil {
-		return errors.Wrapf(err, "error building repo for type \"%s\"", typeName)
+		return fmt.Errorf("error building repo for type \"%s\": %w", typeName, err)
 	}
 
 	err = repo.Delete(ctx, recordURN)

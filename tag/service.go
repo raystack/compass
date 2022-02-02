@@ -2,10 +2,9 @@ package tag
 
 import (
 	"context"
+	"errors"
 	"fmt"
-
 	"github.com/odpf/columbus/tag/validator"
-	"github.com/pkg/errors"
 )
 
 // Service is a type that manages business process
@@ -36,7 +35,7 @@ func (s *Service) Create(ctx context.Context, tag *Tag) error {
 	}
 	template, err := s.templateService.Find(ctx, tag.TemplateURN)
 	if err != nil {
-		return errors.Wrap(err, "error finding template")
+		return fmt.Errorf("error finding template: %w", err)
 	}
 	if err := s.validateFieldIsMemberOfTemplate(*tag, template); err != nil {
 		return err
@@ -83,14 +82,14 @@ func (s *Service) FindByRecordAndTemplate(ctx context.Context, recordType, recor
 func (s *Service) Delete(ctx context.Context, recordType, recordURN, templateURN string) error {
 	_, err := s.templateService.Find(ctx, templateURN)
 	if err != nil {
-		return errors.Wrap(err, "error finding template")
+		return fmt.Errorf("error finding template: %w", err)
 	}
 	if err := s.repository.Delete(ctx, Tag{
 		RecordType:  recordType,
 		RecordURN:   recordURN,
 		TemplateURN: templateURN,
 	}); err != nil {
-		return errors.Wrap(err, "error deleting tag")
+		return fmt.Errorf("error deleting tag: %w", err)
 	}
 	return nil
 }
@@ -102,7 +101,7 @@ func (s *Service) Update(ctx context.Context, tag *Tag) error {
 	}
 	template, err := s.templateService.Find(ctx, tag.TemplateURN)
 	if err != nil {
-		return errors.Wrap(err, "error finding template")
+		return fmt.Errorf("error finding template: %w", err)
 	}
 	existingTags, err := s.repository.Read(ctx, Tag{
 		RecordType:  tag.RecordType,
@@ -110,7 +109,7 @@ func (s *Service) Update(ctx context.Context, tag *Tag) error {
 		TemplateURN: tag.TemplateURN,
 	})
 	if err != nil {
-		return errors.Wrap(err, "error finding existing tag")
+		return fmt.Errorf("error finding existing tag: %w", err)
 	}
 	if len(existingTags) == 0 {
 		return NotFoundError{URN: tag.RecordURN, Type: tag.RecordType, Template: tag.TemplateURN}
@@ -123,7 +122,7 @@ func (s *Service) Update(ctx context.Context, tag *Tag) error {
 		return err
 	}
 	if err := s.repository.Update(ctx, tag); err != nil {
-		return errors.Wrap(err, "error updating tag")
+		return fmt.Errorf("error updating tag: %w", err)
 	}
 	return nil
 }

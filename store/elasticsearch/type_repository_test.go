@@ -56,7 +56,7 @@ func TestTypeRepository(t *testing.T) {
 			require.NoError(t, err)
 
 			repo := store.NewTypeRepository(esClient)
-			counts, err := repo.GetAll(ctx)
+			_, err = repo.GetAll(ctx)
 			require.NoError(t, err)
 
 			rrf := store.NewRecordRepositoryFactory(esClient)
@@ -70,7 +70,7 @@ func TestTypeRepository(t *testing.T) {
 			err = rr.CreateOrReplaceMany(ctx, assets)
 			require.NoError(t, err)
 
-			counts, err = repo.GetAll(ctx)
+			counts, err := repo.GetAll(ctx)
 			require.NoError(t, err)
 
 			expected := map[asset.Type]int{

@@ -8,7 +8,6 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/odpf/columbus/asset"
-	"github.com/pkg/errors"
 )
 
 // TypeRepository is an implementation of discovery.TypeRepository
@@ -23,7 +22,7 @@ func (repo *TypeRepository) GetAll(ctx context.Context) (map[asset.Type]int, err
 		repo.cli.Cat.Indices.WithContext(ctx),
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "error from es client")
+		return nil, fmt.Errorf("error from es client %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.IsError() {
@@ -32,14 +31,14 @@ func (repo *TypeRepository) GetAll(ctx context.Context) (map[asset.Type]int, err
 	var indices []esIndex
 	err = json.NewDecoder(resp.Body).Decode(&indices)
 	if err != nil {
-		return nil, errors.Wrap(err, "error decoding es response")
+		return nil, fmt.Errorf("error decoding es response %w", err)
 	}
 
 	results := map[asset.Type]int{}
 	for _, index := range indices {
 		count, err := strconv.Atoi(index.DocsCount)
 		if err != nil {
-			return results, errors.Wrap(err, "error converting docs count to a number")
+			return results, fmt.Errorf("error converting docs count to a number: %w", err)
 		}
 		typName := asset.Type(index.Index)
 		if !typName.IsValid() {
