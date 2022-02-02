@@ -41,7 +41,7 @@ func (r *AssetRepository) Get(ctx context.Context, config asset.Config) (assets 
 		return
 	}
 
-	ams := []*Asset{}
+	ams := []*AssetModel{}
 	err = r.client.db.SelectContext(ctx, &ams, query, args...)
 	if err != nil {
 		err = fmt.Errorf("error getting asset list: %w", err)
@@ -77,7 +77,7 @@ func (r *AssetRepository) GetCount(ctx context.Context, config asset.Config) (to
 func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Asset, err error) {
 	query := `SELECT * FROM assets WHERE id = $1 LIMIT 1;`
 
-	am := &Asset{}
+	am := &AssetModel{}
 	err = r.client.db.GetContext(ctx, am, query, id)
 	if errors.Is(err, sql.ErrNoRows) {
 		err = asset.NotFoundError{AssetID: id}

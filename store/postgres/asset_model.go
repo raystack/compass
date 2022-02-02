@@ -10,7 +10,7 @@ import (
 	"github.com/odpf/columbus/asset"
 )
 
-type Asset struct {
+type AssetModel struct {
 	ID          string    `db:"id"`
 	URN         string    `db:"urn"`
 	Type        string    `db:"type"`
@@ -23,7 +23,7 @@ type Asset struct {
 	UpdatedAt   time.Time `db:"updated_at"`
 }
 
-func (a *Asset) toAsset() asset.Asset {
+func (a *AssetModel) toAsset() asset.Asset {
 	return asset.Asset{
 		ID:          a.ID,
 		URN:         a.URN,
@@ -38,7 +38,7 @@ func (a *Asset) toAsset() asset.Asset {
 	}
 }
 
-func (a *Asset) buildLabels() map[string]string {
+func (a *AssetModel) buildLabels() map[string]string {
 	if a.Labels == nil {
 		return nil
 	}
