@@ -35,7 +35,7 @@ func NewAssetHandler(
 }
 
 func (h *AssetHandler) Get(w http.ResponseWriter, r *http.Request) {
-	config := h.buildGetConfig(r.URL.Query())
+	config := h.buildAssetConfig(r.URL.Query())
 	assets, err := h.assetRepository.Get(r.Context(), config)
 	if err != nil {
 		internalServerError(w, h.logger, err.Error())
@@ -162,7 +162,7 @@ func (h *AssetHandler) validateAsset(ast asset.Asset) error {
 	return nil
 }
 
-func (h *AssetHandler) buildGetConfig(query url.Values) asset.Config {
+func (h *AssetHandler) buildAssetConfig(query url.Values) asset.Config {
 	config := asset.Config{
 		Text:    query.Get("text"),
 		Type:    asset.Type(query.Get("type")),
