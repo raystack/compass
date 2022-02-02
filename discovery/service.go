@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/odpf/columbus/record"
+	"github.com/odpf/columbus/asset"
 )
 
 type Service struct {
@@ -19,15 +19,15 @@ func NewService(factory RecordRepositoryFactory, recordSearcher RecordSearcher) 
 	}
 }
 
-func (s *Service) Upsert(ctx context.Context, typeName string, records []record.Record) (err error) {
+func (s *Service) Upsert(ctx context.Context, typeName string, assets []asset.Asset) (err error) {
 	repo, err := s.factory.For(typeName)
 	if err != nil {
 		return fmt.Errorf("error building repo for type \"%s\": %w", typeName, err)
 	}
 
-	err = repo.CreateOrReplaceMany(ctx, records)
+	err = repo.CreateOrReplaceMany(ctx, assets)
 	if err != nil {
-		return fmt.Errorf("error upserting records: %w", err)
+		return fmt.Errorf("error upserting assets: %w", err)
 	}
 
 	return nil

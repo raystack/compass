@@ -7,16 +7,16 @@ import (
 	"testing"
 
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/record"
 	store "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 type searchTestData struct {
-	TypeName record.TypeName `json:"type"`
-	Records  []record.Record `json:"records"`
+	Type   asset.Type    `json:"type"`
+	Assets []asset.Asset `json:"assets"`
 }
 
 func TestSearcherSearch(t *testing.T) {
@@ -48,8 +48,8 @@ func TestSearcherSearch(t *testing.T) {
 		require.NoError(t, err)
 
 		type expectedRow struct {
-			Type     string `json:"type"`
-			RecordID string `json:"record_id"`
+			Type    string
+			AssetID string
 		}
 		type searchTest struct {
 			Description    string
@@ -59,15 +59,15 @@ func TestSearcherSearch(t *testing.T) {
 		}
 		tests := []searchTest{
 			{
-				Description: "should fetch records which has text in any of its fields",
+				Description: "should fetch assets which has text in any of its fields",
 				Config: discovery.SearchConfig{
 					Text: "topic",
 				},
 				Expected: []expectedRow{
-					{Type: "topic", RecordID: "order-topic"},
-					{Type: "topic", RecordID: "purchase-topic"},
-					{Type: "topic", RecordID: "consumer-topic"},
-					{Type: "topic", RecordID: "consumer-mq-2"},
+					{Type: "topic", AssetID: "order-topic"},
+					{Type: "topic", AssetID: "purchase-topic"},
+					{Type: "topic", AssetID: "consumer-topic"},
+					{Type: "topic", AssetID: "consumer-mq-2"},
 				},
 			},
 			{
@@ -76,10 +76,10 @@ func TestSearcherSearch(t *testing.T) {
 					Text: "tpic",
 				},
 				Expected: []expectedRow{
-					{Type: "topic", RecordID: "order-topic"},
-					{Type: "topic", RecordID: "purchase-topic"},
-					{Type: "topic", RecordID: "consumer-topic"},
-					{Type: "topic", RecordID: "consumer-mq-2"},
+					{Type: "topic", AssetID: "order-topic"},
+					{Type: "topic", AssetID: "purchase-topic"},
+					{Type: "topic", AssetID: "consumer-topic"},
+					{Type: "topic", AssetID: "consumer-mq-2"},
 				},
 			},
 			{
@@ -88,9 +88,9 @@ func TestSearcherSearch(t *testing.T) {
 					Text: "invoice",
 				},
 				Expected: []expectedRow{
-					{Type: "table", RecordID: "au2-microsoft-invoice"},
-					{Type: "table", RecordID: "us1-apple-invoice"},
-					{Type: "topic", RecordID: "transaction"},
+					{Type: "table", AssetID: "au2-microsoft-invoice"},
+					{Type: "table", AssetID: "us1-apple-invoice"},
+					{Type: "topic", AssetID: "transaction"},
 				},
 			},
 			{
@@ -102,8 +102,8 @@ func TestSearcherSearch(t *testing.T) {
 					},
 				},
 				Expected: []expectedRow{
-					{Type: "table", RecordID: "au2-microsoft-invoice"},
-					{Type: "topic", RecordID: "transaction"},
+					{Type: "table", AssetID: "au2-microsoft-invoice"},
+					{Type: "topic", AssetID: "transaction"},
 				},
 			},
 			{
@@ -115,13 +115,13 @@ func TestSearcherSearch(t *testing.T) {
 					},
 				},
 				Expected: []expectedRow{
-					{Type: "topic", RecordID: "order-topic"},
-					{Type: "topic", RecordID: "consumer-topic"},
-					{Type: "topic", RecordID: "consumer-mq-2"},
+					{Type: "topic", AssetID: "order-topic"},
+					{Type: "topic", AssetID: "consumer-topic"},
+					{Type: "topic", AssetID: "consumer-mq-2"},
 				},
 			},
 			{
-				Description: "should not return records without fields specified in filters",
+				Description: "should not return assets without fields specified in filters",
 				Config: discovery.SearchConfig{
 					Text: "invoice topic",
 					Filters: map[string][]string{
@@ -131,8 +131,8 @@ func TestSearcherSearch(t *testing.T) {
 					},
 				},
 				Expected: []expectedRow{
-					{Type: "topic", RecordID: "consumer-topic"},
-					{Type: "topic", RecordID: "consumer-mq-2"},
+					{Type: "topic", AssetID: "consumer-topic"},
+					{Type: "topic", AssetID: "consumer-mq-2"},
 				},
 			},
 			{
@@ -144,7 +144,7 @@ func TestSearcherSearch(t *testing.T) {
 					},
 				},
 				Expected: []expectedRow{
-					{Type: "topic", RecordID: "consumer-topic"},
+					{Type: "topic", AssetID: "consumer-topic"},
 				},
 			},
 			{
@@ -154,9 +154,9 @@ func TestSearcherSearch(t *testing.T) {
 					RankBy: "data.profile.usage_count",
 				},
 				Expected: []expectedRow{
-					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-common"},
-					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-mid"},
-					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-1"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-mid"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
 				},
 			},
 			{
@@ -164,12 +164,12 @@ func TestSearcherSearch(t *testing.T) {
 				Config: discovery.SearchConfig{
 					Text: "consumer",
 					Queries: map[string]string{
-						"description": "rabbitmq",
-						"owners.name": "john doe",
+						"description":  "rabbitmq",
+						"owners.email": "john.doe",
 					},
 				},
 				Expected: []expectedRow{
-					{Type: "topic", RecordID: "consumer-topic"},
+					{Type: "topic", AssetID: "consumer-topic"},
 				},
 			},
 			{
@@ -181,7 +181,7 @@ func TestSearcherSearch(t *testing.T) {
 					},
 				},
 				Expected: []expectedRow{
-					{Type: "table", RecordID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
 				},
 			},
 		}
@@ -190,10 +190,10 @@ func TestSearcherSearch(t *testing.T) {
 				results, err := searcher.Search(ctx, test.Config)
 				require.NoError(t, err)
 
-				assert.Equal(t, len(test.Expected), len(results))
+				require.Equal(t, len(test.Expected), len(results))
 				for i, res := range test.Expected {
 					assert.Equal(t, res.Type, results[i].Type)
-					assert.Equal(t, res.RecordID, results[i].ID)
+					assert.Equal(t, res.AssetID, results[i].ID)
 				}
 			})
 		}
@@ -246,11 +246,11 @@ func loadTestFixture(esClient *elasticsearch.Client, filePath string) (err error
 
 	ctx := context.TODO()
 	for _, testdata := range data {
-		if err := store.Migrate(ctx, esClient, testdata.TypeName); err != nil {
+		if err := store.Migrate(ctx, esClient, testdata.Type); err != nil {
 			return err
 		}
-		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(testdata.TypeName.String())
-		if err := recordRepo.CreateOrReplaceMany(ctx, testdata.Records); err != nil {
+		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(testdata.Type.String())
+		if err := recordRepo.CreateOrReplaceMany(ctx, testdata.Assets); err != nil {
 			return err
 		}
 	}

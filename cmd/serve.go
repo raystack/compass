@@ -63,20 +63,6 @@ func initRouter(
 		logger.Fatal("error creating searcher", "error", err)
 	}
 
-	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
-		RefreshInterval:    config.LineageRefreshIntervalStr,
-		MetricsMonitor:     statsdMonitor,
-		PerformanceMonitor: nrMonitor,
-	})
-	if err != nil {
-		logger.Fatal("failed to create service", "error", err)
-	}
-	// build lineage asynchronously
-	go func() {
-		lineageService.ForceBuild()
-		logger.Info("lineage build complete")
-	}()
-
 	pgClient := initPostgres(logger, config)
 	tagRepository, err := postgres.NewTagRepository(pgClient)
 	if err != nil {
@@ -92,6 +78,34 @@ func initRouter(
 		tagTemplateService,
 	)
 
+	userRepository, err := postgres.NewUserRepository(pgClient)
+	if err != nil {
+		logger.Fatal("failed to create new user repository", "error", err)
+	}
+	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0)
+	if err != nil {
+		logger.Fatal("failed to create new asset repository", "error", err)
+	}
+
+	discoveryRepo := esStore.NewDiscoveryRepository(esClient)
+	lineageRepo, err := postgres.NewLineageRepository(pgClient)
+	if err != nil {
+		logger.Fatal("failed to create new lineage repository", "error", err)
+	}
+	lineageService, err := lineage.NewService(lineageRepo, lineage.Config{
+		RefreshInterval:    config.LineageRefreshIntervalStr,
+		MetricsMonitor:     statsdMonitor,
+		PerformanceMonitor: nrMonitor,
+	})
+	if err != nil {
+		logger.Fatal("failed to create service", "error", err)
+	}
+	// build lineage asynchronously
+	go func() {
+		lineageService.ForceBuild()
+		logger.Info("lineage build complete")
+	}()
+
 	router := mux.NewRouter()
 	if nrMonitor != nil {
 		nrMonitor.MonitorRouter(router)
@@ -105,6 +119,8 @@ func initRouter(
 
 	api.RegisterRoutes(router, api.Config{
 		Logger:                  logger,
+		AssetRepository:         assetRepository,
+		DiscoveryRepository:     discoveryRepo,
 		TypeRepository:          typeRepository,
 		DiscoveryService:        discovery.NewService(recordRepositoryFactory, recordSearcher),
 		RecordRepositoryFactory: recordRepositoryFactory,

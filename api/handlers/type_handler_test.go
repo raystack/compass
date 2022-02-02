@@ -4,15 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/odpf/salt/log"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/odpf/salt/log"
+
 	"github.com/odpf/columbus/api/handlers"
+	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/lib/mock"
-	"github.com/odpf/columbus/record"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -31,24 +32,24 @@ func TestTypeHandler(t *testing.T) {
 				Description:  "should return 500 status code if failing to fetch types",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
-					er.On("GetAll", context.Background()).Return(map[record.TypeName]int{}, errors.New("failed to fetch type"))
+					er.On("GetAll", context.Background()).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
 				},
 			},
 			{
 				Description:  "should return 500 status code if failing to fetch counts",
 				ExpectStatus: http.StatusInternalServerError,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
-					er.On("GetAll", context.Background()).Return(map[record.TypeName]int{}, errors.New("failed to fetch records count"))
+					er.On("GetAll", context.Background()).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
 				},
 			},
 			{
 				Description:  "should return all valid types with its record count",
 				ExpectStatus: http.StatusOK,
 				Setup: func(tc *testCase, er *mock.TypeRepository) {
-					er.On("GetAll", context.Background()).Return(map[record.TypeName]int{
-						record.TypeName("table"): 10,
-						record.TypeName("topic"): 30,
-						record.TypeName("job"):   15,
+					er.On("GetAll", context.Background()).Return(map[asset.Type]int{
+						asset.Type("table"): 10,
+						asset.Type("topic"): 30,
+						asset.Type("job"):   15,
 					}, nil)
 				},
 				PostCheck: func(t *testing.T, tc *testCase, resp *http.Response) error {

@@ -16,7 +16,7 @@ type StatusResponse struct {
 type ValidationErrorResponse struct {
 	ErrorResponse
 
-	// details represent(s) the failed records.
+	// details represent(s) the failed assets.
 	// the key is the index of the record, and the value
 	// is an error message explaining the problem
 	Details map[int]string `json:"details"`

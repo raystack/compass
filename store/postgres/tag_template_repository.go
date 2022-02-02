@@ -76,8 +76,8 @@ func (r *TagTemplateRepository) Read(ctx context.Context, templateURN string) ([
 
 	templateModels := templatesFieldModels.toTemplateModels()
 
-	for _, record := range templateModels {
-		templateDomain := record.toTemplate()
+	for _, template := range templateModels {
+		templateDomain := template.toTemplate()
 		templates = append(templates, templateDomain)
 	}
 	return templates, nil
@@ -95,8 +95,8 @@ func (r *TagTemplateRepository) ReadAll(ctx context.Context) ([]tag.Template, er
 
 	templateModels := templatesFieldModels.toTemplateModels()
 
-	for _, record := range templateModels {
-		templateDomain := record.toTemplate()
+	for _, template := range templateModels {
+		templateDomain := template.toTemplate()
 		templates = append(templates, templateDomain)
 	}
 	return templates, nil

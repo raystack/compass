@@ -1,7 +1,7 @@
 [
     {
         "type": "topic",
-        "records": [
+        "assets": [
             {"name": "wallet/event", "urn": "wallet/event"},
             {"name": "wallet-usage", "urn": "wallet-usage"},
             {"name": "wallet_usage", "urn": "wallet_usage"},
@@ -13,7 +13,7 @@
     },
     {
         "type": "table",
-        "records": [
+        "assets": [
             {"name": "invoice", "urn": "invoice"},
             {"name": "user.address", "urn": "user.address"},
             {"name": "user_wallet", "urn": "user_wallet"},

@@ -1,6 +1,6 @@
 package discovery
 
-import "github.com/odpf/columbus/record"
+import "github.com/odpf/columbus/asset"
 
 // RecordFilter is a filter intended to be used as a search
 // criteria for operations involving record search
@@ -9,6 +9,7 @@ type RecordFilter = map[string][]string
 // SearchResult represents an item/result in a list of search results
 type SearchResult struct {
 	ID          string            `json:"id"`
+	URN         string            `json:"urn"`
 	Title       string            `json:"title"`
 	Type        string            `json:"type"`
 	Service     string            `json:"service"`
@@ -50,14 +51,14 @@ type GetConfig struct {
 	// Number of relevant results to return
 	Size int
 
-	// Offset to fetch records from
+	// Offset to fetch assets from
 	From int
 }
 
-// RecordList is a struct that wraps list of records with total
+// RecordList is a struct that wraps list of assets with total
 type RecordList struct {
-	// Data contains list of fetched records
-	Data []record.Record `json:"data"`
+	// Data contains list of fetched assets
+	Data []asset.Asset `json:"data"`
 
 	// Count is the length of Data
 	Count int `json:"count"`

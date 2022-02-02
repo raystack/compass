@@ -5,17 +5,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/lib/mock"
 	"github.com/odpf/columbus/lineage"
-	"github.com/odpf/columbus/record"
+	"github.com/odpf/columbus/lineage/mocks"
 	"github.com/stretchr/testify/assert"
 	testifyMock "github.com/stretchr/testify/mock"
 )
 
 type stubBuilder struct{} //nolint:unused
 
-func (b *stubBuilder) Build(_ context.Context, _ record.TypeRepository, _ discovery.RecordRepositoryFactory) (lineage.Graph, error) { //nolint:unused
+func (b *stubBuilder) Build(ctx context.Context, repo lineage.Repository) (lineage.Graph, error) { //nolint:unused
 	return nil, nil
 }
 
@@ -39,12 +37,9 @@ func (pm *mockPerformanceMonitor) StartTransaction(ctx context.Context, operatio
 func TestService(t *testing.T) {
 	ctx := context.Background()
 	t.Run("smoke test", func(t *testing.T) {
-		entRepo := new(mock.TypeRepository)
-		entRepo.On("GetAll", ctx).Return([]record.TypeName{}, nil)
-		recordRepoFac := new(mock.RecordRepositoryFactory)
-		if _, err := lineage.NewService(entRepo, recordRepoFac, lineage.Config{}); err != nil {
-			t.Fatal(err)
-		}
+		repo := new(mocks.Repository)
+		repo.On("GetEdges", ctx).Return([]lineage.Edge{}, nil)
+		lineage.NewService(repo, lineage.Config{}) // nolint:errcheck
 	})
 	t.Run("telemetry test", func(t *testing.T) {
 		// Temporarily disabling lineage build on service creation causes this test to fail
@@ -72,7 +67,6 @@ func TestService(t *testing.T) {
 		})
 
 		if _, err := lineage.NewService(
-			nil,
 			nil,
 			lineage.Config{
 				MetricsMonitor:     mm,

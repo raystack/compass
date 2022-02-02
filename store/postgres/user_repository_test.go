@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/columbus/user"
 	"github.com/ory/dockertest/v3"
@@ -75,6 +76,51 @@ func (r *UserRepositoryTestSuite) TestCreate() {
 		r.Equal(lengthOfString(id), 36) // uuid
 
 		id, err = r.repository.Create(r.ctx, ud)
+		r.ErrorAs(err, new(user.DuplicateRecordError))
+		r.Empty(id)
+	})
+}
+
+func (r *UserRepositoryTestSuite) TestCreateWithTx() {
+	validUser := &user.User{
+		Email:    "userWithTx@odpf.io",
+		Provider: "columbus",
+	}
+	r.Run("return no error if succesfully create user", func() {
+		var id string
+		err := r.client.RunWithinTx(r.ctx, func(tx *sqlx.Tx) error {
+			var err error
+			id, err = r.repository.CreateWithTx(r.ctx, tx, validUser)
+			return err
+		})
+		r.Equal(lengthOfString(id), 36) // uuid
+		r.NoError(err)
+	})
+
+	r.Run("return ErrNilUser if user is nil", func() {
+		var id string
+		err := r.client.RunWithinTx(r.ctx, func(tx *sqlx.Tx) error {
+			var err error
+			id, err = r.repository.CreateWithTx(r.ctx, tx, nil)
+			return err
+		})
+		r.ErrorIs(err, user.ErrNilUser)
+		r.Empty(id)
+	})
+
+	r.Run("return ErrDuplicateRecord if user is already exist", func() {
+		err := setup(r.ctx, r.client)
+		r.NoError(err)
+
+		id, err := r.repository.Create(r.ctx, validUser)
+		r.NoError(err)
+		r.Equal(lengthOfString(id), 36) // uuid
+
+		err = r.client.RunWithinTx(r.ctx, func(tx *sqlx.Tx) error {
+			var err error
+			id, err = r.repository.CreateWithTx(r.ctx, tx, validUser)
+			return err
+		})
 		r.ErrorAs(err, new(user.DuplicateRecordError))
 		r.Empty(id)
 	})

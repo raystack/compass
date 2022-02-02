@@ -4,30 +4,136 @@ info:
   description: "Data Discovery and Lineage Service"
   version: 0.1.0
 paths:
-  "/v1beta1/lineage":
+  "/v1beta1/assets":
     get:
-      tags:
-        - Lineage
-      summary: lineage list api
-      description: "Returns the lineage graph, optionally filtered by type. Each entry in the graph describes a record using it's urn and type, and has `downstreams` and `upstreams` fields that declare related records. By default, the returned graph will only show immediate and directly related records. For instance, say that according to the lineage configuration, there exist 3 records R1,  R2 and R3 where data flows from R1 -> R2 -> R3. If the graph is requested with the filter for R1 and R3 , the returned Graph will have a Node R1 that references a downstream R2, but since it was filtered out, it won't be available in the graph. Similarly, R3 will declare a phamtom upstream R2. This can be addressed via the `collapse` feature. If we make the same request with collapse set to true, R1 will declare R3 as its downstream (using trasitive property) and R3 will also have a corresponding upstream declaration of R1."
+      tags: 
+        - Assets
+      summary: Get list of assets
+      description: "Returns list of assets, optionally filtered by type and service"
       produces:
         - "application/json"
       parameters:
         - in: query
-          name: filter.type
+          name: type
+          description: "filter by type"
+          schema:
+            $ref: "#/definitions/AssetType"
+        - in: query
+          name: service
+          description: "filter by service"
           type: string
         - in: query
-          name: collapse
+          name: size
+          description: "maximum size to fetch"
+          type: number
+        - in: query
+          name: offset
+          description: "offset to fetch from"
+          type: number
+        - in: query
+          name: with_total
+          description: "if set include total field in response"
           type: boolean
       responses:
         200:
           description: OK
           schema:
-            $ref: "#/definitions/AdjacencyMap"
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: "#/definitions/Asset"
+              total:
+                type: number
+                example: 1800
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+    put:
+      tags: 
+        - Assets
+      summary: Upsert an asset
+      description: "Create a new asset if a combination of urn, type and service does not exist. If exists update instead"
+      produces:
+        - "application/json"
+      parameters:
+        - in: body
+          name: ""
+          required: true
+          schema:
+            $ref: "#/definitions/BaseAsset"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              id:
+                $ref: "#/definitions/UUID"
+        400:
+          description: "validation error"
+          schema:
+            $ref: "#/definitions/ValidationError"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+  "/v1beta1/assets/{id}":
+    get:
+      tags: 
+        - Assets
+      summary: Find an asset
+      description: "Returns a single asset with given ID"
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: id
+          description: "asset's ID"
+          schema:
+            $ref: "#/definitions/UUID"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Asset"
         404:
-          description: record not found
+          description: "not found error"
           schema:
             $ref: "#/definitions/Error"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+    delete:
+      tags: 
+        - Assets
+      summary: Delete an asset
+      description: "Delete a single asset with given ID"
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: id
+          description: "asset's ID"
+          schema:
+            $ref: "#/definitions/UUID"
+      responses:
+        204:
+          description: OK
+          schema:
+            type: string
+            example: OK
+        404:
+          description: "not found error"
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
   "/v1beta1/lineage/{type}/{record}":
     get:
       tags:
@@ -560,6 +666,46 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 definitions:
+  BaseAsset:
+    type: object
+    properties:
+      urn:
+        type: string
+        example: "sample-urn"
+      type:
+        $ref: "#/definitions/AssetType"
+      name:
+        type: string
+        example: "sample-name"
+      service:
+        type: string
+        example: "bigquery"
+      description:
+        type: string
+        example: "sample description"
+      data:
+        type: object
+        description: "dynamic object"
+      labels:
+        type: object
+        description: "map of string"
+  Asset:
+    type: object
+    allOf:
+      - type: object
+        properties: 
+          id:
+            $ref: "#/definitions/UUID"
+            description: "Main asset identifer in UUID"
+      - $ref: "#/definitions/BaseAsset"
+      - $ref: "#/definitions/Timestamps"
+  AssetType:
+    type: string
+    enum:
+      - table
+      - job
+      - topic
+      - dashboard
   Record:
     type: object
     properties:
@@ -717,12 +863,25 @@ definitions:
     properties:
       "<NodeLabel>":
         $ref: "#/definitions/AdjacencyEntry"
+  UUID:
+    type: string
+    description: "UUID"
+    example: "2a46cf6a-ac75-4327-a34b-4f8ed33c1162"
   Type:
     type: object
     properties:
       name:
         type: string
         description: name of the type (for e.g. dagger, firehose)
+  Timestamps:
+    type: object
+    properties:
+      created_at:
+        type: string
+        example: "0001-01-01T00:00:00Z"
+      updated_at:
+        type: string
+        example: "0001-01-01T00:00:00Z"
   Error:
     type: object
     properties:
@@ -747,6 +906,13 @@ definitions:
       labels:
         type: object
         description: "key value pairs describing the labels configured for the given type of record. Example of labels: team, created, owner etc"
+  InternalServerError:
+    type: object
+    properties:
+      reason:
+        type: string
+        description: "Internal Server Error"
+        example: "Internal Server Error - (ref: 188239132)"
   ValidationError:
     allOf:
       - $ref: "#/definitions/Error"

@@ -3,20 +3,21 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/odpf/salt/log"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 
+	"github.com/odpf/salt/log"
+
 	"github.com/gorilla/mux"
+	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/record"
 )
 
 // RecordHandler exposes a REST interface to types
 type RecordHandler struct {
-	typeRepository          record.TypeRepository
+	typeRepository          discovery.TypeRepository
 	recordRepositoryFactory discovery.RecordRepositoryFactory
 	discoveryService        *discovery.Service
 	logger                  log.Logger
@@ -24,7 +25,7 @@ type RecordHandler struct {
 
 func NewRecordHandler(
 	logger log.Logger,
-	typeRepository record.TypeRepository,
+	typeRepository discovery.TypeRepository,
 	discoveryService *discovery.Service,
 	rrf discovery.RecordRepositoryFactory) *RecordHandler {
 	handler := &RecordHandler{
@@ -46,9 +47,9 @@ func (h *RecordHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		errMessage = fmt.Sprintf("error deleting record \"%s\" with type \"%s\"", recordID, typeName)
 	)
 
-	typName := record.TypeName(typeName)
-	if err := typName.IsValid(); err != nil {
-		writeJSONError(w, http.StatusNotFound, err.Error())
+	typName := asset.Type(typeName)
+	if !typName.IsValid() {
+		writeJSONError(w, http.StatusNotFound, "type is invalid")
 		return
 	}
 
@@ -56,7 +57,7 @@ func (h *RecordHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("error deleting record", "type", typName, "error", err)
 
-		if _, ok := err.(record.ErrNoSuchRecord); ok {
+		if _, ok := err.(asset.NotFoundError); ok {
 			statusCode = http.StatusNotFound
 			errMessage = err.Error()
 		}
@@ -72,47 +73,47 @@ func (h *RecordHandler) Delete(w http.ResponseWriter, r *http.Request) {
 func (h *RecordHandler) UpsertBulk(w http.ResponseWriter, r *http.Request) {
 	typeName := mux.Vars(r)["name"]
 
-	var records []record.Record
-	err := json.NewDecoder(r.Body).Decode(&records)
+	var assets []asset.Asset
+	err := json.NewDecoder(r.Body).Decode(&assets)
 	if err != nil {
 		writeJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
 		return
 	}
 
-	typName := record.TypeName(typeName)
-	if err := typName.IsValid(); err != nil {
-		writeJSONError(w, http.StatusNotFound, err.Error())
+	typName := asset.Type(typeName)
+	if !typName.IsValid() {
+		writeJSONError(w, http.StatusNotFound, "type is invalid")
 		return
 	}
 
-	var failedRecords = make(map[int]string)
-	for idx, record := range records {
+	var failedAssets = make(map[int]string)
+	for idx, record := range assets {
 		if err := h.validateRecord(record); err != nil {
 			h.logger.Error("error validating record", "type", typName, "record", record, "error", err)
-			failedRecords[idx] = err.Error()
+			failedAssets[idx] = err.Error()
 		}
 	}
-	if len(failedRecords) > 0 {
-		writeJSON(w, http.StatusBadRequest, NewValidationErrorResponse(failedRecords))
+	if len(failedAssets) > 0 {
+		writeJSON(w, http.StatusBadRequest, NewValidationErrorResponse(failedAssets))
 		return
 	}
 
-	if err := h.discoveryService.Upsert(r.Context(), typName.String(), records); err != nil {
-		h.logger.Error("error creating/updating records", "type", typName, "error", err)
+	if err := h.discoveryService.Upsert(r.Context(), typName.String(), assets); err != nil {
+		h.logger.Error("error creating/updating assets", "type", typName, "error", err)
 		status := http.StatusInternalServerError
 		writeJSONError(w, status, http.StatusText(status))
 		return
 	}
-	h.logger.Info("created/updated records", "record count", len(records), "type", typName)
+	h.logger.Info("created/updated assets", "record count", len(assets), "type", typName)
 	writeJSON(w, http.StatusOK, StatusResponse{Status: "success"})
 }
 
 func (h *RecordHandler) GetByType(w http.ResponseWriter, r *http.Request) {
 	typeName := mux.Vars(r)["name"]
 
-	typName := record.TypeName(typeName)
-	if err := typName.IsValid(); err != nil {
-		writeJSONError(w, http.StatusNotFound, err.Error())
+	typName := asset.Type(typeName)
+	if !typName.IsValid() {
+		writeJSONError(w, http.StatusNotFound, "type is invalid")
 		return
 	}
 
@@ -131,7 +132,7 @@ func (h *RecordHandler) GetByType(w http.ResponseWriter, r *http.Request) {
 
 	recordList, err := recordRepo.GetAll(r.Context(), getCfg)
 	if err != nil {
-		h.logger.Error("error fetching records: GetAll", "type", typName, "error", err)
+		h.logger.Error("error fetching assets: GetAll", "type", typName, "error", err)
 		status, message := h.responseStatusForError(err)
 		writeJSONError(w, status, message)
 		return
@@ -151,9 +152,9 @@ func (h *RecordHandler) GetOneByType(w http.ResponseWriter, r *http.Request) {
 		recordID = vars["id"]
 	)
 
-	typName := record.TypeName(typeName)
-	if err := typName.IsValid(); err != nil {
-		writeJSONError(w, http.StatusNotFound, err.Error())
+	typName := asset.Type(typeName)
+	if !typName.IsValid() {
+		writeJSONError(w, http.StatusNotFound, "type is invalid")
 		return
 	}
 
@@ -206,33 +207,33 @@ func (h *RecordHandler) parseSelectQuery(raw string) (fields []string) {
 	return
 }
 
-func (h *RecordHandler) selectRecordFields(fields []string, records []record.Record) (processedRecords []record.Record) {
-	for _, record := range records {
+func (h *RecordHandler) selectRecordFields(fields []string, assets []asset.Asset) (processedAssets []asset.Asset) {
+	for _, ast := range assets {
 		newData := map[string]interface{}{}
 		for _, field := range fields {
-			v, ok := record.Data[field]
+			v, ok := ast.Data[field]
 			if !ok {
 				continue
 			}
 			newData[field] = v
 		}
-		record.Data = newData
-		processedRecords = append(processedRecords, record)
+		ast.Data = newData
+		processedAssets = append(processedAssets, ast)
 	}
 	return
 }
 
-func (h *RecordHandler) validateRecord(record record.Record) error {
-	if record.Urn == "" {
+func (h *RecordHandler) validateRecord(ast asset.Asset) error {
+	if ast.URN == "" {
 		return fmt.Errorf("urn is required")
 	}
-	if record.Name == "" {
+	if ast.Name == "" {
 		return fmt.Errorf("name is required")
 	}
-	if record.Data == nil {
+	if ast.Data == nil {
 		return fmt.Errorf("data is required")
 	}
-	if record.Service == "" {
+	if ast.Service == "" {
 		return fmt.Errorf("service is required")
 	}
 
@@ -241,7 +242,7 @@ func (h *RecordHandler) validateRecord(record record.Record) error {
 
 func (h *RecordHandler) responseStatusForError(err error) (int, string) {
 	switch err.(type) {
-	case record.ErrNoSuchRecord:
+	case asset.NotFoundError:
 		return http.StatusNotFound, err.Error()
 	}
 	return http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)

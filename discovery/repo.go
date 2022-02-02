@@ -3,30 +3,27 @@ package discovery
 import (
 	"context"
 
-	"github.com/odpf/columbus/record"
+	"github.com/odpf/columbus/asset"
 )
 
-type RecordIterator interface {
-	Scan() bool
-	Next() []record.Record
-	Close() error
+//go:generate mockery --name Repository --outpkg mock --output ../lib/mock/ --structname DiscoveryRepository --filename discovery_repository.go
+type Repository interface {
+	Upsert(context.Context, asset.Asset) error
+	Delete(ctx context.Context, assetID string) error
 }
 
-// RecordRepository is an abstract storage for Records
+// RecordRepository is an abstract storage for Assets
 type RecordRepository interface {
-	CreateOrReplaceMany(context.Context, []record.Record) error
+	CreateOrReplaceMany(context.Context, []asset.Asset) error
 
-	// GetAll returns specific records from storage
+	// GetAll returns specific assets from storage
 	// GetConfig is used to configure fetching such as filters and offset
 	GetAll(ctx context.Context, cfg GetConfig) (RecordList, error)
-
-	// GetAllIterator returns RecordIterator to iterate records by batches
-	GetAllIterator(context.Context) (RecordIterator, error)
 
 	// GetByID returns a record by it's id.
 	// The field that contains this ID is defined by the
 	// type to which this record belongs
-	GetByID(context.Context, string) (record.Record, error)
+	GetByID(context.Context, string) (asset.Asset, error)
 
 	// Delete deletes a record by it's id.
 	// The field that contains this ID is defined by the
@@ -43,4 +40,12 @@ type RecordRepositoryFactory interface {
 type RecordSearcher interface {
 	Search(ctx context.Context, cfg SearchConfig) (results []SearchResult, err error)
 	Suggest(ctx context.Context, cfg SearchConfig) (suggestions []string, err error)
+}
+
+// TypeRepository is an interface to a storage
+// system for types.
+type TypeRepository interface {
+	// GetAll fetches types with assets count for all available types
+	// and returns them as a map[typeName]count
+	GetAll(context.Context) (map[asset.Type]int, error)
 }

@@ -11,8 +11,8 @@ import (
 
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/record"
 	store "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/stretchr/testify/assert"
 )
@@ -24,35 +24,35 @@ func TestRecordRepository(t *testing.T) {
 		var testCases = []struct {
 			Title      string
 			ShouldFail bool
-			Setup      func(cli *elasticsearch.Client, records []record.Record, typeName string) error
-			PostCheck  func(cli *elasticsearch.Client, records []record.Record, typeName string) error
-			TypeName   string
-			Records    []record.Record
+			Setup      func(cli *elasticsearch.Client, assets []asset.Asset, typeName string) error
+			PostCheck  func(cli *elasticsearch.Client, assets []asset.Asset, typeName string) error
+			Type       string
+			Assets     []asset.Asset
 		}{
 			{
-				Title:    "should succesfully write all the documents to the index for a valid type",
-				TypeName: "job",
-				Records: []record.Record{
+				Title: "should succesfully write all the documents to the index for a valid type",
+				Type:  "job",
+				Assets: []asset.Asset{
 					{
-						Urn: "dagger1",
+						URN: "dagger1",
 						Data: map[string]interface{}{
 							"foo": "bar",
 						},
 					},
 					{
-						Urn: "dagger2",
+						URN: "dagger2",
 						Data: map[string]interface{}{
 							"foo": "bar",
 						},
 					},
 					{
-						Urn: "dagger3",
+						URN: "dagger3",
 						Data: map[string]interface{}{
 							"foo": "bar",
 						},
 					},
 				},
-				PostCheck: func(cli *elasticsearch.Client, records []record.Record, typeName string) error {
+				PostCheck: func(cli *elasticsearch.Client, assets []asset.Asset, typeName string) error {
 					searchReq := esapi.SearchRequest{
 						Index: []string{typeName},
 						Body:  strings.NewReader(`{"query":{"match_all":{}}}`),
@@ -75,8 +75,8 @@ func TestRecordRepository(t *testing.T) {
 					if err != nil {
 						return fmt.Errorf("error parsing elasticsearch response: %w", err)
 					}
-					if len(records) != len(response.Hits.Hits) {
-						return fmt.Errorf("expected elasticsearch index to contain %d records, but had %d records instead", len(records), len(response.Hits.Hits))
+					if len(assets) != len(response.Hits.Hits) {
+						return fmt.Errorf("expected elasticsearch index to contain %d assets, but had %d assets instead", len(assets), len(response.Hits.Hits))
 					}
 
 					return nil
@@ -88,18 +88,18 @@ func TestRecordRepository(t *testing.T) {
 			t.Run(testCase.Title, func(t *testing.T) {
 				cli := esTestServer.NewClient()
 				if testCase.Setup != nil {
-					err := testCase.Setup(cli, testCase.Records, testCase.TypeName)
+					err := testCase.Setup(cli, testCase.Assets, testCase.Type)
 					if err != nil {
 						t.Errorf("error setting up testcase: %v", err)
 					}
 				}
 				factory := store.NewRecordRepositoryFactory(cli)
-				repo, err := factory.For(testCase.TypeName)
+				repo, err := factory.For(testCase.Type)
 				if err != nil {
-					t.Fatalf("error creating record repository: %s", err)
+					t.Fatalf("error creating asset repository: %s", err)
 				}
 
-				err = repo.CreateOrReplaceMany(ctx, testCase.Records)
+				err = repo.CreateOrReplaceMany(ctx, testCase.Assets)
 				if testCase.ShouldFail {
 					assert.Error(t, err)
 				} else if err != nil {
@@ -107,7 +107,7 @@ func TestRecordRepository(t *testing.T) {
 					return
 				}
 				if testCase.PostCheck != nil {
-					if err := testCase.PostCheck(cli, testCase.Records, testCase.TypeName); err != nil {
+					if err := testCase.PostCheck(cli, testCase.Assets, testCase.Type); err != nil {
 						t.Error(err)
 						return
 					}
@@ -118,45 +118,14 @@ func TestRecordRepository(t *testing.T) {
 
 	cli := esTestServer.NewClient()
 	rrf := store.NewRecordRepositoryFactory(cli)
-	recordRepo, err := rrf.For("topic")
+	assetRepo, err := rrf.For("topic")
 	if err != nil {
-		t.Fatalf("failed to construct record repository: %v", err)
+		t.Fatalf("failed to construct asset repository: %v", err)
 		return
 	}
 
-	records := insertRecord(ctx, t, recordRepo)
+	assets := insertRecord(ctx, t, assetRepo)
 
-	t.Run("GetAllIterator", func(t *testing.T) {
-		t.Run("should return record iterator to iterate records", func(t *testing.T) {
-			expectedResults := []record.Record{}
-			raw, err := ioutil.ReadFile("./testdata/records.json")
-			if err != nil {
-				t.Fatalf("error reading results file: %v", err)
-				return
-			}
-			err = json.Unmarshal(raw, &expectedResults)
-			if err != nil {
-				t.Fatalf("error parsing results file: %v", err)
-				return
-			}
-
-			var actualResults []record.Record
-			iterator, err := recordRepo.GetAllIterator(ctx)
-			if err != nil {
-				t.Fatalf("error executing GetAllIterator: %v", err)
-				return
-			}
-			for iterator.Scan() {
-				actualResults = append(actualResults, iterator.Next()...)
-			}
-			iterator.Close()
-
-			if reflect.DeepEqual(expectedResults, actualResults) == false {
-				t.Error(incorrectResultsError(expectedResults, actualResults))
-				return
-			}
-		})
-	})
 	t.Run("GetAll", func(t *testing.T) {
 		type testCase struct {
 			Description   string
@@ -171,14 +140,14 @@ func TestRecordRepository(t *testing.T) {
 			{
 				Description: "should handle nil filter and default sort by name",
 				Filter:      nil,
-				ResultsFile: "./testdata/records-all.json",
+				ResultsFile: "./testdata/assets-all.json",
 			},
 			{
 				Description:   "should fetch certain offset and size if given",
 				Filter:        nil,
 				From:          2,
 				Size:          3,
-				ResultsFile:   "./testdata/records-offset.json",
+				ResultsFile:   "./testdata/assets-offset.json",
 				ExpectedTotal: 10,
 			},
 			{
@@ -186,21 +155,21 @@ func TestRecordRepository(t *testing.T) {
 				Filter: map[string][]string{
 					"service": {"rabbitmq"},
 				},
-				ResultsFile: "./testdata/records-service.json",
+				ResultsFile: "./testdata/assets-service.json",
 			},
 			{
 				Description: "should support a single value filter",
 				Filter: map[string][]string{
 					"data.country": {"id"},
 				},
-				ResultsFile: "./testdata/records-id.json",
+				ResultsFile: "./testdata/assets-id.json",
 			},
 			{
 				Description: "should support multi value filter",
 				Filter: map[string][]string{
 					"data.country": {"id", "vn"},
 				},
-				ResultsFile: "./testdata/records-vn-id.json",
+				ResultsFile: "./testdata/assets-vn-id.json",
 			},
 			{
 				Description: "should support multiple terms",
@@ -208,13 +177,13 @@ func TestRecordRepository(t *testing.T) {
 					"data.country": {"th"},
 					"data.title":   {"test_grant2"},
 				},
-				ResultsFile: "./testdata/records-th-deployed.json",
+				ResultsFile: "./testdata/assets-th-deployed.json",
 			},
 		}
 
 		for _, tc := range testCases {
 			t.Run(tc.Description, func(t *testing.T) {
-				expectedResults := []record.Record{}
+				expectedResults := []asset.Asset{}
 				raw, err := ioutil.ReadFile(tc.ResultsFile)
 				if err != nil {
 					t.Fatalf("error reading results file: %v", err)
@@ -226,7 +195,7 @@ func TestRecordRepository(t *testing.T) {
 					return
 				}
 
-				recordList, err := recordRepo.GetAll(ctx, discovery.GetConfig{
+				assetList, err := assetRepo.GetAll(ctx, discovery.GetConfig{
 					Filters: tc.Filter,
 					From:    tc.From,
 					Size:    tc.Size,
@@ -236,44 +205,44 @@ func TestRecordRepository(t *testing.T) {
 					return
 				}
 
-				assert.Equal(t, len(expectedResults), recordList.Count)
-				if reflect.DeepEqual(expectedResults, recordList.Data) == false {
-					t.Error(incorrectResultsError(expectedResults, recordList.Data))
+				assert.Equal(t, len(expectedResults), assetList.Count)
+				if reflect.DeepEqual(expectedResults, assetList.Data) == false {
+					t.Error(incorrectResultsError(expectedResults, assetList.Data))
 					return
 				}
 
 				if tc.ExpectedTotal > 0 {
-					assert.Equal(t, tc.ExpectedTotal, recordList.Total)
+					assert.Equal(t, tc.ExpectedTotal, assetList.Total)
 				}
 			})
 		}
 	})
 	t.Run("GetByID", func(t *testing.T) {
 		t.Run("data-based tests", func(t *testing.T) {
-			for _, record := range records {
-				recordFromRepo, err := recordRepo.GetByID(ctx, record.Urn)
+			for _, ast := range assets {
+				assetFromRepo, err := assetRepo.GetByID(ctx, ast.URN)
 				if err != nil {
-					t.Errorf("unexpected error: GetByID(%q): %v", record.Urn, err)
+					t.Errorf("unexpected error: GetByID(%q): %v", ast.URN, err)
 					return
 				}
-				if reflect.DeepEqual(record, recordFromRepo) == false {
-					t.Error(incorrectResultsError(record, recordFromRepo))
+				if reflect.DeepEqual(ast, assetFromRepo) == false {
+					t.Error(incorrectResultsError(ast, assetFromRepo))
 				}
 			}
 		})
-		t.Run("should return an error if a non-existent record is requested", func(t *testing.T) {
+		t.Run("should return an error if a non-existent asset is requested", func(t *testing.T) {
 			var id = "this-doesnt-exists"
-			_, err := recordRepo.GetByID(ctx, id)
-			_, ok := err.(record.ErrNoSuchRecord)
+			_, err := assetRepo.GetByID(ctx, id)
+			_, ok := err.(asset.NotFoundError)
 			assert.True(t, ok)
 		})
 	})
 	t.Run("Delete", func(t *testing.T) {
-		t.Run("should delete record from index", func(t *testing.T) {
+		t.Run("should delete asset from index", func(t *testing.T) {
 			id := "delete-id-01"
-			err := recordRepo.CreateOrReplaceMany(ctx, []record.Record{
+			err := assetRepo.CreateOrReplaceMany(ctx, []asset.Asset{
 				{
-					Urn:  id,
+					URN:  id,
 					Name: "To be deleted",
 					Data: map[string]interface{}{
 						"title": "To be deleted",
@@ -285,35 +254,35 @@ func TestRecordRepository(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			err = recordRepo.Delete(ctx, id)
+			err = assetRepo.Delete(ctx, id)
 			assert.Nil(t, err)
 
-			r, err := recordRepo.GetByID(ctx, id)
+			r, err := assetRepo.GetByID(ctx, id)
 			assert.NotNil(t, err)
-			assert.Equal(t, record.Record{}, r)
+			assert.Equal(t, asset.Asset{}, r)
 		})
 
-		t.Run("should return custom error when record could not be found", func(t *testing.T) {
-			err := recordRepo.Delete(ctx, "not-found-id")
+		t.Run("should return custom error when asset could not be found", func(t *testing.T) {
+			err := assetRepo.Delete(ctx, "not-found-id")
 			assert.NotNil(t, err)
-			assert.IsType(t, record.ErrNoSuchRecord{}, err)
+			assert.IsType(t, asset.NotFoundError{}, err)
 		})
 	})
 }
 
-func insertRecord(ctx context.Context, t *testing.T, repo discovery.RecordRepository) (records []record.Record) {
-	src, err := ioutil.ReadFile("./testdata/records.json")
+func insertRecord(ctx context.Context, t *testing.T, repo discovery.RecordRepository) (assets []asset.Asset) {
+	src, err := ioutil.ReadFile("./testdata/assets.json")
 	if err != nil {
 		t.Fatalf("error reading testdata: %v", err)
 		return
 	}
 
-	err = json.Unmarshal(src, &records)
+	err = json.Unmarshal(src, &assets)
 	if err != nil {
 		t.Fatalf("error unmarshalling testdata: %v", err)
 		return
 	}
-	err = repo.CreateOrReplaceMany(ctx, records)
+	err = repo.CreateOrReplaceMany(ctx, assets)
 	if err != nil {
 		t.Fatalf("error writing testdata to elasticsearch: %v", err)
 		return

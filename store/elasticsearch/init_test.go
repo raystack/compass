@@ -7,11 +7,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/odpf/columbus/record"
+	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/store/elasticsearch/testutil"
 )
 
-var daggerType = record.TypeName("dagger")
+var daggerType = asset.Type("dagger")
 
 var esTestServer *testutil.ElasticsearchTestServer
 

@@ -1,18 +1,20 @@
 package handlers
 
 import (
-	"github.com/odpf/columbus/record"
-	"github.com/odpf/salt/log"
 	"net/http"
+
+	"github.com/odpf/columbus/asset"
+	"github.com/odpf/columbus/discovery"
+	"github.com/odpf/salt/log"
 )
 
 // TypeHandler exposes a REST interface to types
 type TypeHandler struct {
-	typeRepo record.TypeRepository
+	typeRepo discovery.TypeRepository
 	logger   log.Logger
 }
 
-func NewTypeHandler(logger log.Logger, er record.TypeRepository) *TypeHandler {
+func NewTypeHandler(logger log.Logger, er discovery.TypeRepository) *TypeHandler {
 	h := &TypeHandler{
 		typeRepo: er,
 		logger:   logger,
@@ -34,7 +36,7 @@ func (h *TypeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	results := []TypeWithCount{}
-	for _, typName := range record.AllSupportedTypes {
+	for _, typName := range asset.AllSupportedTypes {
 		count := typesNameMap[typName]
 		results = append(results, TypeWithCount{
 			Name:  typName.String(),
