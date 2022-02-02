@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	DEFAULT_MAX_SIZE = 100
+	DEFAULT_MAX_RESULT_SIZE = 100
 )
 
 // AssetRepository is a type that manages user operation to the primary database
@@ -394,7 +394,7 @@ func NewAssetRepository(c *Client, userRepo *UserRepository, defaultGetMaxSize i
 		return nil, errors.New("postgres client is nil")
 	}
 	if defaultGetMaxSize == 0 {
-		defaultGetMaxSize = DEFAULT_MAX_SIZE
+		defaultGetMaxSize = DEFAULT_MAX_RESULT_SIZE
 	}
 
 	return &AssetRepository{
