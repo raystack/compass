@@ -214,7 +214,7 @@ func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id stri
 
 func (r *AssetRepository) update(ctx context.Context, id string, ast *asset.Asset) error {
 	return r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
-		_, err := r.client.db.ExecContext(ctx,
+		err := r.execContext(ctx, tx,
 			`UPDATE assets
 			SET urn = $1,
 				type = $2,
@@ -227,6 +227,9 @@ func (r *AssetRepository) update(ctx context.Context, id string, ast *asset.Asse
 			WHERE id = $9;
 			`,
 			ast.URN, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.Labels, ast.UpdatedAt, id)
+		if err != nil {
+			return fmt.Errorf("error running update asset query: %w", err)
+		}
 
 		ast.Owners, err = r.createOrFetchOwnersID(ctx, tx, ast.Owners)
 		if err != nil {
@@ -282,7 +285,7 @@ func (r *AssetRepository) insertOwners(ctx context.Context, execer sqlx.ExecerCo
 		INSERT INTO asset_owners
 			(asset_id, user_id)
 		VALUES %s`, strings.Join(values, ","))
-	_, err = execer.ExecContext(ctx, query, args...)
+	err = r.execContext(ctx, execer, query, args...)
 	if err != nil {
 		err = fmt.Errorf("error running insert owners query: %w", err)
 	}
@@ -305,7 +308,7 @@ func (r *AssetRepository) removeOwners(ctx context.Context, execer sqlx.ExecerCo
 		`DELETE FROM asset_owners WHERE asset_id = $1 AND user_id in (%s)`,
 		strings.Join(user_ids, ","),
 	)
-	_, err = execer.ExecContext(ctx, query, args...)
+	err = r.execContext(ctx, execer, query, args...)
 	if err != nil {
 		err = fmt.Errorf("error running delete owners query: %w", err)
 	}
@@ -352,6 +355,20 @@ func (r *AssetRepository) getID(ctx context.Context, ast *asset.Asset) (id strin
 	}
 
 	return
+}
+
+func (r *AssetRepository) execContext(ctx context.Context, execer sqlx.ExecerContext, query string, args ...interface{}) error {
+	res, err := execer.ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("error running query: %w", err)
+	}
+
+	affectedRows, err := res.RowsAffected()
+	if affectedRows == 0 {
+		return errors.New("query affected 0 rows")
+	}
+
+	return nil
 }
 
 func (r *AssetRepository) compareOwners(current, new []user.User) (toInserts, toRemove []user.User) {
