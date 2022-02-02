@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/user"
@@ -25,7 +26,21 @@ type AssetRepository struct {
 
 // Get retrieves list of assets with filters via config
 func (r *AssetRepository) Get(ctx context.Context, config asset.Config) (assets []asset.Asset, err error) {
-	query, args := r.buildGetQuery(config)
+	size := config.Size
+	if size == 0 {
+		size = r.defaultGetMaxSize
+	}
+
+	builder := sq.Select("*").From("assets").
+		Limit(uint64(size)).
+		Offset(uint64(config.Offset))
+	builder = r.buildFilterQuery(builder, config)
+	query, args, err := r.buildSQL(builder)
+	if err != nil {
+		err = fmt.Errorf("error building query: %w", err)
+		return
+	}
+
 	ams := []*Asset{}
 	err = r.client.db.SelectContext(ctx, &ams, query, args...)
 	if err != nil {
@@ -43,7 +58,12 @@ func (r *AssetRepository) Get(ctx context.Context, config asset.Config) (assets 
 
 // Get retrieves list of assets with filters via config
 func (r *AssetRepository) GetCount(ctx context.Context, config asset.Config) (total int, err error) {
-	query, args := r.buildGetCountQuery(config)
+	builder := sq.Select("count(1)").From("assets")
+	builder = r.buildFilterQuery(builder, config)
+	query, args, err := r.buildSQL(builder)
+	if err != nil {
+		err = fmt.Errorf("error building count query: %w", err)
+	}
 	err = r.client.db.GetContext(ctx, &total, query, args...)
 	if err != nil {
 		err = fmt.Errorf("error getting asset list: %w", err)
@@ -120,67 +140,19 @@ func (r *AssetRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *AssetRepository) buildGetQuery(config asset.Config) (query string, args []interface{}) {
-	whereFields := []string{}
-	args = []interface{}{}
-
+func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, config asset.Config) sq.SelectBuilder {
+	clause := sq.Eq{}
 	if config.Type != "" {
-		whereFields = append(whereFields, "type")
-		args = append(args, config.Type)
+		clause["type"] = config.Type
 	}
 	if config.Service != "" {
-		whereFields = append(whereFields, "service")
-		args = append(args, config.Service)
-	}
-	size := config.Size
-	if size == 0 {
-		size = r.defaultGetMaxSize
+		clause["service"] = config.Service
 	}
 
-	args = append(args, size, config.Offset)
-
-	whereClauses := []string{}
-	for i, field := range whereFields {
-		whereClauses = append(whereClauses, fmt.Sprintf("%s = $%d", field, i+1))
+	if len(clause) > 0 {
+		builder = builder.Where(clause)
 	}
-	totalWhereClauses := len(whereClauses)
-
-	query = "SELECT * FROM assets "
-	if totalWhereClauses > 0 {
-		query += "WHERE " + strings.Join(whereClauses, " AND ") + " "
-	}
-	query += fmt.Sprintf("LIMIT $%d OFFSET $%d;", totalWhereClauses+1, totalWhereClauses+2)
-
-	return
-}
-
-func (r *AssetRepository) buildGetCountQuery(config asset.Config) (query string, args []interface{}) {
-	whereFields := []string{}
-	args = []interface{}{}
-
-	if config.Type != "" {
-		whereFields = append(whereFields, "type")
-		args = append(args, config.Type)
-	}
-	if config.Service != "" {
-		whereFields = append(whereFields, "service")
-		args = append(args, config.Service)
-	}
-
-	args = append(args)
-
-	whereClauses := []string{}
-	for i, field := range whereFields {
-		whereClauses = append(whereClauses, fmt.Sprintf("%s = $%d", field, i+1))
-	}
-	totalWhereClauses := len(whereClauses)
-
-	query = "SELECT count(1) FROM assets "
-	if totalWhereClauses > 0 {
-		query += "WHERE " + strings.Join(whereClauses, " AND ") + " "
-	}
-
-	return
+	return builder
 }
 
 func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id string, err error) {
@@ -396,6 +368,21 @@ func (r *AssetRepository) compareOwners(current, new []user.User) (toInserts, to
 
 	for id, _ := range currMap {
 		toRemove = append(toRemove, user.User{ID: id})
+	}
+
+	return
+}
+
+func (r *AssetRepository) buildSQL(builder sq.SelectBuilder) (query string, args []interface{}, err error) {
+	query, args, err = builder.ToSql()
+	if err != nil {
+		err = fmt.Errorf("error transforming to sql")
+		return
+	}
+	query, err = sq.Dollar.ReplacePlaceholders(query)
+	if err != nil {
+		err = fmt.Errorf("error replacing placeholders to dollar")
+		return
 	}
 
 	return
