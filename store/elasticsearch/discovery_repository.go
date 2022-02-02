@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/odpf/columbus/asset"
@@ -16,9 +15,6 @@ import (
 const (
 	defaultGetSize   = 20
 	defaultSortField = "name.keyword"
-
-	defaultScrollTimeout   = 30 * time.Second
-	defaultScrollBatchSize = 20
 )
 
 var indexTypeMap = map[asset.Type]string{

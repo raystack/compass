@@ -12,7 +12,6 @@ import (
 )
 
 var daggerType = asset.Type("dagger")
-var validType = asset.TypeTable
 
 var esTestServer *testutil.ElasticsearchTestServer
 

@@ -39,7 +39,7 @@ func TestService(t *testing.T) {
 	t.Run("smoke test", func(t *testing.T) {
 		repo := new(mocks.Repository)
 		repo.On("GetEdges", ctx).Return([]lineage.Edge{}, nil)
-		lineage.NewService(repo, lineage.Config{})
+		lineage.NewService(repo, lineage.Config{}) // nolint:errcheck
 	})
 	t.Run("telemetry test", func(t *testing.T) {
 		// Temporarily disabling lineage build on service creation causes this test to fail

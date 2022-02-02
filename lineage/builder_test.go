@@ -10,17 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func adjEntryWithTypeAndURN(id, urn, typ, service string) lineage.AdjacencyEntry {
-	return lineage.AdjacencyEntry{
-		ID:          id,
-		Type:        typ,
-		URN:         urn,
-		Service:     service,
-		Downstreams: set.NewStringSet(),
-		Upstreams:   set.NewStringSet(),
-	}
-}
-
 func TestDefaultBuilder(t *testing.T) {
 	t.Run("graph construction algorithm", func(t *testing.T) {
 		type testCase struct {

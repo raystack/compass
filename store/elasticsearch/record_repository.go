@@ -171,28 +171,6 @@ func (repo *RecordRepository) writeInsertAction(w io.Writer, ast asset.Asset) er
 	return json.NewEncoder(w).Encode(action)
 }
 
-func (repo *RecordRepository) scrollAssets(ctx context.Context, scrollID string) ([]asset.Asset, string, error) {
-	resp, err := repo.cli.Scroll(
-		repo.cli.Scroll.WithScrollID(scrollID),
-		repo.cli.Scroll.WithScroll(defaultScrollTimeout),
-		repo.cli.Scroll.WithContext(ctx),
-	)
-	if err != nil {
-		return nil, "", fmt.Errorf("error executing scroll: %v", err)
-	}
-	defer resp.Body.Close()
-	if resp.IsError() {
-		return nil, "", fmt.Errorf("error response from elasticsearch: %v", errorReasonFromResponse(resp))
-	}
-	var response searchResponse
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	resp.Body.Close()
-	if err != nil {
-		return nil, "", fmt.Errorf("error decoding es response: %w", err)
-	}
-	return repo.toRecordList(response), response.ScrollID, nil
-}
-
 func (repo *RecordRepository) toRecordList(res searchResponse) []asset.Asset {
 	assets := []asset.Asset{}
 	for _, entry := range res.Hits.Hits {

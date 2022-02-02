@@ -127,18 +127,6 @@ func (h *AssetHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusNoContent, nil)
 }
 
-func (h *AssetHandler) validateAssets(assets []asset.Asset) (faileds map[int]string) {
-	faileds = make(map[int]string)
-	for idx, ast := range assets {
-		if err := h.validateAsset(ast); err != nil {
-			h.logger.Error("error validating asset", "asset", ast, "error", err)
-			faileds[idx] = err.Error()
-		}
-	}
-
-	return
-}
-
 func (h *AssetHandler) validateAsset(ast asset.Asset) error {
 	if ast.URN == "" {
 		return fmt.Errorf("urn is required")

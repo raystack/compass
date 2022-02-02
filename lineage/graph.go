@@ -60,8 +60,6 @@ func (graph InMemoryGraph) addAdjacentsInDir(subgraph AdjacencyMap, superGraph A
 			queue = append(queue, adjacentEl)
 		}
 	}
-
-	return
 }
 
 func NewInMemoryGraph(data AdjacencyMap) InMemoryGraph {

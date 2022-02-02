@@ -54,26 +54,6 @@ func (a *Asset) buildLabels() map[string]string {
 	return result
 }
 
-func newAssetModel(a asset.Asset) *Asset {
-	labels := make(map[string]interface{})
-	for key, value := range a.Labels {
-		labels[key] = value
-	}
-
-	return &Asset{
-		ID:          a.ID,
-		URN:         a.URN,
-		Type:        a.Type.String(),
-		Name:        a.Name,
-		Service:     a.Service,
-		Description: a.Description,
-		Data:        a.Data,
-		Labels:      labels,
-		CreatedAt:   a.CreatedAt,
-		UpdatedAt:   a.UpdatedAt,
-	}
-}
-
 type JSONMap map[string]interface{}
 
 func (m JSONMap) Value() (driver.Value, error) {

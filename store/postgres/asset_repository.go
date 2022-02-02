@@ -63,6 +63,7 @@ func (r *AssetRepository) GetCount(ctx context.Context, config asset.Config) (to
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
 		err = fmt.Errorf("error building count query: %w", err)
+		return
 	}
 	err = r.client.db.GetContext(ctx, &total, query, args...)
 	if err != nil {
@@ -336,6 +337,9 @@ func (r *AssetRepository) execContext(ctx context.Context, execer sqlx.ExecerCon
 	}
 
 	affectedRows, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error getting affected rows: %w", err)
+	}
 	if affectedRows == 0 {
 		return errors.New("query affected 0 rows")
 	}
@@ -366,7 +370,7 @@ func (r *AssetRepository) compareOwners(current, new []user.User) (toInserts, to
 		}
 	}
 
-	for id, _ := range currMap {
+	for id := range currMap {
 		toRemove = append(toRemove, user.User{ID: id})
 	}
 

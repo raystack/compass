@@ -160,8 +160,3 @@ func indexExists(ctx context.Context, cli *elasticsearch.Client, name string) (b
 	defer res.Body.Close()
 	return res.StatusCode == 200, nil
 }
-
-func isReservedName(name string) bool {
-	name = strings.ToLower(name)
-	return name == defaultSearchIndex
-}
