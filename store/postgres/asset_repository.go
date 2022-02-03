@@ -231,7 +231,7 @@ func (r *AssetRepository) getOwners(ctx context.Context, asset_id string) (owner
 		FROM asset_owners ao
 		JOIN users u on ao.user_id = u.id
 		WHERE asset_id = $1`
-	ums := []User{}
+	ums := []UserModel{}
 	err = r.client.db.SelectContext(ctx, &ums, query, asset_id)
 	if err != nil {
 		err = fmt.Errorf("error getting asset's owners: %w", err)

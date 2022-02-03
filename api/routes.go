@@ -11,6 +11,7 @@ import (
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/tag"
+	"github.com/odpf/columbus/user"
 )
 
 type Config struct {
@@ -20,6 +21,7 @@ type Config struct {
 	TagService          *tag.Service
 	TagTemplateService  *tag.TemplateService
 	LineageProvider     handlers.LineageProvider
+	UserService         *user.Service
 	MiddlewareConfig    middleware.Config
 
 	// Deprecated

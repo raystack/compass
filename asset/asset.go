@@ -1,5 +1,6 @@
 package asset
 
+//go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --structname AssetRepository --filename asset_repository.go
 import (
 	"context"
 	"time"
@@ -22,7 +23,6 @@ type Asset struct {
 	UpdatedAt   time.Time              `json:"updated_at"`
 }
 
-//go:generate mockery --name Repository --outpkg mock --output ../lib/mock/ --structname AssetRepository --filename asset_repository.go
 type Repository interface {
 	Get(context.Context, Config) ([]Asset, error)
 	GetCount(context.Context, Config) (int, error)

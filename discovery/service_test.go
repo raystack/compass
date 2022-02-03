@@ -34,7 +34,7 @@ func TestServiceUpsert(t *testing.T) {
 		assets := []asset.Asset{sampleRecord}
 
 		rr := new(mocks.RecordRepository)
-		rr.On("CreateOrReplaceMany", ctx, records).Return(errors.New("error"))
+		rr.On("CreateOrReplaceMany", ctx, assets).Return(errors.New("error"))
 		defer rr.AssertExpectations(t)
 		rrf := new(mocks.RecordRepositoryFactory)
 		rrf.On("For", "table").Return(rr, nil)
@@ -49,7 +49,7 @@ func TestServiceUpsert(t *testing.T) {
 		assets := []asset.Asset{sampleRecord}
 
 		rr := new(mocks.RecordRepository)
-		rr.On("CreateOrReplaceMany", ctx, records).Return(nil)
+		rr.On("CreateOrReplaceMany", ctx, assets).Return(nil)
 		defer rr.AssertExpectations(t)
 		rrf := new(mocks.RecordRepositoryFactory)
 		rrf.On("For", "table").Return(rr, nil)

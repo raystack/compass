@@ -84,7 +84,7 @@ func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
 	var ast asset.Asset
 	err := json.NewDecoder(r.Body).Decode(&ast)
 	if err != nil {
-		writeJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
+		WriteJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
 		return
 	}
 	if err := h.validateAsset(ast); err != nil {

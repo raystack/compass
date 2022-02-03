@@ -1,7 +1,6 @@
 package user
 
-// go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --structname UserRepository --filename user_repository.go
-
+//go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --structname UserRepository --filename user_repository.go
 import (
 	"context"
 	"time"
@@ -15,6 +14,7 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// Validate validates a user is valid or not
 func (u *User) Validate() error {
 	if u == nil {
 		return ErrNoUserInformation

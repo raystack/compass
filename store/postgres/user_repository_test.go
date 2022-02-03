@@ -113,7 +113,7 @@ func (r *UserRepositoryTestSuite) TestCreateWithTx() {
 			id, err = r.repository.CreateWithTx(r.ctx, tx, nil)
 			return err
 		})
-		r.ErrorIs(err, user.ErrNilUser)
+		r.ErrorIs(err, user.ErrNoUserInformation)
 		r.Empty(id)
 	})
 
