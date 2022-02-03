@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/odpf/columbus/lib/mock"
+	"github.com/odpf/columbus/lib/mocks"
 	"github.com/odpf/columbus/lineage"
 )
 
@@ -15,15 +15,15 @@ func TestCachedGraph(t *testing.T) {
 	type testCase struct {
 		Description  string
 		Cfg          lineage.QueryCfg
-		Graph        func(testCase) *mock.Graph
+		Graph        func(testCase) *mocks.Graph
 		Setup        func(testCase, *lineage.CachedGraph)
 		ExpectCalls  int
 		ExpectResult lineage.AdjacencyMap
 		ExpectError  error
 	}
 
-	var graphFromTestCase = func(tc testCase) *mock.Graph {
-		g := new(mock.Graph)
+	var graphFromTestCase = func(tc testCase) *mocks.Graph {
+		g := new(mocks.Graph)
 		g.On("Query", tc.Cfg).Return(tc.ExpectResult, tc.ExpectError)
 		return g
 	}
@@ -54,8 +54,8 @@ func TestCachedGraph(t *testing.T) {
 			Cfg: lineage.QueryCfg{
 				Collapse: true,
 			},
-			Graph: func(tc testCase) *mock.Graph {
-				g := new(mock.Graph)
+			Graph: func(tc testCase) *mocks.Graph {
+				g := new(mocks.Graph)
 				g.On("Query", tc.Cfg).Return(lineage.AdjacencyMap{}, fmt.Errorf("bad implementation"))
 				return g
 			},

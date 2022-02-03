@@ -8,8 +8,8 @@ import (
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/columbus/user"
+	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -29,21 +29,21 @@ type AssetRepositoryTestSuite struct {
 func (r *AssetRepositoryTestSuite) SetupSuite() {
 	var err error
 
-	logger := logrus.New()
+	logger := log.NewLogrus()
 	// logger.SetLevel(logrus.DebugLevel)
 	r.client, r.pool, r.resource, err = newTestClient(logger)
 	if err != nil {
-		logger.Fatal(err)
+		r.T().Fatal(err)
 	}
 
 	r.ctx = context.TODO()
 	userRepo, err := postgres.NewUserRepository(r.client)
 	if err != nil {
-		logger.Fatal(err)
+		r.T().Fatal(err)
 	}
 	r.repository, err = postgres.NewAssetRepository(r.client, userRepo, defaultGetMaxSize)
 	if err != nil {
-		logger.Fatal(err)
+		r.T().Fatal(err)
 	}
 }
 
@@ -198,8 +198,8 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 
 	r.Run("return owners if any", func() {
 		// create users
-		user1 := user.User{Email: "johndoe@example.com"}
-		user2 := user.User{Email: "janedoe@example.com"}
+		user1 := user.User{Email: "johndoe@example.com", Provider: "shield"}
+		user2 := user.User{Email: "janedoe@example.com", Provider: "shield"}
 		userRepo, err := postgres.NewUserRepository(r.client)
 		r.Require().NoError(err)
 		user1.ID, err = userRepo.Create(r.ctx, &user1)
@@ -236,8 +236,8 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 
 func (r *AssetRepositoryTestSuite) TestUpsert() {
 	// create users
-	user1 := user.User{Email: "johndoe@example.com"}
-	user2 := user.User{Email: "janedoe@example.com"}
+	user1 := user.User{Email: "johndoe@example.com", Provider: "shield"}
+	user2 := user.User{Email: "janedoe@example.com", Provider: "shield"}
 	userRepo, err := postgres.NewUserRepository(r.client)
 	r.Require().NoError(err)
 	user1.ID, err = userRepo.Create(r.ctx, &user1)
@@ -295,7 +295,7 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				Type:    "table",
 				Service: "bigquery",
 				Owners: []user.User{
-					{Email: "newuser@example.com"},
+					{Email: "newuser@example.com", Provider: "shield"},
 				},
 			}
 
@@ -399,7 +399,7 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			newAsset := ast
 			newAsset.Owners = []user.User{
 				user1,
-				{Email: "newuser@example.com"},
+				{Email: "newuser@example.com", Provider: "shield"},
 			}
 
 			err := r.repository.Upsert(r.ctx, &ast)

@@ -15,7 +15,7 @@ import (
 
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/lib/mock"
+	"github.com/odpf/columbus/lib/mocks"
 
 	"github.com/stretchr/testify/assert"
 	testifyMock "github.com/stretchr/testify/mock"
@@ -28,7 +28,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 		Title            string
 		ExpectStatus     int
 		Querystring      string
-		InitSearcher     func(testCase, *mock.RecordSearcher)
+		InitSearcher     func(testCase, *mocks.RecordSearcher)
 		ValidateResponse func(testCase, io.Reader) error
 	}
 
@@ -42,7 +42,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 		{
 			Title:       "should report HTTP 500 if record searcher fails",
 			Querystring: "text=test",
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
+			InitSearcher: func(tc testCase, searcher *mocks.RecordSearcher) {
 				err := fmt.Errorf("service unavailable")
 				searcher.On("Search", ctx, testifyMock.AnythingOfType("discovery.SearchConfig")).
 					Return([]discovery.SearchResult{}, err)
@@ -52,7 +52,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 		{
 			Title:       "should pass filter to search config format",
 			Querystring: "text=resource&landscape=id,vn&filter.data.landscape=th&filter.type=topic&filter.service=kafka,rabbitmq",
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
+			InitSearcher: func(tc testCase, searcher *mocks.RecordSearcher) {
 				cfg := discovery.SearchConfig{
 					Text:          "resource",
 					TypeWhiteList: []string{"topic"},
@@ -72,7 +72,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 		{
 			Title:       "should pass queries to search config format",
 			Querystring: "text=resource&landscape=id,vn&filter.data.landscape=th&filter.type=topic&filter.service=kafka,rabbitmq&query.data.columns.name=timestamp&query.owners.email=john.doe@email.com",
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
+			InitSearcher: func(tc testCase, searcher *mocks.RecordSearcher) {
 				cfg := discovery.SearchConfig{
 					Text:          "resource",
 					TypeWhiteList: []string{"topic"},
@@ -95,7 +95,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 		{
 			Title:       "should return the matched documents",
 			Querystring: "text=test",
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
+			InitSearcher: func(tc testCase, searcher *mocks.RecordSearcher) {
 				cfg := discovery.SearchConfig{
 					Text:    "test",
 					Filters: make(map[string][]string),
@@ -145,7 +145,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 		{
 			Title:       "should return the requested number of assets",
 			Querystring: "text=resource&size=10",
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
+			InitSearcher: func(tc testCase, searcher *mocks.RecordSearcher) {
 				cfg := discovery.SearchConfig{
 					Text:       "resource",
 					MaxResults: 10,
@@ -192,7 +192,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.Title, func(t *testing.T) {
 			var (
-				recordSearcher = new(mock.RecordSearcher)
+				recordSearcher = new(mocks.RecordSearcher)
 				logger         = log.NewNoop()
 			)
 			if testCase.InitSearcher != nil {
@@ -232,7 +232,7 @@ func TestSearchHandlerSuggest(t *testing.T) {
 		Title            string
 		ExpectStatus     int
 		Querystring      string
-		InitSearcher     func(testCase, *mock.RecordSearcher)
+		InitSearcher     func(testCase, *mocks.RecordSearcher)
 		ValidateResponse func(testCase, io.Reader) error
 	}
 
@@ -246,7 +246,7 @@ func TestSearchHandlerSuggest(t *testing.T) {
 		{
 			Title:       "should report HTTP 500 if searcher fails",
 			Querystring: "text=test",
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
+			InitSearcher: func(tc testCase, searcher *mocks.RecordSearcher) {
 				cfg := discovery.SearchConfig{
 					Text:    "test",
 					Filters: map[string][]string{},
@@ -259,7 +259,7 @@ func TestSearchHandlerSuggest(t *testing.T) {
 		{
 			Title:       "should pass filter to search config format",
 			Querystring: "text=resource&landscape=id,vn&query.description=this is my dashboard&filter.data.landscape=th&filter.type=topic&filter.service=kafka,rabbitmq",
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
+			InitSearcher: func(tc testCase, searcher *mocks.RecordSearcher) {
 				cfg := discovery.SearchConfig{
 					Text:          "resource",
 					TypeWhiteList: []string{"topic"},
@@ -281,7 +281,7 @@ func TestSearchHandlerSuggest(t *testing.T) {
 		{
 			Title:       "should return suggestions",
 			Querystring: "text=test",
-			InitSearcher: func(tc testCase, searcher *mock.RecordSearcher) {
+			InitSearcher: func(tc testCase, searcher *mocks.RecordSearcher) {
 				cfg := discovery.SearchConfig{
 					Text:    "test",
 					Filters: make(map[string][]string),
@@ -321,7 +321,7 @@ func TestSearchHandlerSuggest(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.Title, func(t *testing.T) {
 			var (
-				recordSearcher = new(mock.RecordSearcher)
+				recordSearcher = new(mocks.RecordSearcher)
 				logger         = log.NewNoop()
 			)
 			if testCase.InitSearcher != nil {

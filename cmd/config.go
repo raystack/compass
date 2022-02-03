@@ -43,6 +43,10 @@ type Config struct {
 	DBUser     string `mapstructure:"DB_USER" default:"root"`
 	DBPassword string `mapstructure:"DB_PASSWORD" default:""`
 	DBSSLMode  string `mapstructure:"DB_SSL_MODE" default:"disable"`
+
+	// User Identity
+	IdentityHeader              string `mapstructure:"IDENTITY_HEADER" default:"Columbus-User-Email"`
+	IdentityProviderDefaultName string `mapstructure:"IDENTITY_PROVIDER_DEFAULT_NAME" default:""`
 }
 
 var config Config

@@ -13,6 +13,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: query
           name: type
           description: "filter by type"
@@ -143,6 +150,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: query
           name: collapse
           type: boolean
@@ -163,6 +177,14 @@ paths:
       description: used to fetch all types
       produces:
         - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
       responses:
         200:
           description: OK
@@ -185,6 +207,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: path
           name: name
           type: string
@@ -211,6 +240,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: path
           name: name
           type: string
@@ -246,6 +282,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: path
           name: name
           type: string
@@ -270,6 +313,13 @@ paths:
         - Record
       summary: get a record by id
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: path
           name: name
           type: string
@@ -298,6 +348,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: query
           name: "text"
           description: "text to search for (fuzzy)"
@@ -351,6 +408,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: body
           name: ""
           required: true
@@ -387,6 +451,14 @@ paths:
       description: Get all available tag templates
       produces:
         - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
       responses:
         200:
           description: OK
@@ -406,6 +478,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: body
           name: ""
           schema:
@@ -442,6 +521,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: path
           name: template_urn
           type: string
@@ -467,6 +553,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: path
           name: template_urn
           type: string
@@ -505,6 +598,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: path
           name: template_urn
           type: string
@@ -532,6 +632,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: path
           name: type
           type: string
@@ -560,6 +667,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: path
           name: type
           type: string
@@ -593,6 +707,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: path
           name: type
           type: string
@@ -638,6 +759,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: path
           name: type
           type: string

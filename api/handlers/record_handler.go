@@ -49,7 +49,7 @@ func (h *RecordHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	typName := asset.Type(typeName)
 	if !typName.IsValid() {
-		writeJSONError(w, http.StatusNotFound, "type is invalid")
+		WriteJSONError(w, http.StatusNotFound, "type is invalid")
 		return
 	}
 
@@ -62,7 +62,7 @@ func (h *RecordHandler) Delete(w http.ResponseWriter, r *http.Request) {
 			errMessage = err.Error()
 		}
 
-		writeJSONError(w, statusCode, errMessage)
+		WriteJSONError(w, statusCode, errMessage)
 		return
 	}
 
@@ -76,13 +76,13 @@ func (h *RecordHandler) UpsertBulk(w http.ResponseWriter, r *http.Request) {
 	var assets []asset.Asset
 	err := json.NewDecoder(r.Body).Decode(&assets)
 	if err != nil {
-		writeJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
+		WriteJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
 		return
 	}
 
 	typName := asset.Type(typeName)
 	if !typName.IsValid() {
-		writeJSONError(w, http.StatusNotFound, "type is invalid")
+		WriteJSONError(w, http.StatusNotFound, "type is invalid")
 		return
 	}
 
@@ -101,7 +101,7 @@ func (h *RecordHandler) UpsertBulk(w http.ResponseWriter, r *http.Request) {
 	if err := h.discoveryService.Upsert(r.Context(), typName.String(), assets); err != nil {
 		h.logger.Error("error creating/updating assets", "type", typName, "error", err)
 		status := http.StatusInternalServerError
-		writeJSONError(w, status, http.StatusText(status))
+		WriteJSONError(w, status, http.StatusText(status))
 		return
 	}
 	h.logger.Info("created/updated assets", "record count", len(assets), "type", typName)
@@ -113,7 +113,7 @@ func (h *RecordHandler) GetByType(w http.ResponseWriter, r *http.Request) {
 
 	typName := asset.Type(typeName)
 	if !typName.IsValid() {
-		writeJSONError(w, http.StatusNotFound, "type is invalid")
+		WriteJSONError(w, http.StatusNotFound, "type is invalid")
 		return
 	}
 
@@ -121,12 +121,12 @@ func (h *RecordHandler) GetByType(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("error constructing record repository", "type", typName, "error", err)
 		status, message := h.responseStatusForError(err)
-		writeJSONError(w, status, message)
+		WriteJSONError(w, status, message)
 		return
 	}
 	getCfg, err := h.buildGetConfig(r.URL.Query())
 	if err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -134,7 +134,7 @@ func (h *RecordHandler) GetByType(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("error fetching assets: GetAll", "type", typName, "error", err)
 		status, message := h.responseStatusForError(err)
-		writeJSONError(w, status, message)
+		WriteJSONError(w, status, message)
 		return
 	}
 
@@ -154,7 +154,7 @@ func (h *RecordHandler) GetOneByType(w http.ResponseWriter, r *http.Request) {
 
 	typName := asset.Type(typeName)
 	if !typName.IsValid() {
-		writeJSONError(w, http.StatusNotFound, "type is invalid")
+		WriteJSONError(w, http.StatusNotFound, "type is invalid")
 		return
 	}
 
@@ -162,7 +162,7 @@ func (h *RecordHandler) GetOneByType(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("internal: error construing record repository", "type", typName, "error", err)
 		status := http.StatusInternalServerError
-		writeJSONError(w, status, http.StatusText(status))
+		WriteJSONError(w, status, http.StatusText(status))
 		return
 	}
 
@@ -170,7 +170,7 @@ func (h *RecordHandler) GetOneByType(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("error fetching record", "type", typName, "record id", recordID, "error", err)
 		status, message := h.responseStatusForError(err)
-		writeJSONError(w, status, message)
+		WriteJSONError(w, status, message)
 		return
 	}
 	writeJSON(w, http.StatusOK, record)

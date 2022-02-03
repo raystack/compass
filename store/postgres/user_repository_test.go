@@ -9,8 +9,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/columbus/user"
+	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -26,17 +26,16 @@ type UserRepositoryTestSuite struct {
 func (r *UserRepositoryTestSuite) SetupSuite() {
 	var err error
 
-	logger := logrus.New()
-	// logger.SetLevel(logrus.DebugLevel)
+	logger := log.NewNoop()
 	r.client, r.pool, r.resource, err = newTestClient(logger)
 	if err != nil {
-		logger.Fatal(err)
+		r.T().Fatal(err)
 	}
 
 	r.ctx = context.TODO()
 	r.repository, err = postgres.NewUserRepository(r.client)
 	if err != nil {
-		logger.Fatal(err)
+		r.T().Fatal(err)
 	}
 }
 
@@ -60,9 +59,9 @@ func (r *UserRepositoryTestSuite) TestCreate() {
 		r.Equal(lengthOfString(id), 36) // uuid
 	})
 
-	r.Run("return ErrNilUser if user is nil", func() {
+	r.Run("return ErrNoUserInformation if user is nil", func() {
 		id, err := r.repository.Create(r.ctx, nil)
-		r.ErrorIs(err, user.ErrNilUser)
+		r.ErrorIs(err, user.ErrNoUserInformation)
 		r.Empty(id)
 	})
 
@@ -77,6 +76,16 @@ func (r *UserRepositoryTestSuite) TestCreate() {
 
 		id, err = r.repository.Create(r.ctx, ud)
 		r.ErrorAs(err, new(user.DuplicateRecordError))
+		r.Empty(id)
+	})
+
+	r.Run("return invalid error if field in user is empty", func() {
+		err := setup(r.ctx, r.client)
+		r.NoError(err)
+
+		ud := &user.User{}
+		id, err := r.repository.Create(r.ctx, ud)
+		r.ErrorIs(err, user.InvalidError{})
 		r.Empty(id)
 	})
 }
@@ -104,7 +113,7 @@ func (r *UserRepositoryTestSuite) TestCreateWithTx() {
 			id, err = r.repository.CreateWithTx(r.ctx, tx, nil)
 			return err
 		})
-		r.ErrorIs(err, user.ErrNilUser)
+		r.ErrorIs(err, user.ErrNoUserInformation)
 		r.Empty(id)
 	})
 

@@ -46,8 +46,9 @@ func (r *UserRepository) GetID(ctx context.Context, email string) (string, error
 
 func (r *UserRepository) create(ctx context.Context, querier sqlx.QueryerContext, ud *user.User) (string, error) {
 	var userID string
-	if ud == nil {
-		return "", user.ErrNilUser
+
+	if err := ud.Validate(); err != nil {
+		return "", err
 	}
 
 	// either success inserting a row or return error
@@ -64,6 +65,7 @@ func (r *UserRepository) create(ctx context.Context, querier sqlx.QueryerContext
 		if errors.Is(err, errDuplicateKey) {
 			return "", user.DuplicateRecordError{ID: ud.ID, Email: ud.Email}
 		}
+		return "", err
 	}
 	if userID == "" {
 		return "", fmt.Errorf("error User ID is empty from DB")

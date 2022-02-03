@@ -11,7 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
-	"github.com/odpf/columbus/lib/mock"
+	"github.com/odpf/columbus/lib/mocks"
 	"github.com/odpf/columbus/lib/set"
 	"github.com/odpf/columbus/lineage"
 )
@@ -38,10 +38,10 @@ func TestLineageHandler(t *testing.T) {
 				},
 			}
 
-			graph := new(mock.Graph)
+			graph := new(mocks.Graph)
 			graph.On("Query", lineage.QueryCfg{Root: "asset-A"}).Return(subGraph, nil)
 
-			lp := new(mock.LineageProvider)
+			lp := new(mocks.LineageProvider)
 			lp.On("Graph").Return(graph, nil)
 
 			handler := handlers.NewLineageHandler(logger, lp)

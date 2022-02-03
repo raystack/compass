@@ -3,16 +3,17 @@ package handlers_test
 import (
 	"encoding/json"
 	"errors"
-	"github.com/odpf/salt/log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/odpf/salt/log"
+
 	"github.com/odpf/columbus/api/handlers"
+	"github.com/odpf/columbus/lib/mocks"
 	"github.com/odpf/columbus/tag"
-	"github.com/odpf/columbus/tag/mocks"
 
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/mock"

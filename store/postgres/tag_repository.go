@@ -120,7 +120,7 @@ func (r *TagRepository) Read(ctx context.Context, filter tag.Tag) ([]tag.Tag, er
 	}
 
 	var templateTagFields TagJoinTemplateTagFieldModels
-	if err := r.client.db.Select(&templateTagFields, sqlQuery, sqlArgs...); err != nil {
+	if err := r.client.db.SelectContext(ctx, &templateTagFields, sqlQuery, sqlArgs...); err != nil {
 		return nil, fmt.Errorf("failed reading domain tag: %w", err)
 	}
 

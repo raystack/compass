@@ -7,9 +7,9 @@ import (
 )
 
 func NotFound(w http.ResponseWriter, r *http.Request) {
-	writeJSONError(w, http.StatusNotFound, mux.ErrNotFound.Error())
+	WriteJSONError(w, http.StatusNotFound, mux.ErrNotFound.Error())
 }
 
 func MethodNotAllowed(w http.ResponseWriter, r *http.Request) {
-	writeJSONError(w, http.StatusMethodNotAllowed, mux.ErrMethodMismatch.Error())
+	WriteJSONError(w, http.StatusMethodNotAllowed, mux.ErrMethodMismatch.Error())
 }

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/odpf/columbus/lib/mocks"
 	"github.com/odpf/columbus/tag"
-	"github.com/odpf/columbus/tag/mocks"
 	"github.com/odpf/columbus/tag/validator"
 
 	"github.com/stretchr/testify/mock"

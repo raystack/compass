@@ -1,21 +1,20 @@
-package api
+package middleware
 
 import (
-	"github.com/odpf/salt/log"
 	"net/http"
 	"net/url"
 
 	"github.com/gorilla/mux"
 )
 
-func decodeURLMiddleware(logger log.Logger) mux.MiddlewareFunc {
+func DecodeURL(cfg Config) mux.MiddlewareFunc {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			newVars := map[string]string{}
 			for key, val := range mux.Vars(r) {
 				decodedVal, err := url.QueryUnescape(val)
 				if err != nil {
-					logger.Warn("error decoding url", "value", val)
+					cfg.Logger.Warn("error decoding url", "value", val)
 					decodedVal = val
 				}
 

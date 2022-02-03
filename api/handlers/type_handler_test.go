@@ -13,7 +13,7 @@ import (
 
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/lib/mock"
+	"github.com/odpf/columbus/lib/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -23,7 +23,7 @@ func TestTypeHandler(t *testing.T) {
 		type testCase struct {
 			Description  string
 			ExpectStatus int
-			Setup        func(tc *testCase, er *mock.TypeRepository)
+			Setup        func(tc *testCase, er *mocks.TypeRepository)
 			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
 		}
 
@@ -31,21 +31,21 @@ func TestTypeHandler(t *testing.T) {
 			{
 				Description:  "should return 500 status code if failing to fetch types",
 				ExpectStatus: http.StatusInternalServerError,
-				Setup: func(tc *testCase, er *mock.TypeRepository) {
+				Setup: func(tc *testCase, er *mocks.TypeRepository) {
 					er.On("GetAll", context.Background()).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
 				},
 			},
 			{
 				Description:  "should return 500 status code if failing to fetch counts",
 				ExpectStatus: http.StatusInternalServerError,
-				Setup: func(tc *testCase, er *mock.TypeRepository) {
+				Setup: func(tc *testCase, er *mocks.TypeRepository) {
 					er.On("GetAll", context.Background()).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
 				},
 			},
 			{
 				Description:  "should return all valid types with its record count",
 				ExpectStatus: http.StatusOK,
-				Setup: func(tc *testCase, er *mock.TypeRepository) {
+				Setup: func(tc *testCase, er *mocks.TypeRepository) {
 					er.On("GetAll", context.Background()).Return(map[asset.Type]int{
 						asset.Type("table"): 10,
 						asset.Type("topic"): 30,
@@ -72,7 +72,7 @@ func TestTypeHandler(t *testing.T) {
 		}
 		for _, tc := range testCases {
 			t.Run(tc.Description, func(t *testing.T) {
-				er := new(mock.TypeRepository)
+				er := new(mocks.TypeRepository)
 				logger := log.NewNoop()
 				defer er.AssertExpectations(t)
 				tc.Setup(&tc, er)

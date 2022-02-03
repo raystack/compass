@@ -8,8 +8,8 @@ import (
 
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/columbus/tag"
+	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -26,21 +26,20 @@ type TagRepositoryTestSuite struct {
 func (r *TagRepositoryTestSuite) SetupSuite() {
 	var err error
 
-	logger := logrus.New()
-	// logger.SetLevel(logrus.DebugLevel)
+	logger := log.NewNoop()
 	r.client, r.pool, r.resource, err = newTestClient(logger)
 	if err != nil {
-		logger.Fatal(err)
+		r.T().Fatal(err)
 	}
 
 	r.ctx = context.TODO()
 	r.repository, err = postgres.NewTagRepository(r.client)
 	if err != nil {
-		logger.Fatal(err)
+		r.T().Fatal(err)
 	}
 	r.templateRepository, err = postgres.NewTagTemplateRepository(r.client)
 	if err != nil {
-		logger.Fatal(err)
+		r.T().Fatal(err)
 	}
 }
 

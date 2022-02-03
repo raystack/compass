@@ -15,3 +15,5 @@ DB_NAME: columbus
 DB_USER: postgres
 DB_PASSWORD: ~
 DB_SSL_MODE: disable
+IDENTITY_HEADER: Columbus-User-Email
+IDENTITY_PROVIDER_DEFAULT_NAME: shield
