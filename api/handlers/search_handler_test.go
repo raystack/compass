@@ -18,7 +18,7 @@ import (
 	"github.com/odpf/columbus/lib/mocks"
 
 	"github.com/stretchr/testify/assert"
-	testifyMock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -44,7 +44,7 @@ func TestSearchHandlerSearch(t *testing.T) {
 			Querystring: "text=test",
 			InitSearcher: func(tc testCase, searcher *mocks.RecordSearcher) {
 				err := fmt.Errorf("service unavailable")
-				searcher.On("Search", ctx, testifyMock.AnythingOfType("discovery.SearchConfig")).
+				searcher.On("Search", ctx, mock.AnythingOfType("discovery.SearchConfig")).
 					Return([]discovery.SearchResult{}, err)
 			},
 			ExpectStatus: http.StatusInternalServerError,

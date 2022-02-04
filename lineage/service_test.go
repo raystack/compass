@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/odpf/columbus/lib/mocks"
 	"github.com/odpf/columbus/lineage"
-	"github.com/odpf/columbus/lineage/mocks"
 	"github.com/stretchr/testify/assert"
-	testifyMock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/mock"
 )
 
 type stubBuilder struct{} //nolint:unused
@@ -18,7 +18,7 @@ func (b *stubBuilder) Build(ctx context.Context, repo lineage.Repository) (linea
 }
 
 type mockMetricsMonitor struct { //nolint:unused
-	testifyMock.Mock
+	mock.Mock
 }
 
 func (mm *mockMetricsMonitor) Duration(op string, d int) { //nolint:unused
@@ -26,7 +26,7 @@ func (mm *mockMetricsMonitor) Duration(op string, d int) { //nolint:unused
 }
 
 type mockPerformanceMonitor struct { //nolint:unused
-	testifyMock.Mock
+	mock.Mock
 }
 
 func (pm *mockPerformanceMonitor) StartTransaction(ctx context.Context, operation string) (context.Context, func()) { //nolint:unused
@@ -37,7 +37,7 @@ func (pm *mockPerformanceMonitor) StartTransaction(ctx context.Context, operatio
 func TestService(t *testing.T) {
 	ctx := context.Background()
 	t.Run("smoke test", func(t *testing.T) {
-		repo := new(mocks.Repository)
+		repo := new(mocks.LineageRepository)
 		repo.On("GetEdges", ctx).Return([]lineage.Edge{}, nil)
 		lineage.NewService(repo, lineage.Config{}) // nolint:errcheck
 	})

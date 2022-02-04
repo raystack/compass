@@ -33,3 +33,19 @@ func newUserModel(u *user.User) *UserModel {
 		UpdatedAt: u.UpdatedAt,
 	}
 }
+
+type UserModels []UserModel
+
+func (us UserModels) toUsers() []user.User {
+	users := []user.User{}
+	for _, u := range us {
+		users = append(users, user.User{
+			ID:        u.ID,
+			Email:     u.Email,
+			Provider:  u.Provider,
+			CreatedAt: u.CreatedAt,
+			UpdatedAt: u.UpdatedAt,
+		})
+	}
+	return users
+}

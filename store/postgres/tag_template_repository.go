@@ -310,7 +310,7 @@ func updateFieldToDBTx(ctx context.Context, tx *sqlx.Tx, field *TagTemplateField
 // which will mutate the reference variable in method's argument
 func NewTagTemplateRepository(c *Client) (*TagTemplateRepository, error) {
 	if c == nil {
-		return nil, errors.New("postgres client is nil")
+		return nil, errNilPostgresClient
 	}
 	return &TagTemplateRepository{
 		client: c,

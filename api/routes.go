@@ -10,6 +10,7 @@ import (
 	"github.com/odpf/columbus/api/middleware"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
+	"github.com/odpf/columbus/star"
 	"github.com/odpf/columbus/tag"
 	"github.com/odpf/columbus/user"
 )
@@ -23,6 +24,7 @@ type Config struct {
 	LineageProvider     handlers.LineageProvider
 	UserService         *user.Service
 	MiddlewareConfig    middleware.Config
+	StarRepository      star.Repository
 
 	// Deprecated
 	DiscoveryService        *discovery.Service
@@ -38,6 +40,7 @@ type Handlers struct {
 	Lineage     *handlers.LineageHandler
 	Tag         *handlers.TagHandler
 	TagTemplate *handlers.TagTemplateHandler
+	User        *handlers.UserHandler
 }
 
 func initHandlers(config Config) *Handlers {
@@ -50,6 +53,7 @@ func initHandlers(config Config) *Handlers {
 		config.Logger,
 		config.AssetRepository,
 		config.DiscoveryRepository,
+		config.StarRepository,
 	)
 
 	recordHandler := handlers.NewRecordHandler(
@@ -74,6 +78,10 @@ func initHandlers(config Config) *Handlers {
 		config.Logger,
 		config.TagTemplateService,
 	)
+	userHandler := handlers.NewUserHandler(
+		config.Logger,
+		config.StarRepository,
+	)
 
 	return &Handlers{
 		Asset:       assetHandler,
@@ -83,6 +91,7 @@ func initHandlers(config Config) *Handlers {
 		Lineage:     lineageHandler,
 		Tag:         tagHandler,
 		TagTemplate: tagTemplateHandler,
+		User:        userHandler,
 	}
 }
 

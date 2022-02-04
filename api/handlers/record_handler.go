@@ -29,10 +29,10 @@ func NewRecordHandler(
 	discoveryService *discovery.Service,
 	rrf discovery.RecordRepositoryFactory) *RecordHandler {
 	handler := &RecordHandler{
-		recordRepositoryFactory: rrf,
+		logger:                  logger,
 		discoveryService:        discoveryService,
 		typeRepository:          typeRepository,
-		logger:                  logger,
+		recordRepositoryFactory: rrf,
 	}
 
 	return handler

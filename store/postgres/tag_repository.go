@@ -280,7 +280,7 @@ func (r *TagRepository) complementTag(domainTag *tag.Tag, template tag.Template,
 // which will mutate the reference variable in method's argument
 func NewTagRepository(client *Client) (*TagRepository, error) {
 	if client == nil {
-		return nil, errors.New("postgres client is nil")
+		return nil, errNilPostgresClient
 	}
 	return &TagRepository{
 		client: client,

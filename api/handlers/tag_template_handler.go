@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/odpf/salt/log"
 	"net/http"
+
+	"github.com/odpf/salt/log"
 
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/tag"

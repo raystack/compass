@@ -6,7 +6,7 @@ info:
 paths:
   "/v1beta1/assets":
     get:
-      tags: 
+      tags:
         - Assets
       summary: Get list of assets
       description: "Returns list of assets, optionally filtered by type and service"
@@ -59,7 +59,7 @@ paths:
           schema:
             $ref: "#/definitions/InternalServerError"
     put:
-      tags: 
+      tags:
         - Assets
       summary: Upsert an asset
       description: "Create a new asset if a combination of urn, type and service does not exist. If exists update instead"
@@ -89,7 +89,7 @@ paths:
             $ref: "#/definitions/InternalServerError"
   "/v1beta1/assets/{id}":
     get:
-      tags: 
+      tags:
         - Assets
       summary: Find an asset
       description: "Returns a single asset with given ID"
@@ -115,7 +115,7 @@ paths:
           schema:
             $ref: "#/definitions/InternalServerError"
     delete:
-      tags: 
+      tags:
         - Assets
       summary: Delete an asset
       description: "Delete a single asset with given ID"
@@ -133,6 +133,39 @@ paths:
           schema:
             type: string
             example: OK
+        404:
+          description: "not found error"
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+  "/v1beta1/assets/{id}/stargazers":
+    get:
+      tags:
+        - Assets
+      summary: Find users that stars an asset
+      description: "Returns a list of users that stars an asset"
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: id
+          description: "asset's ID"
+          schema:
+            $ref: "#/definitions/UUID"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/User"
+        400:
+          description: "bad request error"
+          schema:
+            $ref: "#/definitions/Error"
         404:
           description: "not found error"
           schema:
@@ -793,6 +826,199 @@ paths:
           description: internal server error
           schema:
             $ref: "#/definitions/Error"
+  "/v1beta1/user/starred":
+    get:
+      tags:
+        - User
+        - Star
+      summary: Get user starred assets
+      description: Get all assets starred by a user
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Star"
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        404:
+          description: not found
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: internal server error
+          schema:
+            $ref: "#/definitions/Error"
+  "/v1beta1/user/starred/{asset_id}":
+    put:
+      tags:
+        - User
+        - Star
+      summary: Star an asset
+      description: Mark an asset by a user with a star
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
+        - in: path
+          name: asset_id
+          type: string
+          required: true
+      responses:
+        204:
+          description: OK
+          schema:
+            type: object
+            properties:
+              id:
+                $ref: "#/definitions/UUID"
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        404:
+          description: not found
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: internal server error
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - User
+        - Star
+      summary: Untar an asset
+      description: Unmark a starred asset of a user
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
+        - in: path
+          name: asset_id
+          type: string
+          required: true
+      responses:
+        204:
+          description: No Content
+          schema:
+            type: string
+            example: success
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        404:
+          description: not found
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: internal server error
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - User
+        - Star
+      summary: Get a starred asset of a user
+      description: Get a specific starred asset of a user
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
+        - in: path
+          name: asset_id
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            $ref: "#/definitions/Star"
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        404:
+          description: not found
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: internal server error
+          schema:
+            $ref: "#/definitions/Error"
+  "/v1beta1/users/{user_id}/starred":
+    get:
+      tags:
+        - User
+        - Star
+      summary: Get assets starred by a user
+      description: Get all assets starred by a user
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
+        - in: path
+          name: user_id
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Star"
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        404:
+          description: not found
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: internal server error
+          schema:
+            $ref: "#/definitions/Error"
 definitions:
   BaseAsset:
     type: object
@@ -821,7 +1047,7 @@ definitions:
     type: object
     allOf:
       - type: object
-        properties: 
+        properties:
           id:
             $ref: "#/definitions/UUID"
             description: "Main asset identifer in UUID"
@@ -1049,3 +1275,15 @@ definitions:
           details:
             type: object
             description: error details. the keys are integer indices for the records that failed validation, and the value is a string describing the reason why that record fails validation
+  Star:
+    type: object
+    properties:
+      asset_type:
+        type: string
+        description: name of the type (for e.g. dagger, firehose)
+      asset_urn:
+        type: string
+      created_at:
+        type: string
+      updated_at:
+        type: string

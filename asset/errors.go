@@ -17,3 +17,11 @@ type NotFoundError struct {
 func (err NotFoundError) Error() string {
 	return fmt.Sprintf("no such record: %q", err.AssetID)
 }
+
+type InvalidError struct {
+	AssetID string
+}
+
+func (err InvalidError) Error() string {
+	return fmt.Sprintf("invalid asset id: %q", err.AssetID)
+}

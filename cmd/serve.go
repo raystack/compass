@@ -78,6 +78,7 @@ func initRouter(
 	}
 	tagTemplateService := tag.NewTemplateService(tagTemplateRepository)
 	tagService := tag.NewService(tagRepository, tagTemplateService)
+
 	// init user
 	userRepository, err := postgres.NewUserRepository(pgClient)
 	if err != nil {
@@ -90,6 +91,12 @@ func initRouter(
 	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0)
 	if err != nil {
 		logger.Fatal("failed to create new asset repository", "error", err)
+	}
+
+	// init star
+	starRepository, err := postgres.NewStarRepository(pgClient)
+	if err != nil {
+		logger.Fatal("failed to create new star repository", "error", err)
 	}
 
 	discoveryRepo := esStore.NewDiscoveryRepository(esClient)
@@ -139,6 +146,7 @@ func initRouter(
 		TagTemplateService:      tagTemplateService,
 		UserService:             userService,
 		MiddlewareConfig:        middlewareCfg,
+		StarRepository:          starRepository,
 	})
 
 	return router

@@ -1,5 +1,7 @@
 package lineage
 
+//go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --structname LineageRepository --filename lineage_repository.go
+
 import (
 	"context"
 	"time"

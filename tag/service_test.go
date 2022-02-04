@@ -17,7 +17,7 @@ import (
 type ServiceTestSuite struct {
 	suite.Suite
 	tagService   *tag.Service
-	templateRepo *mocks.TemplateRepository
+	templateRepo *mocks.TagTemplateRepository
 	repository   *mocks.TagRepository
 }
 
@@ -33,7 +33,7 @@ func (s *ServiceTestSuite) TestNewService() {
 
 func (s *ServiceTestSuite) Setup() {
 	s.repository = &mocks.TagRepository{}
-	s.templateRepo = &mocks.TemplateRepository{}
+	s.templateRepo = &mocks.TagTemplateRepository{}
 
 	templateService := tag.NewTemplateService(s.templateRepo)
 	s.tagService = tag.NewService(s.repository, templateService)
@@ -41,7 +41,7 @@ func (s *ServiceTestSuite) Setup() {
 
 func (s *ServiceTestSuite) TestValidate() {
 	repository := &mocks.TagRepository{}
-	templateService := tag.NewTemplateService(&mocks.TemplateRepository{})
+	templateService := tag.NewTemplateService(&mocks.TagTemplateRepository{})
 	tagService := tag.NewService(repository, templateService)
 
 	s.Run("should return error if record URN is empty", func() {

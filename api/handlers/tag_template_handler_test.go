@@ -23,7 +23,7 @@ import (
 type TagTemplateHandlerTestSuite struct {
 	suite.Suite
 	handler            *handlers.TagTemplateHandler
-	templateRepository *mocks.TemplateRepository
+	templateRepository *mocks.TagTemplateRepository
 	recorder           *httptest.ResponseRecorder
 	logger             log.Noop
 }
@@ -38,7 +38,7 @@ func (s *TagTemplateHandlerTestSuite) TestNewHandler() {
 }
 
 func (s *TagTemplateHandlerTestSuite) Setup() {
-	s.templateRepository = new(mocks.TemplateRepository)
+	s.templateRepository = new(mocks.TagTemplateRepository)
 	service := tag.NewTemplateService(s.templateRepository)
 
 	s.handler = handlers.NewTagTemplateHandler(&s.logger, service)
