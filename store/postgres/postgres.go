@@ -11,6 +11,8 @@ import (
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/google/uuid"
+
 	// Register database postgres
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	// Register golang migrate source
@@ -127,4 +129,9 @@ func checkPostgresError(err error) error {
 		}
 	}
 	return err
+}
+
+func isValidUUID(u string) bool {
+	_, err := uuid.Parse(u)
+	return err == nil
 }

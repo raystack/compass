@@ -43,6 +43,21 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 			Setup:        func(tc *testCase, sr *mocks.StarRepository) {},
 		},
 		{
+			Description:  "should return 400 status code if star repository return invalid error",
+			ExpectStatus: http.StatusBadRequest,
+			MutateRequest: func(req *http.Request) *http.Request {
+				params := url.Values{}
+				params.Add("offset", strconv.Itoa(offset))
+				params.Add("size", strconv.Itoa(size))
+				req.URL.RawQuery = params.Encode()
+				ctx := user.NewContext(req.Context(), userID)
+				return req.WithContext(ctx)
+			},
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {
+				sr.On("GetAllAssetsByUserID", mock.AnythingOfType("*context.valueCtx"), star.Config{Offset: offset, Size: size}, userID).Return(nil, star.InvalidError{})
+			},
+		},
+		{
 			Description:  "should return 500 status code if failed to fetch starred",
 			ExpectStatus: http.StatusInternalServerError,
 			MutateRequest: func(req *http.Request) *http.Request {
@@ -168,6 +183,21 @@ func TestGetStarredWithPath(t *testing.T) {
 			},
 		},
 		{
+			Description:  "should return 400 status code if star repository return invalid error",
+			ExpectStatus: http.StatusBadRequest,
+			MutateRequest: func(req *http.Request) *http.Request {
+				req.URL.Path += fmt.Sprintf("/%s/starred", pathUserID)
+				params := url.Values{}
+				params.Add("offset", strconv.Itoa(offset))
+				params.Add("size", strconv.Itoa(size))
+				req.URL.RawQuery = params.Encode()
+				return req
+			},
+			Setup: func(tc *testCase, er *mocks.StarRepository) {
+				er.On("GetAllAssetsByUserID", mock.AnythingOfType("*context.valueCtx"), star.Config{Offset: offset, Size: size}, pathUserID).Return(nil, star.InvalidError{})
+			},
+		},
+		{
 			Description:  "should return 404 status code if starred not found",
 			ExpectStatus: http.StatusNotFound,
 			MutateRequest: func(req *http.Request) *http.Request {
@@ -284,6 +314,18 @@ func TestStarAsset(t *testing.T) {
 			},
 		},
 		{
+			Description:  "should return 400 status code if star repository return invalid error",
+			ExpectStatus: http.StatusBadRequest,
+			MutateRequest: func(req *http.Request) *http.Request {
+				req.URL.Path += fmt.Sprintf("/%s", assetID)
+				ctx := user.NewContext(req.Context(), userID)
+				return req.WithContext(ctx)
+			},
+			Setup: func(tc *testCase, er *mocks.StarRepository) {
+				er.On("Create", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return("", star.InvalidError{})
+			},
+		},
+		{
 			Description:  "should return 404 status code if user not found",
 			ExpectStatus: http.StatusNotFound,
 			MutateRequest: func(req *http.Request) *http.Request {
@@ -392,6 +434,18 @@ func TestGetStarredAsset(t *testing.T) {
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
 				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(nil, star.ErrEmptyAssetID)
+			},
+		},
+		{
+			Description:  "should return 400 status code if star repository return invalid error",
+			ExpectStatus: http.StatusBadRequest,
+			MutateRequest: func(req *http.Request) *http.Request {
+				req.URL.Path += fmt.Sprintf("/%s", assetID)
+				ctx := user.NewContext(req.Context(), userID)
+				return req.WithContext(ctx)
+			},
+			Setup: func(tc *testCase, er *mocks.StarRepository) {
+				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(nil, star.InvalidError{})
 			},
 		},
 		{
@@ -505,6 +559,18 @@ func TestUnstarAsset(t *testing.T) {
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
 				sr.On("Delete", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(star.ErrEmptyAssetID)
+			},
+		},
+		{
+			Description:  "should return 400 status code if star repository return invalid error",
+			ExpectStatus: http.StatusBadRequest,
+			MutateRequest: func(req *http.Request) *http.Request {
+				req.URL.Path += fmt.Sprintf("/%s", assetID)
+				ctx := user.NewContext(req.Context(), userID)
+				return req.WithContext(ctx)
+			},
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {
+				sr.On("Delete", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(star.InvalidError{})
 			},
 		},
 		{

@@ -43,3 +43,19 @@ type DuplicateRecordError struct {
 func (e DuplicateRecordError) Error() string {
 	return fmt.Sprintf("duplicate starred asset id \"%s\" with user id \"%s\"", e.AssetID, e.UserID)
 }
+
+type InvalidError struct {
+	UserID  string
+	AssetID string
+}
+
+func (e InvalidError) Error() string {
+	fields := []string{"invalid"}
+	if e.AssetID != "" {
+		fields = append(fields, fmt.Sprintf("asset id \"%s\"", e.AssetID))
+	}
+	if e.UserID != "" {
+		fields = append(fields, fmt.Sprintf("user id \"%s\"", e.UserID))
+	}
+	return strings.Join(fields, " ")
+}

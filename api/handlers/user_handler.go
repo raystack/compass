@@ -28,7 +28,7 @@ func (h *UserHandler) GetStarredAssetsWithHeader(w http.ResponseWriter, r *http.
 
 	starredAssets, err := h.starRepository.GetAllAssetsByUserID(r.Context(), starCfg, userID)
 	if err != nil {
-		if errors.Is(err, star.ErrEmptyUserID) {
+		if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -54,7 +54,7 @@ func (h *UserHandler) GetStarredAssetsWithPath(w http.ResponseWriter, r *http.Re
 
 	starredAssets, err := h.starRepository.GetAllAssetsByUserID(r.Context(), starCfg, targetUserID)
 	if err != nil {
-		if errors.Is(err, star.ErrEmptyUserID) {
+		if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -82,7 +82,7 @@ func (h *UserHandler) StarAsset(w http.ResponseWriter, r *http.Request) {
 
 	starID, err := h.starRepository.Create(r.Context(), userID, assetID)
 	if err != nil {
-		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) {
+		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -115,7 +115,7 @@ func (h *UserHandler) GetStarredAsset(w http.ResponseWriter, r *http.Request) {
 
 	starID, err := h.starRepository.GetAssetByUserID(r.Context(), userID, assetID)
 	if err != nil {
-		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) {
+		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -143,7 +143,7 @@ func (h *UserHandler) UnstarAsset(w http.ResponseWriter, r *http.Request) {
 
 	err := h.starRepository.Delete(r.Context(), userID, assetID)
 	if err != nil {
-		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) {
+		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}

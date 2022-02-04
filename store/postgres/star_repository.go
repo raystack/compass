@@ -26,6 +26,13 @@ func (r *StarRepository) Create(ctx context.Context, userID string, assetID stri
 		return "", star.ErrEmptyAssetID
 	}
 
+	if !isValidUUID(userID) {
+		return "", star.InvalidError{AssetID: assetID, UserID: userID}
+	}
+	if !isValidUUID(assetID) {
+		return "", star.InvalidError{AssetID: assetID, UserID: userID}
+	}
+
 	if err := r.client.db.QueryRowxContext(ctx, `
 					INSERT INTO 
 					stars 
@@ -53,6 +60,10 @@ func (r *StarRepository) Create(ctx context.Context, userID string, assetID stri
 func (r *StarRepository) GetStargazers(ctx context.Context, cfg star.Config, assetID string) ([]user.User, error) {
 	if assetID == "" {
 		return nil, star.ErrEmptyAssetID
+	}
+
+	if !isValidUUID(assetID) {
+		return nil, star.InvalidError{AssetID: assetID}
 	}
 
 	starCfg := r.buildConfig(cfg)
@@ -90,6 +101,10 @@ func (r *StarRepository) GetStargazers(ctx context.Context, cfg star.Config, ass
 func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Config, userID string) ([]asset.Asset, error) {
 	if userID == "" {
 		return nil, star.ErrEmptyUserID
+	}
+
+	if !isValidUUID(userID) {
+		return nil, star.InvalidError{UserID: userID}
 	}
 
 	starCfg := r.buildConfig(cfg)
@@ -143,6 +158,13 @@ func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, as
 		return nil, star.ErrEmptyAssetID
 	}
 
+	if !isValidUUID(userID) {
+		return nil, star.InvalidError{AssetID: assetID, UserID: userID}
+	}
+	if !isValidUUID(assetID) {
+		return nil, star.InvalidError{AssetID: assetID, UserID: userID}
+	}
+
 	var asetModel AssetModel
 	err := r.client.db.GetContext(ctx, &asetModel, `
 		SELECT
@@ -182,6 +204,13 @@ func (r *StarRepository) Delete(ctx context.Context, userID string, assetID stri
 	}
 	if assetID == "" {
 		return star.ErrEmptyAssetID
+	}
+
+	if !isValidUUID(userID) {
+		return star.InvalidError{AssetID: assetID, UserID: userID}
+	}
+	if !isValidUUID(assetID) {
+		return star.InvalidError{AssetID: assetID, UserID: userID}
 	}
 
 	res, err := r.client.db.ExecContext(ctx, `

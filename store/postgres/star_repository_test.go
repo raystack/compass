@@ -76,15 +76,28 @@ func (r *StarRepositoryTestSuite) TestCreate() {
 		r.Equal(lengthOfString(id), 36) // uuid
 	})
 
-	r.Run("return invalid error if user id is empty", func() {
+	r.Run("return ErrEmptyUserID if user id is empty", func() {
 		id, err := r.repository.Create(r.ctx, "", "")
 		r.ErrorIs(err, star.ErrEmptyUserID)
 		r.Empty(id)
 	})
 
-	r.Run("return invalid error if asset id is empty", func() {
+	r.Run("return ErrEmptyAssetID error if asset id is empty", func() {
 		id, err := r.repository.Create(r.ctx, "user-id", "")
 		r.ErrorIs(err, star.ErrEmptyAssetID)
+		r.Empty(id)
+	})
+
+	r.Run("return invalid error if user id is not uuid", func() {
+		id, err := r.repository.Create(r.ctx, "user-id", "asset-id")
+		r.ErrorIs(err, star.InvalidError{UserID: "user-id", AssetID: "asset-id"})
+		r.Empty(id)
+	})
+
+	r.Run("return invalid error if asset id is not uuid", func() {
+		uid := uuid.NewString()
+		id, err := r.repository.Create(r.ctx, uid, "asset-id")
+		r.ErrorIs(err, star.InvalidError{UserID: uid, AssetID: "asset-id"})
 		r.Empty(id)
 	})
 
@@ -123,9 +136,15 @@ func (r *StarRepositoryTestSuite) TestCreate() {
 
 func (r *StarRepositoryTestSuite) TestGetStargazers() {
 	defaultCfg := star.Config{}
-	r.Run("return invalid error if asset id is empty", func() {
+	r.Run("return ErrEmptyAssetID if asset id is empty", func() {
 		users, err := r.repository.GetStargazers(r.ctx, defaultCfg, "")
 		r.ErrorIs(err, star.ErrEmptyAssetID)
+		r.Empty(users)
+	})
+
+	r.Run("return invalid error if asset id is not uuid", func() {
+		users, err := r.repository.GetStargazers(r.ctx, defaultCfg, "asset-id")
+		r.ErrorIs(err, star.InvalidError{AssetID: "asset-id"})
 		r.Empty(users)
 	})
 
@@ -204,6 +223,12 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
 		r.Empty(assets)
 	})
 
+	r.Run("return invalid error if user id is not uuid", func() {
+		assets, err := r.repository.GetAllAssetsByUserID(r.ctx, defaultCfg, "user-id")
+		r.ErrorIs(err, star.InvalidError{UserID: "user-id"})
+		r.Empty(assets)
+	})
+
 	r.Run("return not found error if starred asset not found in db", func() {
 		randomUserID := uuid.NewString()
 		assets, err := r.repository.GetAllAssetsByUserID(r.ctx, defaultCfg, randomUserID)
@@ -276,15 +301,28 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
 }
 
 func (r *StarRepositoryTestSuite) TestGetAssetByUserID() {
-	r.Run("return invalid error if user id is empty", func() {
+	r.Run("return ErrEmptyUserID if user id is empty", func() {
 		ast, err := r.repository.GetAssetByUserID(r.ctx, "", "")
 		r.ErrorIs(err, star.ErrEmptyUserID)
 		r.Empty(ast)
 	})
 
-	r.Run("return invalid error if asset id is empty", func() {
+	r.Run("return ErrEmptyAssetID if asset id is empty", func() {
 		ast, err := r.repository.GetAssetByUserID(r.ctx, "user-id", "")
 		r.ErrorIs(err, star.ErrEmptyAssetID)
+		r.Empty(ast)
+	})
+
+	r.Run("return invalid error if user id is not uuid", func() {
+		ast, err := r.repository.GetAssetByUserID(r.ctx, "user-id", "asset-id")
+		r.ErrorIs(err, star.InvalidError{UserID: "user-id", AssetID: "asset-id"})
+		r.Empty(ast)
+	})
+
+	r.Run("return invalid error if asset id is not uuid", func() {
+		uid := uuid.NewString()
+		ast, err := r.repository.GetAssetByUserID(r.ctx, uid, "asset-id")
+		r.ErrorIs(err, star.InvalidError{UserID: uid, AssetID: "asset-id"})
 		r.Empty(ast)
 	})
 
@@ -337,6 +375,17 @@ func (r *StarRepositoryTestSuite) TestDelete() {
 	r.Run("return invalid error if asset id is empty", func() {
 		err := r.repository.Delete(r.ctx, "user-id", "")
 		r.ErrorIs(err, star.ErrEmptyAssetID)
+	})
+
+	r.Run("return invalid error if user id is not uuid", func() {
+		err := r.repository.Delete(r.ctx, "user-id", "asset-id")
+		r.ErrorIs(err, star.InvalidError{UserID: "user-id", AssetID: "asset-id"})
+	})
+
+	r.Run("return invalid error if asset id is not uuid", func() {
+		uid := uuid.NewString()
+		err := r.repository.Delete(r.ctx, uid, "asset-id")
+		r.ErrorIs(err, star.InvalidError{UserID: uid, AssetID: "asset-id"})
 	})
 
 	r.Run("return not found error if starred asset not found in db", func() {
