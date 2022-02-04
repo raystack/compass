@@ -24,7 +24,7 @@ type Config struct {
 	LineageProvider     handlers.LineageProvider
 	UserService         *user.Service
 	MiddlewareConfig    middleware.Config
-	StarService         *star.Service
+	StarRepository      star.Repository
 
 	// Deprecated
 	DiscoveryService        *discovery.Service
@@ -53,7 +53,7 @@ func initHandlers(config Config) *Handlers {
 		config.Logger,
 		config.AssetRepository,
 		config.DiscoveryRepository,
-		config.StarService,
+		config.StarRepository,
 	)
 
 	recordHandler := handlers.NewRecordHandler(
@@ -61,7 +61,6 @@ func initHandlers(config Config) *Handlers {
 		config.TypeRepository,
 		config.DiscoveryService,
 		config.RecordRepositoryFactory,
-		config.StarService,
 	)
 	searchHandler := handlers.NewSearchHandler(
 		config.Logger,
@@ -81,7 +80,7 @@ func initHandlers(config Config) *Handlers {
 	)
 	userHandler := handlers.NewUserHandler(
 		config.Logger,
-		config.StarService,
+		config.StarRepository,
 	)
 
 	return &Handlers{

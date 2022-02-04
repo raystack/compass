@@ -489,21 +489,6 @@ func TestAssetHandlerGetStargazers(t *testing.T) {
 			},
 		},
 		{
-			Description:  "should return 400 status code if star repository return invalid error",
-			ExpectStatus: http.StatusBadRequest,
-			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s/stargazers", assetID)
-				params := url.Values{}
-				params.Add("offset", strconv.Itoa(offset))
-				params.Add("size", strconv.Itoa(size))
-				req.URL.RawQuery = params.Encode()
-				return req
-			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository) {
-				sr.On("GetStargazers", mock.Anything, defaultStarCfg, assetID).Return(nil, star.InvalidError{})
-			},
-		},
-		{
 			Description:  "should return 404 status code if star repository return not found error",
 			ExpectStatus: http.StatusNotFound,
 			MutateRequest: func(req *http.Request) *http.Request {
@@ -540,9 +525,8 @@ func TestAssetHandlerGetStargazers(t *testing.T) {
 			logger := log.NewNoop()
 			defer sr.AssertExpectations(t)
 			tc.Setup(&tc, sr)
-			starSvc := star.NewService(sr, nil)
 
-			handler := handlers.NewAssetHandler(logger, nil, nil, starSvc)
+			handler := handlers.NewAssetHandler(logger, nil, nil, sr)
 			router := mux.NewRouter()
 			router.Path("/assets/{id}/stargazers").Methods("GET").HandlerFunc(handler.GetStargazers)
 			rr := httptest.NewRequest("GET", "/assets", nil)

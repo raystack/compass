@@ -12,8 +12,8 @@ import (
 
 // UserHandler exposes a REST interface to user
 type UserHandler struct {
-	service *star.Service
-	logger  log.Logger
+	starRepository star.Repository
+	logger         log.Logger
 }
 
 func (h *UserHandler) GetStarredAssetsWithHeader(w http.ResponseWriter, r *http.Request) {
@@ -26,9 +26,9 @@ func (h *UserHandler) GetStarredAssetsWithHeader(w http.ResponseWriter, r *http.
 
 	starCfg := buildStarConfig(h.logger, r.URL.Query())
 
-	starredAssets, err := h.service.GetAllAssetsByUserID(r.Context(), starCfg, userID)
+	starredAssets, err := h.starRepository.GetAllAssetsByUserID(r.Context(), starCfg, userID)
 	if err != nil {
-		if errors.As(err, new(star.InvalidError)) {
+		if errors.Is(err, star.ErrEmptyUserID) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -52,9 +52,9 @@ func (h *UserHandler) GetStarredAssetsWithPath(w http.ResponseWriter, r *http.Re
 
 	starCfg := buildStarConfig(h.logger, r.URL.Query())
 
-	starredAssets, err := h.service.GetAllAssetsByUserID(r.Context(), starCfg, targetUserID)
+	starredAssets, err := h.starRepository.GetAllAssetsByUserID(r.Context(), starCfg, targetUserID)
 	if err != nil {
-		if errors.As(err, new(star.InvalidError)) {
+		if errors.Is(err, star.ErrEmptyUserID) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -80,9 +80,9 @@ func (h *UserHandler) StarAsset(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	assetID := pathParams["asset_id"]
 
-	starID, err := h.service.Star(r.Context(), userID, assetID)
+	starID, err := h.starRepository.Create(r.Context(), userID, assetID)
 	if err != nil {
-		if errors.As(err, new(star.InvalidError)) {
+		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -113,9 +113,9 @@ func (h *UserHandler) GetStarredAsset(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	assetID := pathParams["asset_id"]
 
-	starID, err := h.service.GetAssetByUserID(r.Context(), userID, assetID)
+	starID, err := h.starRepository.GetAssetByUserID(r.Context(), userID, assetID)
 	if err != nil {
-		if errors.As(err, new(star.InvalidError)) {
+		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -141,9 +141,9 @@ func (h *UserHandler) UnstarAsset(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	assetID := pathParams["asset_id"]
 
-	err := h.service.Unstar(r.Context(), userID, assetID)
+	err := h.starRepository.Delete(r.Context(), userID, assetID)
 	if err != nil {
-		if errors.As(err, new(star.InvalidError)) {
+		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
@@ -158,10 +158,10 @@ func (h *UserHandler) UnstarAsset(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusNoContent, "success")
 }
 
-func NewUserHandler(logger log.Logger, svc *star.Service) *UserHandler {
+func NewUserHandler(logger log.Logger, starRepo star.Repository) *UserHandler {
 	h := &UserHandler{
-		service: svc,
-		logger:  logger,
+		starRepository: starRepo,
+		logger:         logger,
 	}
 	return h
 }

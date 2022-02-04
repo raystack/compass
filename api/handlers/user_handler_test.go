@@ -27,7 +27,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 	type testCase struct {
 		Description   string
 		ExpectStatus  int
-		Setup         func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository)
+		Setup         func(tc *testCase, sr *mocks.StarRepository)
 		MutateRequest func(req *http.Request) *http.Request
 		PostCheck     func(t *testing.T, tc *testCase, resp *http.Response) error
 	}
@@ -40,7 +40,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 		{
 			Description:  "should return 400 status code if user id not found in context",
 			ExpectStatus: http.StatusBadRequest,
-			Setup:        func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {},
+			Setup:        func(tc *testCase, sr *mocks.StarRepository) {},
 		},
 		{
 			Description:  "should return 500 status code if failed to fetch starred",
@@ -53,7 +53,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {
 				sr.On("GetAllAssetsByUserID", mock.AnythingOfType("*context.valueCtx"), star.Config{Offset: offset, Size: size}, userID).Return(nil, errors.New("failed to fetch starred"))
 			},
 		},
@@ -68,7 +68,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {
 				sr.On("GetAllAssetsByUserID", mock.AnythingOfType("*context.valueCtx"), star.Config{Offset: offset, Size: size}, userID).Return(nil, star.NotFoundError{})
 			},
 		},
@@ -83,7 +83,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {
 				sr.On("GetAllAssetsByUserID", mock.AnythingOfType("*context.valueCtx"), star.Config{Offset: offset, Size: size}, userID).Return([]asset.Asset{
 					{ID: "1", URN: "asset-urn-1", Type: "asset-type"},
 					{ID: "2", URN: "asset-urn-2", Type: "asset-type"},
@@ -111,15 +111,11 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			sr := new(mocks.StarRepository)
-			ar := new(mocks.AssetRepository)
 			logger := log.NewNoop()
 			defer sr.AssertExpectations(t)
-			defer ar.AssertExpectations(t)
-			tc.Setup(&tc, sr, ar)
+			tc.Setup(&tc, sr)
 
-			svc := star.NewService(sr, ar)
-
-			handler := handlers.NewUserHandler(logger, svc)
+			handler := handlers.NewUserHandler(logger, sr)
 			rr := httptest.NewRequest("GET", "/", nil)
 			rw := httptest.NewRecorder()
 
@@ -229,8 +225,7 @@ func TestGetStarredWithPath(t *testing.T) {
 			defer sr.AssertExpectations(t)
 			tc.Setup(&tc, sr)
 
-			svc := star.NewService(sr, nil)
-			handler := handlers.NewUserHandler(logger, svc)
+			handler := handlers.NewUserHandler(logger, sr)
 			router := mux.NewRouter()
 			router.Path("/v1beta1/{user_id}/starred").Methods("GET").HandlerFunc(handler.GetStarredAssetsWithPath)
 			rr := httptest.NewRequest("GET", "/v1beta1", nil)
@@ -259,7 +254,7 @@ func TestStarAsset(t *testing.T) {
 	type testCase struct {
 		Description   string
 		ExpectStatus  int
-		Setup         func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository)
+		Setup         func(tc *testCase, sr *mocks.StarRepository)
 		MutateRequest func(req *http.Request) *http.Request
 	}
 
@@ -274,7 +269,7 @@ func TestStarAsset(t *testing.T) {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				return req
 			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {},
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {},
 		},
 		{
 			Description:  "should return 400 status code if asset id in param is invalid",
@@ -284,8 +279,8 @@ func TestStarAsset(t *testing.T) {
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, er *mocks.StarRepository, ar *mocks.AssetRepository) {
-				er.On("Create", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return("", star.InvalidError{})
+			Setup: func(tc *testCase, er *mocks.StarRepository) {
+				er.On("Create", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return("", star.ErrEmptyAssetID)
 			},
 		},
 		{
@@ -296,7 +291,7 @@ func TestStarAsset(t *testing.T) {
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, er *mocks.StarRepository, ar *mocks.AssetRepository) {
+			Setup: func(tc *testCase, er *mocks.StarRepository) {
 				er.On("Create", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return("", star.UserNotFoundError{UserID: userID})
 			},
 		},
@@ -308,7 +303,7 @@ func TestStarAsset(t *testing.T) {
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, er *mocks.StarRepository, ar *mocks.AssetRepository) {
+			Setup: func(tc *testCase, er *mocks.StarRepository) {
 				er.On("Create", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return("", errors.New("failed to star an asset"))
 			},
 		},
@@ -320,7 +315,7 @@ func TestStarAsset(t *testing.T) {
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, er *mocks.StarRepository, ar *mocks.AssetRepository) {
+			Setup: func(tc *testCase, er *mocks.StarRepository) {
 				er.On("Create", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return("1234", nil)
 			},
 		},
@@ -332,7 +327,7 @@ func TestStarAsset(t *testing.T) {
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, er *mocks.StarRepository, ar *mocks.AssetRepository) {
+			Setup: func(tc *testCase, er *mocks.StarRepository) {
 				er.On("Create", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return("", star.DuplicateRecordError{})
 			},
 		},
@@ -340,14 +335,11 @@ func TestStarAsset(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			sr := new(mocks.StarRepository)
-			ar := new(mocks.AssetRepository)
 			logger := log.NewNoop()
 			defer sr.AssertExpectations(t)
-			defer ar.AssertExpectations(t)
-			tc.Setup(&tc, sr, ar)
+			tc.Setup(&tc, sr)
 
-			svc := star.NewService(sr, ar)
-			handler := handlers.NewUserHandler(logger, svc)
+			handler := handlers.NewUserHandler(logger, sr)
 			router := mux.NewRouter()
 			router.Path("/user/starred/{asset_id}").Methods("PUT").HandlerFunc(handler.StarAsset)
 			rr := httptest.NewRequest("PUT", "/user/starred", nil)
@@ -370,7 +362,7 @@ func TestGetStarredAsset(t *testing.T) {
 	type testCase struct {
 		Description   string
 		ExpectStatus  int
-		Setup         func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository)
+		Setup         func(tc *testCase, sr *mocks.StarRepository)
 		MutateRequest func(req *http.Request) *http.Request
 		PostCheck     func(t *testing.T, tc *testCase, resp *http.Response) error
 	}
@@ -388,7 +380,7 @@ func TestGetStarredAsset(t *testing.T) {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				return req
 			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {},
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {},
 		},
 		{
 			Description:  "should return 400 status code if asset id in param is invalid",
@@ -398,8 +390,8 @@ func TestGetStarredAsset(t *testing.T) {
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, er *mocks.StarRepository, ar *mocks.AssetRepository) {
-				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(nil, star.InvalidError{})
+			Setup: func(tc *testCase, er *mocks.StarRepository) {
+				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(nil, star.ErrEmptyAssetID)
 			},
 		},
 		{
@@ -410,7 +402,7 @@ func TestGetStarredAsset(t *testing.T) {
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, er *mocks.StarRepository, ar *mocks.AssetRepository) {
+			Setup: func(tc *testCase, er *mocks.StarRepository) {
 				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(nil, star.NotFoundError{})
 			},
 		},
@@ -422,7 +414,7 @@ func TestGetStarredAsset(t *testing.T) {
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, er *mocks.StarRepository, ar *mocks.AssetRepository) {
+			Setup: func(tc *testCase, er *mocks.StarRepository) {
 				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(nil, errors.New("failed to fetch starred"))
 			},
 		},
@@ -434,7 +426,7 @@ func TestGetStarredAsset(t *testing.T) {
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, er *mocks.StarRepository, ar *mocks.AssetRepository) {
+			Setup: func(tc *testCase, er *mocks.StarRepository) {
 				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(&asset.Asset{Type: asset.Type(assetType), URN: assetURN}, nil)
 			},
 			PostCheck: func(t *testing.T, tc *testCase, resp *http.Response) error {
@@ -453,15 +445,11 @@ func TestGetStarredAsset(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			sr := new(mocks.StarRepository)
-			ar := new(mocks.AssetRepository)
 			logger := log.NewNoop()
 			defer sr.AssertExpectations(t)
-			defer ar.AssertExpectations(t)
-			tc.Setup(&tc, sr, ar)
+			tc.Setup(&tc, sr)
 
-			svc := star.NewService(sr, ar)
-
-			handler := handlers.NewUserHandler(logger, svc)
+			handler := handlers.NewUserHandler(logger, sr)
 			router := mux.NewRouter()
 			router.Path("/user/starred/{asset_id}").Methods("GET").HandlerFunc(handler.GetStarredAsset)
 			rr := httptest.NewRequest("GET", "/user/starred", nil)
@@ -490,7 +478,7 @@ func TestUnstarAsset(t *testing.T) {
 	type testCase struct {
 		Description   string
 		ExpectStatus  int
-		Setup         func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository)
+		Setup         func(tc *testCase, sr *mocks.StarRepository)
 		MutateRequest func(req *http.Request) *http.Request
 	}
 
@@ -505,18 +493,18 @@ func TestUnstarAsset(t *testing.T) {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				return req
 			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {},
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {},
 		},
 		{
-			Description:  "should return 400 status code if star in param is invalid",
+			Description:  "should return 400 status code if asset id is empty",
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {
-				sr.On("Delete", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(star.InvalidError{})
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {
+				sr.On("Delete", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(star.ErrEmptyAssetID)
 			},
 		},
 		{
@@ -527,7 +515,7 @@ func TestUnstarAsset(t *testing.T) {
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {
 				sr.On("Delete", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(errors.New("failed to star an asset"))
 			},
 		},
@@ -539,7 +527,7 @@ func TestUnstarAsset(t *testing.T) {
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {
+			Setup: func(tc *testCase, sr *mocks.StarRepository) {
 				sr.On("Delete", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(nil)
 			},
 		},
@@ -547,15 +535,11 @@ func TestUnstarAsset(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			sr := new(mocks.StarRepository)
-			ar := new(mocks.AssetRepository)
 			logger := log.NewNoop()
 			defer sr.AssertExpectations(t)
-			defer ar.AssertExpectations(t)
-			tc.Setup(&tc, sr, ar)
+			tc.Setup(&tc, sr)
 
-			svc := star.NewService(sr, ar)
-
-			handler := handlers.NewUserHandler(logger, svc)
+			handler := handlers.NewUserHandler(logger, sr)
 			router := mux.NewRouter()
 			router.Path("/user/starred/{asset_id}").Methods("DELETE").HandlerFunc(handler.UnstarAsset)
 			rr := httptest.NewRequest("DELETE", "/user/starred", nil)

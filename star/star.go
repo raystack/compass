@@ -17,18 +17,6 @@ type Star struct {
 	UpdatedAt time.Time   `json:"updated_at"`
 }
 
-func (s *Star) ValidateAssetURN() error {
-	if s == nil {
-		return InvalidError{}
-	}
-
-	if s.Asset.URN == "" || s.Asset.Type == "" {
-		return InvalidError{AssetURN: s.Asset.URN, AssetType: s.Asset.Type.String()}
-	}
-
-	return nil
-}
-
 type Repository interface {
 	Create(ctx context.Context, userID string, assetID string) (string, error)
 	GetStargazers(ctx context.Context, cfg Config, assetID string) ([]user.User, error)

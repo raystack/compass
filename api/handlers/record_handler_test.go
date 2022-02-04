@@ -62,7 +62,7 @@ func TestRecordHandler(t *testing.T) {
 					"name": typeName,
 				})
 
-				handler := handlers.NewRecordHandler(logger, tr, nil, nil, nil)
+				handler := handlers.NewRecordHandler(logger, tr, nil, nil)
 				handler.UpsertBulk(rw, rr)
 
 				expectedStatus := http.StatusBadRequest
@@ -80,7 +80,7 @@ func TestRecordHandler(t *testing.T) {
 				"name": "invalid",
 			})
 
-			handler := handlers.NewRecordHandler(logger, tr, nil, nil, nil)
+			handler := handlers.NewRecordHandler(logger, tr, nil, nil)
 			handler.UpsertBulk(rw, rr)
 
 			expectedStatus := http.StatusNotFound
@@ -110,7 +110,7 @@ func TestRecordHandler(t *testing.T) {
 				defer recordRepoFac.AssertExpectations(t)
 
 				service := discovery.NewService(recordRepoFac, nil)
-				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac, nil)
+				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac)
 				handler.UpsertBulk(rw, rr)
 
 				expectedStatus := http.StatusInternalServerError
@@ -155,7 +155,7 @@ func TestRecordHandler(t *testing.T) {
 				defer recordRepoFac.AssertExpectations(t)
 
 				service := discovery.NewService(recordRepoFac, nil)
-				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac, nil)
+				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac)
 				handler.UpsertBulk(rw, rr)
 
 				expectedStatus := http.StatusInternalServerError
@@ -199,7 +199,7 @@ func TestRecordHandler(t *testing.T) {
 			defer recordRepoFac.AssertExpectations(t)
 
 			service := discovery.NewService(recordRepoFac, nil)
-			handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac, nil)
+			handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac)
 			handler.UpsertBulk(rw, rr)
 
 			expectedStatus := http.StatusOK
@@ -288,7 +288,7 @@ func TestRecordHandler(t *testing.T) {
 				defer recordRepo.AssertExpectations(t)
 
 				service := discovery.NewService(recordRepoFactory, nil)
-				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFactory, nil)
+				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFactory)
 				handler.Delete(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {
@@ -478,7 +478,7 @@ func TestRecordHandler(t *testing.T) {
 				tc.Setup(&tc, rrf)
 
 				service := discovery.NewService(rrf, nil)
-				handler := handlers.NewRecordHandler(logger, tr, service, rrf, nil)
+				handler := handlers.NewRecordHandler(logger, tr, service, rrf)
 				handler.GetByType(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {
@@ -575,7 +575,7 @@ func TestRecordHandler(t *testing.T) {
 				}
 
 				service := discovery.NewService(recordRepoFac, nil)
-				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac, nil)
+				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac)
 				handler.GetOneByType(rw, rr)
 
 				if rw.Code != tc.ExpectStatus {

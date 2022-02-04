@@ -19,11 +19,11 @@ type StarRepository struct {
 // Create insert a new record in the stars table
 func (r *StarRepository) Create(ctx context.Context, userID string, assetID string) (string, error) {
 	var starID string
-	if userID == "" || assetID == "" {
-		return "", star.InvalidError{
-			UserID:  userID,
-			AssetID: assetID,
-		}
+	if userID == "" {
+		return "", star.ErrEmptyUserID
+	}
+	if assetID == "" {
+		return "", star.ErrEmptyAssetID
 	}
 
 	if err := r.client.db.QueryRowxContext(ctx, `
@@ -52,7 +52,7 @@ func (r *StarRepository) Create(ctx context.Context, userID string, assetID stri
 // GetStargazers fetch list of user IDs that star an asset
 func (r *StarRepository) GetStargazers(ctx context.Context, cfg star.Config, assetID string) ([]user.User, error) {
 	if assetID == "" {
-		return nil, star.InvalidError{}
+		return nil, star.ErrEmptyAssetID
 	}
 
 	starCfg := r.buildConfig(cfg)
@@ -89,7 +89,7 @@ func (r *StarRepository) GetStargazers(ctx context.Context, cfg star.Config, ass
 // GetAllAssetsByUserID fetch list of assets starred by a user
 func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Config, userID string) ([]asset.Asset, error) {
 	if userID == "" {
-		return nil, star.InvalidError{}
+		return nil, star.ErrEmptyUserID
 	}
 
 	starCfg := r.buildConfig(cfg)
@@ -136,11 +136,11 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Conf
 
 // GetAssetByUserID fetch a specific starred asset by user id
 func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, assetID string) (*asset.Asset, error) {
-	if userID == "" || assetID == "" {
-		return nil, star.InvalidError{
-			UserID:  userID,
-			AssetID: assetID,
-		}
+	if userID == "" {
+		return nil, star.ErrEmptyUserID
+	}
+	if assetID == "" {
+		return nil, star.ErrEmptyAssetID
 	}
 
 	var asetModel AssetModel
@@ -177,11 +177,11 @@ func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, as
 
 // Delete will delete/unstar a starred asset for a user id
 func (r *StarRepository) Delete(ctx context.Context, userID string, assetID string) error {
-	if userID == "" || assetID == "" {
-		return star.InvalidError{
-			UserID:  userID,
-			AssetID: assetID,
-		}
+	if userID == "" {
+		return star.ErrEmptyUserID
+	}
+	if assetID == "" {
+		return star.ErrEmptyAssetID
 	}
 
 	res, err := r.client.db.ExecContext(ctx, `

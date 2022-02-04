@@ -21,19 +21,19 @@ type AssetHandler struct {
 	logger          log.Logger
 	assetRepository asset.Repository
 	discoveryRepo   discovery.Repository
-	starService     *star.Service
+	starRepository  star.Repository
 }
 
 func NewAssetHandler(
 	logger log.Logger,
 	assetRepository asset.Repository,
 	discoveryRepo discovery.Repository,
-	starService *star.Service) *AssetHandler {
+	starRepository star.Repository) *AssetHandler {
 	handler := &AssetHandler{
 		logger:          logger,
 		assetRepository: assetRepository,
 		discoveryRepo:   discoveryRepo,
-		starService:     starService,
+		starRepository:  starRepository,
 	}
 
 	return handler
@@ -141,9 +141,9 @@ func (h *AssetHandler) GetStargazers(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	assetID := pathParams["id"]
 
-	users, err := h.starService.GetStargazers(r.Context(), starCfg, assetID)
+	users, err := h.starRepository.GetStargazers(r.Context(), starCfg, assetID)
 	if err != nil {
-		if errors.As(err, new(star.InvalidError)) {
+		if errors.Is(err, star.ErrEmptyUserID) || errors.Is(err, star.ErrEmptyAssetID) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}

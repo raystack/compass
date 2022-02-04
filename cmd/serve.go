@@ -19,7 +19,6 @@ import (
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/metrics"
-	"github.com/odpf/columbus/star"
 	esStore "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/columbus/tag"
@@ -100,8 +99,6 @@ func initRouter(
 		logger.Fatal("failed to create new star repository", "error", err)
 	}
 
-	starService := star.NewService(starRepository, assetRepository)
-
 	discoveryRepo := esStore.NewDiscoveryRepository(esClient)
 	lineageRepo, err := postgres.NewLineageRepository(pgClient)
 	if err != nil {
@@ -149,7 +146,7 @@ func initRouter(
 		TagTemplateService:      tagTemplateService,
 		UserService:             userService,
 		MiddlewareConfig:        middlewareCfg,
-		StarService:             starService,
+		StarRepository:          starRepository,
 	})
 
 	return router

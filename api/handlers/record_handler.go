@@ -13,7 +13,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/star"
 )
 
 // RecordHandler exposes a REST interface to types
@@ -21,7 +20,6 @@ type RecordHandler struct {
 	typeRepository          discovery.TypeRepository
 	recordRepositoryFactory discovery.RecordRepositoryFactory
 	discoveryService        *discovery.Service
-	starService             *star.Service
 	logger                  log.Logger
 }
 
@@ -29,14 +27,12 @@ func NewRecordHandler(
 	logger log.Logger,
 	typeRepository discovery.TypeRepository,
 	discoveryService *discovery.Service,
-	rrf discovery.RecordRepositoryFactory,
-	starSvc *star.Service) *RecordHandler {
+	rrf discovery.RecordRepositoryFactory) *RecordHandler {
 	handler := &RecordHandler{
 		logger:                  logger,
 		discoveryService:        discoveryService,
 		typeRepository:          typeRepository,
 		recordRepositoryFactory: rrf,
-		starService:             starSvc,
 	}
 
 	return handler
