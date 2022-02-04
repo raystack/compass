@@ -3,7 +3,6 @@ package asset
 import (
 	"errors"
 	"fmt"
-	"strings"
 )
 
 var (
@@ -12,41 +11,9 @@ var (
 )
 
 type NotFoundError struct {
-	AssetID   string
-	AssetType string
-	AssetURN  string
+	AssetID string
 }
 
-func (e NotFoundError) Error() string {
-	fields := []string{"no such record"}
-	if e.AssetID != "" {
-		fields = append(fields, fmt.Sprintf("with asset id \"%s\"", e.AssetID))
-	}
-	if e.AssetURN != "" {
-		fields = append(fields, fmt.Sprintf("with asset urn \"%s\"", e.AssetURN))
-	}
-	if e.AssetType != "" {
-		fields = append(fields, fmt.Sprintf("with asset type \"%s\"", e.AssetType))
-	}
-	return fmt.Sprintf("{%s}", strings.Join(fields, " "))
-}
-
-type InvalidError struct {
-	AssetID   string
-	AssetType string
-	AssetURN  string
-}
-
-func (e InvalidError) Error() string {
-	fields := []string{"empty asset field"}
-	if e.AssetID != "" {
-		fields = append(fields, fmt.Sprintf("with asset id \"%s\"", e.AssetID))
-	}
-	if e.AssetURN != "" {
-		fields = append(fields, fmt.Sprintf("with asset urn \"%s\"", e.AssetURN))
-	}
-	if e.AssetType != "" {
-		fields = append(fields, fmt.Sprintf("with asset type \"%s\"", e.AssetType))
-	}
-	return fmt.Sprintf("{%s}", strings.Join(fields, " "))
+func (err NotFoundError) Error() string {
+	return fmt.Sprintf("no such record: %q", err.AssetID)
 }

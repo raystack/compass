@@ -23,18 +23,6 @@ type Asset struct {
 	UpdatedAt   time.Time              `json:"updated_at"`
 }
 
-func (a *Asset) Validate() error {
-	if a == nil {
-		return InvalidError{}
-	}
-
-	if a.URN == "" || a.Type == "" {
-		return InvalidError{AssetURN: a.URN, AssetType: a.Type.String()}
-	}
-
-	return nil
-}
-
 type Repository interface {
 	Get(context.Context, Config) ([]Asset, error)
 	GetCount(context.Context, Config) (int, error)
