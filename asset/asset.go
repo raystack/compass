@@ -39,7 +39,6 @@ type Repository interface {
 	Get(context.Context, Config) ([]Asset, error)
 	GetCount(context.Context, Config) (int, error)
 	GetByID(ctx context.Context, id string) (Asset, error)
-	GetIDByURN(context.Context, *Asset) (string, error)
 	Upsert(context.Context, *Asset) (string, error)
 	Delete(ctx context.Context, id string) error
 }

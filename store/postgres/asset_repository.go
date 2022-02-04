@@ -99,7 +99,7 @@ func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Ass
 // It updates if asset does exist.
 // Checking existance is done using "urn", "type", and "service" fields.
 func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string, error) {
-	assetID, err := r.GetIDByURN(ctx, ast)
+	assetID, err := r.getID(ctx, ast)
 	if errors.As(err, new(asset.NotFoundError)) {
 		err = nil
 	}
@@ -313,29 +313,11 @@ func (r *AssetRepository) createOrFetchOwnersID(ctx context.Context, tx *sqlx.Tx
 	return
 }
 
-func (r *AssetRepository) GetIDByURN(ctx context.Context, ast *asset.Asset) (id string, err error) {
-	if vErr := ast.Validate(); vErr != nil {
-		err = vErr
-		return
-	}
-
-	builder := sq.Select("id").From("assets").
-		PlaceholderFormat(sq.Dollar).
-		Where("urn = ?", ast.URN).
-		Where("type = ?", ast.Type)
-
-	if ast.Service != "" {
-		builder = builder.Where("service = ?", ast.Service)
-	}
-	query, args, err := builder.ToSql()
-	if err != nil {
-		err = fmt.Errorf("error building query: %w", err)
-		return
-	}
-
-	err = r.client.db.GetContext(ctx, &id, query, args...)
+func (r *AssetRepository) getID(ctx context.Context, ast *asset.Asset) (id string, err error) {
+	query := `SELECT id FROM assets WHERE urn = $1 AND type = $2 AND service = $3;`
+	err = r.client.db.GetContext(ctx, &id, query, ast.URN, ast.Type, ast.Service)
 	if errors.Is(err, sql.ErrNoRows) {
-		err = asset.NotFoundError{AssetURN: ast.URN, AssetType: ast.Type.String()}
+		err = nil
 	}
 	if err != nil {
 		err = fmt.Errorf(
