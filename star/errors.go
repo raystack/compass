@@ -24,7 +24,7 @@ func (e NotFoundError) Error() string {
 	if e.UserID != "" {
 		fields = append(fields, fmt.Sprintf("by user id \"%s\"", e.UserID))
 	}
-	return fmt.Sprintf("{%s}", strings.Join(fields, ", "))
+	return strings.Join(fields, ", ")
 }
 
 type UserNotFoundError struct {
