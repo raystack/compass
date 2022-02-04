@@ -27,10 +27,10 @@ func (r *StarRepository) Create(ctx context.Context, userID string, assetID stri
 	}
 
 	if !isValidUUID(userID) {
-		return "", star.InvalidError{AssetID: assetID, UserID: userID}
+		return "", star.InvalidError{UserID: userID}
 	}
 	if !isValidUUID(assetID) {
-		return "", star.InvalidError{AssetID: assetID, UserID: userID}
+		return "", star.InvalidError{AssetID: assetID}
 	}
 
 	if err := r.client.db.QueryRowxContext(ctx, `
@@ -159,10 +159,10 @@ func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, as
 	}
 
 	if !isValidUUID(userID) {
-		return nil, star.InvalidError{AssetID: assetID, UserID: userID}
+		return nil, star.InvalidError{UserID: userID}
 	}
 	if !isValidUUID(assetID) {
-		return nil, star.InvalidError{AssetID: assetID, UserID: userID}
+		return nil, star.InvalidError{AssetID: assetID}
 	}
 
 	var asetModel AssetModel
@@ -207,10 +207,10 @@ func (r *StarRepository) Delete(ctx context.Context, userID string, assetID stri
 	}
 
 	if !isValidUUID(userID) {
-		return star.InvalidError{AssetID: assetID, UserID: userID}
+		return star.InvalidError{UserID: userID}
 	}
 	if !isValidUUID(assetID) {
-		return star.InvalidError{AssetID: assetID, UserID: userID}
+		return star.InvalidError{AssetID: assetID}
 	}
 
 	res, err := r.client.db.ExecContext(ctx, `

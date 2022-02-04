@@ -90,14 +90,14 @@ func (r *StarRepositoryTestSuite) TestCreate() {
 
 	r.Run("return invalid error if user id is not uuid", func() {
 		id, err := r.repository.Create(r.ctx, "user-id", "asset-id")
-		r.ErrorIs(err, star.InvalidError{UserID: "user-id", AssetID: "asset-id"})
+		r.ErrorIs(err, star.InvalidError{UserID: "user-id"})
 		r.Empty(id)
 	})
 
 	r.Run("return invalid error if asset id is not uuid", func() {
 		uid := uuid.NewString()
 		id, err := r.repository.Create(r.ctx, uid, "asset-id")
-		r.ErrorIs(err, star.InvalidError{UserID: uid, AssetID: "asset-id"})
+		r.ErrorIs(err, star.InvalidError{AssetID: "asset-id"})
 		r.Empty(id)
 	})
 
@@ -315,14 +315,14 @@ func (r *StarRepositoryTestSuite) TestGetAssetByUserID() {
 
 	r.Run("return invalid error if user id is not uuid", func() {
 		ast, err := r.repository.GetAssetByUserID(r.ctx, "user-id", "asset-id")
-		r.ErrorIs(err, star.InvalidError{UserID: "user-id", AssetID: "asset-id"})
+		r.ErrorIs(err, star.InvalidError{UserID: "user-id"})
 		r.Empty(ast)
 	})
 
 	r.Run("return invalid error if asset id is not uuid", func() {
 		uid := uuid.NewString()
 		ast, err := r.repository.GetAssetByUserID(r.ctx, uid, "asset-id")
-		r.ErrorIs(err, star.InvalidError{UserID: uid, AssetID: "asset-id"})
+		r.ErrorIs(err, star.InvalidError{AssetID: "asset-id"})
 		r.Empty(ast)
 	})
 
@@ -379,13 +379,13 @@ func (r *StarRepositoryTestSuite) TestDelete() {
 
 	r.Run("return invalid error if user id is not uuid", func() {
 		err := r.repository.Delete(r.ctx, "user-id", "asset-id")
-		r.ErrorIs(err, star.InvalidError{UserID: "user-id", AssetID: "asset-id"})
+		r.ErrorIs(err, star.InvalidError{UserID: "user-id"})
 	})
 
 	r.Run("return invalid error if asset id is not uuid", func() {
 		uid := uuid.NewString()
 		err := r.repository.Delete(r.ctx, uid, "asset-id")
-		r.ErrorIs(err, star.InvalidError{UserID: uid, AssetID: "asset-id"})
+		r.ErrorIs(err, star.InvalidError{AssetID: "asset-id"})
 	})
 
 	r.Run("return not found error if starred asset not found in db", func() {
