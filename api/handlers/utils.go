@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/star"
 	"github.com/odpf/salt/log"
 )
@@ -62,13 +61,4 @@ func buildStarConfig(logger log.Logger, query url.Values) star.Config {
 		}
 	}
 	return star.Config{Offset: offset, Size: size}
-}
-
-func buildStarFromPath(pathParams map[string]string) *star.Star {
-	return &star.Star{
-		Asset: asset.Asset{
-			Type: asset.Type(pathParams["asset_type"]),
-			URN:  pathParams["asset_urn"],
-		},
-	}
 }

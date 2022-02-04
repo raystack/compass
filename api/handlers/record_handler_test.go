@@ -8,11 +8,8 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"reflect"
-	"strconv"
 	"strings"
 	"testing"
-
-	"github.com/odpf/columbus/user"
 
 	"github.com/odpf/salt/log"
 
@@ -21,7 +18,6 @@ import (
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lib/mocks"
-	"github.com/odpf/columbus/star"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -596,144 +592,4 @@ func TestRecordHandler(t *testing.T) {
 		}
 	})
 
-}
-
-func TestGetStargazers(t *testing.T) {
-	type testCase struct {
-		Description   string
-		ExpectStatus  int
-		Setup         func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository)
-		MutateRequest func(req *http.Request) *http.Request
-	}
-
-	assetType := "an-asset-type"
-	assetURN := "an-asset-urn"
-	offset := 10
-	size := 20
-	defaultStarCfg := star.Config{Offset: offset, Size: size}
-	assetID := "dummy-asset-id"
-
-	var testCases = []testCase{
-		{
-			Description:  "should return 400 status code if asset in param is invalid",
-			ExpectStatus: http.StatusBadRequest,
-			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s/records/%s/stargazers", assetType, assetURN)
-				params := url.Values{}
-				params.Add("offset", strconv.Itoa(offset))
-				params.Add("size", strconv.Itoa(size))
-				req.URL.RawQuery = params.Encode()
-				return req
-			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {
-				ar.On("GetIDByURN", mock.AnythingOfType("*context.valueCtx"), &asset.Asset{URN: assetURN, Type: asset.Type(assetType)}).Return("", asset.InvalidError{})
-			},
-		},
-		{
-			Description:  "should return 404 status code if asset not found",
-			ExpectStatus: http.StatusNotFound,
-			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s/records/%s/stargazers", assetType, assetURN)
-				params := url.Values{}
-				params.Add("offset", strconv.Itoa(offset))
-				params.Add("size", strconv.Itoa(size))
-				req.URL.RawQuery = params.Encode()
-				return req
-			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {
-				ar.On("GetIDByURN", mock.AnythingOfType("*context.valueCtx"), &asset.Asset{URN: assetURN, Type: asset.Type(assetType)}).Return("", asset.NotFoundError{})
-			},
-		},
-		{
-			Description:  "should return 500 status code if failed to fetch star repository",
-			ExpectStatus: http.StatusInternalServerError,
-			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s/records/%s/stargazers", assetType, assetURN)
-				params := url.Values{}
-				params.Add("offset", strconv.Itoa(offset))
-				params.Add("size", strconv.Itoa(size))
-				req.URL.RawQuery = params.Encode()
-				return req
-			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {
-				ar.On("GetIDByURN", mock.AnythingOfType("*context.valueCtx"), &asset.Asset{URN: assetURN, Type: asset.Type(assetType)}).Return(assetID, nil)
-				sr.On("GetStargazers", mock.Anything, defaultStarCfg, assetID).Return(nil, errors.New("some error"))
-			},
-		},
-		{
-			Description:  "should return 400 status code if star repository return invalid error",
-			ExpectStatus: http.StatusBadRequest,
-			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s/records/%s/stargazers", assetType, assetURN)
-				params := url.Values{}
-				params.Add("offset", strconv.Itoa(offset))
-				params.Add("size", strconv.Itoa(size))
-				req.URL.RawQuery = params.Encode()
-				return req
-			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {
-				ar.On("GetIDByURN", mock.AnythingOfType("*context.valueCtx"), &asset.Asset{URN: assetURN, Type: asset.Type(assetType)}).Return(assetID, nil)
-				sr.On("GetStargazers", mock.Anything, defaultStarCfg, assetID).Return(nil, star.InvalidError{})
-			},
-		},
-		{
-			Description:  "should return 404 status code if star repository return not found error",
-			ExpectStatus: http.StatusNotFound,
-			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s/records/%s/stargazers", assetType, assetURN)
-				params := url.Values{}
-				params.Add("offset", strconv.Itoa(offset))
-				params.Add("size", strconv.Itoa(size))
-				req.URL.RawQuery = params.Encode()
-				return req
-			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {
-				ar.On("GetIDByURN", mock.AnythingOfType("*context.valueCtx"), &asset.Asset{URN: assetURN, Type: asset.Type(assetType)}).Return(assetID, nil)
-				sr.On("GetStargazers", mock.Anything, defaultStarCfg, assetID).Return(nil, star.NotFoundError{})
-			},
-		},
-		{
-			Description:  "should return 200 ok if star repository return nil error",
-			ExpectStatus: http.StatusOK,
-			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s/records/%s/stargazers", assetType, assetURN)
-				params := url.Values{}
-				params.Add("offset", strconv.Itoa(offset))
-				params.Add("size", strconv.Itoa(size))
-				req.URL.RawQuery = params.Encode()
-				return req
-			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository, ar *mocks.AssetRepository) {
-				ar.On("GetIDByURN", mock.AnythingOfType("*context.valueCtx"), &asset.Asset{URN: assetURN, Type: asset.Type(assetType)}).Return(assetID, nil)
-				sr.On("GetStargazers", mock.Anything, defaultStarCfg, assetID).Return([]user.User{{ID: "1"}, {ID: "2"}, {ID: "3"}}, nil)
-			},
-		},
-	}
-	for _, tc := range testCases {
-		t.Run(tc.Description, func(t *testing.T) {
-			sr := new(mocks.StarRepository)
-			ar := new(mocks.AssetRepository)
-			logger := log.NewNoop()
-			defer sr.AssertExpectations(t)
-			defer ar.AssertExpectations(t)
-			tc.Setup(&tc, sr, ar)
-			starSvc := star.NewService(sr, ar)
-
-			handler := handlers.NewRecordHandler(logger, nil, nil, nil, starSvc)
-			router := mux.NewRouter()
-			router.Path("/types/{name}/records/{id}/stargazers").Methods("GET").HandlerFunc(handler.GetStargazers)
-			rr := httptest.NewRequest("GET", "/types", nil)
-			rw := httptest.NewRecorder()
-
-			if tc.MutateRequest != nil {
-				rr = tc.MutateRequest(rr)
-			}
-
-			router.ServeHTTP(rw, rr)
-			if rw.Code != tc.ExpectStatus {
-				t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
-				return
-			}
-		})
-	}
 }

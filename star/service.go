@@ -14,13 +14,9 @@ type Service struct {
 }
 
 // Star bookmarks an asset for a user
-func (s *Service) Star(ctx context.Context, userID string, starring *Star) (string, error) {
-	if err := starring.ValidateAssetURN(); err != nil {
-		return "", err
-	}
-	assetID, err := s.assetRepo.GetIDByURN(ctx, &starring.Asset)
-	if err != nil {
-		return "", err
+func (s *Service) Star(ctx context.Context, userID string, assetID string) (string, error) {
+	if assetID == "" {
+		return "", InvalidError{}
 	}
 	starID, err := s.repository.Create(ctx, userID, assetID)
 	if err != nil {
@@ -29,24 +25,8 @@ func (s *Service) Star(ctx context.Context, userID string, starring *Star) (stri
 	return starID, nil
 }
 
-// GetStargazersByURN returns all users that stars an asset by asset urn and type
-func (s *Service) GetStargazersByURN(ctx context.Context, cfg Config, starring *Star) ([]user.User, error) {
-	if err := starring.ValidateAssetURN(); err != nil {
-		return nil, err
-	}
-	assetID, err := s.assetRepo.GetIDByURN(ctx, &starring.Asset)
-	if err != nil {
-		return nil, err
-	}
-	users, err := s.repository.GetStargazers(ctx, cfg, assetID)
-	if err != nil {
-		return nil, err
-	}
-	return users, nil
-}
-
 // GetStargazersByID returns all users that stars an asset by asset id
-func (s *Service) GetStargazersByID(ctx context.Context, cfg Config, assetID string) ([]user.User, error) {
+func (s *Service) GetStargazers(ctx context.Context, cfg Config, assetID string) ([]user.User, error) {
 	if assetID == "" {
 		return nil, InvalidError{}
 	}
@@ -67,13 +47,9 @@ func (s *Service) GetAllAssetsByUserID(ctx context.Context, cfg Config, userID s
 }
 
 // GetAssetByUserID returns an asset starred by a user
-func (s *Service) GetAssetByUserID(ctx context.Context, userID string, starring *Star) (*asset.Asset, error) {
-	if err := starring.ValidateAssetURN(); err != nil {
-		return nil, err
-	}
-	assetID, err := s.assetRepo.GetIDByURN(ctx, &starring.Asset)
-	if err != nil {
-		return nil, err
+func (s *Service) GetAssetByUserID(ctx context.Context, userID string, assetID string) (*asset.Asset, error) {
+	if assetID == "" {
+		return nil, InvalidError{}
 	}
 	ast, err := s.repository.GetAssetByUserID(ctx, userID, assetID)
 	if err != nil {
@@ -83,15 +59,11 @@ func (s *Service) GetAssetByUserID(ctx context.Context, userID string, starring 
 }
 
 // Unstar deletes a starred asset
-func (s *Service) Unstar(ctx context.Context, userID string, starring *Star) error {
-	if err := starring.ValidateAssetURN(); err != nil {
-		return err
+func (s *Service) Unstar(ctx context.Context, userID string, assetID string) error {
+	if assetID == "" {
+		return InvalidError{}
 	}
-	assetID, err := s.assetRepo.GetIDByURN(ctx, &starring.Asset)
-	if err != nil {
-		return err
-	}
-	err = s.repository.Delete(ctx, userID, assetID)
+	err := s.repository.Delete(ctx, userID, assetID)
 	if err != nil {
 		return err
 	}

@@ -340,48 +340,6 @@ paths:
           description: type or record cannot be found
           schema:
             $ref: "#/definitions/Error"
-  "/v1beta1/types/{name}/records/{id}/stargazers":
-    delete:
-      tags:
-        - Record
-      summary: get list of users that stars a record
-      produces:
-        - "application/json"
-      parameters:
-        - in: header
-          name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
-          required: true
-        - in: path
-          name: name
-          type: string
-          required: true
-        - in: path
-          name: id
-          type: string
-          required: true
-      responses:
-        200:
-          description: OK
-          schema:
-            type: array
-            items:
-              $ref: "#/definitions/User"
-        404:
-          description: type or record cannot be found
-          schema:
-            $ref: "#/definitions/Error"
-        400:
-          description: bad request
-          schema:
-            $ref: "#/definitions/Error"
-        500:
-          description: internal server error
-          schema:
-            $ref: "#/definitions/Error"
   "/v1beta1/types/{name}/{id}":
     get:
       tags:
@@ -904,7 +862,7 @@ paths:
           description: internal server error
           schema:
             $ref: "#/definitions/Error"
-  "/v1beta1/user/{asset_type}/{asset_urn}":
+  "/v1beta1/user/starred/{asset_id}":
     put:
       tags:
         - User
@@ -922,19 +880,17 @@ paths:
             example: user@odpf.io
           required: true
         - in: path
-          name: asset_type
-          type: string
-          required: true
-        - in: path
-          name: asset_urn
+          name: asset_id
           type: string
           required: true
       responses:
         204:
-          description: Content
+          description: OK
           schema:
-            type: string
-            example: 1234-1234-1234
+            type: object
+            properties:
+              id:
+                $ref: "#/definitions/UUID"
         400:
           description: validation error
           schema:
@@ -964,11 +920,7 @@ paths:
             example: user@odpf.io
           required: true
         - in: path
-          name: asset_type
-          type: string
-          required: true
-        - in: path
-          name: asset_urn
+          name: asset_id
           type: string
           required: true
       responses:
@@ -1006,11 +958,7 @@ paths:
             example: user@odpf.io
           required: true
         - in: path
-          name: asset_type
-          type: string
-          required: true
-        - in: path
-          name: asset_urn
+          name: asset_id
           type: string
           required: true
       responses:
@@ -1019,6 +967,46 @@ paths:
           schema:
             type: object
             $ref: "#/definitions/Star"
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        404:
+          description: not found
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: internal server error
+          schema:
+            $ref: "#/definitions/Error"
+  "/v1beta1/users/{user_id}/starred":
+    get:
+      tags:
+        - User
+        - Star
+      summary: Get assets starred by a user
+      description: Get all assets starred by a user
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
+        - in: path
+          name: user_id
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Star"
         400:
           description: validation error
           schema:

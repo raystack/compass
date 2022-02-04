@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/star"
 	"github.com/odpf/columbus/user"
 	"github.com/odpf/salt/log"
@@ -78,15 +77,16 @@ func (h *UserHandler) StarAsset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	starring := buildStarFromPath(mux.Vars(r))
+	pathParams := mux.Vars(r)
+	assetID := pathParams["asset_id"]
 
-	starID, err := h.service.Star(r.Context(), userID, starring)
+	starID, err := h.service.Star(r.Context(), userID, assetID)
 	if err != nil {
-		if errors.As(err, new(asset.InvalidError)) || errors.As(err, new(star.InvalidError)) {
+		if errors.As(err, new(star.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		if errors.As(err, new(asset.NotFoundError)) || errors.As(err, new(star.UserNotFoundError)) {
+		if errors.As(err, new(star.UserNotFoundError)) {
 			WriteJSONError(w, http.StatusNotFound, err.Error())
 			return
 		}
@@ -110,15 +110,16 @@ func (h *UserHandler) GetStarredAsset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	starring := buildStarFromPath(mux.Vars(r))
+	pathParams := mux.Vars(r)
+	assetID := pathParams["asset_id"]
 
-	starID, err := h.service.GetAssetByUserID(r.Context(), userID, starring)
+	starID, err := h.service.GetAssetByUserID(r.Context(), userID, assetID)
 	if err != nil {
-		if errors.As(err, new(asset.InvalidError)) || errors.As(err, new(star.InvalidError)) {
+		if errors.As(err, new(star.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		if errors.As(err, new(asset.NotFoundError)) || errors.As(err, new(star.NotFoundError)) {
+		if errors.As(err, new(star.NotFoundError)) {
 			WriteJSONError(w, http.StatusNotFound, err.Error())
 			return
 		}
@@ -137,15 +138,16 @@ func (h *UserHandler) UnstarAsset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	starring := buildStarFromPath(mux.Vars(r))
+	pathParams := mux.Vars(r)
+	assetID := pathParams["asset_id"]
 
-	err := h.service.Unstar(r.Context(), userID, starring)
+	err := h.service.Unstar(r.Context(), userID, assetID)
 	if err != nil {
-		if errors.As(err, new(asset.InvalidError)) || errors.As(err, new(star.InvalidError)) {
+		if errors.As(err, new(star.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		if errors.As(err, new(asset.NotFoundError)) || errors.As(err, new(star.NotFoundError)) {
+		if errors.As(err, new(star.NotFoundError)) {
 			WriteJSONError(w, http.StatusNotFound, err.Error())
 			return
 		}

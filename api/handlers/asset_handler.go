@@ -141,7 +141,7 @@ func (h *AssetHandler) GetStargazers(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	assetID := pathParams["id"]
 
-	users, err := h.starService.GetStargazersByID(r.Context(), starCfg, assetID)
+	users, err := h.starService.GetStargazers(r.Context(), starCfg, assetID)
 	if err != nil {
 		if errors.As(err, new(star.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
