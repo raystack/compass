@@ -164,10 +164,10 @@ func (r *AssetRepositoryTestSuite) TestGetCount() {
 }
 
 func (r *AssetRepositoryTestSuite) TestGetByID() {
-	r.Run("return error from client if any", func() {
+	r.Run("return error from client if asset not an uuid", func() {
 		_, err := r.repository.GetByID(r.ctx, "invalid-uuid")
 		r.Error(err)
-		r.Contains(err.Error(), "error getting asset with ID = \"invalid-uuid\"")
+		r.Contains(err.Error(), "invalid asset id: \"invalid-uuid\"")
 	})
 
 	r.Run("return NotFoundError if asset does not exist", func() {
@@ -459,7 +459,7 @@ func (r *AssetRepositoryTestSuite) TestDelete() {
 	r.Run("return error from client if any", func() {
 		err := r.repository.Delete(r.ctx, "invalid-uuid")
 		r.Error(err)
-		r.Contains(err.Error(), "error deleting asset with ID = \"invalid-uuid\"")
+		r.Contains(err.Error(), "invalid asset id: \"invalid-uuid\"")
 	})
 
 	r.Run("return NotFoundError if asset does not exist", func() {

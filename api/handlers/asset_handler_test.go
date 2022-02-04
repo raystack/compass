@@ -175,43 +175,51 @@ func TestAssetHandlerDelete(t *testing.T) {
 		Description  string
 		AssetID      string
 		ExpectStatus int
-		Setup        func(context.Context, *mocks.AssetRepository, *mocks.DiscoveryRepository)
+		Setup        func(context.Context, *testCase, *mocks.AssetRepository, *mocks.DiscoveryRepository)
 		PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
 	}
 
 	var testCases = []testCase{
 		{
+			Description:  "should return 400 when asset id is not uuid",
+			AssetID:      "not-uuid",
+			ExpectStatus: http.StatusBadRequest,
+			Setup: func(ctx context.Context, tc *testCase, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
+				ar.On("Delete", ctx, tc.AssetID).Return(asset.InvalidError{AssetID: tc.AssetID})
+			},
+		},
+		{
 			Description:  "should return 404 when asset cannot be found",
-			AssetID:      "id-10",
+			AssetID:      uuid.NewString(),
 			ExpectStatus: http.StatusNotFound,
-			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
-				ar.On("Delete", ctx, "id-10").Return(asset.NotFoundError{AssetID: "id-10"})
+			Setup: func(ctx context.Context, tc *testCase, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
+				ar.On("Delete", ctx, tc.AssetID).Return(asset.NotFoundError{AssetID: tc.AssetID})
 			},
 		},
 		{
 			Description:  "should return 500 on error deleting asset",
-			AssetID:      "id-10",
+			AssetID:      uuid.NewString(),
 			ExpectStatus: http.StatusInternalServerError,
-			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
-				ar.On("Delete", ctx, "id-10").Return(errors.New("error deleting asset"))
+			Setup: func(ctx context.Context, tc *testCase, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
+				ar.On("Delete", ctx, tc.AssetID).Return(errors.New("error deleting asset"))
 			},
 		},
 		{
 			Description:  "should return 500 on error deleting asset from discovery",
-			AssetID:      "id-10",
+			AssetID:      uuid.NewString(),
 			ExpectStatus: http.StatusInternalServerError,
-			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
-				ar.On("Delete", ctx, "id-10").Return(nil)
-				dr.On("Delete", ctx, "id-10").Return(asset.NotFoundError{AssetID: "id-10"})
+			Setup: func(ctx context.Context, tc *testCase, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
+				ar.On("Delete", ctx, tc.AssetID).Return(nil)
+				dr.On("Delete", ctx, tc.AssetID).Return(asset.NotFoundError{AssetID: tc.AssetID})
 			},
 		},
 		{
 			Description:  "should return 204 on success",
-			AssetID:      "id-10",
+			AssetID:      uuid.NewString(),
 			ExpectStatus: http.StatusNoContent,
-			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
-				ar.On("Delete", ctx, "id-10").Return(nil)
-				dr.On("Delete", ctx, "id-10").Return(nil)
+			Setup: func(ctx context.Context, tc *testCase, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
+				ar.On("Delete", ctx, tc.AssetID).Return(nil)
+				dr.On("Delete", ctx, tc.AssetID).Return(nil)
 			},
 		},
 	}
@@ -225,7 +233,7 @@ func TestAssetHandlerDelete(t *testing.T) {
 
 			ar := new(mocks.AssetRepository)
 			dr := new(mocks.DiscoveryRepository)
-			tc.Setup(rr.Context(), ar, dr)
+			tc.Setup(rr.Context(), &tc, ar, dr)
 			defer ar.AssertExpectations(t)
 
 			handler := handlers.NewAssetHandler(logger, ar, dr, nil)
@@ -241,7 +249,7 @@ func TestAssetHandlerDelete(t *testing.T) {
 
 func TestAssetHandlerGetByID(t *testing.T) {
 	var (
-		assetID = "id-1"
+		assetID = uuid.NewString()
 		ast     = asset.Asset{
 			ID: assetID,
 		}
@@ -255,6 +263,13 @@ func TestAssetHandlerGetByID(t *testing.T) {
 	}
 
 	var testCases = []testCase{
+		{
+			Description:  `should return http 400 if asset id is not uuid`,
+			ExpectStatus: http.StatusBadRequest,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.On("GetByID", ctx, assetID).Return(asset.Asset{}, asset.InvalidError{AssetID: assetID})
+			},
+		},
 		{
 			Description:  `should return http 404 if asset doesn't exist`,
 			ExpectStatus: http.StatusNotFound,

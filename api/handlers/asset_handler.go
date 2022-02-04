@@ -74,11 +74,15 @@ func (h *AssetHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	ast, err := h.assetRepository.GetByID(r.Context(), assetID)
 	if err != nil {
-		if _, ok := err.(asset.NotFoundError); ok {
-			writeJSON(w, http.StatusNotFound, err.Error())
-		} else {
-			internalServerError(w, h.logger, err.Error())
+		if errors.As(err, new(asset.InvalidError)) {
+			WriteJSONError(w, http.StatusBadRequest, err.Error())
+			return
 		}
+		if errors.As(err, new(asset.NotFoundError)) {
+			WriteJSONError(w, http.StatusNotFound, err.Error())
+			return
+		}
+		internalServerError(w, h.logger, err.Error())
 		return
 	}
 
@@ -93,12 +97,16 @@ func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.validateAsset(ast); err != nil {
-		writeJSON(w, http.StatusBadRequest, err.Error())
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	var assetID string
-	if assetID, err = h.assetRepository.Upsert(r.Context(), &ast); err != nil {
+	assetID, err := h.assetRepository.Upsert(r.Context(), &ast)
+	if errors.As(err, new(asset.InvalidError)) {
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err != nil {
 		internalServerError(w, h.logger, err.Error())
 		return
 	}
@@ -119,11 +127,15 @@ func (h *AssetHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	assetID := vars["id"]
 
 	if err := h.assetRepository.Delete(r.Context(), assetID); err != nil {
-		if _, ok := err.(asset.NotFoundError); ok {
-			writeJSON(w, http.StatusNotFound, err.Error())
-		} else {
-			internalServerError(w, h.logger, err.Error())
+		if errors.As(err, new(asset.InvalidError)) {
+			WriteJSONError(w, http.StatusBadRequest, err.Error())
+			return
 		}
+		if errors.As(err, new(asset.NotFoundError)) {
+			WriteJSONError(w, http.StatusNotFound, err.Error())
+			return
+		}
+		internalServerError(w, h.logger, err.Error())
 		return
 	}
 
@@ -143,7 +155,7 @@ func (h *AssetHandler) GetStargazers(w http.ResponseWriter, r *http.Request) {
 
 	users, err := h.starRepository.GetStargazers(r.Context(), starCfg, assetID)
 	if err != nil {
-		if errors.Is(err, star.ErrEmptyUserID) || errors.Is(err, star.ErrEmptyAssetID) {
+		if errors.Is(err, star.ErrEmptyUserID) || errors.Is(err, star.ErrEmptyAssetID) || errors.As(err, new(star.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}

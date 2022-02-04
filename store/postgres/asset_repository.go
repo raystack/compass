@@ -71,6 +71,11 @@ func (r *AssetRepository) GetCount(ctx context.Context, config asset.Config) (to
 
 // GetByID retrieves asset by its ID
 func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Asset, err error) {
+
+	if !isValidUUID(id) {
+		return asset.Asset{}, asset.InvalidError{AssetID: id}
+	}
+
 	query := `SELECT * FROM assets WHERE id = $1 LIMIT 1;`
 
 	am := &AssetModel{}
@@ -123,6 +128,11 @@ func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string,
 
 // Delete removes asset using its ID
 func (r *AssetRepository) Delete(ctx context.Context, id string) error {
+
+	if !isValidUUID(id) {
+		return asset.InvalidError{AssetID: id}
+	}
+
 	query := `DELETE FROM assets WHERE id = $1;`
 	res, err := r.client.db.ExecContext(ctx, query, id)
 	if err != nil {
@@ -184,6 +194,11 @@ func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id stri
 }
 
 func (r *AssetRepository) update(ctx context.Context, id string, ast *asset.Asset) error {
+
+	if !isValidUUID(id) {
+		return asset.InvalidError{AssetID: id}
+	}
+
 	return r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		err := r.execContext(ctx, tx,
 			`UPDATE assets
@@ -223,14 +238,19 @@ func (r *AssetRepository) update(ctx context.Context, id string, ast *asset.Asse
 }
 
 // getOwners retrieves asset's owners by its ID
-func (r *AssetRepository) getOwners(ctx context.Context, asset_id string) (owners []user.User, err error) {
+func (r *AssetRepository) getOwners(ctx context.Context, assetID string) (owners []user.User, err error) {
+
+	if !isValidUUID(assetID) {
+		return nil, asset.InvalidError{AssetID: assetID}
+	}
+
 	query := `
 		SELECT u.id,u.email,u.provider
 		FROM asset_owners ao
 		JOIN users u on ao.user_id = u.id
 		WHERE asset_id = $1`
 	ums := []UserModel{}
-	err = r.client.db.SelectContext(ctx, &ums, query, asset_id)
+	err = r.client.db.SelectContext(ctx, &ums, query, assetID)
 	if err != nil {
 		err = fmt.Errorf("error getting asset's owners: %w", err)
 	}
@@ -241,13 +261,17 @@ func (r *AssetRepository) getOwners(ctx context.Context, asset_id string) (owner
 	return
 }
 
-func (r *AssetRepository) insertOwners(ctx context.Context, execer sqlx.ExecerContext, asset_id string, owners []user.User) (err error) {
+func (r *AssetRepository) insertOwners(ctx context.Context, execer sqlx.ExecerContext, assetID string, owners []user.User) (err error) {
 	if len(owners) == 0 {
 		return
 	}
 
+	if !isValidUUID(assetID) {
+		return asset.InvalidError{AssetID: assetID}
+	}
+
 	var values []string
-	var args = []interface{}{asset_id}
+	var args = []interface{}{assetID}
 	for i, owner := range owners {
 		values = append(values, fmt.Sprintf("($1, $%d)", i+2))
 		args = append(args, owner.ID)
@@ -264,13 +288,17 @@ func (r *AssetRepository) insertOwners(ctx context.Context, execer sqlx.ExecerCo
 	return
 }
 
-func (r *AssetRepository) removeOwners(ctx context.Context, execer sqlx.ExecerContext, asset_id string, owners []user.User) (err error) {
+func (r *AssetRepository) removeOwners(ctx context.Context, execer sqlx.ExecerContext, assetID string, owners []user.User) (err error) {
 	if len(owners) == 0 {
 		return
 	}
 
+	if !isValidUUID(assetID) {
+		return asset.InvalidError{AssetID: assetID}
+	}
+
 	var user_ids []string
-	var args = []interface{}{asset_id}
+	var args = []interface{}{assetID}
 	for i, owner := range owners {
 		user_ids = append(user_ids, fmt.Sprintf("$%d", i+2))
 		args = append(args, owner.ID)
