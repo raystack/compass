@@ -104,26 +104,26 @@ func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Ass
 // It updates if asset does exist.
 // Checking existance is done using "urn", "type", and "service" fields.
 func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string, error) {
-	assetID, err := r.getID(ctx, ast)
+	fetchedAsset, err := r.getAssetByURN(ctx, ast.URN, ast.Type, ast.Service)
 	if errors.As(err, new(asset.NotFoundError)) {
 		err = nil
 	}
 	if err != nil {
 		return "", fmt.Errorf("error getting asset ID: %w", err)
 	}
-	if assetID == "" {
-		assetID, err = r.insert(ctx, ast)
+	if fetchedAsset.ID == "" {
+		fetchedAsset.ID, err = r.insert(ctx, ast)
 		if err != nil {
-			return assetID, fmt.Errorf("error inserting asset to DB: %w", err)
+			return fetchedAsset.ID, fmt.Errorf("error inserting asset to DB: %w", err)
 		}
 	} else {
-		err = r.update(ctx, assetID, ast)
+		err = r.update(ctx, fetchedAsset.ID, ast)
 		if err != nil {
 			return "", fmt.Errorf("error updating asset to DB: %w", err)
 		}
 	}
 
-	return assetID, nil
+	return fetchedAsset.ID, nil
 }
 
 // Delete removes asset using its ID
@@ -338,19 +338,19 @@ func (r *AssetRepository) createOrFetchOwnersID(ctx context.Context, tx *sqlx.Tx
 	return
 }
 
-func (r *AssetRepository) getID(ctx context.Context, ast *asset.Asset) (id string, err error) {
-	query := `SELECT id FROM assets WHERE urn = $1 AND type = $2 AND service = $3;`
-	err = r.client.db.GetContext(ctx, &id, query, ast.URN, ast.Type, ast.Service)
-	if errors.Is(err, sql.ErrNoRows) {
-		err = nil
-	}
-	if err != nil {
-		err = fmt.Errorf(
+func (r *AssetRepository) getAssetByURN(ctx context.Context, assetURN string, assetType asset.Type, assetService string) (asset.Asset, error) {
+	query := `SELECT * FROM assets WHERE urn = $1 AND type = $2 AND service = $3;`
+	var assetModel AssetModel
+	if err := r.client.db.GetContext(ctx, &assetModel, query, assetURN, assetType, assetService); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return asset.Asset{}, asset.NotFoundError{}
+		}
+		return asset.Asset{}, fmt.Errorf(
 			"error getting asset's ID with urn = \"%s\", type = \"%s\", service = \"%s\": %w",
-			ast.URN, ast.Type, ast.Service, err)
+			assetURN, assetType, assetService, err)
 	}
 
-	return
+	return assetModel.toAsset(), nil
 }
 
 func (r *AssetRepository) execContext(ctx context.Context, execer sqlx.ExecerContext, query string, args ...interface{}) error {
