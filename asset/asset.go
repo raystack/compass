@@ -6,23 +6,16 @@ import (
 	"time"
 
 	"github.com/odpf/columbus/user"
+	"github.com/r3labs/diff/v2"
 )
 
-// Asset is a model that wraps arbitrary data with Columbus' context
-type Asset struct {
-	ID          string                 `json:"id"`
-	URN         string                 `json:"urn"`
-	Type        Type                   `json:"type"`
-	Name        string                 `json:"name"`
-	Service     string                 `json:"service"`
-	Description string                 `json:"description"`
-	Data        map[string]interface{} `json:"data"`
-	Labels      map[string]string      `json:"labels"`
-	Owners      []user.User            `json:"owners,omitempty"`
-	CreatedAt   time.Time              `json:"created_at"`
-	UpdatedAt   time.Time              `json:"updated_at"`
+type Config struct {
+	Text    string `json:"text"`
+	Type    Type   `json:"type"`
+	Service string `json:"service"`
+	Size    int    `json:"size"`
+	Offset  int    `json:"offset"`
 }
-
 type Repository interface {
 	Get(context.Context, Config) ([]Asset, error)
 	GetCount(context.Context, Config) (int, error)
@@ -31,10 +24,23 @@ type Repository interface {
 	Delete(ctx context.Context, id string) error
 }
 
-type Config struct {
-	Text    string `json:"text"`
-	Type    Type   `json:"type"`
-	Service string `json:"service"`
-	Size    int    `json:"size"`
-	Offset  int    `json:"offset"`
+// Asset is a model that wraps arbitrary data with Columbus' context
+type Asset struct {
+	ID          string                 `json:"id" diff:"-"`
+	URN         string                 `json:"urn" diff:"-"`
+	Type        Type                   `json:"type" diff:"-"`
+	Service     string                 `json:"service" diff:"-"`
+	Name        string                 `json:"name" diff:"name"`
+	Description string                 `json:"description" diff:"description"`
+	Data        map[string]interface{} `json:"data" diff:"data"`
+	Labels      map[string]string      `json:"labels" diff:"labels"`
+	Owners      []user.User            `json:"owners,omitempty" diff:"owners"`
+	CreatedAt   time.Time              `json:"created_at" diff:"-"`
+	UpdatedAt   time.Time              `json:"updated_at" diff:"-"`
+}
+
+// Diff returns nil changelog with nil error if equal
+// returns r3labs/diff Changelog struct with nil error if not equal
+func (a *Asset) Diff(otherAsset *Asset) (diff.Changelog, error) {
+	return diff.Diff(a, otherAsset, diff.DiscardComplexOrigin())
 }
