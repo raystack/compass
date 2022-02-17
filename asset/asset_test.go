@@ -2,7 +2,6 @@ package asset_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/odpf/columbus/asset"
@@ -50,6 +49,24 @@ func TestDiffTopLevel(t *testing.T) {
 			},
 			nil,
 		},
+		{
+			"created owners should be reflected",
+			`{
+				"name":	"old-name"
+			}`,
+			`{
+				"name":	"old-name",
+				"owners": [
+					{
+						"email": "email@odpf.io"
+					}
+				]
+			}`,
+			diff.Changelog{
+				diff.Change{Type: diff.CREATE, Path: []string{"owners", "0", "email"}, To: "email@odpf.io"},
+			},
+			nil,
+		},
 	}
 
 	for _, tc := range cases {
@@ -71,7 +88,6 @@ func TestDiffTopLevel(t *testing.T) {
 			assert.Equal(t, tc.Error, err)
 			require.Equal(t, len(tc.Changelog), len(cl))
 
-			fmt.Printf("%+v\n", cl)
 			for i, c := range cl {
 				assert.Equal(t, tc.Changelog[i].Type, c.Type)
 				assert.Equal(t, tc.Changelog[i].Path, c.Path)
