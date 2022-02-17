@@ -66,6 +66,13 @@ paths:
       produces:
         - "application/json"
       parameters:
+        - in: header
+          name: Columbus-User-Email
+          schema:
+            type: string
+            format: email
+            example: user@odpf.io
+          required: true
         - in: body
           name: ""
           required: true

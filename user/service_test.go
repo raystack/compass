@@ -14,11 +14,8 @@ import (
 
 func TestValidateWithHeader(t *testing.T) {
 	ctx := context.TODO()
-	userCfg := user.Config{
-		IdentityProviderDefaultName: "shield",
-	}
 	t.Run("should return no user error when param is empty", func(t *testing.T) {
-		userSvc := user.NewService(userCfg, nil)
+		userSvc := user.NewService(nil)
 
 		id, err := userSvc.ValidateUser(ctx, "")
 
@@ -30,7 +27,7 @@ func TestValidateWithHeader(t *testing.T) {
 		mockUserRepository := &mocks.UserRepository{}
 		mockUserRepository.On("GetID", mock.Anything, mock.Anything).Return("", nil)
 
-		userSvc := user.NewService(userCfg, mockUserRepository)
+		userSvc := user.NewService(mockUserRepository)
 
 		id, err := userSvc.ValidateUser(ctx, "an-email")
 
@@ -43,7 +40,7 @@ func TestValidateWithHeader(t *testing.T) {
 		mockUserRepository := &mocks.UserRepository{}
 		mockUserRepository.On("GetID", mock.Anything, mock.Anything).Return(userID, nil)
 
-		userSvc := user.NewService(userCfg, mockUserRepository)
+		userSvc := user.NewService(mockUserRepository)
 
 		id, err := userSvc.ValidateUser(ctx, "an-email")
 
@@ -57,7 +54,7 @@ func TestValidateWithHeader(t *testing.T) {
 		mockUserRepository.On("GetID", mock.Anything, mock.Anything).Return("", nil)
 		mockUserRepository.On("Create", mock.Anything, mock.Anything).Return(userID, nil)
 
-		userSvc := user.NewService(userCfg, mockUserRepository)
+		userSvc := user.NewService(mockUserRepository)
 
 		id, err := userSvc.ValidateUser(ctx, "an-email")
 
@@ -71,7 +68,7 @@ func TestValidateWithHeader(t *testing.T) {
 		mockUserRepository.On("GetID", mock.Anything, mock.Anything).Return("", mockErr)
 		mockUserRepository.On("Create", mock.Anything, mock.Anything).Return("", mockErr)
 
-		userSvc := user.NewService(userCfg, mockUserRepository)
+		userSvc := user.NewService(mockUserRepository)
 
 		id, err := userSvc.ValidateUser(ctx, "an-email")
 

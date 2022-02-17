@@ -14,6 +14,7 @@ import (
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/star"
+	"github.com/odpf/columbus/user"
 )
 
 // AssetHandler exposes a REST interface to types
@@ -90,6 +91,13 @@ func (h *AssetHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
+	userEmail := user.EmailFromContext(r.Context())
+	if userEmail == "" {
+		h.logger.Warn(errMissingUserInfo.Error())
+		WriteJSONError(w, http.StatusBadRequest, errMissingUserInfo.Error())
+		return
+	}
+
 	var ast asset.Asset
 	err := json.NewDecoder(r.Body).Decode(&ast)
 	if err != nil {
@@ -101,7 +109,7 @@ func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	assetID, err := h.assetRepository.Upsert(r.Context(), &ast)
+	assetID, err := h.assetRepository.Upsert(r.Context(), userEmail, &ast)
 	if errors.As(err, new(asset.InvalidError)) {
 		WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return

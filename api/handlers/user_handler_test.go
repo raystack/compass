@@ -33,6 +33,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 	}
 
 	userID := "dummy-user-id"
+	userEmail := "user@odpf.io"
 	offset := 10
 	size := 20
 
@@ -50,7 +51,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 				params.Add("offset", strconv.Itoa(offset))
 				params.Add("size", strconv.Itoa(size))
 				req.URL.RawQuery = params.Encode()
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
@@ -65,7 +66,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 				params.Add("offset", strconv.Itoa(offset))
 				params.Add("size", strconv.Itoa(size))
 				req.URL.RawQuery = params.Encode()
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
@@ -80,7 +81,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 				params.Add("offset", strconv.Itoa(offset))
 				params.Add("size", strconv.Itoa(size))
 				req.URL.RawQuery = params.Encode()
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
@@ -95,7 +96,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 				params.Add("offset", strconv.Itoa(offset))
 				params.Add("size", strconv.Itoa(size))
 				req.URL.RawQuery = params.Encode()
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
@@ -289,6 +290,7 @@ func TestStarAsset(t *testing.T) {
 	}
 
 	userID := "dummy-user-id"
+	userEmail := "user@odpf.io"
 	assetID := "dummy-asset-id"
 
 	var testCases = []testCase{
@@ -306,7 +308,7 @@ func TestStarAsset(t *testing.T) {
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -318,7 +320,7 @@ func TestStarAsset(t *testing.T) {
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -330,7 +332,7 @@ func TestStarAsset(t *testing.T) {
 			ExpectStatus: http.StatusNotFound,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -342,7 +344,7 @@ func TestStarAsset(t *testing.T) {
 			ExpectStatus: http.StatusInternalServerError,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -354,7 +356,7 @@ func TestStarAsset(t *testing.T) {
 			ExpectStatus: http.StatusNoContent,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -366,7 +368,7 @@ func TestStarAsset(t *testing.T) {
 			ExpectStatus: http.StatusNoContent,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -412,6 +414,7 @@ func TestGetStarredAsset(t *testing.T) {
 	assetType := "an-asset-type"
 	assetURN := "dummy-asset-urn"
 	userID := "dummy-user-id"
+	userEmail := "user@odpf.io"
 	assetID := "an-asset-id"
 
 	var testCases = []testCase{
@@ -429,7 +432,7 @@ func TestGetStarredAsset(t *testing.T) {
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -441,7 +444,7 @@ func TestGetStarredAsset(t *testing.T) {
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -453,7 +456,7 @@ func TestGetStarredAsset(t *testing.T) {
 			ExpectStatus: http.StatusNotFound,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -465,7 +468,7 @@ func TestGetStarredAsset(t *testing.T) {
 			ExpectStatus: http.StatusInternalServerError,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -477,7 +480,7 @@ func TestGetStarredAsset(t *testing.T) {
 			ExpectStatus: http.StatusOK,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -537,6 +540,7 @@ func TestUnstarAsset(t *testing.T) {
 	}
 
 	userID := "dummy-user-id"
+	userEmail := "email@odpf.io"
 	assetID := "dummy-asset-id"
 
 	var testCases = []testCase{
@@ -554,7 +558,7 @@ func TestUnstarAsset(t *testing.T) {
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
@@ -566,7 +570,7 @@ func TestUnstarAsset(t *testing.T) {
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
@@ -578,7 +582,7 @@ func TestUnstarAsset(t *testing.T) {
 			ExpectStatus: http.StatusInternalServerError,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
@@ -590,7 +594,7 @@ func TestUnstarAsset(t *testing.T) {
 			ExpectStatus: http.StatusNoContent,
 			MutateRequest: func(req *http.Request) *http.Request {
 				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				ctx := user.NewContext(req.Context(), userID)
+				ctx := user.NewContext(req.Context(), userID, userEmail)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {

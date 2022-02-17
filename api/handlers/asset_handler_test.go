@@ -32,6 +32,8 @@ var (
 )
 
 func TestAssetHandlerUpsert(t *testing.T) {
+	var userEmail = "user@odpf.io"
+	var userID = uuid.NewString()
 	var validPayload = `{"urn": "test dagger", "type": "table", "name": "de-dagger-test", "service": "kafka", "data": {}}`
 
 	t.Run("should return HTTP 400 for invalid payload", func(t *testing.T) {
@@ -72,7 +74,10 @@ func TestAssetHandlerUpsert(t *testing.T) {
 		for _, testCase := range testCases {
 			t.Run(testCase.description, func(t *testing.T) {
 				rw := httptest.NewRecorder()
+
 				rr := httptest.NewRequest("PUT", "/", strings.NewReader(testCase.payload))
+				ctx := user.NewContext(rr.Context(), userID, userEmail)
+				rr = rr.WithContext(ctx)
 
 				handler := handlers.NewAssetHandler(logger, nil, nil, nil)
 				handler.Upsert(rw, rr)
@@ -88,12 +93,14 @@ func TestAssetHandlerUpsert(t *testing.T) {
 	t.Run("should return HTTP 500 if the asset creation/update fails", func(t *testing.T) {
 		t.Run("AssetRepository fails", func(t *testing.T) {
 			rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
+			ctx := user.NewContext(rr.Context(), userID, userEmail)
+			rr = rr.WithContext(ctx)
 			rw := httptest.NewRecorder()
 
 			expectedErr := errors.New("unknown error")
 
 			ar := new(mocks.AssetRepository)
-			ar.On("Upsert", rr.Context(), mock.AnythingOfType("*asset.Asset")).Return("1234-5678", expectedErr)
+			ar.On("Upsert", rr.Context(), userEmail, mock.AnythingOfType("*asset.Asset")).Return("1234-5678", expectedErr)
 			defer ar.AssertExpectations(t)
 
 			rr.Context()
@@ -108,12 +115,14 @@ func TestAssetHandlerUpsert(t *testing.T) {
 		})
 		t.Run("DiscoveryRepository fails", func(t *testing.T) {
 			rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
+			ctx := user.NewContext(rr.Context(), userID, userEmail)
+			rr = rr.WithContext(ctx)
 			rw := httptest.NewRecorder()
 
 			expectedErr := errors.New("unknown error")
 
 			ar := new(mocks.AssetRepository)
-			ar.On("Upsert", rr.Context(), mock.AnythingOfType("*asset.Asset")).Return("1234-5678", nil)
+			ar.On("Upsert", rr.Context(), userEmail, mock.AnythingOfType("*asset.Asset")).Return("1234-5678", nil)
 			defer ar.AssertExpectations(t)
 
 			dr := new(mocks.DiscoveryRepository)
@@ -131,6 +140,7 @@ func TestAssetHandlerUpsert(t *testing.T) {
 			assert.Contains(t, response.Reason, "Internal Server Error")
 		})
 	})
+
 	t.Run("should return HTTP 200 and asset's ID if the asset is successfully created/updated", func(t *testing.T) {
 		ast := asset.Asset{
 			URN:     "test dagger",
@@ -143,11 +153,13 @@ func TestAssetHandlerUpsert(t *testing.T) {
 		assetWithID.ID = uuid.New().String()
 
 		rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
+		ctx := user.NewContext(rr.Context(), userID, userEmail)
+		rr = rr.WithContext(ctx)
 		rw := httptest.NewRecorder()
 
 		ar := new(mocks.AssetRepository)
-		ar.On("Upsert", rr.Context(), &ast).Return(assetWithID.ID, nil).Run(func(args mock.Arguments) {
-			argAsset := args.Get(1).(*asset.Asset)
+		ar.On("Upsert", rr.Context(), userEmail, &ast).Return(assetWithID.ID, nil).Run(func(args mock.Arguments) {
+			argAsset := args.Get(2).(*asset.Asset)
 			argAsset.ID = assetWithID.ID
 		})
 		defer ar.AssertExpectations(t)

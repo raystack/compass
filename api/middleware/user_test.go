@@ -27,11 +27,9 @@ func TestValidateUser(t *testing.T) {
 		Logger:         log.NewNoop(),
 		IdentityHeader: identityHeader,
 	}
-	userCfg := user.Config{
-		IdentityProviderDefaultName: "shield",
-	}
+
 	t.Run("should return HTTP 400 when identity header not present", func(t *testing.T) {
-		userSvc := user.NewService(userCfg, nil)
+		userSvc := user.NewService(nil)
 		r := mux.NewRouter()
 		r.Use(ValidateUser(middlewareCfg, userSvc))
 		r.Path(dummyRoute).Methods(http.MethodGet)
@@ -58,7 +56,7 @@ func TestValidateUser(t *testing.T) {
 		mockUserRepository.On("GetID", mock.Anything, mock.Anything).Return("", customError)
 		mockUserRepository.On("Create", mock.Anything, mock.Anything).Return("", customError)
 
-		userSvc := user.NewService(userCfg, mockUserRepository)
+		userSvc := user.NewService(mockUserRepository)
 		r := mux.NewRouter()
 		r.Use(ValidateUser(middlewareCfg, userSvc))
 		r.Path(dummyRoute).Methods(http.MethodGet)
@@ -81,18 +79,20 @@ func TestValidateUser(t *testing.T) {
 		assert.Equal(t, customError.Error(), response.Reason)
 	})
 
-	t.Run("should return HTTP 200 with propagated user ID when user validation success", func(t *testing.T) {
+	t.Run("should return HTTP 200 with propagated user ID and email when user validation success", func(t *testing.T) {
 		userID := "user-id"
+		userEmail := "some-email"
 		mockUserRepository := &mocks.UserRepository{}
 		mockUserRepository.On("GetID", mock.Anything, mock.Anything).Return(userID, nil)
 		mockUserRepository.On("Create", mock.Anything, mock.Anything).Return(userID, nil)
 
-		userSvc := user.NewService(userCfg, mockUserRepository)
+		userSvc := user.NewService(mockUserRepository)
 		r := mux.NewRouter()
 		r.Use(ValidateUser(middlewareCfg, userSvc))
 		r.Path(dummyRoute).Methods(http.MethodGet).HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			propagatedUserID := user.FromContext(r.Context())
-			_, err := rw.Write([]byte(propagatedUserID))
+			propagatedUserID := user.IDFromContext(r.Context())
+			propagatedUserEmail := user.EmailFromContext(r.Context())
+			_, err := rw.Write([]byte(propagatedUserID + propagatedUserEmail))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -100,13 +100,13 @@ func TestValidateUser(t *testing.T) {
 		})
 
 		req, _ := http.NewRequest("GET", dummyRoute, nil)
-		req.Header.Set(identityHeader, "some-email")
+		req.Header.Set(identityHeader, userEmail)
 		req.Header.Set(identityProviderHeader, "some-provider")
 
 		rr := httptest.NewRecorder()
 
 		r.ServeHTTP(rr, req)
 
-		assert.Equal(t, userID, rr.Body.String())
+		assert.Equal(t, userID+userEmail, rr.Body.String())
 	})
 }

@@ -10,12 +10,11 @@ import (
 	"github.com/odpf/columbus/user"
 	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"
+	"github.com/r3labs/diff/v2"
 	"github.com/stretchr/testify/suite"
 )
 
-const (
-	defaultGetMaxSize = 7
-)
+var defaultAssetUpdaterUserEmail = "user-updater@odpf.io"
 
 type AssetRepositoryTestSuite struct {
 	suite.Suite
@@ -36,7 +35,7 @@ func (r *AssetRepositoryTestSuite) SetupSuite() {
 	}
 
 	r.ctx = context.TODO()
-	userRepo, err := postgres.NewUserRepository(r.client)
+	userRepo, err := postgres.NewUserRepository(r.client, user.Config{IdentityProviderDefaultName: defaultProviderName})
 	if err != nil {
 		r.T().Fatal(err)
 	}
@@ -74,11 +73,13 @@ func (r *AssetRepositoryTestSuite) TestGet() {
 		}
 
 		ast := asset.Asset{
-			URN:     fmt.Sprintf("urn-get-%d", i),
-			Type:    typ,
-			Service: service,
+			URN:       fmt.Sprintf("urn-get-%d", i),
+			Type:      typ,
+			Service:   service,
+			Version:   asset.BaseVersion,
+			UpdatedBy: defaultAssetUpdaterUserEmail,
 		}
-		id, err := r.repository.Upsert(r.ctx, &ast)
+		id, err := r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &ast)
 		r.Require().NoError(err)
 		r.Require().Equal(r.lengthOfString(id), 36)
 		ast.ID = id
@@ -147,7 +148,7 @@ func (r *AssetRepositoryTestSuite) TestGetCount() {
 			Type:    typ,
 			Service: service,
 		}
-		id, err := r.repository.Upsert(r.ctx, &ast)
+		id, err := r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &ast)
 		r.Require().NoError(err)
 		r.Require().Equal(r.lengthOfString(id), 36)
 		ast.ID = id
@@ -181,20 +182,22 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 			URN:     "urn-gbi-1",
 			Type:    "table",
 			Service: "bigquery",
+			Version: asset.BaseVersion,
 		}
 		asset2 := asset.Asset{
 			URN:     "urn-gbi-2",
 			Type:    "topic",
 			Service: "kafka",
+			Version: asset.BaseVersion,
 		}
 
 		var err error
-		id, err := r.repository.Upsert(r.ctx, &asset1)
+		id, err := r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &asset1)
 		r.Require().NoError(err)
 		r.Require().Equal(r.lengthOfString(id), 36)
 		asset1.ID = id
 
-		id, err = r.repository.Upsert(r.ctx, &asset2)
+		id, err = r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &asset2)
 		r.Require().NoError(err)
 		r.Require().Equal(r.lengthOfString(id), 36)
 		asset2.ID = id
@@ -206,9 +209,9 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 
 	r.Run("return owners if any", func() {
 		// create users
-		user1 := user.User{Email: "johndoe@example.com", Provider: "shield"}
-		user2 := user.User{Email: "janedoe@example.com", Provider: "shield"}
-		userRepo, err := postgres.NewUserRepository(r.client)
+		user1 := user.User{Email: "johndoe@example.com", Provider: defaultProviderName}
+		user2 := user.User{Email: "janedoe@example.com", Provider: defaultProviderName}
+		userRepo, err := postgres.NewUserRepository(r.client, user.Config{IdentityProviderDefaultName: defaultProviderName})
 		r.Require().NoError(err)
 		user1.ID, err = userRepo.Create(r.ctx, &user1)
 		r.Require().NoError(err)
@@ -230,7 +233,7 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 			},
 		}
 
-		id, err := r.repository.Upsert(r.ctx, &ast)
+		id, err := r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &ast)
 		r.Require().NoError(err)
 		r.Require().Equal(r.lengthOfString(id), 36)
 		ast.ID = id
@@ -244,11 +247,177 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 	})
 }
 
+func (r *AssetRepositoryTestSuite) TestVersions() {
+	// create users
+	user1 := user.User{Email: "user@odpf.io", Provider: defaultProviderName}
+	userRepo, err := postgres.NewUserRepository(r.client, user.Config{IdentityProviderDefaultName: defaultProviderName})
+	r.Require().NoError(err)
+	user1.ID, err = userRepo.Create(r.ctx, &user1)
+	// clean up
+	defer func() {
+		err = r.client.ExecQueries(r.ctx, []string{"DELETE from users"})
+		r.Require().NoError(err)
+	}()
+
+	assetURN := "urn-u-2-version"
+	// v0.1
+	astVersioning := asset.Asset{
+		URN:     assetURN,
+		Type:    "table",
+		Service: "bigquery",
+	}
+
+	id, err := r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &astVersioning)
+	r.Require().NoError(err)
+	r.Require().Equal(r.lengthOfString(id), 36)
+	astVersioning.ID = id
+
+	// v0.2
+	astVersioning.Description = "new description in v0.2"
+	id, err = r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &astVersioning)
+	r.Require().NoError(err)
+	r.Require().Equal(id, astVersioning.ID)
+
+	// v0.3
+	astVersioning.Owners = []user.User{
+		{
+			Email: "user@odpf.io",
+		},
+		{
+			Email:    "meteor@odpf.io",
+			Provider: "meteor",
+		},
+	}
+	id, err = r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &astVersioning)
+	r.Require().NoError(err)
+	r.Require().Equal(id, astVersioning.ID)
+
+	// v0.4
+	astVersioning.Data = map[string]interface{}{
+		"data1": float64(12345),
+	}
+	id, err = r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &astVersioning)
+	r.Require().NoError(err)
+	r.Require().Equal(id, astVersioning.ID)
+
+	// v0.5
+	astVersioning.Labels = map[string]string{
+		"key1": "value1",
+	}
+
+	id, err = r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &astVersioning)
+	r.Require().NoError(err)
+	r.Require().Equal(id, astVersioning.ID)
+
+	r.Run("should return 3 last versions of an assets if there are exist", func() {
+
+		expectedAssetVersions := []asset.AssetVersion{
+			{
+				ID:      astVersioning.ID,
+				URN:     assetURN,
+				Type:    "table",
+				Service: "bigquery",
+				Version: "0.4",
+				Changelog: diff.Changelog{
+					diff.Change{Type: "create", Path: []string{"labels", "key1"}, From: interface{}(nil), To: "value1"},
+				},
+				UpdatedBy: defaultAssetUpdaterUserEmail,
+			},
+			{
+				ID:      astVersioning.ID,
+				URN:     assetURN,
+				Type:    "table",
+				Service: "bigquery",
+				Version: "0.3",
+				Changelog: diff.Changelog{
+					diff.Change{Type: "create", Path: []string{"data", "data1"}, From: interface{}(nil), To: float64(12345)},
+				},
+				UpdatedBy: defaultAssetUpdaterUserEmail,
+			},
+			{
+				ID:      astVersioning.ID,
+				URN:     assetURN,
+				Type:    "table",
+				Service: "bigquery",
+				Version: "0.2",
+				Changelog: diff.Changelog{
+					diff.Change{Type: "create", Path: []string{"owners", "0", "email"}, From: interface{}(nil), To: "user@odpf.io"},
+					diff.Change{Type: "create", Path: []string{"owners", "1", "email"}, From: interface{}(nil), To: "meteor@odpf.io"},
+				},
+				UpdatedBy: defaultAssetUpdaterUserEmail,
+			},
+		}
+
+		assetVersions, err := r.repository.GetLastVersions(r.ctx, asset.Config{Size: 3}, astVersioning.ID)
+		r.NoError(err)
+		r.Equal(expectedAssetVersions, assetVersions)
+	})
+
+	r.Run("should return current version of an assets", func() {
+		expectedLatestVersion := asset.Asset{
+			ID:          astVersioning.ID,
+			URN:         assetURN,
+			Type:        "table",
+			Service:     "bigquery",
+			Description: "new description in v0.2",
+			Data:        map[string]interface{}{"data1": float64(12345)},
+			Labels:      map[string]string{"key1": "value1"},
+			Version:     "0.5",
+			UpdatedBy:   defaultAssetUpdaterUserEmail,
+		}
+
+		ast, err := r.repository.GetByID(r.ctx, astVersioning.ID)
+		// hard to get the internally generated user id, we exclude the owners from the assertion
+		astOwners := ast.Owners
+		ast.Owners = nil
+		r.NoError(err)
+		r.Equal(expectedLatestVersion, ast)
+
+		r.Len(astOwners, 2)
+	})
+
+	r.Run("should return a specific version of an asset", func() {
+		selectedVersion := "0.3"
+		expectedAsset := asset.Asset{
+			ID:          astVersioning.ID,
+			URN:         assetURN,
+			Type:        "table",
+			Service:     "bigquery",
+			Description: "new description in v0.2",
+			Version:     "0.3",
+			Changelog: diff.Changelog{
+				diff.Change{Type: "create", Path: []string{"data", "data1"}, From: interface{}(nil), To: float64(12345)},
+			},
+
+			UpdatedBy: defaultAssetUpdaterUserEmail,
+		}
+		expectedOwners := []user.User{
+			{
+				Email: "user@odpf.io",
+			},
+			{
+				Email: "meteor@odpf.io",
+			},
+		}
+		ast, err := r.repository.GetByVersion(r.ctx, astVersioning.ID, selectedVersion)
+		// hard to get the internally generated user id, we exclude the owners from the assertion
+		astOwners := ast.Owners
+		ast.Owners = nil
+		r.Assert().NoError(err)
+		r.Assert().Equal(expectedAsset, ast)
+
+		for i := 0; i < len(astOwners); i++ {
+			astOwners[i].ID = ""
+		}
+		r.Assert().Equal(expectedOwners, astOwners)
+	})
+}
+
 func (r *AssetRepositoryTestSuite) TestUpsert() {
 	// create users
-	user1 := user.User{Email: "johndoe@example.com", Provider: "shield"}
-	user2 := user.User{Email: "janedoe@example.com", Provider: "shield"}
-	userRepo, err := postgres.NewUserRepository(r.client)
+	user1 := user.User{Email: "johndoe@example.com", Provider: defaultProviderName}
+	user2 := user.User{Email: "janedoe@example.com", Provider: defaultProviderName}
+	userRepo, err := postgres.NewUserRepository(r.client, user.Config{IdentityProviderDefaultName: defaultProviderName})
 	r.Require().NoError(err)
 	user1.ID, err = userRepo.Create(r.ctx, &user1)
 	r.Require().NoError(err)
@@ -261,13 +430,14 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 	}()
 
 	r.Run("on insert", func() {
-		r.Run("set ID to asset", func() {
+		r.Run("set ID to asset and version to base version", func() {
 			ast := asset.Asset{
 				URN:     "urn-u-1",
 				Type:    "table",
 				Service: "bigquery",
+				Version: "0.1",
 			}
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &ast)
 			r.NoError(err)
 			r.Require().Equal(r.lengthOfString(id), 36)
 			ast.ID = id
@@ -290,7 +460,7 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				},
 			}
 
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &ast)
 			r.Require().NoError(err)
 			r.Require().Equal(r.lengthOfString(id), 36)
 			ast.ID = id
@@ -310,16 +480,15 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				Type:    "table",
 				Service: "bigquery",
 				Owners: []user.User{
-					{Email: "newuser@example.com", Provider: "shield"},
+					{Email: "newuser@example.com", Provider: defaultProviderName},
 				},
 			}
 
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &ast)
 			r.Require().NoError(err)
 			r.Require().Equal(r.lengthOfString(id), 36)
-			ast.ID = id
 
-			actual, err := r.repository.GetByID(r.ctx, ast.ID)
+			actual, err := r.repository.GetByID(r.ctx, id)
 			r.NoError(err)
 
 			r.Len(actual.Owners, len(ast.Owners))
@@ -331,7 +500,7 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 	})
 
 	r.Run("on update", func() {
-		r.Run("should not create but update existing asset if urn, type and service match", func() {
+		r.Run("should not create nor updating the asset if asset is identical", func() {
 			ast := asset.Asset{
 				URN:     "urn-u-2",
 				Type:    "table",
@@ -340,12 +509,12 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			identicalAsset := ast
 			identicalAsset.Name = "some-name"
 
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &ast)
 			r.Require().NoError(err)
 			r.Require().Equal(r.lengthOfString(id), 36)
 			ast.ID = id
 
-			id, err = r.repository.Upsert(r.ctx, &identicalAsset)
+			id, err = r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &identicalAsset)
 			r.Require().NoError(err)
 			r.Require().Equal(r.lengthOfString(id), 36)
 			identicalAsset.ID = id
@@ -368,12 +537,12 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				user2,
 			}
 
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &ast)
 			r.Require().NoError(err)
 			r.Require().Equal(r.lengthOfString(id), 36)
 			ast.ID = id
 
-			id, err = r.repository.Upsert(r.ctx, &newAsset)
+			id, err = r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &newAsset)
 			r.Require().NoError(err)
 			r.Require().Equal(r.lengthOfString(id), 36)
 			newAsset.ID = id
@@ -401,12 +570,12 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				user2,
 			}
 
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &ast)
 			r.Require().NoError(err)
 			r.Require().Equal(r.lengthOfString(id), 36)
 			ast.ID = id
 
-			id, err = r.repository.Upsert(r.ctx, &newAsset)
+			id, err = r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &newAsset)
 			r.Require().NoError(err)
 			r.Require().Equal(r.lengthOfString(id), 36)
 			newAsset.ID = id
@@ -431,15 +600,15 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			newAsset := ast
 			newAsset.Owners = []user.User{
 				user1,
-				{Email: "newuser@example.com", Provider: "shield"},
+				{Email: "newuser@example.com", Provider: defaultProviderName},
 			}
 
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &ast)
 			r.Require().NoError(err)
 			r.Require().Equal(r.lengthOfString(id), 36)
 			ast.ID = id
 
-			id, err = r.repository.Upsert(r.ctx, &newAsset)
+			id, err = r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &newAsset)
 			r.Require().NoError(err)
 			r.Require().Equal(r.lengthOfString(id), 36)
 			newAsset.ID = id
@@ -478,15 +647,16 @@ func (r *AssetRepositoryTestSuite) TestDelete() {
 			URN:     "urn-del-2",
 			Type:    "topic",
 			Service: "kafka",
+			Version: asset.BaseVersion,
 		}
 
 		var err error
-		id, err := r.repository.Upsert(r.ctx, &asset1)
+		id, err := r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &asset1)
 		r.Require().NoError(err)
 		r.Require().Equal(r.lengthOfString(id), 36)
 		asset1.ID = id
 
-		id, err = r.repository.Upsert(r.ctx, &asset2)
+		id, err = r.repository.Upsert(r.ctx, defaultAssetUpdaterUserEmail, &asset2)
 		r.Require().NoError(err)
 		r.Require().Equal(r.lengthOfString(id), 36)
 		asset2.ID = id

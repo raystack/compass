@@ -31,7 +31,7 @@ func (r *UserRepositoryTestSuite) SetupSuite() {
 	}
 
 	r.ctx = context.TODO()
-	r.repository, err = postgres.NewUserRepository(r.client)
+	r.repository, err = postgres.NewUserRepository(r.client, user.Config{IdentityProviderDefaultName: "shield"})
 	if err != nil {
 		r.T().Fatal(err)
 	}

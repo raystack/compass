@@ -17,10 +17,10 @@ type UserHandler struct {
 }
 
 func (h *UserHandler) GetStarredAssetsWithHeader(w http.ResponseWriter, r *http.Request) {
-	userID := user.FromContext(r.Context())
+	userID := user.IDFromContext(r.Context())
 	if userID == "" {
-		h.logger.Warn(errMissingUserID.Error())
-		WriteJSONError(w, http.StatusBadRequest, errMissingUserID.Error())
+		h.logger.Warn(errMissingUserInfo.Error())
+		WriteJSONError(w, http.StatusBadRequest, errMissingUserInfo.Error())
 		return
 	}
 
@@ -46,7 +46,7 @@ func (h *UserHandler) GetStarredAssetsWithHeader(w http.ResponseWriter, r *http.
 func (h *UserHandler) GetStarredAssetsWithPath(w http.ResponseWriter, r *http.Request) {
 	targetUserID := mux.Vars(r)["user_id"]
 	if targetUserID == "" {
-		WriteJSONError(w, http.StatusBadRequest, errMissingUserID.Error())
+		WriteJSONError(w, http.StatusBadRequest, errMissingUserInfo.Error())
 		return
 	}
 
@@ -70,10 +70,10 @@ func (h *UserHandler) GetStarredAssetsWithPath(w http.ResponseWriter, r *http.Re
 }
 
 func (h *UserHandler) StarAsset(w http.ResponseWriter, r *http.Request) {
-	userID := user.FromContext(r.Context())
+	userID := user.IDFromContext(r.Context())
 	if userID == "" {
-		h.logger.Warn(errMissingUserID.Error())
-		WriteJSONError(w, http.StatusBadRequest, errMissingUserID.Error())
+		h.logger.Warn(errMissingUserInfo.Error())
+		WriteJSONError(w, http.StatusBadRequest, errMissingUserInfo.Error())
 		return
 	}
 
@@ -103,10 +103,10 @@ func (h *UserHandler) StarAsset(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetStarredAsset(w http.ResponseWriter, r *http.Request) {
-	userID := user.FromContext(r.Context())
+	userID := user.IDFromContext(r.Context())
 	if userID == "" {
-		h.logger.Warn(errMissingUserID.Error())
-		WriteJSONError(w, http.StatusBadRequest, errMissingUserID.Error())
+		h.logger.Warn(errMissingUserInfo.Error())
+		WriteJSONError(w, http.StatusBadRequest, errMissingUserInfo.Error())
 		return
 	}
 
@@ -131,10 +131,10 @@ func (h *UserHandler) GetStarredAsset(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) UnstarAsset(w http.ResponseWriter, r *http.Request) {
-	userID := user.FromContext(r.Context())
+	userID := user.IDFromContext(r.Context())
 	if userID == "" {
-		h.logger.Warn(errMissingUserID.Error())
-		WriteJSONError(w, http.StatusBadRequest, errMissingUserID.Error())
+		h.logger.Warn(errMissingUserInfo.Error())
+		WriteJSONError(w, http.StatusBadRequest, errMissingUserInfo.Error())
 		return
 	}
 

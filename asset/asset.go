@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/odpf/columbus/user"
+
 	"github.com/r3labs/diff/v2"
 )
 
@@ -16,11 +17,14 @@ type Config struct {
 	Size    int    `json:"size"`
 	Offset  int    `json:"offset"`
 }
+
 type Repository interface {
 	Get(context.Context, Config) ([]Asset, error)
 	GetCount(context.Context, Config) (int, error)
 	GetByID(ctx context.Context, id string) (Asset, error)
-	Upsert(context.Context, *Asset) (string, error)
+	GetLastVersions(ctx context.Context, cfg Config, id string) ([]AssetVersion, error)
+	GetByVersion(ctx context.Context, id string, version string) (Asset, error)
+	Upsert(ctx context.Context, userID string, ast *Asset) (string, error)
 	Delete(ctx context.Context, id string) error
 }
 
@@ -37,10 +41,13 @@ type Asset struct {
 	Owners      []user.User            `json:"owners,omitempty" diff:"owners"`
 	CreatedAt   time.Time              `json:"created_at" diff:"-"`
 	UpdatedAt   time.Time              `json:"updated_at" diff:"-"`
+	Version     string                 `json:"version" diff:"-"`
+	UpdatedBy   string                 `json:"updated_by" diff:"-"`
+	Changelog   diff.Changelog         `json:"changelog,omitempty" diff:"-"`
 }
 
 // Diff returns nil changelog with nil error if equal
-// returns r3labs/diff Changelog struct with nil error if not equal
+// returns wrapped r3labs/diff Changelog struct with nil error if not equal
 func (a *Asset) Diff(otherAsset *Asset) (diff.Changelog, error) {
-	return diff.Diff(a, otherAsset, diff.DiscardComplexOrigin())
+	return diff.Diff(a, otherAsset, diff.DiscardComplexOrigin(), diff.AllowTypeMismatch(true))
 }

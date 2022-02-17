@@ -50,64 +50,6 @@ func TestDiffTopLevel(t *testing.T) {
 			},
 			nil,
 		},
-		{
-			"added owners should be reflected",
-			`{
-				"owners": [
-					{
-						"id": "1234",
-						"email": "user1@odpf.io"
-					}
-				]
-			}`,
-			`{
-				"owners": [
-					{
-						"id": "5678",
-						"email": "user2@odpf.io"
-					},
-					{
-						"id": "1234",
-						"email": "user1@odpf.io"
-					}
-				]
-			}`,
-			diff.Changelog{
-				diff.Change{Type: diff.CREATE, Path: []string{"owners", "0", "ID"}, To: "5678"},
-				diff.Change{Type: diff.CREATE, Path: []string{"owners", "0", "Email"}, To: "user2@odpf.io"},
-			},
-			nil,
-		},
-		{
-			"updated owners should be reflected",
-			`{
-				"owners": [
-					{
-						"id": "1234",
-						"email": "user1@odpf.io"
-					}
-				]
-			}`,
-			`{
-				"owners": [
-					{
-						"id": "5678",
-						"email": "user2@odpf.io"
-					},
-					{
-						"id": "8765",
-						"email": "user3@odpf.io"
-					}
-				]
-			}`,
-			diff.Changelog{
-				diff.Change{Type: diff.UPDATE, Path: []string{"owners", "0", "ID"}, From: "1234", To: "5678"},
-				diff.Change{Type: diff.UPDATE, Path: []string{"owners", "0", "Email"}, From: "user1@odpf.io", To: "user2@odpf.io"},
-				diff.Change{Type: diff.CREATE, Path: []string{"owners", "1", "ID"}, To: "8765"},
-				diff.Change{Type: diff.CREATE, Path: []string{"owners", "1", "Email"}, To: "user3@odpf.io"},
-			},
-			nil,
-		},
 	}
 
 	for _, tc := range cases {

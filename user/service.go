@@ -5,18 +5,21 @@ import (
 	"fmt"
 )
 
-type contextKeyType struct{}
+type contextKey1Type struct{}
+type contextKey2Type struct{}
 
 var (
 	// userIDContextKey is the key used for user.FromContext and
 	// user.NewContext.
-	userIDContextKey = contextKeyType(struct{}{})
+	userIDContextKey = contextKey1Type(struct{}{})
+	// userEmailContextKey is the key used for user.FromContext and
+	// user.NewContext.
+	userEmailContextKey = contextKey2Type(struct{}{})
 )
 
 // Service is a type of service that manages business process
 type Service struct {
 	repository Repository
-	config     Config
 }
 
 // ValidateUser checks if user information is already in DB
@@ -34,8 +37,7 @@ func (s *Service) ValidateUser(ctx context.Context, email string) (string, error
 		return "", fmt.Errorf("%w, fetched user id from DB is nil with email: %s", ErrNoUserInformation, email)
 	}
 	user := &User{
-		Email:    email,
-		Provider: s.config.IdentityProviderDefaultName,
+		Email: email,
 	}
 	if userID, err = s.repository.Create(ctx, user); err != nil {
 		return "", err
@@ -45,13 +47,14 @@ func (s *Service) ValidateUser(ctx context.Context, email string) (string, error
 
 // NewContext returns a new context.Context that carries the provided
 // user ID.
-func NewContext(ctx context.Context, userID string) context.Context {
-	return context.WithValue(ctx, userIDContextKey, userID)
+func NewContext(ctx context.Context, userID string, email string) context.Context {
+	newCtx := context.WithValue(ctx, userIDContextKey, userID)
+	return context.WithValue(newCtx, userEmailContextKey, email)
 }
 
-// FromContext returns the user ID from the context if present, and empty
+// IDFromContext returns the user ID from the context if present, and empty
 // otherwise.
-func FromContext(ctx context.Context) string {
+func IDFromContext(ctx context.Context) string {
 	if ctx == nil {
 		return ""
 	}
@@ -62,10 +65,22 @@ func FromContext(ctx context.Context) string {
 	return h
 }
 
+// EmailFromContext returns the user email from the context if present, and empty
+// otherwise.
+func EmailFromContext(ctx context.Context) string {
+	if ctx == nil {
+		return ""
+	}
+	h, _ := ctx.Value(userEmailContextKey).(string)
+	if h != "" {
+		return h
+	}
+	return h
+}
+
 // NewService initializes user service
-func NewService(cfg Config, repository Repository) *Service {
+func NewService(repository Repository) *Service {
 	return &Service{
-		config:     cfg,
 		repository: repository,
 	}
 }

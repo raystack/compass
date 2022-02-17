@@ -151,7 +151,7 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Conf
 
 	assets := []asset.Asset{}
 	for _, am := range assetModels {
-		assets = append(assets, am.toAsset())
+		assets = append(assets, am.toAsset(nil))
 	}
 	return assets, nil
 }
@@ -200,7 +200,7 @@ func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, as
 		return nil, fmt.Errorf("failed fetching star by user: %w", err)
 	}
 
-	asset := asetModel.toAsset()
+	asset := asetModel.toAsset(nil)
 	return &asset, nil
 }
 

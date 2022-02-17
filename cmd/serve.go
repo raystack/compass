@@ -80,13 +80,13 @@ func initRouter(
 	tagService := tag.NewService(tagRepository, tagTemplateService)
 
 	// init user
-	userRepository, err := postgres.NewUserRepository(pgClient)
+	userRepository, err := postgres.NewUserRepository(pgClient, user.Config{
+		IdentityProviderDefaultName: config.IdentityProviderDefaultName,
+	})
 	if err != nil {
 		logger.Fatal("failed to create new user repository", "error", err)
 	}
-	userService := user.NewService(user.Config{
-		IdentityProviderDefaultName: config.IdentityProviderDefaultName,
-	}, userRepository)
+	userService := user.NewService(userRepository)
 
 	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0)
 	if err != nil {
