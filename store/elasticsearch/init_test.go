@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"testing"
 
@@ -20,8 +21,13 @@ func TestMain(m *testing.M) {
 	// an elasticsearch server. That means you can't run unit tests
 	// standlone :/
 	esTestServer = testutil.NewElasticsearchTestServer()
-	defer esTestServer.Close()
-	os.Exit(m.Run())
+	exitCode := m.Run()
+
+	if err := esTestServer.Close(); err != nil {
+		fmt.Println("Error closing elasticsearch test server:", err)
+		return
+	}
+	os.Exit(exitCode)
 }
 
 // name this somethings that's more generic
