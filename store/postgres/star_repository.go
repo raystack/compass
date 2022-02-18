@@ -149,6 +149,57 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Conf
 	return assets, nil
 }
 
+// GetAllAssetsByUserEmail fetch list of assets starred by a user
+// this function is temporary and might be remove in the future version
+func (r *StarRepository) GetAllAssetsByUserEmail(ctx context.Context, cfg star.Config, userEmail string) ([]asset.Asset, error) {
+	if userEmail == "" {
+		return nil, star.ErrEmptyUserID
+	}
+
+	starCfg := r.buildConfig(cfg)
+
+	var assetModels []AssetModel
+	if err := r.client.db.SelectContext(ctx, &assetModels, fmt.Sprintf(`
+		SELECT	
+			a.id as id,
+			a.urn as urn,
+			a.type as type,
+			a.name as name,
+			a.service as service,
+			a.description as description,
+			a.data as data,
+			a.labels as labels,
+			a.created_at as created_at,
+			a.updated_at as updated_at
+		FROM
+			stars s
+		INNER JOIN
+			assets a ON s.asset_id = a.id
+		INNER JOIN
+			users u ON s.user_id = u.id
+		WHERE
+			u.email = $1
+		ORDER BY
+			$2 %s
+		LIMIT
+			$3
+		OFFSET
+			$4
+	`, starCfg.SortDirectionKey), userEmail, starCfg.SortKey, starCfg.Limit, starCfg.Offset); err != nil {
+		return nil, fmt.Errorf("failed fetching stars by user: %w", err)
+	}
+
+	if len(assetModels) == 0 {
+		return nil, star.NotFoundError{UserID: userEmail}
+	}
+
+	assets := []asset.Asset{}
+	for _, am := range assetModels {
+		assets = append(assets, am.toAsset())
+	}
+	return assets, nil
+}
+
 // GetAssetByUserID fetch a specific starred asset by user id
 func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, assetID string) (*asset.Asset, error) {
 	if userID == "" {
