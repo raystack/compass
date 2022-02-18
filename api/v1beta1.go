@@ -62,6 +62,14 @@ func setupV1Beta1AssetRoutes(router *mux.Router, ah *handlers.AssetHandler) {
 	router.Path(url+"/{id}/stargazers").
 		Methods(http.MethodGet, http.MethodHead).
 		HandlerFunc(ah.GetStargazers)
+
+	router.Path(url+"/{id}/versions").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(ah.GetLastVersions)
+
+	router.Path(url+"/{id}/versions/{version}").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(ah.GetByVersion)
 }
 
 func setupV1Beta1TypeRoutes(router *mux.Router, th *handlers.TypeHandler, rh *handlers.RecordHandler) {

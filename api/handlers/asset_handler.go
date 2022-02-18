@@ -178,6 +178,57 @@ func (h *AssetHandler) GetStargazers(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, users)
 }
 
+func (h *AssetHandler) GetLastVersions(w http.ResponseWriter, r *http.Request) {
+	config := h.buildAssetConfig(r.URL.Query())
+
+	pathParams := mux.Vars(r)
+	assetID := pathParams["id"]
+
+	assetVersions, err := h.assetRepository.GetLastVersions(r.Context(), config, assetID)
+	if err != nil {
+		if errors.As(err, new(asset.InvalidError)) {
+			WriteJSONError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		if errors.As(err, new(asset.NotFoundError)) {
+			WriteJSONError(w, http.StatusNotFound, err.Error())
+			return
+		}
+		internalServerError(w, h.logger, err.Error())
+		return
+	}
+
+	writeJSON(w, http.StatusOK, assetVersions)
+}
+
+func (h *AssetHandler) GetByVersion(w http.ResponseWriter, r *http.Request) {
+
+	pathParams := mux.Vars(r)
+	assetID := pathParams["id"]
+	version := pathParams["version"]
+
+	if err := asset.ValidateVersion(version); err != nil {
+		WriteJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	ast, err := h.assetRepository.GetByVersion(r.Context(), assetID, version)
+	if err != nil {
+		if errors.As(err, new(asset.InvalidError)) {
+			WriteJSONError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		if errors.As(err, new(asset.NotFoundError)) {
+			WriteJSONError(w, http.StatusNotFound, err.Error())
+			return
+		}
+		internalServerError(w, h.logger, err.Error())
+		return
+	}
+
+	writeJSON(w, http.StatusOK, ast)
+}
+
 func (h *AssetHandler) validateAsset(ast asset.Asset) error {
 	if ast.URN == "" {
 		return fmt.Errorf("urn is required")

@@ -87,6 +87,7 @@ func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Ass
 		err = asset.NotFoundError{AssetID: id}
 		return
 	}
+
 	if err != nil {
 		err = fmt.Errorf("error getting asset with ID = \"%s\": %w", id, err)
 		return
@@ -104,14 +105,19 @@ func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Ass
 }
 
 // GetLastVersions retrieves the last versions of an asset
-func (r *AssetRepository) GetLastVersions(ctx context.Context, cfg asset.Config, id string) ([]asset.AssetVersion, error) {
+func (r *AssetRepository) GetLastVersions(ctx context.Context, cfg asset.Config, id string) (avs []asset.AssetVersion, err error) {
+	if !isValidUUID(id) {
+		err = asset.InvalidError{AssetID: id}
+		return
+	}
+
 	size := cfg.Size
 	if size == 0 {
 		size = r.defaultGetMaxSize
 	}
 
 	var assetModels []AssetModel
-	err := r.client.db.SelectContext(ctx, &assetModels, `
+	err = r.client.db.SelectContext(ctx, &assetModels, `
 		SELECT
 			*
 		FROM
@@ -123,21 +129,22 @@ func (r *AssetRepository) GetLastVersions(ctx context.Context, cfg asset.Config,
 			$2
 		OFFSET
 			$3
-	`,
-		id, size, cfg.Offset)
+	`, id, size, cfg.Offset)
 	if err != nil {
-		return nil, fmt.Errorf("failed fetching last versions: %w", err)
+		err = fmt.Errorf("failed fetching last versions: %w", err)
+		return
 	}
 
 	if len(assetModels) == 0 {
-		return nil, asset.NotFoundError{AssetID: id}
+		err = asset.NotFoundError{AssetID: id}
+		return
 	}
 
-	avs := []asset.AssetVersion{}
 	for _, am := range assetModels {
-		av, err := am.toAssetVersion()
-		if err != nil {
-			return nil, err
+		av, ferr := am.toAssetVersion()
+		if ferr != nil {
+			err = fmt.Errorf("failed converting asset model to asset version: %w", ferr)
+			return
 		}
 		avs = append(avs, av)
 	}
@@ -147,17 +154,27 @@ func (r *AssetRepository) GetLastVersions(ctx context.Context, cfg asset.Config,
 
 // GetByVersion retrieves the specific asset version
 func (r *AssetRepository) GetByVersion(ctx context.Context, id string, version string) (ast asset.Asset, err error) {
+	if !isValidUUID(id) {
+		err = asset.InvalidError{AssetID: id}
+		return
+	}
 
 	var assetModel AssetModel
-	if err = r.client.db.GetContext(ctx, &assetModel, `
+	err = r.client.db.GetContext(ctx, &assetModel, `
 		SELECT
 			*
 		FROM
 			assets_versions
 		WHERE
 			id = $1 AND version = $2
-	`,
-		id, version); err != nil {
+	`, id, version)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		err = asset.NotFoundError{AssetID: id}
+		return
+	}
+
+	if err != nil {
 		err = fmt.Errorf("failed fetching asset version: %w", err)
 		return
 	}
