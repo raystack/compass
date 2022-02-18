@@ -2,7 +2,7 @@ swagger: "2.0"
 info:
   title: "Data Discovery and Lineage Service"
   description: "Data Discovery and Lineage Service"
-  version: 0.1.0
+  version: 0.1.9
 paths:
   "/v1beta1/assets":
     get:
@@ -15,16 +15,14 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: query
           name: type
           description: "filter by type"
-          schema:
-            $ref: "#/definitions/AssetType"
+          type: string
+          format: asset_type
         - in: query
           name: service
           description: "filter by service"
@@ -68,10 +66,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: body
           name: ""
@@ -106,8 +102,9 @@ paths:
         - in: path
           name: id
           description: "asset's ID"
-          schema:
-            $ref: "#/definitions/UUID"
+          type: string
+          format: uuid
+          required: true
       responses:
         200:
           description: OK
@@ -132,8 +129,9 @@ paths:
         - in: path
           name: id
           description: "asset's ID"
-          schema:
-            $ref: "#/definitions/UUID"
+          type: string
+          format: uuid
+          required: true
       responses:
         204:
           description: OK
@@ -160,8 +158,9 @@ paths:
         - in: path
           name: id
           description: "asset's ID"
-          schema:
-            $ref: "#/definitions/UUID"
+          type: string
+          format: uuid
+          required: true
       responses:
         200:
           description: OK
@@ -169,6 +168,78 @@ paths:
             type: array
             items:
               $ref: "#/definitions/User"
+        400:
+          description: "bad request error"
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: "not found error"
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+  "/v1beta1/assets/{id}/versions":
+    get:
+      tags:
+        - Assets
+      summary: Get version history of an asset
+      description: "Returns a list of asset version history"
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: id
+          description: "asset's ID"
+          type: string
+          format: uuid
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/AssetVersion"
+        400:
+          description: "bad request error"
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: "not found error"
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+  "/v1beta1/assets/{id}/versions/{version}":
+    get:
+      tags:
+        - Assets
+      summary: Get asset's prev version
+      description: "Returns a specific version of an asset"
+      produces:
+        - "application/json"
+      parameters:
+        - in: path
+          name: id
+          description: "asset's ID"
+          type: string
+          format: uuid
+          required: true
+        - in: path
+          name: version
+          description: "asset's version"
+          type: string
+          format: semver
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Asset"
         400:
           description: "bad request error"
           schema:
@@ -192,14 +263,23 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: query
           name: collapse
           type: boolean
+        - in: path
+          name: type
+          description: "asset's type"
+          type: string
+          format: asset_type
+          required: true
+        - in: path
+          name: record
+          description: "record's id"
+          type: string
+          required: true
       responses:
         200:
           description: OK
@@ -220,10 +300,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
       responses:
         200:
@@ -249,10 +327,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: name
@@ -282,10 +358,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: name
@@ -324,10 +398,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: name
@@ -355,10 +427,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: name
@@ -390,10 +460,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: query
           name: "text"
@@ -450,10 +518,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: body
           name: ""
@@ -494,10 +560,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
       responses:
         200:
@@ -520,10 +584,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: body
           name: ""
@@ -563,10 +625,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: template_urn
@@ -595,10 +655,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: template_urn
@@ -640,10 +698,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: template_urn
@@ -674,10 +730,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: type
@@ -709,10 +763,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: type
@@ -749,10 +801,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: type
@@ -801,10 +851,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: type
@@ -845,10 +893,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
       responses:
         200:
@@ -881,10 +927,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: asset_id
@@ -921,10 +965,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: asset_id
@@ -959,10 +1001,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: asset_id
@@ -972,7 +1012,6 @@ paths:
         200:
           description: OK
           schema:
-            type: object
             $ref: "#/definitions/Star"
         400:
           description: validation error
@@ -998,10 +1037,8 @@ paths:
       parameters:
         - in: header
           name: Columbus-User-Email
-          schema:
-            type: string
-            format: email
-            example: user@odpf.io
+          type: string
+          format: email
           required: true
         - in: path
           name: user_id
@@ -1067,6 +1104,75 @@ definitions:
       - job
       - topic
       - dashboard
+  AssetVersion:
+    type: object
+    properties:
+      id:
+        type: object
+        $ref: "#/definitions/UUID"
+      urn:
+        type: string
+        example: "sample-urn"
+      type:
+        type: object
+        $ref: "#/definitions/AssetType"
+      service:
+        type: string
+        example: "bigquery"
+      version:
+        type: string
+        example: "0.1"
+      Changelog:
+        type: object
+        $ref: "#/definitions/Changelog"
+      updated_by:
+        type: string
+        example: "user@odpf.io"
+      created_at:
+        type: string
+      updated_at:
+        type: string
+  Changelog:
+    type: array
+    items:
+      type: object
+      properties:
+        type:
+          type: string
+        path:
+          type: array
+          items:
+            type: string
+        from:
+          type: string
+        to:
+          type: string
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+        description: id of a user
+        format: uuid
+      email:
+        type: string
+        description: email of a user
+        format: email
+      provider:
+        type: string
+        description: provider of user identity
+  Star:
+    type: object
+    properties:
+      asset_type:
+        type: string
+        description: name of the type (for e.g. dagger, firehose)
+      asset_urn:
+        type: string
+      created_at:
+        type: string
+      updated_at:
+        type: string
   Record:
     type: object
     properties:
@@ -1282,15 +1388,3 @@ definitions:
           details:
             type: object
             description: error details. the keys are integer indices for the records that failed validation, and the value is a string describing the reason why that record fails validation
-  Star:
-    type: object
-    properties:
-      asset_type:
-        type: string
-        description: name of the type (for e.g. dagger, firehose)
-      asset_urn:
-        type: string
-      created_at:
-        type: string
-      updated_at:
-        type: string

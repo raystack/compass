@@ -393,10 +393,12 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 		}
 		expectedOwners := []user.User{
 			{
-				Email: "user@odpf.io",
+				Email:    "user@odpf.io",
+				Provider: "shield",
 			},
 			{
-				Email: "meteor@odpf.io",
+				Email:    "meteor@odpf.io",
+				Provider: "meteor",
 			},
 		}
 		ast, err := r.repository.GetByVersion(r.ctx, astVersioning.ID, selectedVersion)
