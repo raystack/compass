@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v2
         with:
-          go-version: '^1.16'
+          go-version: "^1.16"
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
@@ -17,3 +17,4 @@ jobs:
         with:
           skip-go-installation: true
           version: v1.42.1
+          args: --timeout=5m
