@@ -5,16 +5,12 @@ import (
 	"fmt"
 )
 
-type contextKey1Type struct{}
-type contextKey2Type struct{}
+type contextKeyType struct{}
 
 var (
-	// userIDContextKey is the key used for user.FromContext and
+	// userContextKey is the key used for user.FromContext and
 	// user.NewContext.
-	userIDContextKey = contextKey1Type(struct{}{})
-	// userEmailContextKey is the key used for user.FromContext and
-	// user.NewContext.
-	userEmailContextKey = contextKey2Type(struct{}{})
+	userContextKey = contextKeyType(struct{}{})
 )
 
 // Service is a type of service that manages business process
@@ -47,31 +43,17 @@ func (s *Service) ValidateUser(ctx context.Context, email string) (string, error
 
 // NewContext returns a new context.Context that carries the provided
 // user ID.
-func NewContext(ctx context.Context, userID string, email string) context.Context {
-	newCtx := context.WithValue(ctx, userIDContextKey, userID)
-	return context.WithValue(newCtx, userEmailContextKey, email)
+func NewContext(ctx context.Context, userID string) context.Context {
+	return context.WithValue(ctx, userContextKey, userID)
 }
 
-// IDFromContext returns the user ID from the context if present, and empty
+// FromContext returns the user ID from the context if present, and empty
 // otherwise.
-func IDFromContext(ctx context.Context) string {
+func FromContext(ctx context.Context) string {
 	if ctx == nil {
 		return ""
 	}
-	h, _ := ctx.Value(userIDContextKey).(string)
-	if h != "" {
-		return h
-	}
-	return h
-}
-
-// EmailFromContext returns the user email from the context if present, and empty
-// otherwise.
-func EmailFromContext(ctx context.Context) string {
-	if ctx == nil {
-		return ""
-	}
-	h, _ := ctx.Value(userEmailContextKey).(string)
+	h, _ := ctx.Value(userContextKey).(string)
 	if h != "" {
 		return h
 	}

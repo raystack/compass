@@ -79,7 +79,7 @@ func TestValidateUser(t *testing.T) {
 		assert.Equal(t, customError.Error(), response.Reason)
 	})
 
-	t.Run("should return HTTP 200 with propagated user ID and email when user validation success", func(t *testing.T) {
+	t.Run("should return HTTP 200 with propagated user ID when user validation success", func(t *testing.T) {
 		userID := "user-id"
 		userEmail := "some-email"
 		mockUserRepository := &mocks.UserRepository{}
@@ -90,9 +90,8 @@ func TestValidateUser(t *testing.T) {
 		r := mux.NewRouter()
 		r.Use(ValidateUser(middlewareCfg, userSvc))
 		r.Path(dummyRoute).Methods(http.MethodGet).HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			propagatedUserID := user.IDFromContext(r.Context())
-			propagatedUserEmail := user.EmailFromContext(r.Context())
-			_, err := rw.Write([]byte(propagatedUserID + propagatedUserEmail))
+			propagatedUserID := user.FromContext(r.Context())
+			_, err := rw.Write([]byte(propagatedUserID))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -107,6 +106,6 @@ func TestValidateUser(t *testing.T) {
 
 		r.ServeHTTP(rr, req)
 
-		assert.Equal(t, userID+userEmail, rr.Body.String())
+		assert.Equal(t, userID, rr.Body.String())
 	})
 }

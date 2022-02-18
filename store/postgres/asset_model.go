@@ -23,7 +23,7 @@ type AssetModel struct {
 	Data        JSONMap   `db:"data"`
 	Labels      JSONMap   `db:"labels"`
 	Version     string    `db:"version"`
-	UpdatedBy   string    `db:"updated_by"`
+	UpdatedBy   UserModel `db:"updated_by"`
 	CreatedAt   time.Time `db:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at"`
 	// version specific information
@@ -32,16 +32,6 @@ type AssetModel struct {
 }
 
 func (a *AssetModel) toAsset(owners []user.User) asset.Asset {
-
-	// owners only contain email information. e.g.
-	// [
-	//  	{
-	//  		"email": "user@odpf.io"
-	//  	},
-	//  	{
-	//  		"email": "admin@odpf.io"
-	//  	}
-	// ]
 
 	return asset.Asset{
 		ID:          a.ID,
@@ -54,7 +44,7 @@ func (a *AssetModel) toAsset(owners []user.User) asset.Asset {
 		Labels:      a.buildLabels(),
 		Owners:      owners,
 		Version:     a.Version,
-		UpdatedBy:   a.UpdatedBy,
+		UpdatedBy:   a.UpdatedBy.toUser(),
 		CreatedAt:   a.CreatedAt,
 		UpdatedAt:   a.UpdatedAt,
 	}
@@ -75,7 +65,7 @@ func (a *AssetModel) toAssetVersion() (asset.AssetVersion, error) {
 		Service:   a.Service,
 		Version:   a.Version,
 		Changelog: clog,
-		UpdatedBy: a.UpdatedBy,
+		UpdatedBy: a.UpdatedBy.toUser(),
 		CreatedAt: a.CreatedAt,
 	}, nil
 }
@@ -92,6 +82,7 @@ func (a *AssetModel) toVersionedAsset(latestAssetVersion asset.Asset) (asset.Ass
 	if err != nil {
 		return asset.Asset{}, err
 	}
+
 	return asset.Asset{
 		ID:          latestAssetVersion.ID,
 		URN:         latestAssetVersion.URN,
@@ -103,7 +94,7 @@ func (a *AssetModel) toVersionedAsset(latestAssetVersion asset.Asset) (asset.Ass
 		Labels:      a.buildLabels(),
 		Owners:      owners,
 		Version:     a.Version,
-		UpdatedBy:   a.UpdatedBy,
+		UpdatedBy:   a.UpdatedBy.toUser(),
 		CreatedAt:   a.CreatedAt,
 		UpdatedAt:   a.UpdatedAt,
 		Changelog:   clog,

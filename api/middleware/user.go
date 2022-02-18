@@ -30,7 +30,7 @@ func ValidateUser(cfg Config, userSvc *user.Service) mux.MiddlewareFunc {
 				handlers.WriteJSONError(rw, http.StatusInternalServerError, err.Error())
 				return
 			}
-			ctx := user.NewContext(r.Context(), userID, userEmail)
+			ctx := user.NewContext(r.Context(), userID)
 			r = r.WithContext(ctx)
 			h.ServeHTTP(rw, r)
 		})

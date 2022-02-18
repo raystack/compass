@@ -8,7 +8,7 @@ CREATE TABLE assets (
     data jsonb,
     labels jsonb,
     version text NOT NULL,
-    updated_by text NOT NULL,
+    updated_by uuid NOT NULL,
     created_at timestamp DEFAULT NOW(),
     updated_at timestamp DEFAULT NOW()
 );

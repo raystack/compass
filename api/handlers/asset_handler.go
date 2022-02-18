@@ -91,8 +91,8 @@ func (h *AssetHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
-	userEmail := user.EmailFromContext(r.Context())
-	if userEmail == "" {
+	userID := user.FromContext(r.Context())
+	if userID == "" {
 		h.logger.Warn(errMissingUserInfo.Error())
 		WriteJSONError(w, http.StatusBadRequest, errMissingUserInfo.Error())
 		return
@@ -109,7 +109,7 @@ func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	assetID, err := h.assetRepository.Upsert(r.Context(), userEmail, &ast)
+	assetID, err := h.assetRepository.Upsert(r.Context(), userID, &ast)
 	if errors.As(err, new(asset.InvalidError)) {
 		WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
@@ -207,7 +207,7 @@ func (h *AssetHandler) GetByVersion(w http.ResponseWriter, r *http.Request) {
 	assetID := pathParams["id"]
 	version := pathParams["version"]
 
-	if err := asset.ValidateVersion(version); err != nil {
+	if _, err := asset.ParseVersion(version); err != nil {
 		WriteJSONError(w, http.StatusNotFound, err.Error())
 		return
 	}

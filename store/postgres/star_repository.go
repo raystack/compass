@@ -75,8 +75,8 @@ func (r *StarRepository) GetStargazers(ctx context.Context, cfg star.Config, ass
 
 	starClausesValue := r.buildClausesValue(cfg)
 
-	var users []user.User
-	if err := r.client.db.SelectContext(ctx, &users, `
+	var userModels UserModels
+	if err := r.client.db.SelectContext(ctx, &userModels, `
 		SELECT
 			DISTINCT ON (u.id) u.id,
 			u.email,
@@ -89,19 +89,17 @@ func (r *StarRepository) GetStargazers(ctx context.Context, cfg star.Config, ass
 			users u ON s.user_id = u.id
 		WHERE
 			s.asset_id = $1
-		LIMIT
-			$2
-		OFFSET
-			$3
+		LIMIT $2
+		OFFSET $3
 	`, assetID, starClausesValue.Limit, starClausesValue.Offset); err != nil {
 		return nil, fmt.Errorf("failed fetching users of star: %w", err)
 	}
 
-	if len(users) == 0 {
+	if len(userModels) == 0 {
 		return nil, star.NotFoundError{AssetID: assetID}
 	}
 
-	return users, nil
+	return userModels.toUsers(), nil
 }
 
 // GetAllAssetsByUserID fetch list of assets starred by a user

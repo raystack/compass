@@ -42,7 +42,7 @@ type Asset struct {
 	CreatedAt   time.Time              `json:"created_at" diff:"-"`
 	UpdatedAt   time.Time              `json:"updated_at" diff:"-"`
 	Version     string                 `json:"version" diff:"-"`
-	UpdatedBy   string                 `json:"updated_by" diff:"-"`
+	UpdatedBy   user.User              `json:"updated_by" diff:"-"`
 	Changelog   diff.Changelog         `json:"changelog,omitempty" diff:"-"`
 }
 

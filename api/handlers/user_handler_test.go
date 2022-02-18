@@ -33,7 +33,6 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 	}
 
 	userID := "dummy-user-id"
-	userEmail := "user@odpf.io"
 	offset := 10
 	size := 20
 
@@ -51,7 +50,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 				params.Add("offset", strconv.Itoa(offset))
 				params.Add("size", strconv.Itoa(size))
 				req.URL.RawQuery = params.Encode()
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
@@ -66,7 +65,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 				params.Add("offset", strconv.Itoa(offset))
 				params.Add("size", strconv.Itoa(size))
 				req.URL.RawQuery = params.Encode()
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
@@ -81,7 +80,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 				params.Add("offset", strconv.Itoa(offset))
 				params.Add("size", strconv.Itoa(size))
 				req.URL.RawQuery = params.Encode()
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
@@ -96,7 +95,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 				params.Add("offset", strconv.Itoa(offset))
 				params.Add("size", strconv.Itoa(size))
 				req.URL.RawQuery = params.Encode()
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
@@ -287,7 +286,6 @@ func TestStarAsset(t *testing.T) {
 	}
 
 	userID := "dummy-user-id"
-	userEmail := "user@odpf.io"
 	assetID := "dummy-asset-id"
 
 	var testCases = []testCase{
@@ -300,7 +298,7 @@ func TestStarAsset(t *testing.T) {
 			Description:  "should return 400 status code if asset id in param is invalid",
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -311,7 +309,7 @@ func TestStarAsset(t *testing.T) {
 			Description:  "should return 400 status code if star repository return invalid error",
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -322,7 +320,7 @@ func TestStarAsset(t *testing.T) {
 			Description:  "should return 404 status code if user not found",
 			ExpectStatus: http.StatusNotFound,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -333,7 +331,7 @@ func TestStarAsset(t *testing.T) {
 			Description:  "should return 500 status code if failed to star an asset",
 			ExpectStatus: http.StatusInternalServerError,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -344,7 +342,7 @@ func TestStarAsset(t *testing.T) {
 			Description:  "should return 204 if starring success",
 			ExpectStatus: http.StatusNoContent,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -355,7 +353,7 @@ func TestStarAsset(t *testing.T) {
 			Description:  "should return 204 if asset is already starred",
 			ExpectStatus: http.StatusNoContent,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -402,7 +400,6 @@ func TestGetStarredAsset(t *testing.T) {
 	assetType := "an-asset-type"
 	assetURN := "dummy-asset-urn"
 	userID := "dummy-user-id"
-	userEmail := "user@odpf.io"
 	assetID := "an-asset-id"
 
 	var testCases = []testCase{
@@ -415,7 +412,7 @@ func TestGetStarredAsset(t *testing.T) {
 			Description:  "should return 400 status code if asset id in param is invalid",
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -426,7 +423,7 @@ func TestGetStarredAsset(t *testing.T) {
 			Description:  "should return 400 status code if star repository return invalid error",
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -437,7 +434,7 @@ func TestGetStarredAsset(t *testing.T) {
 			Description:  "should return 404 status code if a star not found",
 			ExpectStatus: http.StatusNotFound,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -448,7 +445,7 @@ func TestGetStarredAsset(t *testing.T) {
 			Description:  "should return 500 status code if failed to fetch a starred asset",
 			ExpectStatus: http.StatusInternalServerError,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -459,7 +456,7 @@ func TestGetStarredAsset(t *testing.T) {
 			Description:  "should return 200 starred assets of a user if no error",
 			ExpectStatus: http.StatusOK,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
@@ -520,7 +517,6 @@ func TestUnstarAsset(t *testing.T) {
 	}
 
 	userID := "dummy-user-id"
-	userEmail := "email@odpf.io"
 	assetID := "dummy-asset-id"
 
 	var testCases = []testCase{
@@ -533,7 +529,7 @@ func TestUnstarAsset(t *testing.T) {
 			Description:  "should return 400 status code if asset id is empty",
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
@@ -544,7 +540,7 @@ func TestUnstarAsset(t *testing.T) {
 			Description:  "should return 400 status code if star repository return invalid error",
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
@@ -555,7 +551,7 @@ func TestUnstarAsset(t *testing.T) {
 			Description:  "should return 500 status code if failed to unstar an asset",
 			ExpectStatus: http.StatusInternalServerError,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
@@ -566,7 +562,7 @@ func TestUnstarAsset(t *testing.T) {
 			Description:  "should return 204 if unstarring success",
 			ExpectStatus: http.StatusNoContent,
 			MutateRequest: func(req *http.Request) *http.Request {
-				ctx := user.NewContext(req.Context(), userID, userEmail)
+				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {

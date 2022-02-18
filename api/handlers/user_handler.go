@@ -17,7 +17,7 @@ type UserHandler struct {
 }
 
 func (h *UserHandler) GetStarredAssetsWithHeader(w http.ResponseWriter, r *http.Request) {
-	userID := user.IDFromContext(r.Context())
+	userID := user.FromContext(r.Context())
 	if userID == "" {
 		h.logger.Warn(errMissingUserInfo.Error())
 		WriteJSONError(w, http.StatusBadRequest, errMissingUserInfo.Error())
@@ -70,7 +70,7 @@ func (h *UserHandler) GetStarredAssetsWithPath(w http.ResponseWriter, r *http.Re
 }
 
 func (h *UserHandler) StarAsset(w http.ResponseWriter, r *http.Request) {
-	userID := user.IDFromContext(r.Context())
+	userID := user.FromContext(r.Context())
 	if userID == "" {
 		h.logger.Warn(errMissingUserInfo.Error())
 		WriteJSONError(w, http.StatusBadRequest, errMissingUserInfo.Error())
@@ -103,7 +103,7 @@ func (h *UserHandler) StarAsset(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetStarredAsset(w http.ResponseWriter, r *http.Request) {
-	userID := user.IDFromContext(r.Context())
+	userID := user.FromContext(r.Context())
 	if userID == "" {
 		h.logger.Warn(errMissingUserInfo.Error())
 		WriteJSONError(w, http.StatusBadRequest, errMissingUserInfo.Error())
@@ -131,7 +131,7 @@ func (h *UserHandler) GetStarredAsset(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) UnstarAsset(w http.ResponseWriter, r *http.Request) {
-	userID := user.IDFromContext(r.Context())
+	userID := user.FromContext(r.Context())
 	if userID == "" {
 		h.logger.Warn(errMissingUserInfo.Error())
 		WriteJSONError(w, http.StatusBadRequest, errMissingUserInfo.Error())

@@ -1,5 +1,5 @@
 CREATE TABLE assets_versions (
-    id uuid NOT NULL,
+    id uuid NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
     urn text NOT NULL,
     type text NOT NULL,
     service text NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE assets_versions (
     data jsonb,
     labels jsonb,
     version text NOT NULL,
-    updated_by text NOT NULL,
+    updated_by uuid NOT NULL,
     created_at timestamp,
     updated_at timestamp,
     owners jsonb,

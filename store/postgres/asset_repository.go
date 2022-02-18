@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
@@ -29,7 +30,26 @@ func (r *AssetRepository) Get(ctx context.Context, config asset.Config) (assets 
 		size = r.defaultGetMaxSize
 	}
 
-	builder := sq.Select("*").From("assets").
+	builder := sq.Select(`
+		a.id as "id",
+		a.urn as "urn",
+		a.type as "type",
+		a.name as "name",
+		a.service as"service",
+		a.description as "description",
+		a.data as "data",
+		a.labels as "labels",
+		a.version as "version",
+		a.created_at as "created_at",
+		a.updated_at as "updated_at",
+		u.id as "updated_by.id",
+		u.email as "updated_by.email",
+		u.provider as "updated_by.provider",
+		u.created_at as "updated_by.created_at",
+		u.updated_at as "updated_by.updated_at"
+		`).
+		From("assets a").
+		LeftJoin("users u ON a.updated_by = u.id").
 		Limit(uint64(size)).
 		Offset(uint64(config.Offset))
 	builder = r.buildFilterQuery(builder, config)
@@ -38,7 +58,6 @@ func (r *AssetRepository) Get(ctx context.Context, config asset.Config) (assets 
 		err = fmt.Errorf("error building query: %w", err)
 		return
 	}
-
 	ams := []*AssetModel{}
 	err = r.client.db.SelectContext(ctx, &ams, query, args...)
 	if err != nil {
@@ -79,7 +98,27 @@ func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Ass
 		return
 	}
 
-	query := `SELECT * FROM assets WHERE id = $1 LIMIT 1;`
+	query := `
+	SELECT 
+		a.id as "id",
+		a.urn as "urn",
+		a.type as "type",
+		a.name as "name",
+		a.service as"service",
+		a.description as "description",
+		a.data as "data",
+		a.labels as "labels",
+		a.version as "version",
+		a.created_at as "created_at",
+		a.updated_at as "updated_at",
+		u.id as "updated_by.id",
+		u.email as "updated_by.email",
+		u.provider as "updated_by.provider",
+		u.created_at as "updated_by.created_at",
+		u.updated_at as "updated_by.updated_at"
+	FROM assets a 
+	LEFT JOIN users u ON a.updated_by = u.id 
+	WHERE a.id = $1 LIMIT 1;`
 
 	am := &AssetModel{}
 	err = r.client.db.GetContext(ctx, am, query, id)
@@ -119,16 +158,31 @@ func (r *AssetRepository) GetLastVersions(ctx context.Context, cfg asset.Config,
 	var assetModels []AssetModel
 	err = r.client.db.SelectContext(ctx, &assetModels, `
 		SELECT
-			*
-		FROM
-			assets_versions
+			a.id as "id",
+			a.urn as "urn",
+			a.type as "type",
+			a.name as "name",
+			a.service as"service",
+			a.description as "description",
+			a.data as "data",
+			a.labels as "labels",
+			a.version as "version",
+			a.created_at as "created_at",
+			a.updated_at as "updated_at",
+			a.changelog as "changelog",
+			a.owners as "owners",
+			u.id as "updated_by.id",
+			u.email as "updated_by.email",
+			u.provider as "updated_by.provider",
+			u.created_at as "updated_by.created_at",
+			u.updated_at as "updated_by.updated_at"
+		FROM assets_versions a 
+		LEFT JOIN users u ON a.updated_by = u.id 
 		WHERE
-			id = $1
+			a.id = $1
 		ORDER BY version DESC
-		LIMIT
-			$2
-		OFFSET
-			$3
+		LIMIT $2
+		OFFSET $3
 	`, id, size, cfg.Offset)
 	if err != nil {
 		err = fmt.Errorf("failed fetching last versions: %w", err)
@@ -162,12 +216,27 @@ func (r *AssetRepository) GetByVersion(ctx context.Context, id string, version s
 	var assetModel AssetModel
 	err = r.client.db.GetContext(ctx, &assetModel, `
 		SELECT
-			*
-		FROM
-			assets_versions
-		WHERE
-			id = $1 AND version = $2
-	`, id, version)
+			a.id as "id",
+			a.urn as "urn",
+			a.type as "type",
+			a.name as "name",
+			a.service as"service",
+			a.description as "description",
+			a.data as "data",
+			a.labels as "labels",
+			a.version as "version",
+			a.created_at as "created_at",
+			a.updated_at as "updated_at",
+			a.changelog as "changelog",
+			a.owners as "owners",
+			u.id as "updated_by.id",
+			u.email as "updated_by.email",
+			u.provider as "updated_by.provider",
+			u.created_at as "updated_by.created_at",
+			u.updated_at as "updated_by.updated_at"
+		FROM assets_versions a 
+		LEFT JOIN users u ON a.updated_by = u.id 
+		WHERE a.id = $1 AND a.version = $2`, id, version)
 
 	if errors.Is(err, sql.ErrNoRows) {
 		err = asset.NotFoundError{AssetID: id}
@@ -192,7 +261,7 @@ func (r *AssetRepository) GetByVersion(ctx context.Context, id string, version s
 // Upsert creates a new asset if it does not exist yet.
 // It updates if asset does exist.
 // Checking existance is done using "urn", "type", and "service" fields.
-func (r *AssetRepository) Upsert(ctx context.Context, updaterEmail string, ast *asset.Asset) (string, error) {
+func (r *AssetRepository) Upsert(ctx context.Context, userID string, ast *asset.Asset) (string, error) {
 	fetchedAsset, err := r.getAssetByURN(ctx, ast.URN, ast.Type, ast.Service)
 	if errors.As(err, new(asset.NotFoundError)) {
 		err = nil
@@ -201,12 +270,9 @@ func (r *AssetRepository) Upsert(ctx context.Context, updaterEmail string, ast *
 		return "", fmt.Errorf("error getting asset by URN: %w", err)
 	}
 
-	ast.UpdatedBy = updaterEmail
-	fetchedAsset.UpdatedBy = updaterEmail
-
 	if fetchedAsset.ID == "" {
 		// insert flow
-		fetchedAsset.ID, err = r.insert(ctx, ast)
+		fetchedAsset.ID, err = r.insert(ctx, userID, ast)
 		if err != nil {
 			return fetchedAsset.ID, fmt.Errorf("error inserting asset to DB: %w", err)
 		}
@@ -217,7 +283,7 @@ func (r *AssetRepository) Upsert(ctx context.Context, updaterEmail string, ast *
 			return "", fmt.Errorf("error diffing two assets: %w", err)
 		}
 
-		err = r.update(ctx, fetchedAsset.ID, ast, &fetchedAsset, changelog)
+		err = r.update(ctx, userID, fetchedAsset.ID, ast, &fetchedAsset, changelog)
 		if err != nil {
 			return "", fmt.Errorf("error updating asset to DB: %w", err)
 		}
@@ -264,15 +330,15 @@ func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, config asse
 	return builder
 }
 
-func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id string, err error) {
+func (r *AssetRepository) insert(ctx context.Context, updaterID string, ast *asset.Asset) (id string, err error) {
 	err = r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		err := tx.QueryRowxContext(ctx,
 			`INSERT INTO assets 
-				(urn, type, service, name, description, data, labels, created_at, updated_at, updated_by, version)
+				(urn, type, service, name, description, data, labels, updated_by, version)
 			VALUES 
-				($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+				($1, $2, $3, $4, $5, $6, $7, $8, $9)
 			RETURNING id`,
-			ast.URN, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.Labels, ast.CreatedAt, ast.UpdatedAt, ast.UpdatedBy, asset.BaseVersion).Scan(&id)
+			ast.URN, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.Labels, updaterID, asset.BaseVersion).Scan(&id)
 		if err != nil {
 			return fmt.Errorf("error running insert query: %w", err)
 		}
@@ -293,13 +359,13 @@ func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id stri
 	return
 }
 
-func (r *AssetRepository) update(ctx context.Context, id string, newAsset *asset.Asset, oldAsset *asset.Asset, clog diff.Changelog) error {
+func (r *AssetRepository) update(ctx context.Context, updaterID string, assetID string, newAsset *asset.Asset, oldAsset *asset.Asset, clog diff.Changelog) error {
 
-	if !isValidUUID(id) {
-		return asset.InvalidError{AssetID: id}
+	if !isValidUUID(assetID) {
+		return asset.InvalidError{AssetID: assetID}
 	}
 
-	if clog == nil {
+	if len(clog) == 0 {
 		return nil
 	}
 
@@ -324,7 +390,7 @@ func (r *AssetRepository) update(ctx context.Context, id string, newAsset *asset
 				version = $10
 			WHERE id = $11;
 			`,
-			newAsset.URN, newAsset.Type, newAsset.Service, newAsset.Name, newAsset.Description, newAsset.Data, newAsset.Labels, newAsset.UpdatedAt, newAsset.UpdatedBy, newVersion, id)
+			newAsset.URN, newAsset.Type, newAsset.Service, newAsset.Name, newAsset.Description, newAsset.Data, newAsset.Labels, time.Now(), updaterID, newVersion, assetID)
 		if err != nil {
 			return fmt.Errorf("error running update asset query: %w", err)
 		}
@@ -340,10 +406,10 @@ func (r *AssetRepository) update(ctx context.Context, id string, newAsset *asset
 			return fmt.Errorf("error creating and fetching owners: %w", err)
 		}
 		toInserts, toRemoves := r.compareOwners(oldAsset.Owners, newAssetOwners)
-		if err := r.insertOwners(ctx, tx, id, toInserts); err != nil {
+		if err := r.insertOwners(ctx, tx, assetID, toInserts); err != nil {
 			return fmt.Errorf("error inserting asset's new owners: %w", err)
 		}
-		if err := r.removeOwners(ctx, tx, id, toRemoves); err != nil {
+		if err := r.removeOwners(ctx, tx, assetID, toRemoves); err != nil {
 			return fmt.Errorf("error removing asset's old owners: %w", err)
 		}
 
@@ -374,7 +440,7 @@ func (r *AssetRepository) insertAssetVersion(ctx context.Context, execer sqlx.Ex
 			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 		`,
 		oldAsset.ID, oldAsset.URN, oldAsset.Type, oldAsset.Service, oldAsset.Name, oldAsset.Description, oldAsset.Data, oldAsset.Labels,
-		oldAsset.CreatedAt, oldAsset.UpdatedAt, oldAsset.UpdatedBy, oldAsset.Version, oldAsset.Owners, jsonChangelog); err != nil {
+		oldAsset.CreatedAt, oldAsset.UpdatedAt, oldAsset.UpdatedBy.ID, oldAsset.Version, oldAsset.Owners, jsonChangelog); err != nil {
 		return fmt.Errorf("error running insert asset version query: %w", err)
 	}
 
@@ -516,7 +582,28 @@ func (r *AssetRepository) createOrFetchUserIDs(ctx context.Context, tx *sqlx.Tx,
 }
 
 func (r *AssetRepository) getAssetByURN(ctx context.Context, assetURN string, assetType asset.Type, assetService string) (ast asset.Asset, err error) {
-	query := `SELECT * FROM assets WHERE urn = $1 AND type = $2 AND service = $3;`
+	query := `
+	SELECT 
+		a.id as "id",
+		a.urn as "urn",
+		a.type as "type",
+		a.name as "name",
+		a.service as"service",
+		a.description as "description",
+		a.data as "data",
+		a.labels as "labels",
+		a.version as "version",
+		a.created_at as "created_at",
+		a.updated_at as "updated_at",
+		u.id as "updated_by.id",
+		u.email as "updated_by.email",
+		u.provider as "updated_by.provider",
+		u.created_at as "updated_by.created_at",
+		u.updated_at as "updated_by.updated_at"
+	FROM assets a 
+	LEFT JOIN users u ON a.updated_by = u.id 
+	WHERE a.urn = $1 AND a.type = $2 AND a.service = $3`
+
 	var assetModel AssetModel
 	if err = r.client.db.GetContext(ctx, &assetModel, query, assetURN, assetType, assetService); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

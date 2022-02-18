@@ -149,9 +149,9 @@ func createUser(userRepo user.Repository, email string) (string, error) {
 	return id, nil
 }
 
-func createAsset(assetRepo asset.Repository, ownerEmail, assetURN, assetType string) (string, error) {
+func createAsset(assetRepo asset.Repository, updaterID string, ownerEmail, assetURN, assetType string) (string, error) {
 	ast := getAsset(ownerEmail, assetURN, assetType)
-	id, err := assetRepo.Upsert(context.Background(), defaultAssetUpdaterUserEmail, ast)
+	id, err := assetRepo.Upsert(context.Background(), updaterID, ast)
 	if err != nil {
 		return "", err
 	}
