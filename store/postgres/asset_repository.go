@@ -99,7 +99,7 @@ func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Ass
 	}
 
 	query := `
-	SELECT 
+	SELECT
 		a.id as "id",
 		a.urn as "urn",
 		a.type as "type",
@@ -116,8 +116,8 @@ func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Ass
 		u.provider as "updated_by.provider",
 		u.created_at as "updated_by.created_at",
 		u.updated_at as "updated_by.updated_at"
-	FROM assets a 
-	LEFT JOIN users u ON a.updated_by = u.id 
+	FROM assets a
+	LEFT JOIN users u ON a.updated_by = u.id
 	WHERE a.id = $1 LIMIT 1;`
 
 	am := &AssetModel{}
@@ -158,7 +158,7 @@ func (r *AssetRepository) GetLastVersions(ctx context.Context, cfg asset.Config,
 	var assetModels []AssetModel
 	err = r.client.db.SelectContext(ctx, &assetModels, `
 		SELECT
-			a.id as "id",
+			a.asset_id as "id",
 			a.urn as "urn",
 			a.type as "type",
 			a.name as "name",
@@ -176,10 +176,10 @@ func (r *AssetRepository) GetLastVersions(ctx context.Context, cfg asset.Config,
 			u.provider as "updated_by.provider",
 			u.created_at as "updated_by.created_at",
 			u.updated_at as "updated_by.updated_at"
-		FROM assets_versions a 
-		LEFT JOIN users u ON a.updated_by = u.id 
+		FROM assets_versions a
+		LEFT JOIN users u ON a.updated_by = u.id
 		WHERE
-			a.id = $1
+			a.asset_id = $1
 		ORDER BY version DESC
 		LIMIT $2
 		OFFSET $3
@@ -216,7 +216,7 @@ func (r *AssetRepository) GetByVersion(ctx context.Context, id string, version s
 	var assetModel AssetModel
 	err = r.client.db.GetContext(ctx, &assetModel, `
 		SELECT
-			a.id as "id",
+			a.asset_id as "id",
 			a.urn as "urn",
 			a.type as "type",
 			a.name as "name",
@@ -234,9 +234,9 @@ func (r *AssetRepository) GetByVersion(ctx context.Context, id string, version s
 			u.provider as "updated_by.provider",
 			u.created_at as "updated_by.created_at",
 			u.updated_at as "updated_by.updated_at"
-		FROM assets_versions a 
-		LEFT JOIN users u ON a.updated_by = u.id 
-		WHERE a.id = $1 AND a.version = $2`, id, version)
+		FROM assets_versions a
+		LEFT JOIN users u ON a.updated_by = u.id
+		WHERE a.asset_id = $1 AND a.version = $2`, id, version)
 
 	if errors.Is(err, sql.ErrNoRows) {
 		err = asset.NotFoundError{AssetID: id}
@@ -333,9 +333,9 @@ func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, config asse
 func (r *AssetRepository) insert(ctx context.Context, updaterID string, ast *asset.Asset) (id string, err error) {
 	err = r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		err := tx.QueryRowxContext(ctx,
-			`INSERT INTO assets 
+			`INSERT INTO assets
 				(urn, type, service, name, description, data, labels, updated_by, version)
-			VALUES 
+			VALUES
 				($1, $2, $3, $4, $5, $6, $7, $8, $9)
 			RETURNING id`,
 			ast.URN, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.Labels, updaterID, asset.BaseVersion).Scan(&id)
@@ -435,8 +435,8 @@ func (r *AssetRepository) insertAssetVersion(ctx context.Context, execer sqlx.Ex
 
 	if err = r.execContext(ctx, execer,
 		`INSERT INTO assets_versions
-			(id, urn, type, service, name, description, data, labels, created_at, updated_at ,updated_by, version, owners, changelog)
-		VALUES 
+			(asset_id, urn, type, service, name, description, data, labels, created_at, updated_at ,updated_by, version, owners, changelog)
+		VALUES
 			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 		`,
 		oldAsset.ID, oldAsset.URN, oldAsset.Type, oldAsset.Service, oldAsset.Name, oldAsset.Description, oldAsset.Data, oldAsset.Labels,
@@ -583,7 +583,7 @@ func (r *AssetRepository) createOrFetchUserIDs(ctx context.Context, tx *sqlx.Tx,
 
 func (r *AssetRepository) getAssetByURN(ctx context.Context, assetURN string, assetType asset.Type, assetService string) (ast asset.Asset, err error) {
 	query := `
-	SELECT 
+	SELECT
 		a.id as "id",
 		a.urn as "urn",
 		a.type as "type",
@@ -600,8 +600,8 @@ func (r *AssetRepository) getAssetByURN(ctx context.Context, assetURN string, as
 		u.provider as "updated_by.provider",
 		u.created_at as "updated_by.created_at",
 		u.updated_at as "updated_by.updated_at"
-	FROM assets a 
-	LEFT JOIN users u ON a.updated_by = u.id 
+	FROM assets a
+	LEFT JOIN users u ON a.updated_by = u.id
 	WHERE a.urn = $1 AND a.type = $2 AND a.service = $3`
 
 	var assetModel AssetModel
