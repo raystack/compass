@@ -372,7 +372,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 			},
 		}
 
-		assetVersions, err := r.repository.GetLastVersions(r.ctx, asset.Config{Size: 3}, astVersioning.ID)
+		assetVersions, err := r.repository.GetPrevVersions(r.ctx, asset.Config{Size: 3}, astVersioning.ID)
 		r.NoError(err)
 		// making updatedby user time empty to make ast comparable
 		for i := 0; i < len(assetVersions); i++ {
@@ -398,6 +398,34 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 		}
 
 		ast, err := r.repository.GetByID(r.ctx, astVersioning.ID)
+		// hard to get the internally generated user id, we exclude the owners from the assertion
+		astOwners := ast.Owners
+		ast.Owners = nil
+		r.NoError(err)
+		// making updatedby user time empty to make ast comparable
+		ast.UpdatedBy.CreatedAt = time.Time{}
+		ast.UpdatedBy.UpdatedAt = time.Time{}
+		ast.CreatedAt = time.Time{}
+		ast.UpdatedAt = time.Time{}
+		r.Equal(expectedLatestVersion, ast)
+
+		r.Len(astOwners, 2)
+	})
+
+	r.Run("should return current version of an assets with by version", func() {
+		expectedLatestVersion := asset.Asset{
+			ID:          astVersioning.ID,
+			URN:         assetURN,
+			Type:        "table",
+			Service:     "bigquery",
+			Description: "new description in v0.2",
+			Data:        map[string]interface{}{"data1": float64(12345)},
+			Labels:      map[string]string{"key1": "value1"},
+			Version:     "0.5",
+			UpdatedBy:   user1,
+		}
+
+		ast, err := r.repository.GetByVersion(r.ctx, astVersioning.ID, "0.5")
 		// hard to get the internally generated user id, we exclude the owners from the assertion
 		astOwners := ast.Owners
 		ast.Owners = nil

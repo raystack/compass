@@ -22,7 +22,7 @@ type Repository interface {
 	Get(context.Context, Config) ([]Asset, error)
 	GetCount(context.Context, Config) (int, error)
 	GetByID(ctx context.Context, id string) (Asset, error)
-	GetLastVersions(ctx context.Context, cfg Config, id string) ([]AssetVersion, error)
+	GetPrevVersions(ctx context.Context, cfg Config, id string) ([]AssetVersion, error)
 	GetByVersion(ctx context.Context, id string, version string) (Asset, error)
 	Upsert(ctx context.Context, userID string, ast *Asset) (string, error)
 	Delete(ctx context.Context, id string) error

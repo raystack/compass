@@ -569,7 +569,7 @@ func TestAssetHandlerGetStargazers(t *testing.T) {
 	}
 }
 
-func TestAssetHandlerGetLastVersions(t *testing.T) {
+func TestAssetHandlerGetPrevVersions(t *testing.T) {
 	var assetID = uuid.NewString()
 
 	type testCase struct {
@@ -585,14 +585,14 @@ func TestAssetHandlerGetLastVersions(t *testing.T) {
 			Description:  `should return http 400 if asset id is not uuid`,
 			ExpectStatus: http.StatusBadRequest,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetLastVersions", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{}, asset.InvalidError{AssetID: assetID})
+				ar.On("GetPrevVersions", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{}, asset.InvalidError{AssetID: assetID})
 			},
 		},
 		{
 			Description:  `should return http 500 if fetching fails`,
 			ExpectStatus: http.StatusInternalServerError,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetLastVersions", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{}, errors.New("unknown error"))
+				ar.On("GetPrevVersions", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -600,7 +600,7 @@ func TestAssetHandlerGetLastVersions(t *testing.T) {
 			Querystring:  "?size=30&offset=50",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetLastVersions", ctx, asset.Config{
+				ar.On("GetPrevVersions", ctx, asset.Config{
 					Size:   30,
 					Offset: 50,
 				}, assetID).Return([]asset.AssetVersion{}, nil)
@@ -610,7 +610,7 @@ func TestAssetHandlerGetLastVersions(t *testing.T) {
 			Description:  "should return http 200 status along with list of asset versions",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetLastVersions", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{
+				ar.On("GetPrevVersions", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 				}, nil)
@@ -644,7 +644,7 @@ func TestAssetHandlerGetLastVersions(t *testing.T) {
 			tc.Setup(rr.Context(), ar)
 
 			handler := handlers.NewAssetHandler(logger, ar, nil, nil)
-			handler.GetLastVersions(rw, rr)
+			handler.GetPrevVersions(rw, rr)
 
 			if rw.Code != tc.ExpectStatus {
 				t.Errorf("expected handler to return http %d, returned %d instead", tc.ExpectStatus, rw.Code)

@@ -178,13 +178,13 @@ func (h *AssetHandler) GetStargazers(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, users)
 }
 
-func (h *AssetHandler) GetLastVersions(w http.ResponseWriter, r *http.Request) {
+func (h *AssetHandler) GetPrevVersions(w http.ResponseWriter, r *http.Request) {
 	config := h.buildAssetConfig(r.URL.Query())
 
 	pathParams := mux.Vars(r)
 	assetID := pathParams["id"]
 
-	assetVersions, err := h.assetRepository.GetLastVersions(r.Context(), config, assetID)
+	assetVersions, err := h.assetRepository.GetPrevVersions(r.Context(), config, assetID)
 	if err != nil {
 		if errors.As(err, new(asset.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())

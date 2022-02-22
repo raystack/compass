@@ -115,8 +115,8 @@ func (_m *AssetRepository) GetCount(_a0 context.Context, _a1 asset.Config) (int,
 	return r0, r1
 }
 
-// GetLastVersions provides a mock function with given fields: ctx, cfg, id
-func (_m *AssetRepository) GetLastVersions(ctx context.Context, cfg asset.Config, id string) ([]asset.AssetVersion, error) {
+// GetPrevVersions provides a mock function with given fields: ctx, cfg, id
+func (_m *AssetRepository) GetPrevVersions(ctx context.Context, cfg asset.Config, id string) ([]asset.AssetVersion, error) {
 	ret := _m.Called(ctx, cfg, id)
 
 	var r0 []asset.AssetVersion

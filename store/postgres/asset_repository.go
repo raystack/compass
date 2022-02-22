@@ -92,7 +92,6 @@ func (r *AssetRepository) GetCount(ctx context.Context, config asset.Config) (to
 
 // GetByID retrieves asset by its ID
 func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Asset, err error) {
-
 	if !isValidUUID(id) {
 		err = asset.InvalidError{AssetID: id}
 		return
@@ -143,8 +142,8 @@ func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Ass
 	return
 }
 
-// GetLastVersions retrieves the last versions of an asset
-func (r *AssetRepository) GetLastVersions(ctx context.Context, cfg asset.Config, id string) (avs []asset.AssetVersion, err error) {
+// GetPrevVersions retrieves the previous versions of an asset
+func (r *AssetRepository) GetPrevVersions(ctx context.Context, cfg asset.Config, id string) (avs []asset.AssetVersion, err error) {
 	if !isValidUUID(id) {
 		err = asset.InvalidError{AssetID: id}
 		return
@@ -213,6 +212,21 @@ func (r *AssetRepository) GetByVersion(ctx context.Context, id string, version s
 		return
 	}
 
+	latestAsset, err := r.GetByID(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		err = asset.NotFoundError{AssetID: id}
+		return
+	}
+
+	if err != nil {
+		return
+	}
+
+	if latestAsset.Version == version {
+		ast = latestAsset
+		return
+	}
+
 	var assetModel AssetModel
 	err = r.client.db.GetContext(ctx, &assetModel, `
 		SELECT
@@ -245,11 +259,6 @@ func (r *AssetRepository) GetByVersion(ctx context.Context, id string, version s
 
 	if err != nil {
 		err = fmt.Errorf("failed fetching asset version: %w", err)
-		return
-	}
-
-	latestAsset, err := r.GetByID(ctx, id)
-	if err != nil {
 		return
 	}
 

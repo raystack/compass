@@ -65,7 +65,7 @@ func setupV1Beta1AssetRoutes(router *mux.Router, ah *handlers.AssetHandler) {
 
 	router.Path(url+"/{id}/versions").
 		Methods(http.MethodGet, http.MethodHead).
-		HandlerFunc(ah.GetLastVersions)
+		HandlerFunc(ah.GetPrevVersions)
 
 	router.Path(url+"/{id}/versions/{version}").
 		Methods(http.MethodGet, http.MethodHead).
