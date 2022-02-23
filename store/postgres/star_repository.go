@@ -125,12 +125,20 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Conf
 			a.description as description,
 			a.data as data,
 			a.labels as labels,
+			a.version as version,
 			a.created_at as created_at,
-			a.updated_at as updated_at
+			a.updated_at as updated_at,
+			u.id as "updated_by.id",
+			u.email as "updated_by.email",
+			u.provider as "updated_by.provider",
+			u.created_at as "updated_by.created_at",
+			u.updated_at as "updated_by.updated_at"
 		FROM
 			stars s
-		JOIN
+		INNER JOIN
 			assets a ON s.asset_id = a.id
+		LEFT JOIN
+			users u ON a.updated_by = u.id
 		WHERE
 			s.user_id = $1
 		ORDER BY
@@ -174,12 +182,20 @@ func (r *StarRepository) GetAllAssetsByUserEmail(ctx context.Context, cfg star.C
 			a.description as description,
 			a.data as data,
 			a.labels as labels,
+			a.version as version,
 			a.created_at as created_at,
-			a.updated_at as updated_at
+			a.updated_at as updated_at,
+			ub.id as "updated_by.id",
+			ub.email as "updated_by.email",
+			ub.provider as "updated_by.provider",
+			ub.created_at as "updated_by.created_at",
+			ub.updated_at as "updated_by.updated_at"
 		FROM
 			stars s
 		INNER JOIN
 			assets a ON s.asset_id = a.id
+		LEFT JOIN
+			users ub ON a.updated_by = ub.id
 		INNER JOIN
 			users u ON s.user_id = u.id
 		WHERE
@@ -232,12 +248,20 @@ func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, as
 			a.description,
 			a.data,
 			a.labels,
+			a.version,
 			a.created_at,
-			a.updated_at
+			a.updated_at,
+			u.id as "updated_by.id",
+			u.email as "updated_by.email",
+			u.provider as "updated_by.provider",
+			u.created_at as "updated_by.created_at",
+			u.updated_at as "updated_by.updated_at"
 		FROM
 			stars s
-		JOIN
+		INNER JOIN
 			assets a ON s.asset_id = a.id
+		LEFT JOIN
+			users u ON a.updated_by = u.id
 		WHERE
 			s.user_id = $1 AND s.asset_id = $2
 		LIMIT 1
