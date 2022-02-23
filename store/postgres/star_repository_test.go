@@ -327,19 +327,19 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserEmail() {
 		userID1, err := createUser(r.userRepository, userEmail)
 		r.NoError(err)
 
-		assetID1, err := createAsset(r.assetRepository, userID1, "asset-urn-1", "table")
+		assetID1, err := createAsset(r.assetRepository, userID1, userEmail, "asset-urn-1", "table")
 		r.NoError(err)
 		id, err := r.repository.Create(r.ctx, userID1, assetID1)
 		r.NoError(err)
 		r.NotEmpty(id)
 
-		assetID2, err := createAsset(r.assetRepository, userID1, "asset-urn-2", "table")
+		assetID2, err := createAsset(r.assetRepository, userID1, userEmail, "asset-urn-2", "table")
 		r.NoError(err)
 		id, err = r.repository.Create(r.ctx, userID1, assetID2)
 		r.NoError(err)
 		r.NotEmpty(id)
 
-		assetID3, err := createAsset(r.assetRepository, userID1, "asset-urn-3", "table")
+		assetID3, err := createAsset(r.assetRepository, userID1, userEmail, "asset-urn-3", "table")
 		r.NoError(err)
 		id, err = r.repository.Create(r.ctx, userID1, assetID3)
 		r.NoError(err)
@@ -368,7 +368,7 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserEmail() {
 
 		for i := 1; i < 20; i++ {
 			starURN := fmt.Sprintf("asset-urn-%d", i)
-			assetID, err := createAsset(r.assetRepository, userID, starURN, "table")
+			assetID, err := createAsset(r.assetRepository, userID, userEmail, starURN, "table")
 			r.NoError(err)
 			id, err := r.repository.Create(r.ctx, userID, assetID)
 			r.NoError(err)
