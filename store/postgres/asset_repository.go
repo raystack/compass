@@ -208,7 +208,7 @@ func (r *AssetRepository) GetByVersion(ctx context.Context, id string, version s
 // Upsert creates a new asset if it does not exist yet.
 // It updates if asset does exist.
 // Checking existance is done using "urn", "type", and "service" fields.
-func (r *AssetRepository) Upsert(ctx context.Context, userID string, ast *asset.Asset) (string, error) {
+func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string, error) {
 	fetchedAsset, err := r.getAssetByURN(ctx, ast.URN, ast.Type, ast.Service)
 	if errors.As(err, new(asset.NotFoundError)) {
 		err = nil
@@ -219,7 +219,7 @@ func (r *AssetRepository) Upsert(ctx context.Context, userID string, ast *asset.
 
 	if fetchedAsset.ID == "" {
 		// insert flow
-		fetchedAsset.ID, err = r.insert(ctx, userID, ast)
+		fetchedAsset.ID, err = r.insert(ctx, ast)
 		if err != nil {
 			return fetchedAsset.ID, fmt.Errorf("error inserting asset to DB: %w", err)
 		}
@@ -230,7 +230,7 @@ func (r *AssetRepository) Upsert(ctx context.Context, userID string, ast *asset.
 			return "", fmt.Errorf("error diffing two assets: %w", err)
 		}
 
-		err = r.update(ctx, userID, fetchedAsset.ID, ast, &fetchedAsset, changelog)
+		err = r.update(ctx, fetchedAsset.ID, ast, &fetchedAsset, changelog)
 		if err != nil {
 			return "", fmt.Errorf("error updating asset to DB: %w", err)
 		}
@@ -277,11 +277,11 @@ func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, config asse
 	return builder
 }
 
-func (r *AssetRepository) insert(ctx context.Context, updaterID string, ast *asset.Asset) (id string, err error) {
+func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id string, err error) {
 	err = r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		query, args, err := sq.Insert("assets").
 			Columns("urn", "type", "service", "name", "description", "data", "labels", "updated_by", "version").
-			Values(ast.URN, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.Labels, updaterID, asset.BaseVersion).
+			Values(ast.URN, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion).
 			Suffix("RETURNING \"id\"").
 			PlaceholderFormat(sq.Dollar).
 			ToSql()
@@ -310,7 +310,7 @@ func (r *AssetRepository) insert(ctx context.Context, updaterID string, ast *ass
 	return
 }
 
-func (r *AssetRepository) update(ctx context.Context, updaterID string, assetID string, newAsset *asset.Asset, oldAsset *asset.Asset, clog diff.Changelog) error {
+func (r *AssetRepository) update(ctx context.Context, assetID string, newAsset *asset.Asset, oldAsset *asset.Asset, clog diff.Changelog) error {
 
 	if !isValidUUID(assetID) {
 		return asset.InvalidError{AssetID: assetID}
@@ -341,7 +341,7 @@ func (r *AssetRepository) update(ctx context.Context, updaterID string, assetID 
 				version = $10
 			WHERE id = $11;
 			`,
-			newAsset.URN, newAsset.Type, newAsset.Service, newAsset.Name, newAsset.Description, newAsset.Data, newAsset.Labels, time.Now(), updaterID, newVersion, assetID)
+			newAsset.URN, newAsset.Type, newAsset.Service, newAsset.Name, newAsset.Description, newAsset.Data, newAsset.Labels, time.Now(), newAsset.UpdatedBy.ID, newVersion, assetID)
 		if err != nil {
 			return fmt.Errorf("error running update asset query: %w", err)
 		}

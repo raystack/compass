@@ -100,7 +100,7 @@ func TestAssetHandlerUpsert(t *testing.T) {
 			expectedErr := errors.New("unknown error")
 
 			ar := new(mocks.AssetRepository)
-			ar.On("Upsert", rr.Context(), userID, mock.AnythingOfType("*asset.Asset")).Return("1234-5678", expectedErr)
+			ar.On("Upsert", rr.Context(), mock.AnythingOfType("*asset.Asset")).Return("1234-5678", expectedErr)
 			defer ar.AssertExpectations(t)
 
 			rr.Context()
@@ -122,7 +122,7 @@ func TestAssetHandlerUpsert(t *testing.T) {
 			expectedErr := errors.New("unknown error")
 
 			ar := new(mocks.AssetRepository)
-			ar.On("Upsert", rr.Context(), userID, mock.AnythingOfType("*asset.Asset")).Return("1234-5678", nil)
+			ar.On("Upsert", rr.Context(), mock.AnythingOfType("*asset.Asset")).Return("1234-5678", nil)
 			defer ar.AssertExpectations(t)
 
 			dr := new(mocks.DiscoveryRepository)
@@ -143,11 +143,12 @@ func TestAssetHandlerUpsert(t *testing.T) {
 
 	t.Run("should return HTTP 200 and asset's ID if the asset is successfully created/updated", func(t *testing.T) {
 		ast := asset.Asset{
-			URN:     "test dagger",
-			Type:    asset.TypeTable,
-			Name:    "de-dagger-test",
-			Service: "kafka",
-			Data:    map[string]interface{}{},
+			URN:       "test dagger",
+			Type:      asset.TypeTable,
+			Name:      "de-dagger-test",
+			Service:   "kafka",
+			UpdatedBy: user.User{ID: userID},
+			Data:      map[string]interface{}{},
 		}
 		assetWithID := ast
 		assetWithID.ID = uuid.New().String()
@@ -158,8 +159,8 @@ func TestAssetHandlerUpsert(t *testing.T) {
 		rw := httptest.NewRecorder()
 
 		ar := new(mocks.AssetRepository)
-		ar.On("Upsert", rr.Context(), userID, &ast).Return(assetWithID.ID, nil).Run(func(args mock.Arguments) {
-			argAsset := args.Get(2).(*asset.Asset)
+		ar.On("Upsert", rr.Context(), &ast).Return(assetWithID.ID, nil).Run(func(args mock.Arguments) {
+			argAsset := args.Get(1).(*asset.Asset)
 			argAsset.ID = assetWithID.ID
 		})
 		defer ar.AssertExpectations(t)

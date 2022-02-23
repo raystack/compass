@@ -109,7 +109,8 @@ func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	assetID, err := h.assetRepository.Upsert(r.Context(), userID, &ast)
+	ast.UpdatedBy.ID = userID
+	assetID, err := h.assetRepository.Upsert(r.Context(), &ast)
 	if errors.As(err, new(asset.InvalidError)) {
 		WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return

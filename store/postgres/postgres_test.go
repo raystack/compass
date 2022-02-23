@@ -151,7 +151,8 @@ func createUser(userRepo user.Repository, email string) (string, error) {
 
 func createAsset(assetRepo asset.Repository, updaterID string, ownerEmail, assetURN, assetType string) (string, error) {
 	ast := getAsset(ownerEmail, assetURN, assetType)
-	id, err := assetRepo.Upsert(context.Background(), updaterID, ast)
+	ast.UpdatedBy.ID = updaterID
+	id, err := assetRepo.Upsert(context.Background(), ast)
 	if err != nil {
 		return "", err
 	}

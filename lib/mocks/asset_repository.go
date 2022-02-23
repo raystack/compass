@@ -138,20 +138,20 @@ func (_m *AssetRepository) GetVersionHistory(ctx context.Context, cfg asset.Conf
 	return r0, r1
 }
 
-// Upsert provides a mock function with given fields: ctx, userID, ast
-func (_m *AssetRepository) Upsert(ctx context.Context, userID string, ast *asset.Asset) (string, error) {
-	ret := _m.Called(ctx, userID, ast)
+// Upsert provides a mock function with given fields: ctx, ast
+func (_m *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string, error) {
+	ret := _m.Called(ctx, ast)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func(context.Context, string, *asset.Asset) string); ok {
-		r0 = rf(ctx, userID, ast)
+	if rf, ok := ret.Get(0).(func(context.Context, *asset.Asset) string); ok {
+		r0 = rf(ctx, ast)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, *asset.Asset) error); ok {
-		r1 = rf(ctx, userID, ast)
+	if rf, ok := ret.Get(1).(func(context.Context, *asset.Asset) error); ok {
+		r1 = rf(ctx, ast)
 	} else {
 		r1 = ret.Error(1)
 	}

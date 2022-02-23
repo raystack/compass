@@ -24,7 +24,7 @@ type Repository interface {
 	GetByID(ctx context.Context, id string) (Asset, error)
 	GetVersionHistory(ctx context.Context, cfg Config, id string) ([]AssetVersion, error)
 	GetByVersion(ctx context.Context, id string, version string) (Asset, error)
-	Upsert(ctx context.Context, userID string, ast *Asset) (string, error)
+	Upsert(ctx context.Context, ast *Asset) (string, error)
 	Delete(ctx context.Context, id string) error
 }
 
