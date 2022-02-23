@@ -23,33 +23,14 @@ type AssetRepository struct {
 	defaultGetMaxSize int
 }
 
-// Get retrieves list of assets with filters via config
-func (r *AssetRepository) Get(ctx context.Context, config asset.Config) (assets []asset.Asset, err error) {
+// GetAll retrieves list of assets with filters via config
+func (r *AssetRepository) GetAll(ctx context.Context, config asset.Config) (assets []asset.Asset, err error) {
 	size := config.Size
 	if size == 0 {
 		size = r.defaultGetMaxSize
 	}
 
-	builder := sq.Select(`
-		a.id as "id",
-		a.urn as "urn",
-		a.type as "type",
-		a.name as "name",
-		a.service as"service",
-		a.description as "description",
-		a.data as "data",
-		a.labels as "labels",
-		a.version as "version",
-		a.created_at as "created_at",
-		a.updated_at as "updated_at",
-		u.id as "updated_by.id",
-		u.email as "updated_by.email",
-		u.provider as "updated_by.provider",
-		u.created_at as "updated_by.created_at",
-		u.updated_at as "updated_by.updated_at"
-		`).
-		From("assets a").
-		LeftJoin("users u ON a.updated_by = u.id").
+	builder := r.getAssetSQL().
 		Limit(uint64(size)).
 		Offset(uint64(config.Offset))
 	builder = r.buildFilterQuery(builder, config)
@@ -73,7 +54,7 @@ func (r *AssetRepository) Get(ctx context.Context, config asset.Config) (assets 
 	return
 }
 
-// Get retrieves list of assets with filters via config
+// GetCount retrieves number of assets for every type
 func (r *AssetRepository) GetCount(ctx context.Context, config asset.Config) (total int, err error) {
 	builder := sq.Select("count(1)").From("assets")
 	builder = r.buildFilterQuery(builder, config)
@@ -97,30 +78,17 @@ func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Ass
 		return
 	}
 
-	query := `
-	SELECT
-		a.id as "id",
-		a.urn as "urn",
-		a.type as "type",
-		a.name as "name",
-		a.service as"service",
-		a.description as "description",
-		a.data as "data",
-		a.labels as "labels",
-		a.version as "version",
-		a.created_at as "created_at",
-		a.updated_at as "updated_at",
-		u.id as "updated_by.id",
-		u.email as "updated_by.email",
-		u.provider as "updated_by.provider",
-		u.created_at as "updated_by.created_at",
-		u.updated_at as "updated_by.updated_at"
-	FROM assets a
-	LEFT JOIN users u ON a.updated_by = u.id
-	WHERE a.id = $1 LIMIT 1;`
+	builder := r.getAssetSQL().
+		Where(sq.Eq{"a.id": id}).
+		Limit(1)
+	query, args, err := r.buildSQL(builder)
+	if err != nil {
+		err = fmt.Errorf("error building query: %w", err)
+		return
+	}
 
 	am := &AssetModel{}
-	err = r.client.db.GetContext(ctx, am, query, id)
+	err = r.client.db.GetContext(ctx, am, query, args...)
 	if errors.Is(err, sql.ErrNoRows) {
 		err = asset.NotFoundError{AssetID: id}
 		return
@@ -142,8 +110,8 @@ func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Ass
 	return
 }
 
-// GetPrevVersions retrieves the previous versions of an asset
-func (r *AssetRepository) GetPrevVersions(ctx context.Context, cfg asset.Config, id string) (avs []asset.AssetVersion, err error) {
+// GetVersionHistory retrieves the previous versions of an asset
+func (r *AssetRepository) GetVersionHistory(ctx context.Context, cfg asset.Config, id string) (avs []asset.AssetVersion, err error) {
 	if !isValidUUID(id) {
 		err = asset.InvalidError{AssetID: id}
 		return
@@ -154,35 +122,19 @@ func (r *AssetRepository) GetPrevVersions(ctx context.Context, cfg asset.Config,
 		size = r.defaultGetMaxSize
 	}
 
+	builder := r.getAssetVersionSQL().
+		Where(sq.Eq{"a.asset_id": id}).
+		OrderBy("version DESC").
+		Limit(uint64(size)).
+		Offset(uint64(cfg.Offset))
+	query, args, err := r.buildSQL(builder)
+	if err != nil {
+		err = fmt.Errorf("error building query: %w", err)
+		return
+	}
+
 	var assetModels []AssetModel
-	err = r.client.db.SelectContext(ctx, &assetModels, `
-		SELECT
-			a.asset_id as "id",
-			a.urn as "urn",
-			a.type as "type",
-			a.name as "name",
-			a.service as"service",
-			a.description as "description",
-			a.data as "data",
-			a.labels as "labels",
-			a.version as "version",
-			a.created_at as "created_at",
-			a.updated_at as "updated_at",
-			a.changelog as "changelog",
-			a.owners as "owners",
-			u.id as "updated_by.id",
-			u.email as "updated_by.email",
-			u.provider as "updated_by.provider",
-			u.created_at as "updated_by.created_at",
-			u.updated_at as "updated_by.updated_at"
-		FROM assets_versions a
-		LEFT JOIN users u ON a.updated_by = u.id
-		WHERE
-			a.asset_id = $1
-		ORDER BY version DESC
-		LIMIT $2
-		OFFSET $3
-	`, id, size, cfg.Offset)
+	err = r.client.db.SelectContext(ctx, &assetModels, query, args...)
 	if err != nil {
 		err = fmt.Errorf("failed fetching last versions: %w", err)
 		return
@@ -228,30 +180,15 @@ func (r *AssetRepository) GetByVersion(ctx context.Context, id string, version s
 	}
 
 	var assetModel AssetModel
-	err = r.client.db.GetContext(ctx, &assetModel, `
-		SELECT
-			a.asset_id as "id",
-			a.urn as "urn",
-			a.type as "type",
-			a.name as "name",
-			a.service as"service",
-			a.description as "description",
-			a.data as "data",
-			a.labels as "labels",
-			a.version as "version",
-			a.created_at as "created_at",
-			a.updated_at as "updated_at",
-			a.changelog as "changelog",
-			a.owners as "owners",
-			u.id as "updated_by.id",
-			u.email as "updated_by.email",
-			u.provider as "updated_by.provider",
-			u.created_at as "updated_by.created_at",
-			u.updated_at as "updated_by.updated_at"
-		FROM assets_versions a
-		LEFT JOIN users u ON a.updated_by = u.id
-		WHERE a.asset_id = $1 AND a.version = $2`, id, version)
+	builder := r.getAssetVersionSQL().
+		Where(sq.Eq{"a.asset_id": id, "a.version": version})
+	query, args, err := r.buildSQL(builder)
+	if err != nil {
+		err = fmt.Errorf("error building query: %w", err)
+		return
+	}
 
+	err = r.client.db.GetContext(ctx, &assetModel, query, args...)
 	if errors.Is(err, sql.ErrNoRows) {
 		err = asset.NotFoundError{AssetID: id}
 		return
@@ -341,13 +278,17 @@ func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, config asse
 
 func (r *AssetRepository) insert(ctx context.Context, updaterID string, ast *asset.Asset) (id string, err error) {
 	err = r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
-		err := tx.QueryRowxContext(ctx,
-			`INSERT INTO assets
-				(urn, type, service, name, description, data, labels, updated_by, version)
-			VALUES
-				($1, $2, $3, $4, $5, $6, $7, $8, $9)
-			RETURNING id`,
-			ast.URN, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.Labels, updaterID, asset.BaseVersion).Scan(&id)
+		query, args, err := sq.Insert("assets").
+			Columns("urn", "type", "service", "name", "description", "data", "labels", "updated_by", "version").
+			Values(ast.URN, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.Labels, updaterID, asset.BaseVersion).
+			Suffix("RETURNING \"id\"").
+			PlaceholderFormat(sq.Dollar).
+			ToSql()
+		if err != nil {
+			return fmt.Errorf("error building insert query: %w", err)
+		}
+
+		err = tx.QueryRowContext(ctx, query, args...).Scan(&id)
 		if err != nil {
 			return fmt.Errorf("error running insert query: %w", err)
 		}
@@ -441,15 +382,17 @@ func (r *AssetRepository) insertAssetVersion(ctx context.Context, execer sqlx.Ex
 	if err != nil {
 		return err
 	}
+	query, args, err := sq.Insert("assets_versions").
+		Columns("asset_id", "urn", "type", "service", "name", "description", "data", "labels", "created_at", "updated_at", "updated_by", "version", "owners", "changelog").
+		Values(oldAsset.ID, oldAsset.URN, oldAsset.Type, oldAsset.Service, oldAsset.Name, oldAsset.Description, oldAsset.Data, oldAsset.Labels,
+			oldAsset.CreatedAt, oldAsset.UpdatedAt, oldAsset.UpdatedBy.ID, oldAsset.Version, oldAsset.Owners, jsonChangelog).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("error building insert query: %w", err)
+	}
 
-	if err = r.execContext(ctx, execer,
-		`INSERT INTO assets_versions
-			(asset_id, urn, type, service, name, description, data, labels, created_at, updated_at ,updated_by, version, owners, changelog)
-		VALUES
-			($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-		`,
-		oldAsset.ID, oldAsset.URN, oldAsset.Type, oldAsset.Service, oldAsset.Name, oldAsset.Description, oldAsset.Data, oldAsset.Labels,
-		oldAsset.CreatedAt, oldAsset.UpdatedAt, oldAsset.UpdatedBy.ID, oldAsset.Version, oldAsset.Owners, jsonChangelog); err != nil {
+	if err = r.execContext(ctx, execer, query, args...); err != nil {
 		return fmt.Errorf("error running insert asset version query: %w", err)
 	}
 
@@ -591,30 +534,20 @@ func (r *AssetRepository) createOrFetchUserIDs(ctx context.Context, tx *sqlx.Tx,
 }
 
 func (r *AssetRepository) getAssetByURN(ctx context.Context, assetURN string, assetType asset.Type, assetService string) (ast asset.Asset, err error) {
-	query := `
-	SELECT
-		a.id as "id",
-		a.urn as "urn",
-		a.type as "type",
-		a.name as "name",
-		a.service as"service",
-		a.description as "description",
-		a.data as "data",
-		a.labels as "labels",
-		a.version as "version",
-		a.created_at as "created_at",
-		a.updated_at as "updated_at",
-		u.id as "updated_by.id",
-		u.email as "updated_by.email",
-		u.provider as "updated_by.provider",
-		u.created_at as "updated_by.created_at",
-		u.updated_at as "updated_by.updated_at"
-	FROM assets a
-	LEFT JOIN users u ON a.updated_by = u.id
-	WHERE a.urn = $1 AND a.type = $2 AND a.service = $3`
+	builder := r.getAssetSQL().
+		Where(sq.Eq{
+			"a.urn":     assetURN,
+			"a.type":    assetType,
+			"a.service": assetService,
+		})
+	query, args, err := r.buildSQL(builder)
+	if err != nil {
+		err = fmt.Errorf("error building query: %w", err)
+		return
+	}
 
 	var assetModel AssetModel
-	if err = r.client.db.GetContext(ctx, &assetModel, query, assetURN, assetType, assetService); err != nil {
+	if err = r.client.db.GetContext(ctx, &assetModel, query, args...); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = asset.NotFoundError{}
 			return
@@ -666,6 +599,54 @@ func (r *AssetRepository) buildSQL(builder sq.SelectBuilder) (query string, args
 	}
 
 	return
+}
+
+func (r *AssetRepository) getAssetSQL() sq.SelectBuilder {
+	return sq.Select(`
+		a.id as "id",
+		a.urn as "urn",
+		a.type as "type",
+		a.name as "name",
+		a.service as"service",
+		a.description as "description",
+		a.data as "data",
+		a.labels as "labels",
+		a.version as "version",
+		a.created_at as "created_at",
+		a.updated_at as "updated_at",
+		u.id as "updated_by.id",
+		u.email as "updated_by.email",
+		u.provider as "updated_by.provider",
+		u.created_at as "updated_by.created_at",
+		u.updated_at as "updated_by.updated_at"
+		`).
+		From("assets a").
+		LeftJoin("users u ON a.updated_by = u.id")
+}
+
+func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
+	return sq.Select(`
+		a.asset_id as "id",
+		a.urn as "urn",
+		a.type as "type",
+		a.name as "name",
+		a.service as"service",
+		a.description as "description",
+		a.data as "data",
+		a.labels as "labels",
+		a.version as "version",
+		a.created_at as "created_at",
+		a.updated_at as "updated_at",
+		a.changelog as "changelog",
+		a.owners as "owners",
+		u.id as "updated_by.id",
+		u.email as "updated_by.email",
+		u.provider as "updated_by.provider",
+		u.created_at as "updated_by.created_at",
+		u.updated_at as "updated_by.updated_at"
+		`).
+		From("assets_versions a").
+		LeftJoin("users u ON a.updated_by = u.id")
 }
 
 // NewAssetRepository initializes user repository clients

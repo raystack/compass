@@ -40,9 +40,9 @@ func NewAssetHandler(
 	return handler
 }
 
-func (h *AssetHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *AssetHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	config := h.buildAssetConfig(r.URL.Query())
-	assets, err := h.assetRepository.Get(r.Context(), config)
+	assets, err := h.assetRepository.GetAll(r.Context(), config)
 	if err != nil {
 		internalServerError(w, h.logger, err.Error())
 		return
@@ -178,13 +178,13 @@ func (h *AssetHandler) GetStargazers(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, users)
 }
 
-func (h *AssetHandler) GetPrevVersions(w http.ResponseWriter, r *http.Request) {
+func (h *AssetHandler) GetVersionHistory(w http.ResponseWriter, r *http.Request) {
 	config := h.buildAssetConfig(r.URL.Query())
 
 	pathParams := mux.Vars(r)
 	assetID := pathParams["id"]
 
-	assetVersions, err := h.assetRepository.GetPrevVersions(r.Context(), config, assetID)
+	assetVersions, err := h.assetRepository.GetVersionHistory(r.Context(), config, assetID)
 	if err != nil {
 		if errors.As(err, new(asset.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())

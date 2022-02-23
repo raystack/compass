@@ -356,7 +356,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Description:  `should return http 500 if fetching fails`,
 			ExpectStatus: http.StatusInternalServerError,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("Get", ctx, asset.Config{}).Return([]asset.Asset{}, errors.New("unknown error"))
+				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -364,7 +364,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Querystring:  "?with_total=1",
 			ExpectStatus: http.StatusInternalServerError,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("Get", ctx, asset.Config{}).Return([]asset.Asset{}, nil)
+				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{}, nil)
 				ar.On("GetCount", ctx, asset.Config{}).Return(0, errors.New("unknown error"))
 			},
 		},
@@ -373,7 +373,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Querystring:  "?text=asd&type=table&service=bigquery&size=30&offset=50",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("Get", ctx, asset.Config{
+				ar.On("GetAll", ctx, asset.Config{
 					Text:    "asd",
 					Type:    "table",
 					Service: "bigquery",
@@ -386,7 +386,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Description:  "should return http 200 status along with list of assets",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("Get", ctx, asset.Config{}).Return([]asset.Asset{
+				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 				}, nil)
@@ -418,7 +418,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			ExpectStatus: http.StatusOK,
 			Querystring:  "?with_total=true&text=dsa&type=job&service=kafka&size=10&offset=5",
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("Get", ctx, asset.Config{
+				ar.On("GetAll", ctx, asset.Config{
 					Text:    "dsa",
 					Type:    "job",
 					Service: "kafka",
@@ -470,7 +470,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			tc.Setup(rr.Context(), ar)
 
 			handler := handlers.NewAssetHandler(logger, ar, nil, nil)
-			handler.Get(rw, rr)
+			handler.GetAll(rw, rr)
 
 			if rw.Code != tc.ExpectStatus {
 				t.Errorf("expected handler to return http %d, returned %d instead", tc.ExpectStatus, rw.Code)
@@ -569,7 +569,7 @@ func TestAssetHandlerGetStargazers(t *testing.T) {
 	}
 }
 
-func TestAssetHandlerGetPrevVersions(t *testing.T) {
+func TestAssetHandlerGetVersionHistory(t *testing.T) {
 	var assetID = uuid.NewString()
 
 	type testCase struct {
@@ -585,14 +585,14 @@ func TestAssetHandlerGetPrevVersions(t *testing.T) {
 			Description:  `should return http 400 if asset id is not uuid`,
 			ExpectStatus: http.StatusBadRequest,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetPrevVersions", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{}, asset.InvalidError{AssetID: assetID})
+				ar.On("GetVersionHistory", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{}, asset.InvalidError{AssetID: assetID})
 			},
 		},
 		{
 			Description:  `should return http 500 if fetching fails`,
 			ExpectStatus: http.StatusInternalServerError,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetPrevVersions", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{}, errors.New("unknown error"))
+				ar.On("GetVersionHistory", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -600,7 +600,7 @@ func TestAssetHandlerGetPrevVersions(t *testing.T) {
 			Querystring:  "?size=30&offset=50",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetPrevVersions", ctx, asset.Config{
+				ar.On("GetVersionHistory", ctx, asset.Config{
 					Size:   30,
 					Offset: 50,
 				}, assetID).Return([]asset.AssetVersion{}, nil)
@@ -610,7 +610,7 @@ func TestAssetHandlerGetPrevVersions(t *testing.T) {
 			Description:  "should return http 200 status along with list of asset versions",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetPrevVersions", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{
+				ar.On("GetVersionHistory", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 				}, nil)
@@ -644,7 +644,7 @@ func TestAssetHandlerGetPrevVersions(t *testing.T) {
 			tc.Setup(rr.Context(), ar)
 
 			handler := handlers.NewAssetHandler(logger, ar, nil, nil)
-			handler.GetPrevVersions(rw, rr)
+			handler.GetVersionHistory(rw, rr)
 
 			if rw.Code != tc.ExpectStatus {
 				t.Errorf("expected handler to return http %d, returned %d instead", tc.ExpectStatus, rw.Code)

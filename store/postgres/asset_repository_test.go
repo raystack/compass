@@ -59,7 +59,7 @@ func (r *AssetRepositoryTestSuite) TearDownSuite() {
 	}
 }
 
-func (r *AssetRepositoryTestSuite) TestGet() {
+func (r *AssetRepositoryTestSuite) TestGetAll() {
 	// populate assets
 	total := 12
 	assets := []asset.Asset{}
@@ -88,7 +88,7 @@ func (r *AssetRepositoryTestSuite) TestGet() {
 	}
 
 	r.Run("should return all assets limited by default size", func() {
-		results, err := r.repository.Get(r.ctx, asset.Config{})
+		results, err := r.repository.GetAll(r.ctx, asset.Config{})
 		r.Require().NoError(err)
 		r.Require().Len(results, defaultGetMaxSize)
 		// making time empty to make ast comparable
@@ -101,7 +101,7 @@ func (r *AssetRepositoryTestSuite) TestGet() {
 
 	r.Run("should override default size using GetConfig.Size", func() {
 		size := 8
-		results, err := r.repository.Get(r.ctx, asset.Config{
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			Size: size,
 		})
 		r.Require().NoError(err)
@@ -116,7 +116,7 @@ func (r *AssetRepositoryTestSuite) TestGet() {
 
 	r.Run("should fetch assets by offset defined in GetConfig.Offset", func() {
 		offset := 2
-		results, err := r.repository.Get(r.ctx, asset.Config{
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			Offset: offset,
 		})
 		r.Require().NoError(err)
@@ -129,7 +129,7 @@ func (r *AssetRepositoryTestSuite) TestGet() {
 	})
 
 	r.Run("should filter using type", func() {
-		results, err := r.repository.Get(r.ctx, asset.Config{
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			Type: asset.TypeDashboard,
 			Size: total,
 		})
@@ -141,7 +141,7 @@ func (r *AssetRepositoryTestSuite) TestGet() {
 	})
 
 	r.Run("should filter using service", func() {
-		results, err := r.repository.Get(r.ctx, asset.Config{
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			Service: "postgres",
 			Size:    total,
 		})
@@ -372,7 +372,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 			},
 		}
 
-		assetVersions, err := r.repository.GetPrevVersions(r.ctx, asset.Config{Size: 3}, astVersioning.ID)
+		assetVersions, err := r.repository.GetVersionHistory(r.ctx, asset.Config{Size: 3}, astVersioning.ID)
 		r.NoError(err)
 		// making updatedby user time empty to make ast comparable
 		for i := 0; i < len(assetVersions); i++ {

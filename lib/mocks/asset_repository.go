@@ -29,8 +29,8 @@ func (_m *AssetRepository) Delete(ctx context.Context, id string) error {
 	return r0
 }
 
-// Get provides a mock function with given fields: _a0, _a1
-func (_m *AssetRepository) Get(_a0 context.Context, _a1 asset.Config) ([]asset.Asset, error) {
+// GetAll provides a mock function with given fields: _a0, _a1
+func (_m *AssetRepository) GetAll(_a0 context.Context, _a1 asset.Config) ([]asset.Asset, error) {
 	ret := _m.Called(_a0, _a1)
 
 	var r0 []asset.Asset
@@ -115,8 +115,8 @@ func (_m *AssetRepository) GetCount(_a0 context.Context, _a1 asset.Config) (int,
 	return r0, r1
 }
 
-// GetPrevVersions provides a mock function with given fields: ctx, cfg, id
-func (_m *AssetRepository) GetPrevVersions(ctx context.Context, cfg asset.Config, id string) ([]asset.AssetVersion, error) {
+// GetVersionHistory provides a mock function with given fields: ctx, cfg, id
+func (_m *AssetRepository) GetVersionHistory(ctx context.Context, cfg asset.Config, id string) ([]asset.AssetVersion, error) {
 	ret := _m.Called(ctx, cfg, id)
 
 	var r0 []asset.AssetVersion
