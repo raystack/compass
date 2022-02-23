@@ -56,8 +56,10 @@ func (h *UserHandler) GetStarredAssetsWithPath(w http.ResponseWriter, r *http.Re
 
 	var starredAssets []asset.Asset
 
+	//TODO: might want to remove get by email flow in the future
 	// we can use user id or user email
-	// a temporary flow and might be deleted in the future version
+	// get by email is a temporary flow and might be deleted in the future version
+	// once we already introduce better solution (e.g. get by user name)
 	_, err := mail.ParseAddress(targetUserID)
 	if err == nil {
 		starredAssets, err = h.starRepository.GetAllAssetsByUserEmail(r.Context(), starCfg, targetUserID)

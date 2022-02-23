@@ -34,10 +34,10 @@ func (r *StarRepository) Create(ctx context.Context, userID string, assetID stri
 	}
 
 	if err := r.client.db.QueryRowxContext(ctx, `
-					INSERT INTO 
-					stars 
+					INSERT INTO
+					stars
 						(user_id, asset_id)
-					VALUES 
+					VALUES
 						($1, $2)
 					RETURNING id
 					`, userID, assetID).Scan(&starID); err != nil {
@@ -111,7 +111,7 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Conf
 
 	var assetModels []AssetModel
 	if err := r.client.db.SelectContext(ctx, &assetModels, fmt.Sprintf(`
-		SELECT	
+		SELECT
 			a.id as id,
 			a.urn as urn,
 			a.type as type,
@@ -150,7 +150,7 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Conf
 }
 
 // GetAllAssetsByUserEmail fetch list of assets starred by a user
-// this function is temporary and might be remove in the future version
+// TODO: this function is temporary and might be remove in the future version
 func (r *StarRepository) GetAllAssetsByUserEmail(ctx context.Context, cfg star.Config, userEmail string) ([]asset.Asset, error) {
 	if userEmail == "" {
 		return nil, star.ErrEmptyUserID
@@ -160,7 +160,7 @@ func (r *StarRepository) GetAllAssetsByUserEmail(ctx context.Context, cfg star.C
 
 	var assetModels []AssetModel
 	if err := r.client.db.SelectContext(ctx, &assetModels, fmt.Sprintf(`
-		SELECT	
+		SELECT
 			a.id as id,
 			a.urn as urn,
 			a.type as type,
@@ -266,7 +266,7 @@ func (r *StarRepository) Delete(ctx context.Context, userID string, assetID stri
 
 	res, err := r.client.db.ExecContext(ctx, `
 		DELETE FROM
-			stars 
+			stars
 		WHERE
 			user_id = $1 AND asset_id = $2
 	`, userID, assetID)
