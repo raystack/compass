@@ -32,6 +32,7 @@ var (
 )
 
 func TestAssetHandlerUpsert(t *testing.T) {
+	var userID = uuid.NewString()
 	var validPayload = `{"urn": "test dagger", "type": "table", "name": "de-dagger-test", "service": "kafka", "data": {}}`
 
 	t.Run("should return HTTP 400 for invalid payload", func(t *testing.T) {
@@ -72,7 +73,10 @@ func TestAssetHandlerUpsert(t *testing.T) {
 		for _, testCase := range testCases {
 			t.Run(testCase.description, func(t *testing.T) {
 				rw := httptest.NewRecorder()
+
 				rr := httptest.NewRequest("PUT", "/", strings.NewReader(testCase.payload))
+				ctx := user.NewContext(rr.Context(), userID)
+				rr = rr.WithContext(ctx)
 
 				handler := handlers.NewAssetHandler(logger, nil, nil, nil)
 				handler.Upsert(rw, rr)
@@ -85,9 +89,12 @@ func TestAssetHandlerUpsert(t *testing.T) {
 			})
 		}
 	})
+
 	t.Run("should return HTTP 500 if the asset creation/update fails", func(t *testing.T) {
 		t.Run("AssetRepository fails", func(t *testing.T) {
 			rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
+			ctx := user.NewContext(rr.Context(), userID)
+			rr = rr.WithContext(ctx)
 			rw := httptest.NewRecorder()
 
 			expectedErr := errors.New("unknown error")
@@ -108,6 +115,8 @@ func TestAssetHandlerUpsert(t *testing.T) {
 		})
 		t.Run("DiscoveryRepository fails", func(t *testing.T) {
 			rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
+			ctx := user.NewContext(rr.Context(), userID)
+			rr = rr.WithContext(ctx)
 			rw := httptest.NewRecorder()
 
 			expectedErr := errors.New("unknown error")
@@ -131,18 +140,22 @@ func TestAssetHandlerUpsert(t *testing.T) {
 			assert.Contains(t, response.Reason, "Internal Server Error")
 		})
 	})
+
 	t.Run("should return HTTP 200 and asset's ID if the asset is successfully created/updated", func(t *testing.T) {
 		ast := asset.Asset{
-			URN:     "test dagger",
-			Type:    asset.TypeTable,
-			Name:    "de-dagger-test",
-			Service: "kafka",
-			Data:    map[string]interface{}{},
+			URN:       "test dagger",
+			Type:      asset.TypeTable,
+			Name:      "de-dagger-test",
+			Service:   "kafka",
+			UpdatedBy: user.User{ID: userID},
+			Data:      map[string]interface{}{},
 		}
 		assetWithID := ast
 		assetWithID.ID = uuid.New().String()
 
 		rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
+		ctx := user.NewContext(rr.Context(), userID)
+		rr = rr.WithContext(ctx)
 		rw := httptest.NewRecorder()
 
 		ar := new(mocks.AssetRepository)
@@ -344,7 +357,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Description:  `should return http 500 if fetching fails`,
 			ExpectStatus: http.StatusInternalServerError,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("Get", ctx, asset.Config{}).Return([]asset.Asset{}, errors.New("unknown error"))
+				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -352,7 +365,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Querystring:  "?with_total=1",
 			ExpectStatus: http.StatusInternalServerError,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("Get", ctx, asset.Config{}).Return([]asset.Asset{}, nil)
+				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{}, nil)
 				ar.On("GetCount", ctx, asset.Config{}).Return(0, errors.New("unknown error"))
 			},
 		},
@@ -361,7 +374,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Querystring:  "?text=asd&type=table&service=bigquery&size=30&offset=50",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("Get", ctx, asset.Config{
+				ar.On("GetAll", ctx, asset.Config{
 					Text:    "asd",
 					Type:    "table",
 					Service: "bigquery",
@@ -374,7 +387,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Description:  "should return http 200 status along with list of assets",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("Get", ctx, asset.Config{}).Return([]asset.Asset{
+				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 				}, nil)
@@ -406,7 +419,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			ExpectStatus: http.StatusOK,
 			Querystring:  "?with_total=true&text=dsa&type=job&service=kafka&size=10&offset=5",
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("Get", ctx, asset.Config{
+				ar.On("GetAll", ctx, asset.Config{
 					Text:    "dsa",
 					Type:    "job",
 					Service: "kafka",
@@ -458,7 +471,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			tc.Setup(rr.Context(), ar)
 
 			handler := handlers.NewAssetHandler(logger, ar, nil, nil)
-			handler.Get(rw, rr)
+			handler.GetAll(rw, rr)
 
 			if rw.Code != tc.ExpectStatus {
 				t.Errorf("expected handler to return http %d, returned %d instead", tc.ExpectStatus, rw.Code)
@@ -485,7 +498,7 @@ func TestAssetHandlerGetStargazers(t *testing.T) {
 	offset := 10
 	size := 20
 	defaultStarCfg := star.Config{Offset: offset, Size: size}
-	assetID := "dummy-asset-id"
+	var assetID = uuid.NewString()
 
 	var testCases = []testCase{
 		{
@@ -541,17 +554,195 @@ func TestAssetHandlerGetStargazers(t *testing.T) {
 			defer sr.AssertExpectations(t)
 			tc.Setup(&tc, sr)
 
-			handler := handlers.NewAssetHandler(logger, nil, nil, sr)
-			router := mux.NewRouter()
-			router.Path("/assets/{id}/stargazers").Methods("GET").HandlerFunc(handler.GetStargazers)
-			rr := httptest.NewRequest("GET", "/assets", nil)
+			rr := httptest.NewRequest("GET", "/", nil)
 			rw := httptest.NewRecorder()
-
+			rr = mux.SetURLVars(rr, map[string]string{
+				"id": assetID,
+			})
 			if tc.MutateRequest != nil {
 				rr = tc.MutateRequest(rr)
 			}
 
-			router.ServeHTTP(rw, rr)
+			handler := handlers.NewAssetHandler(logger, nil, nil, sr)
+			handler.GetStargazers(rw, rr)
+
+		})
+	}
+}
+
+func TestAssetHandlerGetVersionHistory(t *testing.T) {
+	var assetID = uuid.NewString()
+
+	type testCase struct {
+		Description  string
+		Querystring  string
+		ExpectStatus int
+		Setup        func(context.Context, *mocks.AssetRepository)
+		PostCheck    func(resp *http.Response) error
+	}
+
+	var testCases = []testCase{
+		{
+			Description:  `should return http 400 if asset id is not uuid`,
+			ExpectStatus: http.StatusBadRequest,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.On("GetVersionHistory", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{}, asset.InvalidError{AssetID: assetID})
+			},
+		},
+		{
+			Description:  `should return http 500 if fetching fails`,
+			ExpectStatus: http.StatusInternalServerError,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.On("GetVersionHistory", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{}, errors.New("unknown error"))
+			},
+		},
+		{
+			Description:  `should parse querystring to get config`,
+			Querystring:  "?size=30&offset=50",
+			ExpectStatus: http.StatusOK,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.On("GetVersionHistory", ctx, asset.Config{
+					Size:   30,
+					Offset: 50,
+				}, assetID).Return([]asset.AssetVersion{}, nil)
+			},
+		},
+		{
+			Description:  "should return http 200 status along with list of asset versions",
+			ExpectStatus: http.StatusOK,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.On("GetVersionHistory", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{
+					{ID: "testid-1"},
+					{ID: "testid-2"},
+				}, nil)
+			},
+			PostCheck: func(r *http.Response) error {
+				expected := []asset.AssetVersion{
+					{ID: "testid-1"},
+					{ID: "testid-2"},
+				}
+				var actual []asset.AssetVersion
+				err := json.NewDecoder(r.Body).Decode(&actual)
+				if err != nil {
+					return fmt.Errorf("error reading response body: %w", err)
+				}
+				if reflect.DeepEqual(actual, expected) == false {
+					return fmt.Errorf("expected payload to be to be %+v, was %+v", expected, actual)
+				}
+				return nil
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			rr := httptest.NewRequest("GET", "/"+tc.Querystring, nil)
+			rr = mux.SetURLVars(rr, map[string]string{
+				"id": assetID,
+			})
+			rw := httptest.NewRecorder()
+
+			ar := new(mocks.AssetRepository)
+			tc.Setup(rr.Context(), ar)
+
+			handler := handlers.NewAssetHandler(logger, ar, nil, nil)
+			handler.GetVersionHistory(rw, rr)
+
+			if rw.Code != tc.ExpectStatus {
+				t.Errorf("expected handler to return http %d, returned %d instead", tc.ExpectStatus, rw.Code)
+				return
+			}
+			if tc.PostCheck != nil {
+				if err := tc.PostCheck(rw.Result()); err != nil {
+					t.Error(err)
+					return
+				}
+			}
+		})
+	}
+}
+
+func TestAssetHandlerGetByVersion(t *testing.T) {
+	var (
+		assetID = uuid.NewString()
+		version = "0.2"
+		ast     = asset.Asset{
+			ID:      assetID,
+			Version: version,
+		}
+	)
+
+	type testCase struct {
+		Description  string
+		ExpectStatus int
+		Setup        func(context.Context, *mocks.AssetRepository)
+		PostCheck    func(resp *http.Response) error
+	}
+
+	var testCases = []testCase{
+		{
+			Description:  `should return http 400 if asset id is not uuid`,
+			ExpectStatus: http.StatusBadRequest,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.On("GetByVersion", ctx, assetID, version).Return(asset.Asset{}, asset.InvalidError{AssetID: assetID})
+			},
+		},
+		{
+			Description:  `should return http 404 if asset doesn't exist`,
+			ExpectStatus: http.StatusNotFound,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.On("GetByVersion", ctx, assetID, version).Return(asset.Asset{}, asset.NotFoundError{AssetID: assetID})
+			},
+		},
+		{
+			Description:  `should return http 500 if fetching fails`,
+			ExpectStatus: http.StatusInternalServerError,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.On("GetByVersion", ctx, assetID, version).Return(asset.Asset{}, errors.New("unknown error"))
+			},
+		},
+		{
+			Description:  "should return http 200 status along with the asset, if found",
+			ExpectStatus: http.StatusOK,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.On("GetByVersion", ctx, assetID, version).Return(ast, nil)
+			},
+			PostCheck: func(r *http.Response) error {
+				var responsePayload asset.Asset
+				err := json.NewDecoder(r.Body).Decode(&responsePayload)
+				if err != nil {
+					return fmt.Errorf("error reading response body: %w", err)
+				}
+				if reflect.DeepEqual(responsePayload, ast) == false {
+					return fmt.Errorf("expected returned asset to be to be %+v, was %+v", ast, responsePayload)
+				}
+				return nil
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			rr := httptest.NewRequest("GET", "/", nil)
+			rw := httptest.NewRecorder()
+			rr = mux.SetURLVars(rr, map[string]string{
+				"id":      assetID,
+				"version": version,
+			})
+			ar := new(mocks.AssetRepository)
+			tc.Setup(rr.Context(), ar)
+
+			handler := handlers.NewAssetHandler(logger, ar, nil, nil)
+			handler.GetByVersion(rw, rr)
+
+			if rw.Code != tc.ExpectStatus {
+				t.Errorf("expected handler to return http %d, returned %d instead", tc.ExpectStatus, rw.Code)
+				return
+			}
+			if tc.PostCheck != nil {
+				if err := tc.PostCheck(rw.Result()); err != nil {
+					t.Error(err)
+					return
+				}
+			}
 		})
 	}
 }

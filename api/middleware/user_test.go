@@ -22,16 +22,16 @@ const (
 	identityProviderHeader = "Columbus-User-Provider"
 )
 
+var userCfg = user.Config{IdentityProviderDefaultName: "shield"}
+
 func TestValidateUser(t *testing.T) {
 	middlewareCfg := Config{
 		Logger:         log.NewNoop(),
 		IdentityHeader: identityHeader,
 	}
-	userCfg := user.Config{
-		IdentityProviderDefaultName: "shield",
-	}
+
 	t.Run("should return HTTP 400 when identity header not present", func(t *testing.T) {
-		userSvc := user.NewService(userCfg, nil)
+		userSvc := user.NewService(nil, userCfg)
 		r := mux.NewRouter()
 		r.Use(ValidateUser(middlewareCfg, userSvc))
 		r.Path(dummyRoute).Methods(http.MethodGet)
@@ -58,7 +58,7 @@ func TestValidateUser(t *testing.T) {
 		mockUserRepository.On("GetID", mock.Anything, mock.Anything).Return("", customError)
 		mockUserRepository.On("Create", mock.Anything, mock.Anything).Return("", customError)
 
-		userSvc := user.NewService(userCfg, mockUserRepository)
+		userSvc := user.NewService(mockUserRepository, userCfg)
 		r := mux.NewRouter()
 		r.Use(ValidateUser(middlewareCfg, userSvc))
 		r.Path(dummyRoute).Methods(http.MethodGet)
@@ -83,11 +83,12 @@ func TestValidateUser(t *testing.T) {
 
 	t.Run("should return HTTP 200 with propagated user ID when user validation success", func(t *testing.T) {
 		userID := "user-id"
+		userEmail := "some-email"
 		mockUserRepository := &mocks.UserRepository{}
 		mockUserRepository.On("GetID", mock.Anything, mock.Anything).Return(userID, nil)
 		mockUserRepository.On("Create", mock.Anything, mock.Anything).Return(userID, nil)
 
-		userSvc := user.NewService(userCfg, mockUserRepository)
+		userSvc := user.NewService(mockUserRepository, userCfg)
 		r := mux.NewRouter()
 		r.Use(ValidateUser(middlewareCfg, userSvc))
 		r.Path(dummyRoute).Methods(http.MethodGet).HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
@@ -100,7 +101,7 @@ func TestValidateUser(t *testing.T) {
 		})
 
 		req, _ := http.NewRequest("GET", dummyRoute, nil)
-		req.Header.Set(identityHeader, "some-email")
+		req.Header.Set(identityHeader, userEmail)
 		req.Header.Set(identityProviderHeader, "some-provider")
 
 		rr := httptest.NewRecorder()

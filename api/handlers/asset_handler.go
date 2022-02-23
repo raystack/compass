@@ -14,6 +14,7 @@ import (
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/star"
+	"github.com/odpf/columbus/user"
 )
 
 // AssetHandler exposes a REST interface to types
@@ -39,9 +40,9 @@ func NewAssetHandler(
 	return handler
 }
 
-func (h *AssetHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *AssetHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	config := h.buildAssetConfig(r.URL.Query())
-	assets, err := h.assetRepository.Get(r.Context(), config)
+	assets, err := h.assetRepository.GetAll(r.Context(), config)
 	if err != nil {
 		internalServerError(w, h.logger, err.Error())
 		return
@@ -90,6 +91,13 @@ func (h *AssetHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
+	userID := user.FromContext(r.Context())
+	if userID == "" {
+		h.logger.Warn(errMissingUserInfo.Error())
+		WriteJSONError(w, http.StatusBadRequest, errMissingUserInfo.Error())
+		return
+	}
+
 	var ast asset.Asset
 	err := json.NewDecoder(r.Body).Decode(&ast)
 	if err != nil {
@@ -101,6 +109,7 @@ func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ast.UpdatedBy.ID = userID
 	assetID, err := h.assetRepository.Upsert(r.Context(), &ast)
 	if errors.As(err, new(asset.InvalidError)) {
 		WriteJSONError(w, http.StatusBadRequest, err.Error())
@@ -168,6 +177,57 @@ func (h *AssetHandler) GetStargazers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, users)
+}
+
+func (h *AssetHandler) GetVersionHistory(w http.ResponseWriter, r *http.Request) {
+	config := h.buildAssetConfig(r.URL.Query())
+
+	pathParams := mux.Vars(r)
+	assetID := pathParams["id"]
+
+	assetVersions, err := h.assetRepository.GetVersionHistory(r.Context(), config, assetID)
+	if err != nil {
+		if errors.As(err, new(asset.InvalidError)) {
+			WriteJSONError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		if errors.As(err, new(asset.NotFoundError)) {
+			WriteJSONError(w, http.StatusNotFound, err.Error())
+			return
+		}
+		internalServerError(w, h.logger, err.Error())
+		return
+	}
+
+	writeJSON(w, http.StatusOK, assetVersions)
+}
+
+func (h *AssetHandler) GetByVersion(w http.ResponseWriter, r *http.Request) {
+
+	pathParams := mux.Vars(r)
+	assetID := pathParams["id"]
+	version := pathParams["version"]
+
+	if _, err := asset.ParseVersion(version); err != nil {
+		WriteJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	ast, err := h.assetRepository.GetByVersion(r.Context(), assetID, version)
+	if err != nil {
+		if errors.As(err, new(asset.InvalidError)) {
+			WriteJSONError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		if errors.As(err, new(asset.NotFoundError)) {
+			WriteJSONError(w, http.StatusNotFound, err.Error())
+			return
+		}
+		internalServerError(w, h.logger, err.Error())
+		return
+	}
+
+	writeJSON(w, http.StatusOK, ast)
 }
 
 func (h *AssetHandler) validateAsset(ast asset.Asset) error {

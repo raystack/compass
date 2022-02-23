@@ -33,10 +33,10 @@ func (r *UserRepository) create(ctx context.Context, querier sqlx.QueryerContext
 	}
 
 	if err := r.client.db.QueryRowxContext(ctx, `
-					INSERT INTO 
-					users 
+					INSERT INTO
+					users
 						(email, provider)
-					VALUES 
+					VALUES
 						($1, $2)
 					RETURNING id
 					`, ud.Email, ud.Provider).Scan(&userID); err != nil {
@@ -56,7 +56,7 @@ func (r *UserRepository) create(ctx context.Context, querier sqlx.QueryerContext
 func (r *UserRepository) GetID(ctx context.Context, email string) (string, error) {
 	var userID string
 	if err := r.client.db.GetContext(ctx, &userID, `
-		SELECT 
+		SELECT
 			id
 		FROM
 			users

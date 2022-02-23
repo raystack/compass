@@ -3,7 +3,6 @@ package handlers_test
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -11,6 +10,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/asset"
@@ -162,7 +162,7 @@ func TestGetStarredWithPath(t *testing.T) {
 		PostCheck     func(t *testing.T, tc *testCase, resp *http.Response) error
 	}
 
-	pathUserID := "a-path-user-id"
+	pathUserID := uuid.NewString()
 	offset := 10
 	size := 20
 
@@ -171,7 +171,6 @@ func TestGetStarredWithPath(t *testing.T) {
 			Description:  "should return 500 status code if failed to fetch starred",
 			ExpectStatus: http.StatusInternalServerError,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s/starred", pathUserID)
 				params := url.Values{}
 				params.Add("offset", strconv.Itoa(offset))
 				params.Add("size", strconv.Itoa(size))
@@ -186,7 +185,6 @@ func TestGetStarredWithPath(t *testing.T) {
 			Description:  "should return 400 status code if star repository return invalid error",
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s/starred", pathUserID)
 				params := url.Values{}
 				params.Add("offset", strconv.Itoa(offset))
 				params.Add("size", strconv.Itoa(size))
@@ -201,7 +199,6 @@ func TestGetStarredWithPath(t *testing.T) {
 			Description:  "should return 404 status code if starred not found",
 			ExpectStatus: http.StatusNotFound,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s/starred", pathUserID)
 				params := url.Values{}
 				params.Add("offset", strconv.Itoa(offset))
 				params.Add("size", strconv.Itoa(size))
@@ -216,7 +213,6 @@ func TestGetStarredWithPath(t *testing.T) {
 			Description:  "should return 200 starred assets of a user if no error",
 			ExpectStatus: http.StatusOK,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s/starred", pathUserID)
 				params := url.Values{}
 				params.Add("offset", strconv.Itoa(offset))
 				params.Add("size", strconv.Itoa(size))
@@ -256,16 +252,17 @@ func TestGetStarredWithPath(t *testing.T) {
 			tc.Setup(&tc, sr)
 
 			handler := handlers.NewUserHandler(logger, sr)
-			router := mux.NewRouter()
-			router.Path("/v1beta1/{user_id}/starred").Methods("GET").HandlerFunc(handler.GetStarredAssetsWithPath)
-			rr := httptest.NewRequest("GET", "/v1beta1", nil)
+			rr := httptest.NewRequest("GET", "/", nil)
 			rw := httptest.NewRecorder()
+			rr = mux.SetURLVars(rr, map[string]string{
+				"user_id": pathUserID,
+			})
 
 			if tc.MutateRequest != nil {
 				rr = tc.MutateRequest(rr)
 			}
 
-			router.ServeHTTP(rw, rr)
+			handler.GetStarredAssetsWithPath(rw, rr)
 			if rw.Code != tc.ExpectStatus {
 				t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
 				return
@@ -295,17 +292,12 @@ func TestStarAsset(t *testing.T) {
 		{
 			Description:  "should return 400 status code if user id not found in context",
 			ExpectStatus: http.StatusBadRequest,
-			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				return req
-			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository) {},
+			Setup:        func(tc *testCase, sr *mocks.StarRepository) {},
 		},
 		{
 			Description:  "should return 400 status code if asset id in param is invalid",
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -317,7 +309,6 @@ func TestStarAsset(t *testing.T) {
 			Description:  "should return 400 status code if star repository return invalid error",
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -329,7 +320,6 @@ func TestStarAsset(t *testing.T) {
 			Description:  "should return 404 status code if user not found",
 			ExpectStatus: http.StatusNotFound,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -341,7 +331,6 @@ func TestStarAsset(t *testing.T) {
 			Description:  "should return 500 status code if failed to star an asset",
 			ExpectStatus: http.StatusInternalServerError,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -353,7 +342,6 @@ func TestStarAsset(t *testing.T) {
 			Description:  "should return 204 if starring success",
 			ExpectStatus: http.StatusNoContent,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -365,7 +353,6 @@ func TestStarAsset(t *testing.T) {
 			Description:  "should return 204 if asset is already starred",
 			ExpectStatus: http.StatusNoContent,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -382,16 +369,17 @@ func TestStarAsset(t *testing.T) {
 			tc.Setup(&tc, sr)
 
 			handler := handlers.NewUserHandler(logger, sr)
-			router := mux.NewRouter()
-			router.Path("/user/starred/{asset_id}").Methods("PUT").HandlerFunc(handler.StarAsset)
-			rr := httptest.NewRequest("PUT", "/user/starred", nil)
+			rr := httptest.NewRequest("PUT", "/", nil)
 			rw := httptest.NewRecorder()
+			rr = mux.SetURLVars(rr, map[string]string{
+				"asset_id": assetID,
+			})
 
 			if tc.MutateRequest != nil {
 				rr = tc.MutateRequest(rr)
 			}
 
-			router.ServeHTTP(rw, rr)
+			handler.StarAsset(rw, rr)
 			if rw.Code != tc.ExpectStatus {
 				t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
 				return
@@ -418,17 +406,12 @@ func TestGetStarredAsset(t *testing.T) {
 		{
 			Description:  "should return 400 status code if user id not found in context",
 			ExpectStatus: http.StatusBadRequest,
-			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				return req
-			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository) {},
+			Setup:        func(tc *testCase, sr *mocks.StarRepository) {},
 		},
 		{
 			Description:  "should return 400 status code if asset id in param is invalid",
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -440,7 +423,6 @@ func TestGetStarredAsset(t *testing.T) {
 			Description:  "should return 400 status code if star repository return invalid error",
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -452,7 +434,6 @@ func TestGetStarredAsset(t *testing.T) {
 			Description:  "should return 404 status code if a star not found",
 			ExpectStatus: http.StatusNotFound,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -464,7 +445,6 @@ func TestGetStarredAsset(t *testing.T) {
 			Description:  "should return 500 status code if failed to fetch a starred asset",
 			ExpectStatus: http.StatusInternalServerError,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -476,7 +456,6 @@ func TestGetStarredAsset(t *testing.T) {
 			Description:  "should return 200 starred assets of a user if no error",
 			ExpectStatus: http.StatusOK,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -504,16 +483,17 @@ func TestGetStarredAsset(t *testing.T) {
 			tc.Setup(&tc, sr)
 
 			handler := handlers.NewUserHandler(logger, sr)
-			router := mux.NewRouter()
-			router.Path("/user/starred/{asset_id}").Methods("GET").HandlerFunc(handler.GetStarredAsset)
-			rr := httptest.NewRequest("GET", "/user/starred", nil)
+			rr := httptest.NewRequest("GET", "/", nil)
 			rw := httptest.NewRecorder()
+			rr = mux.SetURLVars(rr, map[string]string{
+				"asset_id": assetID,
+			})
 
 			if tc.MutateRequest != nil {
 				rr = tc.MutateRequest(rr)
 			}
 
-			router.ServeHTTP(rw, rr)
+			handler.GetStarredAsset(rw, rr)
 			if rw.Code != tc.ExpectStatus {
 				t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
 				return
@@ -543,17 +523,12 @@ func TestUnstarAsset(t *testing.T) {
 		{
 			Description:  "should return 400 status code if user id not found in context",
 			ExpectStatus: http.StatusBadRequest,
-			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
-				return req
-			},
-			Setup: func(tc *testCase, sr *mocks.StarRepository) {},
+			Setup:        func(tc *testCase, sr *mocks.StarRepository) {},
 		},
 		{
 			Description:  "should return 400 status code if asset id is empty",
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -565,7 +540,6 @@ func TestUnstarAsset(t *testing.T) {
 			Description:  "should return 400 status code if star repository return invalid error",
 			ExpectStatus: http.StatusBadRequest,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -577,7 +551,6 @@ func TestUnstarAsset(t *testing.T) {
 			Description:  "should return 500 status code if failed to unstar an asset",
 			ExpectStatus: http.StatusInternalServerError,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -589,7 +562,6 @@ func TestUnstarAsset(t *testing.T) {
 			Description:  "should return 204 if unstarring success",
 			ExpectStatus: http.StatusNoContent,
 			MutateRequest: func(req *http.Request) *http.Request {
-				req.URL.Path += fmt.Sprintf("/%s", assetID)
 				ctx := user.NewContext(req.Context(), userID)
 				return req.WithContext(ctx)
 			},
@@ -606,16 +578,17 @@ func TestUnstarAsset(t *testing.T) {
 			tc.Setup(&tc, sr)
 
 			handler := handlers.NewUserHandler(logger, sr)
-			router := mux.NewRouter()
-			router.Path("/user/starred/{asset_id}").Methods("DELETE").HandlerFunc(handler.UnstarAsset)
-			rr := httptest.NewRequest("DELETE", "/user/starred", nil)
+			rr := httptest.NewRequest("DELETE", "/", nil)
 			rw := httptest.NewRecorder()
+			rr = mux.SetURLVars(rr, map[string]string{
+				"asset_id": assetID,
+			})
 
 			if tc.MutateRequest != nil {
 				rr = tc.MutateRequest(rr)
 			}
 
-			router.ServeHTTP(rw, rr)
+			handler.UnstarAsset(rw, rr)
 			if rw.Code != tc.ExpectStatus {
 				t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
 				return

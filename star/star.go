@@ -4,18 +4,10 @@ package star
 
 import (
 	"context"
-	"time"
 
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/user"
 )
-
-type Star struct {
-	ID        string      `json:"id"`
-	Asset     asset.Asset `json:"asset"`
-	CreatedAt time.Time   `json:"created_at"`
-	UpdatedAt time.Time   `json:"updated_at"`
-}
 
 type Repository interface {
 	Create(ctx context.Context, userID string, assetID string) (string, error)

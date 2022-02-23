@@ -84,11 +84,11 @@ func initRouter(
 	if err != nil {
 		logger.Fatal("failed to create new user repository", "error", err)
 	}
-	userService := user.NewService(user.Config{
+	userService := user.NewService(userRepository, user.Config{
 		IdentityProviderDefaultName: config.IdentityProviderDefaultName,
-	}, userRepository)
+	})
 
-	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0)
+	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0, config.IdentityProviderDefaultName)
 	if err != nil {
 		logger.Fatal("failed to create new asset repository", "error", err)
 	}
@@ -167,9 +167,9 @@ func initElasticsearch(config Config, logger log.Logger) *elasticsearch.Client {
 		Transport: nrelasticsearch.NewRoundTripper(nil),
 		// uncomment below code to debug request and response to elasticsearch
 		// Logger: &estransport.ColorLogger{
-		// 	Output:             os.Stdout,
-		// 	EnableRequestBody:  true,
-		// 	EnableResponseBody: true,
+		//	Output:             os.Stdout,
+		//	EnableRequestBody:  true,
+		//	EnableResponseBody: true,
 		// },
 	})
 	if err != nil {

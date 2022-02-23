@@ -8,15 +8,15 @@ import (
 type contextKeyType struct{}
 
 var (
-	// userIDContextKey is the key used for user.FromContext and
+	// userContextKey is the key used for user.FromContext and
 	// user.NewContext.
-	userIDContextKey = contextKeyType(struct{}{})
+	userContextKey = contextKeyType(struct{}{})
 )
 
 // Service is a type of service that manages business process
 type Service struct {
 	repository Repository
-	config     Config
+	cfg        Config
 }
 
 // ValidateUser checks if user information is already in DB
@@ -35,7 +35,7 @@ func (s *Service) ValidateUser(ctx context.Context, email string) (string, error
 	}
 	user := &User{
 		Email:    email,
-		Provider: s.config.IdentityProviderDefaultName,
+		Provider: s.cfg.IdentityProviderDefaultName,
 	}
 	if userID, err = s.repository.Create(ctx, user); err != nil {
 		return "", err
@@ -46,7 +46,7 @@ func (s *Service) ValidateUser(ctx context.Context, email string) (string, error
 // NewContext returns a new context.Context that carries the provided
 // user ID.
 func NewContext(ctx context.Context, userID string) context.Context {
-	return context.WithValue(ctx, userIDContextKey, userID)
+	return context.WithValue(ctx, userContextKey, userID)
 }
 
 // FromContext returns the user ID from the context if present, and empty
@@ -55,7 +55,7 @@ func FromContext(ctx context.Context) string {
 	if ctx == nil {
 		return ""
 	}
-	h, _ := ctx.Value(userIDContextKey).(string)
+	h, _ := ctx.Value(userContextKey).(string)
 	if h != "" {
 		return h
 	}
@@ -63,9 +63,9 @@ func FromContext(ctx context.Context) string {
 }
 
 // NewService initializes user service
-func NewService(cfg Config, repository Repository) *Service {
+func NewService(repository Repository, cfg Config) *Service {
 	return &Service{
-		config:     cfg,
 		repository: repository,
+		cfg:        cfg,
 	}
 }

@@ -16,7 +16,11 @@ import (
 	"github.com/ory/dockertest/v3/docker"
 )
 
-const logLevelDebug = "debug"
+const (
+	logLevelDebug       = "debug"
+	defaultProviderName = "shield"
+	defaultGetMaxSize   = 7
+)
 
 var (
 	pgConfig = postgres.Config{
@@ -145,8 +149,9 @@ func createUser(userRepo user.Repository, email string) (string, error) {
 	return id, nil
 }
 
-func createAsset(assetRepo asset.Repository, userID, assetURN, assetType string) (string, error) {
-	ast := getAsset(userID, assetURN, assetType)
+func createAsset(assetRepo asset.Repository, updaterID string, ownerEmail, assetURN, assetType string) (string, error) {
+	ast := getAsset(ownerEmail, assetURN, assetType)
+	ast.UpdatedBy.ID = updaterID
 	id, err := assetRepo.Upsert(context.Background(), ast)
 	if err != nil {
 		return "", err
@@ -154,14 +159,14 @@ func createAsset(assetRepo asset.Repository, userID, assetURN, assetType string)
 	return id, nil
 }
 
-func getAsset(userID, assetURN, assetType string) *asset.Asset {
+func getAsset(ownerEmail, assetURN, assetType string) *asset.Asset {
 	return &asset.Asset{
 		URN:     assetURN,
 		Type:    asset.Type(assetType),
 		Service: "bigquery",
 		Owners: []user.User{
 			{
-				ID: userID,
+				Email: ownerEmail,
 			},
 		},
 	}

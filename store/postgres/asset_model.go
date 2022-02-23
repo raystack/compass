@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jmoiron/sqlx/types"
 	"github.com/odpf/columbus/asset"
+	"github.com/odpf/columbus/user"
+	"github.com/r3labs/diff/v2"
 )
 
 type AssetModel struct {
@@ -19,11 +22,17 @@ type AssetModel struct {
 	Description string    `db:"description"`
 	Data        JSONMap   `db:"data"`
 	Labels      JSONMap   `db:"labels"`
+	Version     string    `db:"version"`
+	UpdatedBy   UserModel `db:"updated_by"`
 	CreatedAt   time.Time `db:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at"`
+	// version specific information
+	Changelog types.JSONText `db:"changelog"`
+	Owners    types.JSONText `db:"owners"`
 }
 
-func (a *AssetModel) toAsset() asset.Asset {
+func (a *AssetModel) toAsset(owners []user.User) asset.Asset {
+
 	return asset.Asset{
 		ID:          a.ID,
 		URN:         a.URN,
@@ -33,9 +42,63 @@ func (a *AssetModel) toAsset() asset.Asset {
 		Description: a.Description,
 		Data:        a.Data,
 		Labels:      a.buildLabels(),
+		Owners:      owners,
+		Version:     a.Version,
+		UpdatedBy:   a.UpdatedBy.toUser(),
 		CreatedAt:   a.CreatedAt,
 		UpdatedAt:   a.UpdatedAt,
 	}
+}
+
+func (a *AssetModel) toAssetVersion() (asset.AssetVersion, error) {
+
+	var clog diff.Changelog
+	err := a.Changelog.Unmarshal(&clog)
+	if err != nil {
+		return asset.AssetVersion{}, err
+	}
+
+	return asset.AssetVersion{
+		ID:        a.ID,
+		URN:       a.URN,
+		Type:      a.Type,
+		Service:   a.Service,
+		Version:   a.Version,
+		Changelog: clog,
+		UpdatedBy: a.UpdatedBy.toUser(),
+		CreatedAt: a.CreatedAt,
+	}, nil
+}
+
+func (a *AssetModel) toVersionedAsset(latestAssetVersion asset.Asset) (asset.Asset, error) {
+	var owners []user.User
+	err := a.Owners.Unmarshal(&owners)
+	if err != nil {
+		return asset.Asset{}, err
+	}
+
+	var clog diff.Changelog
+	err = a.Changelog.Unmarshal(&clog)
+	if err != nil {
+		return asset.Asset{}, err
+	}
+
+	return asset.Asset{
+		ID:          latestAssetVersion.ID,
+		URN:         latestAssetVersion.URN,
+		Type:        asset.Type(latestAssetVersion.Type),
+		Name:        a.Name,
+		Service:     latestAssetVersion.Service,
+		Description: a.Description,
+		Data:        a.Data,
+		Labels:      a.buildLabels(),
+		Owners:      owners,
+		Version:     a.Version,
+		UpdatedBy:   a.UpdatedBy.toUser(),
+		CreatedAt:   a.CreatedAt,
+		UpdatedAt:   a.UpdatedAt,
+		Changelog:   clog,
+	}, nil
 }
 
 func (a *AssetModel) buildLabels() map[string]string {

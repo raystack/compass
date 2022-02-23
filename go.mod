@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/MakeNowJust/heredoc v1.0.0
+	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/Masterminds/squirrel v1.5.2
 	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/elastic/go-elasticsearch/v7 v7.16.0
@@ -30,6 +31,7 @@ require (
 	github.com/odpf/salt v0.0.0-20220106155451-62e8c849ae81
 	github.com/olivere/elastic/v7 v7.0.31
 	github.com/ory/dockertest/v3 v3.8.1
+	github.com/r3labs/diff/v2 v2.15.0
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.0

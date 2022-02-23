@@ -11,6 +11,13 @@ import (
 	"github.com/odpf/columbus/user"
 )
 
+type StarClauses struct {
+	Limit            int
+	Offset           int
+	SortKey          string
+	SortDirectionKey string
+}
+
 // StarRepository is a type that manages star operation to the primary database
 type StarRepository struct {
 	client *Client
@@ -66,7 +73,7 @@ func (r *StarRepository) GetStargazers(ctx context.Context, cfg star.Config, ass
 		return nil, star.InvalidError{AssetID: assetID}
 	}
 
-	starCfg := r.buildConfig(cfg)
+	starClausesValue := r.buildClausesValue(cfg)
 
 	var userModels UserModels
 	if err := r.client.db.SelectContext(ctx, &userModels, `
@@ -82,11 +89,9 @@ func (r *StarRepository) GetStargazers(ctx context.Context, cfg star.Config, ass
 			users u ON s.user_id = u.id
 		WHERE
 			s.asset_id = $1
-		LIMIT
-			$2
-		OFFSET
-			$3
-	`, assetID, starCfg.Limit, starCfg.Offset); err != nil {
+		LIMIT $2
+		OFFSET $3
+	`, assetID, starClausesValue.Limit, starClausesValue.Offset); err != nil {
 		return nil, fmt.Errorf("failed fetching users of star: %w", err)
 	}
 
@@ -107,7 +112,7 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Conf
 		return nil, star.InvalidError{UserID: userID}
 	}
 
-	starCfg := r.buildConfig(cfg)
+	starClausesValue := r.buildClausesValue(cfg)
 
 	var assetModels []AssetModel
 	if err := r.client.db.SelectContext(ctx, &assetModels, fmt.Sprintf(`
@@ -134,7 +139,7 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Conf
 			$3
 		OFFSET
 			$4
-	`, starCfg.SortDirectionKey), userID, starCfg.SortKey, starCfg.Limit, starCfg.Offset); err != nil {
+	`, starClausesValue.SortDirectionKey), userID, starClausesValue.SortKey, starClausesValue.Limit, starClausesValue.Offset); err != nil {
 		return nil, fmt.Errorf("failed fetching stars by user: %w", err)
 	}
 
@@ -144,7 +149,7 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Conf
 
 	assets := []asset.Asset{}
 	for _, am := range assetModels {
-		assets = append(assets, am.toAsset())
+		assets = append(assets, am.toAsset(nil))
 	}
 	return assets, nil
 }
@@ -193,7 +198,7 @@ func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, as
 		return nil, fmt.Errorf("failed fetching star by user: %w", err)
 	}
 
-	asset := asetModel.toAsset()
+	asset := asetModel.toAsset(nil)
 	return &asset, nil
 }
 
@@ -234,8 +239,8 @@ func (r *StarRepository) Delete(ctx context.Context, userID string, assetID stri
 	return nil
 }
 
-func (r *StarRepository) buildConfig(cfg star.Config) StarConfig {
-	sCfg := StarConfig{
+func (r *StarRepository) buildClausesValue(cfg star.Config) StarClauses {
+	sCfg := StarClauses{
 		Offset:           0,
 		Limit:            DEFAULT_MAX_RESULT_SIZE,
 		SortKey:          columnNameCreatedAt,

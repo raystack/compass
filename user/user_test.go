@@ -25,11 +25,6 @@ func TestValidate(t *testing.T) {
 			ExpectError: InvalidError{Provider: "provider"},
 		},
 		{
-			Title:       "should return error invalid if provider is empty",
-			User:        &User{Email: "email"},
-			ExpectError: InvalidError{Email: "email"},
-		},
-		{
 			Title:       "should return nil if user is valid",
 			User:        &User{Email: "email", Provider: "provider"},
 			ExpectError: nil,
