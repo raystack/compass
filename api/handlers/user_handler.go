@@ -3,8 +3,10 @@ package handlers
 import (
 	"errors"
 	"net/http"
+	"net/mail"
 
 	"github.com/gorilla/mux"
+	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/star"
 	"github.com/odpf/columbus/user"
 	"github.com/odpf/salt/log"
@@ -52,7 +54,18 @@ func (h *UserHandler) GetStarredAssetsWithPath(w http.ResponseWriter, r *http.Re
 
 	starCfg := buildStarConfig(h.logger, r.URL.Query())
 
-	starredAssets, err := h.starRepository.GetAllAssetsByUserID(r.Context(), starCfg, targetUserID)
+	var starredAssets []asset.Asset
+
+	//TODO: might want to remove get by email flow in the future
+	// we can use user id or user email
+	// get by email is a temporary flow and might be deleted in the future version
+	// once we already introduce better solution (e.g. get by user name)
+	_, err := mail.ParseAddress(targetUserID)
+	if err == nil {
+		starredAssets, err = h.starRepository.GetAllAssetsByUserEmail(r.Context(), starCfg, targetUserID)
+	} else {
+		starredAssets, err = h.starRepository.GetAllAssetsByUserID(r.Context(), starCfg, targetUserID)
+	}
 	if err != nil {
 		if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())

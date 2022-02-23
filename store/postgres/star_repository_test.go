@@ -305,6 +305,85 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
 	})
 }
 
+func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserEmail() {
+	userEmail := "user@odpf.io"
+	defaultCfg := star.Config{}
+	r.Run("return invalid error if user email is empty", func() {
+		assets, err := r.repository.GetAllAssetsByUserEmail(r.ctx, defaultCfg, "")
+		r.ErrorIs(err, star.ErrEmptyUserID)
+		r.Empty(assets)
+	})
+
+	r.Run("return not found error if starred asset not found in db", func() {
+		assets, err := r.repository.GetAllAssetsByUserEmail(r.ctx, defaultCfg, "somerandom@email.com")
+		r.ErrorIs(err, star.NotFoundError{UserID: "somerandom@email.com"})
+		r.Empty(assets)
+	})
+
+	r.Run("return list of starred assets if get by user email success", func() {
+		err := setup(r.ctx, r.client)
+		r.NoError(err)
+
+		userID1, err := createUser(r.userRepository, userEmail)
+		r.NoError(err)
+
+		assetID1, err := createAsset(r.assetRepository, userID1, "asset-urn-1", "table")
+		r.NoError(err)
+		id, err := r.repository.Create(r.ctx, userID1, assetID1)
+		r.NoError(err)
+		r.NotEmpty(id)
+
+		assetID2, err := createAsset(r.assetRepository, userID1, "asset-urn-2", "table")
+		r.NoError(err)
+		id, err = r.repository.Create(r.ctx, userID1, assetID2)
+		r.NoError(err)
+		r.NotEmpty(id)
+
+		assetID3, err := createAsset(r.assetRepository, userID1, "asset-urn-3", "table")
+		r.NoError(err)
+		id, err = r.repository.Create(r.ctx, userID1, assetID3)
+		r.NoError(err)
+		r.NotEmpty(id)
+
+		actualAssets, err := r.repository.GetAllAssetsByUserEmail(r.ctx, defaultCfg, userEmail)
+		r.NoError(err)
+
+		assetIDs := []string{}
+		for _, asset := range actualAssets {
+			assetIDs = append(assetIDs, asset.ID)
+		}
+
+		r.Len(actualAssets, 3)
+		r.Contains(assetIDs, assetID1)
+		r.Contains(assetIDs, assetID2)
+		r.Contains(assetIDs, assetID3)
+	})
+
+	r.Run("return limited paginated list of starred assets if get by user id success", func() {
+		err := setup(r.ctx, r.client)
+		r.NoError(err)
+
+		userID, err := createUser(r.userRepository, userEmail)
+		r.NoError(err)
+
+		for i := 1; i < 20; i++ {
+			starURN := fmt.Sprintf("asset-urn-%d", i)
+			assetID, err := createAsset(r.assetRepository, userID, starURN, "table")
+			r.NoError(err)
+			id, err := r.repository.Create(r.ctx, userID, assetID)
+			r.NoError(err)
+			r.NotEmpty(id)
+		}
+
+		cfg := star.Config{Size: 7}
+		actualAssets, err := r.repository.GetAllAssetsByUserEmail(r.ctx, cfg, userEmail)
+		r.NoError(err)
+		r.NoError(err)
+
+		r.Len(actualAssets, 7)
+	})
+}
+
 func (r *StarRepositoryTestSuite) TestGetAssetByUserID() {
 	ownerEmail := "test-getbyuserid@odpf.io"
 

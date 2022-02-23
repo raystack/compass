@@ -54,6 +54,29 @@ func (_m *StarRepository) Delete(ctx context.Context, userID string, assetID str
 	return r0
 }
 
+// GetAllAssetsByUserEmail provides a mock function with given fields: ctx, cfg, userEmail
+func (_m *StarRepository) GetAllAssetsByUserEmail(ctx context.Context, cfg star.Config, userEmail string) ([]asset.Asset, error) {
+	ret := _m.Called(ctx, cfg, userEmail)
+
+	var r0 []asset.Asset
+	if rf, ok := ret.Get(0).(func(context.Context, star.Config, string) []asset.Asset); ok {
+		r0 = rf(ctx, cfg, userEmail)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]asset.Asset)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, star.Config, string) error); ok {
+		r1 = rf(ctx, cfg, userEmail)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetAllAssetsByUserID provides a mock function with given fields: ctx, cfg, userID
 func (_m *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Config, userID string) ([]asset.Asset, error) {
 	ret := _m.Called(ctx, cfg, userID)
