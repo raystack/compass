@@ -18,9 +18,10 @@ import (
 
 // AssetRepository is a type that manages user operation to the primary database
 type AssetRepository struct {
-	client            *Client
-	userRepo          *UserRepository
-	defaultGetMaxSize int
+	client              *Client
+	userRepo            *UserRepository
+	defaultGetMaxSize   int
+	defaultUserProvider string
 }
 
 // GetAll retrieves list of assets with filters via config
@@ -515,6 +516,7 @@ func (r *AssetRepository) createOrFetchUserIDs(ctx context.Context, tx *sqlx.Tx,
 		var userID string
 		userID, err = r.userRepo.GetID(ctx, u.Email)
 		if errors.As(err, &user.NotFoundError{}) {
+			u.Provider = r.defaultUserProvider
 			userID, err = r.userRepo.CreateWithTx(ctx, tx, &u)
 			if err != nil {
 				err = fmt.Errorf("error creating owner: %w", err)
@@ -650,17 +652,21 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 }
 
 // NewAssetRepository initializes user repository clients
-func NewAssetRepository(c *Client, userRepo *UserRepository, defaultGetMaxSize int) (*AssetRepository, error) {
+func NewAssetRepository(c *Client, userRepo *UserRepository, defaultGetMaxSize int, defaultUserProvider string) (*AssetRepository, error) {
 	if c == nil {
 		return nil, errors.New("postgres client is nil")
 	}
 	if defaultGetMaxSize == 0 {
 		defaultGetMaxSize = DEFAULT_MAX_RESULT_SIZE
 	}
+	if defaultUserProvider == "" {
+		defaultUserProvider = "unknown"
+	}
 
 	return &AssetRepository{
-		client:            c,
-		defaultGetMaxSize: defaultGetMaxSize,
-		userRepo:          userRepo,
+		client:              c,
+		defaultGetMaxSize:   defaultGetMaxSize,
+		defaultUserProvider: defaultUserProvider,
+		userRepo:            userRepo,
 	}, nil
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/odpf/columbus/star"
 	"github.com/odpf/columbus/store/postgres"
-	"github.com/odpf/columbus/user"
 	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
@@ -39,11 +38,11 @@ func (r *StarRepositoryTestSuite) SetupSuite() {
 	if err != nil {
 		r.T().Fatal(err)
 	}
-	r.userRepository, err = postgres.NewUserRepository(r.client, user.Config{IdentityProviderDefaultName: defaultProviderName})
+	r.userRepository, err = postgres.NewUserRepository(r.client)
 	if err != nil {
 		r.T().Fatal(err)
 	}
-	r.assetRepository, err = postgres.NewAssetRepository(r.client, r.userRepository, postgres.DEFAULT_MAX_RESULT_SIZE)
+	r.assetRepository, err = postgres.NewAssetRepository(r.client, r.userRepository, postgres.DEFAULT_MAX_RESULT_SIZE, "")
 	if err != nil {
 		r.T().Fatal(err)
 	}

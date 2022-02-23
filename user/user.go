@@ -21,7 +21,7 @@ func (u *User) Validate() error {
 		return ErrNoUserInformation
 	}
 
-	if u.Email == "" {
+	if u.Email == "" || u.Provider == "" {
 		return InvalidError{Email: u.Email, Provider: u.Provider}
 	}
 

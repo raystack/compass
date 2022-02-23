@@ -13,7 +13,6 @@ import (
 // UserRepository is a type that manages user operation to the primary database
 type UserRepository struct {
 	client *Client
-	cfg    user.Config
 }
 
 // Create insert a user to the database
@@ -33,16 +32,11 @@ func (r *UserRepository) create(ctx context.Context, querier sqlx.QueryerContext
 		return "", err
 	}
 
-	// TODO: provider name is optional for now and we force the default
-	if ud.Provider == "" {
-		ud.Provider = r.cfg.IdentityProviderDefaultName
-	}
-
 	if err := r.client.db.QueryRowxContext(ctx, `
-					INSERT INTO 
-					users 
+					INSERT INTO
+					users
 						(email, provider)
-					VALUES 
+					VALUES
 						($1, $2)
 					RETURNING id
 					`, ud.Email, ud.Provider).Scan(&userID); err != nil {
@@ -62,7 +56,7 @@ func (r *UserRepository) create(ctx context.Context, querier sqlx.QueryerContext
 func (r *UserRepository) GetID(ctx context.Context, email string) (string, error) {
 	var userID string
 	if err := r.client.db.GetContext(ctx, &userID, `
-		SELECT 
+		SELECT
 			id
 		FROM
 			users
@@ -78,12 +72,11 @@ func (r *UserRepository) GetID(ctx context.Context, email string) (string, error
 }
 
 // NewUserRepository initializes user repository clients
-func NewUserRepository(c *Client, cfg user.Config) (*UserRepository, error) {
+func NewUserRepository(c *Client) (*UserRepository, error) {
 	if c == nil {
 		return nil, errNilPostgresClient
 	}
 	return &UserRepository{
 		client: c,
-		cfg:    cfg,
 	}, nil
 }

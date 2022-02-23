@@ -27,6 +27,8 @@ type AssetRepositoryTestSuite struct {
 	repository *postgres.AssetRepository
 }
 
+var defaultUserProvider = "meteor"
+
 func (r *AssetRepositoryTestSuite) SetupSuite() {
 	var err error
 
@@ -37,11 +39,11 @@ func (r *AssetRepositoryTestSuite) SetupSuite() {
 	}
 
 	r.ctx = context.TODO()
-	userRepo, err := postgres.NewUserRepository(r.client, user.Config{IdentityProviderDefaultName: defaultProviderName})
+	userRepo, err := postgres.NewUserRepository(r.client)
 	if err != nil {
 		r.T().Fatal(err)
 	}
-	r.repository, err = postgres.NewAssetRepository(r.client, userRepo, defaultGetMaxSize)
+	r.repository, err = postgres.NewAssetRepository(r.client, userRepo, defaultGetMaxSize, defaultUserProvider)
 	if err != nil {
 		r.T().Fatal(err)
 	}
@@ -185,7 +187,7 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 	// create users
 	user1 := user.User{Email: "johndoe@example.com", Provider: defaultProviderName}
 	user2 := user.User{Email: "janedoe@example.com", Provider: defaultProviderName}
-	userRepo, err := postgres.NewUserRepository(r.client, user.Config{IdentityProviderDefaultName: defaultProviderName})
+	userRepo, err := postgres.NewUserRepository(r.client)
 	r.Require().NoError(err)
 	user1.ID, err = userRepo.Create(r.ctx, &user1)
 	r.Require().NoError(err)
@@ -274,7 +276,7 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 func (r *AssetRepositoryTestSuite) TestVersions() {
 	// create users
 	user1 := user.User{Email: "user@odpf.io", Provider: defaultProviderName}
-	userRepo, err := postgres.NewUserRepository(r.client, user.Config{IdentityProviderDefaultName: defaultProviderName})
+	userRepo, err := postgres.NewUserRepository(r.client)
 	r.Require().NoError(err)
 	user1.ID, err = userRepo.Create(r.ctx, &user1)
 	// clean up
@@ -487,7 +489,7 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 	// create users
 	user1 := user.User{Email: "johndoe@example.com", Provider: defaultProviderName}
 	user2 := user.User{Email: "janedoe@example.com", Provider: defaultProviderName}
-	userRepo, err := postgres.NewUserRepository(r.client, user.Config{IdentityProviderDefaultName: defaultProviderName})
+	userRepo, err := postgres.NewUserRepository(r.client)
 	r.Require().NoError(err)
 	user1.ID, err = userRepo.Create(r.ctx, &user1)
 	r.Require().NoError(err)

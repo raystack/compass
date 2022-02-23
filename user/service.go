@@ -16,6 +16,7 @@ var (
 // Service is a type of service that manages business process
 type Service struct {
 	repository Repository
+	cfg        Config
 }
 
 // ValidateUser checks if user information is already in DB
@@ -33,7 +34,8 @@ func (s *Service) ValidateUser(ctx context.Context, email string) (string, error
 		return "", fmt.Errorf("%w, fetched user id from DB is nil with email: %s", ErrNoUserInformation, email)
 	}
 	user := &User{
-		Email: email,
+		Email:    email,
+		Provider: s.cfg.IdentityProviderDefaultName,
 	}
 	if userID, err = s.repository.Create(ctx, user); err != nil {
 		return "", err
@@ -61,8 +63,9 @@ func FromContext(ctx context.Context) string {
 }
 
 // NewService initializes user service
-func NewService(repository Repository) *Service {
+func NewService(repository Repository, cfg Config) *Service {
 	return &Service{
 		repository: repository,
+		cfg:        cfg,
 	}
 }

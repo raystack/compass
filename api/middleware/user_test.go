@@ -22,6 +22,8 @@ const (
 	identityProviderHeader = "Columbus-User-Provider"
 )
 
+var userCfg = user.Config{IdentityProviderDefaultName: "shield"}
+
 func TestValidateUser(t *testing.T) {
 	middlewareCfg := Config{
 		Logger:         log.NewNoop(),
@@ -29,7 +31,7 @@ func TestValidateUser(t *testing.T) {
 	}
 
 	t.Run("should return HTTP 400 when identity header not present", func(t *testing.T) {
-		userSvc := user.NewService(nil)
+		userSvc := user.NewService(nil, userCfg)
 		r := mux.NewRouter()
 		r.Use(ValidateUser(middlewareCfg, userSvc))
 		r.Path(dummyRoute).Methods(http.MethodGet)
@@ -56,7 +58,7 @@ func TestValidateUser(t *testing.T) {
 		mockUserRepository.On("GetID", mock.Anything, mock.Anything).Return("", customError)
 		mockUserRepository.On("Create", mock.Anything, mock.Anything).Return("", customError)
 
-		userSvc := user.NewService(mockUserRepository)
+		userSvc := user.NewService(mockUserRepository, userCfg)
 		r := mux.NewRouter()
 		r.Use(ValidateUser(middlewareCfg, userSvc))
 		r.Path(dummyRoute).Methods(http.MethodGet)
@@ -86,7 +88,7 @@ func TestValidateUser(t *testing.T) {
 		mockUserRepository.On("GetID", mock.Anything, mock.Anything).Return(userID, nil)
 		mockUserRepository.On("Create", mock.Anything, mock.Anything).Return(userID, nil)
 
-		userSvc := user.NewService(mockUserRepository)
+		userSvc := user.NewService(mockUserRepository, userCfg)
 		r := mux.NewRouter()
 		r.Use(ValidateUser(middlewareCfg, userSvc))
 		r.Path(dummyRoute).Methods(http.MethodGet).HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
