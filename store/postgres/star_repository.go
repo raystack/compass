@@ -161,7 +161,7 @@ func (r *StarRepository) GetAllAssetsByUserEmail(ctx context.Context, cfg star.C
 		return nil, star.ErrEmptyUserID
 	}
 
-	starCfg := r.buildConfig(cfg)
+	starClausesValue := r.buildClausesValue(cfg)
 
 	var assetModels []AssetModel
 	if err := r.client.db.SelectContext(ctx, &assetModels, fmt.Sprintf(`
@@ -190,7 +190,7 @@ func (r *StarRepository) GetAllAssetsByUserEmail(ctx context.Context, cfg star.C
 			$3
 		OFFSET
 			$4
-	`, starCfg.SortDirectionKey), userEmail, starCfg.SortKey, starCfg.Limit, starCfg.Offset); err != nil {
+	`, starClausesValue.SortDirectionKey), userEmail, starClausesValue.SortKey, starClausesValue.Limit, starClausesValue.Offset); err != nil {
 		return nil, fmt.Errorf("failed fetching stars by user: %w", err)
 	}
 
@@ -200,7 +200,7 @@ func (r *StarRepository) GetAllAssetsByUserEmail(ctx context.Context, cfg star.C
 
 	assets := []asset.Asset{}
 	for _, am := range assetModels {
-		assets = append(assets, am.toAsset())
+		assets = append(assets, am.toAsset(nil))
 	}
 	return assets, nil
 }
