@@ -5,7 +5,7 @@ import (
 
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/lineage"
+	"github.com/odpf/columbus/lineage/v1"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -51,6 +51,11 @@ func (repo *RecordRepository) GetAll(ctx context.Context, cfg discovery.GetConfi
 	return args.Get(0).(discovery.RecordList), args.Error(1)
 }
 
+func (repo *RecordRepository) GetAllIterator(ctx context.Context) (discovery.RecordIterator, error) {
+	args := repo.Called(ctx)
+	return args.Get(0).(discovery.RecordIterator), args.Error(1)
+}
+
 func (repo *RecordRepository) GetByID(ctx context.Context, id string) (asset.Asset, error) {
 	args := repo.Called(ctx, id)
 	return args.Get(0).(asset.Asset), args.Error(1)
@@ -94,20 +99,20 @@ func (searcher *RecordSearcher) Suggest(ctx context.Context, cfg discovery.Searc
 	return args.Get(0).([]string), args.Error(1)
 }
 
-type LineageProvider struct {
+type LineageProviderV1 struct {
 	mock.Mock
 }
 
-func (lp *LineageProvider) Graph() (lineage.Graph, error) {
+func (lp *LineageProviderV1) Graph() (lineage.Graph, error) {
 	args := lp.Called()
 	return args.Get(0).(lineage.Graph), args.Error(1)
 }
 
-type Graph struct {
+type GraphV1 struct {
 	mock.Mock
 }
 
-func (graph *Graph) Query(cfg lineage.QueryCfg) (lineage.AdjacencyMap, error) {
+func (graph *GraphV1) Query(cfg lineage.QueryCfg) (lineage.AdjacencyMap, error) {
 	args := graph.Called(cfg)
 	return args.Get(0).(lineage.AdjacencyMap), args.Error(1)
 }

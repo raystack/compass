@@ -36,3 +36,21 @@ func (_m *LineageRepository) GetEdges(_a0 context.Context) ([]lineage.Edge, erro
 
 	return r0, r1
 }
+
+type LineageProvider struct {
+	mock.Mock
+}
+
+func (lp *LineageProvider) Graph() (lineage.Graph, error) {
+	args := lp.Called()
+	return args.Get(0).(lineage.Graph), args.Error(1)
+}
+
+type Graph struct {
+	mock.Mock
+}
+
+func (graph *Graph) Query(cfg lineage.QueryCfg) (lineage.AdjacencyMap, error) {
+	args := graph.Called(cfg)
+	return args.Get(0).(lineage.AdjacencyMap), args.Error(1)
+}

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
@@ -17,6 +18,9 @@ import (
 const (
 	// name of the search index
 	defaultSearchIndex = "universe"
+
+	defaultScrollTimeout   = 30 * time.Second
+	defaultScrollBatchSize = 1000
 )
 
 // used as a utility for generating request payload

@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
 	"github.com/olivere/elastic/v7"
@@ -67,6 +68,41 @@ func (repo *RecordRepository) GetAll(ctx context.Context, cfg discovery.GetConfi
 	recordList.Total = int(response.Hits.Total.Value)
 
 	return
+}
+
+func (repo *RecordRepository) GetAllIterator(ctx context.Context) (discovery.RecordIterator, error) {
+	body, err := repo.getAllQuery(discovery.RecordFilter{})
+	if err != nil {
+		return nil, fmt.Errorf("error building search query: %w", err)
+	}
+
+	resp, err := repo.cli.Search(
+		repo.cli.Search.WithIndex(repo.typeName),
+		repo.cli.Search.WithBody(body),
+		repo.cli.Search.WithScroll(defaultScrollTimeout),
+		repo.cli.Search.WithSize(defaultScrollBatchSize),
+		repo.cli.Search.WithContext(ctx),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error executing search: %w", err)
+	}
+	if resp.IsError() {
+		return nil, fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(resp))
+	}
+
+	var response searchResponse
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding es response: %w", err)
+	}
+	var results = repo.toRecordList(response)
+	it := recordIterator{
+		resp:     resp,
+		records:  results,
+		scrollID: response.ScrollID,
+		repo:     repo,
+	}
+	return &it, nil
 }
 
 func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, assets []asset.Asset) error {
@@ -214,6 +250,57 @@ func (repo *RecordRepository) termsQuery(filters discovery.RecordFilter) (io.Rea
 	}
 	payload := bytes.NewBuffer(nil)
 	return payload, json.NewEncoder(payload).Encode(raw)
+}
+
+func (repo *RecordRepository) scrollRecords(ctx context.Context, scrollID string) ([]asset.Asset, string, error) {
+	resp, err := repo.cli.Scroll(
+		repo.cli.Scroll.WithScrollID(scrollID),
+		repo.cli.Scroll.WithScroll(defaultScrollTimeout),
+		repo.cli.Scroll.WithContext(ctx),
+	)
+	if err != nil {
+		return nil, "", fmt.Errorf("error executing scroll: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.IsError() {
+		return nil, "", fmt.Errorf("error response from elasticsearch: %v", errorReasonFromResponse(resp))
+	}
+	var response searchResponse
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	resp.Body.Close()
+	if err != nil {
+		return nil, "", fmt.Errorf("error decoding es response: %w", err)
+	}
+	return repo.toRecordList(response), response.ScrollID, nil
+}
+
+// recordIterator is the internal implementation of record.RecordIterator by RecordRepository
+type recordIterator struct {
+	resp     *esapi.Response
+	records  []asset.Asset
+	repo     *RecordRepository
+	scrollID string
+}
+
+func (it *recordIterator) Scan() bool {
+	return len(strings.TrimSpace(it.scrollID)) > 0
+}
+
+func (it *recordIterator) Next() (prev []asset.Asset) {
+	prev = it.records
+	var err error
+	it.records, it.scrollID, err = it.repo.scrollRecords(context.Background(), it.scrollID)
+	if err != nil {
+		panic("error scrolling results:" + err.Error())
+	}
+	if len(it.records) == 0 {
+		it.scrollID = ""
+	}
+	return
+}
+
+func (it *recordIterator) Close() error {
+	return it.resp.Body.Close()
 }
 
 // RecordRepositoryFactory can be used to construct a RecordRepository
