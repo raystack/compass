@@ -14,6 +14,6 @@ type Repository interface {
 	GetStargazers(ctx context.Context, cfg Config, assetID string) ([]user.User, error)
 	GetAllAssetsByUserID(ctx context.Context, cfg Config, userID string) ([]asset.Asset, error)
 	GetAllAssetsByUserEmail(ctx context.Context, cfg Config, userEmail string) ([]asset.Asset, error)
-	GetAssetByUserID(ctx context.Context, userID string, assetID string) (*asset.Asset, error)
+	GetAssetByUserID(ctx context.Context, userID string, assetID string) (asset.Asset, error)
 	Delete(ctx context.Context, userID string, assetID string) error
 }

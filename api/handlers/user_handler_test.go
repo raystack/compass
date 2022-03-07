@@ -416,7 +416,7 @@ func TestGetStarredAsset(t *testing.T) {
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
-				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(nil, star.ErrEmptyAssetID)
+				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(asset.Asset{}, star.ErrEmptyAssetID)
 			},
 		},
 		{
@@ -427,7 +427,7 @@ func TestGetStarredAsset(t *testing.T) {
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
-				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(nil, star.InvalidError{})
+				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(asset.Asset{}, star.InvalidError{})
 			},
 		},
 		{
@@ -438,7 +438,7 @@ func TestGetStarredAsset(t *testing.T) {
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
-				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(nil, star.NotFoundError{})
+				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(asset.Asset{}, star.NotFoundError{})
 			},
 		},
 		{
@@ -449,7 +449,7 @@ func TestGetStarredAsset(t *testing.T) {
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
-				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(nil, errors.New("failed to fetch starred"))
+				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(asset.Asset{}, errors.New("failed to fetch starred"))
 			},
 		},
 		{
@@ -460,7 +460,7 @@ func TestGetStarredAsset(t *testing.T) {
 				return req.WithContext(ctx)
 			},
 			Setup: func(tc *testCase, er *mocks.StarRepository) {
-				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(&asset.Asset{Type: asset.Type(assetType), URN: assetURN}, nil)
+				er.On("GetAssetByUserID", mock.AnythingOfType("*context.valueCtx"), userID, assetID).Return(asset.Asset{Type: asset.Type(assetType), URN: assetURN}, nil)
 			},
 			PostCheck: func(t *testing.T, tc *testCase, resp *http.Response) error {
 				actual, err := ioutil.ReadAll(resp.Body)

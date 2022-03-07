@@ -31,6 +31,9 @@ func setupV1Beta1Router(router *mux.Router, handlers *Handlers) {
 
 	usersRouter := router.PathPrefix("/users").Subrouter()
 	setupUsersRoutes(usersRouter, handlers.User)
+
+	discussionsRouter := router.PathPrefix("/discussions").Subrouter()
+	setupDiscussionsRoutes(discussionsRouter, handlers.Discussion)
 }
 
 func setupV1Beta1AssetRoutes(router *mux.Router, ah *handlers.AssetHandler) {
@@ -125,4 +128,22 @@ func setupUsersRoutes(router *mux.Router, ush *handlers.UserHandler) {
 	router.Path("/{user_id}/starred").
 		Methods(http.MethodGet, http.MethodHead).
 		HandlerFunc(ush.GetStarredAssetsWithPath)
+}
+
+func setupDiscussionsRoutes(router *mux.Router, dh *handlers.DiscussionHandler) {
+	router.
+		Methods(http.MethodPost).
+		HandlerFunc(dh.Create)
+
+	router.
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(dh.GetAll)
+
+	router.Path("/{id}").
+		Methods(http.MethodGet).
+		HandlerFunc(dh.Get)
+
+	router.Path("/{id}").
+		Methods(http.MethodPatch).
+		HandlerFunc(dh.Patch)
 }

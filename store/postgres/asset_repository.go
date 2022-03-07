@@ -25,7 +25,7 @@ type AssetRepository struct {
 }
 
 // GetAll retrieves list of assets with filters via config
-func (r *AssetRepository) GetAll(ctx context.Context, config asset.Config) (assets []asset.Asset, err error) {
+func (r *AssetRepository) GetAll(ctx context.Context, config asset.Config) ([]asset.Asset, error) {
 	size := config.Size
 	if size == 0 {
 		size = r.defaultGetMaxSize
@@ -37,22 +37,20 @@ func (r *AssetRepository) GetAll(ctx context.Context, config asset.Config) (asse
 	builder = r.buildFilterQuery(builder, config)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
-		err = fmt.Errorf("error building query: %w", err)
-		return
+		return nil, fmt.Errorf("error building query: %w", err)
 	}
 	ams := []*AssetModel{}
 	err = r.client.db.SelectContext(ctx, &ams, query, args...)
 	if err != nil {
-		err = fmt.Errorf("error getting asset list: %w", err)
-		return
+		return nil, fmt.Errorf("error getting asset list: %w", err)
 	}
 
-	assets = []asset.Asset{}
+	assets := []asset.Asset{}
 	for _, am := range ams {
 		assets = append(assets, am.toAsset(nil))
 	}
 
-	return
+	return assets, nil
 }
 
 // GetCount retrieves number of assets for every type

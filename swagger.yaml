@@ -76,14 +76,14 @@ paths:
             allOf:
               - $ref: "#/definitions/BaseAsset"
               - type: object
-                properties: 
+                properties:
                   upstreams:
                     type: array
-                    items: 
+                    items:
                       $ref: "#/definitions/LineageRecord"
                   downstreams:
                     type: array
-                    items: 
+                    items:
                       $ref: "#/definitions/LineageRecord"
       responses:
         200:
@@ -255,6 +255,182 @@ paths:
           description: "bad request error"
           schema:
             $ref: "#/definitions/Error"
+        404:
+          description: "not found error"
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+  "/v1beta1/discussions":
+    get:
+      tags:
+        - Discussions
+      summary: Get all discussions
+      description: "Returns all discussions given possible filters"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          type: string
+          format: email
+          required: true
+        - in: query
+          name: type
+          type: string
+          enum:
+            - openeded
+            - issues
+            - qanda
+        - in: query
+          name: state
+          type: string
+          enum:
+            - open
+            - closed
+        - in: query
+          name: owner
+          type: string
+        - in: query
+          name: sort
+          type: string
+        - in: query
+          name: direction
+          type: string
+        - in: query
+          name: assignee
+          type: string
+        - in: query
+          name: asset
+          type: string
+        - in: query
+          name: labels
+          type: string
+          description: comma separated value of label
+        - in: query
+          name: size
+          type: integer
+        - in: query
+          name: offset
+          type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Discussion"
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+    post:
+      tags:
+        - Discussions
+      summary: Create a new discussion
+      description: "Create a new discussion"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          type: string
+          format: email
+          required: true
+        - in: body
+          name: ""
+          required: true
+          schema:
+            allOf:
+              - $ref: "#/definitions/Discussion"
+              - required:
+                  - title
+                  - body
+                  - type
+      responses:
+        201:
+          description: Created
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: id of the newly created discussion
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+  "/v1beta1/discussions/{id}":
+    get:
+      tags:
+        - Discussions
+      summary: Get a discussion
+      description: "Returns a discussion given an id"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          type: string
+          format: email
+          required: true
+        - in: path
+          name: id
+          description: "discussion's ID"
+          type: integer
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Discussion"
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        404:
+          description: "not found error"
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+    patch:
+      tags:
+        - Discussions
+      summary: Patch a field in a discussion
+      description: "Patch a field in a discussion by id"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          type: string
+          format: email
+          required: true
+        - in: path
+          name: id
+          description: "discussion's ID"
+          type: integer
+          required: true
+      responses:
+        204:
+          description: No Content
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
         404:
           description: "not found error"
           schema:
@@ -1162,6 +1338,55 @@ definitions:
       provider:
         type: string
         description: provider of user identity
+  Discussion:
+    type: object
+    properties:
+      id:
+        type: string
+        description: id of a discussion
+      title:
+        type: string
+        description: title of a discussion
+      body:
+        type: string
+        description: body text of a discussion
+      type:
+        type: string
+        description: type of a discussion
+        enum:
+          - openeded
+          - issues
+          - qanda
+      state:
+        type: string
+        description: state of a discussion
+        enum:
+          - open
+          - closed
+      labels:
+        type: array
+        description: labels of a discussion
+        items:
+          type: string
+      assets:
+        type: array
+        description: assets of a discussion
+        items:
+          type: string
+      assignees:
+        type: array
+        description: assignees of a discussion
+        items:
+          type: string
+      owner:
+        type: object
+        description: owner/creator of a discussion
+        additionalProperties:
+          $ref: "#/definitions/User"
+      created_at:
+        type: string
+      updated_at:
+        type: string
   Star:
     type: object
     properties:
@@ -1317,7 +1542,7 @@ definitions:
         example: "bigqery"
   LineageGraph:
     type: array
-    items: 
+    items:
       properties:
         source:
           type: string
