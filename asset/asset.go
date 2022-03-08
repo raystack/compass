@@ -56,6 +56,7 @@ func (a *Asset) Diff(otherAsset *Asset) (diff.Changelog, error) {
 }
 
 type LineageRecord struct {
-	URN  string `json:"urn"`
-	Type string `json:"type"`
+	URN     string `json:"urn"`
+	Type    Type   `json:"type"`
+	Service string `json:"service"`
 }

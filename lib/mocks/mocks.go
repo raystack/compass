@@ -107,12 +107,3 @@ func (lp *LineageProviderV1) Graph() (lineage.Graph, error) {
 	args := lp.Called()
 	return args.Get(0).(lineage.Graph), args.Error(1)
 }
-
-type GraphV1 struct {
-	mock.Mock
-}
-
-func (graph *GraphV1) Query(cfg lineage.QueryCfg) (lineage.AdjacencyMap, error) {
-	args := graph.Called(cfg)
-	return args.Get(0).(lineage.AdjacencyMap), args.Error(1)
-}

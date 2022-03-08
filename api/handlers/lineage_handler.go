@@ -16,6 +16,7 @@ import (
 
 // interface to lineage.Service
 // named provider to avoid ambiguitity with the service implementation
+//go:generate mockery --name LineageProvider --outpkg mocks --output ../../lib/mocks/ --structname LineageProvider --filename lineage_provider.go
 type LineageProvider interface {
 	Graph() (lineage.Graph, error)
 }

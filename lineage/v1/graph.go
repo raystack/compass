@@ -13,6 +13,7 @@ type QueryCfg struct {
 	Root          string
 }
 
+//go:generate mockery --name Graph --outpkg mocks --output ../../lib/mocks/ --structname GraphV1 --filename lineage_v1.go
 type Graph interface {
 	Query(QueryCfg) (AdjacencyMap, error)
 }

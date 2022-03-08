@@ -20,6 +20,7 @@ import (
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/lib/mocks"
+	"github.com/odpf/columbus/lineage/v2"
 	"github.com/odpf/columbus/star"
 	"github.com/odpf/columbus/user"
 	"github.com/stretchr/testify/assert"
@@ -33,7 +34,20 @@ var (
 
 func TestAssetHandlerUpsert(t *testing.T) {
 	var userID = uuid.NewString()
-	var validPayload = `{"urn": "test dagger", "type": "table", "name": "de-dagger-test", "service": "kafka", "data": {}}`
+	var validPayload = `{
+		"urn": "test dagger",
+		"type": "table",
+		"name": "de-dagger-test",
+		"service": "kafka",
+		"data": {},
+		"upstreams": [
+			{"urn": "upstream-1", "type": "job", "service": "optimus"}
+		],
+		"downstreams": [
+			{"urn": "downstream-1", "type": "dashboard", "service": "metabase"},
+			{"urn": "downstream-2", "type": "dashboard", "service": "tableau"}
+		]
+	}`
 
 	t.Run("should return HTTP 400 for invalid payload", func(t *testing.T) {
 		testCases := []struct {
@@ -78,7 +92,7 @@ func TestAssetHandlerUpsert(t *testing.T) {
 				ctx := user.NewContext(rr.Context(), userID)
 				rr = rr.WithContext(ctx)
 
-				handler := handlers.NewAssetHandler(logger, nil, nil, nil)
+				handler := handlers.NewAssetHandler(logger, nil, nil, nil, nil)
 				handler.Upsert(rw, rr)
 
 				expectedStatus := http.StatusBadRequest
@@ -104,7 +118,7 @@ func TestAssetHandlerUpsert(t *testing.T) {
 			defer ar.AssertExpectations(t)
 
 			rr.Context()
-			handler := handlers.NewAssetHandler(logger, ar, nil, nil)
+			handler := handlers.NewAssetHandler(logger, ar, nil, nil, nil)
 			handler.Upsert(rw, rr)
 
 			assert.Equal(t, http.StatusInternalServerError, rw.Code)
@@ -122,7 +136,7 @@ func TestAssetHandlerUpsert(t *testing.T) {
 			expectedErr := errors.New("unknown error")
 
 			ar := new(mocks.AssetRepository)
-			ar.On("Upsert", rr.Context(), mock.AnythingOfType("*asset.Asset")).Return("1234-5678", nil)
+			ar.On("Upsert", rr.Context(), mock.AnythingOfType("*asset.Asset")).Return("1234-5678", nil, nil)
 			defer ar.AssertExpectations(t)
 
 			dr := new(mocks.DiscoveryRepository)
@@ -130,7 +144,41 @@ func TestAssetHandlerUpsert(t *testing.T) {
 			defer dr.AssertExpectations(t)
 
 			rr.Context()
-			handler := handlers.NewAssetHandler(logger, ar, dr, nil)
+			handler := handlers.NewAssetHandler(logger, ar, dr, nil, nil)
+			handler.Upsert(rw, rr)
+
+			assert.Equal(t, http.StatusInternalServerError, rw.Code)
+			var response handlers.ErrorResponse
+			err := json.NewDecoder(rw.Body).Decode(&response)
+			require.NoError(t, err)
+			assert.Contains(t, response.Reason, "Internal Server Error")
+		})
+		t.Run("LineageRepository fails", func(t *testing.T) {
+			rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
+			ctx := user.NewContext(rr.Context(), userID)
+			rr = rr.WithContext(ctx)
+			rw := httptest.NewRecorder()
+
+			expectedErr := errors.New("unknown error")
+
+			ar := new(mocks.AssetRepository)
+			ar.On("Upsert", rr.Context(), mock.AnythingOfType("*asset.Asset")).Return("1234-5678", nil, nil)
+			defer ar.AssertExpectations(t)
+
+			dr := new(mocks.DiscoveryRepository)
+			dr.On("Upsert", rr.Context(), mock.AnythingOfType("asset.Asset")).Return(nil)
+			defer dr.AssertExpectations(t)
+
+			lr := new(mocks.LineageRepository)
+			lr.On("Upsert", rr.Context(),
+				mock.AnythingOfType("lineage.Node"),
+				mock.AnythingOfType("[]lineage.Node"),
+				mock.AnythingOfType("[]lineage.Node"),
+			).Return(expectedErr)
+			defer lr.AssertExpectations(t)
+
+			rr.Context()
+			handler := handlers.NewAssetHandler(logger, ar, dr, nil, lr)
 			handler.Upsert(rw, rr)
 
 			assert.Equal(t, http.StatusInternalServerError, rw.Code)
@@ -149,6 +197,13 @@ func TestAssetHandlerUpsert(t *testing.T) {
 			Service:   "kafka",
 			UpdatedBy: user.User{ID: userID},
 			Data:      map[string]interface{}{},
+			Upstreams: []asset.LineageRecord{
+				{URN: "upstream-1", Type: asset.TypeJob, Service: "optimus"},
+			},
+			Downstreams: []asset.LineageRecord{
+				{URN: "downstream-1", Type: asset.TypeDashboard, Service: "metabase"},
+				{URN: "downstream-2", Type: asset.TypeDashboard, Service: "tableau"},
+			},
 		}
 		assetWithID := ast
 		assetWithID.ID = uuid.New().String()
@@ -159,7 +214,7 @@ func TestAssetHandlerUpsert(t *testing.T) {
 		rw := httptest.NewRecorder()
 
 		ar := new(mocks.AssetRepository)
-		ar.On("Upsert", rr.Context(), &ast).Return(assetWithID.ID, nil).Run(func(args mock.Arguments) {
+		ar.On("Upsert", rr.Context(), &ast).Return(assetWithID.ID, nil, nil).Run(func(args mock.Arguments) {
 			argAsset := args.Get(1).(*asset.Asset)
 			argAsset.ID = assetWithID.ID
 		})
@@ -169,7 +224,24 @@ func TestAssetHandlerUpsert(t *testing.T) {
 		dr.On("Upsert", rr.Context(), assetWithID).Return(nil)
 		defer dr.AssertExpectations(t)
 
-		handler := handlers.NewAssetHandler(logger, ar, dr, nil)
+		lr := new(mocks.LineageRepository)
+		lr.On("Upsert", rr.Context(),
+			lineage.Node{
+				URN:     ast.URN,
+				Type:    ast.Type,
+				Service: ast.Service,
+			},
+			[]lineage.Node{
+				{URN: "upstream-1", Type: asset.TypeJob, Service: "optimus"},
+			},
+			[]lineage.Node{
+				{URN: "downstream-1", Type: asset.TypeDashboard, Service: "metabase"},
+				{URN: "downstream-2", Type: asset.TypeDashboard, Service: "tableau"},
+			},
+		).Return(nil)
+		defer lr.AssertExpectations(t)
+
+		handler := handlers.NewAssetHandler(logger, ar, dr, nil, lr)
 		handler.Upsert(rw, rr)
 
 		assert.Equal(t, http.StatusOK, rw.Code)
@@ -249,7 +321,7 @@ func TestAssetHandlerDelete(t *testing.T) {
 			tc.Setup(rr.Context(), &tc, ar, dr)
 			defer ar.AssertExpectations(t)
 
-			handler := handlers.NewAssetHandler(logger, ar, dr, nil)
+			handler := handlers.NewAssetHandler(logger, ar, dr, nil, nil)
 			handler.Delete(rw, rr)
 
 			if rw.Code != tc.ExpectStatus {
@@ -301,7 +373,7 @@ func TestAssetHandlerGetByID(t *testing.T) {
 			Description:  "should return http 200 status along with the asset, if found",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetByID", ctx, assetID).Return(ast, nil)
+				ar.On("GetByID", ctx, assetID).Return(ast, nil, nil)
 			},
 			PostCheck: func(r *http.Response) error {
 				var responsePayload asset.Asset
@@ -326,7 +398,7 @@ func TestAssetHandlerGetByID(t *testing.T) {
 			ar := new(mocks.AssetRepository)
 			tc.Setup(rr.Context(), ar)
 
-			handler := handlers.NewAssetHandler(logger, ar, nil, nil)
+			handler := handlers.NewAssetHandler(logger, ar, nil, nil, nil)
 			handler.GetByID(rw, rr)
 
 			if rw.Code != tc.ExpectStatus {
@@ -365,7 +437,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Querystring:  "?with_total=1",
 			ExpectStatus: http.StatusInternalServerError,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{}, nil)
+				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{}, nil, nil)
 				ar.On("GetCount", ctx, asset.Config{}).Return(0, errors.New("unknown error"))
 			},
 		},
@@ -380,7 +452,7 @@ func TestAssetHandlerGet(t *testing.T) {
 					Service: "bigquery",
 					Size:    30,
 					Offset:  50,
-				}).Return([]asset.Asset{}, nil)
+				}).Return([]asset.Asset{}, nil, nil)
 			},
 		},
 		{
@@ -390,7 +462,7 @@ func TestAssetHandlerGet(t *testing.T) {
 				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
-				}, nil)
+				}, nil, nil)
 			},
 			PostCheck: func(r *http.Response) error {
 				type responsePayload struct {
@@ -429,12 +501,12 @@ func TestAssetHandlerGet(t *testing.T) {
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 					{ID: "testid-3"},
-				}, nil)
+				}, nil, nil)
 				ar.On("GetCount", ctx, asset.Config{
 					Text:    "dsa",
 					Type:    "job",
 					Service: "kafka",
-				}).Return(150, nil)
+				}).Return(150, nil, nil)
 			},
 			PostCheck: func(r *http.Response) error {
 				type responsePayload struct {
@@ -470,7 +542,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			ar := new(mocks.AssetRepository)
 			tc.Setup(rr.Context(), ar)
 
-			handler := handlers.NewAssetHandler(logger, ar, nil, nil)
+			handler := handlers.NewAssetHandler(logger, ar, nil, nil, nil)
 			handler.GetAll(rw, rr)
 
 			if rw.Code != tc.ExpectStatus {
@@ -543,7 +615,7 @@ func TestAssetHandlerGetStargazers(t *testing.T) {
 				return req
 			},
 			Setup: func(tc *testCase, sr *mocks.StarRepository) {
-				sr.On("GetStargazers", mock.Anything, defaultStarCfg, assetID).Return([]user.User{{ID: "1"}, {ID: "2"}, {ID: "3"}}, nil)
+				sr.On("GetStargazers", mock.Anything, defaultStarCfg, assetID).Return([]user.User{{ID: "1"}, {ID: "2"}, {ID: "3"}}, nil, nil)
 			},
 		},
 	}
@@ -563,7 +635,7 @@ func TestAssetHandlerGetStargazers(t *testing.T) {
 				rr = tc.MutateRequest(rr)
 			}
 
-			handler := handlers.NewAssetHandler(logger, nil, nil, sr)
+			handler := handlers.NewAssetHandler(logger, nil, nil, sr, nil)
 			handler.GetStargazers(rw, rr)
 
 		})
@@ -604,7 +676,7 @@ func TestAssetHandlerGetVersionHistory(t *testing.T) {
 				ar.On("GetVersionHistory", ctx, asset.Config{
 					Size:   30,
 					Offset: 50,
-				}, assetID).Return([]asset.AssetVersion{}, nil)
+				}, assetID).Return([]asset.AssetVersion{}, nil, nil)
 			},
 		},
 		{
@@ -614,7 +686,7 @@ func TestAssetHandlerGetVersionHistory(t *testing.T) {
 				ar.On("GetVersionHistory", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
-				}, nil)
+				}, nil, nil)
 			},
 			PostCheck: func(r *http.Response) error {
 				expected := []asset.AssetVersion{
@@ -644,7 +716,7 @@ func TestAssetHandlerGetVersionHistory(t *testing.T) {
 			ar := new(mocks.AssetRepository)
 			tc.Setup(rr.Context(), ar)
 
-			handler := handlers.NewAssetHandler(logger, ar, nil, nil)
+			handler := handlers.NewAssetHandler(logger, ar, nil, nil, nil)
 			handler.GetVersionHistory(rw, rr)
 
 			if rw.Code != tc.ExpectStatus {
@@ -704,7 +776,7 @@ func TestAssetHandlerGetByVersion(t *testing.T) {
 			Description:  "should return http 200 status along with the asset, if found",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetByVersion", ctx, assetID, version).Return(ast, nil)
+				ar.On("GetByVersion", ctx, assetID, version).Return(ast, nil, nil)
 			},
 			PostCheck: func(r *http.Response) error {
 				var responsePayload asset.Asset
@@ -730,7 +802,7 @@ func TestAssetHandlerGetByVersion(t *testing.T) {
 			ar := new(mocks.AssetRepository)
 			tc.Setup(rr.Context(), ar)
 
-			handler := handlers.NewAssetHandler(logger, ar, nil, nil)
+			handler := handlers.NewAssetHandler(logger, ar, nil, nil, nil)
 			handler.GetByVersion(rw, rr)
 
 			if rw.Code != tc.ExpectStatus {

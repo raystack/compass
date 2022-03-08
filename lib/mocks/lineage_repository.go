@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	lineage "github.com/odpf/columbus/lineage"
+	lineage "github.com/odpf/columbus/lineage/v2"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -14,22 +14,22 @@ type LineageRepository struct {
 	mock.Mock
 }
 
-// GetEdges provides a mock function with given fields: _a0
-func (_m *LineageRepository) GetEdges(_a0 context.Context) ([]lineage.Edge, error) {
-	ret := _m.Called(_a0)
+// GetGraph provides a mock function with given fields: ctx, node
+func (_m *LineageRepository) GetGraph(ctx context.Context, node lineage.Node) (lineage.Graph, error) {
+	ret := _m.Called(ctx, node)
 
-	var r0 []lineage.Edge
-	if rf, ok := ret.Get(0).(func(context.Context) []lineage.Edge); ok {
-		r0 = rf(_a0)
+	var r0 lineage.Graph
+	if rf, ok := ret.Get(0).(func(context.Context, lineage.Node) lineage.Graph); ok {
+		r0 = rf(ctx, node)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]lineage.Edge)
+			r0 = ret.Get(0).(lineage.Graph)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(_a0)
+	if rf, ok := ret.Get(1).(func(context.Context, lineage.Node) error); ok {
+		r1 = rf(ctx, node)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -37,20 +37,16 @@ func (_m *LineageRepository) GetEdges(_a0 context.Context) ([]lineage.Edge, erro
 	return r0, r1
 }
 
-type LineageProvider struct {
-	mock.Mock
-}
+// Upsert provides a mock function with given fields: ctx, node, upstreams, downstreams
+func (_m *LineageRepository) Upsert(ctx context.Context, node lineage.Node, upstreams []lineage.Node, downstreams []lineage.Node) error {
+	ret := _m.Called(ctx, node, upstreams, downstreams)
 
-func (lp *LineageProvider) Graph() (lineage.Graph, error) {
-	args := lp.Called()
-	return args.Get(0).(lineage.Graph), args.Error(1)
-}
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, lineage.Node, []lineage.Node, []lineage.Node) error); ok {
+		r0 = rf(ctx, node, upstreams, downstreams)
+	} else {
+		r0 = ret.Error(0)
+	}
 
-type Graph struct {
-	mock.Mock
-}
-
-func (graph *Graph) Query(cfg lineage.QueryCfg) (lineage.AdjacencyMap, error) {
-	args := graph.Called(cfg)
-	return args.Get(0).(lineage.AdjacencyMap), args.Error(1)
+	return r0
 }
