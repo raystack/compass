@@ -114,6 +114,11 @@ func initRouter(
 		logger.Info("lineage build complete")
 	}()
 
+	lineageRepo, err := postgres.NewLineageRepository(pgClient)
+	if err != nil {
+		logger.Fatal("failed to create new lineage repository", "error", err)
+	}
+
 	router := mux.NewRouter()
 	if nrMonitor != nil {
 		nrMonitor.MonitorRouter(router)
@@ -138,6 +143,7 @@ func initRouter(
 		DiscoveryService:        discovery.NewService(recordRepositoryFactory, recordSearcher),
 		RecordRepositoryFactory: recordRepositoryFactory,
 		LineageProvider:         lineageService,
+		LineageRepository:       lineageRepo,
 		TagService:              tagService,
 		TagTemplateService:      tagTemplateService,
 		UserService:             userService,
@@ -193,7 +199,7 @@ func initPostgres(logger log.Logger, config Config) *postgres.Client {
 	if err != nil {
 		logger.Fatal("error creating postgres client", "error", err)
 	}
-	logger.Info("connected to postgres server %s:%d", "host", config.DBHost, "port", config.DBPort)
+	logger.Info("connected to postgres server", "host", config.DBHost, "port", config.DBPort)
 
 	return pgClient
 }

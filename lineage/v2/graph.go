@@ -6,13 +6,13 @@ type Graph []Edge
 
 type Edge struct {
 	// Source represents source node ID
-	Source string
+	Source string `json:"source"`
 
 	// Source represents source node ID
-	Target string
+	Target string `json:"target"`
 
 	// Prop is a map containing extra information about the edge
-	Prop map[string]interface{}
+	Prop map[string]interface{} `json:"prop"`
 }
 
 type Node struct {

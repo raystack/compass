@@ -40,6 +40,7 @@ type Handlers struct {
 	Record      *handlers.RecordHandler
 	Search      *handlers.SearchHandler
 	Lineage     *handlers.LineageHandler
+	LineageV2   *handlers.LineageV2Handler
 	Tag         *handlers.TagHandler
 	TagTemplate *handlers.TagTemplateHandler
 	User        *handlers.UserHandler
@@ -73,6 +74,10 @@ func initHandlers(config Config) *Handlers {
 		config.Logger,
 		config.LineageProvider,
 	)
+	lineageV2Handler := handlers.NewLineageV2Handler(
+		config.Logger,
+		config.LineageRepository,
+	)
 	tagHandler := handlers.NewTagHandler(
 		config.Logger,
 		config.TagService,
@@ -92,6 +97,7 @@ func initHandlers(config Config) *Handlers {
 		Record:      recordHandler,
 		Search:      searchHandler,
 		Lineage:     lineageHandler,
+		LineageV2:   lineageV2Handler,
 		Tag:         tagHandler,
 		TagTemplate: tagTemplateHandler,
 		User:        userHandler,
@@ -117,6 +123,9 @@ func RegisterRoutes(router *mux.Router, config Config) {
 
 	v1SubRouter := router.PathPrefix("/v1").Subrouter()
 	setupV1Beta1Router(v1SubRouter, handlerCollection)
+
+	v1Beta2SubRouter := router.PathPrefix("/v1beta2").Subrouter()
+	setupV1Beta2Router(v1Beta2SubRouter, handlerCollection)
 
 	router.NotFoundHandler = http.HandlerFunc(handlers.NotFound)
 	router.MethodNotAllowedHandler = http.HandlerFunc(handlers.MethodNotAllowed)
