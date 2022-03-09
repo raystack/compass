@@ -5,10 +5,10 @@ import "github.com/odpf/columbus/asset"
 type Graph []Edge
 
 type Edge struct {
-	// Source represents source node ID
+	// Source represents source's node ID
 	Source string `json:"source"`
 
-	// Source represents source node ID
+	// Target represents target's node ID
 	Target string `json:"target"`
 
 	// Prop is a map containing extra information about the edge
