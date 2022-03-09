@@ -127,7 +127,7 @@ func (builder defaultBuilder) buildAdjacents(r asset.Asset, dir dataflowDir) (ad
 
 	var lineageRecords []asset.LineageRecord
 	if dir == dataflowDirUpstream {
-		lineageRecords = r.Upstreams
+		lineageRecords = r.Upstreams // nolint:staticcheck
 	} else {
 		lineageRecords = r.Downstreams
 	}

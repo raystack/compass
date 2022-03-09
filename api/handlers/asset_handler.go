@@ -297,7 +297,7 @@ func (h *AssetHandler) saveLineage(ctx context.Context, ast asset.Asset) error {
 	}
 
 	upstreams := []lineage.Node{}
-	for _, n := range ast.Upstreams {
+	for _, n := range ast.Upstreams { // nolint:staticcheck
 		upstreams = append(upstreams, lineage.Node{
 			URN:     n.URN,
 			Type:    n.Type,
