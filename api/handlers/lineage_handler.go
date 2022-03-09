@@ -38,9 +38,8 @@ func NewLineageHandler(logger log.Logger, provider LineageProvider) *LineageHand
 func (handler *LineageHandler) ListLineage(w http.ResponseWriter, r *http.Request) {
 	graph, err := handler.lineageProvider.Graph()
 	if err != nil {
-		handler.logger.Error("error requesting graph", "error", err)
-		status := http.StatusInternalServerError
-		WriteJSONError(w, status, http.StatusText(status))
+		errMessage := fmt.Sprintf("error requesting graph: %s", err.Error())
+		internalServerError(w, handler.logger, errMessage)
 		return
 	}
 
@@ -62,9 +61,8 @@ func (handler *LineageHandler) ListLineage(w http.ResponseWriter, r *http.Reques
 func (handler *LineageHandler) GetLineage(w http.ResponseWriter, r *http.Request) {
 	graph, err := handler.lineageProvider.Graph()
 	if err != nil {
-		handler.logger.Error("error requesting graph", "error", err)
-		status := http.StatusInternalServerError
-		WriteJSONError(w, status, http.StatusText(status))
+		errMessage := fmt.Sprintf("error requesting graph: %s", err.Error())
+		internalServerError(w, handler.logger, errMessage)
 		return
 	}
 	requestParams := mux.Vars(r)

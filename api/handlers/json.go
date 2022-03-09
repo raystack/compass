@@ -27,7 +27,7 @@ func writeJSON(w http.ResponseWriter, status int, v interface{}) {
 func internalServerError(w http.ResponseWriter, logger log.Logger, msg string) {
 	ref := time.Now().Unix()
 
-	logger.Error("time format", "ref", ref, "msg", msg)
+	logger.Error(msg, "ref", ref)
 	response := &ErrorResponse{
 		Reason: fmt.Sprintf(
 			"%s - ref (%d)",
