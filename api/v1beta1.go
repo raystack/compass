@@ -7,7 +7,7 @@ import (
 	"github.com/odpf/columbus/api/handlers"
 )
 
-func setupV1Beta1Router(router *mux.Router, handlers *Handlers) *mux.Router {
+func setupV1Beta1Router(router *mux.Router, handlers *Handlers) {
 	setupV1Beta1AssetRoutes(router, handlers.Asset)
 	setupV1Beta1TagRoutes(router, "/tags", handlers.Tag, handlers.TagTemplate)
 
@@ -42,7 +42,6 @@ func setupV1Beta1Router(router *mux.Router, handlers *Handlers) *mux.Router {
 
 	usersRouter := router.PathPrefix("/users").Subrouter()
 	setupUsersRoutes(usersRouter, handlers.User)
-	return router
 }
 
 func setupV1Beta1AssetRoutes(router *mux.Router, ah *handlers.AssetHandler) {
