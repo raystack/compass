@@ -122,10 +122,7 @@ func RegisterRoutes(router *mux.Router, config Config) {
 	setupV1Beta1Router(v1Beta1SubRouter, handlerCollection)
 
 	v1SubRouter := router.PathPrefix("/v1").Subrouter()
-	setupV1Beta1Router(v1SubRouter, handlerCollection)
-
-	v1Beta2SubRouter := router.PathPrefix("/v1beta2").Subrouter()
-	setupV1Beta2Router(v1Beta2SubRouter, handlerCollection)
+	setupV1Router(v1SubRouter, handlerCollection)
 
 	router.NotFoundHandler = http.HandlerFunc(handlers.NotFound)
 	router.MethodNotAllowedHandler = http.HandlerFunc(handlers.MethodNotAllowed)
