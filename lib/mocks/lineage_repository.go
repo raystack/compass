@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	lineage "github.com/odpf/columbus/lineage/v2"
+	lineage "github.com/odpf/columbus/lineage"
 	mock "github.com/stretchr/testify/mock"
 )
 

@@ -17,7 +17,6 @@ import (
 	"github.com/odpf/columbus/api"
 	"github.com/odpf/columbus/api/middleware"
 	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/lineage/v1"
 	"github.com/odpf/columbus/metrics"
 	esStore "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/odpf/columbus/store/postgres"
@@ -100,20 +99,6 @@ func initRouter(
 	}
 
 	discoveryRepo := esStore.NewDiscoveryRepository(esClient)
-	lineageService, err := lineage.NewService(typeRepository, recordRepositoryFactory, lineage.Config{
-		RefreshInterval:    config.LineageRefreshIntervalStr,
-		MetricsMonitor:     statsdMonitor,
-		PerformanceMonitor: nrMonitor,
-	})
-	if err != nil {
-		logger.Fatal("failed to create service", "error", err)
-	}
-	// build lineage asynchronously
-	go func() {
-		lineageService.ForceBuild()
-		logger.Info("lineage build complete")
-	}()
-
 	lineageRepo, err := postgres.NewLineageRepository(pgClient)
 	if err != nil {
 		logger.Fatal("failed to create new lineage repository", "error", err)
@@ -142,7 +127,6 @@ func initRouter(
 		TypeRepository:          typeRepository,
 		DiscoveryService:        discovery.NewService(recordRepositoryFactory, recordSearcher),
 		RecordRepositoryFactory: recordRepositoryFactory,
-		LineageProvider:         lineageService,
 		LineageRepository:       lineageRepo,
 		TagService:              tagService,
 		TagTemplateService:      tagTemplateService,

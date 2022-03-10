@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/lineage/v2"
+	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/store/postgres"
 	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"

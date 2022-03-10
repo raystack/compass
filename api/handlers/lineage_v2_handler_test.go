@@ -12,10 +12,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/lib/mocks"
-	"github.com/odpf/columbus/lineage/v2"
+	"github.com/odpf/columbus/lineage"
 )
 
-func TestLineageV2Handler(t *testing.T) {
+func TestLineageHandler(t *testing.T) {
 	logger := log.NewNoop()
 	t.Run("GetLineage", func(t *testing.T) {
 		t.Run("should return a graph containing the requested resource, along with it's related resources", func(t *testing.T) {
@@ -37,7 +37,7 @@ func TestLineageV2Handler(t *testing.T) {
 			lr := new(mocks.LineageRepository)
 			lr.On("GetGraph", rr.Context(), node).Return(graph, nil)
 
-			handler := handlers.NewLineageV2Handler(logger, lr)
+			handler := handlers.NewLineageHandler(logger, lr)
 			handler.GetGraph(rw, rr)
 
 			if rw.Code != http.StatusOK {

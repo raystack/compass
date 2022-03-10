@@ -5,7 +5,6 @@ import (
 
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/lineage/v1"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -97,13 +96,4 @@ func (searcher *RecordSearcher) Search(ctx context.Context, cfg discovery.Search
 func (searcher *RecordSearcher) Suggest(ctx context.Context, cfg discovery.SearchConfig) ([]string, error) {
 	args := searcher.Called(ctx, cfg)
 	return args.Get(0).([]string), args.Error(1)
-}
-
-type LineageProviderV1 struct {
-	mock.Mock
-}
-
-func (lp *LineageProviderV1) Graph() (lineage.Graph, error) {
-	args := lp.Called()
-	return args.Get(0).(lineage.Graph), args.Error(1)
 }

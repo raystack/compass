@@ -6,16 +6,16 @@ import (
 	"github.com/odpf/salt/log"
 
 	"github.com/gorilla/mux"
-	"github.com/odpf/columbus/lineage/v2"
+	"github.com/odpf/columbus/lineage"
 )
 
-type LineageV2Handler struct {
+type LineageHandler struct {
 	logger      log.Logger
 	lineageRepo lineage.Repository
 }
 
-func NewLineageV2Handler(logger log.Logger, lineageRepo lineage.Repository) *LineageV2Handler {
-	handler := &LineageV2Handler{
+func NewLineageHandler(logger log.Logger, lineageRepo lineage.Repository) *LineageHandler {
+	handler := &LineageHandler{
 		logger:      logger,
 		lineageRepo: lineageRepo,
 	}
@@ -23,7 +23,7 @@ func NewLineageV2Handler(logger log.Logger, lineageRepo lineage.Repository) *Lin
 	return handler
 }
 
-func (handler *LineageV2Handler) GetGraph(w http.ResponseWriter, r *http.Request) {
+func (handler *LineageHandler) GetGraph(w http.ResponseWriter, r *http.Request) {
 	urn := mux.Vars(r)["urn"]
 
 	graph, err := handler.lineageRepo.GetGraph(r.Context(), lineage.Node{URN: urn})
