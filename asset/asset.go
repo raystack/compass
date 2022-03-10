@@ -44,10 +44,19 @@ type Asset struct {
 	Version     string                 `json:"version" diff:"-"`
 	UpdatedBy   user.User              `json:"updated_by" diff:"-"`
 	Changelog   diff.Changelog         `json:"changelog,omitempty" diff:"-"`
+	// Deprecated: this is only to support old lineage
+	Upstreams   []LineageRecord `json:"upstreams"`
+	Downstreams []LineageRecord `json:"downstreams"`
 }
 
 // Diff returns nil changelog with nil error if equal
 // returns wrapped r3labs/diff Changelog struct with nil error if not equal
 func (a *Asset) Diff(otherAsset *Asset) (diff.Changelog, error) {
 	return diff.Diff(a, otherAsset, diff.DiscardComplexOrigin(), diff.AllowTypeMismatch(true))
+}
+
+type LineageRecord struct {
+	URN     string `json:"urn"`
+	Type    Type   `json:"type"`
+	Service string `json:"service"`
 }

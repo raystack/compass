@@ -10,6 +10,7 @@ import (
 	"github.com/odpf/columbus/api/middleware"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
+	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/star"
 	"github.com/odpf/columbus/tag"
 	"github.com/odpf/columbus/user"
@@ -21,10 +22,10 @@ type Config struct {
 	DiscoveryRepository discovery.Repository
 	TagService          *tag.Service
 	TagTemplateService  *tag.TemplateService
-	LineageProvider     handlers.LineageProvider
 	UserService         *user.Service
 	MiddlewareConfig    middleware.Config
 	StarRepository      star.Repository
+	LineageRepository   lineage.Repository
 
 	// Deprecated
 	DiscoveryService        *discovery.Service
@@ -54,6 +55,7 @@ func initHandlers(config Config) *Handlers {
 		config.AssetRepository,
 		config.DiscoveryRepository,
 		config.StarRepository,
+		config.LineageRepository,
 	)
 
 	recordHandler := handlers.NewRecordHandler(
@@ -68,7 +70,7 @@ func initHandlers(config Config) *Handlers {
 	)
 	lineageHandler := handlers.NewLineageHandler(
 		config.Logger,
-		config.LineageProvider,
+		config.LineageRepository,
 	)
 	tagHandler := handlers.NewTagHandler(
 		config.Logger,
@@ -111,9 +113,6 @@ func RegisterRoutes(router *mux.Router, config Config) {
 	v1Beta1SubRouter := router.PathPrefix("/v1beta1").Subrouter()
 	v1Beta1SubRouter.Use(middleware.ValidateUser(config.MiddlewareConfig, config.UserService))
 	setupV1Beta1Router(v1Beta1SubRouter, handlerCollection)
-
-	v1SubRouter := router.PathPrefix("/v1").Subrouter()
-	setupV1Beta1Router(v1SubRouter, handlerCollection)
 
 	router.NotFoundHandler = http.HandlerFunc(handlers.NotFound)
 	router.MethodNotAllowedHandler = http.HandlerFunc(handlers.MethodNotAllowed)

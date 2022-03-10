@@ -17,7 +17,6 @@ import (
 	"github.com/odpf/columbus/api"
 	"github.com/odpf/columbus/api/middleware"
 	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/metrics"
 	esStore "github.com/odpf/columbus/store/elasticsearch"
 	"github.com/odpf/columbus/store/postgres"
@@ -104,19 +103,6 @@ func initRouter(
 	if err != nil {
 		logger.Fatal("failed to create new lineage repository", "error", err)
 	}
-	lineageService, err := lineage.NewService(lineageRepo, lineage.Config{
-		RefreshInterval:    config.LineageRefreshIntervalStr,
-		MetricsMonitor:     statsdMonitor,
-		PerformanceMonitor: nrMonitor,
-	})
-	if err != nil {
-		logger.Fatal("failed to create service", "error", err)
-	}
-	// build lineage asynchronously
-	go func() {
-		lineageService.ForceBuild()
-		logger.Info("lineage build complete")
-	}()
 
 	router := mux.NewRouter()
 	if nrMonitor != nil {
@@ -141,7 +127,7 @@ func initRouter(
 		TypeRepository:          typeRepository,
 		DiscoveryService:        discovery.NewService(recordRepositoryFactory, recordSearcher),
 		RecordRepositoryFactory: recordRepositoryFactory,
-		LineageProvider:         lineageService,
+		LineageRepository:       lineageRepo,
 		TagService:              tagService,
 		TagTemplateService:      tagTemplateService,
 		UserService:             userService,
@@ -197,7 +183,7 @@ func initPostgres(logger log.Logger, config Config) *postgres.Client {
 	if err != nil {
 		logger.Fatal("error creating postgres client", "error", err)
 	}
-	logger.Info("connected to postgres server %s:%d", "host", config.DBHost, "port", config.DBPort)
+	logger.Info("connected to postgres server", "host", config.DBHost, "port", config.DBPort)
 
 	return pgClient
 }

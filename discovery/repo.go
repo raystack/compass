@@ -7,6 +7,12 @@ import (
 	"github.com/odpf/columbus/asset"
 )
 
+type RecordIterator interface {
+	Scan() bool
+	Next() []asset.Asset
+	Close() error
+}
+
 type Repository interface {
 	Upsert(context.Context, asset.Asset) error
 	Delete(ctx context.Context, assetID string) error
@@ -19,6 +25,9 @@ type RecordRepository interface {
 	// GetAll returns specific assets from storage
 	// GetConfig is used to configure fetching such as filters and offset
 	GetAll(ctx context.Context, cfg GetConfig) (RecordList, error)
+
+	// GetAllIterator returns RecordIterator to iterate records by batches
+	GetAllIterator(context.Context) (RecordIterator, error)
 
 	// GetByID returns a record by it's id.
 	// The field that contains this ID is defined by the

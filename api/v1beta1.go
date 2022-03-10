@@ -7,7 +7,7 @@ import (
 	"github.com/odpf/columbus/api/handlers"
 )
 
-func setupV1Beta1Router(router *mux.Router, handlers *Handlers) *mux.Router {
+func setupV1Beta1Router(router *mux.Router, handlers *Handlers) {
 	setupV1Beta1AssetRoutes(router, handlers.Asset)
 	setupV1Beta1TagRoutes(router, "/tags", handlers.Tag, handlers.TagTemplate)
 
@@ -19,15 +19,9 @@ func setupV1Beta1Router(router *mux.Router, handlers *Handlers) *mux.Router {
 		Methods(http.MethodGet).
 		HandlerFunc(handlers.Search.Suggest)
 
-	router.PathPrefix("/lineage/{id}").
+	router.PathPrefix("/lineage/{urn}").
 		Methods(http.MethodGet).
-		HandlerFunc(handlers.Lineage.GetLineage)
-
-	// Deprecated: This route will be removed in the future.
-	// Use /lineage/{id} instead
-	router.PathPrefix("/lineage/{type}/{id}").
-		Methods(http.MethodGet).
-		HandlerFunc(handlers.Lineage.GetLineage)
+		HandlerFunc(handlers.Lineage.GetGraph)
 
 	// Deprecated: Use setupV1Beta1AssetRoutes instead
 	setupV1Beta1TypeRoutes(router, handlers.Type, handlers.Record)
@@ -37,7 +31,6 @@ func setupV1Beta1Router(router *mux.Router, handlers *Handlers) *mux.Router {
 
 	usersRouter := router.PathPrefix("/users").Subrouter()
 	setupUsersRoutes(usersRouter, handlers.User)
-	return router
 }
 
 func setupV1Beta1AssetRoutes(router *mux.Router, ah *handlers.AssetHandler) {
