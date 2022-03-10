@@ -73,7 +73,18 @@ paths:
           name: ""
           required: true
           schema:
-            $ref: "#/definitions/BaseAsset"
+            allOf:
+              - $ref: "#/definitions/BaseAsset"
+              - type: object
+                properties: 
+                  upstreams:
+                    type: array
+                    items: 
+                      $ref: "#/definitions/LineageRecord"
+                  downstreams:
+                    type: array
+                    items: 
+                      $ref: "#/definitions/LineageRecord"
       responses:
         200:
           description: OK
@@ -252,43 +263,6 @@ paths:
           description: "internal server error"
           schema:
             $ref: "#/definitions/InternalServerError"
-  "/v1beta1/lineage/{type}/{record}":
-    get:
-      tags:
-        - Lineage
-      summary: lineage get api
-      description: "Returns lineage graph of a single record. For BQTable to BQTable lineage, set collapse to true"
-      produces:
-        - "application/json"
-      parameters:
-        - in: header
-          name: Columbus-User-Email
-          type: string
-          format: email
-          required: true
-        - in: query
-          name: collapse
-          type: boolean
-        - in: path
-          name: type
-          description: "asset's type"
-          type: string
-          format: asset_type
-          required: true
-        - in: path
-          name: record
-          description: "record's id"
-          type: string
-          required: true
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: "#/definitions/AdjacencyMap"
-        404:
-          description: invalid type requested
-          schema:
-            $ref: "#/definitions/Error"
   "/v1beta1/types":
     get:
       tags:
@@ -1063,6 +1037,33 @@ paths:
           description: internal server error
           schema:
             $ref: "#/definitions/Error"
+  "/v1beta1/lineage/{asset_urn}":
+    get:
+      tags:
+        - Lineage
+      summary: Get Lineage Graph
+      description: Get lineage graph of an asset
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          type: string
+          format: email
+          required: true
+        - in: path
+          name: asset_urn
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/LineageGraph"
+        500:
+          description: internal server error
+          schema:
+            $ref: "#/definitions/Error"
 definitions:
   BaseAsset:
     type: object
@@ -1310,26 +1311,22 @@ definitions:
         type: string
         description: "Columbus registered type"
         example: "table"
-  AdjacencyEntry:
-    type: object
-    properties:
-      urn:
+      service:
         type: string
-      type:
-        type: string
-      downstreams:
-        type: array
-        items:
+        description: "Asset's service e.g. bigquery, kafka"
+        example: "bigqery"
+  LineageGraph:
+    type: array
+    items: 
+      properties:
+        source:
           type: string
-      upstreams:
-        type: array
-        items:
+          example: "asset-urn-1"
+        target:
           type: string
-  AdjacencyMap:
-    type: object
-    properties:
-      "<NodeLabel>":
-        $ref: "#/definitions/AdjacencyEntry"
+          example: "asset-urn-2"
+        prop:
+          type: object
   UUID:
     type: string
     description: "UUID"
