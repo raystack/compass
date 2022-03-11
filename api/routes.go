@@ -9,6 +9,7 @@ import (
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/api/middleware"
 	"github.com/odpf/columbus/asset"
+	"github.com/odpf/columbus/comment"
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/discussion"
 	"github.com/odpf/columbus/lineage"
@@ -28,6 +29,7 @@ type Config struct {
 	StarRepository       star.Repository
 	LineageRepository    lineage.Repository
 	DiscussionRepository discussion.Repository
+	CommentRepository    comment.Repository
 
 	// Deprecated
 	DiscoveryService        *discovery.Service
@@ -45,6 +47,7 @@ type Handlers struct {
 	TagTemplate *handlers.TagTemplateHandler
 	User        *handlers.UserHandler
 	Discussion  *handlers.DiscussionHandler
+	Comment     *handlers.CommentHandler
 }
 
 func initHandlers(config Config) *Handlers {
@@ -86,6 +89,7 @@ func initHandlers(config Config) *Handlers {
 	userHandler := handlers.NewUserHandler(
 		config.Logger,
 		config.StarRepository,
+		config.DiscussionRepository,
 	)
 
 	discussionHandler := handlers.NewDiscussionHandler(

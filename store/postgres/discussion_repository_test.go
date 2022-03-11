@@ -91,7 +91,7 @@ func (r *DiscussionRepositoryTestSuite) TearDownTest() {
 func (r *DiscussionRepositoryTestSuite) bootstrap() error {
 	queries := []string{
 		fmt.Sprintf(`insert into discussions values (11111, 'Kafka Source', 'We need to figure out how to source the new kafka', 'open', 'issues', '%s', array['kafka','topic','question'],null,array['59bf4219-433e-4e38-ad72-ebab70c7ee7a'])`, r.users[0].ID),
-		fmt.Sprintf(`insert into discussions values (22222, 'Missing data point on asset 1234-5678', 'Does anyone know why do we miss datapoint on asset 1234-5678', 'open', 'qanda', '%s', array['wondering','data','datapoint','question'],array['6663c3c7-62cf-41db-b0e1-4d443525f6d4'],array['59bf4219-433e-4e38-ad72-ebab70c7ee7a','b5b6b5fe-813f-45ac-92a2-d65b47377ea3'])`, r.users[1].ID),
+		fmt.Sprintf(`insert into discussions values (22222, 'Missing data point on asset 1234-5678', 'Does anyone know why do we miss datapoint on asset 1234-5678', 'open', 'qanda', '%s', array['wondering','data','datapoint','question'],array['6663c3c7-62cf-41db-b0e1-4d443525f6d4'],array['59bf4219-433e-4e38-ad72-ebab70c7ee7a','%s'])`, r.users[1].ID, r.users[0].ID),
 		fmt.Sprintf(`insert into discussions values (33333, 'Improve data', 'How about cleaning the data more?', 'open', 'openended', '%s', array['data','enhancement'],array['44a368e7-73df-4520-8803-3979a97f1cc3','59bf4219-433e-4e38-ad72-ebab70c7ee7a','458e8fdd-bca3-45a8-a17c-c00b2541d671'],array['ef1f0896-785a-47a0-8c9f-9897cdcf3697'])`, r.users[2].ID),
 		fmt.Sprintf(`insert into discussions values (44444, 'Kafka Source (duplicated)', 'We need to figure out how to source the new kafka', 'closed', 'issues', '%s', array['kafka','topic'],null,array['ef1f0896-785a-47a0-8c9f-9897cdcf3697'])`, r.users[3].ID),
 		fmt.Sprintf(`insert into discussions values (55555, 'Answered Questions', 'This question is answered', 'closed', 'qanda', '%s', array['question','answered'],null,null)`, r.users[4].ID),
@@ -101,7 +101,7 @@ func (r *DiscussionRepositoryTestSuite) bootstrap() error {
 
 func (r *DiscussionRepositoryTestSuite) cleanup() error {
 	queries := []string{
-		"TRUNCATE TABLE discussions",
+		"TRUNCATE TABLE discussions CASCADE",
 	}
 	return r.client.ExecQueries(r.ctx, queries)
 }
@@ -167,6 +167,11 @@ func (r *DiscussionRepositoryTestSuite) TestGetAll() {
 				resultLength: 5,
 			},
 			{
+				description:  "should successfully fetch all discussions with assignee user 0 or owner user 0",
+				filter:       discussion.Filter{Assignees: []string{r.users[0].ID}, Owner: r.users[0].ID, DisjointAssigneeOwner: true},
+				resultLength: 2,
+			},
+			{
 				description: "should limit with size",
 				filter: discussion.Filter{
 					Size: 1,
@@ -209,6 +214,21 @@ func (r *DiscussionRepositoryTestSuite) TestGetAll() {
 				resultLength: 2,
 			},
 			{
+				description: "should get all discussions ascendingly sorted by created_at",
+				filter: discussion.Filter{
+					SortBy:        "created_at",
+					SortDirection: "asc",
+				},
+				resultLength: 5,
+				validateResult: func(r *DiscussionRepositoryTestSuite, results []discussion.Discussion) {
+					r.Equal(results[0].ID, "11111")
+					r.Equal(results[1].ID, "22222")
+					r.Equal(results[2].ID, "33333")
+					r.Equal(results[3].ID, "44444")
+					r.Equal(results[4].ID, "55555")
+				},
+			},
+			{
 				description: "should get all discussions with a specific assetid",
 				filter: discussion.Filter{
 					Assets: []string{"6663c3c7-62cf-41db-b0e1-4d443525f6d4"},
@@ -234,7 +254,7 @@ func (r *DiscussionRepositoryTestSuite) TestGetAll() {
 					Type:      discussion.TypeQAndA.String(),
 					State:     discussion.StateOpen.String(),
 					Labels:    []string{"wondering"},
-					Assignees: []string{"b5b6b5fe-813f-45ac-92a2-d65b47377ea3"},
+					Assignees: []string{"59bf4219-433e-4e38-ad72-ebab70c7ee7a"},
 					Assets:    []string{"6663c3c7-62cf-41db-b0e1-4d443525f6d4"},
 					Owner:     r.users[1].ID,
 				},

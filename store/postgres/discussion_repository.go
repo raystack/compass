@@ -194,33 +194,43 @@ func (r *DiscussionRepository) selectSQL() sq.SelectBuilder {
 }
 
 func (r *DiscussionRepository) buildSelectFilterQuery(builder sq.SelectBuilder, flt discussion.Filter) sq.SelectBuilder {
-	whereClause := sq.Eq{}
+	whereClauses := sq.And{}
 	if len(strings.TrimSpace(flt.Type)) > 0 && flt.Type != "all" {
-		whereClause["type"] = flt.Type
+		whereClauses = append(whereClauses, sq.Expr("type = ?", flt.Type))
 	}
 
 	if len(strings.TrimSpace(flt.State)) > 0 && flt.State != "all" {
-		whereClause["state"] = flt.State
-	}
-
-	if len(strings.TrimSpace(flt.Owner)) > 0 {
-		whereClause["owner"] = flt.Owner
-	}
-
-	if len(whereClause) > 0 {
-		builder = builder.Where(whereClause)
+		whereClauses = append(whereClauses, sq.Expr("state = ?", flt.State))
 	}
 
 	if len(flt.Labels) > 0 {
-		builder = builder.Where("labels @> ?", flt.Labels)
+		whereClauses = append(whereClauses, sq.Expr("labels @> ?", flt.Labels))
 	}
 
-	if len(flt.Assignees) > 0 {
-		builder = builder.Where("assignees @> ?", flt.Assignees)
+	if flt.DisjointAssigneeOwner {
+		if len(strings.TrimSpace(flt.Owner)) > 0 && len(flt.Assignees) > 0 {
+			whereClauses = append(whereClauses,
+				sq.Or{
+					sq.Expr("owner = ?", flt.Owner),
+					sq.Expr("assignees @> ?", flt.Assignees),
+				})
+		}
+	} else {
+		if len(strings.TrimSpace(flt.Owner)) > 0 {
+			whereClauses = append(whereClauses, sq.Expr("owner = ?", flt.Owner))
+		}
+
+		if len(flt.Assignees) > 0 {
+			whereClauses = append(whereClauses, sq.Expr("assignees @> ?", flt.Assignees))
+		}
 	}
 
 	if len(flt.Assets) > 0 {
-		builder = builder.Where("assets @> ?", flt.Assets)
+		whereClauses = append(whereClauses, sq.Expr("assets @> ?", flt.Assets))
+	}
+
+	if len(whereClauses) > 0 {
+		return builder.Where(whereClauses)
 	}
 
 	return builder
