@@ -31,20 +31,12 @@ type Filter struct {
 	Labels        []string
 	SortBy        string `json:"sort" validate:"omitempty,oneof=created_at updated_at"`
 	SortDirection string `json:"direction" validate:"omitempty,oneof=asc desc"`
-	Size          int
-	Offset        int
+	Size          int    `json:"size" validate:"omitempty,gte=0"`
+	Offset        int    `json:"offset" validate:"omitempty,gte=0"`
 }
 
 // Validate will check whether fields in the filter fulfills the constraint
 func (f *Filter) Validate() error {
-
-	if f.Size < 0 {
-		return errors.New("size cannot be less than 0")
-	}
-
-	if f.Offset < 0 {
-		return errors.New("offset cannot be less than 0")
-	}
 
 	err := validate.Struct(f)
 	if err != nil {
@@ -56,6 +48,12 @@ func (f *Filter) Validate() error {
 				errStrs = append(errStrs, errStr)
 				continue
 			}
+
+			if e.Tag() == "gte" {
+				errStrs = append(errStrs, fmt.Sprintf("%s cannot be less than %s", e.Field(), e.Param()))
+				continue
+			}
+
 			errStrs = append(errStrs, e.Error())
 		}
 		return errors.New(strings.Join(errStrs, " and "))

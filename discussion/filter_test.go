@@ -37,7 +37,7 @@ func TestValidateFilter(t *testing.T) {
 		{
 			Description: "invalid size and offset will return error",
 			Filter:      &discussion.Filter{Size: -12, Offset: -1},
-			errString:   "size cannot be less than 0",
+			errString:   "size cannot be less than 0 and offset cannot be less than 0",
 		},
 	}
 
