@@ -206,6 +206,8 @@ func (h *DiscussionHandler) buildGetFilter(query url.Values) (discussion.Filter,
 		return discussion.Filter{}, err
 	}
 
+	fl.AssignDefault()
+
 	return fl, nil
 }
 

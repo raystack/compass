@@ -24,7 +24,7 @@ func init() {
 
 type Filter struct {
 	Type          string `json:"type" validate:"omitempty,oneof=openended issues qanda all"`
-	State         string `json:"state" validate:"omitempty,oneof=open closed"`
+	State         string `json:"state" validate:"omitempty,oneof=open closed all"`
 	Assignees     []string
 	Assets        []string
 	Owner         string
@@ -59,4 +59,15 @@ func (f *Filter) Validate() error {
 		return errors.New(strings.Join(errStrs, " and "))
 	}
 	return err
+}
+
+// AssignDefault will populate default value to filter
+func (f *Filter) AssignDefault() {
+	if len(strings.TrimSpace(f.Type)) == 0 {
+		f.Type = "all"
+	}
+
+	if len(strings.TrimSpace(f.State)) == 0 {
+		f.State = StateOpen.String()
+	}
 }

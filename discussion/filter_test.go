@@ -27,7 +27,7 @@ func TestValidateFilter(t *testing.T) {
 		{
 			Description: "invalid state will return error",
 			Filter:      &discussion.Filter{State: "random"},
-			errString:   "error filter \"random\" for key \"state\" not recognized, only support \"open closed\"",
+			errString:   "error filter \"random\" for key \"state\" not recognized, only support \"open closed all\"",
 		},
 		{
 			Description: "invalid sort and direction will return error",

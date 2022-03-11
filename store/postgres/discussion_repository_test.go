@@ -162,6 +162,11 @@ func (r *DiscussionRepositoryTestSuite) TestGetAll() {
 				resultLength: 5,
 			},
 			{
+				description:  "should successfully fetch all discussions with all filters",
+				filter:       discussion.Filter{Type: "all", State: "all"},
+				resultLength: 5,
+			},
+			{
 				description: "should limit with size",
 				filter: discussion.Filter{
 					Size: 1,

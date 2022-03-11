@@ -36,7 +36,7 @@ func TestDiscussionHandlerGetAll(t *testing.T) {
 			Description:  `should return http 500 if fetching fails`,
 			ExpectStatus: http.StatusInternalServerError,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
-				dr.EXPECT().GetAll(ctx, discussion.Filter{}).Return([]discussion.Discussion{}, errors.New("unknown error"))
+				dr.EXPECT().GetAll(ctx, discussion.Filter{Type: "all", State: discussion.StateOpen.String()}).Return([]discussion.Discussion{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -62,7 +62,7 @@ func TestDiscussionHandlerGetAll(t *testing.T) {
 			Description:  "should return http 200 status along with list of discussions",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
-				dr.EXPECT().GetAll(ctx, discussion.Filter{}).Return([]discussion.Discussion{
+				dr.EXPECT().GetAll(ctx, discussion.Filter{Type: "all", State: discussion.StateOpen.String()}).Return([]discussion.Discussion{
 					{ID: "1122"},
 					{ID: "2233"},
 				}, nil)

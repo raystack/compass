@@ -195,15 +195,15 @@ func (r *DiscussionRepository) selectSQL() sq.SelectBuilder {
 
 func (r *DiscussionRepository) buildSelectFilterQuery(builder sq.SelectBuilder, flt discussion.Filter) sq.SelectBuilder {
 	whereClause := sq.Eq{}
-	if flt.Type != "" {
-		dTypeEnum := discussion.GetTypeEnum(flt.Type)
-		whereClause["type"] = dTypeEnum
-		if flt.State != "" {
-			whereClause["state"] = discussion.GetStateEnum(flt.State)
-		}
+	if len(strings.TrimSpace(flt.Type)) > 0 && flt.Type != "all" {
+		whereClause["type"] = flt.Type
 	}
 
-	if flt.Owner != "" {
+	if len(strings.TrimSpace(flt.State)) > 0 && flt.State != "all" {
+		whereClause["state"] = flt.State
+	}
+
+	if len(strings.TrimSpace(flt.Owner)) > 0 {
 		whereClause["owner"] = flt.Owner
 	}
 
