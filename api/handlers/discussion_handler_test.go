@@ -36,15 +36,15 @@ func TestDiscussionHandlerGetAll(t *testing.T) {
 			Description:  `should return http 500 if fetching fails`,
 			ExpectStatus: http.StatusInternalServerError,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
-				dr.On("GetAll", ctx, discussion.Filter{}).Return([]discussion.Discussion{}, errors.New("unknown error"))
+				dr.EXPECT().GetAll(ctx, discussion.Filter{}).Return([]discussion.Discussion{}, errors.New("unknown error"))
 			},
 		},
 		{
 			Description:  `should parse querystring to get filter`,
 			Querystring:  "?labels=label1,label2,label4&assignee=646130cf-3dde-4d61-99e9-6070dd369597&asset=e5d81dcd-3046-4d33-b1ac-efdd221e621d&owner=62326386-dc9d-4ae5-9448-e54c720f856d&type=issues&state=closed&sort=updated_at&direction=asc&size=30&offset=50",
 			ExpectStatus: http.StatusOK,
-			Setup: func(ctx context.Context, ar *mocks.DiscussionRepository) {
-				ar.On("GetAll", ctx, discussion.Filter{
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().GetAll(ctx, discussion.Filter{
 					Type:          "issues",
 					State:         "closed",
 					Assignees:     []string{"646130cf-3dde-4d61-99e9-6070dd369597"},
@@ -61,8 +61,8 @@ func TestDiscussionHandlerGetAll(t *testing.T) {
 		{
 			Description:  "should return http 200 status along with list of discussions",
 			ExpectStatus: http.StatusOK,
-			Setup: func(ctx context.Context, ar *mocks.DiscussionRepository) {
-				ar.On("GetAll", ctx, discussion.Filter{}).Return([]discussion.Discussion{
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().GetAll(ctx, discussion.Filter{}).Return([]discussion.Discussion{
 					{ID: "1122"},
 					{ID: "2233"},
 				}, nil)
@@ -173,7 +173,7 @@ func TestDiscussionHandlerCreate(t *testing.T) {
 		expectedErr := errors.New("unknown error")
 
 		dr := new(mocks.DiscussionRepository)
-		dr.On("Create", rr.Context(), mock.AnythingOfType("*discussion.Discussion")).Return("1234-5678", expectedErr)
+		dr.EXPECT().Create(rr.Context(), mock.AnythingOfType("*discussion.Discussion")).Return("", expectedErr)
 		defer dr.AssertExpectations(t)
 
 		rr.Context()
@@ -203,10 +203,9 @@ func TestDiscussionHandlerCreate(t *testing.T) {
 		rw := httptest.NewRecorder()
 
 		dr := new(mocks.DiscussionRepository)
-		dr.On("Create", rr.Context(), &dsc).Return(discussionWithID.ID, nil).Run(func(args mock.Arguments) {
-			argDiscussion := args.Get(1).(*discussion.Discussion)
-			argDiscussion.ID = discussionWithID.ID
-		})
+		dr.EXPECT().Create(rr.Context(), &dsc).Run(func(ctx context.Context, dsc *discussion.Discussion) {
+			dsc.ID = discussionWithID.ID
+		}).Return(discussionWithID.ID, nil)
 		defer dr.AssertExpectations(t)
 
 		handler := handlers.NewDiscussionHandler(logger, dr)
@@ -242,7 +241,7 @@ func TestDiscussionHandlerGet(t *testing.T) {
 			ExpectStatus: http.StatusInternalServerError,
 			DiscussionID: discussionID,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
-				dr.On("Get", ctx, discussionID).Return(discussion.Discussion{}, errors.New("unknown error"))
+				dr.EXPECT().Get(ctx, discussionID).Return(discussion.Discussion{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -260,15 +259,15 @@ func TestDiscussionHandlerGet(t *testing.T) {
 			ExpectStatus: http.StatusNotFound,
 			DiscussionID: discussionID,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
-				dr.On("Get", ctx, discussionID).Return(discussion.Discussion{}, discussion.NotFoundError{DiscussionID: discussionID})
+				dr.EXPECT().Get(ctx, discussionID).Return(discussion.Discussion{}, discussion.NotFoundError{DiscussionID: discussionID})
 			},
 		},
 		{
 			Description:  "should return http 200 status along with discussions",
 			ExpectStatus: http.StatusOK,
 			DiscussionID: discussionID,
-			Setup: func(ctx context.Context, ar *mocks.DiscussionRepository) {
-				ar.On("Get", ctx, discussionID).Return(discussion.Discussion{ID: discussionID}, nil)
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().Get(ctx, discussionID).Return(discussion.Discussion{ID: discussionID}, nil)
 			},
 			PostCheck: func(r *http.Response) error {
 				expected := discussion.Discussion{
@@ -414,7 +413,7 @@ func TestDiscussionHandlerPatch(t *testing.T) {
 		expectedErr := errors.New("unknown error")
 
 		dr := new(mocks.DiscussionRepository)
-		dr.On("Patch", rr.Context(), mock.AnythingOfType("*discussion.Discussion")).Return(expectedErr)
+		dr.EXPECT().Patch(rr.Context(), mock.AnythingOfType("*discussion.Discussion")).Return(expectedErr)
 		defer dr.AssertExpectations(t)
 
 		rr.Context()
@@ -443,10 +442,9 @@ func TestDiscussionHandlerPatch(t *testing.T) {
 		rw := httptest.NewRecorder()
 
 		dr := new(mocks.DiscussionRepository)
-		dr.On("Patch", rr.Context(), dsc).Return(nil).Run(func(args mock.Arguments) {
-			argDiscussion := args.Get(1).(*discussion.Discussion)
-			argDiscussion.ID = dsc.ID
-		})
+		dr.EXPECT().Patch(rr.Context(), dsc).Run(func(ctx context.Context, disc *discussion.Discussion) {
+			disc.ID = dsc.ID
+		}).Return(nil)
 		defer dr.AssertExpectations(t)
 
 		handler := handlers.NewDiscussionHandler(logger, dr)

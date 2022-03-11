@@ -1,6 +1,6 @@
 package discussion
 
-//go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --structname DiscussionRepository --filename discussion_repository.go
+//go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --with-expecter --structname DiscussionRepository --filename discussion_repository.go
 
 import (
 	"context"
