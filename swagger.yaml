@@ -281,7 +281,7 @@ paths:
           name: type
           type: string
           enum:
-            - openeded
+            - openended
             - issues
             - qanda
         - in: query
@@ -1354,7 +1354,7 @@ definitions:
         type: string
         description: type of a discussion
         enum:
-          - openeded
+          - openended
           - issues
           - qanda
       state:
