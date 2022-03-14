@@ -9,6 +9,7 @@ require (
 	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/elastic/go-elasticsearch/v7 v7.16.0
 	github.com/etsy/statsd v0.9.0
+	github.com/go-playground/form v3.1.4+incompatible // indirect
 	github.com/go-playground/locales v0.14.0
 	github.com/go-playground/universal-translator v0.18.0
 	github.com/go-playground/validator/v10 v10.10.0

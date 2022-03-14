@@ -17,6 +17,7 @@ vendor/
 # IDEs
 .idea
 .vscode
+.DS_Store
 
 # Project specific ignore
 .env

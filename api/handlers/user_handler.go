@@ -29,15 +29,15 @@ func (h *UserHandler) GetStarredAssetsWithHeader(w http.ResponseWriter, r *http.
 	starCfg := buildStarConfig(h.logger, r.URL.Query())
 
 	starredAssets, err := h.starRepository.GetAllAssetsByUserID(r.Context(), starCfg, userID)
+	if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if errors.As(err, new(star.NotFoundError)) {
+		WriteJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
 	if err != nil {
-		if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
-			WriteJSONError(w, http.StatusBadRequest, err.Error())
-			return
-		}
-		if errors.As(err, new(star.NotFoundError)) {
-			WriteJSONError(w, http.StatusNotFound, err.Error())
-			return
-		}
 		internalServerError(w, h.logger, err.Error())
 		return
 	}
@@ -66,15 +66,15 @@ func (h *UserHandler) GetStarredAssetsWithPath(w http.ResponseWriter, r *http.Re
 	} else {
 		starredAssets, err = h.starRepository.GetAllAssetsByUserID(r.Context(), starCfg, targetUserID)
 	}
+	if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if errors.As(err, new(star.NotFoundError)) {
+		WriteJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
 	if err != nil {
-		if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
-			WriteJSONError(w, http.StatusBadRequest, err.Error())
-			return
-		}
-		if errors.As(err, new(star.NotFoundError)) {
-			WriteJSONError(w, http.StatusNotFound, err.Error())
-			return
-		}
 		internalServerError(w, h.logger, err.Error())
 		return
 	}
@@ -94,20 +94,20 @@ func (h *UserHandler) StarAsset(w http.ResponseWriter, r *http.Request) {
 	assetID := pathParams["asset_id"]
 
 	starID, err := h.starRepository.Create(r.Context(), userID, assetID)
+	if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if errors.As(err, new(star.UserNotFoundError)) {
+		WriteJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
+	if errors.As(err, new(star.DuplicateRecordError)) {
+		// idempotent
+		writeJSON(w, http.StatusNoContent, starID)
+		return
+	}
 	if err != nil {
-		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
-			WriteJSONError(w, http.StatusBadRequest, err.Error())
-			return
-		}
-		if errors.As(err, new(star.UserNotFoundError)) {
-			WriteJSONError(w, http.StatusNotFound, err.Error())
-			return
-		}
-		if errors.As(err, new(star.DuplicateRecordError)) {
-			// idempotent
-			writeJSON(w, http.StatusNoContent, starID)
-			return
-		}
 		internalServerError(w, h.logger, err.Error())
 		return
 	}
@@ -126,21 +126,21 @@ func (h *UserHandler) GetStarredAsset(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	assetID := pathParams["asset_id"]
 
-	starID, err := h.starRepository.GetAssetByUserID(r.Context(), userID, assetID)
+	ast, err := h.starRepository.GetAssetByUserID(r.Context(), userID, assetID)
+	if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if errors.As(err, new(star.NotFoundError)) {
+		WriteJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
 	if err != nil {
-		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
-			WriteJSONError(w, http.StatusBadRequest, err.Error())
-			return
-		}
-		if errors.As(err, new(star.NotFoundError)) {
-			WriteJSONError(w, http.StatusNotFound, err.Error())
-			return
-		}
 		internalServerError(w, h.logger, err.Error())
 		return
 	}
 
-	writeJSON(w, http.StatusOK, starID)
+	writeJSON(w, http.StatusOK, ast)
 }
 
 func (h *UserHandler) UnstarAsset(w http.ResponseWriter, r *http.Request) {
@@ -155,15 +155,15 @@ func (h *UserHandler) UnstarAsset(w http.ResponseWriter, r *http.Request) {
 	assetID := pathParams["asset_id"]
 
 	err := h.starRepository.Delete(r.Context(), userID, assetID)
+	if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if errors.As(err, new(star.NotFoundError)) {
+		WriteJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
 	if err != nil {
-		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
-			WriteJSONError(w, http.StatusBadRequest, err.Error())
-			return
-		}
-		if errors.As(err, new(star.NotFoundError)) {
-			WriteJSONError(w, http.StatusNotFound, err.Error())
-			return
-		}
 		internalServerError(w, h.logger, err.Error())
 		return
 	}

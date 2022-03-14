@@ -10,6 +10,7 @@ import (
 	"github.com/odpf/columbus/api/middleware"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
+	"github.com/odpf/columbus/discussion"
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/star"
 	"github.com/odpf/columbus/tag"
@@ -17,15 +18,16 @@ import (
 )
 
 type Config struct {
-	Logger              log.Logger
-	AssetRepository     asset.Repository
-	DiscoveryRepository discovery.Repository
-	TagService          *tag.Service
-	TagTemplateService  *tag.TemplateService
-	UserService         *user.Service
-	MiddlewareConfig    middleware.Config
-	StarRepository      star.Repository
-	LineageRepository   lineage.Repository
+	Logger               log.Logger
+	AssetRepository      asset.Repository
+	DiscoveryRepository  discovery.Repository
+	TagService           *tag.Service
+	TagTemplateService   *tag.TemplateService
+	UserService          *user.Service
+	MiddlewareConfig     middleware.Config
+	StarRepository       star.Repository
+	LineageRepository    lineage.Repository
+	DiscussionRepository discussion.Repository
 
 	// Deprecated
 	DiscoveryService        *discovery.Service
@@ -42,6 +44,7 @@ type Handlers struct {
 	Tag         *handlers.TagHandler
 	TagTemplate *handlers.TagTemplateHandler
 	User        *handlers.UserHandler
+	Discussion  *handlers.DiscussionHandler
 }
 
 func initHandlers(config Config) *Handlers {
@@ -85,6 +88,11 @@ func initHandlers(config Config) *Handlers {
 		config.StarRepository,
 	)
 
+	discussionHandler := handlers.NewDiscussionHandler(
+		config.Logger,
+		config.DiscussionRepository,
+	)
+
 	return &Handlers{
 		Asset:       assetHandler,
 		Type:        typeHandler,
@@ -94,6 +102,7 @@ func initHandlers(config Config) *Handlers {
 		Tag:         tagHandler,
 		TagTemplate: tagTemplateHandler,
 		User:        userHandler,
+		Discussion:  discussionHandler,
 	}
 }
 

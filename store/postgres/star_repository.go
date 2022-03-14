@@ -222,19 +222,19 @@ func (r *StarRepository) GetAllAssetsByUserEmail(ctx context.Context, cfg star.C
 }
 
 // GetAssetByUserID fetch a specific starred asset by user id
-func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, assetID string) (*asset.Asset, error) {
+func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, assetID string) (asset.Asset, error) {
 	if userID == "" {
-		return nil, star.ErrEmptyUserID
+		return asset.Asset{}, star.ErrEmptyUserID
 	}
 	if assetID == "" {
-		return nil, star.ErrEmptyAssetID
+		return asset.Asset{}, star.ErrEmptyAssetID
 	}
 
 	if !isValidUUID(userID) {
-		return nil, star.InvalidError{UserID: userID}
+		return asset.Asset{}, star.InvalidError{UserID: userID}
 	}
 	if !isValidUUID(assetID) {
-		return nil, star.InvalidError{AssetID: assetID}
+		return asset.Asset{}, star.InvalidError{AssetID: assetID}
 	}
 
 	var asetModel AssetModel
@@ -267,14 +267,14 @@ func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, as
 		LIMIT 1
 	`, userID, assetID)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, star.NotFoundError{AssetID: assetID, UserID: userID}
+		return asset.Asset{}, star.NotFoundError{AssetID: assetID, UserID: userID}
 	}
 	if err != nil {
-		return nil, fmt.Errorf("failed fetching star by user: %w", err)
+		return asset.Asset{}, fmt.Errorf("failed fetching star by user: %w", err)
 	}
 
 	asset := asetModel.toAsset(nil)
-	return &asset, nil
+	return asset, nil
 }
 
 // Delete will delete/unstar a starred asset for a user id

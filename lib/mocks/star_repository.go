@@ -101,16 +101,14 @@ func (_m *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Con
 }
 
 // GetAssetByUserID provides a mock function with given fields: ctx, userID, assetID
-func (_m *StarRepository) GetAssetByUserID(ctx context.Context, userID string, assetID string) (*asset.Asset, error) {
+func (_m *StarRepository) GetAssetByUserID(ctx context.Context, userID string, assetID string) (asset.Asset, error) {
 	ret := _m.Called(ctx, userID, assetID)
 
-	var r0 *asset.Asset
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) *asset.Asset); ok {
+	var r0 asset.Asset
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) asset.Asset); ok {
 		r0 = rf(ctx, userID, assetID)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*asset.Asset)
-		}
+		r0 = ret.Get(0).(asset.Asset)
 	}
 
 	var r1 error
