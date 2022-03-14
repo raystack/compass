@@ -342,10 +342,10 @@ func TestDiscussionHandlerPatch(t *testing.T) {
 				StatusCode:   http.StatusBadRequest,
 			},
 			{
-				Description:  "empty object return no content",
+				Description:  "empty object return bad request",
 				Payload:      `{}`,
 				DiscussionID: discussionID,
-				StatusCode:   http.StatusNoContent,
+				StatusCode:   http.StatusBadRequest,
 			},
 			{
 				Description: "wrong payload return bad request",
@@ -425,6 +425,29 @@ func TestDiscussionHandlerPatch(t *testing.T) {
 		err := json.NewDecoder(rw.Body).Decode(&response)
 		require.NoError(t, err)
 		assert.Contains(t, response.Reason, "Internal Server Error")
+	})
+
+	t.Run("should return HTTP 404 if the discussion id is invalid", func(t *testing.T) {
+		rr := httptest.NewRequest("PATCH", "/", strings.NewReader(validPayload))
+		ctx := user.NewContext(rr.Context(), userID)
+		rr = rr.WithContext(ctx)
+		rr = mux.SetURLVars(rr, map[string]string{
+			"id": "999",
+		})
+
+		rw := httptest.NewRecorder()
+
+		expectedErr := discussion.NotFoundError{DiscussionID: "99"}
+
+		dr := new(mocks.DiscussionRepository)
+		dr.EXPECT().Patch(rr.Context(), mock.AnythingOfType("*discussion.Discussion")).Return(expectedErr)
+		defer dr.AssertExpectations(t)
+
+		rr.Context()
+		handler := handlers.NewDiscussionHandler(logger, dr)
+		handler.Patch(rw, rr)
+
+		assert.Equal(t, http.StatusNotFound, rw.Code)
 	})
 
 	t.Run("should return HTTP 204 if the discussion is successfully patched", func(t *testing.T) {

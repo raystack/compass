@@ -135,7 +135,9 @@ func (h *DiscussionHandler) Patch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if isEmpty := dsc.IsEmpty(); isEmpty {
-		writeJSON(w, http.StatusNoContent, nil)
+		err := errors.New("empty discussion body")
+		h.logger.Warn(err.Error(), "id", discussionID)
+		WriteJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
 		return
 	}
 	if err := dsc.ValidateConstraint(); err != nil {

@@ -328,6 +328,7 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 		{
 			description: "should successfully patch title and body",
 			disc:        &discussion.Discussion{ID: "11111", Title: "patched title", Body: "patched body"},
+			err:         nil,
 			validateResult: func(r *DiscussionRepositoryTestSuite, result discussion.Discussion) {
 				r.Equal("patched title", result.Title)
 				r.Equal("patched body", result.Body)
@@ -336,6 +337,7 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 		{
 			description: "should successfully patch assignees",
 			disc:        &discussion.Discussion{ID: "11111", Assignees: []string{"a", "b", "c"}},
+			err:         nil,
 			validateResult: func(r *DiscussionRepositoryTestSuite, result discussion.Discussion) {
 				r.Equal([]string{"a", "b", "c"}, result.Assignees)
 			},
@@ -343,6 +345,7 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 		{
 			description: "should successfully patch assets",
 			disc:        &discussion.Discussion{ID: "11111", Assets: []string{"d", "e", "f"}},
+			err:         nil,
 			validateResult: func(r *DiscussionRepositoryTestSuite, result discussion.Discussion) {
 				r.Equal([]string{"d", "e", "f"}, result.Assets)
 			},
@@ -370,6 +373,13 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 			validateResult: func(r *DiscussionRepositoryTestSuite, result discussion.Discussion) {
 				r.Equal([]string(nil), result.Assignees)
 			},
+		}, {
+			description: "should return error if discussion id does not exist",
+			disc:        &discussion.Discussion{ID: "999", Assignees: []string{}},
+			err:         discussion.NotFoundError{DiscussionID: "999"},
+			validateResult: func(r *DiscussionRepositoryTestSuite, result discussion.Discussion) {
+				r.Empty(result)
+			},
 		},
 	}
 
@@ -379,9 +389,7 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 			r.Equal(testCase.err, err)
 
 			dsc, err := r.repository.Get(r.ctx, testCase.disc.ID)
-			if err != nil {
-				r.T().Fatal(err)
-			}
+			r.Equal(err, testCase.err)
 			testCase.validateResult(r, dsc)
 		})
 	}
