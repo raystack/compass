@@ -68,11 +68,15 @@ func TestDiscussionHandlerGetAll(t *testing.T) {
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				dr.EXPECT().GetAll(ctx, discussion.Filter{
+					Type:          "all",
+					State:         "open",
+					SortBy:        "created_at",
 					SortDirection: "desc",
 				}).Return([]discussion.Discussion{
 					{ID: "1122"},
 					{ID: "2233"},
 				}, nil)
+			},
 			PostCheck: func(r *http.Response) error {
 				expected := []discussion.Discussion{
 					{ID: "1122"},

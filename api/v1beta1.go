@@ -117,7 +117,7 @@ func setupUserRoutes(baseURL string, router *mux.Router, ush *handlers.UserHandl
 	router.Methods(http.MethodGet).Path(userAssetsURL).HandlerFunc(ush.GetStarredAsset)
 	router.Methods(http.MethodDelete).Path(userAssetsURL).HandlerFunc(ush.UnstarAsset)
 
-	router.Path("/discussions").
+	router.Path(baseURL+"/discussions").
 		Methods(http.MethodGet, http.MethodHead).
 		HandlerFunc(ush.GetDiscussions)
 }

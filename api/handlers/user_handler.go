@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discussion"
+	"github.com/odpf/columbus/filter"
 	"github.com/odpf/columbus/star"
 	"github.com/odpf/columbus/user"
 	"github.com/odpf/salt/log"
@@ -207,11 +208,14 @@ func (h *UserHandler) buildGetDiscussionsFilter(query url.Values, userID string)
 		SortDirection: query.Get("direction"),
 	}
 
-	filterQuery := "assigned"
-	if len(strings.TrimSpace(query.Get("filter"))) > 0 {
-		tempFilterQuery := query.Get("filter")
-		if tempFilterQuery == "created" || tempFilterQuery == "all" {
-			filterQuery = tempFilterQuery
+	filterQuery := query.Get("filter")
+	if err := filter.ValidateOneOf(filterQuery, "assigned", "created", "all"); err != nil {
+		return discussion.Filter{}, err
+	}
+
+	if len(strings.TrimSpace(filterQuery)) > 0 {
+		if !(filterQuery == "created" || filterQuery == "all") {
+			filterQuery = "assigned" // default value
 		}
 	}
 
@@ -219,6 +223,7 @@ func (h *UserHandler) buildGetDiscussionsFilter(query url.Values, userID string)
 	case "all":
 		fl.Owner = userID
 		fl.Assignees = []string{userID}
+		fl.DisjointAssigneeOwner = true
 	case "created":
 		fl.Owner = userID
 	default:
@@ -256,8 +261,6 @@ func (h *UserHandler) buildGetDiscussionsFilter(query url.Values, userID string)
 	}
 
 	fl.AssignDefault()
-	fl.DisjointAssigneeOwner = true
-
 	return fl, nil
 }
 

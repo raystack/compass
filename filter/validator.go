@@ -24,18 +24,39 @@ func newValidator() *validator.Validate {
 	return validate
 }
 
-func Validate(f interface{}) error {
+func ValidateStruct(f interface{}) error {
 	if validate == nil {
 		validate = newValidator()
 	}
-	err := validate.Struct(f)
+	err := getValidator().Struct(f)
+	return checkError(err)
+}
+
+func ValidateOneOf(value string, enums ...string) error {
+	tags := "omitempty,oneof=" + strings.Join(enums, " ")
+	err := getValidator().Var(value, tags)
+	return checkError(err)
+}
+
+func getValidator() *validator.Validate {
+	if validate == nil {
+		validate = newValidator()
+	}
+	return validate
+}
+
+func checkError(err error) error {
 	if err != nil {
 		errs := err.(validator.ValidationErrors)
 		errStrs := []string{}
 		for _, e := range errs {
 			if e.Tag() == "oneof" {
-				errStr := fmt.Sprintf("error filter \"%s\" for key \"%s\" not recognized, only support \"%s\"", e.Value(), e.Field(), e.Param())
-				errStrs = append(errStrs, errStr)
+				errStrValue := fmt.Sprintf("error value \"%s\"", e.Value())
+				if e.Field() != "" {
+					errStrValue = errStrValue + fmt.Sprintf(" for key \"%s\"", e.Field())
+				}
+				errStrValue = errStrValue + fmt.Sprintf(" not recognized, only support \"%s\"", e.Param())
+				errStrs = append(errStrs, errStrValue)
 				continue
 			}
 
@@ -48,5 +69,5 @@ func Validate(f interface{}) error {
 		}
 		return errors.New(strings.Join(errStrs, " and "))
 	}
-	return err
+	return nil
 }

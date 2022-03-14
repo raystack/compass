@@ -22,7 +22,7 @@ func TestValidateFilter(t *testing.T) {
 		{
 			Description: "invalid sort and direction will return error",
 			Filter:      &comment.Filter{SortBy: "random", SortDirection: "random"},
-			errString:   "error filter \"random\" for key \"sort\" not recognized, only support \"created_at updated_at\" and error filter \"random\" for key \"direction\" not recognized, only support \"asc desc\"",
+			errString:   "error value \"random\" for key \"sort\" not recognized, only support \"created_at updated_at\" and error value \"random\" for key \"direction\" not recognized, only support \"asc desc\"",
 		},
 		{
 			Description: "invalid size and offset will return error",

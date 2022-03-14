@@ -15,7 +15,7 @@ type Filter struct {
 
 // Validate will check whether fields in the filter fulfills the constraint
 func (f *Filter) Validate() error {
-	return filter.Validate(f)
+	return filter.ValidateStruct(f)
 }
 
 // AssignDefault will populate default value to filter

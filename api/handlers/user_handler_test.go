@@ -621,7 +621,7 @@ func TestUserGetDiscussions(t *testing.T) {
 					Assignees:             []string{userID},
 					SortBy:                "created_at",
 					SortDirection:         "desc",
-					DisjointAssigneeOwner: true,
+					DisjointAssigneeOwner: false,
 				}).Return([]discussion.Discussion{}, errors.New("unknown error"))
 			},
 		},
@@ -640,6 +640,21 @@ func TestUserGetDiscussions(t *testing.T) {
 					SortDirection:         "asc",
 					Size:                  30,
 					Offset:                50,
+					DisjointAssigneeOwner: false,
+				}).Return([]discussion.Discussion{}, nil)
+			},
+		}, {
+			Description:  `should search by assigned or created if filter is all`,
+			Querystring:  "?filter=all",
+			ExpectStatus: http.StatusOK,
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().GetAll(ctx, discussion.Filter{
+					Type:                  "all",
+					State:                 "open",
+					Assignees:             []string{userID},
+					Owner:                 userID,
+					SortBy:                "created_at",
+					SortDirection:         "desc",
 					DisjointAssigneeOwner: true,
 				}).Return([]discussion.Discussion{}, nil)
 			},
@@ -656,7 +671,7 @@ func TestUserGetDiscussions(t *testing.T) {
 					SortDirection:         "desc",
 					Size:                  0,
 					Offset:                0,
-					DisjointAssigneeOwner: true,
+					DisjointAssigneeOwner: false,
 				}).Return([]discussion.Discussion{}, nil)
 			},
 		},
@@ -670,7 +685,7 @@ func TestUserGetDiscussions(t *testing.T) {
 					Assignees:             []string{userID},
 					SortBy:                "created_at",
 					SortDirection:         "desc",
-					DisjointAssigneeOwner: true,
+					DisjointAssigneeOwner: false,
 				}).Return([]discussion.Discussion{
 					{ID: "1122"},
 					{ID: "2233"},
