@@ -131,16 +131,16 @@ func setupUsersRoutes(router *mux.Router, ush *handlers.UserHandler) {
 }
 
 func setupDiscussionsRoutes(router *mux.Router, dh *handlers.DiscussionHandler) {
-	router.
+	router.Path("").
 		Methods(http.MethodPost).
 		HandlerFunc(dh.Create)
 
-	router.
+	router.Path("").
 		Methods(http.MethodGet, http.MethodHead).
 		HandlerFunc(dh.GetAll)
 
 	router.Path("/{id}").
-		Methods(http.MethodGet).
+		Methods(http.MethodGet, http.MethodHead).
 		HandlerFunc(dh.Get)
 
 	router.Path("/{id}").
