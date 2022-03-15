@@ -13,17 +13,19 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type Config struct {
-	Text    string `json:"text"`
-	Type    Type   `json:"type"`
-	Service string `json:"service"`
-	Size    int    `json:"size"`
-	Offset  int    `json:"offset"`
-}
+//type Config struct {
+//	Text    string `json:"text"`
+//	Type    Type   `json:"type"`
+//	Service string `json:"service"`
+//	Size    int    `json:"size"`
+//	Offset  int    `json:"offset"`
+//	SortBy        string `json:"sort" validate:"omitempty,oneof=created_at updated_at"`
+//	SortDirection string `json:"direction" validate:"omitempty,oneof=asc desc"`
+//}
 
 type Repository interface {
-	GetAll(context.Context, Config) ([]Asset, error)
-	GetCount(context.Context, Config) (int, error)
+	GetAll(context.Context, Filter) ([]Asset, error)
+	GetCount(context.Context, Filter) (int, error)
 	GetByID(ctx context.Context, id string) (Asset, error)
 	Find(ctx context.Context, urn string, typ Type, service string) (Asset, error)
 	GetVersionHistory(ctx context.Context, cfg Config, id string) ([]Asset, error)

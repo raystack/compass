@@ -24,28 +24,28 @@ type AssetRepository struct {
 	defaultUserProvider string
 }
 
-// GetAll retrieves list of assets with filters via config
-func (r *AssetRepository) GetAll(ctx context.Context, config asset.Config) ([]asset.Asset, error) {
-	size := config.Size
+// GetAll retrieves list of assets with filters via filter
+func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset.Asset, error) {
+	size := cfg.Size
 	if size == 0 {
 		size = r.defaultGetMaxSize
 	}
 
-	builder := r.getAssetSQL().
-		Limit(uint64(size)).
-		Offset(uint64(config.Offset))
-	builder = r.buildFilterQuery(builder, config)
+	builder := r.getAssetSQL().Limit(uint64(size)).Offset(uint64(cfg.Offset))
+	builder = r.buildFilterQuery(builder, cfg)
+	builder = r.buildOrderQuery(builder, cfg)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
 		return nil, fmt.Errorf("error building query: %w", err)
 	}
-	ams := []*AssetModel{}
+
+	var ams []*AssetModel
 	err = r.client.db.SelectContext(ctx, &ams, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("error getting asset list: %w", err)
 	}
 
-	assets := []asset.Asset{}
+	var assets []asset.Asset
 	for _, am := range ams {
 		assets = append(assets, am.toAsset(nil))
 	}
@@ -294,21 +294,6 @@ func (r *AssetRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	return nil
-}
-
-func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, config asset.Config) sq.SelectBuilder {
-	clause := sq.Eq{}
-	if config.Type != "" {
-		clause["type"] = config.Type
-	}
-	if config.Service != "" {
-		clause["service"] = config.Service
-	}
-
-	if len(clause) > 0 {
-		builder = builder.Where(clause)
-	}
-	return builder
 }
 
 func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id string, err error) {
@@ -647,6 +632,33 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 		`).
 		From("assets_versions a").
 		LeftJoin("users u ON a.updated_by = u.id")
+}
+
+func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
+	clause := sq.Eq{}
+	if cfg.Type != "" {
+		clause["type"] = cfg.Type
+	}
+	if cfg.Service != "" {
+		clause["service"] = cfg.Service
+	}
+
+	if len(clause) > 0 {
+		builder = builder.Where(clause)
+	}
+	return builder
+}
+
+func (r *AssetRepository) buildOrderQuery(builder sq.SelectBuilder, flt asset.Config) sq.SelectBuilder {
+	if flt.SortBy != "" {
+		orderDirection := "DESC"
+		if flt.SortDirection != "" {
+			orderDirection = strings.ToUpper(flt.SortDirection)
+		}
+		return builder.OrderBy(flt.SortBy + " " + orderDirection)
+	}
+
+	return builder
 }
 
 // NewAssetRepository initializes user repository clients

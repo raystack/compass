@@ -9,10 +9,10 @@ const (
 
 // AllSupportedTypes holds a list of all supported types struct
 var AllSupportedTypes = []Type{
-	TypeTable,
-	TypeJob,
-	TypeDashboard,
-	TypeTopic,
+	TypeTable.String(),
+	TypeJob.String(),
+	TypeDashboard.String(),
+	TypeTopic.String(),
 }
 
 // Type specifies a supported type name
@@ -30,4 +30,17 @@ func (t Type) IsValid() bool {
 		return true
 	}
 	return false
+}
+
+func GetTypeEnum(t string) Type {
+	switch {
+	case t == TypeTable.String():
+		return TypeTable
+	case t == TypeJob.String():
+		return TypeJob
+	case t == TypeDashboard.String():
+		return TypeDashboard
+	case t == TypeTopic.String():
+		return TypeTopic
+	}
 }

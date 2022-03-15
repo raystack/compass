@@ -47,8 +47,13 @@ func NewAssetHandler(
 }
 
 func (h *AssetHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	config := h.buildAssetConfig(r.URL.Query())
-	assets, err := h.assetRepo.GetAll(r.Context(), config)
+	cfg, err := h.buildAssetConfig(r.URL.Query())
+	if err != nil {
+		WriteJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
+		return
+	}
+
+	assets, err := h.assetRepo.GetAll(r.Context(), cfg)
 	if err != nil {
 		internalServerError(w, h.logger, err.Error())
 		return
@@ -61,9 +66,9 @@ func (h *AssetHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	withTotal, ok := r.URL.Query()["with_total"]
 	if ok && len(withTotal) > 0 && withTotal[0] != "false" && withTotal[0] != "0" {
 		total, err := h.assetRepo.GetCount(r.Context(), asset.Config{
-			Type:    config.Type,
-			Service: config.Service,
-			Text:    config.Text,
+			Type:    cfg.Type,
+			Service: cfg.Service,
+			Text:    cfg.Text,
 		})
 		if err != nil {
 			internalServerError(w, h.logger, err.Error())
@@ -253,12 +258,16 @@ func (h *AssetHandler) GetStargazers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AssetHandler) GetVersionHistory(w http.ResponseWriter, r *http.Request) {
-	config := h.buildAssetConfig(r.URL.Query())
+	flt, err := h.buildAssetConfig(r.URL.Query())
+	if err != nil {
+		WriteJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
+		return
+	}
 
 	pathParams := mux.Vars(r)
 	assetID := pathParams["id"]
 
-	assetVersions, err := h.assetRepo.GetVersionHistory(r.Context(), config, assetID)
+	assetVersions, err := h.assetRepo.GetVersionHistory(r.Context(), flt, assetID)
 	if err != nil {
 		if errors.As(err, new(asset.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
@@ -363,29 +372,37 @@ func (h *AssetHandler) validatePatchPayload(assetPayload map[string]interface{})
 	return
 }
 
-func (h *AssetHandler) buildAssetConfig(query url.Values) asset.Config {
-	config := asset.Config{
-		Text:    query.Get("text"),
-		Type:    asset.Type(query.Get("type")),
-		Service: query.Get("service"),
+func (h *AssetHandler) buildAssetConfig(query url.Values) (asset.Config, error) {
+	cfg := asset.Config{
+		Text:          query.Get("text"),
+		Type:          asset.Type(query.Get("type")),
+		Service:       query.Get("service"),
+		SortBy:        query.Get("sort"),
+		SortDirection: query.Get("direction"),
 	}
 
 	sizeString := query.Get("size")
 	if sizeString != "" {
 		size, err := strconv.Atoi(sizeString)
 		if err == nil {
-			config.Size = size
+			cfg.Size = size
 		}
 	}
 	offsetString := query.Get("offset")
 	if offsetString != "" {
 		offset, err := strconv.Atoi(offsetString)
 		if err == nil {
-			config.Offset = offset
+			cfg.Offset = offset
 		}
 	}
 
-	return config
+	if err := cfg.Validate(); err != nil {
+		return asset.Config{}, err
+	}
+
+	//fl.AssignDefault()
+
+	return cfg, nil
 }
 
 func (h *AssetHandler) saveLineage(ctx context.Context, ast asset.Asset, upstreams, downstreams []lineage.Node) error {
