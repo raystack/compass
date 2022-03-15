@@ -97,6 +97,11 @@ func initHandlers(config Config) *Handlers {
 		config.DiscussionRepository,
 	)
 
+	commentHandler := handlers.NewCommentHandler(
+		config.Logger,
+		config.CommentRepository,
+	)
+
 	return &Handlers{
 		Asset:       assetHandler,
 		Type:        typeHandler,
@@ -107,6 +112,7 @@ func initHandlers(config Config) *Handlers {
 		TagTemplate: tagTemplateHandler,
 		User:        userHandler,
 		Discussion:  discussionHandler,
+		Comment:     commentHandler,
 	}
 }
 
