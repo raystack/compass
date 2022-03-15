@@ -18,14 +18,14 @@ type NotFoundError struct {
 }
 
 func (e NotFoundError) Error() string {
-	fields := []string{"could not find"}
+	reasons := []string{}
 	if e.DiscussionID != "" {
-		fields = append(fields, fmt.Sprintf(" discussion with id \"%s\"", e.DiscussionID))
+		reasons = append(reasons, fmt.Sprintf("with discussion id \"%s\"", e.DiscussionID))
 	}
 	if e.CommentID != "" {
-		fields = append(fields, fmt.Sprintf(" and comment with id \"%s\"", e.CommentID))
+		reasons = append(reasons, fmt.Sprintf("with comment id \"%s\"", e.CommentID))
 	}
-	return strings.Join(fields, " ")
+	return "resource not found " + strings.Join(reasons, " and ")
 }
 
 type InvalidError struct {
@@ -34,12 +34,12 @@ type InvalidError struct {
 }
 
 func (e InvalidError) Error() string {
-	fields := []string{"invalid"}
+	reasons := []string{}
 	if e.DiscussionID != "" {
-		fields = append(fields, fmt.Sprintf("discussion id \"%s\"", e.DiscussionID))
+		reasons = append(reasons, fmt.Sprintf("with discussion id \"%s\"", e.DiscussionID))
 	}
 	if e.CommentID != "" {
-		fields = append(fields, fmt.Sprintf("comment id \"%s\"", e.CommentID))
+		reasons = append(reasons, fmt.Sprintf("with comment id \"%s\"", e.CommentID))
 	}
-	return strings.Join(fields, " ")
+	return "invalid input " + strings.Join(reasons, " and ")
 }

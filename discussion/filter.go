@@ -3,7 +3,7 @@ package discussion
 import (
 	"strings"
 
-	"github.com/odpf/columbus/filter"
+	"github.com/odpf/columbus/validator"
 )
 
 type Filter struct {
@@ -22,7 +22,7 @@ type Filter struct {
 
 // Validate will check whether fields in the filter fulfills the constraint
 func (f *Filter) Validate() error {
-	return filter.ValidateStruct(f)
+	return validator.ValidateStruct(f)
 }
 
 // AssignDefault will populate default value to filter

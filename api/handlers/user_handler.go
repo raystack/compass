@@ -11,9 +11,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discussion"
-	"github.com/odpf/columbus/filter"
 	"github.com/odpf/columbus/star"
 	"github.com/odpf/columbus/user"
+	"github.com/odpf/columbus/validator"
 	"github.com/odpf/salt/log"
 )
 
@@ -209,7 +209,7 @@ func (h *UserHandler) buildGetDiscussionsFilter(query url.Values, userID string)
 	}
 
 	filterQuery := query.Get("filter")
-	if err := filter.ValidateOneOf(filterQuery, "assigned", "created", "all"); err != nil {
+	if err := validator.ValidateOneOf(filterQuery, "assigned", "created", "all"); err != nil {
 		return discussion.Filter{}, err
 	}
 

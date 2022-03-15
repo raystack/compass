@@ -39,7 +39,7 @@ func (r *DiscussionRepository) CreateComment(ctx context.Context, cmt *discussio
 	return commentID, nil
 }
 
-// GetAll fetchs all comments of a specific discussion
+// GetAll fetches all comments of a specific discussion
 func (r *DiscussionRepository) GetAllComments(ctx context.Context, did string, flt discussion.Filter) ([]discussion.Comment, error) {
 
 	builder := r.selectCommentsSQL()
