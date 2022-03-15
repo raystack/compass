@@ -90,12 +90,20 @@ func (r *DiscussionRepositoryTestSuite) TearDownTest() {
 
 func (r *DiscussionRepositoryTestSuite) bootstrap() error {
 	queries := []string{
-		fmt.Sprintf(`insert into discussions values (11111, 'Kafka Source', 'We need to figure out how to source the new kafka', 'open', 'issues', '%s', array['kafka','topic','question'],null,array['59bf4219-433e-4e38-ad72-ebab70c7ee7a'])`, r.users[0].ID),
+		fmt.Sprintf(`insert into discussions values (11111, 'Kafka Source', 'We need to figure out how to source the new kafka', 1, 2, '%s', array['kafka','topic','question'],null,array['59bf4219-433e-4e38-ad72-ebab70c7ee7a'])`, r.users[0].ID),
 		fmt.Sprintf(`insert into discussions values (22222, 'Missing data point on asset 1234-5678', 'Does anyone know why do we miss datapoint on asset 1234-5678', 'open', 'qanda', '%s', array['wondering','data','datapoint','question'],array['6663c3c7-62cf-41db-b0e1-4d443525f6d4'],array['59bf4219-433e-4e38-ad72-ebab70c7ee7a','%s'])`, r.users[1].ID, r.users[0].ID),
 		fmt.Sprintf(`insert into discussions values (33333, 'Improve data', 'How about cleaning the data more?', 'open', 'openended', '%s', array['data','enhancement'],array['44a368e7-73df-4520-8803-3979a97f1cc3','59bf4219-433e-4e38-ad72-ebab70c7ee7a','458e8fdd-bca3-45a8-a17c-c00b2541d671'],array['ef1f0896-785a-47a0-8c9f-9897cdcf3697'])`, r.users[2].ID),
 		fmt.Sprintf(`insert into discussions values (44444, 'Kafka Source (duplicated)', 'We need to figure out how to source the new kafka', 'closed', 'issues', '%s', array['kafka','topic'],null,array['ef1f0896-785a-47a0-8c9f-9897cdcf3697'])`, r.users[3].ID),
 		fmt.Sprintf(`insert into discussions values (55555, 'Answered Questions', 'This question is answered', 'closed', 'qanda', '%s', array['question','answered'],null,null)`, r.users[4].ID),
 	}
+
+	queries = append(queries, []string{
+		fmt.Sprintf(`insert into comments values (11, 11111, 'This is 1st comment of discussion 11111', '%s', '%s')`, r.users[0].ID, r.users[0].ID),
+		fmt.Sprintf(`insert into comments values (22, 11111, 'This is 2nd comment of discussion 11111', '%s', '%s')`, r.users[1].ID, r.users[1].ID),
+		fmt.Sprintf(`insert into comments values (33, 22222, 'This is 1st comment of discussion 22222', '%s', '%s')`, r.users[2].ID, r.users[2].ID),
+		fmt.Sprintf(`insert into comments values (44, 22222, 'This is 2nd comment of discussion 22222', '%s', '%s')`, r.users[3].ID, r.users[3].ID),
+		fmt.Sprintf(`insert into comments values (55, 22222, 'This is 3rd comment of discussion 22222', '%s', '%s')`, r.users[0].ID, r.users[0].ID),
+	}...)
 	return r.client.ExecQueries(r.ctx, queries)
 }
 

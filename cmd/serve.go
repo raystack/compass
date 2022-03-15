@@ -98,12 +98,6 @@ func initRouter(
 		logger.Fatal("failed to create new discussion repository", "error", err)
 	}
 
-	// init comment
-	commentRepository, err := postgres.NewCommentRepository(pgClient, 0)
-	if err != nil {
-		logger.Fatal("failed to create new comment repository", "error", err)
-	}
-
 	// init star
 	starRepository, err := postgres.NewStarRepository(pgClient)
 	if err != nil {
@@ -146,7 +140,6 @@ func initRouter(
 		MiddlewareConfig:        middlewareCfg,
 		StarRepository:          starRepository,
 		DiscussionRepository:    discussionRepository,
-		CommentRepository:       commentRepository,
 	})
 
 	return router

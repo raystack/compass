@@ -5,21 +5,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/odpf/columbus/comment"
+	"github.com/odpf/columbus/discussion"
 )
 
-// CommentRepository is a type that manages comment operation to the primary database
-type CommentRepository struct {
-	client            *Client
-	defaultGetMaxSize int
-}
-
 // Create adds a new comment to a specific discussion
-func (r *CommentRepository) Create(ctx context.Context, cmt *comment.Comment) (string, error) {
+func (r *DiscussionRepository) CreateComment(ctx context.Context, cmt *discussion.Comment) (string, error) {
 	var commentID string
 	query, args, err := sq.Insert("comments").
 		Columns("discussion_id",
@@ -47,9 +40,9 @@ func (r *CommentRepository) Create(ctx context.Context, cmt *comment.Comment) (s
 }
 
 // GetAll fetchs all comments of a specific discussion
-func (r *CommentRepository) GetAll(ctx context.Context, did string, flt comment.Filter) ([]comment.Comment, error) {
+func (r *DiscussionRepository) GetAllComments(ctx context.Context, did string, flt discussion.Filter) ([]discussion.Comment, error) {
 
-	builder := r.selectSQL()
+	builder := r.selectCommentsSQL()
 	builder = builder.Where(sq.Eq{"discussion_id": did})
 	builder = r.buildSelectOrderQuery(builder, flt)
 	builder = r.buildSelectLimitQuery(builder, flt)
@@ -58,7 +51,7 @@ func (r *CommentRepository) GetAll(ctx context.Context, did string, flt comment.
 		return nil, fmt.Errorf("error building query: %w", err)
 	}
 
-	cmts := []comment.Comment{}
+	cmts := []discussion.Comment{}
 	err = r.client.db.SelectContext(ctx, &cmts, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("error getting list of comments: %w", err)
@@ -68,32 +61,32 @@ func (r *CommentRepository) GetAll(ctx context.Context, did string, flt comment.
 }
 
 // Get fetchs a comment
-func (r *CommentRepository) Get(ctx context.Context, cid string, did string) (comment.Comment, error) {
+func (r *DiscussionRepository) GetComment(ctx context.Context, cid string, did string) (discussion.Comment, error) {
 
-	builder := r.selectSQL()
+	builder := r.selectCommentsSQL()
 	builder = builder.Where(sq.Eq{
 		"c.id":            cid,
 		"c.discussion_id": did,
 	})
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
-		return comment.Comment{}, fmt.Errorf("error building query: %w", err)
+		return discussion.Comment{}, fmt.Errorf("error building query: %w", err)
 	}
 
-	cmt := comment.Comment{}
+	cmt := discussion.Comment{}
 	err = r.client.db.GetContext(ctx, &cmt, query, args...)
 	if errors.Is(err, sql.ErrNoRows) {
-		return comment.Comment{}, comment.NotFoundError{CommentID: cid, DiscussionID: did}
+		return discussion.Comment{}, discussion.NotFoundError{CommentID: cid, DiscussionID: did}
 	}
 	if err != nil {
-		return comment.Comment{}, fmt.Errorf("error getting list of comments: %w", err)
+		return discussion.Comment{}, fmt.Errorf("error getting list of comments: %w", err)
 	}
 
 	return cmt, nil
 }
 
 // Update updates a comment
-func (r *CommentRepository) Update(ctx context.Context, cmt *comment.Comment) error {
+func (r *DiscussionRepository) UpdateComment(ctx context.Context, cmt *discussion.Comment) error {
 	builder := sq.Update("comments").
 		Set("body", cmt.Body).
 		Set("updated_by", cmt.UpdatedBy.ID).
@@ -116,14 +109,14 @@ func (r *CommentRepository) Update(ctx context.Context, cmt *comment.Comment) er
 		return fmt.Errorf("error getting affected rows: %w", err)
 	}
 	if affectedRows == 0 {
-		return comment.NotFoundError{CommentID: cmt.ID, DiscussionID: cmt.DiscussionID}
+		return discussion.NotFoundError{CommentID: cmt.ID, DiscussionID: cmt.DiscussionID}
 	}
 
 	return nil
 }
 
 // Delete removes a comment
-func (r *CommentRepository) Delete(ctx context.Context, cid string, did string) error {
+func (r *DiscussionRepository) DeleteComment(ctx context.Context, cid string, did string) error {
 	builder := sq.Delete("comments").
 		Where(sq.Eq{
 			"id":            cid,
@@ -143,13 +136,13 @@ func (r *CommentRepository) Delete(ctx context.Context, cid string, did string) 
 		return fmt.Errorf("error getting affected rows: %w", err)
 	}
 	if affectedRows == 0 {
-		return comment.NotFoundError{CommentID: cid, DiscussionID: did}
+		return discussion.NotFoundError{CommentID: cid, DiscussionID: did}
 	}
 
 	return nil
 }
 
-func (r *CommentRepository) selectSQL() sq.SelectBuilder {
+func (r *DiscussionRepository) selectCommentsSQL() sq.SelectBuilder {
 	return sq.Select(`
 		c.id as id,
 		c.discussion_id as discussion_id,
@@ -170,57 +163,4 @@ func (r *CommentRepository) selectSQL() sq.SelectBuilder {
 		From("comments c").
 		Join("users uo ON c.owner = uo.id").
 		Join("users uu ON c.updated_by = uu.id")
-}
-
-func (r *CommentRepository) buildSelectOrderQuery(builder sq.SelectBuilder, flt comment.Filter) sq.SelectBuilder {
-	if flt.SortBy != "" {
-		orderDirection := "DESC"
-		if flt.SortDirection != "" {
-			orderDirection = strings.ToUpper(flt.SortDirection)
-		}
-		return builder.OrderBy(flt.SortBy + " " + orderDirection)
-	}
-
-	return builder
-}
-
-func (r *CommentRepository) buildSelectLimitQuery(builder sq.SelectBuilder, flt comment.Filter) sq.SelectBuilder {
-	limitSize := r.defaultGetMaxSize
-	if flt.Size > 0 {
-		limitSize = flt.Size
-	}
-
-	return builder.
-		Limit(uint64(limitSize)).
-		Offset(uint64(flt.Offset))
-}
-
-func (r *CommentRepository) buildSQL(builder sq.Sqlizer) (query string, args []interface{}, err error) {
-	query, args, err = builder.ToSql()
-	if err != nil {
-		err = fmt.Errorf("error transforming to sql")
-		return
-	}
-	query, err = sq.Dollar.ReplacePlaceholders(query)
-	if err != nil {
-		err = fmt.Errorf("error replacing placeholders to dollar")
-		return
-	}
-
-	return
-}
-
-// NewCommentRepository initializes comment repository clients
-func NewCommentRepository(c *Client, defaultGetMaxSize int) (*CommentRepository, error) {
-	if c == nil {
-		return nil, errors.New("postgres client is nil")
-	}
-	if defaultGetMaxSize == 0 {
-		defaultGetMaxSize = DEFAULT_MAX_RESULT_SIZE
-	}
-
-	return &CommentRepository{
-		client:            c,
-		defaultGetMaxSize: defaultGetMaxSize,
-	}, nil
 }

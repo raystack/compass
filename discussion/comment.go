@@ -1,9 +1,6 @@
-package comment
-
-//go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --with-expecter --structname CommentRepository --filename comment_repository.go
+package discussion
 
 import (
-	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -11,13 +8,6 @@ import (
 	"github.com/odpf/columbus/user"
 )
 
-type Repository interface {
-	GetAll(ctx context.Context, discussionID string, flt Filter) ([]Comment, error)
-	Create(ctx context.Context, cmt *Comment) (string, error)
-	Get(ctx context.Context, commentID string, discussionID string) (Comment, error)
-	Update(ctx context.Context, cmt *Comment) error
-	Delete(ctx context.Context, commentID string, discussionID string) error
-}
 type Comment struct {
 	ID           string    `json:"id" db:"id"`
 	DiscussionID string    `json:"discussion_id" db:"discussion_id"`

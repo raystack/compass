@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
-	"github.com/odpf/columbus/comment"
+	"github.com/odpf/columbus/discussion"
 	"github.com/odpf/columbus/lib/mocks"
 	"github.com/odpf/columbus/user"
 	"github.com/stretchr/testify/assert"
@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCommentHandlerCreate(t *testing.T) {
+func TestHandlerCreateComment(t *testing.T) {
 	var (
 		userID       = uuid.NewString()
 		discussionID = "11111"
@@ -62,10 +62,10 @@ func TestCommentHandlerCreate(t *testing.T) {
 					"discussion_id": testCase.discussionID,
 				})
 
-				cr := new(mocks.CommentRepository)
+				dr := new(mocks.DiscussionRepository)
 
-				handler := handlers.NewCommentHandler(logger, cr)
-				handler.Create(rw, rr)
+				handler := handlers.NewDiscussionHandler(logger, dr)
+				handler.CreateComment(rw, rr)
 
 				expectedStatus := http.StatusBadRequest
 				if rw.Code != expectedStatus {
@@ -87,13 +87,13 @@ func TestCommentHandlerCreate(t *testing.T) {
 
 		expectedErr := errors.New("unknown error")
 
-		cr := new(mocks.CommentRepository)
-		cr.EXPECT().Create(rr.Context(), mock.AnythingOfType("*comment.Comment")).Return("", expectedErr)
-		defer cr.AssertExpectations(t)
+		dr := new(mocks.DiscussionRepository)
+		dr.EXPECT().CreateComment(rr.Context(), mock.AnythingOfType("*discussion.Comment")).Return("", expectedErr)
+		defer dr.AssertExpectations(t)
 
 		rr.Context()
-		handler := handlers.NewCommentHandler(logger, cr)
-		handler.Create(rw, rr)
+		handler := handlers.NewDiscussionHandler(logger, dr)
+		handler.CreateComment(rw, rr)
 
 		assert.Equal(t, http.StatusInternalServerError, rw.Code)
 		var response handlers.ErrorResponse
@@ -103,7 +103,7 @@ func TestCommentHandlerCreate(t *testing.T) {
 	})
 
 	t.Run("should return HTTP 201 and comment ID if the comment is successfully created", func(t *testing.T) {
-		cmt := comment.Comment{
+		cmt := discussion.Comment{
 			DiscussionID: discussionID,
 			Body:         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
 			UpdatedBy:    user.User{ID: userID},
@@ -120,16 +120,16 @@ func TestCommentHandlerCreate(t *testing.T) {
 		})
 		rw := httptest.NewRecorder()
 
-		cr := new(mocks.CommentRepository)
-		cr.EXPECT().Create(rr.Context(), &cmt).
-			Run(func(ctx context.Context, cmt *comment.Comment) {
+		dr := new(mocks.DiscussionRepository)
+		dr.EXPECT().CreateComment(rr.Context(), &cmt).
+			Run(func(ctx context.Context, cmt *discussion.Comment) {
 				cmt.ID = commentWithID.ID
 			}).
 			Return(commentWithID.ID, nil)
-		defer cr.AssertExpectations(t)
+		defer dr.AssertExpectations(t)
 
-		handler := handlers.NewCommentHandler(logger, cr)
-		handler.Create(rw, rr)
+		handler := handlers.NewDiscussionHandler(logger, dr)
+		handler.CreateComment(rw, rr)
 
 		assert.Equal(t, http.StatusCreated, rw.Code)
 		var response map[string]interface{}
@@ -142,7 +142,7 @@ func TestCommentHandlerCreate(t *testing.T) {
 	})
 }
 
-func TestCommentHandlerGetAll(t *testing.T) {
+func TestHandlerGetAllComments(t *testing.T) {
 	var (
 		userID       = uuid.NewString()
 		discussionID = "11111"
@@ -152,7 +152,7 @@ func TestCommentHandlerGetAll(t *testing.T) {
 		Querystring  string
 		ExpectStatus int
 		DiscussionID string
-		Setup        func(context.Context, *mocks.CommentRepository)
+		Setup        func(context.Context, *mocks.DiscussionRepository)
 		PostCheck    func(resp *http.Response) error
 	}
 	var testCases = []testCase{
@@ -170,11 +170,13 @@ func TestCommentHandlerGetAll(t *testing.T) {
 			Description:  `should return http 500 if fetching fails`,
 			DiscussionID: discussionID,
 			ExpectStatus: http.StatusInternalServerError,
-			Setup: func(ctx context.Context, cr *mocks.CommentRepository) {
-				cr.EXPECT().GetAll(ctx, discussionID, comment.Filter{
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().GetAllComments(ctx, discussionID, discussion.Filter{
+					Type:          "all",
+					State:         "open",
 					SortBy:        "created_at",
 					SortDirection: "desc",
-				}).Return([]comment.Comment{}, errors.New("unknown error"))
+				}).Return([]discussion.Comment{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -182,35 +184,39 @@ func TestCommentHandlerGetAll(t *testing.T) {
 			DiscussionID: discussionID,
 			Querystring:  "?sort=updated_at&direction=asc&size=30&offset=50",
 			ExpectStatus: http.StatusOK,
-			Setup: func(ctx context.Context, cr *mocks.CommentRepository) {
-				cr.EXPECT().GetAll(ctx, discussionID, comment.Filter{
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().GetAllComments(ctx, discussionID, discussion.Filter{
+					Type:          "all",
+					State:         "open",
 					SortBy:        "updated_at",
 					SortDirection: "asc",
 					Size:          30,
 					Offset:        50,
-				}).Return([]comment.Comment{}, nil)
+				}).Return([]discussion.Comment{}, nil)
 			},
 		},
 		{
 			Description:  "should return http 200 status along with list of comments",
 			DiscussionID: discussionID,
 			ExpectStatus: http.StatusOK,
-			Setup: func(ctx context.Context, cr *mocks.CommentRepository) {
-				cr.EXPECT().GetAll(ctx, discussionID, comment.Filter{
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().GetAllComments(ctx, discussionID, discussion.Filter{
+					Type:          "all",
+					State:         "open",
 					SortBy:        "created_at",
 					SortDirection: "desc",
-				}).Return([]comment.Comment{
+				}).Return([]discussion.Comment{
 					{ID: "1122"},
 					{ID: "2233"},
 				}, nil)
 			},
 			PostCheck: func(r *http.Response) error {
-				expected := []comment.Comment{
+				expected := []discussion.Comment{
 					{ID: "1122"},
 					{ID: "2233"},
 				}
 
-				var actual []comment.Comment
+				var actual []discussion.Comment
 				err := json.NewDecoder(r.Body).Decode(&actual)
 				if err != nil {
 					return fmt.Errorf("error reading response body: %w", err)
@@ -233,15 +239,15 @@ func TestCommentHandlerGetAll(t *testing.T) {
 
 			rw := httptest.NewRecorder()
 
-			cr := new(mocks.CommentRepository)
-			defer cr.AssertExpectations(t)
+			dr := new(mocks.DiscussionRepository)
+			defer dr.AssertExpectations(t)
 
 			if tc.Setup != nil {
-				tc.Setup(rr.Context(), cr)
+				tc.Setup(rr.Context(), dr)
 			}
 
-			handler := handlers.NewCommentHandler(logger, cr)
-			handler.GetAll(rw, rr)
+			handler := handlers.NewDiscussionHandler(logger, dr)
+			handler.GetAllComments(rw, rr)
 
 			if rw.Code != tc.ExpectStatus {
 				t.Errorf("expected handler to return http %d, returned %d instead", tc.ExpectStatus, rw.Code)
@@ -257,7 +263,7 @@ func TestCommentHandlerGetAll(t *testing.T) {
 	}
 }
 
-func TestCommentHandlerGet(t *testing.T) {
+func TestHandlerGetComment(t *testing.T) {
 	var (
 		userID       = uuid.NewString()
 		discussionID = "123"
@@ -269,7 +275,7 @@ func TestCommentHandlerGet(t *testing.T) {
 		ExpectStatus int
 		DiscussionID string
 		CommentID    string
-		Setup        func(context.Context, *mocks.CommentRepository)
+		Setup        func(context.Context, *mocks.DiscussionRepository)
 		PostCheck    func(resp *http.Response) error
 	}
 	var testCases = []testCase{
@@ -278,8 +284,8 @@ func TestCommentHandlerGet(t *testing.T) {
 			ExpectStatus: http.StatusInternalServerError,
 			CommentID:    commentID,
 			DiscussionID: discussionID,
-			Setup: func(ctx context.Context, cr *mocks.CommentRepository) {
-				cr.EXPECT().Get(ctx, commentID, discussionID).Return(comment.Comment{}, errors.New("unknown error"))
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().GetComment(ctx, commentID, discussionID).Return(discussion.Comment{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -311,8 +317,8 @@ func TestCommentHandlerGet(t *testing.T) {
 			ExpectStatus: http.StatusNotFound,
 			CommentID:    commentID,
 			DiscussionID: discussionID,
-			Setup: func(ctx context.Context, cr *mocks.CommentRepository) {
-				cr.EXPECT().Get(ctx, commentID, discussionID).Return(comment.Comment{}, comment.NotFoundError{DiscussionID: discussionID, CommentID: commentID})
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().GetComment(ctx, commentID, discussionID).Return(discussion.Comment{}, discussion.NotFoundError{DiscussionID: discussionID, CommentID: commentID})
 			},
 		},
 		{
@@ -320,16 +326,16 @@ func TestCommentHandlerGet(t *testing.T) {
 			ExpectStatus: http.StatusOK,
 			CommentID:    commentID,
 			DiscussionID: discussionID,
-			Setup: func(ctx context.Context, cr *mocks.CommentRepository) {
-				cr.EXPECT().Get(ctx, commentID, discussionID).Return(comment.Comment{ID: commentID, DiscussionID: discussionID}, nil)
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().GetComment(ctx, commentID, discussionID).Return(discussion.Comment{ID: commentID, DiscussionID: discussionID}, nil)
 			},
 			PostCheck: func(r *http.Response) error {
-				expected := comment.Comment{
+				expected := discussion.Comment{
 					ID:           commentID,
 					DiscussionID: discussionID,
 				}
 
-				var actual comment.Comment
+				var actual discussion.Comment
 				err := json.NewDecoder(r.Body).Decode(&actual)
 				if err != nil {
 					return fmt.Errorf("error reading response body: %w", err)
@@ -353,12 +359,12 @@ func TestCommentHandlerGet(t *testing.T) {
 
 			rw := httptest.NewRecorder()
 
-			cr := new(mocks.CommentRepository)
+			dr := new(mocks.DiscussionRepository)
 			if tc.Setup != nil {
-				tc.Setup(rr.Context(), cr)
+				tc.Setup(rr.Context(), dr)
 			}
-			handler := handlers.NewCommentHandler(logger, cr)
-			handler.Get(rw, rr)
+			handler := handlers.NewDiscussionHandler(logger, dr)
+			handler.GetComment(rw, rr)
 
 			if rw.Code != tc.ExpectStatus {
 				t.Errorf("expected handler to return http %d, returned %d instead", tc.ExpectStatus, rw.Code)
@@ -374,7 +380,7 @@ func TestCommentHandlerGet(t *testing.T) {
 	}
 }
 
-func TestCommentHandlerUpdate(t *testing.T) {
+func TestHandlerUpdateComment(t *testing.T) {
 	var (
 		userID       = uuid.NewString()
 		discussionID = "123"
@@ -447,10 +453,10 @@ func TestCommentHandlerUpdate(t *testing.T) {
 					"id":            testCase.CommentID,
 				})
 
-				cr := new(mocks.CommentRepository)
+				dr := new(mocks.DiscussionRepository)
 
-				handler := handlers.NewCommentHandler(logger, cr)
-				handler.Update(rw, rr)
+				handler := handlers.NewDiscussionHandler(logger, dr)
+				handler.UpdateComment(rw, rr)
 
 				assert.Equal(t, testCase.StatusCode, rw.Code)
 			})
@@ -458,7 +464,7 @@ func TestCommentHandlerUpdate(t *testing.T) {
 	})
 
 	t.Run("should return HTTP 500 if the update comment failed", func(t *testing.T) {
-		cmt := &comment.Comment{
+		cmt := &discussion.Comment{
 			ID:           commentID,
 			DiscussionID: discussionID,
 			Body:         "Lorem Ipsum",
@@ -476,12 +482,12 @@ func TestCommentHandlerUpdate(t *testing.T) {
 
 		expectedErr := errors.New("unknown error")
 
-		cr := new(mocks.CommentRepository)
-		cr.EXPECT().Update(rr.Context(), cmt).Return(expectedErr)
-		defer cr.AssertExpectations(t)
+		dr := new(mocks.DiscussionRepository)
+		dr.EXPECT().UpdateComment(rr.Context(), cmt).Return(expectedErr)
+		defer dr.AssertExpectations(t)
 
-		handler := handlers.NewCommentHandler(logger, cr)
-		handler.Update(rw, rr)
+		handler := handlers.NewDiscussionHandler(logger, dr)
+		handler.UpdateComment(rw, rr)
 
 		assert.Equal(t, http.StatusInternalServerError, rw.Code)
 		var response handlers.ErrorResponse
@@ -491,7 +497,7 @@ func TestCommentHandlerUpdate(t *testing.T) {
 	})
 
 	t.Run("should return HTTP 404 if the discussion id or comment id not found", func(t *testing.T) {
-		cmt := &comment.Comment{
+		cmt := &discussion.Comment{
 			ID:           commentID,
 			DiscussionID: discussionID,
 			Body:         "Lorem Ipsum",
@@ -507,20 +513,20 @@ func TestCommentHandlerUpdate(t *testing.T) {
 
 		rw := httptest.NewRecorder()
 
-		expectedErr := comment.NotFoundError{DiscussionID: discussionID, CommentID: commentID}
+		expectedErr := discussion.NotFoundError{DiscussionID: discussionID, CommentID: commentID}
 
-		cr := new(mocks.CommentRepository)
-		cr.EXPECT().Update(rr.Context(), cmt).Return(expectedErr)
-		defer cr.AssertExpectations(t)
+		dr := new(mocks.DiscussionRepository)
+		dr.EXPECT().UpdateComment(rr.Context(), cmt).Return(expectedErr)
+		defer dr.AssertExpectations(t)
 
-		handler := handlers.NewCommentHandler(logger, cr)
-		handler.Update(rw, rr)
+		handler := handlers.NewDiscussionHandler(logger, dr)
+		handler.UpdateComment(rw, rr)
 
 		assert.Equal(t, http.StatusNotFound, rw.Code)
 	})
 
 	t.Run("should return HTTP 204 if the comment is successfully updated", func(t *testing.T) {
-		cmt := &comment.Comment{
+		cmt := &discussion.Comment{
 			ID:           commentID,
 			DiscussionID: discussionID,
 			Body:         "Lorem Ipsum",
@@ -536,20 +542,20 @@ func TestCommentHandlerUpdate(t *testing.T) {
 
 		rw := httptest.NewRecorder()
 
-		cr := new(mocks.CommentRepository)
-		cr.EXPECT().Update(rr.Context(), cmt).Run(func(ctx context.Context, cmtArg *comment.Comment) {
+		dr := new(mocks.DiscussionRepository)
+		dr.EXPECT().UpdateComment(rr.Context(), cmt).Run(func(ctx context.Context, cmtArg *discussion.Comment) {
 			cmtArg.ID = cmt.ID
 		}).Return(nil)
-		defer cr.AssertExpectations(t)
+		defer dr.AssertExpectations(t)
 
-		handler := handlers.NewCommentHandler(logger, cr)
-		handler.Update(rw, rr)
+		handler := handlers.NewDiscussionHandler(logger, dr)
+		handler.UpdateComment(rw, rr)
 
 		assert.Equal(t, http.StatusNoContent, rw.Code)
 	})
 }
 
-func TestCommentHandlerDelete(t *testing.T) {
+func TestHandlerDeleteComment(t *testing.T) {
 	var (
 		userID       = uuid.NewString()
 		discussionID = "123"
@@ -602,10 +608,10 @@ func TestCommentHandlerDelete(t *testing.T) {
 					"id":            testCase.CommentID,
 				})
 
-				cr := new(mocks.CommentRepository)
+				dr := new(mocks.DiscussionRepository)
 
-				handler := handlers.NewCommentHandler(logger, cr)
-				handler.Delete(rw, rr)
+				handler := handlers.NewDiscussionHandler(logger, dr)
+				handler.DeleteComment(rw, rr)
 
 				assert.Equal(t, testCase.StatusCode, rw.Code)
 			})
@@ -625,12 +631,12 @@ func TestCommentHandlerDelete(t *testing.T) {
 
 		expectedErr := errors.New("unknown error")
 
-		cr := new(mocks.CommentRepository)
-		cr.EXPECT().Delete(rr.Context(), commentID, discussionID).Return(expectedErr)
-		defer cr.AssertExpectations(t)
+		dr := new(mocks.DiscussionRepository)
+		dr.EXPECT().DeleteComment(rr.Context(), commentID, discussionID).Return(expectedErr)
+		defer dr.AssertExpectations(t)
 
-		handler := handlers.NewCommentHandler(logger, cr)
-		handler.Delete(rw, rr)
+		handler := handlers.NewDiscussionHandler(logger, dr)
+		handler.DeleteComment(rw, rr)
 
 		assert.Equal(t, http.StatusInternalServerError, rw.Code)
 		var response handlers.ErrorResponse
@@ -650,14 +656,14 @@ func TestCommentHandlerDelete(t *testing.T) {
 
 		rw := httptest.NewRecorder()
 
-		expectedErr := comment.NotFoundError{DiscussionID: discussionID, CommentID: commentID}
+		expectedErr := discussion.NotFoundError{DiscussionID: discussionID, CommentID: commentID}
 
-		cr := new(mocks.CommentRepository)
-		cr.EXPECT().Delete(rr.Context(), commentID, discussionID).Return(expectedErr)
-		defer cr.AssertExpectations(t)
+		dr := new(mocks.DiscussionRepository)
+		dr.EXPECT().DeleteComment(rr.Context(), commentID, discussionID).Return(expectedErr)
+		defer dr.AssertExpectations(t)
 
-		handler := handlers.NewCommentHandler(logger, cr)
-		handler.Delete(rw, rr)
+		handler := handlers.NewDiscussionHandler(logger, dr)
+		handler.DeleteComment(rw, rr)
 
 		assert.Equal(t, http.StatusNotFound, rw.Code)
 	})
@@ -673,12 +679,12 @@ func TestCommentHandlerDelete(t *testing.T) {
 
 		rw := httptest.NewRecorder()
 
-		cr := new(mocks.CommentRepository)
-		cr.EXPECT().Delete(rr.Context(), commentID, discussionID).Return(nil)
-		defer cr.AssertExpectations(t)
+		dr := new(mocks.DiscussionRepository)
+		dr.EXPECT().DeleteComment(rr.Context(), commentID, discussionID).Return(nil)
+		defer dr.AssertExpectations(t)
 
-		handler := handlers.NewCommentHandler(logger, cr)
-		handler.Delete(rw, rr)
+		handler := handlers.NewDiscussionHandler(logger, dr)
+		handler.DeleteComment(rw, rr)
 
 		assert.Equal(t, http.StatusNoContent, rw.Code)
 	})
