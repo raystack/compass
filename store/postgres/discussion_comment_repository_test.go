@@ -34,6 +34,17 @@ func (r *DiscussionRepositoryTestSuite) TestCreateComment() {
 		r.Error(err)
 		r.Empty(id)
 	})
+
+	r.Run("should return error not found when creating a new comment with unknown discussion id", func() {
+		cmt := &discussion.Comment{
+			Body:  "some body",
+			Owner: r.users[len(r.users)-1],
+		}
+		cmt.DiscussionID = "9278"
+		id, err := r.repository.CreateComment(r.ctx, cmt)
+		r.ErrorAs(err, new(discussion.NotFoundError))
+		r.Empty(id)
+	})
 }
 
 func (r *DiscussionRepositoryTestSuite) TestGetAllComments() {

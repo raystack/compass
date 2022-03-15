@@ -44,6 +44,10 @@ func (h *DiscussionHandler) CreateComment(w http.ResponseWriter, r *http.Request
 	cmt.Owner = user.User{ID: userID}
 	cmt.UpdatedBy = user.User{ID: userID}
 	id, err := h.discussionRepository.CreateComment(r.Context(), &cmt)
+	if errors.As(err, new(discussion.NotFoundError)) {
+		WriteJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
 	if err != nil {
 		internalServerError(w, h.logger, err.Error())
 		return

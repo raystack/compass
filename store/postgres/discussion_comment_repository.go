@@ -27,8 +27,12 @@ func (r *DiscussionRepository) CreateComment(ctx context.Context, cmt *discussio
 		return "", fmt.Errorf("error building insert query: %w", err)
 	}
 
-	err = r.client.db.QueryRowContext(ctx, query, args...).Scan(&commentID)
-	if err != nil {
+	if err = r.client.db.QueryRowContext(ctx, query, args...).Scan(&commentID); err != nil {
+		err = checkPostgresError(err)
+		if errors.Is(err, errForeignKeyViolation) {
+			return "", discussion.NotFoundError{DiscussionID: cmt.DiscussionID}
+		}
+
 		return "", fmt.Errorf("error running insert query: %w", err)
 	}
 
