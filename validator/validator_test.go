@@ -19,7 +19,7 @@ func TestValidateStruct(t *testing.T) {
 		ErrString   string
 	}
 
-	var testCases = []TestCase{
+	testCases := []TestCase{
 		{
 			Description: "return error with supported values in oneof type validation",
 			Struct: DummyStruct{
@@ -44,11 +44,6 @@ func TestValidateStruct(t *testing.T) {
 }
 
 func TestValidateOneOfTestValidateOneOf(t *testing.T) {
-	type DummyStruct struct {
-		VarOneOf string `json:"varoneof" validate:"omitempty,oneof=type1 type2 type3"`
-		VarInt   int    `json:"varint" validate:"omitempty,gte=0"`
-	}
-
 	type TestCase struct {
 		Description string
 		Value       string
@@ -56,7 +51,7 @@ func TestValidateOneOfTestValidateOneOf(t *testing.T) {
 		ErrString   string
 	}
 
-	var testCases = []TestCase{
+	testCases := []TestCase{
 		{
 			Description: "return error with supported values",
 			Value:       "random",

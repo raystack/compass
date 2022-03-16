@@ -9,7 +9,6 @@ require (
 	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/elastic/go-elasticsearch/v7 v7.16.0
 	github.com/etsy/statsd v0.9.0
-	github.com/go-playground/form v3.1.4+incompatible // indirect
 	github.com/go-playground/locales v0.14.0
 	github.com/go-playground/universal-translator v0.18.0
 	github.com/go-playground/validator/v10 v10.10.0
@@ -22,7 +21,7 @@ require (
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/jeremywohl/flatten v1.0.1
 	github.com/jmoiron/sqlx v1.3.4
-	github.com/lib/pq v1.10.2 // indirect
+	github.com/lib/pq v1.10.2
 	github.com/mattn/go-sqlite3 v1.14.9 // indirect
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/mitchellh/mapstructure v1.4.3
@@ -37,4 +36,5 @@ require (
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce // indirect
+	gotest.tools v2.2.0+incompatible
 )
