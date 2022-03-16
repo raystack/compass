@@ -4,17 +4,23 @@ import (
 	"errors"
 	"net/http"
 	"net/mail"
+	"net/url"
+	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/asset"
+	"github.com/odpf/columbus/discussion"
 	"github.com/odpf/columbus/star"
 	"github.com/odpf/columbus/user"
+	"github.com/odpf/columbus/validator"
 	"github.com/odpf/salt/log"
 )
 
 // UserHandler exposes a REST interface to user
 type UserHandler struct {
-	starRepository star.Repository
+	starRepo       star.Repository
+	discussionRepo discussion.Repository
 	logger         log.Logger
 }
 
@@ -28,7 +34,7 @@ func (h *UserHandler) GetStarredAssetsWithHeader(w http.ResponseWriter, r *http.
 
 	starCfg := buildStarConfig(h.logger, r.URL.Query())
 
-	starredAssets, err := h.starRepository.GetAllAssetsByUserID(r.Context(), starCfg, userID)
+	starredAssets, err := h.starRepo.GetAllAssetsByUserID(r.Context(), starCfg, userID)
 	if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 		WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
@@ -62,9 +68,9 @@ func (h *UserHandler) GetStarredAssetsWithPath(w http.ResponseWriter, r *http.Re
 	// once we already introduce better solution (e.g. get by user name)
 	_, err := mail.ParseAddress(targetUserID)
 	if err == nil {
-		starredAssets, err = h.starRepository.GetAllAssetsByUserEmail(r.Context(), starCfg, targetUserID)
+		starredAssets, err = h.starRepo.GetAllAssetsByUserEmail(r.Context(), starCfg, targetUserID)
 	} else {
-		starredAssets, err = h.starRepository.GetAllAssetsByUserID(r.Context(), starCfg, targetUserID)
+		starredAssets, err = h.starRepo.GetAllAssetsByUserID(r.Context(), starCfg, targetUserID)
 	}
 	if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 		WriteJSONError(w, http.StatusBadRequest, err.Error())
@@ -93,7 +99,7 @@ func (h *UserHandler) StarAsset(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	assetID := pathParams["asset_id"]
 
-	starID, err := h.starRepository.Create(r.Context(), userID, assetID)
+	starID, err := h.starRepo.Create(r.Context(), userID, assetID)
 	if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 		WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
@@ -126,7 +132,7 @@ func (h *UserHandler) GetStarredAsset(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	assetID := pathParams["asset_id"]
 
-	ast, err := h.starRepository.GetAssetByUserID(r.Context(), userID, assetID)
+	ast, err := h.starRepo.GetAssetByUserID(r.Context(), userID, assetID)
 	if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 		WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
@@ -154,7 +160,7 @@ func (h *UserHandler) UnstarAsset(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	assetID := pathParams["asset_id"]
 
-	err := h.starRepository.Delete(r.Context(), userID, assetID)
+	err := h.starRepo.Delete(r.Context(), userID, assetID)
 	if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 		WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
@@ -171,10 +177,101 @@ func (h *UserHandler) UnstarAsset(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusNoContent, "success")
 }
 
-func NewUserHandler(logger log.Logger, starRepo star.Repository) *UserHandler {
+func (h *UserHandler) GetDiscussions(w http.ResponseWriter, r *http.Request) {
+	userID := user.FromContext(r.Context())
+	if userID == "" {
+		h.logger.Warn(errMissingUserInfo.Error())
+		WriteJSONError(w, http.StatusBadRequest, errMissingUserInfo.Error())
+		return
+	}
+
+	flt, err := h.buildGetDiscussionsFilter(r.URL.Query(), userID)
+	if err != nil {
+		WriteJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
+		return
+	}
+
+	dscs, err := h.discussionRepo.GetAll(r.Context(), flt)
+	if err != nil {
+		internalServerError(w, h.logger, err.Error())
+		return
+	}
+
+	writeJSON(w, http.StatusOK, dscs)
+}
+
+func (h *UserHandler) buildGetDiscussionsFilter(query url.Values, userID string) (discussion.Filter, error) {
+	fl := discussion.Filter{
+		Type:          query.Get("type"),
+		State:         query.Get("state"),
+		SortBy:        query.Get("sort"),
+		SortDirection: query.Get("direction"),
+	}
+
+	filterQuery := query.Get("filter")
+	if err := validator.ValidateOneOf(filterQuery, "assigned", "created", "all"); err != nil {
+		return discussion.Filter{}, err
+	}
+
+	if len(strings.TrimSpace(filterQuery)) > 0 {
+		if !(filterQuery == "created" || filterQuery == "all") {
+			filterQuery = "assigned" // default value
+		}
+	}
+
+	switch filterQuery {
+	case "all":
+		fl.Owner = userID
+		fl.Assignees = []string{userID}
+		fl.DisjointAssigneeOwner = true
+	case "created":
+		fl.Owner = userID
+	default:
+		fl.Assignees = []string{userID}
+	}
+
+	assets := query.Get("asset")
+	if assets != "" {
+		fl.Assets = strings.Split(assets, ",")
+	}
+
+	labels := query.Get("labels")
+	if labels != "" {
+		fl.Labels = strings.Split(labels, ",")
+	}
+
+	sizeString := query.Get("size")
+	if sizeString != "" {
+		size, err := strconv.Atoi(sizeString)
+		if err == nil {
+			fl.Size = size
+		}
+	}
+
+	offsetString := query.Get("offset")
+	if offsetString != "" {
+		offset, err := strconv.Atoi(offsetString)
+		if err == nil {
+			fl.Offset = offset
+		}
+	}
+
+	if err := fl.Validate(); err != nil {
+		return discussion.Filter{}, err
+	}
+
+	fl.AssignDefault()
+	return fl, nil
+}
+
+func NewUserHandler(
+	logger log.Logger,
+	starRepo star.Repository,
+	discussionRepo discussion.Repository) *UserHandler {
 	h := &UserHandler{
-		starRepository: starRepo,
 		logger:         logger,
+		starRepo:       starRepo,
+		discussionRepo: discussionRepo,
 	}
 	return h
 }

@@ -1,12 +1,15 @@
 package handlers_test
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"strconv"
 	"testing"
 
@@ -14,6 +17,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/handlers"
 	"github.com/odpf/columbus/asset"
+	"github.com/odpf/columbus/discussion"
 	"github.com/odpf/columbus/lib/mocks"
 	"github.com/odpf/columbus/star"
 	"github.com/odpf/columbus/user"
@@ -130,7 +134,7 @@ func TestGetStarredAssetsWithHeader(t *testing.T) {
 			defer sr.AssertExpectations(t)
 			tc.Setup(&tc, sr)
 
-			handler := handlers.NewUserHandler(logger, sr)
+			handler := handlers.NewUserHandler(logger, sr, nil)
 			rr := httptest.NewRequest("GET", "/", nil)
 			rw := httptest.NewRecorder()
 
@@ -251,7 +255,7 @@ func TestGetStarredWithPath(t *testing.T) {
 			defer sr.AssertExpectations(t)
 			tc.Setup(&tc, sr)
 
-			handler := handlers.NewUserHandler(logger, sr)
+			handler := handlers.NewUserHandler(logger, sr, nil)
 			rr := httptest.NewRequest("GET", "/", nil)
 			rw := httptest.NewRecorder()
 			rr = mux.SetURLVars(rr, map[string]string{
@@ -368,7 +372,7 @@ func TestStarAsset(t *testing.T) {
 			defer sr.AssertExpectations(t)
 			tc.Setup(&tc, sr)
 
-			handler := handlers.NewUserHandler(logger, sr)
+			handler := handlers.NewUserHandler(logger, sr, nil)
 			rr := httptest.NewRequest("PUT", "/", nil)
 			rw := httptest.NewRecorder()
 			rr = mux.SetURLVars(rr, map[string]string{
@@ -482,7 +486,7 @@ func TestGetStarredAsset(t *testing.T) {
 			defer sr.AssertExpectations(t)
 			tc.Setup(&tc, sr)
 
-			handler := handlers.NewUserHandler(logger, sr)
+			handler := handlers.NewUserHandler(logger, sr, nil)
 			rr := httptest.NewRequest("GET", "/", nil)
 			rw := httptest.NewRecorder()
 			rr = mux.SetURLVars(rr, map[string]string{
@@ -577,7 +581,7 @@ func TestUnstarAsset(t *testing.T) {
 			defer sr.AssertExpectations(t)
 			tc.Setup(&tc, sr)
 
-			handler := handlers.NewUserHandler(logger, sr)
+			handler := handlers.NewUserHandler(logger, sr, nil)
 			rr := httptest.NewRequest("DELETE", "/", nil)
 			rw := httptest.NewRecorder()
 			rr = mux.SetURLVars(rr, map[string]string{
@@ -592,6 +596,141 @@ func TestUnstarAsset(t *testing.T) {
 			if rw.Code != tc.ExpectStatus {
 				t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
 				return
+			}
+		})
+	}
+}
+
+func TestUserGetDiscussions(t *testing.T) {
+	var userID = uuid.NewString()
+	type testCase struct {
+		Description  string
+		Querystring  string
+		ExpectStatus int
+		Setup        func(context.Context, *mocks.DiscussionRepository)
+		PostCheck    func(resp *http.Response) error
+	}
+	var testCases = []testCase{
+		{
+			Description:  `should return http 500 if fetching fails`,
+			ExpectStatus: http.StatusInternalServerError,
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().GetAll(ctx, discussion.Filter{
+					Type:                  "all",
+					State:                 discussion.StateOpen.String(),
+					Assignees:             []string{userID},
+					SortBy:                "created_at",
+					SortDirection:         "desc",
+					DisjointAssigneeOwner: false,
+				}).Return([]discussion.Discussion{}, errors.New("unknown error"))
+			},
+		},
+		{
+			Description:  `should parse querystring to get filter`,
+			Querystring:  "?labels=label1,label2,label4&asset=e5d81dcd-3046-4d33-b1ac-efdd221e621d&type=issues&state=closed&sort=updated_at&direction=asc&size=30&offset=50",
+			ExpectStatus: http.StatusOK,
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().GetAll(ctx, discussion.Filter{
+					Type:                  "issues",
+					State:                 "closed",
+					Assignees:             []string{userID},
+					Assets:                []string{"e5d81dcd-3046-4d33-b1ac-efdd221e621d"},
+					Labels:                []string{"label1", "label2", "label4"},
+					SortBy:                "updated_at",
+					SortDirection:         "asc",
+					Size:                  30,
+					Offset:                50,
+					DisjointAssigneeOwner: false,
+				}).Return([]discussion.Discussion{}, nil)
+			},
+		}, {
+			Description:  `should search by assigned or created if filter is all`,
+			Querystring:  "?filter=all",
+			ExpectStatus: http.StatusOK,
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().GetAll(ctx, discussion.Filter{
+					Type:                  "all",
+					State:                 "open",
+					Assignees:             []string{userID},
+					Owner:                 userID,
+					SortBy:                "created_at",
+					SortDirection:         "desc",
+					DisjointAssigneeOwner: true,
+				}).Return([]discussion.Discussion{}, nil)
+			},
+		},
+		{
+			Description:  `should set filter to default if empty`,
+			ExpectStatus: http.StatusOK,
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().GetAll(ctx, discussion.Filter{
+					Type:                  "all",
+					State:                 "open",
+					Assignees:             []string{userID},
+					SortBy:                "created_at",
+					SortDirection:         "desc",
+					Size:                  0,
+					Offset:                0,
+					DisjointAssigneeOwner: false,
+				}).Return([]discussion.Discussion{}, nil)
+			},
+		},
+		{
+			Description:  "should return http 200 status along with list of discussions",
+			ExpectStatus: http.StatusOK,
+			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
+				dr.EXPECT().GetAll(ctx, discussion.Filter{
+					Type:                  "all",
+					State:                 discussion.StateOpen.String(),
+					Assignees:             []string{userID},
+					SortBy:                "created_at",
+					SortDirection:         "desc",
+					DisjointAssigneeOwner: false,
+				}).Return([]discussion.Discussion{
+					{ID: "1122"},
+					{ID: "2233"},
+				}, nil)
+			},
+			PostCheck: func(r *http.Response) error {
+				expected := []discussion.Discussion{
+					{ID: "1122"},
+					{ID: "2233"},
+				}
+
+				var actual []discussion.Discussion
+				err := json.NewDecoder(r.Body).Decode(&actual)
+				if err != nil {
+					return fmt.Errorf("error reading response body: %w", err)
+				}
+				if reflect.DeepEqual(actual, expected) == false {
+					return fmt.Errorf("expected payload to be to be %+v, was %+v", expected, actual)
+				}
+				return nil
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			rr := httptest.NewRequest("GET", "/"+tc.Querystring, nil)
+			ctx := user.NewContext(rr.Context(), userID)
+			rr = rr.WithContext(ctx)
+			rw := httptest.NewRecorder()
+
+			dr := new(mocks.DiscussionRepository)
+			tc.Setup(rr.Context(), dr)
+
+			handler := handlers.NewUserHandler(logger, nil, dr)
+			handler.GetDiscussions(rw, rr)
+
+			if rw.Code != tc.ExpectStatus {
+				t.Errorf("expected handler to return http %d, returned %d instead", tc.ExpectStatus, rw.Code)
+				return
+			}
+			if tc.PostCheck != nil {
+				if err := tc.PostCheck(rw.Result()); err != nil {
+					t.Error(err)
+					return
+				}
 			}
 		})
 	}

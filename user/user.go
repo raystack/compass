@@ -8,11 +8,11 @@ import (
 
 // User is a basic entity of a user
 type User struct {
-	ID        string    `json:"id,omitempty" diff:"-"`
-	Email     string    `json:"email" diff:"email"`
-	Provider  string    `json:"provider" diff:"-"`
-	CreatedAt time.Time `json:"-" diff:"-"`
-	UpdatedAt time.Time `json:"-" diff:"-"`
+	ID        string    `json:"id,omitempty" diff:"-" db:"id"`
+	Email     string    `json:"email" diff:"email" db:"email"`
+	Provider  string    `json:"provider" diff:"-" db:"provider"`
+	CreatedAt time.Time `json:"-" diff:"-" db:"created_at"`
+	UpdatedAt time.Time `json:"-" diff:"-" db:"updated_at"`
 }
 
 // Validate validates a user is valid or not

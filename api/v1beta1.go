@@ -114,6 +114,10 @@ func setupUserRoutes(baseURL string, router *mux.Router, ush *handlers.UserHandl
 	router.Methods(http.MethodPut).Path(userAssetsURL).HandlerFunc(ush.StarAsset)
 	router.Methods(http.MethodGet).Path(userAssetsURL).HandlerFunc(ush.GetStarredAsset)
 	router.Methods(http.MethodDelete).Path(userAssetsURL).HandlerFunc(ush.UnstarAsset)
+
+	router.Path(baseURL+"/discussions").
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(ush.GetDiscussions)
 }
 
 func setupUsersRoutes(baseURL string, router *mux.Router, ush *handlers.UserHandler) {
@@ -139,4 +143,25 @@ func setupDiscussionsRoutes(baseURL string, router *mux.Router, dh *handlers.Dis
 	router.Path(baseURL + "/{id}").
 		Methods(http.MethodPatch).
 		HandlerFunc(dh.Patch)
+
+	commentURL := baseURL + "/{discussion_id}/comments"
+	router.Path(commentURL).
+		Methods(http.MethodPost).
+		HandlerFunc(dh.CreateComment)
+
+	router.Path(commentURL).
+		Methods(http.MethodGet, http.MethodHead).
+		HandlerFunc(dh.GetAllComments)
+
+	router.Path(commentURL + "/{id}").
+		Methods(http.MethodGet).
+		HandlerFunc(dh.GetComment)
+
+	router.Path(commentURL + "/{id}").
+		Methods(http.MethodPut).
+		HandlerFunc(dh.UpdateComment)
+
+	router.Path(commentURL + "/{id}").
+		Methods(http.MethodDelete).
+		HandlerFunc(dh.DeleteComment)
 }

@@ -284,21 +284,33 @@ paths:
             - openended
             - issues
             - qanda
+            - all
+          default: all
         - in: query
           name: state
           type: string
           enum:
             - open
             - closed
+            - all
+          default: open
         - in: query
           name: owner
           type: string
         - in: query
           name: sort
           type: string
+          enum:
+            - created_at
+            - updated_at
+          default: created_at
         - in: query
           name: direction
           type: string
+          enum:
+            - asc
+            - desc
+          default: desc
         - in: query
           name: assignee
           type: string
@@ -427,6 +439,226 @@ paths:
       responses:
         204:
           description: No Content
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        404:
+          description: "not found error"
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+  "/v1beta1/discussions/{discussion_id}/comments":
+    get:
+      tags:
+        - Discussions
+        - Comments
+      summary: Get list of comments of a discussion
+      description: "Returns list of comments of a discussion"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          type: string
+          format: email
+          required: true
+        - in: path
+          name: discussion_id
+          description: "discussion's ID"
+          type: integer
+          required: true
+        - in: query
+          name: sort
+          type: string
+          enum:
+            - created_at
+            - updated_at
+          default: created_at
+        - in: query
+          name: direction
+          type: string
+          enum:
+            - asc
+            - desc
+          default: desc
+        - in: query
+          name: size
+          type: integer
+        - in: query
+          name: offset
+          type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Comment"
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+    post:
+      tags:
+        - Discussions
+        - Comments
+      summary: Create a comment of a discussion
+      description: "Create a comment of a discussion"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          type: string
+          format: email
+          required: true
+        - in: path
+          name: discussion_id
+          description: "discussion's ID"
+          type: integer
+          required: true
+        - in: body
+          name: ""
+          required: true
+          schema:
+            type: object
+            properties:
+              body:
+                type: string
+                example: "This is my first comment"
+            required:
+              - body
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: "#/definitions/Comment"
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+  "/v1beta1/discussions/{discussion_id}/comments/{id}":
+    get:
+      tags:
+        - Discussions
+        - Comments
+      summary: Get a comment of a discussion
+      description: "Returns a comment of a discussion"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          type: string
+          format: email
+          required: true
+        - in: path
+          name: discussion_id
+          description: "discussion's ID"
+          type: integer
+          required: true
+        - in: path
+          name: id
+          description: "comment's ID"
+          type: integer
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Comment"
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        404:
+          description: "not found error"
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+    put:
+      tags:
+        - Discussions
+        - Comments
+      summary: Update a comment of a discussion
+      description: "Update a comment of a discussion"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          type: string
+          format: email
+          required: true
+        - in: path
+          name: discussion_id
+          description: "discussion's ID"
+          type: integer
+          required: true
+        - in: path
+          name: id
+          description: "comment's ID"
+          type: integer
+          required: true
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: "#/definitions/Comment"
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        404:
+          description: "not found error"
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+    delete:
+      tags:
+        - Discussions
+        - Comments
+      summary: Delete a comment of a discussion
+      description: "Delete a comment of a discussion"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          type: string
+          format: email
+          required: true
+        - in: path
+          name: discussion_id
+          description: "discussion's ID"
+          type: integer
+          required: true
+        - in: path
+          name: id
+          description: "comment's ID"
+          type: integer
+          required: true
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: "#/definitions/Comment"
         400:
           description: validation error
           schema:
@@ -1031,6 +1263,94 @@ paths:
           description: internal server error
           schema:
             $ref: "#/definitions/Error"
+  "/v1beta1/user/discussions":
+    get:
+      tags:
+        - User
+        - Discussions
+      summary: Get all discussions of a user
+      description: "Returns all discussions given possible filters of a user"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          type: string
+          format: email
+          required: true
+        - in: query
+          name: filter
+          type: string
+          enum:
+            - assigned
+            - created
+            - all
+          default: all
+        - in: query
+          name: type
+          type: string
+          enum:
+            - openended
+            - issues
+            - qanda
+            - all
+          default: all
+        - in: query
+          name: state
+          type: string
+          enum:
+            - open
+            - closed
+            - all
+          default: open
+        - in: query
+          name: owner
+          type: string
+        - in: query
+          name: sort
+          type: string
+          enum:
+            - created_at
+            - updated_at
+          default: created_at
+        - in: query
+          name: direction
+          type: string
+          enum:
+            - asc
+            - desc
+          default: desc
+        - in: query
+          name: assignee
+          type: string
+        - in: query
+          name: asset
+          type: string
+        - in: query
+          name: labels
+          type: string
+          description: comma separated value of label
+        - in: query
+          name: size
+          type: integer
+        - in: query
+          name: offset
+          type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Discussion"
+        400:
+          description: validation error
+          schema:
+            $ref: "#/definitions/ValidationError"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
   "/v1beta1/user/starred":
     get:
       tags:
@@ -1381,6 +1701,32 @@ definitions:
       owner:
         type: object
         description: owner/creator of a discussion
+        additionalProperties:
+          $ref: "#/definitions/User"
+      created_at:
+        type: string
+      updated_at:
+        type: string
+  Comment:
+    type: object
+    properties:
+      id:
+        type: string
+        description: id of a comment
+      discussion_id:
+        type: string
+        description: id of a discussion
+      body:
+        type: string
+        description: body text of a comment
+      owner:
+        type: object
+        description: owner/creator of a comment
+        additionalProperties:
+          $ref: "#/definitions/User"
+      updated_by:
+        type: object
+        description: user who updated the comment
         additionalProperties:
           $ref: "#/definitions/User"
       created_at:

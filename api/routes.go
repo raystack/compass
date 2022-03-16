@@ -86,6 +86,7 @@ func initHandlers(config Config) *Handlers {
 	userHandler := handlers.NewUserHandler(
 		config.Logger,
 		config.StarRepository,
+		config.DiscussionRepository,
 	)
 
 	discussionHandler := handlers.NewDiscussionHandler(

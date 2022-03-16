@@ -13,9 +13,33 @@ var (
 )
 
 type NotFoundError struct {
+	CommentID    string
 	DiscussionID string
 }
 
 func (e NotFoundError) Error() string {
-	return fmt.Sprintf("could not find discussion with id: %s", e.DiscussionID)
+	reasons := []string{}
+	if e.DiscussionID != "" {
+		reasons = append(reasons, fmt.Sprintf("with discussion id \"%s\"", e.DiscussionID))
+	}
+	if e.CommentID != "" {
+		reasons = append(reasons, fmt.Sprintf("with comment id \"%s\"", e.CommentID))
+	}
+	return "resource not found " + strings.Join(reasons, " and ")
+}
+
+type InvalidError struct {
+	CommentID    string
+	DiscussionID string
+}
+
+func (e InvalidError) Error() string {
+	reasons := []string{}
+	if e.DiscussionID != "" {
+		reasons = append(reasons, fmt.Sprintf("with discussion id \"%s\"", e.DiscussionID))
+	}
+	if e.CommentID != "" {
+		reasons = append(reasons, fmt.Sprintf("with comment id \"%s\"", e.CommentID))
+	}
+	return "invalid input " + strings.Join(reasons, " and ")
 }
