@@ -279,42 +279,38 @@ paths:
           required: true
         - in: query
           name: type
-          schema:
-            type: string
-            enum:
-              - openeded
-              - issues
-              - qanda
-              - all
-            default: all
+          type: string
+          enum:
+            - openended
+            - issues
+            - qanda
+            - all
+          default: all
         - in: query
           name: state
-          schema:
-            type: string
-            enum:
-              - open
-              - closed
-              - all
-            default: open
+          type: string
+          enum:
+            - open
+            - closed
+            - all
+          default: open
         - in: query
           name: owner
           type: string
         - in: query
           name: sort
-          schema:
-            type: string
-            enum:
-              - created_at
-              - updated_at
-            default: created_at
+          type: string
+          enum:
+            - created_at
+            - updated_at
+          default: created_at
         - in: query
           name: direction
-          schema:
-            type: string
-            enum:
-              - asc
-              - desc
-            default: desc
+          type: string
+          enum:
+            - asc
+            - desc
+          default: desc
         - in: query
           name: assignee
           type: string
@@ -458,6 +454,7 @@ paths:
   "/v1beta1/discussions/{discussion_id}/comments":
     get:
       tags:
+        - Discussions
         - Comments
       summary: Get list of comments of a discussion
       description: "Returns list of comments of a discussion"
@@ -476,20 +473,18 @@ paths:
           required: true
         - in: query
           name: sort
-          schema:
-            type: string
-            enum:
-              - created_at
-              - updated_at
-            default: created_at
+          type: string
+          enum:
+            - created_at
+            - updated_at
+          default: created_at
         - in: query
           name: direction
-          schema:
-            type: string
-            enum:
-              - asc
-              - desc
-            default: desc
+          type: string
+          enum:
+            - asc
+            - desc
+          default: desc
         - in: query
           name: size
           type: integer
@@ -511,6 +506,7 @@ paths:
             $ref: "#/definitions/InternalServerError"
     post:
       tags:
+        - Discussions
         - Comments
       summary: Create a comment of a discussion
       description: "Create a comment of a discussion"
@@ -531,10 +527,13 @@ paths:
           name: ""
           required: true
           schema:
-            allOf:
-              - $ref: "#/definitions/Comment"
-              - required:
-                  - body
+            type: object
+            properties:
+              body:
+                type: string
+                example: "This is my first comment"
+            required:
+              - body
       responses:
         201:
           description: Created
@@ -551,6 +550,7 @@ paths:
   "/v1beta1/discussions/{discussion_id}/comments/{id}":
     get:
       tags:
+        - Discussions
         - Comments
       summary: Get a comment of a discussion
       description: "Returns a comment of a discussion"
@@ -591,6 +591,7 @@ paths:
             $ref: "#/definitions/InternalServerError"
     put:
       tags:
+        - Discussions
         - Comments
       summary: Update a comment of a discussion
       description: "Update a comment of a discussion"
@@ -631,6 +632,7 @@ paths:
             $ref: "#/definitions/InternalServerError"
     delete:
       tags:
+        - Discussions
         - Comments
       summary: Delete a comment of a discussion
       description: "Delete a comment of a discussion"
@@ -657,182 +659,6 @@ paths:
           description: Created
           schema:
             $ref: "#/definitions/Comment"
-        400:
-          description: validation error
-          schema:
-            $ref: "#/definitions/ValidationError"
-        404:
-          description: "not found error"
-          schema:
-            $ref: "#/definitions/Error"
-        500:
-          description: "internal server error"
-          schema:
-            $ref: "#/definitions/InternalServerError"
-  "/v1beta1/lineage/{type}/{record}":
-    get:
-      tags:
-        - Discussions
-      summary: Get all discussions
-      description: "Returns all discussions given possible filters"
-      produces:
-        - "application/json"
-      parameters:
-        - in: header
-          name: Columbus-User-Email
-          type: string
-          format: email
-          required: true
-        - in: query
-          name: type
-          type: string
-          enum:
-            - openended
-            - issues
-            - qanda
-        - in: query
-          name: state
-          type: string
-          enum:
-            - open
-            - closed
-        - in: query
-          name: owner
-          type: string
-        - in: query
-          name: sort
-          type: string
-        - in: query
-          name: direction
-          type: string
-        - in: query
-          name: assignee
-          type: string
-        - in: query
-          name: asset
-          type: string
-        - in: query
-          name: labels
-          type: string
-          description: comma separated value of label
-        - in: query
-          name: size
-          type: integer
-        - in: query
-          name: offset
-          type: integer
-      responses:
-        200:
-          description: OK
-          schema:
-            type: array
-            items:
-              $ref: "#/definitions/Discussion"
-        400:
-          description: validation error
-          schema:
-            $ref: "#/definitions/ValidationError"
-        500:
-          description: "internal server error"
-          schema:
-            $ref: "#/definitions/InternalServerError"
-    post:
-      tags:
-        - Discussions
-      summary: Create a new discussion
-      description: "Create a new discussion"
-      produces:
-        - "application/json"
-      parameters:
-        - in: header
-          name: Columbus-User-Email
-          type: string
-          format: email
-          required: true
-        - in: body
-          name: ""
-          required: true
-          schema:
-            allOf:
-              - $ref: "#/definitions/Discussion"
-              - required:
-                  - title
-                  - body
-                  - type
-      responses:
-        201:
-          description: Created
-          schema:
-            type: object
-            properties:
-              id:
-                type: integer
-                description: id of the newly created discussion
-        400:
-          description: validation error
-          schema:
-            $ref: "#/definitions/ValidationError"
-        500:
-          description: "internal server error"
-          schema:
-            $ref: "#/definitions/InternalServerError"
-  "/v1beta1/discussions/{id}":
-    get:
-      tags:
-        - Discussions
-      summary: Get a discussion
-      description: "Returns a discussion given an id"
-      produces:
-        - "application/json"
-      parameters:
-        - in: header
-          name: Columbus-User-Email
-          type: string
-          format: email
-          required: true
-        - in: path
-          name: id
-          description: "discussion's ID"
-          type: integer
-          required: true
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: "#/definitions/Discussion"
-        400:
-          description: validation error
-          schema:
-            $ref: "#/definitions/ValidationError"
-        404:
-          description: "not found error"
-          schema:
-            $ref: "#/definitions/Error"
-        500:
-          description: "internal server error"
-          schema:
-            $ref: "#/definitions/InternalServerError"
-    patch:
-      tags:
-        - Discussions
-      summary: Patch a field in a discussion
-      description: "Patch a field in a discussion by id"
-      produces:
-        - "application/json"
-      parameters:
-        - in: header
-          name: Columbus-User-Email
-          type: string
-          format: email
-          required: true
-        - in: path
-          name: id
-          description: "discussion's ID"
-          type: integer
-          required: true
-      responses:
-        204:
-          description: No Content
         400:
           description: validation error
           schema:
@@ -1454,51 +1280,46 @@ paths:
           required: true
         - in: query
           name: filter
-          schema:
-            type: string
-            enum:
-              - assigned
-              - created
-              - all
-            default: all
+          type: string
+          enum:
+            - assigned
+            - created
+            - all
+          default: all
         - in: query
           name: type
-          schema:
-            type: string
-            enum:
-              - openeded
-              - issues
-              - qanda
-              - all
-            default: all
+          type: string
+          enum:
+            - openended
+            - issues
+            - qanda
+            - all
+          default: all
         - in: query
           name: state
-          schema:
-            type: string
-            enum:
-              - open
-              - closed
-              - all
-            default: open
+          type: string
+          enum:
+            - open
+            - closed
+            - all
+          default: open
         - in: query
           name: owner
           type: string
         - in: query
           name: sort
-          schema:
-            type: string
-            enum:
-              - created_at
-              - updated_at
-            default: created_at
+          type: string
+          enum:
+            - created_at
+            - updated_at
+          default: created_at
         - in: query
           name: direction
-          schema:
-            type: string
-            enum:
-              - asc
-              - desc
-            default: desc
+          type: string
+          enum:
+            - asc
+            - desc
+          default: desc
         - in: query
           name: assignee
           type: string
