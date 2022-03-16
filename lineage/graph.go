@@ -16,7 +16,7 @@ type Edge struct {
 }
 
 type Node struct {
-	URN     string
-	Type    asset.Type
-	Service string
+	URN     string     `json:"urn"`
+	Type    asset.Type `json:"type"`
+	Service string     `json:"service"`
 }
