@@ -5,7 +5,7 @@ import (
 	"github.com/odpf/columbus/lineage"
 )
 
-type upsertAssertPayload struct {
+type upsertAssetPayload struct {
 	asset.Asset
 	Upstreams   []lineage.Node `json:"upstreams"`
 	Downstreams []lineage.Node `json:"downstreams"`

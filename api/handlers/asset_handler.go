@@ -104,7 +104,7 @@ func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var payload upsertAssertPayload
+	var payload upsertAssetPayload
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		WriteJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
@@ -291,7 +291,7 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) asset.Config {
 	return config
 }
 
-func (h *AssetHandler) saveLineage(ctx context.Context, payload upsertAssertPayload) error {
+func (h *AssetHandler) saveLineage(ctx context.Context, payload upsertAssetPayload) error {
 	ast := payload.Asset
 
 	node := lineage.Node{
