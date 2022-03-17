@@ -197,14 +197,15 @@ func TestAssetHandlerUpsert(t *testing.T) {
 			Service:   "kafka",
 			UpdatedBy: user.User{ID: userID},
 			Data:      map[string]interface{}{},
-			Upstreams: []asset.LineageRecord{
-				{URN: "upstream-1", Type: asset.TypeJob, Service: "optimus"},
-			},
-			Downstreams: []asset.LineageRecord{
-				{URN: "downstream-1", Type: asset.TypeDashboard, Service: "metabase"},
-				{URN: "downstream-2", Type: asset.TypeDashboard, Service: "tableau"},
-			},
 		}
+		upstreams := []lineage.Node{
+			{URN: "upstream-1", Type: asset.TypeJob, Service: "optimus"},
+		}
+		downstreams := []lineage.Node{
+			{URN: "downstream-1", Type: asset.TypeDashboard, Service: "metabase"},
+			{URN: "downstream-2", Type: asset.TypeDashboard, Service: "tableau"},
+		}
+
 		assetWithID := ast
 		assetWithID.ID = uuid.New().String()
 
@@ -231,13 +232,8 @@ func TestAssetHandlerUpsert(t *testing.T) {
 				Type:    ast.Type,
 				Service: ast.Service,
 			},
-			[]lineage.Node{
-				{URN: "upstream-1", Type: asset.TypeJob, Service: "optimus"},
-			},
-			[]lineage.Node{
-				{URN: "downstream-1", Type: asset.TypeDashboard, Service: "metabase"},
-				{URN: "downstream-2", Type: asset.TypeDashboard, Service: "tableau"},
-			},
+			upstreams,
+			downstreams,
 		).Return(nil)
 		defer lr.AssertExpectations(t)
 

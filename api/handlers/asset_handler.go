@@ -104,12 +104,14 @@ func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var ast asset.Asset
-	err := json.NewDecoder(r.Body).Decode(&ast)
+	var payload upsertAssetPayload
+	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		WriteJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
 		return
 	}
+
+	ast := payload.Asset
 	if err := h.validateAsset(ast); err != nil {
 		WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
@@ -132,7 +134,7 @@ func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.saveLineage(r.Context(), ast); err != nil {
+	if err := h.saveLineage(r.Context(), payload); err != nil {
 		internalServerError(w, h.logger, err.Error())
 		return
 	}
@@ -289,30 +291,14 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) asset.Config {
 	return config
 }
 
-func (h *AssetHandler) saveLineage(ctx context.Context, ast asset.Asset) error {
+func (h *AssetHandler) saveLineage(ctx context.Context, payload upsertAssetPayload) error {
+	ast := payload.Asset
+
 	node := lineage.Node{
 		URN:     ast.URN,
 		Type:    ast.Type,
 		Service: ast.Service,
 	}
 
-	upstreams := []lineage.Node{}
-	for _, n := range ast.Upstreams { // nolint:staticcheck
-		upstreams = append(upstreams, lineage.Node{
-			URN:     n.URN,
-			Type:    n.Type,
-			Service: n.Service,
-		})
-	}
-
-	downstreams := []lineage.Node{}
-	for _, n := range ast.Downstreams {
-		downstreams = append(downstreams, lineage.Node{
-			URN:     n.URN,
-			Type:    n.Type,
-			Service: n.Service,
-		})
-	}
-
-	return h.lineageRepo.Upsert(ctx, node, upstreams, downstreams)
+	return h.lineageRepo.Upsert(ctx, node, payload.Upstreams, payload.Downstreams)
 }
