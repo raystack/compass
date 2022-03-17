@@ -11,7 +11,7 @@ import (
 
 	"github.com/odpf/salt/log"
 
-	"github.com/odpf/columbus/api/handlers"
+	"github.com/odpf/columbus/api/httpapi/handlers"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/lib/mocks"
 	"github.com/stretchr/testify/assert"

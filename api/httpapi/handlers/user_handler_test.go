@@ -15,7 +15,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"github.com/odpf/columbus/api/handlers"
+	"github.com/odpf/columbus/api/httpapi/handlers"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discussion"
 	"github.com/odpf/columbus/lib/mocks"

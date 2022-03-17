@@ -11,8 +11,9 @@ import (
 
 type Config struct {
 	// Server Config
-	ServerHost string `mapstructure:"SERVER_HOST" default:"0.0.0.0"`
-	ServerPort string `mapstructure:"SERVER_PORT" default:"8080"`
+	ServerHost     string `mapstructure:"SERVER_HOST" default:"0.0.0.0"`
+	ServerPort     string `mapstructure:"SERVER_PORT" default:"8080"`
+	GRPCServerPort string `mapstructure:"GRPC_SERVER_PORT" default:"8081"` // temporary only, for dev
 
 	// Elasticsearch
 	ElasticSearchBrokers string `mapstructure:"ELASTICSEARCH_BROKERS" default:"http://localhost:9200"`

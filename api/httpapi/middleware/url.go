@@ -7,14 +7,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func DecodeURL(cfg Config) mux.MiddlewareFunc {
+func DecodeURL() mux.MiddlewareFunc {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			newVars := map[string]string{}
 			for key, val := range mux.Vars(r) {
 				decodedVal, err := url.QueryUnescape(val)
 				if err != nil {
-					cfg.Logger.Warn("error decoding url", "value", val)
 					decodedVal = val
 				}
 

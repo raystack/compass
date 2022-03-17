@@ -1,13 +1,13 @@
-package api
+package httpapi
 
 import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/odpf/columbus/api/handlers"
+	"github.com/odpf/columbus/api/httpapi/handlers"
 )
 
-func setupV1Beta1Router(router *mux.Router, handlers *Handlers) {
+func setupV1Beta1Router(router *mux.Router, handlers *Handler) {
 	setupV1Beta1AssetRoutes("/assets", router, handlers.Asset)
 	setupV1Beta1TagRoutes("/tags", router, handlers.Tag, handlers.TagTemplate)
 
