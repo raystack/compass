@@ -29,6 +29,27 @@ func (_m *AssetRepository) Delete(ctx context.Context, id string) error {
 	return r0
 }
 
+// Find provides a mock function with given fields: ctx, urn, typ, service
+func (_m *AssetRepository) Find(ctx context.Context, urn string, typ asset.Type, service string) (asset.Asset, error) {
+	ret := _m.Called(ctx, urn, typ, service)
+
+	var r0 asset.Asset
+	if rf, ok := ret.Get(0).(func(context.Context, string, asset.Type, string) asset.Asset); ok {
+		r0 = rf(ctx, urn, typ, service)
+	} else {
+		r0 = ret.Get(0).(asset.Asset)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, asset.Type, string) error); ok {
+		r1 = rf(ctx, urn, typ, service)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetAll provides a mock function with given fields: _a0, _a1
 func (_m *AssetRepository) GetAll(_a0 context.Context, _a1 asset.Config) ([]asset.Asset, error) {
 	ret := _m.Called(_a0, _a1)

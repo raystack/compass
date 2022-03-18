@@ -42,6 +42,10 @@ func setupV1Beta1AssetRoutes(baseURL string, router *mux.Router, ah *handlers.As
 		Methods(http.MethodPut, http.MethodHead).
 		HandlerFunc(ah.Upsert)
 
+	router.Path(baseURL).
+		Methods(http.MethodPatch, http.MethodHead).
+		HandlerFunc(ah.UpsertPatch)
+
 	router.Path(baseURL+"/{id}").
 		Methods(http.MethodGet, http.MethodHead).
 		HandlerFunc(ah.GetByID)

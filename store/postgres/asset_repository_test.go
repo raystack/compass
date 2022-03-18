@@ -279,6 +279,81 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 	})
 }
 
+func (r *AssetRepositoryTestSuite) TestFind() {
+	r.Run("return NotFoundError if asset does not exist", func() {
+		urn := "some-urn"
+		typ := asset.TypeDashboard
+		service := "bigquery"
+		_, err := r.repository.Find(r.ctx, urn, typ, service)
+		r.ErrorAs(err, &asset.NotFoundError{URN: urn, Type: typ, Service: service})
+	})
+
+	r.Run("return correct asset from db", func() {
+		asset1 := asset.Asset{
+			URN:       "urn-find-1",
+			Type:      "table",
+			Service:   "bigquery",
+			Version:   asset.BaseVersion,
+			UpdatedBy: r.users[1],
+		}
+		asset2 := asset.Asset{
+			URN:       "urn-find-2",
+			Type:      "topic",
+			Service:   "kafka",
+			Version:   asset.BaseVersion,
+			UpdatedBy: r.users[1],
+		}
+
+		var err error
+		id, err := r.repository.Upsert(r.ctx, &asset1)
+		r.Require().NoError(err)
+		r.Require().Equal(r.lengthOfString(id), 36)
+		asset1.ID = id
+
+		id, err = r.repository.Upsert(r.ctx, &asset2)
+		r.Require().NoError(err)
+		r.Require().Equal(r.lengthOfString(id), 36)
+		asset2.ID = id
+
+		result, err := r.repository.Find(r.ctx, asset2.URN, asset2.Type, asset2.Service)
+		r.NoError(err)
+		asset2.UpdatedBy = r.users[1]
+		r.assertAsset(&asset2, &result)
+
+		// clean up
+		r.repository.Delete(r.ctx, asset1.ID)
+		r.repository.Delete(r.ctx, asset2.ID)
+	})
+
+	r.Run("return owners if any", func() {
+		ast := asset.Asset{
+			URN:     "urn-find-3",
+			Type:    "table",
+			Service: "bigquery",
+			Owners: []user.User{
+				r.users[1],
+				r.users[2],
+			},
+			UpdatedBy: r.users[1],
+		}
+
+		id, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+		r.Require().Equal(r.lengthOfString(id), 36)
+		ast.ID = id
+
+		result, err := r.repository.Find(r.ctx, ast.URN, ast.Type, ast.Service)
+		r.NoError(err)
+		r.Len(result.Owners, len(ast.Owners))
+		for i, owner := range result.Owners {
+			r.Equal(ast.Owners[i].ID, owner.ID)
+		}
+
+		// clean up
+		r.repository.Delete(r.ctx, ast.ID)
+	})
+}
+
 func (r *AssetRepositoryTestSuite) TestVersions() {
 	assetURN := "urn-u-2-version"
 	// v0.1

@@ -251,6 +251,257 @@ func TestAssetHandlerUpsert(t *testing.T) {
 	})
 }
 
+func TestAssetHandlerUpsertPatch(t *testing.T) {
+	var userID = uuid.NewString()
+	var validPayload = `{
+		"asset": {
+			"urn": "test dagger",
+			"type": "table",
+			"name": "new-name",
+			"service": "kafka",
+			"data": {}
+		},
+		"upstreams": [
+			{"urn": "upstream-1", "type": "job", "service": "optimus"}
+		],
+		"downstreams": [
+			{"urn": "downstream-1", "type": "dashboard", "service": "metabase"},
+			{"urn": "downstream-2", "type": "dashboard", "service": "tableau"}
+		]
+	}`
+	var currentAsset = asset.Asset{
+		URN:       "test dagger",
+		Type:      asset.TypeTable,
+		Name:      "old-name", // this value will be updated
+		Service:   "kafka",
+		UpdatedBy: user.User{ID: userID},
+		Data:      map[string]interface{}{},
+	}
+
+	t.Run("should return HTTP 400 for invalid payload", func(t *testing.T) {
+		testCases := []struct {
+			description string
+			payload     string
+		}{
+			{
+				description: "empty object",
+				payload:     `{}`,
+			},
+			{
+				description: "empty asset",
+				payload:     `{"asset": {}}`,
+			},
+			{
+				description: "empty urn",
+				payload:     `{"asset": {"urn": "", "name": "some-name", "data": {}, "service": "some-service", "type": "table"}}`,
+			},
+			{
+				description: "empty service",
+				payload:     `{"asset": {"urn": "some-urn", "name": "some-name", "data": {}, "service": "", "type": "table"}}`,
+			},
+			{
+				description: "empty type",
+				payload:     `{"asset": {"urn": "some-urn", "name": "some-name", "data": {}, "service": "some-service", "type": ""}}`,
+			},
+			{
+				description: "invalid type",
+				payload:     `{"asset": {"urn": "some-urn", "name": "some-name", "data": {}, "service": "some-service", "type": "invalid_type"}}`,
+			},
+		}
+
+		for _, testCase := range testCases {
+			t.Run(testCase.description, func(t *testing.T) {
+				rw := httptest.NewRecorder()
+
+				rr := httptest.NewRequest("PUT", "/", strings.NewReader(testCase.payload))
+				ctx := user.NewContext(rr.Context(), userID)
+				rr = rr.WithContext(ctx)
+
+				handler := handlers.NewAssetHandler(logger, nil, nil, nil, nil)
+				handler.UpsertPatch(rw, rr)
+
+				expectedStatus := http.StatusBadRequest
+				if rw.Code != expectedStatus {
+					t.Errorf("expected handler to return HTTP %d, returned HTTP %d instead", expectedStatus, rw.Code)
+					return
+				}
+			})
+		}
+	})
+
+	t.Run("should return HTTP 500 if the asset creation/update fails", func(t *testing.T) {
+		t.Run("Finding asset fails", func(t *testing.T) {
+			rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
+			ctx := user.NewContext(rr.Context(), userID)
+			rr = rr.WithContext(ctx)
+			rw := httptest.NewRecorder()
+
+			expectedErr := errors.New("unknown error")
+
+			ar := new(mocks.AssetRepository)
+			ar.On("Find", rr.Context(), "test dagger", asset.TypeTable, "kafka").Return(currentAsset, expectedErr)
+			defer ar.AssertExpectations(t)
+
+			rr.Context()
+			handler := handlers.NewAssetHandler(logger, ar, nil, nil, nil)
+			handler.UpsertPatch(rw, rr)
+
+			assert.Equal(t, http.StatusInternalServerError, rw.Code)
+			var response handlers.ErrorResponse
+			err := json.NewDecoder(rw.Body).Decode(&response)
+			require.NoError(t, err)
+			assert.Contains(t, response.Reason, "Internal Server Error")
+		})
+		t.Run("AssetRepository Upsert fails", func(t *testing.T) {
+			rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
+			ctx := user.NewContext(rr.Context(), userID)
+			rr = rr.WithContext(ctx)
+			rw := httptest.NewRecorder()
+
+			expectedErr := errors.New("unknown error")
+
+			ar := new(mocks.AssetRepository)
+			ar.On("Find", rr.Context(), "test dagger", asset.TypeTable, "kafka").Return(currentAsset, nil)
+			ar.On("Upsert", rr.Context(), mock.AnythingOfType("*asset.Asset")).Return("1234-5678", expectedErr)
+			defer ar.AssertExpectations(t)
+
+			rr.Context()
+			handler := handlers.NewAssetHandler(logger, ar, nil, nil, nil)
+			handler.UpsertPatch(rw, rr)
+
+			assert.Equal(t, http.StatusInternalServerError, rw.Code)
+			var response handlers.ErrorResponse
+			err := json.NewDecoder(rw.Body).Decode(&response)
+			require.NoError(t, err)
+			assert.Contains(t, response.Reason, "Internal Server Error")
+		})
+		t.Run("DiscoveryRepository fails", func(t *testing.T) {
+			rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
+			ctx := user.NewContext(rr.Context(), userID)
+			rr = rr.WithContext(ctx)
+			rw := httptest.NewRecorder()
+
+			expectedErr := errors.New("unknown error")
+
+			ar := new(mocks.AssetRepository)
+			ar.On("Find", rr.Context(), "test dagger", asset.TypeTable, "kafka").Return(currentAsset, nil)
+			ar.On("Upsert", rr.Context(), mock.AnythingOfType("*asset.Asset")).Return("1234-5678", nil, nil)
+			defer ar.AssertExpectations(t)
+
+			dr := new(mocks.DiscoveryRepository)
+			dr.On("Upsert", rr.Context(), mock.AnythingOfType("asset.Asset")).Return(expectedErr)
+			defer dr.AssertExpectations(t)
+
+			rr.Context()
+			handler := handlers.NewAssetHandler(logger, ar, dr, nil, nil)
+			handler.UpsertPatch(rw, rr)
+
+			assert.Equal(t, http.StatusInternalServerError, rw.Code)
+			var response handlers.ErrorResponse
+			err := json.NewDecoder(rw.Body).Decode(&response)
+			require.NoError(t, err)
+			assert.Contains(t, response.Reason, "Internal Server Error")
+		})
+		t.Run("LineageRepository fails", func(t *testing.T) {
+			rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
+			ctx := user.NewContext(rr.Context(), userID)
+			rr = rr.WithContext(ctx)
+			rw := httptest.NewRecorder()
+
+			expectedErr := errors.New("unknown error")
+
+			ar := new(mocks.AssetRepository)
+			ar.On("Find", rr.Context(), "test dagger", asset.TypeTable, "kafka").Return(currentAsset, nil)
+			ar.On("Upsert", rr.Context(), mock.AnythingOfType("*asset.Asset")).Return("1234-5678", nil, nil)
+			defer ar.AssertExpectations(t)
+
+			dr := new(mocks.DiscoveryRepository)
+			dr.On("Upsert", rr.Context(), mock.AnythingOfType("asset.Asset")).Return(nil)
+			defer dr.AssertExpectations(t)
+
+			lr := new(mocks.LineageRepository)
+			lr.On("Upsert", rr.Context(),
+				mock.AnythingOfType("lineage.Node"),
+				mock.AnythingOfType("[]lineage.Node"),
+				mock.AnythingOfType("[]lineage.Node"),
+			).Return(expectedErr)
+			defer lr.AssertExpectations(t)
+
+			rr.Context()
+			handler := handlers.NewAssetHandler(logger, ar, dr, nil, lr)
+			handler.UpsertPatch(rw, rr)
+
+			assert.Equal(t, http.StatusInternalServerError, rw.Code)
+			var response handlers.ErrorResponse
+			err := json.NewDecoder(rw.Body).Decode(&response)
+			require.NoError(t, err)
+			assert.Contains(t, response.Reason, "Internal Server Error")
+		})
+	})
+
+	t.Run("should return HTTP 200 and asset's ID if the asset is successfully patched", func(t *testing.T) {
+		patchedAsset := asset.Asset{
+			URN:       "test dagger",
+			Type:      asset.TypeTable,
+			Name:      "new-name",
+			Service:   "kafka",
+			UpdatedBy: user.User{ID: userID},
+			Data:      map[string]interface{}{},
+		}
+		upstreams := []lineage.Node{
+			{URN: "upstream-1", Type: asset.TypeJob, Service: "optimus"},
+		}
+		downstreams := []lineage.Node{
+			{URN: "downstream-1", Type: asset.TypeDashboard, Service: "metabase"},
+			{URN: "downstream-2", Type: asset.TypeDashboard, Service: "tableau"},
+		}
+
+		assetWithID := patchedAsset
+		assetWithID.ID = uuid.New().String()
+
+		rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
+		ctx := user.NewContext(rr.Context(), userID)
+		rr = rr.WithContext(ctx)
+		rw := httptest.NewRecorder()
+
+		ar := new(mocks.AssetRepository)
+		ar.On("Find", rr.Context(), "test dagger", asset.TypeTable, "kafka").Return(currentAsset, nil)
+		ar.On("Upsert", rr.Context(), &patchedAsset).Return(assetWithID.ID, nil, nil).Run(func(args mock.Arguments) {
+			argAsset := args.Get(1).(*asset.Asset)
+			argAsset.ID = assetWithID.ID
+		})
+		defer ar.AssertExpectations(t)
+
+		dr := new(mocks.DiscoveryRepository)
+		dr.On("Upsert", rr.Context(), assetWithID).Return(nil)
+		defer dr.AssertExpectations(t)
+
+		lr := new(mocks.LineageRepository)
+		lr.On("Upsert", rr.Context(),
+			lineage.Node{
+				URN:     patchedAsset.URN,
+				Type:    patchedAsset.Type,
+				Service: patchedAsset.Service,
+			},
+			upstreams,
+			downstreams,
+		).Return(nil)
+		defer lr.AssertExpectations(t)
+
+		handler := handlers.NewAssetHandler(logger, ar, dr, nil, lr)
+		handler.UpsertPatch(rw, rr)
+
+		assert.Equal(t, http.StatusOK, rw.Code)
+		var response map[string]interface{}
+		err := json.NewDecoder(rw.Body).Decode(&response)
+		require.NoError(t, err)
+
+		assetID, exists := response["id"]
+		assert.True(t, exists)
+		assert.Equal(t, assetWithID.ID, assetID)
+	})
+}
+
 func TestAssetHandlerDelete(t *testing.T) {
 	type testCase struct {
 		Description  string
