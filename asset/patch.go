@@ -1,8 +1,6 @@
 package asset
 
 import (
-	"reflect"
-
 	"github.com/odpf/columbus/user"
 	"github.com/peterbourgon/mergemap"
 )
@@ -96,36 +94,6 @@ func patchAssetData(a *Asset, data interface{}) {
 	}
 
 	a.Data = mergemap.Merge(a.Data, dataMap)
-}
-
-func skipConditionsFunc(field reflect.StructField) bool {
-	switch field.Name {
-	case "Owners", "Labels", "Data", "Version", "CreatedAt", "UpdatedAt", "UpdatedBy", "Changelog":
-		return true
-	default:
-		return false
-	}
-}
-
-// typeUpdater handle patching Type from string
-func typeUpdater(fieldValue reflect.Value, v reflect.Value) bool {
-	switch fieldValue.Interface().(type) {
-	case Type:
-		// if its null value
-		if !v.IsValid() {
-			newValue := reflect.ValueOf(Type(""))
-			fieldValue.Set(newValue)
-			return true
-		}
-		// only set if underlying type is a string
-		if v.Kind() == reflect.String {
-			newValue := reflect.ValueOf(Type(v.String()))
-			fieldValue.Set(newValue)
-			return true
-		}
-	}
-
-	return false
 }
 
 func patchString(key string, data map[string]interface{}, defaultVal string) string {

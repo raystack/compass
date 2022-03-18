@@ -321,8 +321,10 @@ func (r *AssetRepositoryTestSuite) TestFind() {
 		r.assertAsset(&asset2, &result)
 
 		// clean up
-		r.repository.Delete(r.ctx, asset1.ID)
-		r.repository.Delete(r.ctx, asset2.ID)
+		err = r.repository.Delete(r.ctx, asset1.ID)
+		r.Require().NoError(err)
+		err = r.repository.Delete(r.ctx, asset2.ID)
+		r.Require().NoError(err)
 	})
 
 	r.Run("return owners if any", func() {
@@ -350,7 +352,8 @@ func (r *AssetRepositoryTestSuite) TestFind() {
 		}
 
 		// clean up
-		r.repository.Delete(r.ctx, ast.ID)
+		err = r.repository.Delete(r.ctx, ast.ID)
+		r.Require().NoError(err)
 	})
 }
 
