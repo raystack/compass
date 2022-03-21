@@ -300,7 +300,7 @@ func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id stri
 	err = r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		query, args, err := sq.Insert("assets").
 			Columns("urn", "type", "service", "name", "description", "data", "labels", "updated_by", "version").
-			Values(ast.URN, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion).
+			Values(ast.URN, ast.Types, ast.Services, ast.Name, ast.Description, ast.Data, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion).
 			Suffix("RETURNING \"id\"").
 			PlaceholderFormat(sq.Dollar).
 			ToSql()
@@ -360,7 +360,7 @@ func (r *AssetRepository) update(ctx context.Context, assetID string, newAsset *
 				version = $10
 			WHERE id = $11;
 			`,
-			newAsset.URN, newAsset.Type, newAsset.Service, newAsset.Name, newAsset.Description, newAsset.Data, newAsset.Labels, time.Now(), newAsset.UpdatedBy.ID, newVersion, assetID)
+			newAsset.URN, newAsset.Types, newAsset.Services, newAsset.Name, newAsset.Description, newAsset.Data, newAsset.Labels, time.Now(), newAsset.UpdatedBy.ID, newVersion, assetID)
 		if err != nil {
 			return fmt.Errorf("error running update asset query: %w", err)
 		}
@@ -404,7 +404,7 @@ func (r *AssetRepository) insertAssetVersion(ctx context.Context, execer sqlx.Ex
 	}
 	query, args, err := sq.Insert("assets_versions").
 		Columns("asset_id", "urn", "type", "service", "name", "description", "data", "labels", "created_at", "updated_at", "updated_by", "version", "owners", "changelog").
-		Values(oldAsset.ID, oldAsset.URN, oldAsset.Type, oldAsset.Service, oldAsset.Name, oldAsset.Description, oldAsset.Data, oldAsset.Labels,
+		Values(oldAsset.ID, oldAsset.URN, oldAsset.Types, oldAsset.Services, oldAsset.Name, oldAsset.Description, oldAsset.Data, oldAsset.Labels,
 			oldAsset.CreatedAt, oldAsset.UpdatedAt, oldAsset.UpdatedBy.ID, oldAsset.Version, oldAsset.Owners, jsonChangelog).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -636,14 +636,14 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 
 func (r *AssetRepository) buildConfigQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
 	clause := sq.Eq{}
-	if len(cfg.Type) > 0 {
-		builder = builder.Where("type @> ?", cfg.Type)
+	if len(cfg.Types) > 0 {
+		builder = builder.Where("type @> ?", cfg.Types)
 	}
 	//if cfg.Type != "" {
 	//	clause["type"] = cfg.Type
 	//}
-	if len(cfg.Service) > 0 {
-		builder = builder.Where("service @> ?", cfg.Service)
+	if len(cfg.Services) > 0 {
+		builder = builder.Where("service @> ?", cfg.Services)
 	}
 	//if cfg.Service != "" {
 	//	clause["service"] = cfg.Service

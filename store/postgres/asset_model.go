@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/lib/pq"
 	"time"
 
 	"github.com/jmoiron/sqlx/types"
@@ -14,18 +15,18 @@ import (
 )
 
 type AssetModel struct {
-	ID          string    `db:"id"`
-	URN         string    `db:"urn"`
-	Type        string    `db:"type"`
-	Name        string    `db:"name"`
-	Service     string    `db:"service"`
-	Description string    `db:"description"`
-	Data        JSONMap   `db:"data"`
-	Labels      JSONMap   `db:"labels"`
-	Version     string    `db:"version"`
-	UpdatedBy   UserModel `db:"updated_by"`
-	CreatedAt   time.Time `db:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at"`
+	ID          string         `db:"id"`
+	URN         string         `db:"urn"`
+	Types       []string       `db:"type"`
+	Name        string         `db:"name"`
+	Services    pq.StringArray `db:"service"`
+	Description string         `db:"description"`
+	Data        JSONMap        `db:"data"`
+	Labels      JSONMap        `db:"labels"`
+	Version     string         `db:"version"`
+	UpdatedBy   UserModel      `db:"updated_by"`
+	CreatedAt   time.Time      `db:"created_at"`
+	UpdatedAt   time.Time      `db:"updated_at"`
 	// version specific information
 	Changelog types.JSONText `db:"changelog"`
 	Owners    types.JSONText `db:"owners"`
@@ -36,9 +37,9 @@ func (a *AssetModel) toAsset(owners []user.User) asset.Asset {
 	return asset.Asset{
 		ID:          a.ID,
 		URN:         a.URN,
-		Type:        asset.Type(a.Type),
+		Types:       asset.Type(a.Types),
 		Name:        a.Name,
-		Service:     a.Service,
+		Services:    a.Services,
 		Description: a.Description,
 		Data:        a.Data,
 		Labels:      a.buildLabels(),
@@ -86,9 +87,9 @@ func (a *AssetModel) toVersionedAsset(latestAssetVersion asset.Asset) (asset.Ass
 	return asset.Asset{
 		ID:          latestAssetVersion.ID,
 		URN:         latestAssetVersion.URN,
-		Type:        asset.Type(latestAssetVersion.Type),
+		Types:       latestAssetVersion.Types,
 		Name:        a.Name,
-		Service:     latestAssetVersion.Service,
+		Services:    latestAssetVersion.Services,
 		Description: a.Description,
 		Data:        a.Data,
 		Labels:      a.buildLabels(),

@@ -192,9 +192,9 @@ func TestAssetHandlerUpsert(t *testing.T) {
 	t.Run("should return HTTP 200 and asset's ID if the asset is successfully created/updated", func(t *testing.T) {
 		ast := asset.Asset{
 			URN:       "test dagger",
-			Type:      asset.TypeTable,
+			Types:     asset.TypeTable,
 			Name:      "de-dagger-test",
-			Service:   "kafka",
+			Services:  []string{"kafka"},
 			UpdatedBy: user.User{ID: userID},
 			Data:      map[string]interface{}{},
 		}
@@ -229,8 +229,8 @@ func TestAssetHandlerUpsert(t *testing.T) {
 		lr.On("Upsert", rr.Context(),
 			lineage.Node{
 				URN:     ast.URN,
-				Type:    ast.Type,
-				Service: ast.Service,
+				Type:    ast.Types,
+				Service: ast.Services,
 			},
 			upstreams,
 			downstreams,
@@ -695,8 +695,8 @@ func TestAssetHandlerGet(t *testing.T) {
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
 					Text:          "asd",
-					Type:          []string{"table", "job"},
-					Service:       []string{"bigquery", "presto"},
+					Types:         []string{"table", "job"},
+					Services:      []string{"bigquery", "presto"},
 					Size:          30,
 					Offset:        50,
 					SortDirection: "desc",
@@ -741,20 +741,20 @@ func TestAssetHandlerGet(t *testing.T) {
 			Querystring:  "?with_total=true&text=dsa&type=job&service=kafka&size=10&offset=5",
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
-					Text:    "dsa",
-					Type:    []string{"job"},
-					Service: []string{"kafka"},
-					Size:    10,
-					Offset:  5,
+					Text:     "dsa",
+					Types:    []string{"job"},
+					Services: []string{"kafka"},
+					Size:     10,
+					Offset:   5,
 				}).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 					{ID: "testid-3"},
 				}, nil, nil)
 				ar.On("GetCount", ctx, asset.Config{
-					Text:    "dsa",
-					Type:    []string{"job"},
-					Service: []string{"kafka"},
+					Text:     "dsa",
+					Types:    []string{"job"},
+					Services: []string{"kafka"},
 				}).Return(150, nil, nil)
 			},
 			PostCheck: func(r *http.Response) error {

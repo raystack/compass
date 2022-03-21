@@ -71,9 +71,9 @@ func (h *AssetHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	withTotal, ok := r.URL.Query()["with_total"]
 	if ok && len(withTotal) > 0 && withTotal[0] != "false" && withTotal[0] != "0" {
 		total, err := h.assetRepo.GetCount(r.Context(), asset.Config{
-			Type:    cfg.Type,
-			Service: cfg.Service,
-			Text:    cfg.Text,
+			Types:    cfg.Types,
+			Services: cfg.Services,
+			Text:     cfg.Text,
 		})
 		if err != nil {
 			internalServerError(w, h.logger, err.Error())
@@ -321,25 +321,21 @@ func (h *AssetHandler) validateAsset(ast asset.Asset) error {
 	if ast.URN == "" {
 		return fmt.Errorf("urn is required")
 	}
-	if ast.Type == "" {
+	if ast.Types != nil {
 		return fmt.Errorf("type is required")
 	}
-	if !ast.Type.IsValid() {
-		return fmt.Errorf("type is invalid")
-	}
+	//if !ast.Types.IsValid() {
+	//	return fmt.Errorf("type is invalid")
+	//}
 	if ast.Name == "" {
 		return fmt.Errorf("name is required")
 	}
 	if ast.Data == nil {
 		return fmt.Errorf("data is required")
 	}
-
-	if ast.Service == "" {
+	if ast.Services != nil {
 		return fmt.Errorf("service is required")
 	}
-	//if !ast.Service.IsValid() {
-	//	return fmt.Errorf("service is invalid")
-	//}
 
 	return nil
 }
@@ -400,11 +396,11 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 
 	types := query.Get("type")
 	if types != "" {
-		cfg.Type = strings.Split(types, ",")
+		cfg.Types = strings.Split(types, ",")
 	}
 	services := query.Get("service")
 	if services != "" {
-		cfg.Service = strings.Split(services, ",")
+		cfg.Services = strings.Split(services, ",")
 	}
 
 	cfg.Name = query.Get("name")
@@ -466,8 +462,8 @@ func filterConfigFromAssetValues(querystring url.Values) map[string][]string {
 func (h *AssetHandler) saveLineage(ctx context.Context, ast asset.Asset, upstreams, downstreams []lineage.Node) error {
 	node := lineage.Node{
 		URN:     ast.URN,
-		Type:    ast.Type,
-		Service: ast.Service,
+		Type:    ast.Types,
+		Service: ast.Services,
 	}
 
 	return h.lineageRepo.Upsert(ctx, node, upstreams, downstreams)
