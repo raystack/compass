@@ -5,7 +5,9 @@ import (
 	"strings"
 	"time"
 
+	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/columbus/user"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Comment struct {
@@ -16,6 +18,32 @@ type Comment struct {
 	UpdatedBy    user.User `json:"updated_by" db:"updated_by"`
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
+}
+
+// ToProto transforms struct to proto
+func (d Comment) ToProto() *compassv1beta1.Comment {
+	return &compassv1beta1.Comment{
+		Id:           d.ID,
+		DiscussionId: d.DiscussionID,
+		Body:         d.Body,
+		Owner:        d.Owner.ToProto(),
+		UpdatedBy:    d.UpdatedBy.ToProto(),
+		CreatedAt:    timestamppb.New(d.CreatedAt),
+		UpdatedAt:    timestamppb.New(d.UpdatedAt),
+	}
+}
+
+// NewCommentFromProto transforms proto to struct
+func NewCommentFromProto(proto *compassv1beta1.Comment) Comment {
+	return Comment{
+		ID:           proto.Id,
+		DiscussionID: proto.DiscussionId,
+		Body:         proto.Body,
+		Owner:        user.NewFromProto(proto.Owner),
+		UpdatedBy:    user.NewFromProto(proto.UpdatedBy),
+		CreatedAt:    proto.CreatedAt.AsTime(),
+		UpdatedAt:    proto.UpdatedAt.AsTime(),
+	}
 }
 
 // Validate checks emptyness required fields and constraint in comment and return error if the required is empty

@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/odpf/columbus/api/handlers"
+	"github.com/odpf/columbus/api/httpapi/handlers"
 )
 
 func TestNotFoundHandler(t *testing.T) {

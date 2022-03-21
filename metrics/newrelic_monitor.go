@@ -18,6 +18,13 @@ func NewNewrelicMonitor(app *newrelic.Application) *NewrelicMonitor {
 	}
 }
 
+func (mon *NewrelicMonitor) Application() *newrelic.Application {
+	if mon != nil {
+		return mon.app
+	}
+	return nil
+}
+
 func (mon *NewrelicMonitor) MonitorRouter(router *mux.Router) {
 	router.Use(nrgorilla.Middleware(mon.app))
 

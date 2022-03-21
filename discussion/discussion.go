@@ -8,7 +8,9 @@ import (
 	"strings"
 	"time"
 
+	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/columbus/user"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const MAX_ARRAY_FIELD_NUM = 10
@@ -37,6 +39,40 @@ type Discussion struct {
 	Owner     user.User `json:"owner"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// ToProto transforms struct to proto
+func (d Discussion) ToProto() *compassv1beta1.Discussion {
+	return &compassv1beta1.Discussion{
+		Id:        d.ID,
+		Title:     d.Title,
+		Body:      d.Body,
+		Type:      d.Type.String(),
+		State:     d.State.String(),
+		Labels:    d.Labels,
+		Assets:    d.Assets,
+		Assignees: d.Assignees,
+		Owner:     d.Owner.ToProto(),
+		CreatedAt: timestamppb.New(d.CreatedAt),
+		UpdatedAt: timestamppb.New(d.UpdatedAt),
+	}
+}
+
+// NewFromProto transforms proto to struct
+func NewFromProto(proto *compassv1beta1.Discussion) Discussion {
+	return Discussion{
+		ID:        proto.Id,
+		Title:     proto.Title,
+		Body:      proto.Body,
+		Type:      GetTypeEnum(proto.Type),
+		State:     GetStateEnum(proto.State),
+		Labels:    proto.Labels,
+		Assets:    proto.Assets,
+		Assignees: proto.Assignees,
+		Owner:     user.NewFromProto(proto.Owner),
+		CreatedAt: proto.CreatedAt.AsTime(),
+		UpdatedAt: proto.UpdatedAt.AsTime(),
+	}
 }
 
 // IsEmpty returns true if all fields inside discussion are considered empty

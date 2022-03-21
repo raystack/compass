@@ -1,21 +1,31 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	nrelasticsearch "github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
+	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/odpf/columbus/api"
-	"github.com/odpf/columbus/api/middleware"
+	"github.com/odpf/columbus/api/grpc_interceptor"
+	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/metrics"
 	esStore "github.com/odpf/columbus/store/elasticsearch"
@@ -23,6 +33,10 @@ import (
 	"github.com/odpf/columbus/tag"
 	"github.com/odpf/columbus/user"
 	"github.com/odpf/salt/log"
+	"github.com/odpf/salt/server"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // Version of the current build. overridden by the build system.
@@ -40,21 +54,89 @@ func Serve() {
 	esClient := initElasticsearch(config, logger)
 	newRelicMonitor := initNewRelicMonitor(config, logger)
 	statsdMonitor := initStatsdMonitor(config, logger)
-	router := initRouter(esClient, newRelicMonitor, statsdMonitor, logger)
+	deps := initDependencies(logger, esClient)
 
-	serverAddr := fmt.Sprintf("%s:%s", config.ServerHost, config.ServerPort)
-	logger.Info(fmt.Sprintf("starting http server on %s", serverAddr))
-	if err := http.ListenAndServe(serverAddr, router); err != nil {
-		logger.Error("listen and serve", "error", err)
+	handlers := api.NewHandlers(logger, deps)
+
+	// old http: to be removed
+	router := mux.NewRouter()
+	if newRelicMonitor != nil {
+		newRelicMonitor.MonitorRouter(router)
+	}
+	if statsdMonitor != nil {
+		statsdMonitor.MonitorRouter(router)
+	}
+	router.Use(requestLoggerMiddleware(
+		logger.Writer(),
+	))
+
+	api.RegisterHTTPRoutes(api.Config{IdentityHeaderKey: config.IdentityHeader}, router, deps, handlers.HTTPHandler)
+	// old http: to be removed
+
+	// grpc
+	ctx, cancelFunc := context.WithCancel(
+		server.HandleSignals(context.Background()),
+	)
+	defer cancelFunc()
+
+	muxServer, gw, err := newGRPCServer(
+		config,
+		newRelicMonitor.Application(),
+		grpc_recovery.UnaryServerInterceptor(),
+		grpc_ctxtags.UnaryServerInterceptor(),
+		grpc_logrus.UnaryServerInterceptor(logrus.NewEntry(logrus.New())), //TODO: expose *logrus.Logger in salt
+		nrgrpc.UnaryServerInterceptor(newRelicMonitor.Application()),
+		grpc_interceptor.ValidateUser(config.IdentityHeader, deps.UserService),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = gw.RegisterHandler(ctx, compassv1beta1.RegisterCompassServiceHandlerFromEndpoint)
+	if err != nil {
+		panic(err)
+	}
+
+	muxServer.RegisterService(
+		&compassv1beta1.CompassService_ServiceDesc,
+		handlers.GRPCHandler,
+	)
+
+	muxServer.RegisterHandler("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "pong")
+	}))
+
+	muxServer.SetGateway("/", gw)
+
+	logger.Info("starting server", "host", config.ServerHost, "port", config.ServerPort)
+
+	serverErrorChan := make(chan error)
+
+	go func() {
+		logger.Info(fmt.Sprintf("starting grpc gateway server on %s:%s", config.ServerHost, config.GRPCServerPort))
+		serverErrorChan <- muxServer.Serve()
+	}()
+
+	go func() {
+		serverAddr := fmt.Sprintf("%s:%s", config.ServerHost, config.ServerPort)
+		logger.Info(fmt.Sprintf("starting http server on %s", serverAddr))
+		serverErrorChan <- http.ListenAndServe(serverAddr, router)
+	}()
+
+	select {
+	case <-ctx.Done():
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), time.Second*30)
+		defer shutdownCancel()
+		muxServer.Shutdown(shutdownCtx)
+	case serverError := <-serverErrorChan:
+		panic(serverError)
 	}
 }
 
-func initRouter(
-	esClient *elasticsearch.Client,
-	nrMonitor *metrics.NewrelicMonitor,
-	statsdMonitor *metrics.StatsdMonitor,
+func initDependencies(
 	logger log.Logger,
-) *mux.Router {
+	esClient *elasticsearch.Client,
+) *api.Dependencies {
 	typeRepository := esStore.NewTypeRepository(esClient)
 	recordRepositoryFactory := esStore.NewRecordRepositoryFactory(esClient)
 	recordSearcher, err := esStore.NewSearcher(esStore.SearcherConfig{
@@ -110,23 +192,7 @@ func initRouter(
 		logger.Fatal("failed to create new lineage repository", "error", err)
 	}
 
-	router := mux.NewRouter()
-	if nrMonitor != nil {
-		nrMonitor.MonitorRouter(router)
-	}
-	if statsdMonitor != nil {
-		statsdMonitor.MonitorRouter(router)
-	}
-	router.Use(requestLoggerMiddleware(
-		logger.Writer(),
-	))
-
-	middlewareCfg := middleware.Config{
-		Logger:         logger,
-		IdentityHeader: config.IdentityHeader,
-	}
-
-	api.RegisterRoutes(router, api.Config{
+	return &api.Dependencies{
 		Logger:                  logger,
 		AssetRepository:         assetRepository,
 		DiscoveryRepository:     discoveryRepo,
@@ -137,15 +203,12 @@ func initRouter(
 		TagService:              tagService,
 		TagTemplateService:      tagTemplateService,
 		UserService:             userService,
-		MiddlewareConfig:        middlewareCfg,
 		StarRepository:          starRepository,
 		DiscussionRepository:    discussionRepository,
-	})
-
-	return router
+	}
 }
 
-func initLogger(logLevel string) log.Logger {
+func initLogger(logLevel string) *log.Logrus {
 	logger := log.NewLogrus(
 		log.LogrusWithLevel(logLevel),
 		log.LogrusWithWriter(os.Stdout),
@@ -255,4 +318,88 @@ func esInfo(cli *elasticsearch.Client) (string, error) {
 	}
 
 	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
+}
+
+func newGRPCServer(cfg Config, nrApp *newrelic.Application, middleware ...grpc.UnaryServerInterceptor) (*server.MuxServer, *server.GRPCGateway, error) {
+	grpcPortInt, err := strconv.Atoi(config.GRPCServerPort)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	headerMatcher := makeHeaderMatcher(cfg)
+	muxServer, err := server.NewMux(
+		server.Config{
+			Port: grpcPortInt,
+			Host: cfg.ServerHost,
+		},
+
+		server.WithMuxGRPCServerOptions(
+			grpc.UnaryInterceptor(
+				grpc_middleware.ChainUnaryServer(
+					middleware...,
+				),
+			),
+		),
+	)
+	// server.WithMuxHTTPServer(httpServer))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	gw, err := server.NewGateway(cfg.ServerHost, grpcPortInt,
+		server.WithGatewayMuxOptions(
+			runtime.WithErrorHandler(runtime.DefaultHTTPErrorHandler),
+			runtime.WithIncomingHeaderMatcher(headerMatcher),
+			runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+				MarshalOptions: protojson.MarshalOptions{
+					UseProtoNames: true,
+				},
+				UnmarshalOptions: protojson.UnmarshalOptions{
+					DiscardUnknown: true,
+				},
+			}),
+		))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// if err = gw.RegisterHandler(ctx, compassv1beta1.RegisterCompassServiceHandlerFromEndpoint); err != nil {
+	// 	return nil, err
+	// }
+
+	// muxServer.RegisterService(
+	// 	&compassv1beta1.CompassService_ServiceDesc,
+	// 	grpcapi.NewService(logger, deps),
+	// )
+
+	// api.RegisterHandlers(ctx, muxServer, gw)
+	return muxServer, gw, nil
+}
+
+// func (s *Server) Run() error {
+// 	ctx, cancelFunc := context.WithCancel(
+// 		server.HandleSignals(context.Background()),
+// 	)
+// 	defer cancelFunc()
+// 	if err = s.gw.RegisterHandler(ctx, compassv1beta1.RegisterCompassServiceHandlerFromEndpoint); err != nil {
+// 		return nil, err
+// 	}
+
+// 	s.muxServer.RegisterService(
+// 		&compassv1beta1.CompassService_ServiceDesc,
+// 		grpcapi.NewService(logger, deps),
+// 	)
+
+// 	// api.RegisterHandlers(ctx, muxServer, gw)
+// }
+
+func makeHeaderMatcher(c Config) func(key string) (string, bool) {
+	return func(key string) (string, bool) {
+		switch strings.ToLower(key) {
+		case strings.ToLower(c.IdentityHeader):
+			return key, true
+		default:
+			return runtime.DefaultHeaderMatcher(key)
+		}
+	}
 }

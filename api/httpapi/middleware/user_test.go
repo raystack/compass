@@ -8,32 +8,26 @@ import (
 	"testing"
 
 	"github.com/gorilla/mux"
-	"github.com/odpf/columbus/api/handlers"
+	"github.com/odpf/columbus/api/httpapi/handlers"
 	"github.com/odpf/columbus/lib/mocks"
 	"github.com/odpf/columbus/user"
-	"github.com/odpf/salt/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 const (
-	dummyRoute             = "/v1beta1/dummy"
-	identityHeader         = "Columbus-User-Email"
-	identityProviderHeader = "Columbus-User-Provider"
+	dummyRoute        = "/v1beta1/dummy"
+	identityHeaderKey = "Columbus-User-ID"
 )
 
 var userCfg = user.Config{IdentityProviderDefaultName: "shield"}
 
 func TestValidateUser(t *testing.T) {
-	middlewareCfg := Config{
-		Logger:         log.NewNoop(),
-		IdentityHeader: identityHeader,
-	}
 
 	t.Run("should return HTTP 400 when identity header not present", func(t *testing.T) {
 		userSvc := user.NewService(nil, userCfg)
 		r := mux.NewRouter()
-		r.Use(ValidateUser(middlewareCfg, userSvc))
+		r.Use(ValidateUser(identityHeaderKey, userSvc))
 		r.Path(dummyRoute).Methods(http.MethodGet)
 
 		req, _ := http.NewRequest("GET", dummyRoute, nil)
@@ -60,13 +54,11 @@ func TestValidateUser(t *testing.T) {
 
 		userSvc := user.NewService(mockUserRepository, userCfg)
 		r := mux.NewRouter()
-		r.Use(ValidateUser(middlewareCfg, userSvc))
+		r.Use(ValidateUser(identityHeaderKey, userSvc))
 		r.Path(dummyRoute).Methods(http.MethodGet)
 
 		req, _ := http.NewRequest("GET", dummyRoute, nil)
-		req.Header.Set(identityHeader, "some-email")
-		req.Header.Set(identityProviderHeader, "some-provider")
-
+		req.Header.Set(identityHeaderKey, "some-email")
 		rr := httptest.NewRecorder()
 
 		r.ServeHTTP(rr, req)
@@ -90,7 +82,7 @@ func TestValidateUser(t *testing.T) {
 
 		userSvc := user.NewService(mockUserRepository, userCfg)
 		r := mux.NewRouter()
-		r.Use(ValidateUser(middlewareCfg, userSvc))
+		r.Use(ValidateUser(identityHeaderKey, userSvc))
 		r.Path(dummyRoute).Methods(http.MethodGet).HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			propagatedUserID := user.FromContext(r.Context())
 			_, err := rw.Write([]byte(propagatedUserID))
@@ -101,8 +93,7 @@ func TestValidateUser(t *testing.T) {
 		})
 
 		req, _ := http.NewRequest("GET", dummyRoute, nil)
-		req.Header.Set(identityHeader, userEmail)
-		req.Header.Set(identityProviderHeader, "some-provider")
+		req.Header.Set(identityHeaderKey, userEmail)
 
 		rr := httptest.NewRecorder()
 

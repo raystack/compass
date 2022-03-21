@@ -14,7 +14,7 @@ import (
 	"github.com/odpf/salt/log"
 
 	"github.com/gorilla/mux"
-	"github.com/odpf/columbus/api/handlers"
+	"github.com/odpf/columbus/api/httpapi/handlers"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lib/mocks"
