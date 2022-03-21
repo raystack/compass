@@ -112,7 +112,7 @@ paths:
       tags:
         - Assets
       summary: Patch/Create an asset
-      description: "Similar to Upsert but with patch strategy"
+      description: "Similar to Upsert but with patch strategy and different body format"
       produces:
         - "application/json"
       parameters:
@@ -126,12 +126,16 @@ paths:
           required: true
           schema:
             allOf:
-              - $ref: "#/definitions/BaseAsset"
               - type: object
                 required:
-                  - "urn"
-                  - "type"
-                  - "service"
+                  - asset
+                properties: 
+                  asset:
+                    $ref: "#/definitions/BaseAsset"
+                    required:
+                      - "urn"
+                      - "type"
+                      - "service"
               - type: object
                 properties:
                   upstreams:
