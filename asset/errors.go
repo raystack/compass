@@ -13,10 +13,17 @@ var (
 
 type NotFoundError struct {
 	AssetID string
+	URN     string
+	Type    Type
+	Service string
 }
 
 func (err NotFoundError) Error() string {
-	return fmt.Sprintf("no such record: %q", err.AssetID)
+	if err.AssetID != "" {
+		return fmt.Sprintf("no such record: %q", err.AssetID)
+	}
+
+	return fmt.Sprintf("could not find asset with urn = %s, type = %s, service = %s", err.URN, err.Type, err.Service)
 }
 
 type InvalidError struct {

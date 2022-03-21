@@ -134,7 +134,67 @@ func (h *AssetHandler) Upsert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.saveLineage(r.Context(), payload); err != nil {
+	if err := h.saveLineage(r.Context(), ast, payload.Upstreams, payload.Downstreams); err != nil {
+		internalServerError(w, h.logger, err.Error())
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"id": ast.ID,
+	})
+}
+
+func (h *AssetHandler) UpsertPatch(w http.ResponseWriter, r *http.Request) {
+	userID := user.FromContext(r.Context())
+	if userID == "" {
+		h.logger.Warn(errMissingUserInfo.Error())
+		WriteJSONError(w, http.StatusBadRequest, errMissingUserInfo.Error())
+		return
+	}
+
+	var payload patchAssetPayload
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		WriteJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
+		return
+	}
+
+	urn, typ, service, err := h.validatePatchPayload(payload.Asset)
+	if err != nil {
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ast, err := h.assetRepo.Find(r.Context(), urn, asset.Type(typ), service)
+	if err != nil && !errors.As(err, &asset.NotFoundError{}) {
+		internalServerError(w, h.logger, err.Error())
+		return
+	}
+	ast.Patch(payload.Asset)
+
+	if err := h.validateAsset(ast); err != nil {
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ast.UpdatedBy.ID = userID
+	assetID, err := h.assetRepo.Upsert(r.Context(), &ast)
+	if errors.As(err, new(asset.InvalidError)) {
+		WriteJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err != nil {
+		internalServerError(w, h.logger, err.Error())
+		return
+	}
+
+	ast.ID = assetID
+	if err := h.discoveryRepo.Upsert(r.Context(), ast); err != nil {
+		internalServerError(w, h.logger, err.Error())
+		return
+	}
+
+	if err := h.saveLineage(r.Context(), ast, payload.Upstreams, payload.Downstreams); err != nil {
 		internalServerError(w, h.logger, err.Error())
 		return
 	}
@@ -266,6 +326,43 @@ func (h *AssetHandler) validateAsset(ast asset.Asset) error {
 	return nil
 }
 
+func (h *AssetHandler) validatePatchPayload(assetPayload map[string]interface{}) (urn, typ, service string, err error) {
+	urnVal, exists := assetPayload["urn"]
+	if !exists {
+		err = fmt.Errorf("urn is required")
+		return
+	}
+	urn, valid := urnVal.(string)
+	if !valid || urn == "" {
+		err = fmt.Errorf("urn is invalid")
+		return
+	}
+
+	typeVal, exists := assetPayload["type"]
+	if !exists {
+		err = fmt.Errorf("type is required")
+		return
+	}
+	typ, valid = typeVal.(string)
+	if !valid || typ == "" || !asset.Type(typ).IsValid() {
+		err = fmt.Errorf("type is invalid")
+		return
+	}
+
+	serviceVal, exists := assetPayload["service"]
+	if !exists {
+		err = fmt.Errorf("service is required")
+		return
+	}
+	service, valid = serviceVal.(string)
+	if !valid || service == "" {
+		err = fmt.Errorf("service is invalid")
+		return
+	}
+
+	return
+}
+
 func (h *AssetHandler) buildAssetConfig(query url.Values) asset.Config {
 	config := asset.Config{
 		Text:    query.Get("text"),
@@ -291,14 +388,12 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) asset.Config {
 	return config
 }
 
-func (h *AssetHandler) saveLineage(ctx context.Context, payload upsertAssetPayload) error {
-	ast := payload.Asset
-
+func (h *AssetHandler) saveLineage(ctx context.Context, ast asset.Asset, upstreams, downstreams []lineage.Node) error {
 	node := lineage.Node{
 		URN:     ast.URN,
 		Type:    ast.Type,
 		Service: ast.Service,
 	}
 
-	return h.lineageRepo.Upsert(ctx, node, payload.Upstreams, payload.Downstreams)
+	return h.lineageRepo.Upsert(ctx, node, upstreams, downstreams)
 }

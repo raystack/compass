@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/odpf/columbus/asset"
+	"github.com/odpf/columbus/user"
 	"github.com/r3labs/diff/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -259,6 +260,143 @@ func TestDiffData(t *testing.T) {
 				assert.Equal(t, tc.Changelog[i].From, c.From)
 				assert.Equal(t, tc.Changelog[i].To, c.To)
 			}
+		})
+	}
+}
+
+func TestAssetPatch(t *testing.T) {
+	testcases := []struct {
+		description   string
+		asset         asset.Asset
+		patchDataJSON json.RawMessage
+		expected      asset.Asset
+	}{
+		{
+			description: "should patch all allowed fields",
+			asset: asset.Asset{
+				URN:         "some-urn",
+				Type:        asset.TypeJob,
+				Service:     "optimus",
+				Description: "sample-description",
+				Name:        "old-name",
+				Labels: map[string]string{
+					"foo": "bar",
+				},
+				Owners: []user.User{
+					{Email: "old@example.com"},
+				},
+			},
+			patchDataJSON: []byte(`{
+				"urn":         "new-urn",
+				"type":        "table",
+				"service":     "firehose",
+				"description": "new-description",
+				"name":        "new-name",
+				"labels": {
+					"bar":  "foo",
+					"bar2": "foo2"
+				},
+				"owners": [
+					{"email": "new@example.com"},
+					{"email": "new2@example.com"}
+				]
+			}`),
+			expected: asset.Asset{
+				URN:         "new-urn",
+				Type:        asset.TypeTable,
+				Service:     "firehose",
+				Description: "new-description",
+				Name:        "new-name",
+				Labels: map[string]string{
+					"bar":  "foo",
+					"bar2": "foo2",
+				},
+				Owners: []user.User{
+					{Email: "new@example.com"},
+					{Email: "new2@example.com"},
+				},
+			},
+		},
+		{
+			description: "should patch data field",
+			asset: asset.Asset{
+				Data: map[string]interface{}{
+					"user": map[string]interface{}{
+						"name":  "sample-name",
+						"email": "sample@test.com",
+					},
+					"properties": map[string]interface{}{
+						"attributes": map[string]interface{}{
+							"entity":      "odpf",
+							"environment": "staging",
+						},
+					},
+				},
+			},
+			patchDataJSON: []byte(`{
+				"data": {
+					"user": {
+						"email": "new-email@test.com",
+						"description": "user description"
+					},
+					"schemas": [
+						"schema1",
+						"schema2"
+					],
+					"properties": {
+						"attributes": {
+							"environment": "production",
+							"type": "some-type"
+						}
+					}
+				}
+			}`),
+			expected: asset.Asset{
+				Data: map[string]interface{}{
+					"user": map[string]interface{}{
+						"name":        "sample-name",
+						"email":       "new-email@test.com",
+						"description": "user description",
+					},
+					"properties": map[string]interface{}{
+						"attributes": map[string]interface{}{
+							"entity":      "odpf",
+							"environment": "production",
+							"type":        "some-type",
+						},
+					},
+					"schemas": []interface{}{
+						"schema1",
+						"schema2",
+					},
+				},
+			},
+		},
+		{
+			description: "should not panic if current asset's data is nil",
+			asset: asset.Asset{
+				Data: nil,
+			},
+			patchDataJSON: []byte(`{
+				"data": {
+					"foo": "bar"
+				}
+			}`),
+			expected: asset.Asset{
+				Data: map[string]interface{}{
+					"foo": "bar",
+				},
+			},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.description, func(t *testing.T) {
+			var patchData map[string]interface{}
+			err := json.Unmarshal(tc.patchDataJSON, &patchData)
+			require.NoError(t, err)
+
+			tc.asset.Patch(patchData)
+			assert.Equal(t, tc.expected, tc.asset)
 		})
 	}
 }

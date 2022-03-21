@@ -76,6 +76,67 @@ paths:
             allOf:
               - $ref: "#/definitions/BaseAsset"
               - type: object
+                required:
+                  - "urn"
+                  - "type"
+                  - "service"
+                  - "name"
+                  - "data"
+              - type: object
+                properties:
+                  upstreams:
+                    type: array
+                    items:
+                      $ref: "#/definitions/LineageRecord"
+                  downstreams:
+                    type: array
+                    items:
+                      $ref: "#/definitions/LineageRecord"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              id:
+                $ref: "#/definitions/UUID"
+        400:
+          description: "validation error"
+          schema:
+            $ref: "#/definitions/ValidationError"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/InternalServerError"
+    patch:
+      tags:
+        - Assets
+      summary: Patch/Create an asset
+      description: "Similar to Upsert but with patch strategy and different body format"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Columbus-User-Email
+          type: string
+          format: email
+          required: true
+        - in: body
+          name: ""
+          required: true
+          schema:
+            allOf:
+              - type: object
+                required:
+                  - asset
+                properties: 
+                  asset:
+                    $ref: "#/definitions/BaseAsset"
+                    required:
+                      - "urn"
+                      - "type"
+                      - "service"
+              - type: object
                 properties:
                   upstreams:
                     type: array

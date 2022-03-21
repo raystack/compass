@@ -109,6 +109,42 @@ func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Ass
 	return
 }
 
+func (r *AssetRepository) Find(ctx context.Context, assetURN string, assetType asset.Type, assetService string) (ast asset.Asset, err error) {
+	builder := r.getAssetSQL().
+		Where(sq.Eq{
+			"a.urn":     assetURN,
+			"a.type":    assetType,
+			"a.service": assetService,
+		})
+	query, args, err := r.buildSQL(builder)
+	if err != nil {
+		err = fmt.Errorf("error building query: %w", err)
+		return
+	}
+
+	var assetModel AssetModel
+	if err = r.client.db.GetContext(ctx, &assetModel, query, args...); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = asset.NotFoundError{}
+			return
+		}
+		err = fmt.Errorf(
+			"error getting asset with urn = \"%s\", type = \"%s\", service = \"%s\": %w",
+			assetURN, assetType, assetService, err)
+		return
+	}
+
+	owners, err := r.getOwners(ctx, assetModel.ID)
+	if err != nil {
+		err = fmt.Errorf("error getting asset's current owners: %w", err)
+		return
+	}
+
+	ast = assetModel.toAsset(owners)
+
+	return
+}
+
 // GetVersionHistory retrieves the previous versions of an asset
 func (r *AssetRepository) GetVersionHistory(ctx context.Context, cfg asset.Config, id string) (avs []asset.AssetVersion, err error) {
 	if !isValidUUID(id) {
@@ -207,7 +243,7 @@ func (r *AssetRepository) GetByVersion(ctx context.Context, id string, version s
 // It updates if asset does exist.
 // Checking existance is done using "urn", "type", and "service" fields.
 func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string, error) {
-	fetchedAsset, err := r.getAssetByURN(ctx, ast.URN, ast.Type, ast.Service)
+	fetchedAsset, err := r.Find(ctx, ast.URN, ast.Type, ast.Service)
 	if errors.As(err, new(asset.NotFoundError)) {
 		err = nil
 	}
@@ -529,42 +565,6 @@ func (r *AssetRepository) createOrFetchUserIDs(ctx context.Context, tx *sqlx.Tx,
 		u.ID = userID
 		results = append(results, u)
 	}
-
-	return
-}
-
-func (r *AssetRepository) getAssetByURN(ctx context.Context, assetURN string, assetType asset.Type, assetService string) (ast asset.Asset, err error) {
-	builder := r.getAssetSQL().
-		Where(sq.Eq{
-			"a.urn":     assetURN,
-			"a.type":    assetType,
-			"a.service": assetService,
-		})
-	query, args, err := r.buildSQL(builder)
-	if err != nil {
-		err = fmt.Errorf("error building query: %w", err)
-		return
-	}
-
-	var assetModel AssetModel
-	if err = r.client.db.GetContext(ctx, &assetModel, query, args...); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			err = asset.NotFoundError{}
-			return
-		}
-		err = fmt.Errorf(
-			"error getting asset with urn = \"%s\", type = \"%s\", service = \"%s\": %w",
-			assetURN, assetType, assetService, err)
-		return
-	}
-
-	owners, err := r.getOwners(ctx, assetModel.ID)
-	if err != nil {
-		err = fmt.Errorf("error getting asset's current owners: %w", err)
-		return
-	}
-
-	ast = assetModel.toAsset(owners)
 
 	return
 }

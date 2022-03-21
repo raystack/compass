@@ -22,6 +22,7 @@ type Repository interface {
 	GetAll(context.Context, Config) ([]Asset, error)
 	GetCount(context.Context, Config) (int, error)
 	GetByID(ctx context.Context, id string) (Asset, error)
+	Find(ctx context.Context, urn string, typ Type, service string) (Asset, error)
 	GetVersionHistory(ctx context.Context, cfg Config, id string) ([]AssetVersion, error)
 	GetByVersion(ctx context.Context, id string, version string) (Asset, error)
 	Upsert(ctx context.Context, ast *Asset) (string, error)
@@ -50,4 +51,10 @@ type Asset struct {
 // returns wrapped r3labs/diff Changelog struct with nil error if not equal
 func (a *Asset) Diff(otherAsset *Asset) (diff.Changelog, error) {
 	return diff.Diff(a, otherAsset, diff.DiscardComplexOrigin(), diff.AllowTypeMismatch(true))
+}
+
+// Patch appends asset with data from map. It mutates the asset itself.
+// It is using json annotation of the struct to patch the correct keys
+func (a *Asset) Patch(patchData map[string]interface{}) {
+	patchAsset(a, patchData)
 }
