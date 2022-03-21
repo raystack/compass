@@ -35,58 +35,58 @@ func setupV1Beta1Router(router *mux.Router, handlers *Handlers) {
 
 func setupV1Beta1AssetRoutes(baseURL string, router *mux.Router, ah *handlers.AssetHandler) {
 	router.Path(baseURL).
-		Methods(http.MethodGet, http.MethodHead).
+		Methods(http.MethodGet).
 		HandlerFunc(ah.GetAll)
 
 	router.Path(baseURL).
-		Methods(http.MethodPut, http.MethodHead).
+		Methods(http.MethodPut).
 		HandlerFunc(ah.Upsert)
 
 	router.Path(baseURL).
-		Methods(http.MethodPatch, http.MethodHead).
+		Methods(http.MethodPatch).
 		HandlerFunc(ah.UpsertPatch)
 
-	router.Path(baseURL+"/{id}").
-		Methods(http.MethodGet, http.MethodHead).
+	router.Path(baseURL + "/{id}").
+		Methods(http.MethodGet).
 		HandlerFunc(ah.GetByID)
 
-	router.Path(baseURL+"/{id}").
-		Methods(http.MethodDelete, http.MethodHead).
+	router.Path(baseURL + "/{id}").
+		Methods(http.MethodDelete).
 		HandlerFunc(ah.Delete)
 
-	router.Path(baseURL+"/{id}/stargazers").
-		Methods(http.MethodGet, http.MethodHead).
+	router.Path(baseURL + "/{id}/stargazers").
+		Methods(http.MethodGet).
 		HandlerFunc(ah.GetStargazers)
 
-	router.Path(baseURL+"/{id}/versions").
-		Methods(http.MethodGet, http.MethodHead).
+	router.Path(baseURL + "/{id}/versions").
+		Methods(http.MethodGet).
 		HandlerFunc(ah.GetVersionHistory)
 
-	router.Path(baseURL+"/{id}/versions/{version}").
-		Methods(http.MethodGet, http.MethodHead).
+	router.Path(baseURL + "/{id}/versions/{version}").
+		Methods(http.MethodGet).
 		HandlerFunc(ah.GetByVersion)
 }
 
 func setupV1Beta1TypeRoutes(baseURL string, router *mux.Router, th *handlers.TypeHandler, rh *handlers.RecordHandler) {
 	router.Path(baseURL).
-		Methods(http.MethodGet, http.MethodHead).
+		Methods(http.MethodGet).
 		HandlerFunc(th.Get)
 
 	recordURL := baseURL + "/{name}/records"
 	router.Path(recordURL).
-		Methods(http.MethodPut, http.MethodHead).
+		Methods(http.MethodPut).
 		HandlerFunc(rh.UpsertBulk)
 
 	router.Path(recordURL).
-		Methods(http.MethodGet, http.MethodHead).
+		Methods(http.MethodGet).
 		HandlerFunc(rh.GetByType)
 
-	router.Path(recordURL+"/{id}").
-		Methods(http.MethodGet, http.MethodHead).
+	router.Path(recordURL + "/{id}").
+		Methods(http.MethodGet).
 		HandlerFunc(rh.GetOneByType)
 
-	router.Path(recordURL+"/{id}").
-		Methods(http.MethodDelete, http.MethodHead).
+	router.Path(recordURL + "/{id}").
+		Methods(http.MethodDelete).
 		HandlerFunc(rh.Delete)
 }
 
@@ -110,8 +110,8 @@ func setupV1Beta1TagRoutes(baseURL string, router *mux.Router, th *handlers.TagH
 
 func setupUserRoutes(baseURL string, router *mux.Router, ush *handlers.UserHandler) {
 
-	router.Path(baseURL+"/starred").
-		Methods(http.MethodGet, http.MethodHead).
+	router.Path(baseURL + "/starred").
+		Methods(http.MethodGet).
 		HandlerFunc(ush.GetStarredAssetsWithHeader)
 
 	userAssetsURL := baseURL + "/starred/{asset_id}"
@@ -119,15 +119,15 @@ func setupUserRoutes(baseURL string, router *mux.Router, ush *handlers.UserHandl
 	router.Methods(http.MethodGet).Path(userAssetsURL).HandlerFunc(ush.GetStarredAsset)
 	router.Methods(http.MethodDelete).Path(userAssetsURL).HandlerFunc(ush.UnstarAsset)
 
-	router.Path(baseURL+"/discussions").
-		Methods(http.MethodGet, http.MethodHead).
+	router.Path(baseURL + "/discussions").
+		Methods(http.MethodGet).
 		HandlerFunc(ush.GetDiscussions)
 }
 
 func setupUsersRoutes(baseURL string, router *mux.Router, ush *handlers.UserHandler) {
 
-	router.Path(baseURL+"/{user_id}/starred").
-		Methods(http.MethodGet, http.MethodHead).
+	router.Path(baseURL + "/{user_id}/starred").
+		Methods(http.MethodGet).
 		HandlerFunc(ush.GetStarredAssetsWithPath)
 }
 
@@ -137,11 +137,11 @@ func setupDiscussionsRoutes(baseURL string, router *mux.Router, dh *handlers.Dis
 		HandlerFunc(dh.Create)
 
 	router.Path(baseURL).
-		Methods(http.MethodGet, http.MethodHead).
+		Methods(http.MethodGet).
 		HandlerFunc(dh.GetAll)
 
-	router.Path(baseURL+"/{id}").
-		Methods(http.MethodGet, http.MethodHead).
+	router.Path(baseURL + "/{id}").
+		Methods(http.MethodGet).
 		HandlerFunc(dh.Get)
 
 	router.Path(baseURL + "/{id}").
@@ -154,7 +154,7 @@ func setupDiscussionsRoutes(baseURL string, router *mux.Router, dh *handlers.Dis
 		HandlerFunc(dh.CreateComment)
 
 	router.Path(commentURL).
-		Methods(http.MethodGet, http.MethodHead).
+		Methods(http.MethodGet).
 		HandlerFunc(dh.GetAllComments)
 
 	router.Path(commentURL + "/{id}").
