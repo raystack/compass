@@ -32,7 +32,7 @@ func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset
 	}
 
 	builder := r.getAssetSQL().Limit(uint64(size)).Offset(uint64(cfg.Offset))
-	builder = r.buildFilterQuery(builder, cfg)
+	builder = r.buildConfigQuery(builder, cfg)
 	builder = r.buildOrderQuery(builder, cfg)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
@@ -56,7 +56,7 @@ func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset
 // GetCount retrieves number of assets for every type
 func (r *AssetRepository) GetCount(ctx context.Context, config asset.Config) (total int, err error) {
 	builder := sq.Select("count(1)").From("assets")
-	builder = r.buildFilterQuery(builder, config)
+	builder = r.buildConfigQuery(builder, config)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
 		err = fmt.Errorf("error building count query: %w", err)
@@ -634,13 +634,27 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 		LeftJoin("users u ON a.updated_by = u.id")
 }
 
-func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
+func (r *AssetRepository) buildConfigQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
 	clause := sq.Eq{}
-	if cfg.Type != "" {
-		clause["type"] = cfg.Type
+	if len(cfg.Type) > 0 {
+		builder = builder.Where("type @> ?", cfg.Type)
 	}
-	if cfg.Service != "" {
-		clause["service"] = cfg.Service
+	//if cfg.Type != "" {
+	//	clause["type"] = cfg.Type
+	//}
+	if len(cfg.Service) > 0 {
+		builder = builder.Where("service @> ?", cfg.Service)
+	}
+	//if cfg.Service != "" {
+	//	clause["service"] = cfg.Service
+	//}
+
+	if len(cfg.Name) > 0 {
+		builder = builder.Where("name @> ?", cfg.Name)
+	}
+
+	if len(cfg.URN) > 0 {
+		builder = builder.Where("urn  @> ?", cfg.URN)
 	}
 
 	if len(clause) > 0 {
@@ -649,13 +663,13 @@ func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.C
 	return builder
 }
 
-func (r *AssetRepository) buildOrderQuery(builder sq.SelectBuilder, flt asset.Config) sq.SelectBuilder {
-	if flt.SortBy != "" {
+func (r *AssetRepository) buildOrderQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
+	if cfg.SortBy != "" {
 		orderDirection := "DESC"
-		if flt.SortDirection != "" {
-			orderDirection = strings.ToUpper(flt.SortDirection)
+		if cfg.SortDirection != "" {
+			orderDirection = strings.ToUpper(cfg.SortDirection)
 		}
-		return builder.OrderBy(flt.SortBy + " " + orderDirection)
+		return builder.OrderBy(cfg.SortBy + " " + orderDirection)
 	}
 
 	return builder

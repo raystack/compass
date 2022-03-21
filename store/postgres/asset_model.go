@@ -34,10 +34,9 @@ type AssetModel struct {
 func (a *AssetModel) toAsset(owners []user.User) asset.Asset {
 
 	return asset.Asset{
-		ID:  a.ID,
-		URN: a.URN,
-		//Type:        asset.Type(a.Type),
-		Type:        asset.GetTypeEnum(a.Type),
+		ID:          a.ID,
+		URN:         a.URN,
+		Type:        asset.Type(a.Type),
 		Name:        a.Name,
 		Service:     a.Service,
 		Description: a.Description,

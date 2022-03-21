@@ -13,19 +13,11 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-//type Config struct {
-//	Text    string `json:"text"`
-//	Type    Type   `json:"type"`
-//	Service string `json:"service"`
-//	Size    int    `json:"size"`
-//	Offset  int    `json:"offset"`
-//	SortBy        string `json:"sort" validate:"omitempty,oneof=created_at updated_at"`
-//	SortDirection string `json:"direction" validate:"omitempty,oneof=asc desc"`
-//}
+const MAX_ARRAY_FIELD_NUM = 10
 
 type Repository interface {
-	GetAll(context.Context, Filter) ([]Asset, error)
-	GetCount(context.Context, Filter) (int, error)
+	GetAll(context.Context, Config) ([]Asset, error)
+	GetCount(context.Context, Config) (int, error)
 	GetByID(ctx context.Context, id string) (Asset, error)
 	Find(ctx context.Context, urn string, typ Type, service string) (Asset, error)
 	GetVersionHistory(ctx context.Context, cfg Config, id string) ([]Asset, error)
@@ -214,4 +206,21 @@ func (a *Asset) Diff(otherAsset *Asset) (diff.Changelog, error) {
 // It is using json annotation of the struct to patch the correct keys
 func (a *Asset) Patch(patchData map[string]interface{}) {
 	patchAsset(a, patchData)
+}
+
+// ValidateConstraint checks whether non empty/nil fields fulfill the contract
+func (a *Asset) ValidateConstraint() error {
+	//if len(strings.TrimSpace(a.Type.String())) > 0 && !IsTypeStringValid(a.Type.String()) {
+	//	return ErrUnknownType
+	//}
+
+	//if a.Service != nil && len(a.Service) > MAX_ARRAY_FIELD_NUM {
+	//	return fmt.Errorf("service cannot be more than %d", MAX_ARRAY_FIELD_NUM)
+	//}
+	//
+	//if a.Type != nil && len(a.Type) > MAX_ARRAY_FIELD_NUM {
+	//	return fmt.Errorf("type cannot be more than %d", MAX_ARRAY_FIELD_NUM)
+	//}
+
+	return nil
 }

@@ -690,15 +690,17 @@ func TestAssetHandlerGet(t *testing.T) {
 		},
 		{
 			Description:  `should parse querystring to get config`,
-			Querystring:  "?text=asd&type=table&service=bigquery&size=30&offset=50",
+			Querystring:  "?text=asd&type=table,job&service=bigquery,presto&size=30&offset=50&sort=recent&direction=desc",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
-					Text:    "asd",
-					Type:    "table",
-					Service: "bigquery",
-					Size:    30,
-					Offset:  50,
+					Text:          "asd",
+					Type:          []string{"table", "job"},
+					Service:       []string{"bigquery", "presto"},
+					Size:          30,
+					Offset:        50,
+					SortDirection: "desc",
+					SortBy:        "recent",
 				}).Return([]asset.Asset{}, nil, nil)
 			},
 		},
@@ -740,8 +742,8 @@ func TestAssetHandlerGet(t *testing.T) {
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
 					Text:    "dsa",
-					Type:    "job",
-					Service: "kafka",
+					Type:    []string{"job"},
+					Service: []string{"kafka"},
 					Size:    10,
 					Offset:  5,
 				}).Return([]asset.Asset{
@@ -751,8 +753,8 @@ func TestAssetHandlerGet(t *testing.T) {
 				}, nil, nil)
 				ar.On("GetCount", ctx, asset.Config{
 					Text:    "dsa",
-					Type:    "job",
-					Service: "kafka",
+					Type:    []string{"job"},
+					Service: []string{"kafka"},
 				}).Return(150, nil, nil)
 			},
 			PostCheck: func(r *http.Response) error {

@@ -21,14 +21,20 @@ func init() {
 	})
 }
 
+type RecordFilter map[string][]string
+
 type Config struct {
-	Text          string `json:"text"`
-	Type          Type   `json:"type"`
-	Service       string `json:"service"`
-	Size          int    `json:"size"`
-	Offset        int    `json:"offset"`
-	SortBy        string `json:"sort" validate:"omitempty,oneof=created_at updated_at"`
-	SortDirection string `json:"direction" validate:"omitempty,oneof=asc desc"`
+	Text          string   `json:"text"`
+	Type          []string `json:"type"`
+	Service       []string `json:"service"`
+	Size          int      `json:"size"`
+	Offset        int      `json:"offset"`
+	SortBy        string   `json:"sort" validate:"omitempty,oneof=recent created_at updated_at"`
+	SortDirection string   `json:"direction" validate:"omitempty,oneof=asc desc"`
+	Filters       RecordFilter
+	TypeWhiteList []string
+	URN           string `json:"urn"`
+	Name          string `json:"name"`
 }
 
 // Validate will check whether fields in the filter fulfills the constraint

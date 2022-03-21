@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/odpf/salt/log"
@@ -17,6 +18,10 @@ import (
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/star"
 	"github.com/odpf/columbus/user"
+)
+
+var (
+	whiteListAssetQueryParamKey = "type"
 )
 
 // AssetHandler exposes a REST interface to types
@@ -328,9 +333,13 @@ func (h *AssetHandler) validateAsset(ast asset.Asset) error {
 	if ast.Data == nil {
 		return fmt.Errorf("data is required")
 	}
+
 	if ast.Service == "" {
 		return fmt.Errorf("service is required")
 	}
+	//if !ast.Service.IsValid() {
+	//	return fmt.Errorf("service is invalid")
+	//}
 
 	return nil
 }
@@ -372,14 +381,34 @@ func (h *AssetHandler) validatePatchPayload(assetPayload map[string]interface{})
 	return
 }
 
-func (h *AssetHandler) buildAssetConfig(query url.Values) (asset.Config, error) {
-	cfg := asset.Config{
-		Text:          query.Get("text"),
-		Type:          asset.Type(query.Get("type")),
-		Service:       query.Get("service"),
-		SortBy:        query.Get("sort"),
-		SortDirection: query.Get("direction"),
+func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err error) {
+	//cfg := asset.Config{
+	//	Text: query.Get("text"),
+	//Types:          asset.Type(query.Get("types")),
+	//Services:       query.Get("services"),
+	//	SortBy:        query.Get("sort"),
+	//	SortDirection: query.Get("direction"),
+	//}
+	text := strings.TrimSpace(query.Get("text"))
+	if text == "" {
+		err = fmt.Errorf("'text' must be specified")
+		return
 	}
+	cfg.Text = text
+	cfg.SortBy = query.Get("sort")
+	cfg.SortDirection = query.Get("direction")
+
+	types := query.Get("type")
+	if types != "" {
+		cfg.Type = strings.Split(types, ",")
+	}
+	services := query.Get("service")
+	if services != "" {
+		cfg.Service = strings.Split(services, ",")
+	}
+
+	cfg.Name = query.Get("name")
+	cfg.URN = query.Get("urn")
 
 	sizeString := query.Get("size")
 	if sizeString != "" {
@@ -396,13 +425,42 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (asset.Config, error) 
 		}
 	}
 
-	if err := cfg.Validate(); err != nil {
+	if err = cfg.Validate(); err != nil {
 		return asset.Config{}, err
 	}
 
+	//cfg.Filters = filterConfigFromAssetValues(query)
+	//cfg.TypeWhiteList, err = parseAssetTypeWhiteList(query)
 	//fl.AssignDefault()
 
 	return cfg, nil
+}
+
+func parseAssetTypeWhiteList(values url.Values) (types []string, err error) {
+	for _, commaSeparatedTypes := range values[whiteListQueryParamKey] {
+		types = append(types, strings.Split(commaSeparatedTypes, ",")...)
+	}
+	return
+}
+
+func filterConfigFromAssetValues(querystring url.Values) map[string][]string {
+	var filter = make(map[string][]string)
+	for key, values := range querystring {
+		// filters are of form "{field}", apart from "type", which is used
+		// for building the type whitelist.
+		// case-insensitive comparing and returns true.
+		if strings.EqualFold(key, whiteListAssetQueryParamKey) {
+			continue
+		}
+
+		var filterValues []string
+		for _, value := range values {
+			filterValues = append(filterValues, strings.Split(value, ",")...)
+		}
+
+		filter[key] = filterValues
+	}
+	return filter
 }
 
 func (h *AssetHandler) saveLineage(ctx context.Context, ast asset.Asset, upstreams, downstreams []lineage.Node) error {
