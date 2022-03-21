@@ -21,9 +21,9 @@ type NotFoundError struct {
 func (err NotFoundError) Error() string {
 	if err.AssetID != "" {
 		return fmt.Sprintf("no such record: %q", err.AssetID)
-	} else {
-		return fmt.Sprintf("could not find asset with urn = %s, type = %s, service = %s", err.URN, err.Type, err.Service)
 	}
+
+	return fmt.Sprintf("could not find asset with urn = %s, type = %s, service = %s", err.URN, err.Type, err.Service)
 }
 
 type InvalidError struct {
