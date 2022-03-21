@@ -372,6 +372,22 @@ func TestAssetPatch(t *testing.T) {
 				},
 			},
 		},
+		{
+			description: "should not panic if current asset's data is nil",
+			asset: asset.Asset{
+				Data: nil,
+			},
+			patchDataJSON: []byte(`{
+				"data": {
+					"foo": "bar"
+				}
+			}`),
+			expected: asset.Asset{
+				Data: map[string]interface{}{
+					"foo": "bar",
+				},
+			},
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.description, func(t *testing.T) {

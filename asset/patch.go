@@ -87,9 +87,13 @@ func patchAssetData(a *Asset, data interface{}) {
 	if data == nil {
 		return
 	}
-
 	dataMap, ok := data.(map[string]interface{})
 	if !ok {
+		return
+	}
+
+	if a.Data == nil {
+		a.Data = dataMap
 		return
 	}
 
