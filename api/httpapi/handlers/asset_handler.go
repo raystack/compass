@@ -22,6 +22,7 @@ import (
 
 var (
 	whiteListAssetQueryParamKey = "type"
+	queryConfigPrefix           = "q."
 )
 
 // AssetHandler exposes a REST interface to types
@@ -321,7 +322,7 @@ func (h *AssetHandler) validateAsset(ast asset.Asset) error {
 	if ast.URN == "" {
 		return fmt.Errorf("urn is required")
 	}
-	if ast.Types != nil {
+	if ast.Type != "" {
 		return fmt.Errorf("type is required")
 	}
 	//if !ast.Types.IsValid() {
@@ -333,7 +334,7 @@ func (h *AssetHandler) validateAsset(ast asset.Asset) error {
 	if ast.Data == nil {
 		return fmt.Errorf("data is required")
 	}
-	if ast.Services != nil {
+	if ast.Service != "" {
 		return fmt.Errorf("service is required")
 	}
 
@@ -378,13 +379,6 @@ func (h *AssetHandler) validatePatchPayload(assetPayload map[string]interface{})
 }
 
 func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err error) {
-	//cfg := asset.Config{
-	//	Text: query.Get("text"),
-	//Types:          asset.Type(query.Get("types")),
-	//Services:       query.Get("services"),
-	//	SortBy:        query.Get("sort"),
-	//	SortDirection: query.Get("direction"),
-	//}
 	text := strings.TrimSpace(query.Get("text"))
 	if text == "" {
 		err = fmt.Errorf("'text' must be specified")
@@ -398,13 +392,11 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 	if types != "" {
 		cfg.Types = strings.Split(types, ",")
 	}
+
 	services := query.Get("service")
 	if services != "" {
 		cfg.Services = strings.Split(services, ",")
 	}
-
-	cfg.Name = query.Get("name")
-	cfg.URN = query.Get("urn")
 
 	sizeString := query.Get("size")
 	if sizeString != "" {
@@ -420,6 +412,7 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 			cfg.Offset = offset
 		}
 	}
+	cfg.Filters = filterAssetConfigFromValues(query)
 
 	if err = cfg.Validate(); err != nil {
 		return asset.Config{}, err
@@ -430,6 +423,20 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 	//fl.AssignDefault()
 
 	return cfg, nil
+}
+
+func filterAssetConfigFromValues(querystring url.Values) map[string]string {
+	var query = make(map[string]string)
+	for key, values := range querystring {
+		// filters are of form "data.{field}"
+		//if !strings.HasPrefix(key, queryConfigPrefix) {
+		//	continue
+		//}
+
+		//queryKey := strings.TrimPrefix(key, queryConfigPrefix)
+		query[key] = values[0] // cannot have duplicate query key, always get the first one
+	}
+	return query
 }
 
 func parseAssetTypeWhiteList(values url.Values) (types []string, err error) {
@@ -462,8 +469,8 @@ func filterConfigFromAssetValues(querystring url.Values) map[string][]string {
 func (h *AssetHandler) saveLineage(ctx context.Context, ast asset.Asset, upstreams, downstreams []lineage.Node) error {
 	node := lineage.Node{
 		URN:     ast.URN,
-		Type:    ast.Types,
-		Service: ast.Services,
+		Type:    ast.Type,
+		Service: ast.Service,
 	}
 
 	return h.lineageRepo.Upsert(ctx, node, upstreams, downstreams)

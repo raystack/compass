@@ -300,7 +300,7 @@ func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id stri
 	err = r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		query, args, err := sq.Insert("assets").
 			Columns("urn", "type", "service", "name", "description", "data", "labels", "updated_by", "version").
-			Values(ast.URN, ast.Types, ast.Services, ast.Name, ast.Description, ast.Data, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion).
+			Values(ast.URN, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion).
 			Suffix("RETURNING \"id\"").
 			PlaceholderFormat(sq.Dollar).
 			ToSql()
@@ -360,7 +360,7 @@ func (r *AssetRepository) update(ctx context.Context, assetID string, newAsset *
 				version = $10
 			WHERE id = $11;
 			`,
-			newAsset.URN, newAsset.Types, newAsset.Services, newAsset.Name, newAsset.Description, newAsset.Data, newAsset.Labels, time.Now(), newAsset.UpdatedBy.ID, newVersion, assetID)
+			newAsset.URN, newAsset.Type, newAsset.Service, newAsset.Name, newAsset.Description, newAsset.Data, newAsset.Labels, time.Now(), newAsset.UpdatedBy.ID, newVersion, assetID)
 		if err != nil {
 			return fmt.Errorf("error running update asset query: %w", err)
 		}
@@ -404,7 +404,7 @@ func (r *AssetRepository) insertAssetVersion(ctx context.Context, execer sqlx.Ex
 	}
 	query, args, err := sq.Insert("assets_versions").
 		Columns("asset_id", "urn", "type", "service", "name", "description", "data", "labels", "created_at", "updated_at", "updated_by", "version", "owners", "changelog").
-		Values(oldAsset.ID, oldAsset.URN, oldAsset.Types, oldAsset.Services, oldAsset.Name, oldAsset.Description, oldAsset.Data, oldAsset.Labels,
+		Values(oldAsset.ID, oldAsset.URN, oldAsset.Type, oldAsset.Service, oldAsset.Name, oldAsset.Description, oldAsset.Data, oldAsset.Labels,
 			oldAsset.CreatedAt, oldAsset.UpdatedAt, oldAsset.UpdatedBy.ID, oldAsset.Version, oldAsset.Owners, jsonChangelog).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -441,6 +441,24 @@ func (r *AssetRepository) getOwners(ctx context.Context, assetID string) (owners
 
 	return
 }
+
+//func (r *AssetRepository) getData(ctx context.Context, assetID string) (err error) {
+//	query := `
+//		SELECT
+//		    u.id as "id",
+//			u.data as "data",
+//		FROM asset_owners ao
+//		WHERE
+//		JOIN users u on ao.user_id = u.id`
+//
+//	var ams []*AssetModel
+//	err = r.client.db.SelectContext(ctx, &ams, query, assetID)
+//	if err != nil {
+//		err = fmt.Errorf("error getting asset's owners: %w", err)
+//	}
+//
+//	return
+//}
 
 func (r *AssetRepository) insertOwners(ctx context.Context, execer sqlx.ExecerContext, assetID string, owners []user.User) (err error) {
 	if len(owners) == 0 {
@@ -609,6 +627,29 @@ func (r *AssetRepository) getAssetSQL() sq.SelectBuilder {
 		LeftJoin("users u ON a.updated_by = u.id")
 }
 
+func (r *AssetRepository) getAssetDataSQL() sq.SelectBuilder {
+	return sq.Select(`
+		a.id as id,
+		a.urn as urn,
+		a.type as type,
+		a.name as name,
+		a.service as service,
+		a.description as description,
+		a.data as data,
+		a.labels as labels,
+		a.version as version,
+		a.created_at as created_at,
+		a.updated_at as updated_at,
+		u.id as "updated_by.id",
+		u.email as "updated_by.email",
+		u.provider as "updated_by.provider",
+		u.created_at as "updated_by.created_at",
+		u.updated_at as "updated_by.updated_at"
+		`).
+		From("data a").
+		LeftJoin("users u ON a.updated_by = u.id")
+}
+
 func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 	return sq.Select(`
 		a.asset_id as id,
@@ -636,36 +677,39 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 
 func (r *AssetRepository) buildConfigQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
 	clause := sq.Eq{}
+	//whereClause := sq.And{}
+	//if len(cfg.Types) > 0 {
+	//	for _, j := range cfg.Types {
+	//		builder = builder.Where("type IN ?", j)
+	//	}
+	//}
 	if len(cfg.Types) > 0 {
-		builder = builder.Where("type @> ?", cfg.Types)
+		builder = builder.Where("type IN ?", cfg.Types)
 	}
-	//if cfg.Type != "" {
-	//	clause["type"] = cfg.Type
+
+	//if len(cfg.Types) > 0 {
+	//	whereClause = append(whereClause, sq.Expr("type IN ?", cfg.Types))
+	//}
+	//if len(cfg.Services) > 0 {
+	//	whereClause = append(whereClause, sq.Expr("service = ?", cfg.Services))
 	//}
 	if len(cfg.Services) > 0 {
-		builder = builder.Where("service @> ?", cfg.Services)
-	}
-	//if cfg.Service != "" {
-	//	clause["service"] = cfg.Service
-	//}
-
-	if len(cfg.Name) > 0 {
-		builder = builder.Where("name @> ?", cfg.Name)
-	}
-
-	if len(cfg.URN) > 0 {
-		builder = builder.Where("urn  @> ?", cfg.URN)
+		builder = builder.Where("service = ?", cfg.Services)
 	}
 
 	if len(clause) > 0 {
 		builder = builder.Where(clause)
 	}
+
+	//if len(whereClause) > 0 {
+	//	builder = builder.Where(whereClause)
+	//}
 	return builder
 }
 
 func (r *AssetRepository) buildOrderQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
 	if cfg.SortBy != "" {
-		orderDirection := "DESC"
+		orderDirection := "ASC"
 		if cfg.SortDirection != "" {
 			orderDirection = strings.ToUpper(cfg.SortDirection)
 		}

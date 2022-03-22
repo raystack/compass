@@ -21,20 +21,18 @@ func init() {
 	})
 }
 
-type RecordFilter map[string][]string
-type ConfigType []Type
+//type RecordFilter map[string][]string
 
 type Config struct {
 	Text          string
-	Types         ConfigType
+	Types         []Type
 	Services      []string
 	Size          int
 	Offset        int
 	SortBy        string `validate:"omitempty,oneof=name types services created_at updated_at"`
 	SortDirection string `validate:"omitempty,oneof=asc desc"`
-	Filters       RecordFilter
-	URN           string
-	Name          string
+	//Filters       RecordFilter
+	Filters map[string]string
 }
 
 // Validate will check whether fields in the filter fulfills the constraint

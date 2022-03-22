@@ -96,20 +96,20 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	total := 12
 	assets := []asset.Asset{}
 	for i := 0; i < total; i++ {
-		var types []asset.Type
-		var services []string
+		var typ asset.Type
+		var service string
 		if (i % 2) == 0 { // if even
-			types = []asset.Type{asset.TypeJob}
-			services = []string{"postgres"}
+			typ = asset.TypeJob
+			service = "postgres"
 		} else {
-			types = []asset.Type{asset.TypeDashboard}
-			services = []string{"metabase"}
+			typ = asset.TypeDashboard
+			service = "metabase"
 		}
 
 		ast := asset.Asset{
 			URN:       fmt.Sprintf("urn-get-%d", i),
-			Types:     types,
-			Services:  services,
+			Type:      typ,
+			Service:   service,
 			Version:   asset.BaseVersion,
 			UpdatedBy: r.users[0],
 		}
@@ -155,13 +155,13 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 
 	r.Run("should filter using type", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			Types: asset.TypeDashboard,
+			Types: []asset.Type{asset.TypeDashboard},
 			Size:  total,
 		})
 		r.Require().NoError(err)
 		r.Require().Len(results, total/2)
 		for _, ast := range results {
-			r.Equal(asset.TypeDashboard, ast.Types)
+			r.Equal(asset.TypeDashboard, ast.Type)
 		}
 	})
 
@@ -173,7 +173,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		r.Require().NoError(err)
 		r.Require().Len(results, total/2)
 		for _, ast := range results {
-			r.Equal("postgres", ast.Services)
+			r.Equal("postgres", ast.Service)
 		}
 	})
 }
@@ -186,8 +186,8 @@ func (r *AssetRepositoryTestSuite) TestGetCount() {
 	for i := 0; i < total; i++ {
 		ast := asset.Asset{
 			URN:       fmt.Sprintf("urn-getcount-%d", i),
-			Types:     typ,
-			Services:  service,
+			Type:      typ,
+			Service:   service[0],
 			UpdatedBy: r.users[0],
 		}
 		id, err := r.repository.Upsert(r.ctx, &ast)
@@ -198,7 +198,7 @@ func (r *AssetRepositoryTestSuite) TestGetCount() {
 
 	r.Run("should return total assets with filter", func() {
 		actual, err := r.repository.GetCount(r.ctx, asset.Config{
-			Types:    typ,
+			Types:    []asset.Type{typ},
 			Services: service,
 		})
 		r.Require().NoError(err)
@@ -222,15 +222,15 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 	r.Run("return correct asset from db", func() {
 		asset1 := asset.Asset{
 			URN:       "urn-gbi-1",
-			Types:     []asset.Type{"table"},
-			Services:  []string{"bigquery"},
+			Type:      "table",
+			Service:   "bigquery",
 			Version:   asset.BaseVersion,
 			UpdatedBy: r.users[1],
 		}
 		asset2 := asset.Asset{
 			URN:       "urn-gbi-2",
-			Types:     []asset.Type{"topic"},
-			Services:  []string{"kafka"},
+			Type:      "topic",
+			Service:   "kafka",
 			Version:   asset.BaseVersion,
 			UpdatedBy: r.users[1],
 		}
@@ -255,9 +255,9 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 	r.Run("return owners if any", func() {
 
 		ast := asset.Asset{
-			URN:      "urn-gbi-3",
-			Types:    []asset.Type{"table"},
-			Services: []string{"bigquery"},
+			URN:     "urn-gbi-3",
+			Type:    "table",
+			Service: "bigquery",
 			Owners: []user.User{
 				r.users[1],
 				r.users[2],
@@ -362,8 +362,8 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 	// v0.1
 	astVersioning := asset.Asset{
 		URN:       assetURN,
-		Types:     []asset.Type{"table"},
-		Services:  []string{"bigquery"},
+		Type:      "table",
+		Service:   "bigquery",
 		UpdatedBy: r.users[1],
 	}
 
@@ -413,33 +413,33 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 
 		expectedAssetVersions := []asset.Asset{
 			{
-				ID:       astVersioning.ID,
-				URN:      assetURN,
-				Types:    "table",
-				Services: []string{"bigquery"},
-				Version:  "0.4",
+				ID:      astVersioning.ID,
+				URN:     assetURN,
+				Type:    "table",
+				Service: "bigquery",
+				Version: "0.4",
 				Changelog: diff.Changelog{
 					diff.Change{Type: "create", Path: []string{"labels", "key1"}, From: interface{}(nil), To: "value1"},
 				},
 				UpdatedBy: r.users[1],
 			},
 			{
-				ID:       astVersioning.ID,
-				URN:      assetURN,
-				Types:    "table",
-				Services: []string{"bigquery"},
-				Version:  "0.3",
+				ID:      astVersioning.ID,
+				URN:     assetURN,
+				Type:    "table",
+				Service: "bigquery",
+				Version: "0.3",
 				Changelog: diff.Changelog{
 					diff.Change{Type: "create", Path: []string{"data", "data1"}, From: interface{}(nil), To: float64(12345)},
 				},
 				UpdatedBy: r.users[1],
 			},
 			{
-				ID:       astVersioning.ID,
-				URN:      assetURN,
-				Types:    "table",
-				Services: []string{"bigquery"},
-				Version:  "0.2",
+				ID:      astVersioning.ID,
+				URN:     assetURN,
+				Type:    "table",
+				Service: "bigquery",
+				Version: "0.2",
 				Changelog: diff.Changelog{
 					diff.Change{Type: "create", Path: []string{"owners", "0", "email"}, From: interface{}(nil), To: "user@odpf.io"},
 					diff.Change{Type: "create", Path: []string{"owners", "1", "email"}, From: interface{}(nil), To: "meteor@odpf.io"},
@@ -464,8 +464,8 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 		expectedLatestVersion := asset.Asset{
 			ID:          astVersioning.ID,
 			URN:         assetURN,
-			Types:       []asset.Type{"table"},
-			Services:    []string{"bigquery"},
+			Type:        "table",
+			Service:     "bigquery",
 			Description: "new description in v0.2",
 			Data:        map[string]interface{}{"data1": float64(12345)},
 			Labels:      map[string]string{"key1": "value1"},
@@ -492,8 +492,8 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 		expectedLatestVersion := asset.Asset{
 			ID:          astVersioning.ID,
 			URN:         assetURN,
-			Types:       []asset.Type{"table"},
-			Services:    []string{"bigquery"},
+			Type:        "table",
+			Service:     "bigquery",
 			Description: "new description in v0.2",
 			Data:        map[string]interface{}{"data1": float64(12345)},
 			Labels:      map[string]string{"key1": "value1"},
@@ -521,8 +521,8 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 		expectedAsset := asset.Asset{
 			ID:          astVersioning.ID,
 			URN:         assetURN,
-			Types:       []asset.Type{"table"},
-			Services:    []string{"bigquery"},
+			Type:        "table",
+			Service:     "bigquery",
 			Description: "new description in v0.2",
 			Version:     "0.3",
 			Changelog: diff.Changelog{
@@ -564,8 +564,8 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 		r.Run("set ID to asset and version to base version", func() {
 			ast := asset.Asset{
 				URN:       "urn-u-1",
-				Types:     []asset.Type{"table"},
-				Services:  []string{"bigquery"},
+				Type:      "table",
+				Service:   "bigquery",
 				Version:   "0.1",
 				UpdatedBy: r.users[0],
 			}
@@ -585,9 +585,9 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 
 		r.Run("should store owners if any", func() {
 			ast := asset.Asset{
-				URN:      "urn-u-3",
-				Types:    []asset.Type{"table"},
-				Services: []string{"bigquery"},
+				URN:     "urn-u-3",
+				Type:    "table",
+				Service: "bigquery",
 				Owners: []user.User{
 					r.users[1],
 					r.users[2],
@@ -611,9 +611,9 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 
 		r.Run("should create owners as users if they do not exist yet", func() {
 			ast := asset.Asset{
-				URN:      "urn-u-3a",
-				Types:    []asset.Type{"table"},
-				Services: []string{"bigquery"},
+				URN:     "urn-u-3a",
+				Type:    "table",
+				Service: "bigquery",
 				Owners: []user.User{
 					{Email: "newuser@example.com", Provider: defaultProviderName},
 				},
@@ -639,8 +639,8 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 		r.Run("should not create nor updating the asset if asset is identical", func() {
 			ast := asset.Asset{
 				URN:       "urn-u-2",
-				Types:     []asset.Type{"table"},
-				Services:  []string{"bigquery"},
+				Type:      "table",
+				Service:   "bigquery",
 				UpdatedBy: r.users[0],
 			}
 			identicalAsset := ast
@@ -661,9 +661,9 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 
 		r.Run("should delete old owners if it does not exist on new asset", func() {
 			ast := asset.Asset{
-				URN:      "urn-u-4",
-				Types:    []asset.Type{"table"},
-				Services: []string{"bigquery"},
+				URN:     "urn-u-4",
+				Type:    "table",
+				Service: "bigquery",
 				Owners: []user.User{
 					r.users[1],
 					r.users[2],
@@ -695,9 +695,9 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 
 		r.Run("should create new owners if it does not exist on old asset", func() {
 			ast := asset.Asset{
-				URN:      "urn-u-4",
-				Types:    []asset.Type{"table"},
-				Services: []string{"bigquery"},
+				URN:     "urn-u-4",
+				Type:    "table",
+				Service: "bigquery",
 				Owners: []user.User{
 					r.users[1],
 				},
@@ -729,9 +729,9 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 
 		r.Run("should create users from owners if owner emails do not exist yet", func() {
 			ast := asset.Asset{
-				URN:      "urn-u-4a",
-				Types:    []asset.Type{"table"},
-				Services: []string{"bigquery"},
+				URN:     "urn-u-4a",
+				Type:    "table",
+				Service: "bigquery",
 				Owners: []user.User{
 					r.users[1],
 				},
@@ -780,14 +780,14 @@ func (r *AssetRepositoryTestSuite) TestDelete() {
 	r.Run("should delete correct asset", func() {
 		asset1 := asset.Asset{
 			URN:       "urn-del-1",
-			Types:     []asset.Type{"table"},
-			Services:  []string{"bigquery"},
+			Type:      "table",
+			Service:   "bigquery",
 			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
 		}
 		asset2 := asset.Asset{
 			URN:       "urn-del-2",
-			Types:     []asset.Type{"table"},
-			Services:  []string{"bigquery"},
+			Type:      "topic",
+			Service:   "kafka",
 			Version:   asset.BaseVersion,
 			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
 		}

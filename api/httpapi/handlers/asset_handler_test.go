@@ -192,9 +192,9 @@ func TestAssetHandlerUpsert(t *testing.T) {
 	t.Run("should return HTTP 200 and asset's ID if the asset is successfully created/updated", func(t *testing.T) {
 		ast := asset.Asset{
 			URN:       "test dagger",
-			Types:     asset.TypeTable,
+			Type:      asset.TypeTable,
 			Name:      "de-dagger-test",
-			Services:  []string{"kafka"},
+			Service:   "kafka",
 			UpdatedBy: user.User{ID: userID},
 			Data:      map[string]interface{}{},
 		}
@@ -229,8 +229,8 @@ func TestAssetHandlerUpsert(t *testing.T) {
 		lr.On("Upsert", rr.Context(),
 			lineage.Node{
 				URN:     ast.URN,
-				Type:    ast.Types,
-				Service: ast.Services,
+				Type:    ast.Type,
+				Service: ast.Service,
 			},
 			upstreams,
 			downstreams,
