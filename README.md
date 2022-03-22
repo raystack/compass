@@ -1,7 +1,8 @@
 # Columbus
 
 ![test workflow](https://github.com/odpf/columbus/actions/workflows/test.yml/badge.svg)
-![build workflow](https://github.com/odpf/columbus/actions/workflows/build.yml/badge.svg)
+![build workflow](https://github.com/odpf/columbus/actions/workflows/build_dev.yml/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/odpf/columbus/badge.svg?branch=main)](https://coveralls.io/github/odpf/columbus?branch=main)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)
 [![Version](https://img.shields.io/github/v/release/odpf/columbus?logo=semantic-release)](Version)
 
