@@ -233,7 +233,7 @@ func (h *RecordHandler) validateRecord(ast asset.Asset) error {
 	if ast.Data == nil {
 		return fmt.Errorf("data is required")
 	}
-	if ast.Service != "" {
+	if ast.Service == "" {
 		return fmt.Errorf("service is required")
 	}
 

@@ -695,7 +695,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
 					Text:          "asd",
-					Types:         []string{"table", "job"},
+					Types:         []asset.Type{"table", "job"},
 					Services:      []string{"bigquery", "presto"},
 					Size:          30,
 					Offset:        50,
@@ -742,7 +742,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
 					Text:     "dsa",
-					Types:    []string{"job"},
+					Types:    []asset.Type{"job"},
 					Services: []string{"kafka"},
 					Size:     10,
 					Offset:   5,
@@ -753,7 +753,7 @@ func TestAssetHandlerGet(t *testing.T) {
 				}, nil, nil)
 				ar.On("GetCount", ctx, asset.Config{
 					Text:     "dsa",
-					Types:    []string{"job"},
+					Types:    []asset.Type{"job"},
 					Services: []string{"kafka"},
 				}).Return(150, nil, nil)
 			},

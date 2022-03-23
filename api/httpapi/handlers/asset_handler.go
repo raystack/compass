@@ -264,7 +264,7 @@ func (h *AssetHandler) GetStargazers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AssetHandler) GetVersionHistory(w http.ResponseWriter, r *http.Request) {
-	flt, err := h.buildAssetConfig(r.URL.Query())
+	cfg, err := h.buildAssetConfig(r.URL.Query())
 	if err != nil {
 		WriteJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
 		return
@@ -273,7 +273,7 @@ func (h *AssetHandler) GetVersionHistory(w http.ResponseWriter, r *http.Request)
 	pathParams := mux.Vars(r)
 	assetID := pathParams["id"]
 
-	assetVersions, err := h.assetRepo.GetVersionHistory(r.Context(), flt, assetID)
+	assetVersions, err := h.assetRepo.GetVersionHistory(r.Context(), cfg, assetID)
 	if err != nil {
 		if errors.As(err, new(asset.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
@@ -322,19 +322,19 @@ func (h *AssetHandler) validateAsset(ast asset.Asset) error {
 	if ast.URN == "" {
 		return fmt.Errorf("urn is required")
 	}
-	if ast.Type != "" {
+	if ast.Type == "" {
 		return fmt.Errorf("type is required")
 	}
-	//if !ast.Types.IsValid() {
-	//	return fmt.Errorf("type is invalid")
-	//}
+	if !ast.Type.IsValid() {
+		return fmt.Errorf("type is invalid")
+	}
 	if ast.Name == "" {
 		return fmt.Errorf("name is required")
 	}
 	if ast.Data == nil {
 		return fmt.Errorf("data is required")
 	}
-	if ast.Service != "" {
+	if ast.Service == "" {
 		return fmt.Errorf("service is required")
 	}
 
@@ -389,8 +389,9 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 	cfg.SortDirection = query.Get("direction")
 
 	types := query.Get("type")
-	if types != "" {
-		cfg.Types = strings.Split(types, ",")
+	typ := strings.Split(types, ",")
+	for _, j := range typ {
+		cfg.Types = append(cfg.Types, asset.Type(j))
 	}
 
 	services := query.Get("service")
@@ -412,58 +413,12 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 			cfg.Offset = offset
 		}
 	}
-	cfg.Filters = filterAssetConfigFromValues(query)
 
 	if err = cfg.Validate(); err != nil {
 		return asset.Config{}, err
 	}
 
-	//cfg.Filters = filterConfigFromAssetValues(query)
-	//cfg.TypeWhiteList, err = parseAssetTypeWhiteList(query)
-	//fl.AssignDefault()
-
 	return cfg, nil
-}
-
-func filterAssetConfigFromValues(querystring url.Values) map[string]string {
-	var query = make(map[string]string)
-	for key, values := range querystring {
-		// filters are of form "data.{field}"
-		//if !strings.HasPrefix(key, queryConfigPrefix) {
-		//	continue
-		//}
-
-		//queryKey := strings.TrimPrefix(key, queryConfigPrefix)
-		query[key] = values[0] // cannot have duplicate query key, always get the first one
-	}
-	return query
-}
-
-func parseAssetTypeWhiteList(values url.Values) (types []string, err error) {
-	for _, commaSeparatedTypes := range values[whiteListQueryParamKey] {
-		types = append(types, strings.Split(commaSeparatedTypes, ",")...)
-	}
-	return
-}
-
-func filterConfigFromAssetValues(querystring url.Values) map[string][]string {
-	var filter = make(map[string][]string)
-	for key, values := range querystring {
-		// filters are of form "{field}", apart from "type", which is used
-		// for building the type whitelist.
-		// case-insensitive comparing and returns true.
-		if strings.EqualFold(key, whiteListAssetQueryParamKey) {
-			continue
-		}
-
-		var filterValues []string
-		for _, value := range values {
-			filterValues = append(filterValues, strings.Split(value, ",")...)
-		}
-
-		filter[key] = filterValues
-	}
-	return filter
 }
 
 func (h *AssetHandler) saveLineage(ctx context.Context, ast asset.Asset, upstreams, downstreams []lineage.Node) error {

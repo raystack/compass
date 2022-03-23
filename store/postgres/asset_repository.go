@@ -32,7 +32,7 @@ func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset
 	}
 
 	builder := r.getAssetSQL().Limit(uint64(size)).Offset(uint64(cfg.Offset))
-	builder = r.buildConfigQuery(builder, cfg)
+	builder = r.buildFilterQuery(builder, cfg)
 	builder = r.buildOrderQuery(builder, cfg)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
@@ -56,7 +56,7 @@ func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset
 // GetCount retrieves number of assets for every type
 func (r *AssetRepository) GetCount(ctx context.Context, config asset.Config) (total int, err error) {
 	builder := sq.Select("count(1)").From("assets")
-	builder = r.buildConfigQuery(builder, config)
+	builder = r.buildFilterQuery(builder, config)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
 		err = fmt.Errorf("error building count query: %w", err)
@@ -675,35 +675,20 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 		LeftJoin("users u ON a.updated_by = u.id")
 }
 
-func (r *AssetRepository) buildConfigQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
+func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
 	clause := sq.Eq{}
-	//whereClause := sq.And{}
-	//if len(cfg.Types) > 0 {
-	//	for _, j := range cfg.Types {
-	//		builder = builder.Where("type IN ?", j)
-	//	}
-	//}
 	if len(cfg.Types) > 0 {
-		builder = builder.Where("type IN ?", cfg.Types)
+		builder = builder.Where(sq.Eq{"type": cfg.Types})
 	}
 
-	//if len(cfg.Types) > 0 {
-	//	whereClause = append(whereClause, sq.Expr("type IN ?", cfg.Types))
-	//}
-	//if len(cfg.Services) > 0 {
-	//	whereClause = append(whereClause, sq.Expr("service = ?", cfg.Services))
-	//}
 	if len(cfg.Services) > 0 {
-		builder = builder.Where("service = ?", cfg.Services)
+		builder = builder.Where(sq.Eq{"service": cfg.Services})
 	}
 
 	if len(clause) > 0 {
 		builder = builder.Where(clause)
 	}
 
-	//if len(whereClause) > 0 {
-	//	builder = builder.Where(whereClause)
-	//}
 	return builder
 }
 
