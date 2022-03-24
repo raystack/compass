@@ -1,7 +1,7 @@
 NAME="github.com/odpf/columbus"
 VERSION=$(shell git describe --always --tags 2>/dev/null)
 COVERFILE="/tmp/columbus.coverprofile"
-PROTON_COMMIT := "cdb580faf1f9cc5f0043ef1f8980dd8ac4e04679"
+PROTON_COMMIT := "c3146a25d9f321bc721d94dbdf3aec8483a3cb03"
 
 .PHONY: all build test clean install proto
 
@@ -24,7 +24,7 @@ dist:
 
 lint:
 	golangci-lint run
-
+	
 proto: ## Generate the protobuf files
 	@echo " > generating protobuf from odpf/proton"
 	@echo " > [info] make sure correct version of dependencies are installed using 'make install'"

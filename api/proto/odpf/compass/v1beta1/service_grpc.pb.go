@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -27,12 +26,23 @@ type CompassServiceClient interface {
 	GetAllDiscussions(ctx context.Context, in *GetAllDiscussionsRequest, opts ...grpc.CallOption) (*GetAllDiscussionsResponse, error)
 	CreateDiscussion(ctx context.Context, in *CreateDiscussionRequest, opts ...grpc.CallOption) (*CreateDiscussionResponse, error)
 	GetDiscussion(ctx context.Context, in *GetDiscussionRequest, opts ...grpc.CallOption) (*GetDiscussionResponse, error)
-	PatchDiscussion(ctx context.Context, in *PatchDiscussionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	PatchDiscussion(ctx context.Context, in *PatchDiscussionRequest, opts ...grpc.CallOption) (*PatchDiscussionResponse, error)
 	CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*CreateCommentResponse, error)
 	GetAllComments(ctx context.Context, in *GetAllCommentsRequest, opts ...grpc.CallOption) (*GetAllCommentsResponse, error)
 	GetComment(ctx context.Context, in *GetCommentRequest, opts ...grpc.CallOption) (*GetCommentResponse, error)
-	UpdateComment(ctx context.Context, in *UpdateCommentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteComment(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	UpdateComment(ctx context.Context, in *UpdateCommentRequest, opts ...grpc.CallOption) (*UpdateCommentResponse, error)
+	DeleteComment(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*DeleteCommentResponse, error)
+	SearchAssets(ctx context.Context, in *SearchAssetsRequest, opts ...grpc.CallOption) (*SearchAssetsResponse, error)
+	SuggestAssets(ctx context.Context, in *SuggestAssetsRequest, opts ...grpc.CallOption) (*SuggestAssetsResponse, error)
+	GetGraph(ctx context.Context, in *GetGraphRequest, opts ...grpc.CallOption) (*GetGraphResponse, error)
+	GetAllAssets(ctx context.Context, in *GetAllAssetsRequest, opts ...grpc.CallOption) (*GetAllAssetsResponse, error)
+	GetAssetByID(ctx context.Context, in *GetAssetByIDRequest, opts ...grpc.CallOption) (*GetAssetByIDResponse, error)
+	UpsertAsset(ctx context.Context, in *UpsertAssetRequest, opts ...grpc.CallOption) (*UpsertAssetResponse, error)
+	UpsertPatchAsset(ctx context.Context, in *UpsertPatchAssetRequest, opts ...grpc.CallOption) (*UpsertPatchAssetResponse, error)
+	DeleteAsset(ctx context.Context, in *DeleteAssetRequest, opts ...grpc.CallOption) (*DeleteAssetResponse, error)
+	GetAssetStargazers(ctx context.Context, in *GetAssetStargazersRequest, opts ...grpc.CallOption) (*GetAssetStargazersResponse, error)
+	GetAssetVersionHistory(ctx context.Context, in *GetAssetVersionHistoryRequest, opts ...grpc.CallOption) (*GetAssetVersionHistoryResponse, error)
+	GetAssetByVersion(ctx context.Context, in *GetAssetByVersionRequest, opts ...grpc.CallOption) (*GetAssetByVersionResponse, error)
 }
 
 type compassServiceClient struct {
@@ -70,8 +80,8 @@ func (c *compassServiceClient) GetDiscussion(ctx context.Context, in *GetDiscuss
 	return out, nil
 }
 
-func (c *compassServiceClient) PatchDiscussion(ctx context.Context, in *PatchDiscussionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *compassServiceClient) PatchDiscussion(ctx context.Context, in *PatchDiscussionRequest, opts ...grpc.CallOption) (*PatchDiscussionResponse, error) {
+	out := new(PatchDiscussionResponse)
 	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/PatchDiscussion", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -106,8 +116,8 @@ func (c *compassServiceClient) GetComment(ctx context.Context, in *GetCommentReq
 	return out, nil
 }
 
-func (c *compassServiceClient) UpdateComment(ctx context.Context, in *UpdateCommentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *compassServiceClient) UpdateComment(ctx context.Context, in *UpdateCommentRequest, opts ...grpc.CallOption) (*UpdateCommentResponse, error) {
+	out := new(UpdateCommentResponse)
 	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UpdateComment", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -115,9 +125,108 @@ func (c *compassServiceClient) UpdateComment(ctx context.Context, in *UpdateComm
 	return out, nil
 }
 
-func (c *compassServiceClient) DeleteComment(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *compassServiceClient) DeleteComment(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*DeleteCommentResponse, error) {
+	out := new(DeleteCommentResponse)
 	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/DeleteComment", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) SearchAssets(ctx context.Context, in *SearchAssetsRequest, opts ...grpc.CallOption) (*SearchAssetsResponse, error) {
+	out := new(SearchAssetsResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/SearchAssets", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) SuggestAssets(ctx context.Context, in *SuggestAssetsRequest, opts ...grpc.CallOption) (*SuggestAssetsResponse, error) {
+	out := new(SuggestAssetsResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/SuggestAssets", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetGraph(ctx context.Context, in *GetGraphRequest, opts ...grpc.CallOption) (*GetGraphResponse, error) {
+	out := new(GetGraphResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetGraph", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetAllAssets(ctx context.Context, in *GetAllAssetsRequest, opts ...grpc.CallOption) (*GetAllAssetsResponse, error) {
+	out := new(GetAllAssetsResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAllAssets", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetAssetByID(ctx context.Context, in *GetAssetByIDRequest, opts ...grpc.CallOption) (*GetAssetByIDResponse, error) {
+	out := new(GetAssetByIDResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAssetByID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) UpsertAsset(ctx context.Context, in *UpsertAssetRequest, opts ...grpc.CallOption) (*UpsertAssetResponse, error) {
+	out := new(UpsertAssetResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UpsertAsset", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) UpsertPatchAsset(ctx context.Context, in *UpsertPatchAssetRequest, opts ...grpc.CallOption) (*UpsertPatchAssetResponse, error) {
+	out := new(UpsertPatchAssetResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UpsertPatchAsset", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) DeleteAsset(ctx context.Context, in *DeleteAssetRequest, opts ...grpc.CallOption) (*DeleteAssetResponse, error) {
+	out := new(DeleteAssetResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/DeleteAsset", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetAssetStargazers(ctx context.Context, in *GetAssetStargazersRequest, opts ...grpc.CallOption) (*GetAssetStargazersResponse, error) {
+	out := new(GetAssetStargazersResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAssetStargazers", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetAssetVersionHistory(ctx context.Context, in *GetAssetVersionHistoryRequest, opts ...grpc.CallOption) (*GetAssetVersionHistoryResponse, error) {
+	out := new(GetAssetVersionHistoryResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAssetVersionHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetAssetByVersion(ctx context.Context, in *GetAssetByVersionRequest, opts ...grpc.CallOption) (*GetAssetByVersionResponse, error) {
+	out := new(GetAssetByVersionResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAssetByVersion", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -132,12 +241,23 @@ type CompassServiceServer interface {
 	GetAllDiscussions(context.Context, *GetAllDiscussionsRequest) (*GetAllDiscussionsResponse, error)
 	CreateDiscussion(context.Context, *CreateDiscussionRequest) (*CreateDiscussionResponse, error)
 	GetDiscussion(context.Context, *GetDiscussionRequest) (*GetDiscussionResponse, error)
-	PatchDiscussion(context.Context, *PatchDiscussionRequest) (*emptypb.Empty, error)
+	PatchDiscussion(context.Context, *PatchDiscussionRequest) (*PatchDiscussionResponse, error)
 	CreateComment(context.Context, *CreateCommentRequest) (*CreateCommentResponse, error)
 	GetAllComments(context.Context, *GetAllCommentsRequest) (*GetAllCommentsResponse, error)
 	GetComment(context.Context, *GetCommentRequest) (*GetCommentResponse, error)
-	UpdateComment(context.Context, *UpdateCommentRequest) (*emptypb.Empty, error)
-	DeleteComment(context.Context, *DeleteCommentRequest) (*emptypb.Empty, error)
+	UpdateComment(context.Context, *UpdateCommentRequest) (*UpdateCommentResponse, error)
+	DeleteComment(context.Context, *DeleteCommentRequest) (*DeleteCommentResponse, error)
+	SearchAssets(context.Context, *SearchAssetsRequest) (*SearchAssetsResponse, error)
+	SuggestAssets(context.Context, *SuggestAssetsRequest) (*SuggestAssetsResponse, error)
+	GetGraph(context.Context, *GetGraphRequest) (*GetGraphResponse, error)
+	GetAllAssets(context.Context, *GetAllAssetsRequest) (*GetAllAssetsResponse, error)
+	GetAssetByID(context.Context, *GetAssetByIDRequest) (*GetAssetByIDResponse, error)
+	UpsertAsset(context.Context, *UpsertAssetRequest) (*UpsertAssetResponse, error)
+	UpsertPatchAsset(context.Context, *UpsertPatchAssetRequest) (*UpsertPatchAssetResponse, error)
+	DeleteAsset(context.Context, *DeleteAssetRequest) (*DeleteAssetResponse, error)
+	GetAssetStargazers(context.Context, *GetAssetStargazersRequest) (*GetAssetStargazersResponse, error)
+	GetAssetVersionHistory(context.Context, *GetAssetVersionHistoryRequest) (*GetAssetVersionHistoryResponse, error)
+	GetAssetByVersion(context.Context, *GetAssetByVersionRequest) (*GetAssetByVersionResponse, error)
 	mustEmbedUnimplementedCompassServiceServer()
 }
 
@@ -154,7 +274,7 @@ func (UnimplementedCompassServiceServer) CreateDiscussion(context.Context, *Crea
 func (UnimplementedCompassServiceServer) GetDiscussion(context.Context, *GetDiscussionRequest) (*GetDiscussionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDiscussion not implemented")
 }
-func (UnimplementedCompassServiceServer) PatchDiscussion(context.Context, *PatchDiscussionRequest) (*emptypb.Empty, error) {
+func (UnimplementedCompassServiceServer) PatchDiscussion(context.Context, *PatchDiscussionRequest) (*PatchDiscussionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PatchDiscussion not implemented")
 }
 func (UnimplementedCompassServiceServer) CreateComment(context.Context, *CreateCommentRequest) (*CreateCommentResponse, error) {
@@ -166,11 +286,44 @@ func (UnimplementedCompassServiceServer) GetAllComments(context.Context, *GetAll
 func (UnimplementedCompassServiceServer) GetComment(context.Context, *GetCommentRequest) (*GetCommentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetComment not implemented")
 }
-func (UnimplementedCompassServiceServer) UpdateComment(context.Context, *UpdateCommentRequest) (*emptypb.Empty, error) {
+func (UnimplementedCompassServiceServer) UpdateComment(context.Context, *UpdateCommentRequest) (*UpdateCommentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateComment not implemented")
 }
-func (UnimplementedCompassServiceServer) DeleteComment(context.Context, *DeleteCommentRequest) (*emptypb.Empty, error) {
+func (UnimplementedCompassServiceServer) DeleteComment(context.Context, *DeleteCommentRequest) (*DeleteCommentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteComment not implemented")
+}
+func (UnimplementedCompassServiceServer) SearchAssets(context.Context, *SearchAssetsRequest) (*SearchAssetsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchAssets not implemented")
+}
+func (UnimplementedCompassServiceServer) SuggestAssets(context.Context, *SuggestAssetsRequest) (*SuggestAssetsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SuggestAssets not implemented")
+}
+func (UnimplementedCompassServiceServer) GetGraph(context.Context, *GetGraphRequest) (*GetGraphResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGraph not implemented")
+}
+func (UnimplementedCompassServiceServer) GetAllAssets(context.Context, *GetAllAssetsRequest) (*GetAllAssetsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllAssets not implemented")
+}
+func (UnimplementedCompassServiceServer) GetAssetByID(context.Context, *GetAssetByIDRequest) (*GetAssetByIDResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAssetByID not implemented")
+}
+func (UnimplementedCompassServiceServer) UpsertAsset(context.Context, *UpsertAssetRequest) (*UpsertAssetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpsertAsset not implemented")
+}
+func (UnimplementedCompassServiceServer) UpsertPatchAsset(context.Context, *UpsertPatchAssetRequest) (*UpsertPatchAssetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpsertPatchAsset not implemented")
+}
+func (UnimplementedCompassServiceServer) DeleteAsset(context.Context, *DeleteAssetRequest) (*DeleteAssetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAsset not implemented")
+}
+func (UnimplementedCompassServiceServer) GetAssetStargazers(context.Context, *GetAssetStargazersRequest) (*GetAssetStargazersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAssetStargazers not implemented")
+}
+func (UnimplementedCompassServiceServer) GetAssetVersionHistory(context.Context, *GetAssetVersionHistoryRequest) (*GetAssetVersionHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAssetVersionHistory not implemented")
+}
+func (UnimplementedCompassServiceServer) GetAssetByVersion(context.Context, *GetAssetByVersionRequest) (*GetAssetByVersionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAssetByVersion not implemented")
 }
 func (UnimplementedCompassServiceServer) mustEmbedUnimplementedCompassServiceServer() {}
 
@@ -347,6 +500,204 @@ func _CompassService_DeleteComment_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CompassService_SearchAssets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchAssetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).SearchAssets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/SearchAssets",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).SearchAssets(ctx, req.(*SearchAssetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_SuggestAssets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SuggestAssetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).SuggestAssets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/SuggestAssets",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).SuggestAssets(ctx, req.(*SuggestAssetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetGraph_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGraphRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetGraph(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetGraph",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetGraph(ctx, req.(*GetGraphRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetAllAssets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllAssetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetAllAssets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAllAssets",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetAllAssets(ctx, req.(*GetAllAssetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetAssetByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAssetByIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetAssetByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAssetByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetAssetByID(ctx, req.(*GetAssetByIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_UpsertAsset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpsertAssetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).UpsertAsset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/UpsertAsset",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).UpsertAsset(ctx, req.(*UpsertAssetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_UpsertPatchAsset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpsertPatchAssetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).UpsertPatchAsset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/UpsertPatchAsset",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).UpsertPatchAsset(ctx, req.(*UpsertPatchAssetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_DeleteAsset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteAssetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).DeleteAsset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/DeleteAsset",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).DeleteAsset(ctx, req.(*DeleteAssetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetAssetStargazers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAssetStargazersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetAssetStargazers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAssetStargazers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetAssetStargazers(ctx, req.(*GetAssetStargazersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetAssetVersionHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAssetVersionHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetAssetVersionHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAssetVersionHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetAssetVersionHistory(ctx, req.(*GetAssetVersionHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetAssetByVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAssetByVersionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetAssetByVersion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAssetByVersion",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetAssetByVersion(ctx, req.(*GetAssetByVersionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CompassService_ServiceDesc is the grpc.ServiceDesc for CompassService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -389,6 +740,50 @@ var CompassService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteComment",
 			Handler:    _CompassService_DeleteComment_Handler,
+		},
+		{
+			MethodName: "SearchAssets",
+			Handler:    _CompassService_SearchAssets_Handler,
+		},
+		{
+			MethodName: "SuggestAssets",
+			Handler:    _CompassService_SuggestAssets_Handler,
+		},
+		{
+			MethodName: "GetGraph",
+			Handler:    _CompassService_GetGraph_Handler,
+		},
+		{
+			MethodName: "GetAllAssets",
+			Handler:    _CompassService_GetAllAssets_Handler,
+		},
+		{
+			MethodName: "GetAssetByID",
+			Handler:    _CompassService_GetAssetByID_Handler,
+		},
+		{
+			MethodName: "UpsertAsset",
+			Handler:    _CompassService_UpsertAsset_Handler,
+		},
+		{
+			MethodName: "UpsertPatchAsset",
+			Handler:    _CompassService_UpsertPatchAsset_Handler,
+		},
+		{
+			MethodName: "DeleteAsset",
+			Handler:    _CompassService_DeleteAsset_Handler,
+		},
+		{
+			MethodName: "GetAssetStargazers",
+			Handler:    _CompassService_GetAssetStargazers_Handler,
+		},
+		{
+			MethodName: "GetAssetVersionHistory",
+			Handler:    _CompassService_GetAssetVersionHistory_Handler,
+		},
+		{
+			MethodName: "GetAssetByVersion",
+			Handler:    _CompassService_GetAssetByVersion_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

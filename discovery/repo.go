@@ -1,6 +1,7 @@
 package discovery
 
-//go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --structname DiscoveryRepository --filename discovery_repository.go
+//go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --with-expecter --structname DiscoveryRepository --filename discovery_repository.go
+//go:generate mockery --name RecordSearcher --outpkg mocks --output ../lib/mocks/ --with-expecter --structname DiscoveryRecordSearcher --filename discovery_record_searcher.go
 import (
 	"context"
 

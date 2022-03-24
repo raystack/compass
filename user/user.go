@@ -1,6 +1,6 @@
 package user
 
-//go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --structname UserRepository --filename user_repository.go
+//go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --with-expecter --structname UserRepository --filename user_repository.go
 import (
 	"context"
 	"time"
@@ -20,12 +20,26 @@ type User struct {
 
 // ToProto transforms struct to proto
 func (d User) ToProto() *compassv1beta1.User {
+	if d.ID == "" {
+		return nil
+	}
+
+	var createdAtPB *timestamppb.Timestamp
+	if !d.CreatedAt.IsZero() {
+		createdAtPB = timestamppb.New(d.CreatedAt)
+	}
+
+	var updatedAtPB *timestamppb.Timestamp
+	if !d.UpdatedAt.IsZero() {
+		updatedAtPB = timestamppb.New(d.UpdatedAt)
+	}
+
 	return &compassv1beta1.User{
-		Id:    d.ID,
-		Email: d.Email,
-		// Provider:  d.Provider, //TODO add in proto
-		CreatedAt: timestamppb.New(d.CreatedAt),
-		UpdatedAt: timestamppb.New(d.UpdatedAt),
+		Id:        d.ID,
+		Email:     d.Email,
+		Provider:  d.Provider,
+		CreatedAt: createdAtPB,
+		UpdatedAt: updatedAtPB,
 	}
 }
 

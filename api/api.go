@@ -109,6 +109,16 @@ func NewGRPCHandler(l log.Logger, deps *Dependencies) *v1beta1.Handler {
 	return &v1beta1.Handler{
 		Logger:               l,
 		DiscussionRepository: deps.DiscussionRepository,
+		AssetRepository:      deps.AssetRepository,
+		LineageRepository:    deps.LineageRepository,
+		StarRepository:       deps.StarRepository,
+		UserService:          deps.UserService,
+		TagService:           deps.TagService,
+		TagTemplateService:   deps.TagTemplateService,
+		DiscoveryRepository:  deps.DiscoveryRepository,
+
+		//deprecated
+		DiscoveryService: deps.DiscoveryService,
 	}
 }
 

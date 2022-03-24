@@ -243,13 +243,13 @@ func (_c *DiscussionRepository_GetAll_Call) Return(_a0 []discussion.Discussion, 
 	return _c
 }
 
-// GetAllComments provides a mock function with given fields: ctx, discussionID, flt
-func (_m *DiscussionRepository) GetAllComments(ctx context.Context, discussionID string, flt discussion.Filter) ([]discussion.Comment, error) {
-	ret := _m.Called(ctx, discussionID, flt)
+// GetAllComments provides a mock function with given fields: ctx, discussionID, filter
+func (_m *DiscussionRepository) GetAllComments(ctx context.Context, discussionID string, filter discussion.Filter) ([]discussion.Comment, error) {
+	ret := _m.Called(ctx, discussionID, filter)
 
 	var r0 []discussion.Comment
 	if rf, ok := ret.Get(0).(func(context.Context, string, discussion.Filter) []discussion.Comment); ok {
-		r0 = rf(ctx, discussionID, flt)
+		r0 = rf(ctx, discussionID, filter)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]discussion.Comment)
@@ -258,7 +258,7 @@ func (_m *DiscussionRepository) GetAllComments(ctx context.Context, discussionID
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, string, discussion.Filter) error); ok {
-		r1 = rf(ctx, discussionID, flt)
+		r1 = rf(ctx, discussionID, filter)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -274,12 +274,12 @@ type DiscussionRepository_GetAllComments_Call struct {
 // GetAllComments is a helper method to define mock.On call
 //  - ctx context.Context
 //  - discussionID string
-//  - flt discussion.Filter
-func (_e *DiscussionRepository_Expecter) GetAllComments(ctx interface{}, discussionID interface{}, flt interface{}) *DiscussionRepository_GetAllComments_Call {
-	return &DiscussionRepository_GetAllComments_Call{Call: _e.mock.On("GetAllComments", ctx, discussionID, flt)}
+//  - filter discussion.Filter
+func (_e *DiscussionRepository_Expecter) GetAllComments(ctx interface{}, discussionID interface{}, filter interface{}) *DiscussionRepository_GetAllComments_Call {
+	return &DiscussionRepository_GetAllComments_Call{Call: _e.mock.On("GetAllComments", ctx, discussionID, filter)}
 }
 
-func (_c *DiscussionRepository_GetAllComments_Call) Run(run func(ctx context.Context, discussionID string, flt discussion.Filter)) *DiscussionRepository_GetAllComments_Call {
+func (_c *DiscussionRepository_GetAllComments_Call) Run(run func(ctx context.Context, discussionID string, filter discussion.Filter)) *DiscussionRepository_GetAllComments_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(discussion.Filter))
 	})

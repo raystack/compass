@@ -1,13 +1,16 @@
 package asset
 
-//go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --structname AssetRepository --filename asset_repository.go
+//go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --with-expecter --structname AssetRepository --filename asset_repository.go
 import (
 	"context"
+	"fmt"
 	"time"
 
+	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/columbus/user"
-
 	"github.com/r3labs/diff/v2"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Config struct {
@@ -45,6 +48,130 @@ type Asset struct {
 	Version     string                 `json:"version" diff:"-"`
 	UpdatedBy   user.User              `json:"updated_by" diff:"-"`
 	Changelog   diff.Changelog         `json:"changelog,omitempty" diff:"-"`
+}
+
+// ToProto transforms struct to proto
+func (a Asset) ToProto() (assetPB *compassv1beta1.Asset, err error) {
+	var data *structpb.Struct
+	if len(a.Data) > 0 {
+		data, err = structpb.NewStruct(a.Data)
+		if err != nil {
+			return
+		}
+	}
+
+	var labels *structpb.Struct
+	if len(a.Labels) > 0 {
+		labelsMapInterface := make(map[string]interface{}, len(a.Labels))
+		for k, v := range a.Labels {
+			labelsMapInterface[k] = v
+		}
+		labels, err = structpb.NewStruct(labelsMapInterface)
+		if err != nil {
+			return
+		}
+	}
+
+	owners := []*compassv1beta1.User{}
+	for _, o := range a.Owners {
+		owners = append(owners, o.ToProto())
+	}
+
+	changelogProto, err := changelogToProto(a.Changelog)
+	if err != nil {
+		return nil, err
+	}
+
+	var createdAtPB *timestamppb.Timestamp
+	if !a.CreatedAt.IsZero() {
+		createdAtPB = timestamppb.New(a.CreatedAt)
+	}
+
+	var updatedAtPB *timestamppb.Timestamp
+	if !a.UpdatedAt.IsZero() {
+		updatedAtPB = timestamppb.New(a.UpdatedAt)
+	}
+
+	assetPB = &compassv1beta1.Asset{
+		Id:          a.ID,
+		Urn:         a.URN,
+		Type:        string(a.Type),
+		Service:     a.Service,
+		Name:        a.Name,
+		Description: a.Description,
+		Data:        data,
+		Labels:      labels,
+		Owners:      owners,
+		Version:     a.Version,
+		UpdatedBy:   a.UpdatedBy.ToProto(),
+		Changelog:   changelogProto,
+		CreatedAt:   createdAtPB,
+		UpdatedAt:   updatedAtPB,
+	}
+	return
+}
+
+// NewFromProto transforms proto to struct
+// changelog is not populated by user, it should always be processed and coming from the server
+func NewFromProto(pb *compassv1beta1.Asset) Asset {
+	var assetOwners []user.User
+	for _, op := range pb.GetOwners() {
+		assetOwners = []user.User{}
+		assetOwners = append(assetOwners, user.NewFromProto(op))
+	}
+
+	var labels map[string]string
+	if pb.GetLabels() != nil {
+		labels = make(map[string]string)
+		for key, value := range pb.GetLabels().AsMap() {
+			strKey := fmt.Sprintf("%v", key)
+			strValue := fmt.Sprintf("%v", value)
+			labels[strKey] = strValue
+		}
+	}
+
+	var dataValue map[string]interface{}
+	if pb.GetData() != nil {
+		dataValue = pb.GetData().AsMap()
+	}
+
+	return Asset{
+		ID:          pb.GetId(),
+		URN:         pb.GetUrn(),
+		Type:        Type(pb.GetType()),
+		Service:     pb.GetService(),
+		Name:        pb.GetName(),
+		Description: pb.GetName(),
+		Data:        dataValue,
+		Labels:      labels,
+		Owners:      assetOwners,
+		CreatedAt:   pb.GetCreatedAt().AsTime(),
+		UpdatedAt:   pb.GetUpdatedAt().AsTime(),
+		Version:     pb.GetVersion(),
+		UpdatedBy:   user.NewFromProto(pb.GetUpdatedBy()),
+	}
+}
+
+// AssignDataFromProto populates asset.Data from *structpb.Struct data
+func (a *Asset) AssignDataFromProto(pb *structpb.Struct) {
+	if pb != nil {
+		a.Data = pb.AsMap()
+	}
+}
+
+// AssignLabelsFromProto populates asset.Labels from *structpb.Struct data
+func (a *Asset) AssignLabelsFromProto(pb *structpb.Struct) {
+	if pb != nil {
+		pbMap := pb.AsMap()
+		if len(pbMap) > 0 {
+			a.Labels = make(map[string]string)
+			for key, value := range pb.AsMap() {
+				strKey := fmt.Sprintf("%v", key)
+				strValue := fmt.Sprintf("%v", value)
+				a.Labels[strKey] = strValue
+			}
+		}
+	}
 }
 
 // Diff returns nil changelog with nil error if equal

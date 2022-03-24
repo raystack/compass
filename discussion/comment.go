@@ -22,14 +22,25 @@ type Comment struct {
 
 // ToProto transforms struct to proto
 func (d Comment) ToProto() *compassv1beta1.Comment {
+
+	var createdAtPB *timestamppb.Timestamp
+	if !d.CreatedAt.IsZero() {
+		createdAtPB = timestamppb.New(d.CreatedAt)
+	}
+
+	var updatedAtPB *timestamppb.Timestamp
+	if !d.UpdatedAt.IsZero() {
+		updatedAtPB = timestamppb.New(d.UpdatedAt)
+	}
+
 	return &compassv1beta1.Comment{
 		Id:           d.ID,
 		DiscussionId: d.DiscussionID,
 		Body:         d.Body,
 		Owner:        d.Owner.ToProto(),
 		UpdatedBy:    d.UpdatedBy.ToProto(),
-		CreatedAt:    timestamppb.New(d.CreatedAt),
-		UpdatedAt:    timestamppb.New(d.UpdatedAt),
+		CreatedAt:    createdAtPB,
+		UpdatedAt:    updatedAtPB,
 	}
 }
 

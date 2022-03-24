@@ -17,6 +17,19 @@ type SearchResult struct {
 	Labels      map[string]string `json:"labels"`
 }
 
+// ToAsset returns search result as asset
+func (sr SearchResult) ToAsset() asset.Asset {
+	return asset.Asset{
+		ID:          sr.ID,
+		URN:         sr.URN,
+		Name:        sr.Title,
+		Type:        asset.Type(sr.Type),
+		Service:     sr.Service,
+		Description: sr.Description,
+		Labels:      sr.Labels,
+	}
+}
+
 // SearchConfig represents a search query along
 // with any corresponding filter(s)
 type SearchConfig struct {

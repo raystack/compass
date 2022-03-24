@@ -1320,6 +1320,108 @@ var _ interface {
 	ErrorName() string
 } = CreateCommentRequestValidationError{}
 
+// Validate checks the field values on PatchDiscussionResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PatchDiscussionResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PatchDiscussionResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PatchDiscussionResponseMultiError, or nil if none found.
+func (m *PatchDiscussionResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PatchDiscussionResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return PatchDiscussionResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// PatchDiscussionResponseMultiError is an error wrapping multiple validation
+// errors returned by PatchDiscussionResponse.ValidateAll() if the designated
+// constraints aren't met.
+type PatchDiscussionResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PatchDiscussionResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PatchDiscussionResponseMultiError) AllErrors() []error { return m }
+
+// PatchDiscussionResponseValidationError is the validation error returned by
+// PatchDiscussionResponse.Validate if the designated constraints aren't met.
+type PatchDiscussionResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PatchDiscussionResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PatchDiscussionResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PatchDiscussionResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PatchDiscussionResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PatchDiscussionResponseValidationError) ErrorName() string {
+	return "PatchDiscussionResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PatchDiscussionResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPatchDiscussionResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PatchDiscussionResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PatchDiscussionResponseValidationError{}
+
 // Validate checks the field values on CreateCommentResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -2088,6 +2190,108 @@ var _ interface {
 	ErrorName() string
 } = UpdateCommentRequestValidationError{}
 
+// Validate checks the field values on UpdateCommentResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpdateCommentResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateCommentResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpdateCommentResponseMultiError, or nil if none found.
+func (m *UpdateCommentResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateCommentResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return UpdateCommentResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateCommentResponseMultiError is an error wrapping multiple validation
+// errors returned by UpdateCommentResponse.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateCommentResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateCommentResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateCommentResponseMultiError) AllErrors() []error { return m }
+
+// UpdateCommentResponseValidationError is the validation error returned by
+// UpdateCommentResponse.Validate if the designated constraints aren't met.
+type UpdateCommentResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateCommentResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateCommentResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateCommentResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateCommentResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateCommentResponseValidationError) ErrorName() string {
+	return "UpdateCommentResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateCommentResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateCommentResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateCommentResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateCommentResponseValidationError{}
+
 // Validate checks the field values on DeleteCommentRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -2193,6 +2397,2958 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = DeleteCommentRequestValidationError{}
+
+// Validate checks the field values on DeleteCommentResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeleteCommentResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteCommentResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeleteCommentResponseMultiError, or nil if none found.
+func (m *DeleteCommentResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteCommentResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return DeleteCommentResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteCommentResponseMultiError is an error wrapping multiple validation
+// errors returned by DeleteCommentResponse.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteCommentResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteCommentResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteCommentResponseMultiError) AllErrors() []error { return m }
+
+// DeleteCommentResponseValidationError is the validation error returned by
+// DeleteCommentResponse.Validate if the designated constraints aren't met.
+type DeleteCommentResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteCommentResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteCommentResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteCommentResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteCommentResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteCommentResponseValidationError) ErrorName() string {
+	return "DeleteCommentResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteCommentResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteCommentResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteCommentResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteCommentResponseValidationError{}
+
+// Validate checks the field values on SearchAssetsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SearchAssetsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SearchAssetsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SearchAssetsRequestMultiError, or nil if none found.
+func (m *SearchAssetsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SearchAssetsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetText() != "" {
+
+	}
+
+	if m.GetRankby() != "" {
+
+	}
+
+	if m.GetSearchby() != "" {
+
+	}
+
+	if m.GetSize() != 0 {
+
+		if m.GetSize() < 0 {
+			err := SearchAssetsRequestValidationError{
+				field:  "Size",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	// no validation rules for Filter
+
+	// no validation rules for Query
+
+	if len(errors) > 0 {
+		return SearchAssetsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SearchAssetsRequestMultiError is an error wrapping multiple validation
+// errors returned by SearchAssetsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type SearchAssetsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SearchAssetsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SearchAssetsRequestMultiError) AllErrors() []error { return m }
+
+// SearchAssetsRequestValidationError is the validation error returned by
+// SearchAssetsRequest.Validate if the designated constraints aren't met.
+type SearchAssetsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SearchAssetsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SearchAssetsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SearchAssetsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SearchAssetsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SearchAssetsRequestValidationError) ErrorName() string {
+	return "SearchAssetsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SearchAssetsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSearchAssetsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SearchAssetsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SearchAssetsRequestValidationError{}
+
+// Validate checks the field values on SearchAssetsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SearchAssetsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SearchAssetsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SearchAssetsResponseMultiError, or nil if none found.
+func (m *SearchAssetsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SearchAssetsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetData() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, SearchAssetsResponseValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, SearchAssetsResponseValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return SearchAssetsResponseValidationError{
+					field:  fmt.Sprintf("Data[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return SearchAssetsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// SearchAssetsResponseMultiError is an error wrapping multiple validation
+// errors returned by SearchAssetsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type SearchAssetsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SearchAssetsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SearchAssetsResponseMultiError) AllErrors() []error { return m }
+
+// SearchAssetsResponseValidationError is the validation error returned by
+// SearchAssetsResponse.Validate if the designated constraints aren't met.
+type SearchAssetsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SearchAssetsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SearchAssetsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SearchAssetsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SearchAssetsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SearchAssetsResponseValidationError) ErrorName() string {
+	return "SearchAssetsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SearchAssetsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSearchAssetsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SearchAssetsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SearchAssetsResponseValidationError{}
+
+// Validate checks the field values on SuggestAssetsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SuggestAssetsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SuggestAssetsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SuggestAssetsRequestMultiError, or nil if none found.
+func (m *SuggestAssetsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SuggestAssetsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetText() != "" {
+
+	}
+
+	if m.GetRankby() != "" {
+
+	}
+
+	if m.GetSearchby() != "" {
+
+	}
+
+	if m.GetSize() != 0 {
+
+		if m.GetSize() < 0 {
+			err := SuggestAssetsRequestValidationError{
+				field:  "Size",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	// no validation rules for Filter
+
+	// no validation rules for Query
+
+	if len(errors) > 0 {
+		return SuggestAssetsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SuggestAssetsRequestMultiError is an error wrapping multiple validation
+// errors returned by SuggestAssetsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type SuggestAssetsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SuggestAssetsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SuggestAssetsRequestMultiError) AllErrors() []error { return m }
+
+// SuggestAssetsRequestValidationError is the validation error returned by
+// SuggestAssetsRequest.Validate if the designated constraints aren't met.
+type SuggestAssetsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SuggestAssetsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SuggestAssetsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SuggestAssetsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SuggestAssetsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SuggestAssetsRequestValidationError) ErrorName() string {
+	return "SuggestAssetsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SuggestAssetsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSuggestAssetsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SuggestAssetsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SuggestAssetsRequestValidationError{}
+
+// Validate checks the field values on SuggestAssetsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SuggestAssetsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SuggestAssetsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SuggestAssetsResponseMultiError, or nil if none found.
+func (m *SuggestAssetsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SuggestAssetsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return SuggestAssetsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// SuggestAssetsResponseMultiError is an error wrapping multiple validation
+// errors returned by SuggestAssetsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type SuggestAssetsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SuggestAssetsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SuggestAssetsResponseMultiError) AllErrors() []error { return m }
+
+// SuggestAssetsResponseValidationError is the validation error returned by
+// SuggestAssetsResponse.Validate if the designated constraints aren't met.
+type SuggestAssetsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SuggestAssetsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SuggestAssetsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SuggestAssetsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SuggestAssetsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SuggestAssetsResponseValidationError) ErrorName() string {
+	return "SuggestAssetsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SuggestAssetsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSuggestAssetsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SuggestAssetsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SuggestAssetsResponseValidationError{}
+
+// Validate checks the field values on GetGraphRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *GetGraphRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetGraphRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetGraphRequestMultiError, or nil if none found.
+func (m *GetGraphRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetGraphRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Urn
+
+	if len(errors) > 0 {
+		return GetGraphRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetGraphRequestMultiError is an error wrapping multiple validation errors
+// returned by GetGraphRequest.ValidateAll() if the designated constraints
+// aren't met.
+type GetGraphRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetGraphRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetGraphRequestMultiError) AllErrors() []error { return m }
+
+// GetGraphRequestValidationError is the validation error returned by
+// GetGraphRequest.Validate if the designated constraints aren't met.
+type GetGraphRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetGraphRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetGraphRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetGraphRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetGraphRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetGraphRequestValidationError) ErrorName() string { return "GetGraphRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GetGraphRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetGraphRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetGraphRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetGraphRequestValidationError{}
+
+// Validate checks the field values on GetGraphResponse with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *GetGraphResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetGraphResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetGraphResponseMultiError, or nil if none found.
+func (m *GetGraphResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetGraphResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetData() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetGraphResponseValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetGraphResponseValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetGraphResponseValidationError{
+					field:  fmt.Sprintf("Data[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GetGraphResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetGraphResponseMultiError is an error wrapping multiple validation errors
+// returned by GetGraphResponse.ValidateAll() if the designated constraints
+// aren't met.
+type GetGraphResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetGraphResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetGraphResponseMultiError) AllErrors() []error { return m }
+
+// GetGraphResponseValidationError is the validation error returned by
+// GetGraphResponse.Validate if the designated constraints aren't met.
+type GetGraphResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetGraphResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetGraphResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetGraphResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetGraphResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetGraphResponseValidationError) ErrorName() string { return "GetGraphResponseValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GetGraphResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetGraphResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetGraphResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetGraphResponseValidationError{}
+
+// Validate checks the field values on GetAllAssetsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetAllAssetsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetAllAssetsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetAllAssetsRequestMultiError, or nil if none found.
+func (m *GetAllAssetsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetAllAssetsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetText() != "" {
+
+	}
+
+	if m.GetType() != "" {
+
+	}
+
+	if m.GetService() != "" {
+
+	}
+
+	if m.GetSize() != 0 {
+
+		if m.GetSize() < 0 {
+			err := GetAllAssetsRequestValidationError{
+				field:  "Size",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.GetOffset() != 0 {
+
+		if m.GetOffset() < 0 {
+			err := GetAllAssetsRequestValidationError{
+				field:  "Offset",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	// no validation rules for WithTotal
+
+	if len(errors) > 0 {
+		return GetAllAssetsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetAllAssetsRequestMultiError is an error wrapping multiple validation
+// errors returned by GetAllAssetsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetAllAssetsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetAllAssetsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetAllAssetsRequestMultiError) AllErrors() []error { return m }
+
+// GetAllAssetsRequestValidationError is the validation error returned by
+// GetAllAssetsRequest.Validate if the designated constraints aren't met.
+type GetAllAssetsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetAllAssetsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetAllAssetsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetAllAssetsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetAllAssetsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetAllAssetsRequestValidationError) ErrorName() string {
+	return "GetAllAssetsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetAllAssetsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetAllAssetsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetAllAssetsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetAllAssetsRequestValidationError{}
+
+// Validate checks the field values on GetAllAssetsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetAllAssetsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetAllAssetsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetAllAssetsResponseMultiError, or nil if none found.
+func (m *GetAllAssetsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetAllAssetsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetData() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetAllAssetsResponseValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetAllAssetsResponseValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetAllAssetsResponseValidationError{
+					field:  fmt.Sprintf("Data[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Total
+
+	if len(errors) > 0 {
+		return GetAllAssetsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetAllAssetsResponseMultiError is an error wrapping multiple validation
+// errors returned by GetAllAssetsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GetAllAssetsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetAllAssetsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetAllAssetsResponseMultiError) AllErrors() []error { return m }
+
+// GetAllAssetsResponseValidationError is the validation error returned by
+// GetAllAssetsResponse.Validate if the designated constraints aren't met.
+type GetAllAssetsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetAllAssetsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetAllAssetsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetAllAssetsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetAllAssetsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetAllAssetsResponseValidationError) ErrorName() string {
+	return "GetAllAssetsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetAllAssetsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetAllAssetsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetAllAssetsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetAllAssetsResponseValidationError{}
+
+// Validate checks the field values on GetAssetByIDRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetAssetByIDRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetAssetByIDRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetAssetByIDRequestMultiError, or nil if none found.
+func (m *GetAssetByIDRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetAssetByIDRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	if len(errors) > 0 {
+		return GetAssetByIDRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetAssetByIDRequestMultiError is an error wrapping multiple validation
+// errors returned by GetAssetByIDRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetAssetByIDRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetAssetByIDRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetAssetByIDRequestMultiError) AllErrors() []error { return m }
+
+// GetAssetByIDRequestValidationError is the validation error returned by
+// GetAssetByIDRequest.Validate if the designated constraints aren't met.
+type GetAssetByIDRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetAssetByIDRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetAssetByIDRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetAssetByIDRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetAssetByIDRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetAssetByIDRequestValidationError) ErrorName() string {
+	return "GetAssetByIDRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetAssetByIDRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetAssetByIDRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetAssetByIDRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetAssetByIDRequestValidationError{}
+
+// Validate checks the field values on GetAssetByIDResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetAssetByIDResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetAssetByIDResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetAssetByIDResponseMultiError, or nil if none found.
+func (m *GetAssetByIDResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetAssetByIDResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetData()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetAssetByIDResponseValidationError{
+					field:  "Data",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetAssetByIDResponseValidationError{
+					field:  "Data",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetData()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetAssetByIDResponseValidationError{
+				field:  "Data",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return GetAssetByIDResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetAssetByIDResponseMultiError is an error wrapping multiple validation
+// errors returned by GetAssetByIDResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GetAssetByIDResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetAssetByIDResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetAssetByIDResponseMultiError) AllErrors() []error { return m }
+
+// GetAssetByIDResponseValidationError is the validation error returned by
+// GetAssetByIDResponse.Validate if the designated constraints aren't met.
+type GetAssetByIDResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetAssetByIDResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetAssetByIDResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetAssetByIDResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetAssetByIDResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetAssetByIDResponseValidationError) ErrorName() string {
+	return "GetAssetByIDResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetAssetByIDResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetAssetByIDResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetAssetByIDResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetAssetByIDResponseValidationError{}
+
+// Validate checks the field values on UpsertAssetRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpsertAssetRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpsertAssetRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpsertAssetRequestMultiError, or nil if none found.
+func (m *UpsertAssetRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpsertAssetRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetAsset()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpsertAssetRequestValidationError{
+					field:  "Asset",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpsertAssetRequestValidationError{
+					field:  "Asset",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetAsset()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpsertAssetRequestValidationError{
+				field:  "Asset",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	for idx, item := range m.GetUpstreams() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, UpsertAssetRequestValidationError{
+						field:  fmt.Sprintf("Upstreams[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, UpsertAssetRequestValidationError{
+						field:  fmt.Sprintf("Upstreams[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return UpsertAssetRequestValidationError{
+					field:  fmt.Sprintf("Upstreams[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	for idx, item := range m.GetDownstreams() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, UpsertAssetRequestValidationError{
+						field:  fmt.Sprintf("Downstreams[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, UpsertAssetRequestValidationError{
+						field:  fmt.Sprintf("Downstreams[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return UpsertAssetRequestValidationError{
+					field:  fmt.Sprintf("Downstreams[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return UpsertAssetRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpsertAssetRequestMultiError is an error wrapping multiple validation errors
+// returned by UpsertAssetRequest.ValidateAll() if the designated constraints
+// aren't met.
+type UpsertAssetRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpsertAssetRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpsertAssetRequestMultiError) AllErrors() []error { return m }
+
+// UpsertAssetRequestValidationError is the validation error returned by
+// UpsertAssetRequest.Validate if the designated constraints aren't met.
+type UpsertAssetRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpsertAssetRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpsertAssetRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpsertAssetRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpsertAssetRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpsertAssetRequestValidationError) ErrorName() string {
+	return "UpsertAssetRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpsertAssetRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpsertAssetRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpsertAssetRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpsertAssetRequestValidationError{}
+
+// Validate checks the field values on UpsertAssetResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpsertAssetResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpsertAssetResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpsertAssetResponseMultiError, or nil if none found.
+func (m *UpsertAssetResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpsertAssetResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	if len(errors) > 0 {
+		return UpsertAssetResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpsertAssetResponseMultiError is an error wrapping multiple validation
+// errors returned by UpsertAssetResponse.ValidateAll() if the designated
+// constraints aren't met.
+type UpsertAssetResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpsertAssetResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpsertAssetResponseMultiError) AllErrors() []error { return m }
+
+// UpsertAssetResponseValidationError is the validation error returned by
+// UpsertAssetResponse.Validate if the designated constraints aren't met.
+type UpsertAssetResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpsertAssetResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpsertAssetResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpsertAssetResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpsertAssetResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpsertAssetResponseValidationError) ErrorName() string {
+	return "UpsertAssetResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpsertAssetResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpsertAssetResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpsertAssetResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpsertAssetResponseValidationError{}
+
+// Validate checks the field values on UpsertPatchAssetRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpsertPatchAssetRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpsertPatchAssetRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpsertPatchAssetRequestMultiError, or nil if none found.
+func (m *UpsertPatchAssetRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpsertPatchAssetRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetAsset()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpsertPatchAssetRequestValidationError{
+					field:  "Asset",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpsertPatchAssetRequestValidationError{
+					field:  "Asset",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetAsset()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpsertPatchAssetRequestValidationError{
+				field:  "Asset",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	for idx, item := range m.GetUpstreams() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, UpsertPatchAssetRequestValidationError{
+						field:  fmt.Sprintf("Upstreams[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, UpsertPatchAssetRequestValidationError{
+						field:  fmt.Sprintf("Upstreams[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return UpsertPatchAssetRequestValidationError{
+					field:  fmt.Sprintf("Upstreams[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	for idx, item := range m.GetDownstreams() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, UpsertPatchAssetRequestValidationError{
+						field:  fmt.Sprintf("Downstreams[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, UpsertPatchAssetRequestValidationError{
+						field:  fmt.Sprintf("Downstreams[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return UpsertPatchAssetRequestValidationError{
+					field:  fmt.Sprintf("Downstreams[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return UpsertPatchAssetRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpsertPatchAssetRequestMultiError is an error wrapping multiple validation
+// errors returned by UpsertPatchAssetRequest.ValidateAll() if the designated
+// constraints aren't met.
+type UpsertPatchAssetRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpsertPatchAssetRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpsertPatchAssetRequestMultiError) AllErrors() []error { return m }
+
+// UpsertPatchAssetRequestValidationError is the validation error returned by
+// UpsertPatchAssetRequest.Validate if the designated constraints aren't met.
+type UpsertPatchAssetRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpsertPatchAssetRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpsertPatchAssetRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpsertPatchAssetRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpsertPatchAssetRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpsertPatchAssetRequestValidationError) ErrorName() string {
+	return "UpsertPatchAssetRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpsertPatchAssetRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpsertPatchAssetRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpsertPatchAssetRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpsertPatchAssetRequestValidationError{}
+
+// Validate checks the field values on UpsertPatchAssetResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpsertPatchAssetResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpsertPatchAssetResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpsertPatchAssetResponseMultiError, or nil if none found.
+func (m *UpsertPatchAssetResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpsertPatchAssetResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	if len(errors) > 0 {
+		return UpsertPatchAssetResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpsertPatchAssetResponseMultiError is an error wrapping multiple validation
+// errors returned by UpsertPatchAssetResponse.ValidateAll() if the designated
+// constraints aren't met.
+type UpsertPatchAssetResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpsertPatchAssetResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpsertPatchAssetResponseMultiError) AllErrors() []error { return m }
+
+// UpsertPatchAssetResponseValidationError is the validation error returned by
+// UpsertPatchAssetResponse.Validate if the designated constraints aren't met.
+type UpsertPatchAssetResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpsertPatchAssetResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpsertPatchAssetResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpsertPatchAssetResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpsertPatchAssetResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpsertPatchAssetResponseValidationError) ErrorName() string {
+	return "UpsertPatchAssetResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpsertPatchAssetResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpsertPatchAssetResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpsertPatchAssetResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpsertPatchAssetResponseValidationError{}
+
+// Validate checks the field values on DeleteAssetRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeleteAssetRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteAssetRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeleteAssetRequestMultiError, or nil if none found.
+func (m *DeleteAssetRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteAssetRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	if len(errors) > 0 {
+		return DeleteAssetRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteAssetRequestMultiError is an error wrapping multiple validation errors
+// returned by DeleteAssetRequest.ValidateAll() if the designated constraints
+// aren't met.
+type DeleteAssetRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteAssetRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteAssetRequestMultiError) AllErrors() []error { return m }
+
+// DeleteAssetRequestValidationError is the validation error returned by
+// DeleteAssetRequest.Validate if the designated constraints aren't met.
+type DeleteAssetRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteAssetRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteAssetRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteAssetRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteAssetRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteAssetRequestValidationError) ErrorName() string {
+	return "DeleteAssetRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteAssetRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteAssetRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteAssetRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteAssetRequestValidationError{}
+
+// Validate checks the field values on DeleteAssetResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeleteAssetResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteAssetResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeleteAssetResponseMultiError, or nil if none found.
+func (m *DeleteAssetResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteAssetResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return DeleteAssetResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteAssetResponseMultiError is an error wrapping multiple validation
+// errors returned by DeleteAssetResponse.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteAssetResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteAssetResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteAssetResponseMultiError) AllErrors() []error { return m }
+
+// DeleteAssetResponseValidationError is the validation error returned by
+// DeleteAssetResponse.Validate if the designated constraints aren't met.
+type DeleteAssetResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteAssetResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteAssetResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteAssetResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteAssetResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteAssetResponseValidationError) ErrorName() string {
+	return "DeleteAssetResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteAssetResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteAssetResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteAssetResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteAssetResponseValidationError{}
+
+// Validate checks the field values on GetAssetStargazersRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetAssetStargazersRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetAssetStargazersRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetAssetStargazersRequestMultiError, or nil if none found.
+func (m *GetAssetStargazersRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetAssetStargazersRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	if m.GetSize() != 0 {
+
+		if m.GetSize() < 0 {
+			err := GetAssetStargazersRequestValidationError{
+				field:  "Size",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.GetOffset() != 0 {
+
+		if m.GetOffset() < 0 {
+			err := GetAssetStargazersRequestValidationError{
+				field:  "Offset",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GetAssetStargazersRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetAssetStargazersRequestMultiError is an error wrapping multiple validation
+// errors returned by GetAssetStargazersRequest.ValidateAll() if the
+// designated constraints aren't met.
+type GetAssetStargazersRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetAssetStargazersRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetAssetStargazersRequestMultiError) AllErrors() []error { return m }
+
+// GetAssetStargazersRequestValidationError is the validation error returned by
+// GetAssetStargazersRequest.Validate if the designated constraints aren't met.
+type GetAssetStargazersRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetAssetStargazersRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetAssetStargazersRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetAssetStargazersRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetAssetStargazersRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetAssetStargazersRequestValidationError) ErrorName() string {
+	return "GetAssetStargazersRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetAssetStargazersRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetAssetStargazersRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetAssetStargazersRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetAssetStargazersRequestValidationError{}
+
+// Validate checks the field values on GetAssetStargazersResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetAssetStargazersResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetAssetStargazersResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetAssetStargazersResponseMultiError, or nil if none found.
+func (m *GetAssetStargazersResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetAssetStargazersResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetData() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetAssetStargazersResponseValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetAssetStargazersResponseValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetAssetStargazersResponseValidationError{
+					field:  fmt.Sprintf("Data[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GetAssetStargazersResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetAssetStargazersResponseMultiError is an error wrapping multiple
+// validation errors returned by GetAssetStargazersResponse.ValidateAll() if
+// the designated constraints aren't met.
+type GetAssetStargazersResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetAssetStargazersResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetAssetStargazersResponseMultiError) AllErrors() []error { return m }
+
+// GetAssetStargazersResponseValidationError is the validation error returned
+// by GetAssetStargazersResponse.Validate if the designated constraints aren't met.
+type GetAssetStargazersResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetAssetStargazersResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetAssetStargazersResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetAssetStargazersResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetAssetStargazersResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetAssetStargazersResponseValidationError) ErrorName() string {
+	return "GetAssetStargazersResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetAssetStargazersResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetAssetStargazersResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetAssetStargazersResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetAssetStargazersResponseValidationError{}
+
+// Validate checks the field values on GetAssetVersionHistoryRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetAssetVersionHistoryRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetAssetVersionHistoryRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetAssetVersionHistoryRequestMultiError, or nil if none found.
+func (m *GetAssetVersionHistoryRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetAssetVersionHistoryRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	if m.GetSize() != 0 {
+
+		if m.GetSize() < 0 {
+			err := GetAssetVersionHistoryRequestValidationError{
+				field:  "Size",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.GetOffset() != 0 {
+
+		if m.GetOffset() < 0 {
+			err := GetAssetVersionHistoryRequestValidationError{
+				field:  "Offset",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GetAssetVersionHistoryRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetAssetVersionHistoryRequestMultiError is an error wrapping multiple
+// validation errors returned by GetAssetVersionHistoryRequest.ValidateAll()
+// if the designated constraints aren't met.
+type GetAssetVersionHistoryRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetAssetVersionHistoryRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetAssetVersionHistoryRequestMultiError) AllErrors() []error { return m }
+
+// GetAssetVersionHistoryRequestValidationError is the validation error
+// returned by GetAssetVersionHistoryRequest.Validate if the designated
+// constraints aren't met.
+type GetAssetVersionHistoryRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetAssetVersionHistoryRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetAssetVersionHistoryRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetAssetVersionHistoryRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetAssetVersionHistoryRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetAssetVersionHistoryRequestValidationError) ErrorName() string {
+	return "GetAssetVersionHistoryRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetAssetVersionHistoryRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetAssetVersionHistoryRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetAssetVersionHistoryRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetAssetVersionHistoryRequestValidationError{}
+
+// Validate checks the field values on GetAssetVersionHistoryResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetAssetVersionHistoryResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetAssetVersionHistoryResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetAssetVersionHistoryResponseMultiError, or nil if none found.
+func (m *GetAssetVersionHistoryResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetAssetVersionHistoryResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetData() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetAssetVersionHistoryResponseValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetAssetVersionHistoryResponseValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetAssetVersionHistoryResponseValidationError{
+					field:  fmt.Sprintf("Data[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GetAssetVersionHistoryResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetAssetVersionHistoryResponseMultiError is an error wrapping multiple
+// validation errors returned by GetAssetVersionHistoryResponse.ValidateAll()
+// if the designated constraints aren't met.
+type GetAssetVersionHistoryResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetAssetVersionHistoryResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetAssetVersionHistoryResponseMultiError) AllErrors() []error { return m }
+
+// GetAssetVersionHistoryResponseValidationError is the validation error
+// returned by GetAssetVersionHistoryResponse.Validate if the designated
+// constraints aren't met.
+type GetAssetVersionHistoryResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetAssetVersionHistoryResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetAssetVersionHistoryResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetAssetVersionHistoryResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetAssetVersionHistoryResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetAssetVersionHistoryResponseValidationError) ErrorName() string {
+	return "GetAssetVersionHistoryResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetAssetVersionHistoryResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetAssetVersionHistoryResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetAssetVersionHistoryResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetAssetVersionHistoryResponseValidationError{}
+
+// Validate checks the field values on GetAssetByVersionRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetAssetByVersionRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetAssetByVersionRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetAssetByVersionRequestMultiError, or nil if none found.
+func (m *GetAssetByVersionRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetAssetByVersionRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Version
+
+	if len(errors) > 0 {
+		return GetAssetByVersionRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetAssetByVersionRequestMultiError is an error wrapping multiple validation
+// errors returned by GetAssetByVersionRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetAssetByVersionRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetAssetByVersionRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetAssetByVersionRequestMultiError) AllErrors() []error { return m }
+
+// GetAssetByVersionRequestValidationError is the validation error returned by
+// GetAssetByVersionRequest.Validate if the designated constraints aren't met.
+type GetAssetByVersionRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetAssetByVersionRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetAssetByVersionRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetAssetByVersionRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetAssetByVersionRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetAssetByVersionRequestValidationError) ErrorName() string {
+	return "GetAssetByVersionRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetAssetByVersionRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetAssetByVersionRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetAssetByVersionRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetAssetByVersionRequestValidationError{}
+
+// Validate checks the field values on GetAssetByVersionResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetAssetByVersionResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetAssetByVersionResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetAssetByVersionResponseMultiError, or nil if none found.
+func (m *GetAssetByVersionResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetAssetByVersionResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetData()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetAssetByVersionResponseValidationError{
+					field:  "Data",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetAssetByVersionResponseValidationError{
+					field:  "Data",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetData()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetAssetByVersionResponseValidationError{
+				field:  "Data",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return GetAssetByVersionResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetAssetByVersionResponseMultiError is an error wrapping multiple validation
+// errors returned by GetAssetByVersionResponse.ValidateAll() if the
+// designated constraints aren't met.
+type GetAssetByVersionResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetAssetByVersionResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetAssetByVersionResponseMultiError) AllErrors() []error { return m }
+
+// GetAssetByVersionResponseValidationError is the validation error returned by
+// GetAssetByVersionResponse.Validate if the designated constraints aren't met.
+type GetAssetByVersionResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetAssetByVersionResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetAssetByVersionResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetAssetByVersionResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetAssetByVersionResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetAssetByVersionResponseValidationError) ErrorName() string {
+	return "GetAssetByVersionResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetAssetByVersionResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetAssetByVersionResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetAssetByVersionResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetAssetByVersionResponseValidationError{}
 
 // Validate checks the field values on User with the rules defined in the proto
 // definition for this message. If any rules are violated, the first error
@@ -2566,35 +5722,6 @@ func (m *Change) validate(all bool) error {
 		if err := v.Validate(); err != nil {
 			return ChangeValidationError{
 				field:  "To",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetParent()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ChangeValidationError{
-					field:  "Parent",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ChangeValidationError{
-					field:  "Parent",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetParent()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ChangeValidationError{
-				field:  "Parent",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
@@ -3413,3 +6540,598 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CommentValidationError{}
+
+// Validate checks the field values on LineageEdge with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *LineageEdge) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on LineageEdge with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in LineageEdgeMultiError, or
+// nil if none found.
+func (m *LineageEdge) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *LineageEdge) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Source
+
+	// no validation rules for Target
+
+	if all {
+		switch v := interface{}(m.GetProp()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, LineageEdgeValidationError{
+					field:  "Prop",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, LineageEdgeValidationError{
+					field:  "Prop",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetProp()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return LineageEdgeValidationError{
+				field:  "Prop",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return LineageEdgeMultiError(errors)
+	}
+
+	return nil
+}
+
+// LineageEdgeMultiError is an error wrapping multiple validation errors
+// returned by LineageEdge.ValidateAll() if the designated constraints aren't met.
+type LineageEdgeMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m LineageEdgeMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m LineageEdgeMultiError) AllErrors() []error { return m }
+
+// LineageEdgeValidationError is the validation error returned by
+// LineageEdge.Validate if the designated constraints aren't met.
+type LineageEdgeValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e LineageEdgeValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e LineageEdgeValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e LineageEdgeValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e LineageEdgeValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e LineageEdgeValidationError) ErrorName() string { return "LineageEdgeValidationError" }
+
+// Error satisfies the builtin error interface
+func (e LineageEdgeValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sLineageEdge.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = LineageEdgeValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = LineageEdgeValidationError{}
+
+// Validate checks the field values on LineageNode with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *LineageNode) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on LineageNode with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in LineageNodeMultiError, or
+// nil if none found.
+func (m *LineageNode) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *LineageNode) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Urn
+
+	// no validation rules for Type
+
+	// no validation rules for Service
+
+	if len(errors) > 0 {
+		return LineageNodeMultiError(errors)
+	}
+
+	return nil
+}
+
+// LineageNodeMultiError is an error wrapping multiple validation errors
+// returned by LineageNode.ValidateAll() if the designated constraints aren't met.
+type LineageNodeMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m LineageNodeMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m LineageNodeMultiError) AllErrors() []error { return m }
+
+// LineageNodeValidationError is the validation error returned by
+// LineageNode.Validate if the designated constraints aren't met.
+type LineageNodeValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e LineageNodeValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e LineageNodeValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e LineageNodeValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e LineageNodeValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e LineageNodeValidationError) ErrorName() string { return "LineageNodeValidationError" }
+
+// Error satisfies the builtin error interface
+func (e LineageNodeValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sLineageNode.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = LineageNodeValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = LineageNodeValidationError{}
+
+// Validate checks the field values on UpsertAssetRequest_BaseAsset with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpsertAssetRequest_BaseAsset) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpsertAssetRequest_BaseAsset with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpsertAssetRequest_BaseAssetMultiError, or nil if none found.
+func (m *UpsertAssetRequest_BaseAsset) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpsertAssetRequest_BaseAsset) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Urn
+
+	// no validation rules for Type
+
+	// no validation rules for Name
+
+	// no validation rules for Service
+
+	if m.GetDescription() != "" {
+
+	}
+
+	if all {
+		switch v := interface{}(m.GetData()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpsertAssetRequest_BaseAssetValidationError{
+					field:  "Data",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpsertAssetRequest_BaseAssetValidationError{
+					field:  "Data",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetData()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpsertAssetRequest_BaseAssetValidationError{
+				field:  "Data",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetLabels()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpsertAssetRequest_BaseAssetValidationError{
+					field:  "Labels",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpsertAssetRequest_BaseAssetValidationError{
+					field:  "Labels",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetLabels()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpsertAssetRequest_BaseAssetValidationError{
+				field:  "Labels",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return UpsertAssetRequest_BaseAssetMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpsertAssetRequest_BaseAssetMultiError is an error wrapping multiple
+// validation errors returned by UpsertAssetRequest_BaseAsset.ValidateAll() if
+// the designated constraints aren't met.
+type UpsertAssetRequest_BaseAssetMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpsertAssetRequest_BaseAssetMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpsertAssetRequest_BaseAssetMultiError) AllErrors() []error { return m }
+
+// UpsertAssetRequest_BaseAssetValidationError is the validation error returned
+// by UpsertAssetRequest_BaseAsset.Validate if the designated constraints
+// aren't met.
+type UpsertAssetRequest_BaseAssetValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpsertAssetRequest_BaseAssetValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpsertAssetRequest_BaseAssetValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpsertAssetRequest_BaseAssetValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpsertAssetRequest_BaseAssetValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpsertAssetRequest_BaseAssetValidationError) ErrorName() string {
+	return "UpsertAssetRequest_BaseAssetValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpsertAssetRequest_BaseAssetValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpsertAssetRequest_BaseAsset.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpsertAssetRequest_BaseAssetValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpsertAssetRequest_BaseAssetValidationError{}
+
+// Validate checks the field values on UpsertPatchAssetRequest_BaseAsset with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *UpsertPatchAssetRequest_BaseAsset) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpsertPatchAssetRequest_BaseAsset
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// UpsertPatchAssetRequest_BaseAssetMultiError, or nil if none found.
+func (m *UpsertPatchAssetRequest_BaseAsset) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpsertPatchAssetRequest_BaseAsset) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Urn
+
+	// no validation rules for Type
+
+	if wrapper := m.GetName(); wrapper != nil {
+
+		if wrapper.GetValue() != "" {
+
+		}
+
+	}
+
+	// no validation rules for Service
+
+	if wrapper := m.GetDescription(); wrapper != nil {
+
+		if wrapper.GetValue() != "" {
+
+		}
+
+	}
+
+	if all {
+		switch v := interface{}(m.GetData()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpsertPatchAssetRequest_BaseAssetValidationError{
+					field:  "Data",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpsertPatchAssetRequest_BaseAssetValidationError{
+					field:  "Data",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetData()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpsertPatchAssetRequest_BaseAssetValidationError{
+				field:  "Data",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetLabels()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpsertPatchAssetRequest_BaseAssetValidationError{
+					field:  "Labels",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpsertPatchAssetRequest_BaseAssetValidationError{
+					field:  "Labels",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetLabels()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpsertPatchAssetRequest_BaseAssetValidationError{
+				field:  "Labels",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return UpsertPatchAssetRequest_BaseAssetMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpsertPatchAssetRequest_BaseAssetMultiError is an error wrapping multiple
+// validation errors returned by
+// UpsertPatchAssetRequest_BaseAsset.ValidateAll() if the designated
+// constraints aren't met.
+type UpsertPatchAssetRequest_BaseAssetMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpsertPatchAssetRequest_BaseAssetMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpsertPatchAssetRequest_BaseAssetMultiError) AllErrors() []error { return m }
+
+// UpsertPatchAssetRequest_BaseAssetValidationError is the validation error
+// returned by UpsertPatchAssetRequest_BaseAsset.Validate if the designated
+// constraints aren't met.
+type UpsertPatchAssetRequest_BaseAssetValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpsertPatchAssetRequest_BaseAssetValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpsertPatchAssetRequest_BaseAssetValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpsertPatchAssetRequest_BaseAssetValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpsertPatchAssetRequest_BaseAssetValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpsertPatchAssetRequest_BaseAssetValidationError) ErrorName() string {
+	return "UpsertPatchAssetRequest_BaseAssetValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpsertPatchAssetRequest_BaseAssetValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpsertPatchAssetRequest_BaseAsset.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpsertPatchAssetRequest_BaseAssetValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpsertPatchAssetRequest_BaseAssetValidationError{}

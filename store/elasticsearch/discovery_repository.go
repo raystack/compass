@@ -90,6 +90,7 @@ func (repo *DiscoveryRepository) createUpsertBody(ast asset.Asset) (io.Reader, e
 	if err != nil {
 		return nil, fmt.Errorf("createBulkInsertPayload: %w", err)
 	}
+
 	err = json.NewEncoder(payload).Encode(ast)
 	if err != nil {
 		return nil, fmt.Errorf("error serialising record: %w", err)
