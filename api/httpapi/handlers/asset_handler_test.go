@@ -690,13 +690,13 @@ func TestAssetHandlerGet(t *testing.T) {
 		},
 		{
 			Description:  `should parse querystring to get config`,
-			Querystring:  "?text=asd&type=table,job&service=bigquery,presto&size=30&offset=50&sort=recent&direction=desc",
+			Querystring:  "?text=asd&type=table&service=bigquery&size=30&offset=50&sort=recent&direction=desc",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
 					Text:          "asd",
-					Types:         []asset.Type{"table", "job"},
-					Services:      []string{"bigquery", "presto"},
+					Types:         []asset.Type{"table"},
+					Services:      []string{"bigquery"},
 					Size:          30,
 					Offset:        50,
 					SortDirection: "desc",
@@ -708,7 +708,12 @@ func TestAssetHandlerGet(t *testing.T) {
 			Description:  "should return http 200 status along with list of assets",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{
+				ar.On("GetAll", ctx, asset.Config{
+					Types:    []asset.Type{"job"},
+					Services: []string{"kafka"},
+					Size:     10,
+					Offset:   5,
+				}).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 				}, nil, nil)
@@ -944,6 +949,9 @@ func TestAssetHandlerGetVersionHistory(t *testing.T) {
 				}
 				var actual []asset.Asset
 				err := json.NewDecoder(r.Body).Decode(&actual)
+				fmt.Println("hello")
+
+				fmt.Println(&actual)
 				if err != nil {
 					return fmt.Errorf("error reading response body: %w", err)
 				}
@@ -961,7 +969,7 @@ func TestAssetHandlerGetVersionHistory(t *testing.T) {
 				"id": assetID,
 			})
 			rw := httptest.NewRecorder()
-
+			fmt.Println(rw.Body)
 			ar := new(mocks.AssetRepository)
 			tc.Setup(rr.Context(), ar)
 

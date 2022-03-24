@@ -385,19 +385,29 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 		return
 	}
 	cfg.Text = text
+
 	cfg.SortBy = query.Get("sort")
 	cfg.SortDirection = query.Get("direction")
 
 	types := query.Get("type")
-	typ := strings.Split(types, ",")
-	for _, j := range typ {
-		cfg.Types = append(cfg.Types, asset.Type(j))
+	if types != "" {
+		typ := strings.Split(types, ",")
+		for _, j := range typ {
+			cfg.Types = append(cfg.Types, asset.Type(j))
+		}
 	}
 
 	services := query.Get("service")
 	if services != "" {
 		cfg.Services = strings.Split(services, ",")
 	}
+
+	queriesFields := query.Get("q_fields")
+	if queriesFields != "" {
+		cfg.QueryFields = strings.Split(queriesFields, ",")
+	}
+
+	cfg.Query = query.Get("q")
 
 	sizeString := query.Get("size")
 	if sizeString != "" {
@@ -406,6 +416,7 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 			cfg.Size = size
 		}
 	}
+
 	offsetString := query.Get("offset")
 	if offsetString != "" {
 		offset, err := strconv.Atoi(offsetString)

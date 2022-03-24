@@ -442,24 +442,6 @@ func (r *AssetRepository) getOwners(ctx context.Context, assetID string) (owners
 	return
 }
 
-//func (r *AssetRepository) getData(ctx context.Context, assetID string) (err error) {
-//	query := `
-//		SELECT
-//		    u.id as "id",
-//			u.data as "data",
-//		FROM asset_owners ao
-//		WHERE
-//		JOIN users u on ao.user_id = u.id`
-//
-//	var ams []*AssetModel
-//	err = r.client.db.SelectContext(ctx, &ams, query, assetID)
-//	if err != nil {
-//		err = fmt.Errorf("error getting asset's owners: %w", err)
-//	}
-//
-//	return
-//}
-
 func (r *AssetRepository) insertOwners(ctx context.Context, execer sqlx.ExecerContext, assetID string, owners []user.User) (err error) {
 	if len(owners) == 0 {
 		return
@@ -627,28 +609,21 @@ func (r *AssetRepository) getAssetSQL() sq.SelectBuilder {
 		LeftJoin("users u ON a.updated_by = u.id")
 }
 
-func (r *AssetRepository) getAssetDataSQL() sq.SelectBuilder {
-	return sq.Select(`
-		a.id as id,
-		a.urn as urn,
-		a.type as type,
-		a.name as name,
-		a.service as service,
-		a.description as description,
-		a.data as data,
-		a.labels as labels,
-		a.version as version,
-		a.created_at as created_at,
-		a.updated_at as updated_at,
-		u.id as "updated_by.id",
-		u.email as "updated_by.email",
-		u.provider as "updated_by.provider",
-		u.created_at as "updated_by.created_at",
-		u.updated_at as "updated_by.updated_at"
-		`).
-		From("data a").
-		LeftJoin("users u ON a.updated_by = u.id")
-}
+//func (r *AssetRepository) getQuerySQL(cfg asset.Config) sq.SelectBuilder {
+//	return sq.Select(`
+//		a.urn as urn,
+//		a.type as type,
+//		a.name as name,
+//		a.service as service,
+//		a.description as description,
+//		`).
+//		From("assets a").
+//		Where("array_to_tsvector('?'::text[]) @@ to_tsquery(?);", cfg.QueryFields, cfg.Query)
+//
+//	//select name,urn,description,type,service
+//	//	from assets
+//	//	where to_tsvector(name || ' ' || urn || description || ' ' || type || ' ' || service) @@ to_tsquery('internal');
+//}
 
 func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 	return sq.Select(`
@@ -677,12 +652,19 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 
 func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
 	clause := sq.Eq{}
+	
 	if len(cfg.Types) > 0 {
 		builder = builder.Where(sq.Eq{"type": cfg.Types})
 	}
 
 	if len(cfg.Services) > 0 {
 		builder = builder.Where(sq.Eq{"service": cfg.Services})
+	}
+
+	if len(cfg.QueryFields) > 0 && len(cfg.Query) > 0 {
+		for _, queryField := range cfg.QueryFields {
+			builder = builder.Where(sq.ILike{queryField: cfg.Query})
+		}
 	}
 
 	if len(clause) > 0 {

@@ -176,6 +176,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 			r.Equal("postgres", ast.Service)
 		}
 	})
+
 }
 
 func (r *AssetRepositoryTestSuite) TestGetCount() {
