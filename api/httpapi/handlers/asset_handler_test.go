@@ -690,7 +690,7 @@ func TestAssetHandlerGet(t *testing.T) {
 		},
 		{
 			Description:  `should parse querystring to get config`,
-			Querystring:  "?text=asd&type=table&service=bigquery&size=30&offset=50&sort=recent&direction=desc",
+			Querystring:  "?text=asd&type=table&service=bigquery&size=30&offset=50&sort=created_at&direction=desc",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
@@ -700,7 +700,18 @@ func TestAssetHandlerGet(t *testing.T) {
 					Size:          30,
 					Offset:        50,
 					SortDirection: "desc",
-					SortBy:        "recent",
+					SortBy:        "created_at",
+				}).Return([]asset.Asset{}, nil, nil)
+			},
+		},
+		{
+			Description:  "should convert multiple types and services from querystring to config",
+			Querystring:  "?type=table,job&service=bigquery,kafka",
+			ExpectStatus: http.StatusOK,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.On("GetAll", ctx, asset.Config{
+					Types:    []asset.Type{"table", "job"},
+					Services: []string{"bigquery", "kafka"},
 				}).Return([]asset.Asset{}, nil, nil)
 			},
 		},
@@ -708,12 +719,7 @@ func TestAssetHandlerGet(t *testing.T) {
 			Description:  "should return http 200 status along with list of assets",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Config{
-					Types:    []asset.Type{"job"},
-					Services: []string{"kafka"},
-					Size:     10,
-					Offset:   5,
-				}).Return([]asset.Asset{
+				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 				}, nil, nil)
@@ -949,9 +955,6 @@ func TestAssetHandlerGetVersionHistory(t *testing.T) {
 				}
 				var actual []asset.Asset
 				err := json.NewDecoder(r.Body).Decode(&actual)
-				fmt.Println("hello")
-
-				fmt.Println(&actual)
 				if err != nil {
 					return fmt.Errorf("error reading response body: %w", err)
 				}
@@ -969,7 +972,6 @@ func TestAssetHandlerGetVersionHistory(t *testing.T) {
 				"id": assetID,
 			})
 			rw := httptest.NewRecorder()
-			fmt.Println(rw.Body)
 			ar := new(mocks.AssetRepository)
 			tc.Setup(rr.Context(), ar)
 

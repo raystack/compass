@@ -379,13 +379,7 @@ func (h *AssetHandler) validatePatchPayload(assetPayload map[string]interface{})
 }
 
 func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err error) {
-	text := strings.TrimSpace(query.Get("text"))
-	if text == "" {
-		err = fmt.Errorf("'text' must be specified")
-		return
-	}
-	cfg.Text = text
-
+	cfg.Text = strings.TrimSpace(query.Get("text"))
 	cfg.SortBy = query.Get("sort")
 	cfg.SortDirection = query.Get("direction")
 
