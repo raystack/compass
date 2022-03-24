@@ -59,7 +59,7 @@ func (h *Handler) CreateDiscussion(ctx context.Context, req *compassv1beta1.Crea
 	dsc := discussion.Discussion{
 		Title:     req.Title,
 		Body:      req.Body,
-		Type:      discussion.GetTypeEnum(req.Type),
+		Type:      discussion.Type(req.Type),
 		State:     discussion.GetStateEnum(req.State),
 		Labels:    req.GetLabels(),
 		Assets:    req.Assets,

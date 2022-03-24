@@ -1,7 +1,7 @@
 NAME="github.com/odpf/columbus"
 VERSION=$(shell git describe --always --tags 2>/dev/null)
 COVERFILE="/tmp/columbus.coverprofile"
-PROTON_COMMIT := "c3146a25d9f321bc721d94dbdf3aec8483a3cb03"
+PROTON_COMMIT := "4c76e086f7877efc8897ffac74dd45cf75646a78"
 
 .PHONY: all build test clean install proto
 
@@ -30,7 +30,6 @@ proto: ## Generate the protobuf files
 	@echo " > [info] make sure correct version of dependencies are installed using 'make install'"
 	@buf generate https://github.com/odpf/proton/archive/${PROTON_COMMIT}.zip#strip_components=1 --template buf.gen.yaml --path odpf/compass
 	@echo " > protobuf compilation finished"
-
 
 install: ## install required dependencies
 	@echo "> installing dependencies"

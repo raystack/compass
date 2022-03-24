@@ -18,8 +18,20 @@ type User struct {
 	UpdatedAt time.Time `json:"-" diff:"-" db:"updated_at"`
 }
 
-// ToProto transforms struct to proto
+// ToProto transforms struct with some fields only to proto
 func (d User) ToProto() *compassv1beta1.User {
+	if d.ID == "" {
+		return nil
+	}
+
+	return &compassv1beta1.User{
+		Id:    d.ID,
+		Email: d.Email,
+	}
+}
+
+// ToFullProto transforms struct with all fields to proto
+func (d User) ToFullProto() *compassv1beta1.User {
 	if d.ID == "" {
 		return nil
 	}

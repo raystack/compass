@@ -43,6 +43,17 @@ type Discussion struct {
 
 // ToProto transforms struct to proto
 func (d Discussion) ToProto() *compassv1beta1.Discussion {
+
+	var createdAtPB *timestamppb.Timestamp
+	if !d.CreatedAt.IsZero() {
+		createdAtPB = timestamppb.New(d.CreatedAt)
+	}
+
+	var updatedAtPB *timestamppb.Timestamp
+	if !d.UpdatedAt.IsZero() {
+		updatedAtPB = timestamppb.New(d.UpdatedAt)
+	}
+
 	return &compassv1beta1.Discussion{
 		Id:        d.ID,
 		Title:     d.Title,
@@ -53,25 +64,40 @@ func (d Discussion) ToProto() *compassv1beta1.Discussion {
 		Assets:    d.Assets,
 		Assignees: d.Assignees,
 		Owner:     d.Owner.ToProto(),
-		CreatedAt: timestamppb.New(d.CreatedAt),
-		UpdatedAt: timestamppb.New(d.UpdatedAt),
+		CreatedAt: createdAtPB,
+		UpdatedAt: updatedAtPB,
 	}
 }
 
 // NewFromProto transforms proto to struct
-func NewFromProto(proto *compassv1beta1.Discussion) Discussion {
+func NewFromProto(pb *compassv1beta1.Discussion) Discussion {
+	var createdAt time.Time
+	if pb.GetCreatedAt() != nil {
+		createdAt = pb.GetCreatedAt().AsTime()
+	}
+
+	var updatedAt time.Time
+	if pb.GetUpdatedAt() != nil {
+		updatedAt = pb.GetUpdatedAt().AsTime()
+	}
+
+	var owner user.User
+	if pb.GetOwner() != nil {
+		owner = user.NewFromProto(pb.GetOwner())
+	}
+
 	return Discussion{
-		ID:        proto.Id,
-		Title:     proto.Title,
-		Body:      proto.Body,
-		Type:      GetTypeEnum(proto.Type),
-		State:     GetStateEnum(proto.State),
-		Labels:    proto.Labels,
-		Assets:    proto.Assets,
-		Assignees: proto.Assignees,
-		Owner:     user.NewFromProto(proto.Owner),
-		CreatedAt: proto.CreatedAt.AsTime(),
-		UpdatedAt: proto.UpdatedAt.AsTime(),
+		ID:        pb.GetId(),
+		Title:     pb.GetTitle(),
+		Body:      pb.GetBody(),
+		Type:      GetTypeEnum(pb.GetType()),
+		State:     GetStateEnum(pb.GetState()),
+		Labels:    pb.GetLabels(),
+		Assets:    pb.GetAssets(),
+		Assignees: pb.GetAssignees(),
+		Owner:     owner,
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
 	}
 }
 

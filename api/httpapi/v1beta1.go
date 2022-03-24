@@ -26,7 +26,7 @@ func setupV1Beta1Router(router *mux.Router, handlers *Handler) {
 	// Deprecated: Use setupV1Beta1AssetRoutes instead
 	setupV1Beta1TypeRoutes("/types", router, handlers.Type, handlers.Record)
 
-	setupUserRoutes("/user", router, handlers.User)
+	setupMeRoutes("/me", router, handlers.User)
 
 	setupUsersRoutes("/users", router, handlers.User)
 
@@ -108,7 +108,7 @@ func setupV1Beta1TagRoutes(baseURL string, router *mux.Router, th *handlers.TagH
 	router.Methods(http.MethodDelete).Path(templateURL + "/{template_urn}").HandlerFunc(tth.Delete)
 }
 
-func setupUserRoutes(baseURL string, router *mux.Router, ush *handlers.UserHandler) {
+func setupMeRoutes(baseURL string, router *mux.Router, ush *handlers.UserHandler) {
 
 	router.Path(baseURL + "/starred").
 		Methods(http.MethodGet).
