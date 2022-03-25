@@ -651,8 +651,6 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 }
 
 func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
-	clause := sq.Eq{}
-	
 	if len(cfg.Types) > 0 {
 		builder = builder.Where(sq.Eq{"type": cfg.Types})
 	}
@@ -661,14 +659,16 @@ func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.C
 		builder = builder.Where(sq.Eq{"service": cfg.Services})
 	}
 
-	if len(cfg.QueryFields) > 0 && len(cfg.Query) > 0 {
-		for _, queryField := range cfg.QueryFields {
-			builder = builder.Where(sq.ILike{queryField: cfg.Query})
+	if len(cfg.QueryFields) > 0 && cfg.Query == "" {
+		orClause := sq.Or{}
+		for _, field := range cfg.QueryFields {
+			orClause = append(orClause, sq.ILike{
+				field: fmt.Sprint("%", cfg.Query, "%"),
+			})
 		}
-	}
 
-	if len(clause) > 0 {
-		builder = builder.Where(clause)
+		builder = builder.Where(orClause)
+
 	}
 
 	return builder

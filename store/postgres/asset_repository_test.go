@@ -2,7 +2,9 @@ package postgres_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"testing"
 	"time"
 
@@ -91,6 +93,82 @@ func (r *AssetRepositoryTestSuite) TearDownSuite() {
 	}
 }
 
+func (r *AssetRepositoryTestSuite) TestFilterUsingFixture() {
+	filePath := "./testdata/mock-asset-data.json"
+	testFixtureJSON, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return
+	}
+
+	var data []asset.Asset
+	if err = json.Unmarshal(testFixtureJSON, &data); err != nil {
+		return
+	}
+
+	for _, d := range data {
+		ast := asset.Asset{
+			URN:         d.URN,
+			Type:        d.Type,
+			Service:     d.Service,
+			Description: d.Description,
+			Version:     asset.BaseVersion,
+			UpdatedBy:   r.users[0],
+		}
+
+		id, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+		r.Require().Equal(r.lengthOfString(id), 36)
+		ast.ID = id
+		data = append(data, ast)
+	}
+
+	r.Run("should filter using type", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			Types: []asset.Type{asset.TypeTable},
+		})
+		r.Require().NoError(err)
+		typeCount := 0
+		for _, ast := range results {
+			if ast.Type == asset.TypeTable {
+				typeCount++
+			}
+		}
+		r.Equal(2, typeCount)
+	})
+
+	r.Run("should filter using queries", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			QueryFields: []string{"type"},
+			Query:       "tab",
+		})
+		r.Require().NoError(err)
+		typeCount := 0
+		for _, ast := range results {
+			fmt.Println(ast)
+			if ast.Type == asset.TypeTable {
+				typeCount++
+			}
+		}
+		r.Equal(2, typeCount)
+
+	})
+
+	r.Run("should filter using queries", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			//QueryFields: []string{"service"},
+			//Query:       "post",
+		})
+		r.Require().NoError(err)
+		typeCount := 0
+		for _, ast := range results {
+			if ast.Service == "postgres" {
+				typeCount++
+			}
+		}
+		r.Equal(1, typeCount)
+	})
+}
+
 func (r *AssetRepositoryTestSuite) TestGetAll() {
 	// populate assets
 	total := 12
@@ -172,7 +250,23 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		})
 		r.Require().NoError(err)
 		r.Require().Len(results, total/2)
+		fmt.Println("result:", results)
 		for _, ast := range results {
+			r.Equal("postgres", ast.Service)
+		}
+	})
+
+	r.Run("should filter using query fields", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			QueryFields: []string{"service"},
+			Query:       "postg",
+		})
+		r.Require().NoError(err)
+		fmt.Println("result:", results)
+		r.Require().Len(results, total/2)
+		fmt.Println("length", len(results))
+		for _, ast := range results {
+			fmt.Println("service:", ast.Service)
 			r.Equal("postgres", ast.Service)
 		}
 	})
