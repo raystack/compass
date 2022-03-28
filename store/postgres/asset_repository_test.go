@@ -93,7 +93,7 @@ func (r *AssetRepositoryTestSuite) TearDownSuite() {
 	}
 }
 
-func (r *AssetRepositoryTestSuite) TestFilterUsingFixture() {
+func (r *AssetRepositoryTestSuite) TestGetAll() {
 	filePath := "./testdata/mock-asset-data.json"
 	testFixtureJSON, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -108,9 +108,11 @@ func (r *AssetRepositoryTestSuite) TestFilterUsingFixture() {
 	for _, d := range data {
 		ast := asset.Asset{
 			URN:         d.URN,
+			Name:        d.Name,
 			Type:        d.Type,
 			Service:     d.Service,
 			Description: d.Description,
+			Data:        d.Data,
 			Version:     asset.BaseVersion,
 			UpdatedBy:   r.users[0],
 		}
@@ -124,72 +126,65 @@ func (r *AssetRepositoryTestSuite) TestFilterUsingFixture() {
 
 	r.Run("should filter using type", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			Types: []asset.Type{asset.TypeTable},
+			Types:  []asset.Type{asset.TypeTable},
+			SortBy: "urn",
 		})
 		r.Require().NoError(err)
-		typeCount := 0
-		for _, ast := range results {
-			if ast.Type == asset.TypeTable {
-				typeCount++
-			}
+
+		expectedURNs := []string{"e-test-grant2", "i-undefined-dfgdgd-avi"}
+		r.Equal(len(expectedURNs), len(results))
+		for i, _ := range results {
+			r.Equal(expectedURNs[i], results[i].URN)
 		}
-		r.Equal(2, typeCount)
+	})
+
+	r.Run("should filter using service", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			Services: []string{"mysql", "kafka"},
+			SortBy:   "urn",
+		})
+		r.Require().NoError(err)
+
+		expectedURNs := []string{"c-demo-kafka", "i-undefined-dfgdgd-avi"}
+		r.Equal(len(expectedURNs), len(results))
+		for i, _ := range results {
+			r.Equal(expectedURNs[i], results[i].URN)
+		}
 	})
 
 	r.Run("should filter using query fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			QueryFields: []string{"type"},
-			Query:       "tab",
+			QueryFields: []string{"name", "description"},
+			Query:       "demo",
+			SortBy:      "urn",
 		})
 		r.Require().NoError(err)
-		typeCount := 0
-		for _, ast := range results {
-			fmt.Println(ast)
-			if ast.Type == asset.TypeTable {
-				typeCount++
-			}
+
+		expectedURNs := []string{"c-demo-kafka", "e-test-grant2"}
+		r.Equal(len(expectedURNs), len(results))
+		for i, _ := range results {
+			r.Equal(expectedURNs[i], results[i].URN)
 		}
-		r.Equal(2, typeCount)
 	})
 
-	r.Run("should filter using queries", func() {
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			QueryFields: []string{"service"},
-			Query:       "post",
-		})
-		r.Require().NoError(err)
-		typeCount := 0
-		for _, ast := range results {
-			fmt.Println(ast.Data)
-			if ast.Service == "postgres" {
-				typeCount++
-			}
-		}
-		r.Equal(1, typeCount)
-	})
-
-	r.Run("should filter using data ", func() {
+	r.Run("should filter using asset's Data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			Filter: map[string]string{
-				"title": "test_grant2",
+				"entity":  "odpf",
+				"country": "th",
 			},
 		})
 		r.Require().NoError(err)
-		fmt.Println("hello")
-		fmt.Println("result", results)
 
-		typeCount := 0
-		for _, ast := range results {
-			fmt.Println("data:", ast.Data)
-			if ast.Service == "postgres" {
-				typeCount++
-			}
+		expectedURNs := []string{"e-test-grant2"}
+		r.Equal(len(expectedURNs), len(results))
+		for i, _ := range results {
+			r.Equal(expectedURNs[i], results[i].URN)
 		}
-		r.Equal(1, typeCount)
 	})
 }
 
-func (r *AssetRepositoryTestSuite) TestGetAll() {
+func (r *AssetRepositoryTestSuite) testGetAll() {
 	// populate assets
 	total := 12
 	assets := []asset.Asset{}
@@ -272,38 +267,6 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		r.Require().Len(results, total/2)
 		fmt.Println("result:", results)
 		for _, ast := range results {
-			r.Equal("postgres", ast.Service)
-		}
-	})
-
-	// Breaking
-	r.Run("should filter using query fields", func() {
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			QueryFields: []string{"service"},
-			Query:       "postg",
-			Size:        total,
-		})
-		r.Require().NoError(err)
-		fmt.Println("result:", results)
-		r.Require().Len(results, total/2)
-		fmt.Println("length", len(results))
-		for _, ast := range results {
-			fmt.Println("service:", ast.Service)
-			r.Equal("postgres", ast.Service)
-		}
-	})
-
-	r.Run("should filter using data fields", func() {
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			Filter: map[string]string{
-				"title": "test_grant2",
-			},
-		})
-		r.Require().NoError(err)
-		fmt.Println("result:", results)
-		fmt.Println("length", len(results))
-		for _, ast := range results {
-			fmt.Println("service:", ast.Data)
 			r.Equal("postgres", ast.Service)
 		}
 	})

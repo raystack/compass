@@ -6,7 +6,7 @@
     "service": "kafka",
     "description": "the data contains tables",
     "data": {
-         "urn": "c-demo-kafka",
+      "urn": "c-demo-kafka",
       "title": "demo-kafka",
       "description": "first data description",
       "entity": "odpf",
@@ -18,7 +18,7 @@
     "name": "test_grant2",
     "type": "table",
     "service": "postgres",
-    "description": "postgres information",
+    "description": "postgres information demo",
     "data": {
       "urn": "e-test-grant2",
       "title": "test_grant2",
@@ -37,7 +37,7 @@
       "urn": "i-undefined-dfgdgd-avi",
       "title": "dfgdgd-avi",
       "description": "third data description",
-      "entity": "odpf",
+      "entity": "gojek",
       "country": "id"
     }
   }

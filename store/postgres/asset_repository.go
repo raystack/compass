@@ -643,7 +643,7 @@ func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.C
 		builder = builder.Where(sq.Eq{"service": cfg.Services})
 	}
 
-	if len(cfg.QueryFields) > 0 && cfg.Query == "" {
+	if len(cfg.QueryFields) > 0 && cfg.Query != "" {
 		orClause := sq.Or{}
 		for _, field := range cfg.QueryFields {
 			orClause = append(orClause, sq.ILike{
@@ -659,7 +659,7 @@ func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.C
 
 	if len(cfg.Filter) > 0 {
 		for key, val := range cfg.Filter {
-			builder = builder.Where(sq.Expr("data -> ? = ?", key, val))
+			builder = builder.Where(fmt.Sprintf("data ->> '%s' = '%s'", key, val))
 		}
 	}
 
