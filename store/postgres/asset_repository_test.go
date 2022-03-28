@@ -20,6 +20,8 @@ import (
 
 var defaultAssetUpdaterUserID = uuid.NewString()
 
+const defaultGetAssetMaxSize = 3
+
 type AssetRepositoryTestSuite struct {
 	suite.Suite
 	ctx        context.Context
@@ -93,16 +95,16 @@ func (r *AssetRepositoryTestSuite) TearDownSuite() {
 	}
 }
 
-func (r *AssetRepositoryTestSuite) TestGetAll() {
+func (r *AssetRepositoryTestSuite) insertRecord() (assets []asset.Asset) {
 	filePath := "./testdata/mock-asset-data.json"
 	testFixtureJSON, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		return
+		return []asset.Asset{}
 	}
 
 	var data []asset.Asset
 	if err = json.Unmarshal(testFixtureJSON, &data); err != nil {
-		return
+		return []asset.Asset{}
 	}
 
 	for _, d := range data {
@@ -121,17 +123,56 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		r.Require().NoError(err)
 		r.Require().Equal(r.lengthOfString(id), 36)
 		ast.ID = id
-		data = append(data, ast)
+		assets = append(assets, ast)
 	}
+
+	return assets
+}
+
+func (r *AssetRepositoryTestSuite) TestGetAll() {
+	assets := r.insertRecord()
+
+	r.Run("should return all assets limited by default size", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{})
+		r.Require().NoError(err)
+		r.Require().Len(results, defaultGetAssetMaxSize)
+		for i := 0; i < defaultGetAssetMaxSize; i++ {
+			r.assertAsset(&assets[i], &results[i])
+		}
+	})
+
+	r.Run("should override default size using GetConfig.Size", func() {
+		size := 3
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			Size: size,
+		})
+		r.Require().NoError(err)
+		r.Require().Len(results, size)
+		for i := 0; i < size; i++ {
+			r.assertAsset(&assets[i], &results[i])
+		}
+	})
+
+	r.Run("should fetch assets by offset defined in GetConfig.Offset", func() {
+		offset := 2
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			Offset: offset,
+		})
+		r.Require().NoError(err)
+		for i := offset; i > defaultGetAssetMaxSize+offset; i++ {
+			r.assertAsset(&assets[i], &results[i-offset])
+		}
+	})
 
 	r.Run("should filter using type", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			Types:  []asset.Type{asset.TypeTable},
-			SortBy: "urn",
+			Types:         []asset.Type{asset.TypeTable},
+			SortBy:        "urn",
+			SortDirection: "desc",
 		})
 		r.Require().NoError(err)
 
-		expectedURNs := []string{"e-test-grant2", "i-undefined-dfgdgd-avi"}
+		expectedURNs := []string{"i-undefined-dfgdgd-avi", "e-test-grant2"}
 		r.Equal(len(expectedURNs), len(results))
 		for i, _ := range results {
 			r.Equal(expectedURNs[i], results[i].URN)
@@ -169,7 +210,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 
 	r.Run("should filter using asset's Data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			Filter: map[string]string{
+			Data: map[string]string{
 				"entity":  "odpf",
 				"country": "th",
 			},
@@ -180,94 +221,6 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		r.Equal(len(expectedURNs), len(results))
 		for i, _ := range results {
 			r.Equal(expectedURNs[i], results[i].URN)
-		}
-	})
-}
-
-func (r *AssetRepositoryTestSuite) testGetAll() {
-	// populate assets
-	total := 12
-	assets := []asset.Asset{}
-	for i := 0; i < total; i++ {
-		var typ asset.Type
-		var service string
-		if (i % 2) == 0 { // if even
-			typ = asset.TypeJob
-			service = "postgres"
-		} else {
-			typ = asset.TypeDashboard
-			service = "metabase"
-		}
-
-		ast := asset.Asset{
-			URN:       fmt.Sprintf("urn-get-%d", i),
-			Type:      typ,
-			Service:   service,
-			Version:   asset.BaseVersion,
-			UpdatedBy: r.users[0],
-		}
-		id, err := r.repository.Upsert(r.ctx, &ast)
-		r.Require().NoError(err)
-		r.Require().Equal(r.lengthOfString(id), 36)
-		ast.ID = id
-		assets = append(assets, ast)
-	}
-
-	r.Run("should return all assets limited by default size", func() {
-		results, err := r.repository.GetAll(r.ctx, asset.Config{})
-		r.Require().NoError(err)
-		r.Require().Len(results, defaultGetMaxSize)
-		for i := 0; i < defaultGetMaxSize; i++ {
-			r.assertAsset(&assets[i], &results[i])
-		}
-	})
-
-	r.Run("should override default size using GetConfig.Size", func() {
-		size := 8
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			Size: size,
-		})
-		r.Require().NoError(err)
-		r.Require().Len(results, size)
-		for i := 0; i < size; i++ {
-			r.assertAsset(&assets[i], &results[i])
-		}
-	})
-
-	r.Run("should fetch assets by offset defined in GetConfig.Offset", func() {
-		offset := 2
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			Offset: offset,
-		})
-		r.Require().NoError(err)
-		for i := offset; i < defaultGetMaxSize+offset; i++ {
-			r.assertAsset(&assets[i], &results[i-offset])
-
-		}
-	})
-
-	r.Run("should filter using type", func() {
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			Types: []asset.Type{asset.TypeDashboard},
-			Size:  total,
-		})
-		r.Require().NoError(err)
-		r.Require().Len(results, total/2)
-		for _, ast := range results {
-			r.Equal(asset.TypeDashboard, ast.Type)
-		}
-	})
-
-	r.Run("should filter using service", func() {
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			Services: []string{"postgres"},
-			Size:     total,
-		})
-		r.Require().NoError(err)
-		r.Require().Len(results, total/2)
-		fmt.Println("result:", results)
-		for _, ast := range results {
-			r.Equal("postgres", ast.Service)
 		}
 	})
 }

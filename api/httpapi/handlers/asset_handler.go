@@ -73,7 +73,6 @@ func (h *AssetHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		total, err := h.assetRepo.GetCount(r.Context(), asset.Config{
 			Types:    cfg.Types,
 			Services: cfg.Services,
-			Text:     cfg.Text,
 		})
 		if err != nil {
 			internalServerError(w, h.logger, err.Error())
@@ -378,10 +377,11 @@ func (h *AssetHandler) validatePatchPayload(assetPayload map[string]interface{})
 }
 
 func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err error) {
-	cfg.Text = strings.TrimSpace(query.Get("text"))
-	cfg.SortBy = query.Get("sort")
-	cfg.SortDirection = query.Get("direction")
-	cfg.Query = query.Get("q")
+	cfg = asset.Config{
+		SortBy:        query.Get("sort"),
+		SortDirection: query.Get("direction"),
+		Query:         query.Get("q"),
+	}
 
 	types := query.Get("type")
 	if types != "" {
@@ -416,8 +416,8 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 			cfg.Offset = offset
 		}
 	}
-	cfg.Filter = filterAssetConfigFromValues(query)
 
+	cfg.Data = dataAssetConfigFromValues(query)
 	if err = cfg.Validate(); err != nil {
 		return asset.Config{}, err
 	}
@@ -425,8 +425,9 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 	return cfg, nil
 }
 
-func filterAssetConfigFromValues(querystring url.Values) map[string]string {
-	var filter = make(map[string]string)
+func dataAssetConfigFromValues(querystring url.Values) map[string]string {
+	dataFilter := make(map[string]string)
+
 	for key, values := range querystring {
 		// filters are of form "data.{field}"
 		if !strings.HasPrefix(key, dataFilterPrefix) {
@@ -434,10 +435,10 @@ func filterAssetConfigFromValues(querystring url.Values) map[string]string {
 		}
 
 		filterKey := strings.TrimPrefix(key, dataFilterPrefix)
-		filter[filterKey] = values[0] // cannot have duplicate query key, always get the first one
+		dataFilter[filterKey] = values[0] // cannot have duplicate query key, always get the first one
 	}
 
-	return filter
+	return dataFilter
 }
 
 func (h *AssetHandler) saveLineage(ctx context.Context, ast asset.Asset, upstreams, downstreams []lineage.Node) error {

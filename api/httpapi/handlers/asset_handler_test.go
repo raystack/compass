@@ -676,7 +676,9 @@ func TestAssetHandlerGet(t *testing.T) {
 			Description:  `should return http 500 if fetching fails`,
 			ExpectStatus: http.StatusInternalServerError,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{}, errors.New("unknown error"))
+				ar.On("GetAll", ctx, asset.Config{
+					Data: make(map[string]string),
+				}).Return([]asset.Asset{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -684,26 +686,27 @@ func TestAssetHandlerGet(t *testing.T) {
 			Querystring:  "?with_total=1",
 			ExpectStatus: http.StatusInternalServerError,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{}, nil, nil)
+				ar.On("GetAll", ctx, asset.Config{
+					Data: make(map[string]string),
+				}).Return([]asset.Asset{}, nil, nil)
 				ar.On("GetCount", ctx, asset.Config{}).Return(0, errors.New("unknown error"))
 			},
 		},
 		{
 			Description:  `should parse querystring to get config`,
-			Querystring:  "?text=asd&type=table&service=bigquery&size=30&offset=50&sort=created_at&direction=desc&data.dataset=booking&data.project=p-godata-id",
+			Querystring:  "?type=table&service=bigquery&size=30&offset=50&sort=created_at&direction=desc&data.dataset=booking&data.project=p-godata-id",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
-					Text:          "asd",
 					Types:         []asset.Type{"table"},
 					Services:      []string{"bigquery"},
 					Size:          30,
 					Offset:        50,
 					SortDirection: "desc",
 					SortBy:        "created_at",
-					Filter: map[string]string{
-						"data.dataset": "booking",
-						"data.project": "p-godata-id",
+					Data: map[string]string{
+						"dataset": "booking",
+						"project": "p-godata-id",
 					},
 				}).Return([]asset.Asset{}, nil, nil)
 			},
@@ -716,6 +719,7 @@ func TestAssetHandlerGet(t *testing.T) {
 				ar.On("GetAll", ctx, asset.Config{
 					Types:    []asset.Type{"table", "job"},
 					Services: []string{"bigquery", "kafka"},
+					Data:     make(map[string]string),
 				}).Return([]asset.Asset{}, nil, nil)
 			},
 		},
@@ -723,7 +727,9 @@ func TestAssetHandlerGet(t *testing.T) {
 			Description:  "should return http 200 status along with list of assets",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{
+				ar.On("GetAll", ctx, asset.Config{
+					Data: make(map[string]string),
+				}).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 				}, nil, nil)
@@ -753,21 +759,20 @@ func TestAssetHandlerGet(t *testing.T) {
 		{
 			Description:  "should return total in the payload if with_total flag is given",
 			ExpectStatus: http.StatusOK,
-			Querystring:  "?with_total=true&text=dsa&type=job&service=kafka&size=10&offset=5",
+			Querystring:  "?with_total=true&type=job&service=kafka&size=10&offset=5",
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
-					Text:     "dsa",
 					Types:    []asset.Type{"job"},
 					Services: []string{"kafka"},
 					Size:     10,
 					Offset:   5,
+					Data:     make(map[string]string),
 				}).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 					{ID: "testid-3"},
 				}, nil, nil)
 				ar.On("GetCount", ctx, asset.Config{
-					Text:     "dsa",
 					Types:    []asset.Type{"job"},
 					Services: []string{"kafka"},
 				}).Return(150, nil, nil)

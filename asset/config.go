@@ -4,8 +4,9 @@ import (
 	"github.com/odpf/columbus/validator"
 )
 
+type DataFilter = map[string]string
+
 type Config struct {
-	Text          string
 	Types         []Type
 	Services      []string
 	Size          int
@@ -14,7 +15,7 @@ type Config struct {
 	SortDirection string `validate:"omitempty,oneof=asc desc"`
 	QueryFields   []string
 	Query         string
-	Filter        map[string]string
+	Data          DataFilter
 }
 
 func (cfg *Config) Validate() error {

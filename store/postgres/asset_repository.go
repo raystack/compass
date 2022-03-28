@@ -652,13 +652,9 @@ func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.C
 		}
 		builder = builder.Where(orClause)
 	}
-	//https://www.compose.com/articles/faster-operations-with-the-jsonb-data-type-in-postgresql/
-	//SELECT data->'title' FROM books WHERE data->'genres' @> '["Fiction"]'::jsonb;
 
-	// https://sudonull.com/post/99896-JSONB-queries-in-PostgreSQL
-
-	if len(cfg.Filter) > 0 {
-		for key, val := range cfg.Filter {
+	if len(cfg.Data) > 0 {
+		for key, val := range cfg.Data {
 			builder = builder.Where(fmt.Sprintf("data ->> '%s' = '%s'", key, val))
 		}
 	}
