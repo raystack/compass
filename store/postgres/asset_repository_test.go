@@ -136,7 +136,7 @@ func (r *AssetRepositoryTestSuite) TestFilterUsingFixture() {
 		r.Equal(2, typeCount)
 	})
 
-	r.Run("should filter using queries", func() {
+	r.Run("should filter using query fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			QueryFields: []string{"type"},
 			Query:       "tab",
@@ -150,17 +150,37 @@ func (r *AssetRepositoryTestSuite) TestFilterUsingFixture() {
 			}
 		}
 		r.Equal(2, typeCount)
-
 	})
 
 	r.Run("should filter using queries", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			//QueryFields: []string{"service"},
-			//Query:       "post",
+			QueryFields: []string{"service"},
+			Query:       "post",
 		})
 		r.Require().NoError(err)
 		typeCount := 0
 		for _, ast := range results {
+			fmt.Println(ast.Data)
+			if ast.Service == "postgres" {
+				typeCount++
+			}
+		}
+		r.Equal(1, typeCount)
+	})
+
+	r.Run("should filter using data ", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			Filter: map[string]string{
+				"title": "test_grant2",
+			},
+		})
+		r.Require().NoError(err)
+		fmt.Println("hello")
+		fmt.Println("result", results)
+
+		typeCount := 0
+		for _, ast := range results {
+			fmt.Println("data:", ast.Data)
 			if ast.Service == "postgres" {
 				typeCount++
 			}
@@ -256,10 +276,12 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		}
 	})
 
+	// Breaking
 	r.Run("should filter using query fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			QueryFields: []string{"service"},
 			Query:       "postg",
+			Size:        total,
 		})
 		r.Require().NoError(err)
 		fmt.Println("result:", results)
@@ -271,6 +293,20 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		}
 	})
 
+	r.Run("should filter using data fields", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			Filter: map[string]string{
+				"title": "test_grant2",
+			},
+		})
+		r.Require().NoError(err)
+		fmt.Println("result:", results)
+		fmt.Println("length", len(results))
+		for _, ast := range results {
+			fmt.Println("service:", ast.Data)
+			r.Equal("postgres", ast.Service)
+		}
+	})
 }
 
 func (r *AssetRepositoryTestSuite) TestGetCount() {

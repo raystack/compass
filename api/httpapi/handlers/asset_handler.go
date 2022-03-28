@@ -21,8 +21,7 @@ import (
 )
 
 var (
-	whiteListAssetQueryParamKey = "type"
-	queryConfigPrefix           = "q."
+	dataFilterPrefix = "data."
 )
 
 // AssetHandler exposes a REST interface to types
@@ -382,6 +381,7 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 	cfg.Text = strings.TrimSpace(query.Get("text"))
 	cfg.SortBy = query.Get("sort")
 	cfg.SortDirection = query.Get("direction")
+	cfg.Query = query.Get("q")
 
 	types := query.Get("type")
 	if types != "" {
@@ -401,8 +401,6 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 		cfg.QueryFields = strings.Split(queriesFields, ",")
 	}
 
-	cfg.Query = query.Get("q")
-
 	sizeString := query.Get("size")
 	if sizeString != "" {
 		size, err := strconv.Atoi(sizeString)
@@ -418,12 +416,28 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 			cfg.Offset = offset
 		}
 	}
+	cfg.Filter = filterAssetConfigFromValues(query)
 
 	if err = cfg.Validate(); err != nil {
 		return asset.Config{}, err
 	}
 
 	return cfg, nil
+}
+
+func filterAssetConfigFromValues(querystring url.Values) map[string]string {
+	var filter = make(map[string]string)
+	for key, values := range querystring {
+		// filters are of form "data.{field}"
+		if !strings.HasPrefix(key, dataFilterPrefix) {
+			continue
+		}
+
+		filterKey := strings.TrimPrefix(key, dataFilterPrefix)
+		filter[filterKey] = values[0] // cannot have duplicate query key, always get the first one
+	}
+
+	return filter
 }
 
 func (h *AssetHandler) saveLineage(ctx context.Context, ast asset.Asset, upstreams, downstreams []lineage.Node) error {

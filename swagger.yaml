@@ -36,12 +36,20 @@ paths:
           type: string
         - in: query
           name: direction
-          description: "sort order"
+          description: "sort order (asc/desc)"
           type: string
         - in: query
           name: size
           description: "maximum size to fetch"
           type: number
+        - in: query
+          name: q_fields
+          type: string
+          description: "query in given fields"
+        - in: query
+          name: q
+          type: string
+          description: "query specific value in q_fields"
         - in: query
           name: offset
           description: "offset to fetch from"
@@ -50,6 +58,10 @@ paths:
           name: with_total
           description: "if set include total field in response"
           type: boolean
+#        - in: query
+#          name: "filterby"
+#          type: string
+#          description: 'filter on a specific data records field. the nested data field is written with period separated field name. eg, "data.landscape"'
       responses:
         200:
           description: OK

@@ -609,22 +609,6 @@ func (r *AssetRepository) getAssetSQL() sq.SelectBuilder {
 		LeftJoin("users u ON a.updated_by = u.id")
 }
 
-//func (r *AssetRepository) getQuerySQL(cfg asset.Config) sq.SelectBuilder {
-//	return sq.Select(`
-//		a.urn as urn,
-//		a.type as type,
-//		a.name as name,
-//		a.service as service,
-//		a.description as description,
-//		`).
-//		From("assets a").
-//		Where("array_to_tsvector('?'::text[]) @@ to_tsquery(?);", cfg.QueryFields, cfg.Query)
-//
-//	//select name,urn,description,type,service
-//	//	from assets
-//	//	where to_tsvector(name || ' ' || urn || description || ' ' || type || ' ' || service) @@ to_tsquery('internal');
-//}
-
 func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 	return sq.Select(`
 		a.asset_id as id,
@@ -666,9 +650,17 @@ func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.C
 				field: fmt.Sprint("%", cfg.Query, "%"),
 			})
 		}
-
 		builder = builder.Where(orClause)
+	}
+	//https://www.compose.com/articles/faster-operations-with-the-jsonb-data-type-in-postgresql/
+	//SELECT data->'title' FROM books WHERE data->'genres' @> '["Fiction"]'::jsonb;
 
+	// https://sudonull.com/post/99896-JSONB-queries-in-PostgreSQL
+
+	if len(cfg.Filter) > 0 {
+		for key, val := range cfg.Filter {
+			builder = builder.Where(sq.Expr("data -> ? = ?", key, val))
+		}
 	}
 
 	return builder

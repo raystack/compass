@@ -14,6 +14,7 @@ type Config struct {
 	SortDirection string `validate:"omitempty,oneof=asc desc"`
 	QueryFields   []string
 	Query         string
+	Filter        map[string]string
 }
 
 func (cfg *Config) Validate() error {
