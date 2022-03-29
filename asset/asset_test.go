@@ -2,13 +2,20 @@ package asset_test
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
+	"time"
 
+	"github.com/google/go-cmp/cmp"
+	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/user"
 	"github.com/r3labs/diff/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/testing/protocmp"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestDiffTopLevel(t *testing.T) {
@@ -397,6 +404,187 @@ func TestAssetPatch(t *testing.T) {
 
 			tc.asset.Patch(patchData)
 			assert.Equal(t, tc.expected, tc.asset)
+		})
+	}
+}
+
+func TestToProto(t *testing.T) {
+	timeDummy := time.Date(2000, time.January, 7, 0, 0, 0, 0, time.UTC)
+	dataPB, err := structpb.NewStruct(map[string]interface{}{
+		"data1": "datavalue1",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	labelPB, err := structpb.NewStruct(map[string]interface{}{
+		"label1": "labelvalue1",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	type testCase struct {
+		Title       string
+		Asset       asset.Asset
+		ExpectProto *compassv1beta1.Asset
+	}
+
+	var testCases = []testCase{
+		{
+			Title:       "should return nil data pb, label pb, empty owners pb, nil changelog pb, no timestamp pb if data is empty",
+			Asset:       asset.Asset{ID: "id1", URN: "urn1"},
+			ExpectProto: &compassv1beta1.Asset{Id: "id1", Urn: "urn1"},
+		},
+		{
+			Title: "should return full pb if all fileds are not zero",
+			Asset: asset.Asset{
+				ID:  "id1",
+				URN: "urn1",
+				Data: map[string]interface{}{
+					"data1": "datavalue1",
+				},
+				Labels: map[string]string{
+					"label1": "labelvalue1",
+				},
+				Changelog: diff.Changelog{
+					diff.Change{
+						From: "1",
+						To:   "2",
+						Path: []string{"path1/path2"},
+					},
+				},
+				CreatedAt: timeDummy,
+				UpdatedAt: timeDummy,
+			},
+			ExpectProto: &compassv1beta1.Asset{
+				Id:     "id1",
+				Urn:    "urn1",
+				Data:   dataPB,
+				Labels: labelPB,
+				Changelog: &compassv1beta1.Changelog{
+					Changes: []*compassv1beta1.Change{
+						{
+
+							From: structpb.NewStringValue("1"),
+							To:   structpb.NewStringValue("2"),
+							Path: []string{"path1/path2"},
+						},
+					},
+				},
+				CreatedAt: timestamppb.New(timeDummy),
+				UpdatedAt: timestamppb.New(timeDummy),
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Title, func(t *testing.T) {
+
+			got, err := tc.Asset.ToProto()
+			if err != nil {
+				t.Error(err)
+			}
+			if diff := cmp.Diff(got, tc.ExpectProto, protocmp.Transform()); diff != "" {
+				t.Errorf("expected response to be %+v, was %+v", tc.ExpectProto, got)
+			}
+		})
+	}
+}
+
+func TestNewFromProto(t *testing.T) {
+	timeDummy := time.Date(2000, time.January, 7, 0, 0, 0, 0, time.UTC)
+	dataPB, err := structpb.NewStruct(map[string]interface{}{
+		"data1": "datavalue1",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	labelPB, err := structpb.NewStruct(map[string]interface{}{
+		"label1": "labelvalue1",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	type testCase struct {
+		Title       string
+		AssetPB     *compassv1beta1.Asset
+		ExpectAsset asset.Asset
+	}
+
+	var testCases = []testCase{
+		{
+			Title:       "should return empty labels, data, and owners if all pb empty",
+			AssetPB:     &compassv1beta1.Asset{Id: "id1"},
+			ExpectAsset: asset.Asset{ID: "id1"},
+		},
+		{
+			Title: "should return non empty labels, data, and owners if all pb is not empty",
+			AssetPB: &compassv1beta1.Asset{
+				Id:     "id1",
+				Urn:    "urn1",
+				Name:   "name1",
+				Data:   dataPB,
+				Labels: labelPB,
+				Owners: []*compassv1beta1.User{
+					{
+						Id: "uid1",
+					},
+					{
+						Id: "uid2",
+					},
+				},
+				Changelog: &compassv1beta1.Changelog{
+					Changes: []*compassv1beta1.Change{
+						{
+
+							From: structpb.NewStringValue("1"),
+							To:   structpb.NewStringValue("2"),
+							Path: []string{"path1/path2"},
+						},
+					},
+				},
+				CreatedAt: timestamppb.New(timeDummy),
+				UpdatedAt: timestamppb.New(timeDummy),
+			},
+			ExpectAsset: asset.Asset{
+				ID:   "id1",
+				URN:  "urn1",
+				Name: "name1",
+				Data: map[string]interface{}{
+					"data1": "datavalue1",
+				},
+				Labels: map[string]string{
+					"label1": "labelvalue1",
+				},
+				Owners: []user.User{
+					{
+						ID: "uid1",
+					},
+					{
+						ID: "uid2",
+					},
+				},
+				Changelog: diff.Changelog{
+					diff.Change{
+						From: "1",
+						To:   "2",
+						Path: []string{"path1/path2"},
+					},
+				},
+				CreatedAt: timeDummy,
+				UpdatedAt: timeDummy,
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Title, func(t *testing.T) {
+
+			got := asset.NewFromProto(tc.AssetPB)
+			if reflect.DeepEqual(got, tc.ExpectAsset) == false {
+				t.Errorf("expected returned asset to be to be %+v, was %+v", tc.ExpectAsset, got)
+			}
 		})
 	}
 }

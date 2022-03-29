@@ -411,7 +411,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 
 	r.Run("should return 3 last versions of an assets if there are exist", func() {
 
-		expectedAssetVersions := []asset.AssetVersion{
+		expectedAssetVersions := []asset.Asset{
 			{
 				ID:      astVersioning.ID,
 				URN:     assetURN,

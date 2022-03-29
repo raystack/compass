@@ -2,61 +2,14 @@ package asset
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/Masterminds/semver/v3"
 	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
-	"github.com/odpf/columbus/user"
 	"github.com/r3labs/diff/v2"
 	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const BaseVersion = "0.1"
-
-// AssetVersion is the changes summary of asset versions
-type AssetVersion struct {
-	ID        string         `json:"id" db:"id"`
-	URN       string         `json:"urn" db:"urn"`
-	Type      string         `json:"type" db:"type"`
-	Service   string         `json:"service" db:"service"`
-	Version   string         `json:"version" db:"version"`
-	Changelog diff.Changelog `json:"changelog" db:"changelog"`
-	UpdatedBy user.User      `json:"updated_by" db:"updated_by"`
-	CreatedAt time.Time      `json:"created_at" db:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at" db:"updated_at"`
-}
-
-// ToProto transforms struct to proto
-func (av AssetVersion) ToProto() (*compassv1beta1.Asset, error) {
-
-	changelogProto, err := changelogToProto(av.Changelog)
-	if err != nil {
-		return nil, err
-	}
-
-	var createdAtPB *timestamppb.Timestamp
-	if !av.CreatedAt.IsZero() {
-		createdAtPB = timestamppb.New(av.CreatedAt)
-	}
-
-	var updatedAtPB *timestamppb.Timestamp
-	if !av.UpdatedAt.IsZero() {
-		updatedAtPB = timestamppb.New(av.UpdatedAt)
-	}
-
-	return &compassv1beta1.Asset{
-		Id:        av.ID,
-		Urn:       av.URN,
-		Type:      string(av.Type),
-		Service:   av.Service,
-		Version:   av.Version,
-		UpdatedBy: av.UpdatedBy.ToProto(),
-		Changelog: changelogProto,
-		CreatedAt: createdAtPB,
-		UpdatedAt: updatedAtPB,
-	}, nil
-}
 
 // ParseVersion returns error if version string is not in MAJOR.MINOR format
 func ParseVersion(v string) (*semver.Version, error) {
@@ -112,4 +65,24 @@ func diffChangeToProto(dc diff.Change) (*compassv1beta1.Change, error) {
 		From: from,
 		To:   to,
 	}, nil
+}
+
+// newDiffChangeFromProto converts Change proto to diff.Change
+func newDiffChangeFromProto(pb *compassv1beta1.Change) diff.Change {
+	var fromItf interface{}
+	if pb.GetFrom() != nil {
+		fromItf = pb.GetFrom().AsInterface()
+	}
+
+	var toItf interface{}
+	if pb.GetTo() != nil {
+		toItf = pb.GetTo().AsInterface()
+	}
+
+	return diff.Change{
+		Type: pb.GetType(),
+		Path: pb.GetPath(),
+		From: fromItf,
+		To:   toItf,
+	}
 }

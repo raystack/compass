@@ -942,7 +942,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 				Id: assetID,
 			},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetVersionHistory(ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{}, asset.InvalidError{AssetID: assetID})
+				ar.EXPECT().GetVersionHistory(ctx, asset.Config{}, assetID).Return([]asset.Asset{}, asset.InvalidError{AssetID: assetID})
 			},
 		},
 		{
@@ -952,7 +952,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 				Id: assetID,
 			},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetVersionHistory(ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{}, errors.New("unknown error"))
+				ar.EXPECT().GetVersionHistory(ctx, asset.Config{}, assetID).Return([]asset.Asset{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -967,7 +967,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 				ar.EXPECT().GetVersionHistory(ctx, asset.Config{
 					Size:   30,
 					Offset: 50,
-				}, assetID).Return([]asset.AssetVersion{}, nil)
+				}, assetID).Return([]asset.Asset{}, nil)
 			},
 		},
 		{
@@ -977,7 +977,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 				Id: assetID,
 			},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetVersionHistory(ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{
+				ar.EXPECT().GetVersionHistory(ctx, asset.Config{}, assetID).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 				}, nil)

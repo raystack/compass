@@ -292,15 +292,15 @@ func (_c *AssetRepository_GetCount_Call) Return(_a0 int, _a1 error) *AssetReposi
 }
 
 // GetVersionHistory provides a mock function with given fields: ctx, cfg, id
-func (_m *AssetRepository) GetVersionHistory(ctx context.Context, cfg asset.Config, id string) ([]asset.AssetVersion, error) {
+func (_m *AssetRepository) GetVersionHistory(ctx context.Context, cfg asset.Config, id string) ([]asset.Asset, error) {
 	ret := _m.Called(ctx, cfg, id)
 
-	var r0 []asset.AssetVersion
-	if rf, ok := ret.Get(0).(func(context.Context, asset.Config, string) []asset.AssetVersion); ok {
+	var r0 []asset.Asset
+	if rf, ok := ret.Get(0).(func(context.Context, asset.Config, string) []asset.Asset); ok {
 		r0 = rf(ctx, cfg, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]asset.AssetVersion)
+			r0 = ret.Get(0).([]asset.Asset)
 		}
 	}
 
@@ -334,7 +334,7 @@ func (_c *AssetRepository_GetVersionHistory_Call) Run(run func(ctx context.Conte
 	return _c
 }
 
-func (_c *AssetRepository_GetVersionHistory_Call) Return(_a0 []asset.AssetVersion, _a1 error) *AssetRepository_GetVersionHistory_Call {
+func (_c *AssetRepository_GetVersionHistory_Call) Return(_a0 []asset.Asset, _a1 error) *AssetRepository_GetVersionHistory_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }

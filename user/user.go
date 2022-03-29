@@ -45,12 +45,22 @@ func (d User) ToProto() *compassv1beta1.User {
 
 // NewFromProto transforms proto to struct
 func NewFromProto(proto *compassv1beta1.User) User {
+	var createdAt time.Time
+	if proto.GetCreatedAt() != nil {
+		createdAt = proto.GetCreatedAt().AsTime()
+	}
+
+	var updatedAt time.Time
+	if proto.GetUpdatedAt() != nil {
+		updatedAt = proto.GetUpdatedAt().AsTime()
+	}
+
 	return User{
-		ID:    proto.Id,
-		Email: proto.Email,
-		// Provider:  d.Provider, //TODO add in proto
-		CreatedAt: proto.CreatedAt.AsTime(),
-		UpdatedAt: proto.UpdatedAt.AsTime(),
+		ID:        proto.GetId(),
+		Email:     proto.GetEmail(),
+		Provider:  proto.GetProvider(),
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
 	}
 }
 

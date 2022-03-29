@@ -50,18 +50,18 @@ func (a *AssetModel) toAsset(owners []user.User) asset.Asset {
 	}
 }
 
-func (a *AssetModel) toAssetVersion() (asset.AssetVersion, error) {
+func (a *AssetModel) toAssetVersion() (asset.Asset, error) {
 
 	var clog diff.Changelog
 	err := a.Changelog.Unmarshal(&clog)
 	if err != nil {
-		return asset.AssetVersion{}, err
+		return asset.Asset{}, err
 	}
 
-	return asset.AssetVersion{
+	return asset.Asset{
 		ID:        a.ID,
 		URN:       a.URN,
-		Type:      a.Type,
+		Type:      asset.Type(a.Type),
 		Service:   a.Service,
 		Version:   a.Version,
 		Changelog: clog,

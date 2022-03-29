@@ -146,7 +146,7 @@ func (r *AssetRepository) Find(ctx context.Context, assetURN string, assetType a
 }
 
 // GetVersionHistory retrieves the previous versions of an asset
-func (r *AssetRepository) GetVersionHistory(ctx context.Context, cfg asset.Config, id string) (avs []asset.AssetVersion, err error) {
+func (r *AssetRepository) GetVersionHistory(ctx context.Context, cfg asset.Config, id string) (avs []asset.Asset, err error) {
 	if !isValidUUID(id) {
 		err = asset.InvalidError{AssetID: id}
 		return

@@ -26,7 +26,7 @@ type Repository interface {
 	GetCount(context.Context, Config) (int, error)
 	GetByID(ctx context.Context, id string) (Asset, error)
 	Find(ctx context.Context, urn string, typ Type, service string) (Asset, error)
-	GetVersionHistory(ctx context.Context, cfg Config, id string) ([]AssetVersion, error)
+	GetVersionHistory(ctx context.Context, cfg Config, id string) ([]Asset, error)
 	GetByVersion(ctx context.Context, id string, version string) (Asset, error)
 	Upsert(ctx context.Context, ast *Asset) (string, error)
 	Delete(ctx context.Context, id string) error
@@ -116,7 +116,9 @@ func (a Asset) ToProto() (assetPB *compassv1beta1.Asset, err error) {
 func NewFromProto(pb *compassv1beta1.Asset) Asset {
 	var assetOwners []user.User
 	for _, op := range pb.GetOwners() {
-		assetOwners = []user.User{}
+		if op == nil {
+			continue
+		}
 		assetOwners = append(assetOwners, user.NewFromProto(op))
 	}
 
@@ -135,20 +137,46 @@ func NewFromProto(pb *compassv1beta1.Asset) Asset {
 		dataValue = pb.GetData().AsMap()
 	}
 
+	var createdAt time.Time
+	if pb.GetCreatedAt() != nil {
+		createdAt = pb.GetCreatedAt().AsTime()
+	}
+
+	var updatedAt time.Time
+	if pb.GetUpdatedAt() != nil {
+		updatedAt = pb.GetUpdatedAt().AsTime()
+	}
+
+	var updatedBy user.User
+	if pb.GetUpdatedBy() != nil {
+		updatedBy = user.NewFromProto(pb.GetUpdatedBy())
+	}
+
+	var clog diff.Changelog
+	if pb.GetChangelog() != nil {
+		for _, cg := range pb.GetChangelog().GetChanges() {
+			if cg == nil {
+				continue
+			}
+			clog = append(clog, newDiffChangeFromProto(cg))
+		}
+	}
+
 	return Asset{
 		ID:          pb.GetId(),
 		URN:         pb.GetUrn(),
 		Type:        Type(pb.GetType()),
 		Service:     pb.GetService(),
 		Name:        pb.GetName(),
-		Description: pb.GetName(),
+		Description: pb.GetDescription(),
 		Data:        dataValue,
 		Labels:      labels,
 		Owners:      assetOwners,
-		CreatedAt:   pb.GetCreatedAt().AsTime(),
-		UpdatedAt:   pb.GetUpdatedAt().AsTime(),
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
 		Version:     pb.GetVersion(),
-		UpdatedBy:   user.NewFromProto(pb.GetUpdatedBy()),
+		Changelog:   clog,
+		UpdatedBy:   updatedBy,
 	}
 }
 
