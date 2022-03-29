@@ -9,8 +9,8 @@ paths:
       tags:
         - Assets
       summary: Get list of assets
-      description: "Returns list of assets, optionally filtered by type and service"
-      produces:
+      description: "Returns list of assets. You can specify additional match criteria using 'config.data[{fields}]' query parameters. 
+      For instance, to specify two data fields project and dataset, the query could be ?types=table&services=bigquery&size=30&offset=50&sort=created_at&direction=desc&config.data[dataset]=booking&config.data[project]=p-godata-id",
         - "application/json"
       parameters:
         - in: header
@@ -19,12 +19,12 @@ paths:
           format: email
           required: true
         - in: query
-          name: type
+          name: types
           description: "filter by types, comma separated value of types"
           type: string
           format: asset_type
         - in: query
-          name: service
+          name: services
           description: "filter by services, comma separated value of services"
           type: string
         - in: query
@@ -59,9 +59,17 @@ paths:
           description: "if set include total field in response"
           type: boolean
         - in: query
-          name: "data.{fields}"
+          name: "config.data[landscape]"
           type: string
-          description: 'filter on a specific data records field. the nested data field is written with period separated field name. eg, "data.landscape"'
+          description: "filter results to specified landscape"
+        - in: query
+          name: "config.data[entity]"
+          type: string
+          description: "filter results to specified organisation"
+        - in: query
+          name: "config.data[urn]"
+          type: string
+          description: 'filter results to the specified urn'
       responses:
         200:
           description: OK
@@ -1657,14 +1665,15 @@ definitions:
         type: string
         example: "sample-name"
       service:
-        type: string
-        example: "bigquery"
+        type: array
+        example: "bigquery,postgres"
       description:
         type: string
         example: "sample description"
       data:
         type: object
         description: "dynamic object"
+        example: "config.data[entity]=gojek"
       labels:
         type: object
         description: "map of string"

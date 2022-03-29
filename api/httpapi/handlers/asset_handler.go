@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	dataFilterPrefix = "data."
+	dataFilterPrefix = "config."
 )
 
 // AssetHandler exposes a REST interface to types
@@ -417,7 +417,7 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 		}
 	}
 
-	cfg.Data = dataAssetConfigFromValues(query)
+	cfg.Data = dataAssetConfigValue(query)
 	if err = cfg.Validate(); err != nil {
 		return asset.Config{}, err
 	}
@@ -425,16 +425,31 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 	return cfg, nil
 }
 
-func dataAssetConfigFromValues(querystring url.Values) map[string]string {
+func dataAssetConfigValue(queryString url.Values) map[string]string {
 	dataFilter := make(map[string]string)
+	preChar := "["
+	postChar := "]"
 
-	for key, values := range querystring {
-		// filters are of form "data.{field}"
+	// Get substring between two strings.
+	for key, values := range queryString {
 		if !strings.HasPrefix(key, dataFilterPrefix) {
 			continue
 		}
 
-		filterKey := strings.TrimPrefix(key, dataFilterPrefix)
+		posFirst := strings.Index(key, preChar)
+		if posFirst == -1 {
+			return nil
+		}
+		posLast := strings.Index(key, postChar)
+		if posLast == -1 {
+			return nil
+		}
+		posFirstAdjusted := posFirst + len(preChar)
+		if posFirstAdjusted >= posLast {
+			return nil
+		}
+
+		filterKey := key[posFirstAdjusted:posLast]
 		dataFilter[filterKey] = values[0] // cannot have duplicate query key, always get the first one
 	}
 
