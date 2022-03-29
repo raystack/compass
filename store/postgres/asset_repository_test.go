@@ -174,7 +174,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 
 		expectedURNs := []string{"i-undefined-dfgdgd-avi", "e-test-grant2"}
 		r.Equal(len(expectedURNs), len(results))
-		for i, _ := range results {
+		for i := range results {
 			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})
@@ -188,7 +188,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 
 		expectedURNs := []string{"c-demo-kafka", "i-undefined-dfgdgd-avi"}
 		r.Equal(len(expectedURNs), len(results))
-		for i, _ := range results {
+		for i := range results {
 			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})
@@ -203,7 +203,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 
 		expectedURNs := []string{"c-demo-kafka", "e-test-grant2"}
 		r.Equal(len(expectedURNs), len(results))
-		for i, _ := range results {
+		for i := range results {
 			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})
@@ -219,7 +219,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 
 		expectedURNs := []string{"e-test-grant2"}
 		r.Equal(len(expectedURNs), len(results))
-		for i, _ := range results {
+		for i := range results {
 			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})

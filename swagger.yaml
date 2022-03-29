@@ -23,9 +23,6 @@ paths:
           description: "filter by types, comma separated value of types"
           type: string
           format: asset_type
-#          enum: [table, dashboard, job, topic]
-#            - table
-#            - dashboard
         - in: query
           name: service
           description: "filter by services, comma separated value of services"
@@ -36,8 +33,11 @@ paths:
           type: string
         - in: query
           name: direction
-          description: "sort order (asc/desc)"
+          description: "sort order"
           type: string
+          enum:
+            - asc
+            - desc
         - in: query
           name: size
           description: "maximum size to fetch"
@@ -58,10 +58,10 @@ paths:
           name: with_total
           description: "if set include total field in response"
           type: boolean
-#        - in: query
-#          name: "filterby"
-#          type: string
-#          description: 'filter on a specific data records field. the nested data field is written with period separated field name. eg, "data.landscape"'
+        - in: query
+          name: "data.{fields}"
+          type: string
+          description: 'filter on a specific data records field. the nested data field is written with period separated field name. eg, "data.landscape"'
       responses:
         200:
           description: OK

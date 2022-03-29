@@ -383,7 +383,7 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 		Query:         query.Get("q"),
 	}
 
-	types := query.Get("type")
+	types := query.Get("types")
 	if types != "" {
 		typ := strings.Split(types, ",")
 		for _, j := range typ {
@@ -391,7 +391,7 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 		}
 	}
 
-	services := query.Get("service")
+	services := query.Get("services")
 	if services != "" {
 		cfg.Services = strings.Split(services, ",")
 	}

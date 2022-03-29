@@ -694,7 +694,7 @@ func TestAssetHandlerGet(t *testing.T) {
 		},
 		{
 			Description:  `should parse querystring to get config`,
-			Querystring:  "?type=table&service=bigquery&size=30&offset=50&sort=created_at&direction=desc&data.dataset=booking&data.project=p-godata-id",
+			Querystring:  "?types=table&services=bigquery&size=30&offset=50&sort=created_at&direction=desc&data.dataset=booking&data.project=p-godata-id",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
@@ -713,7 +713,7 @@ func TestAssetHandlerGet(t *testing.T) {
 		},
 		{
 			Description:  "should convert multiple types and services from querystring to config",
-			Querystring:  "?type=table,job&service=bigquery,kafka",
+			Querystring:  "?types=table,job&services=bigquery,kafka",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
@@ -759,7 +759,7 @@ func TestAssetHandlerGet(t *testing.T) {
 		{
 			Description:  "should return total in the payload if with_total flag is given",
 			ExpectStatus: http.StatusOK,
-			Querystring:  "?with_total=true&type=job&service=kafka&size=10&offset=5",
+			Querystring:  "?with_total=true&types=job&services=kafka&size=10&offset=5",
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
 					Types:    []asset.Type{"job"},
