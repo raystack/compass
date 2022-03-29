@@ -20,9 +20,7 @@ import (
 	"github.com/odpf/columbus/user"
 )
 
-var (
-	dataFilterPrefix = "config."
-)
+var dataFilterPrefix = "config."
 
 // AssetHandler exposes a REST interface to types
 type AssetHandler struct {

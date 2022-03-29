@@ -17,7 +17,7 @@ type DiscussionRepository struct {
 	defaultGetMaxSize int
 }
 
-// GetAll fetches all discussion data
+// GetAll fetchs all discussion data
 func (r *DiscussionRepository) GetAll(ctx context.Context, flt discussion.Filter) ([]discussion.Discussion, error) {
 
 	builder := r.selectSQL()

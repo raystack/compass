@@ -16,9 +16,9 @@ import (
 type AssetModel struct {
 	ID          string    `db:"id"`
 	URN         string    `db:"urn"`
-	Types       string    `db:"type"`
+	Type        string    `db:"type"`
 	Name        string    `db:"name"`
-	Services    string    `db:"service"`
+	Service     string    `db:"service"`
 	Description string    `db:"description"`
 	Data        JSONMap   `db:"data"`
 	Labels      JSONMap   `db:"labels"`
@@ -36,9 +36,9 @@ func (a *AssetModel) toAsset(owners []user.User) asset.Asset {
 	return asset.Asset{
 		ID:          a.ID,
 		URN:         a.URN,
-		Type:        asset.Type(a.Types),
+		Type:        asset.Type(a.Type),
 		Name:        a.Name,
-		Service:     a.Services,
+		Service:     a.Service,
 		Description: a.Description,
 		Data:        a.Data,
 		Labels:      a.buildLabels(),

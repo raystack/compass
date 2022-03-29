@@ -31,18 +31,3 @@ func (t Type) IsValid() bool {
 	}
 	return false
 }
-
-//func GetTypeEnum(t string) Type {
-//	switch {
-//	case t == TypeTable.String():
-//		return TypeTable
-//	case t == TypeJob.String():
-//		return TypeJob
-//	case t == TypeDashboard.String():
-//		return TypeDashboard
-//	case t == TypeTopic.String():
-//		return TypeTopic
-//	}
-//	// fallback
-//	return TypeTable
-//}

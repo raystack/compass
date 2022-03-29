@@ -24,7 +24,7 @@ type AssetRepository struct {
 	defaultUserProvider string
 }
 
-// GetAll retrieves list of assets with filters via filter
+// GetAll retrieves list of assets with filters via config
 func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset.Asset, error) {
 	size := cfg.Size
 	if size == 0 {
@@ -241,7 +241,7 @@ func (r *AssetRepository) GetByVersion(ctx context.Context, id string, version s
 
 // Upsert creates a new asset if it does not exist yet.
 // It updates if asset does exist.
-// Checking existance is done using "urn", "type", and "service" fields.
+// Checking existence is done using "urn", "type", and "service" fields.
 func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string, error) {
 	fetchedAsset, err := r.Find(ctx, ast.URN, ast.Type, ast.Service)
 	if errors.As(err, new(asset.NotFoundError)) {

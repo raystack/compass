@@ -13,8 +13,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-const MAX_ARRAY_FIELD_NUM = 10
-
 type Repository interface {
 	GetAll(context.Context, Config) ([]Asset, error)
 	GetCount(context.Context, Config) (int, error)
@@ -206,21 +204,4 @@ func (a *Asset) Diff(otherAsset *Asset) (diff.Changelog, error) {
 // It is using json annotation of the struct to patch the correct keys
 func (a *Asset) Patch(patchData map[string]interface{}) {
 	patchAsset(a, patchData)
-}
-
-// ValidateConstraint checks whether non empty/nil fields fulfill the contract
-func (a *Asset) ValidateConstraint() error {
-	//if len(strings.TrimSpace(a.Type.String())) > 0 && !IsTypeStringValid(a.Type.String()) {
-	//	return ErrUnknownType
-	//}
-
-	//if a.Service != nil && len(a.Service) > MAX_ARRAY_FIELD_NUM {
-	//	return fmt.Errorf("service cannot be more than %d", MAX_ARRAY_FIELD_NUM)
-	//}
-	//
-	//if a.Type != nil && len(a.Type) > MAX_ARRAY_FIELD_NUM {
-	//	return fmt.Errorf("type cannot be more than %d", MAX_ARRAY_FIELD_NUM)
-	//}
-
-	return nil
 }
