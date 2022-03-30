@@ -45,7 +45,7 @@ func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset
 		return nil, fmt.Errorf("error getting asset list: %w", err)
 	}
 
-	var assets []asset.Asset
+	assets := []asset.Asset{}
 	for _, am := range ams {
 		assets = append(assets, am.toAsset(nil))
 	}
@@ -57,6 +57,7 @@ func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset
 func (r *AssetRepository) GetCount(ctx context.Context, config asset.Config) (total int, err error) {
 	builder := sq.Select("count(1)").From("assets")
 	builder = r.buildFilterQuery(builder, config)
+	builder = r.buildOrderQuery(builder, config)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
 		err = fmt.Errorf("error building count query: %w", err)
@@ -663,15 +664,16 @@ func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.C
 }
 
 func (r *AssetRepository) buildOrderQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
-	if cfg.SortBy != "" {
-		orderDirection := "ASC"
-		if cfg.SortDirection != "" {
-			orderDirection = strings.ToUpper(cfg.SortDirection)
-		}
-		return builder.OrderBy(cfg.SortBy + " " + orderDirection)
+	if cfg.SortBy == "" {
+		return builder
 	}
 
-	return builder
+	orderDirection := "ASC"
+	if cfg.SortDirection != "" {
+		orderDirection = cfg.SortDirection
+	}
+
+	return builder.OrderBy(cfg.SortBy + " " + orderDirection)
 }
 
 // NewAssetRepository initializes user repository clients

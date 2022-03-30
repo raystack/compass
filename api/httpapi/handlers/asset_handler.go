@@ -69,8 +69,15 @@ func (h *AssetHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	withTotal, ok := r.URL.Query()["with_total"]
 	if ok && len(withTotal) > 0 && withTotal[0] != "false" && withTotal[0] != "0" {
 		total, err := h.assetRepo.GetCount(r.Context(), asset.Config{
-			Types:    cfg.Types,
-			Services: cfg.Services,
+			Types:         cfg.Types,
+			Services:      cfg.Services,
+			Size:          cfg.Size,
+			Offset:        cfg.Offset,
+			SortBy:        cfg.SortBy,
+			SortDirection: cfg.SortDirection,
+			QueryFields:   cfg.QueryFields,
+			Query:         cfg.Query,
+			Data:          cfg.Data,
 		})
 		if err != nil {
 			internalServerError(w, h.logger, err.Error())
@@ -384,8 +391,8 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 	types := query.Get("types")
 	if types != "" {
 		typ := strings.Split(types, ",")
-		for _, j := range typ {
-			cfg.Types = append(cfg.Types, asset.Type(j))
+		for _, typeVal := range typ {
+			cfg.Types = append(cfg.Types, asset.Type(typeVal))
 		}
 	}
 
@@ -416,6 +423,7 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 	}
 
 	cfg.Data = dataAssetConfigValue(query)
+	cfg.AssignDefault()
 	if err = cfg.Validate(); err != nil {
 		return asset.Config{}, err
 	}

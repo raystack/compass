@@ -20,8 +20,6 @@ import (
 
 var defaultAssetUpdaterUserID = uuid.NewString()
 
-const defaultGetAssetMaxSize = 3
-
 type AssetRepositoryTestSuite struct {
 	suite.Suite
 	ctx        context.Context
@@ -142,7 +140,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	})
 
 	r.Run("should override default size using GetConfig.Size", func() {
-		size := 3
+		size := 2
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			Size: size,
 		})
