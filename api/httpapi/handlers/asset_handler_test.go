@@ -694,7 +694,7 @@ func TestAssetHandlerGet(t *testing.T) {
 		},
 		{
 			Description:  `should parse querystring to get config`,
-			Querystring:  "?types=table&services=bigquery&size=30&offset=50&sort=created_at&direction=desc&config.data[dataset]=booking&config.data[project]=p-godata-id",
+			Querystring:  "?types=table&services=bigquery&size=30&offset=50&sort=created_at&direction=desc&config.data[dataset]=booking&config.data[project]=p-godata-id&q=internal&q_fields=name,urn,description,services",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
@@ -708,6 +708,8 @@ func TestAssetHandlerGet(t *testing.T) {
 						"dataset": "booking",
 						"project": "p-godata-id",
 					},
+					Query:       "internal",
+					QueryFields: []string{"name", "urn", "description", "services"},
 				}).Return([]asset.Asset{}, nil, nil)
 			},
 		},

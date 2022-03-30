@@ -10,7 +10,8 @@ paths:
         - Assets
       summary: Get list of assets
       description: "Returns list of assets. You can specify additional match criteria using 'config.data[{fields}]' query parameters. 
-      For instance, to specify two data fields project and dataset, the query could be ?types=table&services=bigquery&size=30&offset=50&sort=created_at&direction=desc&config.data[dataset]=booking&config.data[project]=p-godata-id",
+      For instance, to specify two data fields project and dataset, the query could be ?types=table&services=bigquery&size=30&offset=50&sort=created_at&direction=desc&config.data[dataset]=booking&config.data[project]=p-godata-id"
+      produces:
         - "application/json"
       parameters:
         - in: header
