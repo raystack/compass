@@ -133,14 +133,14 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	r.Run("should return all assets limited by default size", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{})
 		r.Require().NoError(err)
-		r.Require().Len(results, defaultGetAssetMaxSize)
-		for i := 0; i < defaultGetAssetMaxSize; i++ {
+		r.Require().Len(results, defaultGetMaxSize)
+		for i := 0; i < defaultGetMaxSize; i++ {
 			r.assertAsset(&assets[i], &results[i])
 		}
 	})
 
 	r.Run("should override default size using GetConfig.Size", func() {
-		size := 2
+		size := 6
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			Size: size,
 		})
@@ -157,7 +157,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 			Offset: offset,
 		})
 		r.Require().NoError(err)
-		for i := offset; i > defaultGetAssetMaxSize+offset; i++ {
+		for i := offset; i > defaultGetMaxSize+offset; i++ {
 			r.assertAsset(&assets[i], &results[i-offset])
 		}
 	})
@@ -184,9 +184,10 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		})
 		r.Require().NoError(err)
 
-		expectedURNs := []string{"c-demo-kafka", "i-undefined-dfgdgd-avi"}
+		expectedURNs := []string{"c-demo-kafka", "f-john-test-001", "i-test-grant", "i-undefined-dfgdgd-avi"}
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
+			fmt.Println(results[i].URN)
 			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})
@@ -215,9 +216,10 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		})
 		r.Require().NoError(err)
 
-		expectedURNs := []string{"e-test-grant2"}
+		expectedURNs := []string{"e-test-grant2", "h-test-new-kafka", "i-test-grant"}
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
+			fmt.Println(results[i].URN)
 			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})

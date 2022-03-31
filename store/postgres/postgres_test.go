@@ -17,10 +17,9 @@ import (
 )
 
 const (
-	logLevelDebug          = "debug"
-	defaultProviderName    = "shield"
-	defaultGetMaxSize      = 7
-	defaultGetAssetMaxSize = 3
+	logLevelDebug       = "debug"
+	defaultProviderName = "shield"
+	defaultGetMaxSize   = 7
 )
 
 var (

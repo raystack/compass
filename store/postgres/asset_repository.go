@@ -57,7 +57,6 @@ func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset
 func (r *AssetRepository) GetCount(ctx context.Context, config asset.Config) (total int, err error) {
 	builder := sq.Select("count(1)").From("assets")
 	builder = r.buildFilterQuery(builder, config)
-	builder = r.buildOrderQuery(builder, config)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
 		err = fmt.Errorf("error building count query: %w", err)
