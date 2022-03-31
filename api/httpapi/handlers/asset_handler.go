@@ -20,7 +20,10 @@ import (
 	"github.com/odpf/columbus/user"
 )
 
-var dataFilterPrefix = "config."
+var (
+	dataFilterPrefix = "filter"
+	dataPrefix       = "data."
+)
 
 // AssetHandler exposes a REST interface to types
 type AssetHandler struct {
@@ -455,7 +458,8 @@ func dataAssetConfigValue(queryString url.Values) map[string]string {
 			return nil
 		}
 
-		filterKey := key[posFirstAdjusted:posLast]
+		queryKey := key[posFirstAdjusted:posLast]
+		filterKey := strings.TrimPrefix(queryKey, dataPrefix)
 		dataFilter[filterKey] = values[0] // cannot have duplicate query key, always get the first one
 	}
 
