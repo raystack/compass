@@ -905,14 +905,14 @@ func TestAssetHandlerGetVersionHistory(t *testing.T) {
 			Description:  `should return http 400 if asset id is not uuid`,
 			ExpectStatus: http.StatusBadRequest,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetVersionHistory", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{}, asset.InvalidError{AssetID: assetID})
+				ar.On("GetVersionHistory", ctx, asset.Config{}, assetID).Return([]asset.Asset{}, asset.InvalidError{AssetID: assetID})
 			},
 		},
 		{
 			Description:  `should return http 500 if fetching fails`,
 			ExpectStatus: http.StatusInternalServerError,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetVersionHistory", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{}, errors.New("unknown error"))
+				ar.On("GetVersionHistory", ctx, asset.Config{}, assetID).Return([]asset.Asset{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -923,24 +923,24 @@ func TestAssetHandlerGetVersionHistory(t *testing.T) {
 				ar.On("GetVersionHistory", ctx, asset.Config{
 					Size:   30,
 					Offset: 50,
-				}, assetID).Return([]asset.AssetVersion{}, nil, nil)
+				}, assetID).Return([]asset.Asset{}, nil, nil)
 			},
 		},
 		{
 			Description:  "should return http 200 status along with list of asset versions",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetVersionHistory", ctx, asset.Config{}, assetID).Return([]asset.AssetVersion{
+				ar.On("GetVersionHistory", ctx, asset.Config{}, assetID).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 				}, nil, nil)
 			},
 			PostCheck: func(r *http.Response) error {
-				expected := []asset.AssetVersion{
+				expected := []asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 				}
-				var actual []asset.AssetVersion
+				var actual []asset.Asset
 				err := json.NewDecoder(r.Body).Decode(&actual)
 				if err != nil {
 					return fmt.Errorf("error reading response body: %w", err)

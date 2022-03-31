@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/odpf/columbus/api"
 	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
@@ -18,16 +18,17 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/testing/protocmp"
 )
 
 func TestGetAllDiscussions(t *testing.T) {
 	var userID = uuid.NewString()
 	type testCase struct {
-		Description string
-		Request     *compassv1beta1.GetAllDiscussionsRequest
-		Setup       func(context.Context, *mocks.DiscussionRepository)
-		StatusCode  codes.Code
-		PostCheck   func(resp *compassv1beta1.GetAllDiscussionsResponse) error
+		Description  string
+		Request      *compassv1beta1.GetAllDiscussionsRequest
+		Setup        func(context.Context, *mocks.DiscussionRepository)
+		ExpectStatus codes.Code
+		PostCheck    func(resp *compassv1beta1.GetAllDiscussionsResponse) error
 	}
 
 	var testCases = []testCase{
@@ -41,7 +42,7 @@ func TestGetAllDiscussions(t *testing.T) {
 					SortDirection: "desc",
 				}).Return([]discussion.Discussion{}, errors.New("unknown error"))
 			},
-			StatusCode: codes.Internal,
+			ExpectStatus: codes.Internal,
 		},
 		{
 			Description: `should parse querystring to get filter`,
@@ -71,7 +72,7 @@ func TestGetAllDiscussions(t *testing.T) {
 					Offset:        50,
 				}).Return([]discussion.Discussion{}, nil)
 			},
-			StatusCode: codes.OK,
+			ExpectStatus: codes.OK,
 		},
 		{
 			Description: "should return status OK along with list of discussions",
@@ -87,22 +88,19 @@ func TestGetAllDiscussions(t *testing.T) {
 				}, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAllDiscussionsResponse) error {
-				expected := []discussion.Discussion{
-					{ID: "1122"},
-					{ID: "2233"},
+				expected := &compassv1beta1.GetAllDiscussionsResponse{
+					Data: []*compassv1beta1.Discussion{
+						{Id: "1122"},
+						{Id: "2233"},
+					},
 				}
 
-				actual := []discussion.Discussion{}
-				for _, dsc := range resp.GetData() {
-					actual = append(actual, discussion.NewFromProto(dsc))
-				}
-
-				if reflect.DeepEqual(actual, expected) == false {
-					return fmt.Errorf("expected payload to be to be %+v, was %+v", expected, actual)
+				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
+					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
 				}
 				return nil
 			},
-			StatusCode: codes.OK,
+			ExpectStatus: codes.OK,
 		},
 	}
 
@@ -119,8 +117,8 @@ func TestGetAllDiscussions(t *testing.T) {
 			})
 			got, err := handler.GetAllDiscussions(ctx, tc.Request)
 			code := status.Code(err)
-			if code != tc.StatusCode {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", code.String(), tc.StatusCode.String())
+			if code != tc.ExpectStatus {
+				t.Errorf("expected handler to return Code %s, returned Code %sinstead", code.String(), tc.ExpectStatus.String())
 				return
 			}
 			if tc.PostCheck != nil {
@@ -142,18 +140,18 @@ func TestCreateDiscussion(t *testing.T) {
 	}
 
 	type testCase struct {
-		Description string
-		Request     *compassv1beta1.CreateDiscussionRequest
-		Setup       func(context.Context, *mocks.DiscussionRepository)
-		StatusCode  codes.Code
+		Description  string
+		Request      *compassv1beta1.CreateDiscussionRequest
+		Setup        func(context.Context, *mocks.DiscussionRepository)
+		ExpectStatus codes.Code
 	}
 
 	var testCases = []testCase{
 
 		{
-			Description: "should return Invalid Argument if empty object",
-			Request:     &compassv1beta1.CreateDiscussionRequest{},
-			StatusCode:  codes.InvalidArgument,
+			Description:  "should return Invalid Argument if empty object",
+			Request:      &compassv1beta1.CreateDiscussionRequest{},
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return Invalid Argument if empty title",
@@ -161,7 +159,7 @@ func TestCreateDiscussion(t *testing.T) {
 				Body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
 				Type: discussion.TypeQAndA.String(),
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return Invalid Argument if no body",
@@ -169,7 +167,7 @@ func TestCreateDiscussion(t *testing.T) {
 				Title: "Lorem Ipsum",
 				Type:  discussion.TypeQAndA.String(),
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return Invalid Argument if empty body",
@@ -178,7 +176,7 @@ func TestCreateDiscussion(t *testing.T) {
 				Body:  "",
 				Type:  discussion.TypeQAndA.String(),
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return Invalid Argument if empty type",
@@ -187,7 +185,7 @@ func TestCreateDiscussion(t *testing.T) {
 				Body:  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
 				Type:  "",
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return Invalid Argument if wrong type",
@@ -196,20 +194,20 @@ func TestCreateDiscussion(t *testing.T) {
 				Body:  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
 				Type:  "wrongtype",
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
-			Description: "should return internal server error if the discussion creation fails",
-			Request:     validRequest,
-			StatusCode:  codes.Internal,
+			Description:  "should return internal server error if the discussion creation fails",
+			Request:      validRequest,
+			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				dr.EXPECT().Create(ctx, mock.AnythingOfType("*discussion.Discussion")).Return("", errors.New("some error"))
 			},
 		},
 		{
-			Description: "should return OK and discussion ID if the discussion is successfully created",
-			Request:     validRequest,
-			StatusCode:  codes.OK,
+			Description:  "should return OK and discussion ID if the discussion is successfully created",
+			Request:      validRequest,
+			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				dsc := discussion.Discussion{
 					Title: "Lorem Ipsum",
@@ -244,8 +242,8 @@ func TestCreateDiscussion(t *testing.T) {
 
 			_, err := handler.CreateDiscussion(ctx, tc.Request)
 			code := status.Code(err)
-			if code != tc.StatusCode {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.StatusCode.String(), code.String())
+			if code != tc.ExpectStatus {
+				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
 				return
 			}
 		})
@@ -259,17 +257,17 @@ func TestGetDiscussion(t *testing.T) {
 	)
 
 	type TestCase struct {
-		Description string
-		Request     *compassv1beta1.GetDiscussionRequest
-		Setup       func(context.Context, *mocks.DiscussionRepository)
-		StatusCode  codes.Code
-		PostCheck   func(resp *compassv1beta1.GetDiscussionResponse) error
+		Description  string
+		Request      *compassv1beta1.GetDiscussionRequest
+		Setup        func(context.Context, *mocks.DiscussionRepository)
+		ExpectStatus codes.Code
+		PostCheck    func(resp *compassv1beta1.GetDiscussionResponse) error
 	}
 
 	var testCases = []TestCase{
 		{
-			Description: `should return internal server error if fetching fails`,
-			StatusCode:  codes.Internal,
+			Description:  `should return internal server error if fetching fails`,
+			ExpectStatus: codes.Internal,
 			Request: &compassv1beta1.GetDiscussionRequest{
 				Id: discussionID,
 			},
@@ -278,22 +276,22 @@ func TestGetDiscussion(t *testing.T) {
 			},
 		},
 		{
-			Description: `should return invalid argument if discussion id not integer`,
-			StatusCode:  codes.InvalidArgument,
+			Description:  `should return invalid argument if discussion id not integer`,
+			ExpectStatus: codes.InvalidArgument,
 			Request: &compassv1beta1.GetDiscussionRequest{
 				Id: "random",
 			},
 		},
 		{
-			Description: `should return invalid argument if discussion id < 0`,
-			StatusCode:  codes.InvalidArgument,
+			Description:  `should return invalid argument if discussion id < 0`,
+			ExpectStatus: codes.InvalidArgument,
 			Request: &compassv1beta1.GetDiscussionRequest{
 				Id: "-1",
 			},
 		},
 		{
-			Description: `should return not found if discussion not found`,
-			StatusCode:  codes.NotFound,
+			Description:  `should return not found if discussion not found`,
+			ExpectStatus: codes.NotFound,
 			Request: &compassv1beta1.GetDiscussionRequest{
 				Id: discussionID,
 			},
@@ -302,21 +300,23 @@ func TestGetDiscussion(t *testing.T) {
 			},
 		},
 		{
-			Description: "should return status OK along with discussions",
-			StatusCode:  codes.OK,
+			Description:  "should return status OK along with discussions",
+			ExpectStatus: codes.OK,
 			Request: &compassv1beta1.GetDiscussionRequest{
 				Id: discussionID,
 			},
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				dr.EXPECT().Get(ctx, discussionID).Return(discussion.Discussion{ID: discussionID}, nil)
 			},
-			PostCheck: func(r *compassv1beta1.GetDiscussionResponse) error {
-				expected := discussion.Discussion{
-					ID: discussionID,
+			PostCheck: func(resp *compassv1beta1.GetDiscussionResponse) error {
+				expected := &compassv1beta1.GetDiscussionResponse{
+					Data: &compassv1beta1.Discussion{
+						Id: discussionID,
+					},
 				}
-				actual := discussion.NewFromProto(r.GetData())
-				if reflect.DeepEqual(actual, expected) == false {
-					return fmt.Errorf("expected payload to be to be %+v, was %+v", expected, actual)
+
+				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
+					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
 				}
 				return nil
 			},
@@ -339,8 +339,8 @@ func TestGetDiscussion(t *testing.T) {
 			})
 			got, err := handler.GetDiscussion(ctx, tc.Request)
 			code := status.Code(err)
-			if code != tc.StatusCode {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", code.String(), tc.StatusCode.String())
+			if code != tc.ExpectStatus {
+				t.Errorf("expected handler to return Code %s, returned Code %sinstead", code.String(), tc.ExpectStatus.String())
 				return
 			}
 			if tc.PostCheck != nil {
@@ -362,10 +362,10 @@ func TestPatchDiscussion(t *testing.T) {
 	var validRequest = &compassv1beta1.PatchDiscussionRequest{Id: discussionID, Title: "lorem ipsum"}
 
 	type TestCase struct {
-		Description string
-		Request     *compassv1beta1.PatchDiscussionRequest
-		StatusCode  codes.Code
-		Setup       func(context.Context, *mocks.DiscussionRepository)
+		Description  string
+		Request      *compassv1beta1.PatchDiscussionRequest
+		ExpectStatus codes.Code
+		Setup        func(context.Context, *mocks.DiscussionRepository)
 	}
 
 	testCases := []TestCase{
@@ -374,21 +374,21 @@ func TestPatchDiscussion(t *testing.T) {
 			Request: &compassv1beta1.PatchDiscussionRequest{
 				Id: "random",
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return invalid argument if discussion id is < 0 return invalid argument",
 			Request: &compassv1beta1.PatchDiscussionRequest{
 				Id: "-1",
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return invalid argument if empty object return invalid argument",
 			Request: &compassv1beta1.PatchDiscussionRequest{
 				Id: discussionID,
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return invalid argument if invalid type return invalid argument",
@@ -396,7 +396,7 @@ func TestPatchDiscussion(t *testing.T) {
 				Id:   discussionID,
 				Type: "random",
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return invalid argument if invalid state return invalid argument",
@@ -404,7 +404,7 @@ func TestPatchDiscussion(t *testing.T) {
 				Id:    discussionID,
 				State: "random",
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return invalid argument if assignees more than limit should return invalid argument",
@@ -412,7 +412,7 @@ func TestPatchDiscussion(t *testing.T) {
 				Id:        discussionID,
 				Assignees: []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"},
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return invalid argument if assets more than limit should return invalid argument",
@@ -420,7 +420,7 @@ func TestPatchDiscussion(t *testing.T) {
 				Id:     discussionID,
 				Assets: []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"},
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return invalid argument if labels more than limit should return invalid argument",
@@ -428,30 +428,30 @@ func TestPatchDiscussion(t *testing.T) {
 				Id:     discussionID,
 				Labels: []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"},
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
-			Description: "should return internal server error if the discussion patch fails",
-			Request:     validRequest,
-			StatusCode:  codes.Internal,
+			Description:  "should return internal server error if the discussion patch fails",
+			Request:      validRequest,
+			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				expectedErr := errors.New("unknown error")
 				dr.EXPECT().Patch(ctx, mock.AnythingOfType("*discussion.Discussion")).Return(expectedErr)
 			},
 		},
 		{
-			Description: "should return Not Found if the discussion id is invalid",
-			Request:     validRequest,
-			StatusCode:  codes.NotFound,
+			Description:  "should return Not Found if the discussion id is invalid",
+			Request:      validRequest,
+			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				expectedErr := discussion.NotFoundError{DiscussionID: discussionID}
 				dr.EXPECT().Patch(ctx, mock.AnythingOfType("*discussion.Discussion")).Return(expectedErr)
 			},
 		},
 		{
-			Description: "should return OK if the discussion is successfully patched",
-			Request:     validRequest,
-			StatusCode:  codes.OK,
+			Description:  "should return OK if the discussion is successfully patched",
+			Request:      validRequest,
+			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				dr.EXPECT().Patch(ctx, mock.AnythingOfType("*discussion.Discussion")).Return(nil)
 			},
@@ -475,8 +475,8 @@ func TestPatchDiscussion(t *testing.T) {
 
 			_, err := handler.PatchDiscussion(ctx, tc.Request)
 			code := status.Code(err)
-			if code != tc.StatusCode {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.StatusCode.String(), code.String())
+			if code != tc.ExpectStatus {
+				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
 				return
 			}
 		})

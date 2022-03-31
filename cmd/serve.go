@@ -41,7 +41,9 @@ import (
 
 // Version of the current build. overridden by the build system.
 // see "Makefile" for more information
-var Version string
+var (
+	Version string
+)
 
 func Serve() {
 	if err := loadConfig(); err != nil {
@@ -81,11 +83,10 @@ func Serve() {
 
 	muxServer, gw, err := newGRPCServer(
 		config,
-		newRelicMonitor.Application(),
 		grpc_recovery.UnaryServerInterceptor(),
 		grpc_ctxtags.UnaryServerInterceptor(),
 		grpc_logrus.UnaryServerInterceptor(logrus.NewEntry(logrus.New())), //TODO: expose *logrus.Logger in salt
-		nrgrpc.UnaryServerInterceptor(newRelicMonitor.Application()),
+		nrgrpc.UnaryServerInterceptor(newRelicMonitor.Application()),      // TODO: newRelicMonitor might be nil
 		grpc_interceptor.ValidateUser(config.IdentityHeader, deps.UserService),
 	)
 	if err != nil {
@@ -320,7 +321,7 @@ func esInfo(cli *elasticsearch.Client) (string, error) {
 	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
 }
 
-func newGRPCServer(cfg Config, nrApp *newrelic.Application, middleware ...grpc.UnaryServerInterceptor) (*server.MuxServer, *server.GRPCGateway, error) {
+func newGRPCServer(cfg Config, middleware ...grpc.UnaryServerInterceptor) (*server.MuxServer, *server.GRPCGateway, error) {
 	grpcPortInt, err := strconv.Atoi(config.GRPCServerPort)
 	if err != nil {
 		return nil, nil, err
@@ -341,7 +342,6 @@ func newGRPCServer(cfg Config, nrApp *newrelic.Application, middleware ...grpc.U
 			),
 		),
 	)
-	// server.WithMuxHTTPServer(httpServer))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -363,35 +363,8 @@ func newGRPCServer(cfg Config, nrApp *newrelic.Application, middleware ...grpc.U
 		return nil, nil, err
 	}
 
-	// if err = gw.RegisterHandler(ctx, compassv1beta1.RegisterCompassServiceHandlerFromEndpoint); err != nil {
-	// 	return nil, err
-	// }
-
-	// muxServer.RegisterService(
-	// 	&compassv1beta1.CompassService_ServiceDesc,
-	// 	grpcapi.NewService(logger, deps),
-	// )
-
-	// api.RegisterHandlers(ctx, muxServer, gw)
 	return muxServer, gw, nil
 }
-
-// func (s *Server) Run() error {
-// 	ctx, cancelFunc := context.WithCancel(
-// 		server.HandleSignals(context.Background()),
-// 	)
-// 	defer cancelFunc()
-// 	if err = s.gw.RegisterHandler(ctx, compassv1beta1.RegisterCompassServiceHandlerFromEndpoint); err != nil {
-// 		return nil, err
-// 	}
-
-// 	s.muxServer.RegisterService(
-// 		&compassv1beta1.CompassService_ServiceDesc,
-// 		grpcapi.NewService(logger, deps),
-// 	)
-
-// 	// api.RegisterHandlers(ctx, muxServer, gw)
-// }
 
 func makeHeaderMatcher(c Config) func(key string) (string, bool) {
 	return func(key string) (string, bool) {

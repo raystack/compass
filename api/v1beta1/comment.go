@@ -10,7 +10,6 @@ import (
 	"github.com/odpf/columbus/user"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // CreateComment will create a new comment of a discussion
@@ -111,7 +110,7 @@ func (h *Handler) GetComment(ctx context.Context, req *compassv1beta1.GetComment
 }
 
 // UpdateComment is an api to update a comment by discussion id
-func (h *Handler) UpdateComment(ctx context.Context, req *compassv1beta1.UpdateCommentRequest) (*emptypb.Empty, error) {
+func (h *Handler) UpdateComment(ctx context.Context, req *compassv1beta1.UpdateCommentRequest) (*compassv1beta1.UpdateCommentResponse, error) {
 	userID := user.FromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
@@ -148,11 +147,11 @@ func (h *Handler) UpdateComment(ctx context.Context, req *compassv1beta1.UpdateC
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &emptypb.Empty{}, nil
+	return &compassv1beta1.UpdateCommentResponse{}, nil
 }
 
 // DeleteComment is an api to delete a comment by discussion id
-func (h *Handler) DeleteComment(ctx context.Context, req *compassv1beta1.DeleteCommentRequest) (*emptypb.Empty, error) {
+func (h *Handler) DeleteComment(ctx context.Context, req *compassv1beta1.DeleteCommentRequest) (*compassv1beta1.DeleteCommentResponse, error) {
 	userID := user.FromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
@@ -178,7 +177,7 @@ func (h *Handler) DeleteComment(ctx context.Context, req *compassv1beta1.DeleteC
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &emptypb.Empty{}, nil
+	return &compassv1beta1.DeleteCommentResponse{}, nil
 }
 
 func (h *Handler) buildGetAllDiscussionsFilter(req *compassv1beta1.GetAllDiscussionsRequest) (discussion.Filter, error) {

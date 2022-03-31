@@ -1,6 +1,6 @@
 package star
 
-//go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --structname StarRepository --filename star_repository.go
+//go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --with-expecter  --structname StarRepository --filename star_repository.go
 
 import (
 	"context"

@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/odpf/columbus/api"
 	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
@@ -17,6 +17,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/testing/protocmp"
 )
 
 func TestCreateComment(t *testing.T) {
@@ -30,11 +31,11 @@ func TestCreateComment(t *testing.T) {
 	)
 
 	type TestCase struct {
-		Description string
-		Request     *compassv1beta1.CreateCommentRequest
-		StatusCode  codes.Code
-		Result      string
-		Setup       func(context.Context, *mocks.DiscussionRepository)
+		Description  string
+		Request      *compassv1beta1.CreateCommentRequest
+		ExpectStatus codes.Code
+		Result       string
+		Setup        func(context.Context, *mocks.DiscussionRepository)
 	}
 
 	var testCases = []TestCase{
@@ -43,7 +44,7 @@ func TestCreateComment(t *testing.T) {
 			Request: &compassv1beta1.CreateCommentRequest{
 				DiscussionId: discussionID,
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return invalid request if discussion_id is not integer",
@@ -51,7 +52,7 @@ func TestCreateComment(t *testing.T) {
 				DiscussionId: "test",
 				Body:         validRequest.Body,
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return invalid request if discussion_id is < 1",
@@ -59,7 +60,7 @@ func TestCreateComment(t *testing.T) {
 				DiscussionId: "0",
 				Body:         validRequest.Body,
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "should return internal server error if the comment creation failed",
@@ -67,7 +68,7 @@ func TestCreateComment(t *testing.T) {
 				DiscussionId: validRequest.GetDiscussionId(),
 				Body:         validRequest.GetBody(),
 			},
-			StatusCode: codes.Internal,
+			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				expectedErr := errors.New("unknown error")
 				dr.EXPECT().CreateComment(ctx, mock.AnythingOfType("*discussion.Comment")).Return("", expectedErr)
@@ -79,7 +80,7 @@ func TestCreateComment(t *testing.T) {
 				DiscussionId: validRequest.GetDiscussionId(),
 				Body:         validRequest.GetBody(),
 			},
-			StatusCode: codes.OK,
+			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				dr.EXPECT().CreateComment(ctx, mock.AnythingOfType("*discussion.Comment")).Return("", nil)
 			},
@@ -103,8 +104,8 @@ func TestCreateComment(t *testing.T) {
 
 			got, err := handler.CreateComment(ctx, tc.Request)
 			code := status.Code(err)
-			if code != tc.StatusCode {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.StatusCode.String(), code.String())
+			if code != tc.ExpectStatus {
+				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
 				return
 			}
 			if got.GetId() != tc.Result {
@@ -121,11 +122,11 @@ func TestGetAllComments(t *testing.T) {
 		discussionID = "11111"
 	)
 	type testCase struct {
-		Description string
-		Request     *compassv1beta1.GetAllCommentsRequest
-		StatusCode  codes.Code
-		Setup       func(context.Context, *mocks.DiscussionRepository)
-		PostCheck   func(resp *compassv1beta1.GetAllCommentsResponse) error
+		Description  string
+		Request      *compassv1beta1.GetAllCommentsRequest
+		ExpectStatus codes.Code
+		Setup        func(context.Context, *mocks.DiscussionRepository)
+		PostCheck    func(resp *compassv1beta1.GetAllCommentsResponse) error
 	}
 	var testCases = []testCase{
 		{
@@ -133,21 +134,21 @@ func TestGetAllComments(t *testing.T) {
 			Request: &compassv1beta1.GetAllCommentsRequest{
 				DiscussionId: "test",
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: `should return invalid argument if discussion_id is < 1`,
 			Request: &compassv1beta1.GetAllCommentsRequest{
 				DiscussionId: "0",
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: `should return internal server error if fetching fails`,
 			Request: &compassv1beta1.GetAllCommentsRequest{
 				DiscussionId: discussionID,
 			},
-			StatusCode: codes.Internal,
+			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				dr.EXPECT().GetAllComments(ctx, discussionID, discussion.Filter{
 					Type:          "all",
@@ -166,7 +167,7 @@ func TestGetAllComments(t *testing.T) {
 				Size:         30,
 				Offset:       50,
 			},
-			StatusCode: codes.OK,
+			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				dr.EXPECT().GetAllComments(ctx, discussionID, discussion.Filter{
 					Type:          "all",
@@ -183,7 +184,7 @@ func TestGetAllComments(t *testing.T) {
 			Request: &compassv1beta1.GetAllCommentsRequest{
 				DiscussionId: discussionID,
 			},
-			StatusCode: codes.OK,
+			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				dr.EXPECT().GetAllComments(ctx, discussionID, discussion.Filter{
 					Type:          "all",
@@ -196,17 +197,15 @@ func TestGetAllComments(t *testing.T) {
 				}, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAllCommentsResponse) error {
-				expected := []discussion.Comment{
-					{ID: "1122"},
-					{ID: "2233"},
+				expected := &compassv1beta1.GetAllCommentsResponse{
+					Data: []*compassv1beta1.Comment{
+						{Id: "1122"},
+						{Id: "2233"},
+					},
 				}
 
-				var actual []discussion.Comment
-				for _, cmt := range resp.GetData() {
-					actual = append(actual, discussion.NewCommentFromProto(cmt))
-				}
-				if reflect.DeepEqual(actual, expected) == false {
-					return fmt.Errorf("expected payload to be to be %+v, was %+v", expected, actual)
+				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
+					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
 				}
 				return nil
 			},
@@ -229,8 +228,8 @@ func TestGetAllComments(t *testing.T) {
 
 			got, err := handler.GetAllComments(ctx, tc.Request)
 			code := status.Code(err)
-			if code != tc.StatusCode {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.StatusCode.String(), code.String())
+			if code != tc.ExpectStatus {
+				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
 				return
 			}
 			if tc.PostCheck != nil {
@@ -250,16 +249,16 @@ func TestGetComment(t *testing.T) {
 		commentID    = "11"
 	)
 	type testCase struct {
-		Description string
-		Request     *compassv1beta1.GetCommentRequest
-		StatusCode  codes.Code
-		Setup       func(context.Context, *mocks.DiscussionRepository)
-		PostCheck   func(resp *compassv1beta1.GetCommentResponse) error
+		Description  string
+		Request      *compassv1beta1.GetCommentRequest
+		ExpectStatus codes.Code
+		Setup        func(context.Context, *mocks.DiscussionRepository)
+		PostCheck    func(resp *compassv1beta1.GetCommentResponse) error
 	}
 	var testCases = []testCase{
 		{
-			Description: `should return internal server error if fetching fails`,
-			StatusCode:  codes.Internal,
+			Description:  `should return internal server error if fetching fails`,
+			ExpectStatus: codes.Internal,
 			Request: &compassv1beta1.GetCommentRequest{
 				Id:           commentID,
 				DiscussionId: discussionID,
@@ -269,40 +268,40 @@ func TestGetComment(t *testing.T) {
 			},
 		},
 		{
-			Description: `should return invalid argument if discussion id not integer`,
-			StatusCode:  codes.InvalidArgument,
+			Description:  `should return invalid argument if discussion id not integer`,
+			ExpectStatus: codes.InvalidArgument,
 			Request: &compassv1beta1.GetCommentRequest{
 				Id:           commentID,
 				DiscussionId: "random",
 			},
 		},
 		{
-			Description: `should return invalid argument if discussion id < 0`,
-			StatusCode:  codes.InvalidArgument,
+			Description:  `should return invalid argument if discussion id < 0`,
+			ExpectStatus: codes.InvalidArgument,
 			Request: &compassv1beta1.GetCommentRequest{
 				Id:           commentID,
 				DiscussionId: "-1",
 			},
 		},
 		{
-			Description: `should return invalid argument if comment id not integer`,
-			StatusCode:  codes.InvalidArgument,
+			Description:  `should return invalid argument if comment id not integer`,
+			ExpectStatus: codes.InvalidArgument,
 			Request: &compassv1beta1.GetCommentRequest{
 				Id:           "random",
 				DiscussionId: discussionID,
 			},
 		},
 		{
-			Description: `should return invalid argument if comment id < 0`,
-			StatusCode:  codes.InvalidArgument,
+			Description:  `should return invalid argument if comment id < 0`,
+			ExpectStatus: codes.InvalidArgument,
 			Request: &compassv1beta1.GetCommentRequest{
 				Id:           "-1",
 				DiscussionId: discussionID,
 			},
 		},
 		{
-			Description: `should return Not Found if comment or discussion not found`,
-			StatusCode:  codes.NotFound,
+			Description:  `should return Not Found if comment or discussion not found`,
+			ExpectStatus: codes.NotFound,
 			Request: &compassv1beta1.GetCommentRequest{
 				Id:           commentID,
 				DiscussionId: discussionID,
@@ -312,8 +311,8 @@ func TestGetComment(t *testing.T) {
 			},
 		},
 		{
-			Description: "should return status OK along with comment of a discussion",
-			StatusCode:  codes.OK,
+			Description:  "should return status OK along with comment of a discussion",
+			ExpectStatus: codes.OK,
 			Request: &compassv1beta1.GetCommentRequest{
 				Id:           commentID,
 				DiscussionId: discussionID,
@@ -321,15 +320,16 @@ func TestGetComment(t *testing.T) {
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				dr.EXPECT().GetComment(ctx, commentID, discussionID).Return(discussion.Comment{ID: commentID, DiscussionID: discussionID}, nil)
 			},
-			PostCheck: func(r *compassv1beta1.GetCommentResponse) error {
-				expected := discussion.Comment{
-					ID:           commentID,
-					DiscussionID: discussionID,
+			PostCheck: func(resp *compassv1beta1.GetCommentResponse) error {
+				expected := &compassv1beta1.GetCommentResponse{
+					Data: &compassv1beta1.Comment{
+						Id:           commentID,
+						DiscussionId: discussionID,
+					},
 				}
 
-				actual := discussion.NewCommentFromProto(r.GetData())
-				if reflect.DeepEqual(actual, expected) == false {
-					return fmt.Errorf("expected payload to be to be %+v, was %+v", expected, actual)
+				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
+					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
 				}
 				return nil
 			},
@@ -352,8 +352,8 @@ func TestGetComment(t *testing.T) {
 
 			got, err := handler.GetComment(ctx, tc.Request)
 			code := status.Code(err)
-			if code != tc.StatusCode {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.StatusCode.String(), code.String())
+			if code != tc.ExpectStatus {
+				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
 				return
 			}
 			if tc.PostCheck != nil {
@@ -378,10 +378,10 @@ func TestUpdateComment(t *testing.T) {
 		Body:         "lorem ipsum",
 	}
 	testCases := []struct {
-		Description string
-		Request     *compassv1beta1.UpdateCommentRequest
-		StatusCode  codes.Code
-		Setup       func(context.Context, *mocks.DiscussionRepository)
+		Description  string
+		Request      *compassv1beta1.UpdateCommentRequest
+		ExpectStatus codes.Code
+		Setup        func(context.Context, *mocks.DiscussionRepository)
 	}{
 		{
 			Description: "discussion id is not integer return bad request",
@@ -389,7 +389,7 @@ func TestUpdateComment(t *testing.T) {
 				Id:           commentID,
 				DiscussionId: "random",
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "discussion id is < 0 return bad request",
@@ -397,7 +397,7 @@ func TestUpdateComment(t *testing.T) {
 				Id:           commentID,
 				DiscussionId: "-1",
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "comment id is not integer return bad request",
@@ -405,7 +405,7 @@ func TestUpdateComment(t *testing.T) {
 				Id:           "random",
 				DiscussionId: discussionID,
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "comment id is < 0 return bad request",
@@ -413,7 +413,7 @@ func TestUpdateComment(t *testing.T) {
 				Id:           "-1",
 				DiscussionId: discussionID,
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "empty object return bad request",
@@ -421,7 +421,7 @@ func TestUpdateComment(t *testing.T) {
 				Id:           commentID,
 				DiscussionId: discussionID,
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "empty body return bad request",
@@ -430,12 +430,12 @@ func TestUpdateComment(t *testing.T) {
 				DiscussionId: discussionID,
 				Body:         "",
 			},
-			StatusCode: codes.InvalidArgument,
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
-			Description: "should return internal server error if the update comment failed",
-			Request:     validRequest,
-			StatusCode:  codes.Internal,
+			Description:  "should return internal server error if the update comment failed",
+			Request:      validRequest,
+			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				cmt := &discussion.Comment{
 					ID:           validRequest.Id,
@@ -448,9 +448,9 @@ func TestUpdateComment(t *testing.T) {
 			},
 		},
 		{
-			Description: "should return Not Found if the discussion id or comment id not found",
-			Request:     validRequest,
-			StatusCode:  codes.NotFound,
+			Description:  "should return Not Found if the discussion id or comment id not found",
+			Request:      validRequest,
+			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				cmt := &discussion.Comment{
 					ID:           validRequest.Id,
@@ -463,9 +463,9 @@ func TestUpdateComment(t *testing.T) {
 			},
 		},
 		{
-			Description: "should return status OK if the comment is successfully updated",
-			Request:     validRequest,
-			StatusCode:  codes.OK,
+			Description:  "should return status OK if the comment is successfully updated",
+			Request:      validRequest,
+			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				cmt := &discussion.Comment{
 					ID:           validRequest.Id,
@@ -495,8 +495,8 @@ func TestUpdateComment(t *testing.T) {
 
 			_, err := handler.UpdateComment(ctx, tc.Request)
 			code := status.Code(err)
-			if code != tc.StatusCode {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.StatusCode, code.String())
+			if code != tc.ExpectStatus {
+				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus, code.String())
 				return
 			}
 		})
@@ -511,46 +511,46 @@ func TestDeleteComment(t *testing.T) {
 	)
 
 	testCases := []struct {
-		Description string
-		Request     *compassv1beta1.DeleteCommentRequest
-		StatusCode  codes.Code
-		Setup       func(context.Context, *mocks.DiscussionRepository)
+		Description  string
+		Request      *compassv1beta1.DeleteCommentRequest
+		ExpectStatus codes.Code
+		Setup        func(context.Context, *mocks.DiscussionRepository)
 	}{
 		{
-			Description: "discussion id is not integer return bad request",
-			StatusCode:  codes.InvalidArgument,
+			Description:  "discussion id is not integer return bad request",
+			ExpectStatus: codes.InvalidArgument,
 			Request: &compassv1beta1.DeleteCommentRequest{
 				Id:           commentID,
 				DiscussionId: "random",
 			},
 		},
 		{
-			Description: "discussion id is < 0 return bad request",
-			StatusCode:  codes.InvalidArgument,
+			Description:  "discussion id is < 0 return bad request",
+			ExpectStatus: codes.InvalidArgument,
 			Request: &compassv1beta1.DeleteCommentRequest{
 				Id:           commentID,
 				DiscussionId: "-1",
 			},
 		},
 		{
-			Description: "comment id is not integer return bad request",
-			StatusCode:  codes.InvalidArgument,
+			Description:  "comment id is not integer return bad request",
+			ExpectStatus: codes.InvalidArgument,
 			Request: &compassv1beta1.DeleteCommentRequest{
 				Id:           "random",
 				DiscussionId: discussionID,
 			},
 		},
 		{
-			Description: "comment id is < 0 return bad request",
-			StatusCode:  codes.InvalidArgument,
+			Description:  "comment id is < 0 return bad request",
+			ExpectStatus: codes.InvalidArgument,
 			Request: &compassv1beta1.DeleteCommentRequest{
 				Id:           "-1",
 				DiscussionId: discussionID,
 			},
 		},
 		{
-			Description: "should return internal server error if the delete comment failed",
-			StatusCode:  codes.Internal,
+			Description:  "should return internal server error if the delete comment failed",
+			ExpectStatus: codes.Internal,
 			Request: &compassv1beta1.DeleteCommentRequest{
 				Id:           commentID,
 				DiscussionId: discussionID,
@@ -561,8 +561,8 @@ func TestDeleteComment(t *testing.T) {
 			},
 		},
 		{
-			Description: "should return invalid argument if the discussion id or comment id not found",
-			StatusCode:  codes.NotFound,
+			Description:  "should return invalid argument if the discussion id or comment id not found",
+			ExpectStatus: codes.NotFound,
 			Request: &compassv1beta1.DeleteCommentRequest{
 				Id:           commentID,
 				DiscussionId: discussionID,
@@ -573,8 +573,8 @@ func TestDeleteComment(t *testing.T) {
 			},
 		},
 		{
-			Description: "should return OK if the comment is successfully deleted",
-			StatusCode:  codes.OK,
+			Description:  "should return OK if the comment is successfully deleted",
+			ExpectStatus: codes.OK,
 			Request: &compassv1beta1.DeleteCommentRequest{
 				Id:           commentID,
 				DiscussionId: discussionID,
@@ -602,8 +602,8 @@ func TestDeleteComment(t *testing.T) {
 
 			_, err := handler.DeleteComment(ctx, tc.Request)
 			code := status.Code(err)
-			if code != tc.StatusCode {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.StatusCode.String(), code.String())
+			if code != tc.ExpectStatus {
+				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
 				return
 			}
 		})

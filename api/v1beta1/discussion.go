@@ -10,7 +10,6 @@ import (
 	"github.com/odpf/columbus/user"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // GetAll returns all discussion based on filter in query params
@@ -108,7 +107,7 @@ func (h *Handler) GetDiscussion(ctx context.Context, req *compassv1beta1.GetDisc
 // Patch updates a specific field in discussion
 // empty array in assets,labels,assignees will be considered
 // and clear all assets,labels,assignees from the discussion
-func (h *Handler) PatchDiscussion(ctx context.Context, req *compassv1beta1.PatchDiscussionRequest) (*emptypb.Empty, error) {
+func (h *Handler) PatchDiscussion(ctx context.Context, req *compassv1beta1.PatchDiscussionRequest) (*compassv1beta1.PatchDiscussionResponse, error) {
 	userID := user.FromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
@@ -128,9 +127,9 @@ func (h *Handler) PatchDiscussion(ctx context.Context, req *compassv1beta1.Patch
 		Body:      req.GetBody(),
 		Type:      discussion.Type(req.GetType()),
 		State:     discussion.State(req.GetState()),
-		Labels:    req.Labels,
-		Assets:    req.Assets,
-		Assignees: req.Assignees,
+		Labels:    req.GetLabels(),
+		Assets:    req.GetAssets(),
+		Assignees: req.GetAssignees(),
 	}
 
 	if isEmpty := dsc.IsEmpty(); isEmpty {
@@ -153,7 +152,7 @@ func (h *Handler) PatchDiscussion(ctx context.Context, req *compassv1beta1.Patch
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &emptypb.Empty{}, nil
+	return &compassv1beta1.PatchDiscussionResponse{}, nil
 }
 
 func (h *Handler) validateIDInteger(id string) error {

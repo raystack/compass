@@ -1,4 +1,4 @@
-version: v1beta1
+version: v1
 plugins:
   - name: go
     out: api/proto
@@ -22,3 +22,4 @@ plugins:
       - allow_repeated_fields_in_body=true
       - allow_merge=true
       - merge_file_name=compass
+

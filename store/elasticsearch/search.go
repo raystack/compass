@@ -21,6 +21,8 @@ const (
 	suggesterName                      = "name-phrase-suggest"
 )
 
+var returnedAssetFieldsResult = []string{"id", "urn", "type", "service", "name", "description", "data", "labels", "created_at", "updated_at"}
+
 type SearcherConfig struct {
 	Client *elasticsearch.Client
 }
@@ -77,6 +79,7 @@ func (sr *Searcher) Search(ctx context.Context, cfg discovery.SearchConfig) (res
 		sr.cli.Search.WithIndex(indices...),
 		sr.cli.Search.WithSize(maxResults),
 		sr.cli.Search.WithIgnoreUnavailable(true),
+		sr.cli.Search.WithSourceIncludes(returnedAssetFieldsResult...),
 		sr.cli.Search.WithContext(ctx),
 	)
 	if err != nil {
