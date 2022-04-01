@@ -14,10 +14,10 @@ clean:
 	rm -rf columbus dist/
 
 test:
-	go test -race ./... -coverprofile=coverage.txt
+	go test -race ./... -coverprofile=coverage.out
 
 test-coverage: test
-	go tool cover -html=coverage.txt -o cover.html
+	go tool cover -html=coverage.out -o cover.html
 
 dist:
 	@bash ./scripts/build.sh

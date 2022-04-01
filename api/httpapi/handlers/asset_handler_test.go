@@ -690,7 +690,7 @@ func TestAssetHandlerGet(t *testing.T) {
 		},
 		{
 			Description:  `should parse querystring to get config`,
-			Querystring:  "?types=table&services=bigquery&size=30&offset=50&sort=created_at&direction=desc&filter[data.dataset]=booking&filter[data.project]=p-godata-id&q=internal&q_fields=name,urn",
+			Querystring:  "?types=table&services=bigquery&size=30&offset=50&sort=created_at&direction=desc&data[dataset]=booking&data[project]=p-godata-id&q=internal&q_fields=name,urn",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
@@ -711,7 +711,7 @@ func TestAssetHandlerGet(t *testing.T) {
 		},
 		{
 			Description:  `should parse data and query fields querystring to get config`,
-			Querystring:  "?filter[data.dataset]=booking&filter[data.project]=p-godata-id&q=internal&q_fields=name,urn,description,services",
+			Querystring:  "?data[dataset]=booking&data[project]=p-godata-id&q=internal&q_fields=name,urn,description,services",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
@@ -726,7 +726,7 @@ func TestAssetHandlerGet(t *testing.T) {
 		},
 		{
 			Description:  `should parse data fields querystring to get config`,
-			Querystring:  "?filter[data.dataset]=booking&filter[data.project]=p-godata-id",
+			Querystring:  "?data[dataset]=booking&data[project]=p-godata-id",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{

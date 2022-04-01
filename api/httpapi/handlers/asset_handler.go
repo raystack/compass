@@ -21,8 +21,7 @@ import (
 )
 
 var (
-	dataFilterPrefix = "filter"
-	dataPrefix       = "data."
+	dataFilterPrefix = "data"
 )
 
 // AssetHandler exposes a REST interface to types
@@ -458,8 +457,7 @@ func dataAssetConfigValue(queryString url.Values) map[string]string {
 			return nil
 		}
 
-		queryKey := key[posFirstAdjusted:posLast]
-		filterKey := strings.TrimPrefix(queryKey, dataPrefix)
+		filterKey := key[posFirstAdjusted:posLast]
 		dataFilter[filterKey] = values[0] // cannot have duplicate query key, always get the first one
 	}
 
