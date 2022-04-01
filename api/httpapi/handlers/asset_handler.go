@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/odpf/salt/log"
@@ -17,6 +18,10 @@ import (
 	"github.com/odpf/columbus/lineage"
 	"github.com/odpf/columbus/star"
 	"github.com/odpf/columbus/user"
+)
+
+var (
+	dataFilterPrefix = "data"
 )
 
 // AssetHandler exposes a REST interface to types
@@ -47,8 +52,13 @@ func NewAssetHandler(
 }
 
 func (h *AssetHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	config := h.buildAssetConfig(r.URL.Query())
-	assets, err := h.assetRepo.GetAll(r.Context(), config)
+	cfg, err := h.buildAssetConfig(r.URL.Query())
+	if err != nil {
+		WriteJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
+		return
+	}
+
+	assets, err := h.assetRepo.GetAll(r.Context(), cfg)
 	if err != nil {
 		internalServerError(w, h.logger, err.Error())
 		return
@@ -61,9 +71,15 @@ func (h *AssetHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	withTotal, ok := r.URL.Query()["with_total"]
 	if ok && len(withTotal) > 0 && withTotal[0] != "false" && withTotal[0] != "0" {
 		total, err := h.assetRepo.GetCount(r.Context(), asset.Config{
-			Type:    config.Type,
-			Service: config.Service,
-			Text:    config.Text,
+			Types:         cfg.Types,
+			Services:      cfg.Services,
+			Size:          cfg.Size,
+			Offset:        cfg.Offset,
+			SortBy:        cfg.SortBy,
+			SortDirection: cfg.SortDirection,
+			QueryFields:   cfg.QueryFields,
+			Query:         cfg.Query,
+			Data:          cfg.Data,
 		})
 		if err != nil {
 			internalServerError(w, h.logger, err.Error())
@@ -253,12 +269,16 @@ func (h *AssetHandler) GetStargazers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AssetHandler) GetVersionHistory(w http.ResponseWriter, r *http.Request) {
-	config := h.buildAssetConfig(r.URL.Query())
+	cfg, err := h.buildAssetConfig(r.URL.Query())
+	if err != nil {
+		WriteJSONError(w, http.StatusBadRequest, bodyParserErrorMsg(err))
+		return
+	}
 
 	pathParams := mux.Vars(r)
 	assetID := pathParams["id"]
 
-	assetVersions, err := h.assetRepo.GetVersionHistory(r.Context(), config, assetID)
+	assetVersions, err := h.assetRepo.GetVersionHistory(r.Context(), cfg, assetID)
 	if err != nil {
 		if errors.As(err, new(asset.InvalidError)) {
 			WriteJSONError(w, http.StatusBadRequest, err.Error())
@@ -363,29 +383,88 @@ func (h *AssetHandler) validatePatchPayload(assetPayload map[string]interface{})
 	return
 }
 
-func (h *AssetHandler) buildAssetConfig(query url.Values) asset.Config {
-	config := asset.Config{
-		Text:    query.Get("text"),
-		Type:    asset.Type(query.Get("type")),
-		Service: query.Get("service"),
+func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err error) {
+	cfg = asset.Config{
+		SortBy:        query.Get("sort"),
+		SortDirection: query.Get("direction"),
+		Query:         query.Get("q"),
+	}
+
+	types := query.Get("types")
+	if types != "" {
+		typ := strings.Split(types, ",")
+		for _, typeVal := range typ {
+			cfg.Types = append(cfg.Types, asset.Type(typeVal))
+		}
+	}
+
+	services := query.Get("services")
+	if services != "" {
+		cfg.Services = strings.Split(services, ",")
+	}
+
+	queriesFields := query.Get("q_fields")
+	if queriesFields != "" {
+		cfg.QueryFields = strings.Split(queriesFields, ",")
 	}
 
 	sizeString := query.Get("size")
 	if sizeString != "" {
 		size, err := strconv.Atoi(sizeString)
 		if err == nil {
-			config.Size = size
+			cfg.Size = size
 		}
 	}
+
 	offsetString := query.Get("offset")
 	if offsetString != "" {
 		offset, err := strconv.Atoi(offsetString)
 		if err == nil {
-			config.Offset = offset
+			cfg.Offset = offset
 		}
 	}
 
-	return config
+	cfg.Data = dataAssetConfigValue(query)
+	if err = cfg.Validate(); err != nil {
+		return asset.Config{}, err
+	}
+
+	return cfg, nil
+}
+
+func dataAssetConfigValue(queryString url.Values) map[string]string {
+	dataFilter := make(map[string]string)
+	preChar := "["
+	postChar := "]"
+
+	// Get substring between two strings.
+	for key, values := range queryString {
+		if !strings.HasPrefix(key, dataFilterPrefix) {
+			continue
+		}
+
+		posFirst := strings.Index(key, preChar)
+		if posFirst == -1 {
+			return nil
+		}
+		posLast := strings.Index(key, postChar)
+		if posLast == -1 {
+			return nil
+		}
+		posFirstAdjusted := posFirst + len(preChar)
+		if posFirstAdjusted >= posLast {
+			return nil
+		}
+
+		filterKey := key[posFirstAdjusted:posLast]
+		dataFilter[filterKey] = values[0] // cannot have duplicate query key, always get the first one
+	}
+
+	if len(dataFilter) == 0 {
+		return nil
+	}
+
+	return dataFilter
 }
 
 func (h *AssetHandler) saveLineage(ctx context.Context, ast asset.Asset, upstreams, downstreams []lineage.Node) error {

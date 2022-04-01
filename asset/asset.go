@@ -13,14 +13,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type Config struct {
-	Text    string `json:"text"`
-	Type    Type   `json:"type"`
-	Service string `json:"service"`
-	Size    int    `json:"size"`
-	Offset  int    `json:"offset"`
-}
-
 type Repository interface {
 	GetAll(context.Context, Config) ([]Asset, error)
 	GetCount(context.Context, Config) (int, error)

@@ -9,7 +9,8 @@ paths:
       tags:
         - Assets
       summary: Get list of assets
-      description: "Returns list of assets, optionally filtered by type and service"
+      description: "Returns list of assets. You can specify additional match criteria using 'data[{fields}]' query parameters. 
+      For instance, to specify two data fields project and dataset, the query could be ?types=table&services=bigquery&size=30&offset=50&sort=created_at&direction=desc&data[dataset]=booking&data[project]=p-godata-id"
       produces:
         - "application/json"
       parameters:
@@ -19,18 +20,37 @@ paths:
           format: email
           required: true
         - in: query
-          name: type
-          description: "filter by type"
+          name: types
+          description: "filter by types, comma separated value of types"
           type: string
           format: asset_type
         - in: query
-          name: service
-          description: "filter by service"
+          name: services
+          description: "filter by services, comma separated value of services"
           type: string
+        - in: query
+          name: sort
+          description: "sort by fields"
+          type: string
+        - in: query
+          name: direction
+          description: "sort order"
+          type: string
+          enum:
+            - asc
+            - desc
         - in: query
           name: size
           description: "maximum size to fetch"
           type: number
+        - in: query
+          name: q_fields
+          type: string
+          description: "query in given fields"
+        - in: query
+          name: q
+          type: string
+          description: "query specific value in q_fields"
         - in: query
           name: offset
           description: "offset to fetch from"
@@ -39,6 +59,10 @@ paths:
           name: with_total
           description: "if set include total field in response"
           type: boolean
+        - in: query
+          name: "data"
+          type: string
+          description: "filter results to specified data fields, such as data[landscape], data[urn], data[entity]"
       responses:
         200:
           description: OK

@@ -690,15 +690,72 @@ func TestAssetHandlerGet(t *testing.T) {
 		},
 		{
 			Description:  `should parse querystring to get config`,
-			Querystring:  "?text=asd&type=table&service=bigquery&size=30&offset=50",
+			Querystring:  "?types=table&services=bigquery&size=30&offset=50&sort=created_at&direction=desc&data[dataset]=booking&data[project]=p-godata-id&q=internal&q_fields=name,urn",
 			ExpectStatus: http.StatusOK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
-					Text:    "asd",
-					Type:    "table",
-					Service: "bigquery",
-					Size:    30,
-					Offset:  50,
+					Types:         []asset.Type{"table"},
+					Services:      []string{"bigquery"},
+					Size:          30,
+					Offset:        50,
+					SortDirection: "desc",
+					SortBy:        "created_at",
+					Data: map[string]string{
+						"dataset": "booking",
+						"project": "p-godata-id",
+					},
+					Query:       "internal",
+					QueryFields: []string{"name", "urn"},
+				}).Return([]asset.Asset{}, nil, nil)
+			},
+		},
+		{
+			Description:  `should parse data and query fields querystring to get config`,
+			Querystring:  "?data[dataset]=booking&data[project]=p-godata-id&q=internal&q_fields=name,urn,description,services",
+			ExpectStatus: http.StatusOK,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.On("GetAll", ctx, asset.Config{
+					Data: map[string]string{
+						"dataset": "booking",
+						"project": "p-godata-id",
+					},
+					Query:       "internal",
+					QueryFields: []string{"name", "urn", "description", "services"},
+				}).Return([]asset.Asset{}, nil, nil)
+			},
+		},
+		{
+			Description:  `should parse data fields querystring to get config`,
+			Querystring:  "?data[dataset]=booking&data[project]=p-godata-id",
+			ExpectStatus: http.StatusOK,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.On("GetAll", ctx, asset.Config{
+					Data: map[string]string{
+						"dataset": "booking",
+						"project": "p-godata-id",
+					},
+				}).Return([]asset.Asset{}, nil, nil)
+			},
+		},
+		{
+			Description:  `should parse query fields querystring to get config`,
+			Querystring:  "?q=internal&q_fields=name,urn,description,services",
+			ExpectStatus: http.StatusOK,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.On("GetAll", ctx, asset.Config{
+					Query:       "internal",
+					QueryFields: []string{"name", "urn", "description", "services"},
+				}).Return([]asset.Asset{}, nil, nil)
+			},
+		},
+		{
+			Description:  "should convert multiple types and services from querystring to config",
+			Querystring:  "?types=table,job&services=bigquery,kafka",
+			ExpectStatus: http.StatusOK,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.On("GetAll", ctx, asset.Config{
+					Types:    []asset.Type{"table", "job"},
+					Services: []string{"bigquery", "kafka"},
 				}).Return([]asset.Asset{}, nil, nil)
 			},
 		},
@@ -736,23 +793,23 @@ func TestAssetHandlerGet(t *testing.T) {
 		{
 			Description:  "should return total in the payload if with_total flag is given",
 			ExpectStatus: http.StatusOK,
-			Querystring:  "?with_total=true&text=dsa&type=job&service=kafka&size=10&offset=5",
+			Querystring:  "?with_total=true&types=job&services=kafka&size=10&offset=5",
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{
-					Text:    "dsa",
-					Type:    "job",
-					Service: "kafka",
-					Size:    10,
-					Offset:  5,
+					Types:    []asset.Type{"job"},
+					Services: []string{"kafka"},
+					Size:     10,
+					Offset:   5,
 				}).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 					{ID: "testid-3"},
 				}, nil, nil)
 				ar.On("GetCount", ctx, asset.Config{
-					Text:    "dsa",
-					Type:    "job",
-					Service: "kafka",
+					Size:     10,
+					Offset:   5,
+					Types:    []asset.Type{"job"},
+					Services: []string{"kafka"},
 				}).Return(150, nil, nil)
 			},
 			PostCheck: func(r *http.Response) error {
@@ -959,7 +1016,6 @@ func TestAssetHandlerGetVersionHistory(t *testing.T) {
 				"id": assetID,
 			})
 			rw := httptest.NewRecorder()
-
 			ar := new(mocks.AssetRepository)
 			tc.Setup(rr.Context(), ar)
 

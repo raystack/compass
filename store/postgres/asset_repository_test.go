@@ -2,7 +2,9 @@ package postgres_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"testing"
 	"time"
 
@@ -91,34 +93,42 @@ func (r *AssetRepositoryTestSuite) TearDownSuite() {
 	}
 }
 
-func (r *AssetRepositoryTestSuite) TestGetAll() {
-	// populate assets
-	total := 12
-	assets := []asset.Asset{}
-	for i := 0; i < total; i++ {
-		var typ asset.Type
-		var service string
-		if (i % 2) == 0 { // if even
-			typ = asset.TypeJob
-			service = "postgres"
-		} else {
-			typ = asset.TypeDashboard
-			service = "metabase"
+func (r *AssetRepositoryTestSuite) insertRecord() (assets []asset.Asset) {
+	filePath := "./testdata/mock-asset-data.json"
+	testFixtureJSON, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return []asset.Asset{}
+	}
+
+	var data []asset.Asset
+	if err = json.Unmarshal(testFixtureJSON, &data); err != nil {
+		return []asset.Asset{}
+	}
+
+	for _, d := range data {
+		ast := asset.Asset{
+			URN:         d.URN,
+			Name:        d.Name,
+			Type:        d.Type,
+			Service:     d.Service,
+			Description: d.Description,
+			Data:        d.Data,
+			Version:     asset.BaseVersion,
+			UpdatedBy:   r.users[0],
 		}
 
-		ast := asset.Asset{
-			URN:       fmt.Sprintf("urn-get-%d", i),
-			Type:      typ,
-			Service:   service,
-			Version:   asset.BaseVersion,
-			UpdatedBy: r.users[0],
-		}
 		id, err := r.repository.Upsert(r.ctx, &ast)
 		r.Require().NoError(err)
 		r.Require().Equal(r.lengthOfString(id), 36)
 		ast.ID = id
 		assets = append(assets, ast)
 	}
+
+	return assets
+}
+
+func (r *AssetRepositoryTestSuite) TestGetAll() {
+	assets := r.insertRecord()
 
 	r.Run("should return all assets limited by default size", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{})
@@ -130,7 +140,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	})
 
 	r.Run("should override default size using GetConfig.Size", func() {
-		size := 8
+		size := 6
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			Size: size,
 		})
@@ -147,33 +157,70 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 			Offset: offset,
 		})
 		r.Require().NoError(err)
-		for i := offset; i < defaultGetMaxSize+offset; i++ {
+		for i := offset; i > defaultGetMaxSize+offset; i++ {
 			r.assertAsset(&assets[i], &results[i-offset])
-
 		}
 	})
 
 	r.Run("should filter using type", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			Type: asset.TypeDashboard,
-			Size: total,
+			Types:         []asset.Type{asset.TypeTable},
+			SortBy:        "urn",
+			SortDirection: "desc",
 		})
 		r.Require().NoError(err)
-		r.Require().Len(results, total/2)
-		for _, ast := range results {
-			r.Equal(asset.TypeDashboard, ast.Type)
+
+		expectedURNs := []string{"i-undefined-dfgdgd-avi", "e-test-grant2"}
+		r.Equal(len(expectedURNs), len(results))
+		for i := range results {
+			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})
 
 	r.Run("should filter using service", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
-			Service: "postgres",
-			Size:    total,
+			Services: []string{"mysql", "kafka"},
+			SortBy:   "urn",
 		})
 		r.Require().NoError(err)
-		r.Require().Len(results, total/2)
-		for _, ast := range results {
-			r.Equal("postgres", ast.Service)
+
+		expectedURNs := []string{"c-demo-kafka", "f-john-test-001", "i-test-grant", "i-undefined-dfgdgd-avi"}
+		r.Equal(len(expectedURNs), len(results))
+		for i := range results {
+			fmt.Println(results[i].URN)
+			r.Equal(expectedURNs[i], results[i].URN)
+		}
+	})
+
+	r.Run("should filter using query fields", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			QueryFields: []string{"name", "description"},
+			Query:       "demo",
+			SortBy:      "urn",
+		})
+		r.Require().NoError(err)
+
+		expectedURNs := []string{"c-demo-kafka", "e-test-grant2"}
+		r.Equal(len(expectedURNs), len(results))
+		for i := range results {
+			r.Equal(expectedURNs[i], results[i].URN)
+		}
+	})
+
+	r.Run("should filter using asset's Data fields", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			Data: map[string]string{
+				"entity":  "odpf",
+				"country": "th",
+			},
+		})
+		r.Require().NoError(err)
+
+		expectedURNs := []string{"e-test-grant2", "h-test-new-kafka", "i-test-grant"}
+		r.Equal(len(expectedURNs), len(results))
+		for i := range results {
+			fmt.Println(results[i].URN)
+			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})
 }
@@ -182,12 +229,12 @@ func (r *AssetRepositoryTestSuite) TestGetCount() {
 	// populate assets
 	total := 12
 	typ := asset.TypeJob
-	service := "service-getcount"
+	service := []string{"service-getcount"}
 	for i := 0; i < total; i++ {
 		ast := asset.Asset{
 			URN:       fmt.Sprintf("urn-getcount-%d", i),
 			Type:      typ,
-			Service:   service,
+			Service:   service[0],
 			UpdatedBy: r.users[0],
 		}
 		id, err := r.repository.Upsert(r.ctx, &ast)
@@ -198,8 +245,8 @@ func (r *AssetRepositoryTestSuite) TestGetCount() {
 
 	r.Run("should return total assets with filter", func() {
 		actual, err := r.repository.GetCount(r.ctx, asset.Config{
-			Type:    typ,
-			Service: service,
+			Types:    []asset.Type{typ},
+			Services: service,
 		})
 		r.Require().NoError(err)
 		r.Equal(total, actual)

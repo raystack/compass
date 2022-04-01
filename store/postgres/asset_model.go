@@ -86,7 +86,7 @@ func (a *AssetModel) toVersionedAsset(latestAssetVersion asset.Asset) (asset.Ass
 	return asset.Asset{
 		ID:          latestAssetVersion.ID,
 		URN:         latestAssetVersion.URN,
-		Type:        asset.Type(latestAssetVersion.Type),
+		Type:        latestAssetVersion.Type,
 		Name:        a.Name,
 		Service:     latestAssetVersion.Service,
 		Description: a.Description,

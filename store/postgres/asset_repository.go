@@ -25,21 +25,21 @@ type AssetRepository struct {
 }
 
 // GetAll retrieves list of assets with filters via config
-func (r *AssetRepository) GetAll(ctx context.Context, config asset.Config) ([]asset.Asset, error) {
-	size := config.Size
+func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset.Asset, error) {
+	size := cfg.Size
 	if size == 0 {
 		size = r.defaultGetMaxSize
 	}
 
-	builder := r.getAssetSQL().
-		Limit(uint64(size)).
-		Offset(uint64(config.Offset))
-	builder = r.buildFilterQuery(builder, config)
+	builder := r.getAssetSQL().Limit(uint64(size)).Offset(uint64(cfg.Offset))
+	builder = r.buildFilterQuery(builder, cfg)
+	builder = r.buildOrderQuery(builder, cfg)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
 		return nil, fmt.Errorf("error building query: %w", err)
 	}
-	ams := []*AssetModel{}
+
+	var ams []*AssetModel
 	err = r.client.db.SelectContext(ctx, &ams, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("error getting asset list: %w", err)
@@ -241,7 +241,7 @@ func (r *AssetRepository) GetByVersion(ctx context.Context, id string, version s
 
 // Upsert creates a new asset if it does not exist yet.
 // It updates if asset does exist.
-// Checking existance is done using "urn", "type", and "service" fields.
+// Checking existence is done using "urn", "type", and "service" fields.
 func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string, error) {
 	fetchedAsset, err := r.Find(ctx, ast.URN, ast.Type, ast.Service)
 	if errors.As(err, new(asset.NotFoundError)) {
@@ -294,21 +294,6 @@ func (r *AssetRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	return nil
-}
-
-func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, config asset.Config) sq.SelectBuilder {
-	clause := sq.Eq{}
-	if config.Type != "" {
-		clause["type"] = config.Type
-	}
-	if config.Service != "" {
-		clause["service"] = config.Service
-	}
-
-	if len(clause) > 0 {
-		builder = builder.Where(clause)
-	}
-	return builder
 }
 
 func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id string, err error) {
@@ -647,6 +632,47 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 		`).
 		From("assets_versions a").
 		LeftJoin("users u ON a.updated_by = u.id")
+}
+
+func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
+	if len(cfg.Types) > 0 {
+		builder = builder.Where(sq.Eq{"type": cfg.Types})
+	}
+
+	if len(cfg.Services) > 0 {
+		builder = builder.Where(sq.Eq{"service": cfg.Services})
+	}
+
+	if len(cfg.QueryFields) > 0 && cfg.Query != "" {
+		orClause := sq.Or{}
+		for _, field := range cfg.QueryFields {
+			orClause = append(orClause, sq.ILike{
+				field: fmt.Sprint("%", cfg.Query, "%"),
+			})
+		}
+		builder = builder.Where(orClause)
+	}
+
+	if len(cfg.Data) > 0 {
+		for key, val := range cfg.Data {
+			builder = builder.Where(fmt.Sprintf("data ->> '%s' = '%s'", key, val))
+		}
+	}
+
+	return builder
+}
+
+func (r *AssetRepository) buildOrderQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
+	if cfg.SortBy == "" {
+		return builder
+	}
+
+	orderDirection := "ASC"
+	if cfg.SortDirection != "" {
+		orderDirection = cfg.SortDirection
+	}
+
+	return builder.OrderBy(cfg.SortBy + " " + orderDirection)
 }
 
 // NewAssetRepository initializes user repository clients
