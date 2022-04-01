@@ -425,7 +425,6 @@ func (h *AssetHandler) buildAssetConfig(query url.Values) (cfg asset.Config, err
 	}
 
 	cfg.Data = dataAssetConfigValue(query)
-	cfg.AssignDefault()
 	if err = cfg.Validate(); err != nil {
 		return asset.Config{}, err
 	}
@@ -459,6 +458,10 @@ func dataAssetConfigValue(queryString url.Values) map[string]string {
 
 		filterKey := key[posFirstAdjusted:posLast]
 		dataFilter[filterKey] = values[0] // cannot have duplicate query key, always get the first one
+	}
+
+	if len(dataFilter) == 0 {
+		return nil
 	}
 
 	return dataFilter

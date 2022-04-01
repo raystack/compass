@@ -29,12 +29,6 @@ func (cfg *Config) Validate() error {
 	return validator.ValidateStruct(cfg)
 }
 
-func (cfg *Config) AssignDefault() {
-	if len(cfg.Data) == 0 {
-		cfg.Data = nil
-	}
-}
-
 func (grpcCfg GRPCConfig) ToConfig() Config {
 	cfg := Config{
 		Size:   grpcCfg.Size,
