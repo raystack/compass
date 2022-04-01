@@ -15,15 +15,16 @@ import (
 )
 
 func (h *Handler) GetAllAssets(ctx context.Context, req *compassv1beta1.GetAllAssetsRequest) (*compassv1beta1.GetAllAssetsResponse, error) {
-	config := asset.Config{
+	config := asset.GRPCConfig{
 		Text:    req.GetText(),
 		Type:    asset.Type(req.GetType()),
 		Service: req.GetService(),
 		Size:    int(req.GetSize()),
 		Offset:  int(req.GetOffset()),
 	}
+	cfg := config.ToConfig()
 
-	assets, err := h.AssetRepository.GetAll(ctx, config)
+	assets, err := h.AssetRepository.GetAll(ctx, cfg)
 	if err != nil {
 		return nil, internalServerError(h.Logger, err.Error())
 	}
@@ -42,11 +43,14 @@ func (h *Handler) GetAllAssets(ctx context.Context, req *compassv1beta1.GetAllAs
 	}
 
 	if req.GetWithTotal() {
-		total, err := h.AssetRepository.GetCount(ctx, asset.Config{
+		grpcConfig := asset.GRPCConfig{
 			Type:    config.Type,
 			Service: config.Service,
 			Text:    config.Text,
-		})
+		}
+		cfg = grpcConfig.ToConfig()
+
+		total, err := h.AssetRepository.GetCount(ctx, cfg)
 		if err != nil {
 			return nil, internalServerError(h.Logger, err.Error())
 		}

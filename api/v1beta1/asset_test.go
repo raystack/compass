@@ -64,13 +64,15 @@ func TestGetAllAssets(t *testing.T) {
 			},
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Config{
+				cfg := asset.GRPCConfig{
 					Text:    "asd",
 					Type:    "table",
 					Service: "bigquery",
 					Size:    30,
 					Offset:  50,
-				}).Return([]asset.Asset{}, nil, nil)
+				}
+				config := cfg.ToConfig()
+				ar.On("GetAll", ctx, config).Return([]asset.Asset{}, nil, nil)
 			},
 		},
 		{
@@ -108,22 +110,22 @@ func TestGetAllAssets(t *testing.T) {
 				WithTotal: true,
 			},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Config{
+				ar.On("GetAll", ctx, asset.GRPCConfig{
 					Text:    "dsa",
 					Type:    "job",
 					Service: "kafka",
 					Size:    10,
 					Offset:  5,
-				}).Return([]asset.Asset{
+				}.ToConfig()).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 					{ID: "testid-3"},
 				}, nil, nil)
-				ar.On("GetCount", ctx, asset.Config{
+				ar.On("GetCount", ctx, asset.GRPCConfig{
 					Text:    "dsa",
 					Type:    "job",
 					Service: "kafka",
-				}).Return(150, nil, nil)
+				}.ToConfig()).Return(150, nil, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAllAssetsResponse) error {
 				expected := &compassv1beta1.GetAllAssetsResponse{
