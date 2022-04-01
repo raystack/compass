@@ -9,8 +9,8 @@ paths:
       tags:
         - Assets
       summary: Get list of assets
-      description: "Returns list of assets. You can specify additional match criteria using 'filter[{fields}]' query parameters. 
-      For instance, to specify two data fields project and dataset, the query could be ?types=table&services=bigquery&size=30&offset=50&sort=created_at&direction=desc&filter[data.dataset]=booking&filter[data.project]=p-godata-id"
+      description: "Returns list of assets. You can specify additional match criteria using 'data[{fields}]' query parameters. 
+      For instance, to specify two data fields project and dataset, the query could be ?types=table&services=bigquery&size=30&offset=50&sort=created_at&direction=desc&data[dataset]=booking&data[project]=p-godata-id"
       produces:
         - "application/json"
       parameters:
@@ -60,17 +60,9 @@ paths:
           description: "if set include total field in response"
           type: boolean
         - in: query
-          name: "filter[data.landscape]"
+          name: "data"
           type: string
-          description: "filter results to specified landscape"
-        - in: query
-          name: "filter[data.entity]"
-          type: string
-          description: "filter results to specified organisation"
-        - in: query
-          name: "filter[data.urn]"
-          type: string
-          description: 'filter results to the specified urn'
+          description: "filter results to specified data fields, such as data[landscape], data[urn], data[entity]"
       responses:
         200:
           description: OK
