@@ -45,15 +45,35 @@ func (d Comment) ToProto() *compassv1beta1.Comment {
 }
 
 // NewCommentFromProto transforms proto to struct
-func NewCommentFromProto(proto *compassv1beta1.Comment) Comment {
+func NewCommentFromProto(pb *compassv1beta1.Comment) Comment {
+	var createdAt time.Time
+	if pb.GetCreatedAt() != nil {
+		createdAt = pb.GetCreatedAt().AsTime()
+	}
+
+	var updatedAt time.Time
+	if pb.GetUpdatedAt() != nil {
+		updatedAt = pb.GetUpdatedAt().AsTime()
+	}
+
+	var owner user.User
+	if pb.GetOwner() != nil {
+		owner = user.NewFromProto(pb.GetOwner())
+	}
+
+	var updatedBy user.User
+	if pb.GetUpdatedBy() != nil {
+		updatedBy = user.NewFromProto(pb.GetUpdatedBy())
+	}
+
 	return Comment{
-		ID:           proto.Id,
-		DiscussionID: proto.DiscussionId,
-		Body:         proto.Body,
-		Owner:        user.NewFromProto(proto.Owner),
-		UpdatedBy:    user.NewFromProto(proto.UpdatedBy),
-		CreatedAt:    proto.CreatedAt.AsTime(),
-		UpdatedAt:    proto.UpdatedAt.AsTime(),
+		ID:           pb.GetId(),
+		DiscussionID: pb.GetDiscussionId(),
+		Body:         pb.GetBody(),
+		Owner:        owner,
+		UpdatedBy:    updatedBy,
+		CreatedAt:    createdAt,
+		UpdatedAt:    updatedAt,
 	}
 }
 

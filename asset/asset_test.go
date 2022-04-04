@@ -583,7 +583,7 @@ func TestNewFromProto(t *testing.T) {
 
 			got := asset.NewFromProto(tc.AssetPB)
 			if reflect.DeepEqual(got, tc.ExpectAsset) == false {
-				t.Errorf("expected returned asset to be to be %+v, was %+v", tc.ExpectAsset, got)
+				t.Errorf("expected returned asset to be %+v, was %+v", tc.ExpectAsset, got)
 			}
 		})
 	}

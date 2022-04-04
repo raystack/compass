@@ -60,6 +60,37 @@ func TestToProto(t *testing.T) {
 			ExpectProto: nil,
 		},
 		{
+			Title:       "should return some field only",
+			User:        &User{ID: "id1", Email: "email@email.com", Provider: "provider", CreatedAt: timeDummy, UpdatedAt: timeDummy},
+			ExpectProto: &compassv1beta1.User{Id: "id1", Email: "email@email.com"},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Title, func(t *testing.T) {
+
+			got := tc.User.ToProto()
+			if diff := cmp.Diff(got, tc.ExpectProto, protocmp.Transform()); diff != "" {
+				t.Errorf("expected response to be %+v, was %+v", tc.ExpectProto, got)
+			}
+		})
+	}
+}
+
+func TestToFullProto(t *testing.T) {
+	timeDummy := time.Date(2000, time.January, 7, 0, 0, 0, 0, time.UTC)
+	type testCase struct {
+		Title       string
+		User        *User
+		ExpectProto *compassv1beta1.User
+	}
+
+	var testCases = []testCase{
+		{
+			Title:       "should return nil if ID is empty",
+			User:        &User{},
+			ExpectProto: nil,
+		},
+		{
 			Title:       "should return no timestamp pb if timestamp is zero",
 			User:        &User{ID: "id1", Provider: "provider"},
 			ExpectProto: &compassv1beta1.User{Id: "id1", Provider: "provider"},
@@ -73,7 +104,7 @@ func TestToProto(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
 
-			got := tc.User.ToProto()
+			got := tc.User.ToFullProto()
 			if diff := cmp.Diff(got, tc.ExpectProto, protocmp.Transform()); diff != "" {
 				t.Errorf("expected response to be %+v, was %+v", tc.ExpectProto, got)
 			}
@@ -106,7 +137,7 @@ func TestNewFromProto(t *testing.T) {
 
 			got := NewFromProto(tc.UserPB)
 			if reflect.DeepEqual(got, tc.ExpectUser) == false {
-				t.Errorf("expected returned asset to be to be %+v, was %+v", tc.ExpectUser, got)
+				t.Errorf("expected returned asset to be %+v, was %+v", tc.ExpectUser, got)
 			}
 		})
 	}

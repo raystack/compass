@@ -2,11 +2,17 @@ package discussion_test
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/columbus/discussion"
+	"github.com/odpf/columbus/user"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/testing/protocmp"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestIsEmpty(t *testing.T) {
@@ -118,6 +124,68 @@ func TestValidateDiscussion(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			assert.Equal(t, tc.Err, tc.Discussion.Validate())
+		})
+	}
+}
+
+func TestToProto(t *testing.T) {
+	timeDummy := time.Date(2000, time.January, 7, 0, 0, 0, 0, time.UTC)
+	type testCase struct {
+		Title       string
+		Discussion  *discussion.Discussion
+		ExpectProto *compassv1beta1.Discussion
+	}
+
+	var testCases = []testCase{
+		{
+			Title:       "should return no timestamp pb if timestamp is zero",
+			Discussion:  &discussion.Discussion{ID: "id1"},
+			ExpectProto: &compassv1beta1.Discussion{Id: "id1"},
+		},
+		{
+			Title:       "should return timestamp pb if timestamp is not zero",
+			Discussion:  &discussion.Discussion{ID: "id1", CreatedAt: timeDummy, UpdatedAt: timeDummy},
+			ExpectProto: &compassv1beta1.Discussion{Id: "id1", CreatedAt: timestamppb.New(timeDummy), UpdatedAt: timestamppb.New(timeDummy)},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Title, func(t *testing.T) {
+
+			got := tc.Discussion.ToProto()
+			if diff := cmp.Diff(got, tc.ExpectProto, protocmp.Transform()); diff != "" {
+				t.Errorf("expected response to be %+v, was %+v", tc.ExpectProto, got)
+			}
+		})
+	}
+}
+
+func TestNewFromProto(t *testing.T) {
+	timeDummy := time.Date(2000, time.January, 7, 0, 0, 0, 0, time.UTC)
+	type testCase struct {
+		Title            string
+		DiscussionPB     *compassv1beta1.Discussion
+		ExpectDiscussion discussion.Discussion
+	}
+
+	var testCases = []testCase{
+		{
+			Title:            "should return non empty time.Time and owner if pb is not empty or zero",
+			DiscussionPB:     &compassv1beta1.Discussion{Id: "id1", Owner: &compassv1beta1.User{Id: "uid1"}, CreatedAt: timestamppb.New(timeDummy), UpdatedAt: timestamppb.New(timeDummy)},
+			ExpectDiscussion: discussion.Discussion{ID: "id1", Owner: user.User{ID: "uid1"}, Type: "openended", State: "open", CreatedAt: timeDummy, UpdatedAt: timeDummy},
+		},
+		{
+			Title:            "should return empty time.Time and owner if pb is empty or zero",
+			DiscussionPB:     &compassv1beta1.Discussion{Id: "id1"},
+			ExpectDiscussion: discussion.Discussion{ID: "id1", Type: "openended", State: "open"},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Title, func(t *testing.T) {
+
+			got := discussion.NewFromProto(tc.DiscussionPB)
+			if reflect.DeepEqual(got, tc.ExpectDiscussion) == false {
+				t.Errorf("expected returned asset to be %+v, was %+v", tc.ExpectDiscussion, got)
+			}
 		})
 	}
 }

@@ -147,14 +147,13 @@ func TestCreateDiscussion(t *testing.T) {
 	}
 
 	var testCases = []testCase{
-
 		{
-			Description:  "should return Invalid Argument if empty object",
+			Description:  "should return invalid argument if empty object",
 			Request:      &compassv1beta1.CreateDiscussionRequest{},
 			ExpectStatus: codes.InvalidArgument,
 		},
 		{
-			Description: "should return Invalid Argument if empty title",
+			Description: "should return invalid argument if empty title",
 			Request: &compassv1beta1.CreateDiscussionRequest{
 				Body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
 				Type: discussion.TypeQAndA.String(),
@@ -162,7 +161,7 @@ func TestCreateDiscussion(t *testing.T) {
 			ExpectStatus: codes.InvalidArgument,
 		},
 		{
-			Description: "should return Invalid Argument if no body",
+			Description: "should return invalid argument if no body",
 			Request: &compassv1beta1.CreateDiscussionRequest{
 				Title: "Lorem Ipsum",
 				Type:  discussion.TypeQAndA.String(),
@@ -170,7 +169,7 @@ func TestCreateDiscussion(t *testing.T) {
 			ExpectStatus: codes.InvalidArgument,
 		},
 		{
-			Description: "should return Invalid Argument if empty body",
+			Description: "should return invalid argument if empty body",
 			Request: &compassv1beta1.CreateDiscussionRequest{
 				Title: "Lorem Ipsum",
 				Body:  "",
@@ -179,16 +178,7 @@ func TestCreateDiscussion(t *testing.T) {
 			ExpectStatus: codes.InvalidArgument,
 		},
 		{
-			Description: "should return Invalid Argument if empty type",
-			Request: &compassv1beta1.CreateDiscussionRequest{
-				Title: "Lorem Ipsum",
-				Body:  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-				Type:  "",
-			},
-			ExpectStatus: codes.InvalidArgument,
-		},
-		{
-			Description: "should return Invalid Argument if wrong type",
+			Description: "should return invalid argument if wrong type",
 			Request: &compassv1beta1.CreateDiscussionRequest{
 				Title: "Lorem Ipsum",
 				Body:  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
@@ -203,6 +193,15 @@ func TestCreateDiscussion(t *testing.T) {
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
 				dr.EXPECT().Create(ctx, mock.AnythingOfType("*discussion.Discussion")).Return("", errors.New("some error"))
 			},
+		},
+		{
+			Description: "should return invalid argument if empty type",
+			Request: &compassv1beta1.CreateDiscussionRequest{
+				Title: "Lorem Ipsum",
+				Body:  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+				Type:  "",
+			},
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description:  "should return OK and discussion ID if the discussion is successfully created",

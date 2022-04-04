@@ -32,6 +32,7 @@ type CompassServiceClient interface {
 	GetComment(ctx context.Context, in *GetCommentRequest, opts ...grpc.CallOption) (*GetCommentResponse, error)
 	UpdateComment(ctx context.Context, in *UpdateCommentRequest, opts ...grpc.CallOption) (*UpdateCommentResponse, error)
 	DeleteComment(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*DeleteCommentResponse, error)
+	// Domain: Asset
 	SearchAssets(ctx context.Context, in *SearchAssetsRequest, opts ...grpc.CallOption) (*SearchAssetsResponse, error)
 	SuggestAssets(ctx context.Context, in *SuggestAssetsRequest, opts ...grpc.CallOption) (*SuggestAssetsResponse, error)
 	GetGraph(ctx context.Context, in *GetGraphRequest, opts ...grpc.CallOption) (*GetGraphResponse, error)
@@ -43,6 +44,24 @@ type CompassServiceClient interface {
 	GetAssetStargazers(ctx context.Context, in *GetAssetStargazersRequest, opts ...grpc.CallOption) (*GetAssetStargazersResponse, error)
 	GetAssetVersionHistory(ctx context.Context, in *GetAssetVersionHistoryRequest, opts ...grpc.CallOption) (*GetAssetVersionHistoryResponse, error)
 	GetAssetByVersion(ctx context.Context, in *GetAssetByVersionRequest, opts ...grpc.CallOption) (*GetAssetByVersionResponse, error)
+	// Domain: User * Star
+	GetUserStarredAssets(ctx context.Context, in *GetUserStarredAssetsRequest, opts ...grpc.CallOption) (*GetUserStarredAssetsResponse, error)
+	GetMyStarredAssets(ctx context.Context, in *GetMyStarredAssetsRequest, opts ...grpc.CallOption) (*GetMyStarredAssetsResponse, error)
+	GetMyStarredAsset(ctx context.Context, in *GetMyStarredAssetRequest, opts ...grpc.CallOption) (*GetMyStarredAssetResponse, error)
+	StarAsset(ctx context.Context, in *StarAssetRequest, opts ...grpc.CallOption) (*StarAssetResponse, error)
+	UnstarAsset(ctx context.Context, in *UnstarAssetRequest, opts ...grpc.CallOption) (*UnstarAssetResponse, error)
+	GetMyDiscussions(ctx context.Context, in *GetMyDiscussionsRequest, opts ...grpc.CallOption) (*GetMyDiscussionsResponse, error)
+	// Domain: Tag Templates
+	CreateTag(ctx context.Context, in *CreateTagRequest, opts ...grpc.CallOption) (*CreateTagResponse, error)
+	GetTagsByRecordAndTemplate(ctx context.Context, in *GetTagsByRecordAndTemplateRequest, opts ...grpc.CallOption) (*GetTagsByRecordAndTemplateResponse, error)
+	UpdateTag(ctx context.Context, in *UpdateTagRequest, opts ...grpc.CallOption) (*UpdateTagResponse, error)
+	DeleteTag(ctx context.Context, in *DeleteTagRequest, opts ...grpc.CallOption) (*DeleteTagResponse, error)
+	GetTagsByRecord(ctx context.Context, in *GetTagsByRecordRequest, opts ...grpc.CallOption) (*GetTagsByRecordResponse, error)
+	GetAllTagTemplates(ctx context.Context, in *GetAllTagTemplatesRequest, opts ...grpc.CallOption) (*GetAllTagTemplatesResponse, error)
+	CreateTagTemplate(ctx context.Context, in *CreateTagTemplateRequest, opts ...grpc.CallOption) (*CreateTagTemplateResponse, error)
+	GetTagTemplate(ctx context.Context, in *GetTagTemplateRequest, opts ...grpc.CallOption) (*GetTagTemplateResponse, error)
+	UpdateTagTemplate(ctx context.Context, in *UpdateTagTemplateRequest, opts ...grpc.CallOption) (*UpdateTagTemplateResponse, error)
+	DeleteTagTemplate(ctx context.Context, in *DeleteTagTemplateRequest, opts ...grpc.CallOption) (*DeleteTagTemplateResponse, error)
 }
 
 type compassServiceClient struct {
@@ -233,6 +252,150 @@ func (c *compassServiceClient) GetAssetByVersion(ctx context.Context, in *GetAss
 	return out, nil
 }
 
+func (c *compassServiceClient) GetUserStarredAssets(ctx context.Context, in *GetUserStarredAssetsRequest, opts ...grpc.CallOption) (*GetUserStarredAssetsResponse, error) {
+	out := new(GetUserStarredAssetsResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetUserStarredAssets", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetMyStarredAssets(ctx context.Context, in *GetMyStarredAssetsRequest, opts ...grpc.CallOption) (*GetMyStarredAssetsResponse, error) {
+	out := new(GetMyStarredAssetsResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetMyStarredAssets", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetMyStarredAsset(ctx context.Context, in *GetMyStarredAssetRequest, opts ...grpc.CallOption) (*GetMyStarredAssetResponse, error) {
+	out := new(GetMyStarredAssetResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetMyStarredAsset", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) StarAsset(ctx context.Context, in *StarAssetRequest, opts ...grpc.CallOption) (*StarAssetResponse, error) {
+	out := new(StarAssetResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/StarAsset", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) UnstarAsset(ctx context.Context, in *UnstarAssetRequest, opts ...grpc.CallOption) (*UnstarAssetResponse, error) {
+	out := new(UnstarAssetResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UnstarAsset", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetMyDiscussions(ctx context.Context, in *GetMyDiscussionsRequest, opts ...grpc.CallOption) (*GetMyDiscussionsResponse, error) {
+	out := new(GetMyDiscussionsResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetMyDiscussions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) CreateTag(ctx context.Context, in *CreateTagRequest, opts ...grpc.CallOption) (*CreateTagResponse, error) {
+	out := new(CreateTagResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/CreateTag", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetTagsByRecordAndTemplate(ctx context.Context, in *GetTagsByRecordAndTemplateRequest, opts ...grpc.CallOption) (*GetTagsByRecordAndTemplateResponse, error) {
+	out := new(GetTagsByRecordAndTemplateResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetTagsByRecordAndTemplate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) UpdateTag(ctx context.Context, in *UpdateTagRequest, opts ...grpc.CallOption) (*UpdateTagResponse, error) {
+	out := new(UpdateTagResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UpdateTag", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) DeleteTag(ctx context.Context, in *DeleteTagRequest, opts ...grpc.CallOption) (*DeleteTagResponse, error) {
+	out := new(DeleteTagResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/DeleteTag", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetTagsByRecord(ctx context.Context, in *GetTagsByRecordRequest, opts ...grpc.CallOption) (*GetTagsByRecordResponse, error) {
+	out := new(GetTagsByRecordResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetTagsByRecord", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetAllTagTemplates(ctx context.Context, in *GetAllTagTemplatesRequest, opts ...grpc.CallOption) (*GetAllTagTemplatesResponse, error) {
+	out := new(GetAllTagTemplatesResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAllTagTemplates", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) CreateTagTemplate(ctx context.Context, in *CreateTagTemplateRequest, opts ...grpc.CallOption) (*CreateTagTemplateResponse, error) {
+	out := new(CreateTagTemplateResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/CreateTagTemplate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetTagTemplate(ctx context.Context, in *GetTagTemplateRequest, opts ...grpc.CallOption) (*GetTagTemplateResponse, error) {
+	out := new(GetTagTemplateResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetTagTemplate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) UpdateTagTemplate(ctx context.Context, in *UpdateTagTemplateRequest, opts ...grpc.CallOption) (*UpdateTagTemplateResponse, error) {
+	out := new(UpdateTagTemplateResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UpdateTagTemplate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) DeleteTagTemplate(ctx context.Context, in *DeleteTagTemplateRequest, opts ...grpc.CallOption) (*DeleteTagTemplateResponse, error) {
+	out := new(DeleteTagTemplateResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/DeleteTagTemplate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CompassServiceServer is the server API for CompassService service.
 // All implementations must embed UnimplementedCompassServiceServer
 // for forward compatibility
@@ -247,6 +410,7 @@ type CompassServiceServer interface {
 	GetComment(context.Context, *GetCommentRequest) (*GetCommentResponse, error)
 	UpdateComment(context.Context, *UpdateCommentRequest) (*UpdateCommentResponse, error)
 	DeleteComment(context.Context, *DeleteCommentRequest) (*DeleteCommentResponse, error)
+	// Domain: Asset
 	SearchAssets(context.Context, *SearchAssetsRequest) (*SearchAssetsResponse, error)
 	SuggestAssets(context.Context, *SuggestAssetsRequest) (*SuggestAssetsResponse, error)
 	GetGraph(context.Context, *GetGraphRequest) (*GetGraphResponse, error)
@@ -258,6 +422,24 @@ type CompassServiceServer interface {
 	GetAssetStargazers(context.Context, *GetAssetStargazersRequest) (*GetAssetStargazersResponse, error)
 	GetAssetVersionHistory(context.Context, *GetAssetVersionHistoryRequest) (*GetAssetVersionHistoryResponse, error)
 	GetAssetByVersion(context.Context, *GetAssetByVersionRequest) (*GetAssetByVersionResponse, error)
+	// Domain: User * Star
+	GetUserStarredAssets(context.Context, *GetUserStarredAssetsRequest) (*GetUserStarredAssetsResponse, error)
+	GetMyStarredAssets(context.Context, *GetMyStarredAssetsRequest) (*GetMyStarredAssetsResponse, error)
+	GetMyStarredAsset(context.Context, *GetMyStarredAssetRequest) (*GetMyStarredAssetResponse, error)
+	StarAsset(context.Context, *StarAssetRequest) (*StarAssetResponse, error)
+	UnstarAsset(context.Context, *UnstarAssetRequest) (*UnstarAssetResponse, error)
+	GetMyDiscussions(context.Context, *GetMyDiscussionsRequest) (*GetMyDiscussionsResponse, error)
+	// Domain: Tag Templates
+	CreateTag(context.Context, *CreateTagRequest) (*CreateTagResponse, error)
+	GetTagsByRecordAndTemplate(context.Context, *GetTagsByRecordAndTemplateRequest) (*GetTagsByRecordAndTemplateResponse, error)
+	UpdateTag(context.Context, *UpdateTagRequest) (*UpdateTagResponse, error)
+	DeleteTag(context.Context, *DeleteTagRequest) (*DeleteTagResponse, error)
+	GetTagsByRecord(context.Context, *GetTagsByRecordRequest) (*GetTagsByRecordResponse, error)
+	GetAllTagTemplates(context.Context, *GetAllTagTemplatesRequest) (*GetAllTagTemplatesResponse, error)
+	CreateTagTemplate(context.Context, *CreateTagTemplateRequest) (*CreateTagTemplateResponse, error)
+	GetTagTemplate(context.Context, *GetTagTemplateRequest) (*GetTagTemplateResponse, error)
+	UpdateTagTemplate(context.Context, *UpdateTagTemplateRequest) (*UpdateTagTemplateResponse, error)
+	DeleteTagTemplate(context.Context, *DeleteTagTemplateRequest) (*DeleteTagTemplateResponse, error)
 	mustEmbedUnimplementedCompassServiceServer()
 }
 
@@ -324,6 +506,54 @@ func (UnimplementedCompassServiceServer) GetAssetVersionHistory(context.Context,
 }
 func (UnimplementedCompassServiceServer) GetAssetByVersion(context.Context, *GetAssetByVersionRequest) (*GetAssetByVersionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAssetByVersion not implemented")
+}
+func (UnimplementedCompassServiceServer) GetUserStarredAssets(context.Context, *GetUserStarredAssetsRequest) (*GetUserStarredAssetsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserStarredAssets not implemented")
+}
+func (UnimplementedCompassServiceServer) GetMyStarredAssets(context.Context, *GetMyStarredAssetsRequest) (*GetMyStarredAssetsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMyStarredAssets not implemented")
+}
+func (UnimplementedCompassServiceServer) GetMyStarredAsset(context.Context, *GetMyStarredAssetRequest) (*GetMyStarredAssetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMyStarredAsset not implemented")
+}
+func (UnimplementedCompassServiceServer) StarAsset(context.Context, *StarAssetRequest) (*StarAssetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StarAsset not implemented")
+}
+func (UnimplementedCompassServiceServer) UnstarAsset(context.Context, *UnstarAssetRequest) (*UnstarAssetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnstarAsset not implemented")
+}
+func (UnimplementedCompassServiceServer) GetMyDiscussions(context.Context, *GetMyDiscussionsRequest) (*GetMyDiscussionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMyDiscussions not implemented")
+}
+func (UnimplementedCompassServiceServer) CreateTag(context.Context, *CreateTagRequest) (*CreateTagResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTag not implemented")
+}
+func (UnimplementedCompassServiceServer) GetTagsByRecordAndTemplate(context.Context, *GetTagsByRecordAndTemplateRequest) (*GetTagsByRecordAndTemplateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTagsByRecordAndTemplate not implemented")
+}
+func (UnimplementedCompassServiceServer) UpdateTag(context.Context, *UpdateTagRequest) (*UpdateTagResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTag not implemented")
+}
+func (UnimplementedCompassServiceServer) DeleteTag(context.Context, *DeleteTagRequest) (*DeleteTagResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteTag not implemented")
+}
+func (UnimplementedCompassServiceServer) GetTagsByRecord(context.Context, *GetTagsByRecordRequest) (*GetTagsByRecordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTagsByRecord not implemented")
+}
+func (UnimplementedCompassServiceServer) GetAllTagTemplates(context.Context, *GetAllTagTemplatesRequest) (*GetAllTagTemplatesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllTagTemplates not implemented")
+}
+func (UnimplementedCompassServiceServer) CreateTagTemplate(context.Context, *CreateTagTemplateRequest) (*CreateTagTemplateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTagTemplate not implemented")
+}
+func (UnimplementedCompassServiceServer) GetTagTemplate(context.Context, *GetTagTemplateRequest) (*GetTagTemplateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTagTemplate not implemented")
+}
+func (UnimplementedCompassServiceServer) UpdateTagTemplate(context.Context, *UpdateTagTemplateRequest) (*UpdateTagTemplateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTagTemplate not implemented")
+}
+func (UnimplementedCompassServiceServer) DeleteTagTemplate(context.Context, *DeleteTagTemplateRequest) (*DeleteTagTemplateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteTagTemplate not implemented")
 }
 func (UnimplementedCompassServiceServer) mustEmbedUnimplementedCompassServiceServer() {}
 
@@ -698,6 +928,294 @@ func _CompassService_GetAssetByVersion_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CompassService_GetUserStarredAssets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserStarredAssetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetUserStarredAssets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetUserStarredAssets",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetUserStarredAssets(ctx, req.(*GetUserStarredAssetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetMyStarredAssets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMyStarredAssetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetMyStarredAssets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetMyStarredAssets",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetMyStarredAssets(ctx, req.(*GetMyStarredAssetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetMyStarredAsset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMyStarredAssetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetMyStarredAsset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetMyStarredAsset",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetMyStarredAsset(ctx, req.(*GetMyStarredAssetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_StarAsset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StarAssetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).StarAsset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/StarAsset",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).StarAsset(ctx, req.(*StarAssetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_UnstarAsset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnstarAssetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).UnstarAsset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/UnstarAsset",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).UnstarAsset(ctx, req.(*UnstarAssetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetMyDiscussions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMyDiscussionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetMyDiscussions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetMyDiscussions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetMyDiscussions(ctx, req.(*GetMyDiscussionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_CreateTag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTagRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).CreateTag(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/CreateTag",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).CreateTag(ctx, req.(*CreateTagRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetTagsByRecordAndTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTagsByRecordAndTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetTagsByRecordAndTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetTagsByRecordAndTemplate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetTagsByRecordAndTemplate(ctx, req.(*GetTagsByRecordAndTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_UpdateTag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateTagRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).UpdateTag(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/UpdateTag",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).UpdateTag(ctx, req.(*UpdateTagRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_DeleteTag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteTagRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).DeleteTag(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/DeleteTag",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).DeleteTag(ctx, req.(*DeleteTagRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetTagsByRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTagsByRecordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetTagsByRecord(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetTagsByRecord",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetTagsByRecord(ctx, req.(*GetTagsByRecordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetAllTagTemplates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllTagTemplatesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetAllTagTemplates(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAllTagTemplates",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetAllTagTemplates(ctx, req.(*GetAllTagTemplatesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_CreateTagTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTagTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).CreateTagTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/CreateTagTemplate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).CreateTagTemplate(ctx, req.(*CreateTagTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetTagTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTagTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetTagTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetTagTemplate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetTagTemplate(ctx, req.(*GetTagTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_UpdateTagTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateTagTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).UpdateTagTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/UpdateTagTemplate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).UpdateTagTemplate(ctx, req.(*UpdateTagTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_DeleteTagTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteTagTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).DeleteTagTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/DeleteTagTemplate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).DeleteTagTemplate(ctx, req.(*DeleteTagTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CompassService_ServiceDesc is the grpc.ServiceDesc for CompassService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -784,6 +1302,70 @@ var CompassService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAssetByVersion",
 			Handler:    _CompassService_GetAssetByVersion_Handler,
+		},
+		{
+			MethodName: "GetUserStarredAssets",
+			Handler:    _CompassService_GetUserStarredAssets_Handler,
+		},
+		{
+			MethodName: "GetMyStarredAssets",
+			Handler:    _CompassService_GetMyStarredAssets_Handler,
+		},
+		{
+			MethodName: "GetMyStarredAsset",
+			Handler:    _CompassService_GetMyStarredAsset_Handler,
+		},
+		{
+			MethodName: "StarAsset",
+			Handler:    _CompassService_StarAsset_Handler,
+		},
+		{
+			MethodName: "UnstarAsset",
+			Handler:    _CompassService_UnstarAsset_Handler,
+		},
+		{
+			MethodName: "GetMyDiscussions",
+			Handler:    _CompassService_GetMyDiscussions_Handler,
+		},
+		{
+			MethodName: "CreateTag",
+			Handler:    _CompassService_CreateTag_Handler,
+		},
+		{
+			MethodName: "GetTagsByRecordAndTemplate",
+			Handler:    _CompassService_GetTagsByRecordAndTemplate_Handler,
+		},
+		{
+			MethodName: "UpdateTag",
+			Handler:    _CompassService_UpdateTag_Handler,
+		},
+		{
+			MethodName: "DeleteTag",
+			Handler:    _CompassService_DeleteTag_Handler,
+		},
+		{
+			MethodName: "GetTagsByRecord",
+			Handler:    _CompassService_GetTagsByRecord_Handler,
+		},
+		{
+			MethodName: "GetAllTagTemplates",
+			Handler:    _CompassService_GetAllTagTemplates_Handler,
+		},
+		{
+			MethodName: "CreateTagTemplate",
+			Handler:    _CompassService_CreateTagTemplate_Handler,
+		},
+		{
+			MethodName: "GetTagTemplate",
+			Handler:    _CompassService_GetTagTemplate_Handler,
+		},
+		{
+			MethodName: "UpdateTagTemplate",
+			Handler:    _CompassService_UpdateTagTemplate_Handler,
+		},
+		{
+			MethodName: "DeleteTagTemplate",
+			Handler:    _CompassService_DeleteTagTemplate_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
