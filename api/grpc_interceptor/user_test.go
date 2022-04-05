@@ -10,6 +10,7 @@ import (
 	pb_testproto "github.com/grpc-ecosystem/go-grpc-middleware/testing/testproto"
 	"github.com/odpf/columbus/lib/mocks"
 	"github.com/odpf/columbus/user"
+	"github.com/odpf/salt/log"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -20,8 +21,9 @@ import (
 )
 
 const (
-	identityHeaderKey = "Columbus-User-ID"
-	defaultProvider   = "shield"
+	identityUUIDHeaderKey  = "Columbus-User-ID"
+	identityEmailHeaderKey = "Columbus-User-Email"
+	userID                 = "user-id"
 )
 
 type UserTestSuite struct {
@@ -30,16 +32,15 @@ type UserTestSuite struct {
 }
 
 func TestUserSuite(t *testing.T) {
+	logger := log.NewNoop()
 	mockUserRepo := new(mocks.UserRepository)
-	userSvc := user.NewService(mockUserRepo, user.Config{
-		IdentityProviderDefaultName: defaultProvider,
-	})
+	userSvc := user.NewService(logger, mockUserRepo)
 	s := &UserTestSuite{
 		InterceptorTestSuite: &grpc_testing.InterceptorTestSuite{
 			TestService: &dummyService{TestServiceServer: &grpc_testing.TestPingService{T: t}},
 			ServerOpts: []grpc.ServerOption{
 				grpc_middleware.WithUnaryServerChain(
-					ValidateUser(identityHeaderKey, userSvc)),
+					ValidateUser(identityUUIDHeaderKey, identityEmailHeaderKey, userSvc)),
 			},
 		},
 		userRepo: mockUserRepo,
@@ -51,16 +52,17 @@ func (s *UserTestSuite) TestUnary_IdentityHeaderNotPresent() {
 	_, err := s.Client.Ping(s.SimpleCtx(), &pb_testproto.PingRequest{Value: "something", SleepTimeMs: 9999})
 	code := status.Code(err)
 	require.Equal(s.T(), codes.InvalidArgument, code)
-	require.EqualError(s.T(), err, "rpc error: code = InvalidArgument desc = identity header is empty")
+	require.EqualError(s.T(), err, "rpc error: code = InvalidArgument desc = identity header uuid is empty")
 }
 
 func (s *UserTestSuite) TestUnary_UserServiceError() {
 	userEmail := "user-email-error"
+	userUUID := "user-uuid-error"
 	customError := errors.New("some error")
-	s.userRepo.EXPECT().GetID(mock.Anything, userEmail).Return("", customError)
-	s.userRepo.EXPECT().Create(mock.Anything, mock.Anything).Return("", customError)
+	s.userRepo.EXPECT().GetByUUID(mock.Anything, userUUID).Return(user.User{}, customError)
+	s.userRepo.EXPECT().UpsertByEmail(mock.Anything, mock.Anything).Return("", customError)
 
-	ctx := metadata.AppendToOutgoingContext(context.Background(), identityHeaderKey, userEmail)
+	ctx := metadata.AppendToOutgoingContext(context.Background(), identityUUIDHeaderKey, userUUID, identityEmailHeaderKey, userEmail)
 	_, err := s.Client.Ping(ctx, &pb_testproto.PingRequest{Value: "something", SleepTimeMs: 9999})
 	code := status.Code(err)
 	require.Equal(s.T(), codes.Internal, code)
@@ -70,10 +72,10 @@ func (s *UserTestSuite) TestUnary_UserServiceError() {
 
 func (s *UserTestSuite) TestUnary_HeaderPassed() {
 	userEmail := "user-email"
-	userID := "user-id"
-	s.userRepo.EXPECT().GetID(mock.Anything, userEmail).Return(userID, nil)
+	userUUID := "user-uuid"
+	s.userRepo.EXPECT().GetByUUID(mock.Anything, userUUID).Return(user.User{ID: userID, UUID: userUUID, Email: userEmail}, nil)
 
-	ctx := metadata.AppendToOutgoingContext(s.SimpleCtx(), identityHeaderKey, userEmail)
+	ctx := metadata.AppendToOutgoingContext(s.SimpleCtx(), identityUUIDHeaderKey, userUUID, identityEmailHeaderKey, userEmail)
 	_, err := s.Client.Ping(ctx, &pb_testproto.PingRequest{Value: "something", SleepTimeMs: 9999})
 	code := status.Code(err)
 	require.Equal(s.T(), codes.OK, code)

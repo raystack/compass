@@ -422,6 +422,7 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 		})
 	}
 }
+
 func TestDiscussionRepository(t *testing.T) {
 	suite.Run(t, &DiscussionRepositoryTestSuite{})
 }

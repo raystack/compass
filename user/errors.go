@@ -10,27 +10,41 @@ var (
 )
 
 type NotFoundError struct {
+	UUID  string
 	Email string
 }
 
 func (e NotFoundError) Error() string {
-	return fmt.Sprintf("could not find user \"%s\"", e.Email)
+	cause := "could not find user"
+	if e.UUID != "" {
+		cause += fmt.Sprintf(" with uuid \"%s\"", e.UUID)
+	}
+	if e.Email != "" {
+		cause += fmt.Sprintf(" with email \"%s\"", e.Email)
+	}
+	return cause
 }
 
 type DuplicateRecordError struct {
-	ID    string
+	UUID  string
 	Email string
 }
 
 func (e DuplicateRecordError) Error() string {
-	return fmt.Sprintf("duplicate user \"%s\" with user id \"%s\"", e.Email, e.ID)
+	cause := "duplicate user"
+	if e.UUID != "" {
+		cause += fmt.Sprintf(" with uuid \"%s\"", e.UUID)
+	}
+	if e.Email != "" {
+		cause += fmt.Sprintf(" with email \"%s\"", e.Email)
+	}
+	return cause
 }
 
 type InvalidError struct {
-	Email    string
-	Provider string
+	UUID string
 }
 
 func (e InvalidError) Error() string {
-	return fmt.Sprintf("empty field with email \"%s\" and provider \"%s\"", e.Email, e.Provider)
+	return fmt.Sprintf("empty field with uuid \"%s\"", e.UUID)
 }

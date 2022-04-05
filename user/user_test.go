@@ -26,13 +26,13 @@ func TestValidate(t *testing.T) {
 			ExpectError: ErrNoUserInformation,
 		},
 		{
-			Title:       "should return error invalid if email is empty",
+			Title:       "should return error invalid if uuid is empty",
 			User:        &User{Provider: "provider"},
-			ExpectError: InvalidError{Provider: "provider"},
+			ExpectError: InvalidError{},
 		},
 		{
 			Title:       "should return nil if user is valid",
-			User:        &User{Email: "email", Provider: "provider"},
+			User:        &User{UUID: "some-uuid", Provider: "provider"},
 			ExpectError: nil,
 		},
 	}
@@ -55,14 +55,14 @@ func TestToProto(t *testing.T) {
 
 	var testCases = []testCase{
 		{
-			Title:       "should return nil if ID is empty",
+			Title:       "should return nil if UUID is empty",
 			User:        &User{},
 			ExpectProto: nil,
 		},
 		{
-			Title:       "should return some field only",
-			User:        &User{ID: "id1", Email: "email@email.com", Provider: "provider", CreatedAt: timeDummy, UpdatedAt: timeDummy},
-			ExpectProto: &compassv1beta1.User{Id: "id1", Email: "email@email.com"},
+			Title:       "should return fields without timestamp",
+			User:        &User{UUID: "uuid1", Email: "email@email.com", Provider: "provider", CreatedAt: timeDummy, UpdatedAt: timeDummy},
+			ExpectProto: &compassv1beta1.User{Uuid: "uuid1", Email: "email@email.com"},
 		},
 	}
 	for _, tc := range testCases {
@@ -86,19 +86,19 @@ func TestToFullProto(t *testing.T) {
 
 	var testCases = []testCase{
 		{
-			Title:       "should return nil if ID is empty",
+			Title:       "should return nil if UUID is empty",
 			User:        &User{},
 			ExpectProto: nil,
 		},
 		{
-			Title:       "should return no timestamp pb if timestamp is zero",
-			User:        &User{ID: "id1", Provider: "provider"},
-			ExpectProto: &compassv1beta1.User{Id: "id1", Provider: "provider"},
+			Title:       "should return without timestamp pb if timestamp is zero",
+			User:        &User{UUID: "uuid1", Provider: "provider"},
+			ExpectProto: &compassv1beta1.User{Uuid: "uuid1", Provider: "provider"},
 		},
 		{
-			Title:       "should return timestamp pb if timestamp is not zero",
-			User:        &User{ID: "id1", Provider: "provider", CreatedAt: timeDummy, UpdatedAt: timeDummy},
-			ExpectProto: &compassv1beta1.User{Id: "id1", Provider: "provider", CreatedAt: timestamppb.New(timeDummy), UpdatedAt: timestamppb.New(timeDummy)},
+			Title:       "should return with timestamp pb if timestamp is not zero",
+			User:        &User{UUID: "uuid1", Provider: "provider", CreatedAt: timeDummy, UpdatedAt: timeDummy},
+			ExpectProto: &compassv1beta1.User{Uuid: "uuid1", Provider: "provider", CreatedAt: timestamppb.New(timeDummy), UpdatedAt: timestamppb.New(timeDummy)},
 		},
 	}
 	for _, tc := range testCases {
@@ -123,13 +123,13 @@ func TestNewFromProto(t *testing.T) {
 	var testCases = []testCase{
 		{
 			Title:      "should return non empty time.Time if timestamp pb is not zero",
-			UserPB:     &compassv1beta1.User{Id: "id1", Provider: "provider", CreatedAt: timestamppb.New(timeDummy), UpdatedAt: timestamppb.New(timeDummy)},
-			ExpectUser: User{ID: "id1", Provider: "provider", CreatedAt: timeDummy, UpdatedAt: timeDummy},
+			UserPB:     &compassv1beta1.User{Uuid: "uuid1", Provider: "provider", CreatedAt: timestamppb.New(timeDummy), UpdatedAt: timestamppb.New(timeDummy)},
+			ExpectUser: User{UUID: "uuid1", Provider: "provider", CreatedAt: timeDummy, UpdatedAt: timeDummy},
 		},
 		{
 			Title:      "should return empty time.Time if timestamp pb is zero",
-			UserPB:     &compassv1beta1.User{Id: "id1", Provider: "provider"},
-			ExpectUser: User{ID: "id1", Provider: "provider"},
+			UserPB:     &compassv1beta1.User{Uuid: "uuid1", Provider: "provider"},
+			ExpectUser: User{UUID: "uuid1", Provider: "provider"},
 		},
 	}
 	for _, tc := range testCases {

@@ -2,6 +2,7 @@ package v1beta1
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
@@ -31,14 +32,14 @@ func (h *Handler) SearchAssets(ctx context.Context, req *compassv1beta1.SearchAs
 
 	results, err := h.DiscoveryService.Search(ctx, cfg)
 	if err != nil {
-		return nil, internalServerError(h.Logger, "error searching records")
+		return nil, internalServerError(h.Logger, fmt.Sprintf("error searching record: %s", err.Error()))
 	}
 
 	assetsPB := []*compassv1beta1.Asset{}
 	for _, sr := range results {
 		assetPB, err := sr.ToAsset().ToProto(false)
 		if err != nil {
-			return nil, internalServerError(h.Logger, err.Error())
+			return nil, internalServerError(h.Logger, fmt.Sprintf("error converting assets to proto: %s", err.Error()))
 		}
 		assetsPB = append(assetsPB, assetPB)
 	}
@@ -65,7 +66,7 @@ func (h *Handler) SuggestAssets(ctx context.Context, req *compassv1beta1.Suggest
 
 	suggestions, err := h.DiscoveryService.Suggest(ctx, cfg)
 	if err != nil {
-		return nil, internalServerError(h.Logger, "error building suggestions")
+		return nil, internalServerError(h.Logger, err.Error())
 	}
 
 	return &compassv1beta1.SuggestAssetsResponse{

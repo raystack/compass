@@ -14,7 +14,7 @@ import (
 
 var (
 	elasticSearchCmdLine = []string{
-		"docker", "run", "-d", "-P", "--rm", "-e", "discovery.type=single-node", "elasticsearch:7.6.1",
+		"docker", "run", "-d", "-P", "--rm", "-e", "discovery.type=single-node", "docker.elastic.co/elasticsearch/elasticsearch:7.6.1",
 	}
 	// "9200/tcp" refers to the default container port where elasticsearch server runs
 	esHostQuery = `{{index .NetworkSettings.Ports "9200/tcp" 0 "HostIp"}}:{{index .NetworkSettings.Ports "9200/tcp" 0 "HostPort"}}`

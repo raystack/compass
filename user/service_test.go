@@ -7,74 +7,106 @@ import (
 
 	"github.com/odpf/columbus/lib/mocks"
 	"github.com/odpf/columbus/user"
-
+	"github.com/odpf/salt/log"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
-var userCfg = user.Config{IdentityProviderDefaultName: "shield"}
+func TestValidateUser(t *testing.T) {
+	type testCase struct {
+		Description string
+		UUID        string
+		Email       string
+		Setup       func(ctx context.Context, inputUUID, inputEmail string, userRepo *mocks.UserRepository)
+		ExpectErr   error
+	}
 
-func TestValidateWithHeader(t *testing.T) {
-	ctx := context.TODO()
-	t.Run("should return no user error when param is empty", func(t *testing.T) {
-		userSvc := user.NewService(nil, userCfg)
+	var testCases = []testCase{
+		{
+			Description: "should return no user error when uuid is empty and email is optional",
+			UUID:        "",
+			ExpectErr:   user.ErrNoUserInformation,
+		},
+		{
+			Description: "should return user UUID when successfully found user UUID from DB",
+			UUID:        "a-uuid",
+			Setup: func(ctx context.Context, inputUUID, inputEmail string, userRepo *mocks.UserRepository) {
+				userRepo.EXPECT().GetByUUID(ctx, inputUUID).Return(user.User{ID: "user-id", UUID: inputUUID}, nil)
+			},
+			ExpectErr: nil,
+		},
+		{
+			Description: "should return user error if GetByUUID return nil error and empty ID",
+			UUID:        "a-uuid",
+			Setup: func(ctx context.Context, inputUUID, inputEmail string, userRepo *mocks.UserRepository) {
+				userRepo.EXPECT().GetByUUID(ctx, inputUUID).Return(user.User{}, nil)
+			},
+			ExpectErr: errors.New("fetched user uuid from DB is empty"),
+		},
+		{
+			Description: "should return user UUID when not found user UUID from DB but can create the new one without email",
+			UUID:        "an-email-success-create",
+			Setup: func(ctx context.Context, inputUUID, inputEmail string, userRepo *mocks.UserRepository) {
+				userRepo.EXPECT().GetByUUID(ctx, inputUUID).Return(user.User{}, user.NotFoundError{UUID: inputUUID})
+				userRepo.EXPECT().UpsertByEmail(ctx, &user.User{UUID: inputUUID}).Return("some-id", nil)
+			},
+			ExpectErr: nil,
+		},
+		{
+			Description: "should return user UUID when not found user UUID from DB but can create the new one wit email",
+			UUID:        "an-uuid-error",
+			Email:       "an-email-success-create",
+			Setup: func(ctx context.Context, inputUUID, inputEmail string, userRepo *mocks.UserRepository) {
+				userRepo.EXPECT().GetByUUID(ctx, inputUUID).Return(user.User{}, user.NotFoundError{UUID: inputUUID})
+				userRepo.EXPECT().UpsertByEmail(ctx, &user.User{UUID: inputUUID, Email: inputEmail}).Return("some-id", nil)
+			},
+			ExpectErr: nil,
+		},
+		{
+			Description: "should return error when not found user ID from DB but can't create the new one",
+			UUID:        "an-uuid-error",
+			Email:       "an-email",
+			Setup: func(ctx context.Context, inputUUID, inputEmail string, userRepo *mocks.UserRepository) {
+				mockErr := errors.New("error upserting user")
+				userRepo.EXPECT().GetByUUID(ctx, inputUUID).Return(user.User{}, mockErr)
+				userRepo.EXPECT().UpsertByEmail(ctx, &user.User{UUID: inputUUID, Email: inputEmail}).Return("", mockErr)
+			},
+			ExpectErr: errors.New("error upserting user"),
+		},
+	}
 
-		id, err := userSvc.ValidateUser(ctx, "")
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := context.TODO()
+			logger := log.NewNoop()
+			mockUserRepo := new(mocks.UserRepository)
 
-		assert.ErrorIs(t, err, user.ErrNoUserInformation)
-		assert.Empty(t, id)
+			if tc.Setup != nil {
+				tc.Setup(ctx, tc.UUID, tc.Email, mockUserRepo)
+			}
+
+			userSvc := user.NewService(logger, mockUserRepo)
+
+			_, err := userSvc.ValidateUser(ctx, tc.UUID, tc.Email)
+
+			assert.Equal(t, tc.ExpectErr, err)
+		})
+	}
+}
+
+func TestContext(t *testing.T) {
+	t.Run("should return passed string if exist in context", func(t *testing.T) {
+		passedString := "passed-string"
+		userCtx := user.NewContext(context.Background(), passedString)
+		actual := user.FromContext(userCtx)
+		if actual != passedString {
+			t.Fatalf("actual is \"%+v\" but expected was \"%+v\"", actual, passedString)
+		}
 	})
 
-	t.Run("should return error when user id from DB is empty", func(t *testing.T) {
-		mockUserRepository := &mocks.UserRepository{}
-		mockUserRepository.On("GetID", mock.Anything, mock.Anything).Return("", nil)
-
-		userSvc := user.NewService(mockUserRepository, userCfg)
-
-		id, err := userSvc.ValidateUser(ctx, "an-email")
-
-		assert.ErrorIs(t, err, user.ErrNoUserInformation)
-		assert.Empty(t, id)
-	})
-
-	t.Run("should return user ID when successfully found user ID from DB", func(t *testing.T) {
-		userID := "user-id"
-		mockUserRepository := &mocks.UserRepository{}
-		mockUserRepository.On("GetID", mock.Anything, mock.Anything).Return(userID, nil)
-
-		userSvc := user.NewService(mockUserRepository, userCfg)
-
-		id, err := userSvc.ValidateUser(ctx, "an-email")
-
-		assert.NoError(t, err)
-		assert.Equal(t, id, userID)
-	})
-
-	t.Run("should return user ID when not found user ID from DB but can create the new one", func(t *testing.T) {
-		userID := "user-id"
-		mockUserRepository := &mocks.UserRepository{}
-		mockUserRepository.On("GetID", mock.Anything, mock.Anything).Return("", nil)
-		mockUserRepository.On("Create", mock.Anything, mock.Anything).Return(userID, nil)
-
-		userSvc := user.NewService(mockUserRepository, userCfg)
-
-		id, err := userSvc.ValidateUser(ctx, "an-email")
-
-		assert.ErrorIs(t, err, user.ErrNoUserInformation)
-		assert.Empty(t, id)
-	})
-
-	t.Run("should return error when not found user ID from DB but can't create the new one", func(t *testing.T) {
-		mockErr := errors.New("error adding user")
-		mockUserRepository := &mocks.UserRepository{}
-		mockUserRepository.On("GetID", mock.Anything, mock.Anything).Return("", mockErr)
-		mockUserRepository.On("Create", mock.Anything, mock.Anything).Return("", mockErr)
-
-		userSvc := user.NewService(mockUserRepository, userCfg)
-
-		id, err := userSvc.ValidateUser(ctx, "an-email")
-
-		assert.ErrorIs(t, err, mockErr)
-		assert.Empty(t, id)
+	t.Run("should return empty string if not exist in context", func(t *testing.T) {
+		actual := user.FromContext(context.Background())
+		if actual != "" {
+			t.Fatalf("actual is \"%+v\" but expected was \"%+v\"", actual, "")
+		}
 	})
 }

@@ -1,7 +1,7 @@
 NAME="github.com/odpf/columbus"
 VERSION=$(shell git describe --always --tags 2>/dev/null)
 COVERFILE="/tmp/columbus.coverprofile"
-PROTON_COMMIT := "712a5a1ae39c6dbbd5a1e152c2c082dde18b5e79"
+PROTON_COMMIT := "0e3ef79a86b8aeb2d86318d7d93cf673989073ae"
 
 .PHONY: all build test clean install proto
 
@@ -40,11 +40,11 @@ proto: ## Generate the protobuf files
 install: ## install required dependencies
 	@echo "> installing dependencies"
 	go mod tidy
-	go get -d google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
+	go get google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
 	go get google.golang.org/protobuf/proto@v1.27.1
 	go get google.golang.org/grpc@v1.45.0
-	go get -d google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2.0
-	go get -d github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.8.0
-	go get -d github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.8.0
-	go get -d github.com/bufbuild/buf/cmd/buf@v1.1.0
-	go get -d github.com/envoyproxy/protoc-gen-validate@v0.6.7
+	go get google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2.0
+	go get github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.8.0
+	go get github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.8.0
+	go get github.com/bufbuild/buf/cmd/buf@v1.3.1
+	go get github.com/envoyproxy/protoc-gen-validate@v0.6.7

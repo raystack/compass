@@ -1,6 +1,6 @@
 CREATE TABLE comments (
-  id serial PRIMARY KEY,
-  discussion_id serial NOT NULL REFERENCES discussions(id) ON DELETE CASCADE,
+  id bigserial PRIMARY KEY,
+  discussion_id bigint NOT NULL REFERENCES discussions(id) ON DELETE CASCADE,
   body text NOT NULL,
   owner uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   updated_by uuid NOT NULL,

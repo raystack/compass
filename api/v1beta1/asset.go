@@ -397,6 +397,27 @@ func decodePatchAssetToMap(pb *compassv1beta1.UpsertPatchAssetRequest_BaseAsset)
 	if pb.GetLabels() != nil {
 		m["labels"] = pb.GetLabels().AsMap()
 	}
+	if len(pb.GetOwners()) > 0 {
+		ownersMap := []map[string]interface{}{}
+		ownersPB := pb.GetOwners()
+		for _, ownerPB := range ownersPB {
+			ownerMap := map[string]interface{}{}
+			if ownerPB.GetId() != "" {
+				ownerMap["id"] = ownerPB.GetId()
+			}
+			if ownerPB.GetUuid() != "" {
+				ownerMap["uuid"] = ownerPB.GetUuid()
+			}
+			if ownerPB.GetEmail() != "" {
+				ownerMap["email"] = ownerPB.GetEmail()
+			}
+			if ownerPB.GetProvider() != "" {
+				ownerMap["provider"] = ownerPB.GetProvider()
+			}
+			ownersMap = append(ownersMap, ownerMap)
+		}
+		m["owners"] = ownersMap
+	}
 
 	return m
 }

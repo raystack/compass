@@ -165,7 +165,7 @@ func (r *DiscussionRepositoryTestSuite) TestUpdateComment() {
 		r.NoError(err)
 		r.Equal(newCmt.Body, cmt.Body)
 		r.NotEqual(newCmt.UpdatedAt, cmt.UpdatedAt)
-		r.Equal(newCmt.UpdatedBy.ID, cmt.UpdatedBy.ID)
+		r.Equal(newCmt.UpdatedBy.UUID, cmt.UpdatedBy.UUID)
 	})
 
 	r.Run("should return error when updating a comment that does not exist", func() {

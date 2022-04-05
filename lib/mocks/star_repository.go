@@ -112,54 +112,6 @@ func (_c *StarRepository_Delete_Call) Return(_a0 error) *StarRepository_Delete_C
 	return _c
 }
 
-// GetAllAssetsByUserEmail provides a mock function with given fields: ctx, flt, userEmail
-func (_m *StarRepository) GetAllAssetsByUserEmail(ctx context.Context, flt star.Filter, userEmail string) ([]asset.Asset, error) {
-	ret := _m.Called(ctx, flt, userEmail)
-
-	var r0 []asset.Asset
-	if rf, ok := ret.Get(0).(func(context.Context, star.Filter, string) []asset.Asset); ok {
-		r0 = rf(ctx, flt, userEmail)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]asset.Asset)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, star.Filter, string) error); ok {
-		r1 = rf(ctx, flt, userEmail)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// StarRepository_GetAllAssetsByUserEmail_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllAssetsByUserEmail'
-type StarRepository_GetAllAssetsByUserEmail_Call struct {
-	*mock.Call
-}
-
-// GetAllAssetsByUserEmail is a helper method to define mock.On call
-//  - ctx context.Context
-//  - flt star.Filter
-//  - userEmail string
-func (_e *StarRepository_Expecter) GetAllAssetsByUserEmail(ctx interface{}, flt interface{}, userEmail interface{}) *StarRepository_GetAllAssetsByUserEmail_Call {
-	return &StarRepository_GetAllAssetsByUserEmail_Call{Call: _e.mock.On("GetAllAssetsByUserEmail", ctx, flt, userEmail)}
-}
-
-func (_c *StarRepository_GetAllAssetsByUserEmail_Call) Run(run func(ctx context.Context, flt star.Filter, userEmail string)) *StarRepository_GetAllAssetsByUserEmail_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(star.Filter), args[2].(string))
-	})
-	return _c
-}
-
-func (_c *StarRepository_GetAllAssetsByUserEmail_Call) Return(_a0 []asset.Asset, _a1 error) *StarRepository_GetAllAssetsByUserEmail_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
 // GetAllAssetsByUserID provides a mock function with given fields: ctx, flt, userID
 func (_m *StarRepository) GetAllAssetsByUserID(ctx context.Context, flt star.Filter, userID string) ([]asset.Asset, error) {
 	ret := _m.Called(ctx, flt, userID)

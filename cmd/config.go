@@ -45,7 +45,8 @@ type Config struct {
 	DBSSLMode  string `mapstructure:"DB_SSL_MODE" default:"disable"`
 
 	// User Identity
-	IdentityHeader              string `mapstructure:"IDENTITY_HEADER" default:"Columbus-User-Email"`
+	IdentityUUIDHeaderKey       string `mapstructure:"IDENTITY_UUID_HEADER" default:"Columbus-User-UUID"`
+	IdentityEmailHeaderKey      string `mapstructure:"IDENTITY_EMAIL_HEADER" default:"Columbus-User-Email"`
 	IdentityProviderDefaultName string `mapstructure:"IDENTITY_PROVIDER_DEFAULT_NAME" default:""`
 }
 

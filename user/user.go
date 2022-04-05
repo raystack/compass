@@ -11,7 +11,8 @@ import (
 
 // User is a basic entity of a user
 type User struct {
-	ID        string    `json:"id,omitempty" diff:"-" db:"id"`
+	ID        string    `json:"-" diff:"-" db:"id"`
+	UUID      string    `json:"uuid,omitempty" diff:"-" db:"uuid"`
 	Email     string    `json:"email" diff:"email" db:"email"`
 	Provider  string    `json:"provider" diff:"-" db:"provider"`
 	CreatedAt time.Time `json:"-" diff:"-" db:"created_at"`
@@ -20,19 +21,19 @@ type User struct {
 
 // ToProto transforms struct with some fields only to proto
 func (d User) ToProto() *compassv1beta1.User {
-	if d.ID == "" {
+	if d.UUID == "" {
 		return nil
 	}
 
 	return &compassv1beta1.User{
-		Id:    d.ID,
+		Uuid:  d.UUID,
 		Email: d.Email,
 	}
 }
 
 // ToFullProto transforms struct with all fields to proto
 func (d User) ToFullProto() *compassv1beta1.User {
-	if d.ID == "" {
+	if d.UUID == "" {
 		return nil
 	}
 
@@ -48,6 +49,7 @@ func (d User) ToFullProto() *compassv1beta1.User {
 
 	return &compassv1beta1.User{
 		Id:        d.ID,
+		Uuid:      d.UUID,
 		Email:     d.Email,
 		Provider:  d.Provider,
 		CreatedAt: createdAtPB,
@@ -69,6 +71,7 @@ func NewFromProto(proto *compassv1beta1.User) User {
 
 	return User{
 		ID:        proto.GetId(),
+		UUID:      proto.GetUuid(),
 		Email:     proto.GetEmail(),
 		Provider:  proto.GetProvider(),
 		CreatedAt: createdAt,
@@ -82,8 +85,8 @@ func (u *User) Validate() error {
 		return ErrNoUserInformation
 	}
 
-	if u.Email == "" || u.Provider == "" {
-		return InvalidError{Email: u.Email, Provider: u.Provider}
+	if u.UUID == "" {
+		return InvalidError{UUID: u.UUID}
 	}
 
 	return nil
@@ -92,5 +95,7 @@ func (u *User) Validate() error {
 // Repository contains interface of supported methods
 type Repository interface {
 	Create(ctx context.Context, u *User) (string, error)
-	GetID(ctx context.Context, email string) (string, error)
+	GetByEmail(ctx context.Context, email string) (User, error)
+	GetByUUID(ctx context.Context, uuid string) (User, error)
+	UpsertByEmail(ctx context.Context, u *User) (string, error)
 }
