@@ -38,6 +38,7 @@ func TestGetAllAssets(t *testing.T) {
 		{
 			Description:  `should return internal server error if fetching fails`,
 			ExpectStatus: codes.Internal,
+			Request:      &compassv1beta1.GetAllAssetsRequest{},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{}, errors.New("unknown error"))
 			},
@@ -56,23 +57,37 @@ func TestGetAllAssets(t *testing.T) {
 		{
 			Description: `should successfully get config from request`,
 			Request: &compassv1beta1.GetAllAssetsRequest{
-				Text:    "asd",
-				Type:    "table",
-				Service: "bigquery",
-				Size:    30,
-				Offset:  50,
+				Types:     "table,topic",
+				Services:  "bigquery,kafka",
+				Sort:      "type",
+				Direction: "asc",
+				Data: map[string]string{
+					"dataset": "booking",
+					"project": "p-godata-id",
+				},
+				Q:         "internal",
+				QFields:   "name,urn",
+				Size:      30,
+				Offset:    50,
+				WithTotal: false,
 			},
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				cfg := asset.GRPCConfig{
-					Text:    "asd",
-					Type:    "table",
-					Service: "bigquery",
-					Size:    30,
-					Offset:  50,
+				cfg := asset.Config{
+					Types:         []asset.Type{"table", "topic"},
+					Services:      []string{"bigquery", "kafka"},
+					Size:          30,
+					Offset:        50,
+					SortBy:        "type",
+					SortDirection: "asc",
+					QueryFields:   []string{"name", "urn"},
+					Query:         "internal",
+					Data: map[string]string{
+						"dataset": "booking",
+						"project": "p-godata-id",
+					},
 				}
-				config := cfg.ToConfig()
-				ar.On("GetAll", ctx, config).Return([]asset.Asset{}, nil, nil)
+				ar.On("GetAll", ctx, cfg).Return([]asset.Asset{}, nil, nil)
 			},
 		},
 		{
@@ -102,30 +117,27 @@ func TestGetAllAssets(t *testing.T) {
 			Description:  "should return total in the payload if with_total flag is given",
 			ExpectStatus: codes.OK,
 			Request: &compassv1beta1.GetAllAssetsRequest{
-				Text:      "dsa",
-				Type:      "job",
-				Service:   "kafka",
+				Types:     "job",
+				Services:  "kafka",
 				Size:      10,
 				Offset:    5,
 				WithTotal: true,
 			},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.GRPCConfig{
-					Text:    "dsa",
-					Type:    "job",
-					Service: "kafka",
-					Size:    10,
-					Offset:  5,
-				}.ToConfig()).Return([]asset.Asset{
+				ar.On("GetAll", ctx, asset.Config{
+					Types:    []asset.Type{"job"},
+					Services: []string{"kafka"},
+					Size:     10,
+					Offset:   5,
+				}).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 					{ID: "testid-3"},
 				}, nil, nil)
-				ar.On("GetCount", ctx, asset.GRPCConfig{
-					Text:    "dsa",
-					Type:    "job",
-					Service: "kafka",
-				}.ToConfig()).Return(150, nil, nil)
+				ar.On("GetCount", ctx, asset.Config{
+					Types:    []asset.Type{"job"},
+					Services: []string{"kafka"},
+				}).Return(150, nil, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAllAssetsResponse) error {
 				expected := &compassv1beta1.GetAllAssetsResponse{

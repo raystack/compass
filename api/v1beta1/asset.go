@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/columbus/asset"
@@ -15,16 +16,29 @@ import (
 )
 
 func (h *Handler) GetAllAssets(ctx context.Context, req *compassv1beta1.GetAllAssetsRequest) (*compassv1beta1.GetAllAssetsResponse, error) {
-	config := asset.GRPCConfig{
-		Text:    req.GetText(),
-		Type:    asset.Type(req.GetType()),
-		Service: req.GetService(),
-		Size:    int(req.GetSize()),
-		Offset:  int(req.GetOffset()),
-	}
-	cfg := config.ToConfig()
 
-	assets, err := h.AssetRepository.GetAll(ctx, cfg)
+	config := asset.Config{
+		Size:          int(req.GetSize()),
+		Offset:        int(req.GetOffset()),
+		SortBy:        req.GetSort(),
+		SortDirection: req.GetDirection(),
+		Query:         req.GetQ(),
+		Data:          req.GetData(),
+	}
+	if req.GetTypes() != "" {
+		typs := strings.Split(req.GetTypes(), ",")
+		for _, typeVal := range typs {
+			config.Types = append(config.Types, asset.Type(typeVal))
+		}
+	}
+	if req.GetServices() != "" {
+		config.Services = strings.Split(req.GetServices(), ",")
+	}
+	if req.GetQFields() != "" {
+		config.QueryFields = strings.Split(req.GetQFields(), ",")
+	}
+
+	assets, err := h.AssetRepository.GetAll(ctx, config)
 	if err != nil {
 		return nil, internalServerError(h.Logger, err.Error())
 	}
@@ -43,14 +57,27 @@ func (h *Handler) GetAllAssets(ctx context.Context, req *compassv1beta1.GetAllAs
 	}
 
 	if req.GetWithTotal() {
-		grpcConfig := asset.GRPCConfig{
-			Type:    config.Type,
-			Service: config.Service,
-			Text:    config.Text,
+		config = asset.Config{
+			//Types:    asset.Type(req.GetTypes()),
+			//Services: req.GetService(),
+			//QueryFields:   req.QFields,
+			Size:          int(req.GetSize()),
+			Offset:        int(req.GetOffset()),
+			SortBy:        req.Sort,
+			SortDirection: req.Direction,
+			Query:         req.Q,
+			Data:          req.Data,
 		}
-		cfg = grpcConfig.ToConfig()
 
-		total, err := h.AssetRepository.GetCount(ctx, cfg)
+		typ := strings.Split(req.GetTypes(), ",")
+		for _, typeVal := range typ {
+			config.Types = append(config.Types, asset.Type(typeVal))
+		}
+
+		config.Services = strings.Split(req.GetServices(), ",")
+		config.QueryFields = strings.Split(req.GetQFields(), ",")
+
+		total, err := h.AssetRepository.GetCount(ctx, config)
 		if err != nil {
 			return nil, internalServerError(h.Logger, err.Error())
 		}
