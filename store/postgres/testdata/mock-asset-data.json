@@ -74,7 +74,7 @@
     "name": "test-new-kafka-1-a-b",
     "type": "job",
     "service": "optimus",
-    "description": "optimus information",
+    "description": "columbus_001",
     "data": {
       "urn": "h-test-new-kafka-1-a-b-kafka",
       "title": "test-new-kafka-1-a-b",
@@ -91,7 +91,7 @@
     "description": "topic information",
     "data": {
       "urn": "i-test-grant",
-      "title": "test_grant",
+      "title": "columbus_001",
       "description": "seventh data description",
       "entity": "odpf",
       "country": "th"
@@ -104,6 +104,11 @@
     "service": "tableau ",
     "description": "tableau information",
     "data": {
+      "landscape": {
+        "properties": {
+          "project-id": "columbus_001"
+        }
+      },
       "urn": "j-xcvcx",
       "title": "xcvcx",
       "description": "eighth data description",

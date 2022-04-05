@@ -39,6 +39,8 @@ func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset
 		return nil, fmt.Errorf("error building query: %w", err)
 	}
 
+	fmt.Println("query: ", query)
+
 	var ams []*AssetModel
 	err = r.client.db.SelectContext(ctx, &ams, query, args...)
 	if err != nil {
@@ -645,21 +647,52 @@ func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.C
 
 	if len(cfg.QueryFields) > 0 && cfg.Query != "" {
 		orClause := sq.Or{}
+
 		for _, field := range cfg.QueryFields {
-			orClause = append(orClause, sq.ILike{
-				field: fmt.Sprint("%", cfg.Query, "%"),
-			})
+			// data.name.entity.urn
+			// data -> name -> entity ->> urn
+			if strings.Contains(field, "data") {
+				query := strings.TrimPrefix(field, "data.")
+				finalQuery := nestedDataQuery(query)
+				orClause = append(orClause, sq.ILike{
+					finalQuery: fmt.Sprint("%", cfg.Query, "%"),
+				})
+			} else {
+				orClause = append(orClause, sq.ILike{
+					field: fmt.Sprint("%", cfg.Query, "%"),
+				})
+			}
 		}
 		builder = builder.Where(orClause)
 	}
 
+	//name.entity.urn
+	// data -> name -> entity ->> urn
 	if len(cfg.Data) > 0 {
 		for key, val := range cfg.Data {
-			builder = builder.Where(fmt.Sprintf("data ->> '%s' = '%s'", key, val))
+			finalQuery := nestedDataQuery(key)
+			builder = builder.Where(fmt.Sprintf("%s = '%s'", finalQuery, val))
 		}
 	}
 
 	return builder
+}
+
+func nestedDataQuery(key string) (finalQuery string) {
+	var queries []string
+	queries = append(queries, "data")
+	//query := strings.TrimPrefix(key, "data.")
+	nestedParams := strings.Split(key, ".")
+	length := len(nestedParams)
+	for i := 0; i < length-1; i++ {
+		nestedQuery := fmt.Sprintf(" -> '%s'", nestedParams[i])
+		queries = append(queries, nestedQuery)
+	}
+	lastParam := fmt.Sprintf(" ->> '%s'", nestedParams[length-1])
+	queries = append(queries, lastParam)
+	finalQuery = strings.Join(queries, "")
+
+	return finalQuery
 }
 
 func (r *AssetRepository) buildOrderQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {

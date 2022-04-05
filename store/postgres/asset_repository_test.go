@@ -207,6 +207,36 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		}
 	})
 
+	r.Run("should filter using nested query data fields", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			QueryFields: []string{"data.landscape.properties.project-id", "data.title"},
+			Query:       "columbus_001",
+			SortBy:      "urn",
+		})
+		r.Require().NoError(err)
+
+		expectedURNs := []string{"i-test-grant", "j-xcvcx"}
+		r.Equal(len(expectedURNs), len(results))
+		for i := range results {
+			r.Equal(expectedURNs[i], results[i].URN)
+		}
+	})
+
+	r.Run("should filter using nested query data fields", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			QueryFields: []string{"data.landscape.properties.project-id", "description"},
+			Query:       "columbus_001",
+			SortBy:      "urn",
+		})
+		r.Require().NoError(err)
+
+		expectedURNs := []string{"h-test-new-kafka", "j-xcvcx"}
+		r.Equal(len(expectedURNs), len(results))
+		for i := range results {
+			r.Equal(expectedURNs[i], results[i].URN)
+		}
+	})
+
 	r.Run("should filter using asset's Data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			Data: map[string]string{
@@ -217,6 +247,23 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		r.Require().NoError(err)
 
 		expectedURNs := []string{"e-test-grant2", "h-test-new-kafka", "i-test-grant"}
+		r.Equal(len(expectedURNs), len(results))
+		for i := range results {
+			fmt.Println(results[i].URN)
+			r.Equal(expectedURNs[i], results[i].URN)
+		}
+	})
+
+	r.Run("should filter using asset's nested data fields", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			Data: map[string]string{
+				"landscape.properties.project-id": "columbus_001",
+				"country":                         "vn",
+			},
+		})
+		r.Require().NoError(err)
+
+		expectedURNs := []string{"j-xcvcx"}
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
 			fmt.Println(results[i].URN)
