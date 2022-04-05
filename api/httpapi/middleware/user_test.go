@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/odpf/columbus/api/httpapi/handlers"
 	"github.com/odpf/columbus/lib/mocks"
 	"github.com/odpf/columbus/user"
@@ -26,9 +26,13 @@ func TestValidateUser(t *testing.T) {
 
 	t.Run("should return HTTP 400 when identity header not present", func(t *testing.T) {
 		userSvc := user.NewService(nil, userCfg)
-		r := mux.NewRouter()
-		r.Use(ValidateUser(identityHeaderKey, userSvc))
-		r.Path(dummyRoute).Methods(http.MethodGet)
+
+		r := runtime.NewServeMux()
+		err := r.HandlePath(http.MethodGet, dummyRoute,
+			ValidateUser(identityHeaderKey, userSvc, nil))
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		req, _ := http.NewRequest("GET", dummyRoute, nil)
 
@@ -38,7 +42,7 @@ func TestValidateUser(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, rr.Code)
 		response := &handlers.ErrorResponse{}
-		err := json.Unmarshal(rr.Body.Bytes(), &response)
+		err = json.Unmarshal(rr.Body.Bytes(), &response)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -53,9 +57,13 @@ func TestValidateUser(t *testing.T) {
 		mockUserRepository.On("Create", mock.Anything, mock.Anything).Return("", customError)
 
 		userSvc := user.NewService(mockUserRepository, userCfg)
-		r := mux.NewRouter()
-		r.Use(ValidateUser(identityHeaderKey, userSvc))
-		r.Path(dummyRoute).Methods(http.MethodGet)
+
+		r := runtime.NewServeMux()
+		err := r.HandlePath(http.MethodGet, dummyRoute,
+			ValidateUser(identityHeaderKey, userSvc, nil))
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		req, _ := http.NewRequest("GET", dummyRoute, nil)
 		req.Header.Set(identityHeaderKey, "some-email")
@@ -65,7 +73,7 @@ func TestValidateUser(t *testing.T) {
 
 		assert.Equal(t, http.StatusInternalServerError, rr.Code)
 		response := &handlers.ErrorResponse{}
-		err := json.Unmarshal(rr.Body.Bytes(), &response)
+		err = json.Unmarshal(rr.Body.Bytes(), &response)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -81,16 +89,19 @@ func TestValidateUser(t *testing.T) {
 		mockUserRepository.On("Create", mock.Anything, mock.Anything).Return(userID, nil)
 
 		userSvc := user.NewService(mockUserRepository, userCfg)
-		r := mux.NewRouter()
-		r.Use(ValidateUser(identityHeaderKey, userSvc))
-		r.Path(dummyRoute).Methods(http.MethodGet).HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			propagatedUserID := user.FromContext(r.Context())
-			_, err := rw.Write([]byte(propagatedUserID))
-			if err != nil {
-				t.Fatal(err)
-			}
-			rw.WriteHeader(http.StatusOK)
-		})
+
+		r := runtime.NewServeMux()
+		if err := r.HandlePath(http.MethodGet, dummyRoute,
+			ValidateUser(identityHeaderKey, userSvc, runtime.HandlerFunc(func(rw http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+				propagatedUserID := user.FromContext(r.Context())
+				_, err := rw.Write([]byte(propagatedUserID))
+				if err != nil {
+					t.Fatal(err)
+				}
+				rw.WriteHeader(http.StatusOK)
+			}))); err != nil {
+			t.Fatal(err)
+		}
 
 		req, _ := http.NewRequest("GET", dummyRoute, nil)
 		req.Header.Set(identityHeaderKey, userEmail)

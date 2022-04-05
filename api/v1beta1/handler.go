@@ -31,6 +31,7 @@ type Handler struct {
 	DiscoveryRepository  discovery.Repository
 
 	// deprecated
+	TypeRepository   discovery.TypeRepository
 	DiscoveryService *discovery.Service
 }
 

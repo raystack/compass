@@ -2409,6 +2409,54 @@
         ]
       }
     },
+    "/v1beta1/types": {
+      "get": {
+        "summary": "fetch all types",
+        "description": "used to fetch all types",
+        "operationId": "CompassService_GetAllTypes",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1GetAllTypesResponse"
+            }
+          },
+          "400": {
+            "description": "Returned when the data that user input is wrong.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "409": {
+            "description": "Returned when the resource already exist.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "500": {
+            "description": "Returned when theres is something wrong on the server side.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Type"
+        ]
+      }
+    },
     "/v1beta1/users/{userId}/starred": {
       "get": {
         "summary": "Get assets starred by a user",
@@ -2509,6 +2557,18 @@
       },
       "title": "Tag"
     },
+    "compassv1beta1Type": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -2584,7 +2644,10 @@
           "$ref": "#/definitions/v1beta1User"
         },
         "changelog": {
-          "$ref": "#/definitions/v1beta1Changelog"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1Change"
+          }
         },
         "createdAt": {
           "type": "string",
@@ -2617,18 +2680,6 @@
         }
       },
       "title": "Change"
-    },
-    "v1beta1Changelog": {
-      "type": "object",
-      "properties": {
-        "changes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1beta1Change"
-          }
-        }
-      },
-      "title": "Changelog"
     },
     "v1beta1Comment": {
       "type": "object",
@@ -2898,6 +2949,17 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1beta1TagTemplate"
+          }
+        }
+      }
+    },
+    "v1beta1GetAllTypesResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/compassv1beta1Type"
           }
         }
       }

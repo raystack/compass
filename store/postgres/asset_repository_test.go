@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	sq "github.com/Masterminds/squirrel"
 	"io/ioutil"
 	"strings"
 	"testing"
 	"time"
+
+	sq "github.com/Masterminds/squirrel"
 
 	"github.com/google/uuid"
 	"github.com/odpf/columbus/asset"
@@ -526,7 +527,7 @@ func (r *AssetRepositoryTestSuite) TestFind() {
 }
 
 func (r *AssetRepositoryTestSuite) TestVersions() {
-	assetURN := "urn-u-2-version"
+	assetURN := uuid.NewString() + "urn-u-2-version"
 	// v0.1
 	astVersioning := asset.Asset{
 		URN:       assetURN,
@@ -585,7 +586,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 				URN:     assetURN,
 				Type:    "table",
 				Service: "bigquery",
-				Version: "0.4",
+				Version: "0.5",
 				Changelog: diff.Changelog{
 					diff.Change{Type: "create", Path: []string{"labels", "key1"}, From: interface{}(nil), To: "value1"},
 				},
@@ -596,7 +597,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 				URN:     assetURN,
 				Type:    "table",
 				Service: "bigquery",
-				Version: "0.3",
+				Version: "0.4",
 				Changelog: diff.Changelog{
 					diff.Change{Type: "create", Path: []string{"data", "data1"}, From: interface{}(nil), To: float64(12345)},
 				},
@@ -607,7 +608,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 				URN:     assetURN,
 				Type:    "table",
 				Service: "bigquery",
-				Version: "0.2",
+				Version: "0.3",
 				Changelog: diff.Changelog{
 					diff.Change{Type: "create", Path: []string{"owners", "0", "email"}, From: interface{}(nil), To: "user@odpf.io"},
 					diff.Change{Type: "create", Path: []string{"owners", "1", "email"}, From: interface{}(nil), To: "meteor@odpf.io"},
@@ -694,31 +695,31 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 			Description: "new description in v0.2",
 			Version:     "0.3",
 			Changelog: diff.Changelog{
-				diff.Change{Type: "create", Path: []string{"data", "data1"}, From: interface{}(nil), To: float64(12345)},
+				diff.Change{Type: "create", Path: []string{"owners", "0", "email"}, From: interface{}(nil), To: "user@odpf.io"},
+				diff.Change{Type: "create", Path: []string{"owners", "1", "email"}, From: interface{}(nil), To: "meteor@odpf.io"},
 			},
 			UpdatedBy: r.users[1],
 		}
 		expectedOwners := []user.User{
 			{
-				Email:    "user@odpf.io",
-				Provider: defaultProviderName,
+				Email: "user@odpf.io",
 			},
 			{
 				Email:    "meteor@odpf.io",
-				Provider: defaultProviderName,
+				Provider: "meteor",
 			},
 		}
-		ast, err := r.repository.GetByVersion(r.ctx, astVersioning.ID, selectedVersion)
+		astVer, err := r.repository.GetByVersion(r.ctx, astVersioning.ID, selectedVersion)
 		// hard to get the internally generated user id, we exclude the owners from the assertion
-		astOwners := ast.Owners
-		ast.Owners = nil
+		astOwners := astVer.Owners
+		astVer.Owners = nil
 		r.Assert().NoError(err)
 		// making updatedby user time empty to make ast comparable
-		ast.UpdatedBy.CreatedAt = time.Time{}
-		ast.UpdatedBy.UpdatedAt = time.Time{}
-		ast.CreatedAt = time.Time{}
-		ast.UpdatedAt = time.Time{}
-		r.Assert().Equal(expectedAsset, ast)
+		astVer.UpdatedBy.CreatedAt = time.Time{}
+		astVer.UpdatedBy.UpdatedAt = time.Time{}
+		astVer.CreatedAt = time.Time{}
+		astVer.UpdatedAt = time.Time{}
+		r.Assert().Equal(expectedAsset, astVer)
 
 		for i := 0; i < len(astOwners); i++ {
 			astOwners[i].ID = ""
@@ -812,7 +813,6 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				UpdatedBy: r.users[0],
 			}
 			identicalAsset := ast
-			identicalAsset.Name = "some-name"
 
 			id, err := r.repository.Upsert(r.ctx, &ast)
 			r.Require().NoError(err)

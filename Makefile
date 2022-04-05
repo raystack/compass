@@ -1,7 +1,7 @@
 NAME="github.com/odpf/columbus"
 VERSION=$(shell git describe --always --tags 2>/dev/null)
 COVERFILE="/tmp/columbus.coverprofile"
-PROTON_COMMIT := "4c76e086f7877efc8897ffac74dd45cf75646a78"
+PROTON_COMMIT := "39dd0f995eec1369eaa4ab811f2142484a085af8"
 
 .PHONY: all build test clean install proto
 
@@ -19,6 +19,12 @@ test:
 test-coverage: test
 	go tool cover -html=coverage.txt -o cover.html
 
+e2e-test:
+	go test ./test/... --tags=e2e
+
+generate:
+	go generate ./...
+
 dist:
 	@bash ./scripts/build.sh
 
@@ -28,7 +34,7 @@ lint:
 proto: ## Generate the protobuf files
 	@echo " > generating protobuf from odpf/proton"
 	@echo " > [info] make sure correct version of dependencies are installed using 'make install'"
-	@buf generate https://github.com/odpf/proton/archive/${PROTON_COMMIT}.zip#strip_components=1 --template buf.gen.yaml --path odpf/compass
+	@buf generate https://github.com/odpf/proton/archive/${PROTON_COMMIT}.zip#strip_components=1 --template buf.gen.yaml --path odpf/compass -v
 	@echo " > protobuf compilation finished"
 
 install: ## install required dependencies

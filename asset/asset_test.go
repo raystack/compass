@@ -462,14 +462,12 @@ func TestToProto(t *testing.T) {
 				Urn:    "urn1",
 				Data:   dataPB,
 				Labels: labelPB,
-				Changelog: &compassv1beta1.Changelog{
-					Changes: []*compassv1beta1.Change{
-						{
+				Changelog: []*compassv1beta1.Change{
+					{
 
-							From: structpb.NewStringValue("1"),
-							To:   structpb.NewStringValue("2"),
-							Path: []string{"path1/path2"},
-						},
+						From: structpb.NewStringValue("1"),
+						To:   structpb.NewStringValue("2"),
+						Path: []string{"path1/path2"},
 					},
 				},
 				CreatedAt: timestamppb.New(timeDummy),
@@ -480,7 +478,7 @@ func TestToProto(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
 
-			got, err := tc.Asset.ToProto()
+			got, err := tc.Asset.ToProto(true)
 			if err != nil {
 				t.Error(err)
 			}
@@ -535,14 +533,12 @@ func TestNewFromProto(t *testing.T) {
 						Id: "uid2",
 					},
 				},
-				Changelog: &compassv1beta1.Changelog{
-					Changes: []*compassv1beta1.Change{
-						{
+				Changelog: []*compassv1beta1.Change{
+					{
 
-							From: structpb.NewStringValue("1"),
-							To:   structpb.NewStringValue("2"),
-							Path: []string{"path1/path2"},
-						},
+						From: structpb.NewStringValue("1"),
+						To:   structpb.NewStringValue("2"),
+						Path: []string{"path1/path2"},
 					},
 				},
 				CreatedAt: timestamppb.New(timeDummy),

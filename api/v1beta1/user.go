@@ -35,7 +35,7 @@ func (h *Handler) GetUserStarredAssets(ctx context.Context, req *compassv1beta1.
 
 	var starredAssetsPB []*compassv1beta1.Asset
 	for _, ast := range starredAssets {
-		astPB, err := ast.ToProto()
+		astPB, err := ast.ToProto(false)
 		if err != nil {
 			return nil, internalServerError(h.Logger, err.Error())
 		}
@@ -72,7 +72,7 @@ func (h *Handler) GetMyStarredAssets(ctx context.Context, req *compassv1beta1.Ge
 
 	var starredAssetsPB []*compassv1beta1.Asset
 	for _, ast := range starredAssets {
-		astPB, err := ast.ToProto()
+		astPB, err := ast.ToProto(false)
 		if err != nil {
 			return nil, internalServerError(h.Logger, err.Error())
 		}
@@ -101,7 +101,7 @@ func (h *Handler) GetMyStarredAsset(ctx context.Context, req *compassv1beta1.Get
 		return nil, internalServerError(h.Logger, err.Error())
 	}
 
-	astPB, err := ast.ToProto()
+	astPB, err := ast.ToProto(false)
 	if err != nil {
 		return nil, internalServerError(h.Logger, err.Error())
 	}

@@ -2,302 +2,30 @@ package handlers_test
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/odpf/salt/log"
 
-	"github.com/gorilla/mux"
 	"github.com/odpf/columbus/api/httpapi/handlers"
 	"github.com/odpf/columbus/asset"
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/lib/mocks"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
 func TestRecordHandler(t *testing.T) {
 	var (
-		ctx      = mock.AnythingOfType("*context.valueCtx")
+		ctx      = mock.AnythingOfType("*context.emptyCtx")
 		typeName = asset.TypeTable.String()
 		logger   = log.NewNoop()
 	)
 
 	tr := new(mocks.TypeRepository)
-
-	t.Run("UpsertBulk", func(t *testing.T) {
-		var validPayload = `[{"urn": "test dagger", "name": "de-dagger-test", "service": "kafka", "data": {}}]`
-
-		t.Run("should return HTTP 400 for invalid payload", func(t *testing.T) {
-			testCases := []struct {
-				payload string
-			}{
-				{
-					payload: `[{}]`,
-				},
-				{
-					payload: `[{"urn": ""}]`,
-				},
-				{
-					payload: `[{"urn": "some-urn", "name": ""}]`,
-				},
-				{
-					payload: `[{"urn": "some-urn", "name": "some-name", "data": null}]`,
-				},
-				{
-					payload: `[{"urn": "some-urn", "name": "some-name", "data": {}, "service": ""}]`,
-				},
-			}
-
-			for _, testCase := range testCases {
-				rw := httptest.NewRecorder()
-				rr := httptest.NewRequest("PUT", "/", strings.NewReader(testCase.payload))
-				rr = mux.SetURLVars(rr, map[string]string{
-					"name": typeName,
-				})
-
-				handler := handlers.NewRecordHandler(logger, tr, nil, nil)
-				handler.UpsertBulk(rw, rr)
-
-				expectedStatus := http.StatusBadRequest
-				if rw.Code != expectedStatus {
-					t.Errorf("expected handler to return HTTP %d, returned HTTP %d instead", expectedStatus, rw.Code)
-					return
-				}
-			}
-		})
-
-		t.Run("should return HTTP 404 if type doesn't exist", func(t *testing.T) {
-			rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
-			rw := httptest.NewRecorder()
-			rr = mux.SetURLVars(rr, map[string]string{
-				"name": "invalid",
-			})
-
-			handler := handlers.NewRecordHandler(logger, tr, nil, nil)
-			handler.UpsertBulk(rw, rr)
-
-			expectedStatus := http.StatusNotFound
-			if rw.Code != expectedStatus {
-				t.Errorf("expected handler to return HTTP %d, returned HTTP %d instead", expectedStatus, rw.Code)
-				return
-			}
-
-			var response handlers.ErrorResponse
-			err := json.NewDecoder(rw.Body).Decode(&response)
-			if err != nil {
-				t.Fatalf("error parsing handler response: %v", err)
-				return
-			}
-		})
-		t.Run("should return HTTP 500 if the resource creation/update fails", func(t *testing.T) {
-			t.Run("RecordRepositoryFactory fails", func(t *testing.T) {
-				rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
-				rw := httptest.NewRecorder()
-				rr = mux.SetURLVars(rr, map[string]string{
-					"name": typeName,
-				})
-
-				factoryError := errors.New("unknown error")
-				recordRepoFac := new(mocks.RecordRepositoryFactory)
-				recordRepoFac.On("For", typeName).Return(new(mocks.RecordRepository), factoryError)
-				defer recordRepoFac.AssertExpectations(t)
-
-				service := discovery.NewService(recordRepoFac, nil)
-				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac)
-				handler.UpsertBulk(rw, rr)
-
-				expectedStatus := http.StatusInternalServerError
-				if rw.Code != expectedStatus {
-					t.Errorf("expected handler to return HTTP %d, returned HTTP %d instead", expectedStatus, rw.Code)
-					return
-				}
-
-				var response handlers.ErrorResponse
-				err := json.NewDecoder(rw.Body).Decode(&response)
-				require.NoError(t, err)
-
-				expectedReason := "Internal Server Error"
-				if response.Reason != expectedReason {
-					t.Errorf("expected handler to return reason %q, returned %q instead", expectedReason, response.Reason)
-					return
-				}
-			})
-			t.Run("RecordRepository fails", func(t *testing.T) {
-				expectedAssets := []asset.Asset{
-					{
-						URN:     "test dagger",
-						Name:    "de-dagger-test",
-						Service: "kafka",
-						Data:    map[string]interface{}{},
-					},
-				}
-
-				rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
-				rw := httptest.NewRecorder()
-				rr = mux.SetURLVars(rr, map[string]string{
-					"name": typeName,
-				})
-
-				repositoryErr := errors.New("unknown error")
-				recordRepository := new(mocks.RecordRepository)
-				recordRepository.On("CreateOrReplaceMany", ctx, expectedAssets).Return(repositoryErr)
-				defer recordRepository.AssertExpectations(t)
-
-				recordRepoFac := new(mocks.RecordRepositoryFactory)
-				recordRepoFac.On("For", typeName).Return(recordRepository, nil)
-				defer recordRepoFac.AssertExpectations(t)
-
-				service := discovery.NewService(recordRepoFac, nil)
-				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac)
-				handler.UpsertBulk(rw, rr)
-
-				expectedStatus := http.StatusInternalServerError
-				if rw.Code != expectedStatus {
-					t.Errorf("expected handler to return HTTP %d, returned HTTP %d instead", expectedStatus, rw.Code)
-					return
-				}
-
-				var response handlers.ErrorResponse
-				err := json.NewDecoder(rw.Body).Decode(&response)
-				require.NoError(t, err)
-
-				expectedReason := "Internal Server Error"
-				if response.Reason != expectedReason {
-					t.Errorf("expected handler to return reason %q, returned %q instead", expectedReason, response.Reason)
-					return
-				}
-			})
-		})
-		t.Run("should return HTTP 200 if the resource is successfully created/update", func(t *testing.T) {
-			expectedAssets := []asset.Asset{
-				{
-					URN:     "test dagger",
-					Name:    "de-dagger-test",
-					Service: "kafka",
-					Data:    map[string]interface{}{},
-				},
-			}
-			rr := httptest.NewRequest("PUT", "/", strings.NewReader(validPayload))
-			rw := httptest.NewRecorder()
-			rr = mux.SetURLVars(rr, map[string]string{
-				"name": typeName,
-			})
-
-			recordRepo := new(mocks.RecordRepository)
-			recordRepo.On("CreateOrReplaceMany", ctx, expectedAssets).Return(nil)
-			defer recordRepo.AssertExpectations(t)
-
-			recordRepoFac := new(mocks.RecordRepositoryFactory)
-			recordRepoFac.On("For", typeName).Return(recordRepo, nil)
-			defer recordRepoFac.AssertExpectations(t)
-
-			service := discovery.NewService(recordRepoFac, nil)
-			handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac)
-			handler.UpsertBulk(rw, rr)
-
-			expectedStatus := http.StatusOK
-			if rw.Code != expectedStatus {
-				t.Errorf("expected handler to return HTTP %d, returned HTTP %d instead", expectedStatus, rw.Code)
-				return
-			}
-
-			var response handlers.StatusResponse
-			err := json.NewDecoder(rw.Body).Decode(&response)
-			if err != nil {
-				t.Errorf("error reading response body: %v", err)
-				return
-			}
-			expectedResponse := handlers.StatusResponse{
-				Status: "success",
-			}
-
-			if reflect.DeepEqual(response, expectedResponse) == false {
-				t.Errorf("expected handler to respond with #%v, responded with %#v", expectedResponse, response)
-				return
-			}
-		})
-	})
-	t.Run("Delete", func(t *testing.T) {
-		type testCase struct {
-			Description  string
-			Type         string
-			AssetID      string
-			ExpectStatus int
-			Setup        func(rrf *mocks.RecordRepositoryFactory, rr *mocks.RecordRepository)
-			PostCheck    func(t *testing.T, tc *testCase, resp *http.Response) error
-		}
-
-		var testCases = []testCase{
-			{
-				Description:  "should return 204 on success",
-				Type:         typeName,
-				AssetID:      "id-10",
-				ExpectStatus: http.StatusNoContent,
-				Setup: func(rrf *mocks.RecordRepositoryFactory, rr *mocks.RecordRepository) {
-					rrf.On("For", typeName).Return(rr, nil)
-					rr.On("Delete", ctx, "id-10").Return(nil)
-				},
-			},
-			{
-				Description:  "should return 404 if type cannot be found",
-				Type:         "invalid",
-				AssetID:      "id-10",
-				ExpectStatus: http.StatusNotFound,
-				Setup:        func(rrf *mocks.RecordRepositoryFactory, rr *mocks.RecordRepository) {},
-			},
-			{
-				Description:  "should return 404 when record cannot be found",
-				Type:         typeName,
-				AssetID:      "id-10",
-				ExpectStatus: http.StatusNotFound,
-				Setup: func(rrf *mocks.RecordRepositoryFactory, rr *mocks.RecordRepository) {
-					rrf.On("For", typeName).Return(rr, nil)
-					rr.On("Delete", ctx, "id-10").Return(asset.NotFoundError{AssetID: "id-10"})
-				},
-			},
-			{
-				Description:  "should return 500 on error deleting record",
-				Type:         typeName,
-				AssetID:      "id-10",
-				ExpectStatus: http.StatusInternalServerError,
-				Setup: func(rrf *mocks.RecordRepositoryFactory, rr *mocks.RecordRepository) {
-					rrf.On("For", typeName).Return(rr, nil)
-					rr.On("Delete", ctx, "id-10").Return(errors.New("error deleting record"))
-				},
-			},
-		}
-		for _, tc := range testCases {
-			t.Run(tc.Description, func(t *testing.T) {
-				rr := httptest.NewRequest("DELETE", "/", nil)
-				rw := httptest.NewRecorder()
-				rr = mux.SetURLVars(rr, map[string]string{
-					"name": tc.Type,
-					"id":   tc.AssetID,
-				})
-				recordRepo := new(mocks.RecordRepository)
-				recordRepoFactory := new(mocks.RecordRepositoryFactory)
-				tc.Setup(recordRepoFactory, recordRepo)
-				defer recordRepoFactory.AssertExpectations(t)
-				defer recordRepo.AssertExpectations(t)
-
-				service := discovery.NewService(recordRepoFactory, nil)
-				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFactory)
-				handler.Delete(rw, rr)
-
-				if rw.Code != tc.ExpectStatus {
-					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
-					return
-				}
-			})
-		}
-	})
 
 	t.Run("GetByType", func(t *testing.T) {
 		type testCase struct {
@@ -471,15 +199,15 @@ func TestRecordHandler(t *testing.T) {
 			t.Run(tc.Description, func(t *testing.T) {
 				rr := httptest.NewRequest("GET", "/?"+tc.QueryStrings, nil)
 				rw := httptest.NewRecorder()
-				rr = mux.SetURLVars(rr, map[string]string{
-					"name": tc.Type,
-				})
 				rrf := new(mocks.RecordRepositoryFactory)
 				tc.Setup(&tc, rrf)
 
 				service := discovery.NewService(rrf, nil)
 				handler := handlers.NewRecordHandler(logger, tr, service, rrf)
-				handler.GetByType(rw, rr)
+
+				handler.GetByType(rw, rr, map[string]string{
+					"name": tc.Type,
+				})
 
 				if rw.Code != tc.ExpectStatus {
 					t.Errorf("expected handler to return %d status, was %d instead", tc.ExpectStatus, rw.Code)
@@ -565,10 +293,6 @@ func TestRecordHandler(t *testing.T) {
 			t.Run(tc.Description, func(t *testing.T) {
 				rr := httptest.NewRequest("GET", "/", nil)
 				rw := httptest.NewRecorder()
-				rr = mux.SetURLVars(rr, map[string]string{
-					"name": tc.Type,
-					"id":   tc.AssetID,
-				})
 				recordRepoFac := new(mocks.RecordRepositoryFactory)
 				if tc.Setup != nil {
 					tc.Setup(recordRepoFac)
@@ -576,7 +300,10 @@ func TestRecordHandler(t *testing.T) {
 
 				service := discovery.NewService(recordRepoFac, nil)
 				handler := handlers.NewRecordHandler(logger, tr, service, recordRepoFac)
-				handler.GetOneByType(rw, rr)
+				handler.GetOneByType(rw, rr, map[string]string{
+					"name": tc.Type,
+					"id":   tc.AssetID,
+				})
 
 				if rw.Code != tc.ExpectStatus {
 					t.Errorf("expected handler to return http %d, returned %d instead", tc.ExpectStatus, rw.Code)

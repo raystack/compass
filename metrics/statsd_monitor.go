@@ -3,15 +3,13 @@ package metrics
 import (
 	"fmt"
 	"net"
-	"net/http"
 	"strconv"
-	"time"
 
 	statsd "github.com/etsy/statsd/examples/go"
-	"github.com/gorilla/mux"
 )
 
-type statsdClient interface {
+//go:generate mockery --name StatsdClient --outpkg mocks --output ../lib/mocks/ --with-expecter --structname StatsdClient --filename statsd_monitor.go
+type StatsdClient interface {
 	Timing(string, int64)
 	Increment(string)
 }
@@ -23,12 +21,12 @@ func NewStatsdClient(statsdAddress string) *statsd.StatsdClient {
 }
 
 type StatsdMonitor struct {
-	client    statsdClient
+	client    StatsdClient
 	prefix    string
 	separator string
 }
 
-func NewStatsdMonitor(client statsdClient, prefix string, separator string) *StatsdMonitor {
+func NewStatsdMonitor(client StatsdClient, prefix string, separator string) *StatsdMonitor {
 	return &StatsdMonitor{
 		client:    client,
 		prefix:    prefix,
@@ -36,27 +34,12 @@ func NewStatsdMonitor(client statsdClient, prefix string, separator string) *Sta
 	}
 }
 
-func (mm *StatsdMonitor) MonitorRouter(router *mux.Router) {
-	router.Use(mm.routerMiddleware)
-}
-
 func (mm *StatsdMonitor) Duration(operation string, duration int) {
 	statName := fmt.Sprintf("%s%s%s,operation=%s", mm.prefix, mm.separator, "duration", operation)
 	mm.client.Timing(statName, int64(duration))
 }
 
-func (mm *StatsdMonitor) routerMiddleware(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		rw := responseWriter(w)
-		h.ServeHTTP(rw, r)
-
-		mm.responseTime(r.Method, r.URL.Path, int64(time.Since(start)/time.Millisecond))
-		mm.responseStatus(r.Method, r.URL.Path, rw.statusCode)
-	})
-}
-
-func (mm *StatsdMonitor) responseTime(requestMethod string, requestUrl string, responseTime int64) {
+func (mm *StatsdMonitor) ResponseTime(requestMethod string, requestUrl string, responseTime int64) {
 	statName := fmt.Sprintf("%s%s%s,%s",
 		mm.prefix,
 		mm.separator,
@@ -65,7 +48,7 @@ func (mm *StatsdMonitor) responseTime(requestMethod string, requestUrl string, r
 	mm.client.Timing(statName, responseTime)
 }
 
-func (mm *StatsdMonitor) responseStatus(requestMethod string, requestUrl string, responseCode int) {
+func (mm *StatsdMonitor) ResponseStatus(requestMethod string, requestUrl string, responseCode int) {
 	statName := fmt.Sprintf("%s%s%s,statusCode=%d,%s",
 		mm.prefix,
 		mm.separator,
@@ -75,16 +58,21 @@ func (mm *StatsdMonitor) responseStatus(requestMethod string, requestUrl string,
 	mm.client.Increment(statName)
 }
 
-type interceptedResponseWriter struct {
-	http.ResponseWriter
-	statusCode int
+func (mm *StatsdMonitor) ResponseTimeGRPC(FullMethod string, responseTime int64) {
+	statName := fmt.Sprintf("%s%s%s,%s",
+		mm.prefix,
+		mm.separator,
+		"responseTime",
+		fmt.Sprintf("method=%s", FullMethod))
+	mm.client.Timing(statName, responseTime)
 }
 
-func responseWriter(w http.ResponseWriter) *interceptedResponseWriter {
-	return &interceptedResponseWriter{w, http.StatusOK}
-}
-
-func (lrw *interceptedResponseWriter) WriteHeader(code int) {
-	lrw.statusCode = code
-	lrw.ResponseWriter.WriteHeader(code)
+func (mm *StatsdMonitor) ResponseStatusGRPC(fullMethod string, statusString string) {
+	statName := fmt.Sprintf("%s%s%s,statusCode=%s,%s",
+		mm.prefix,
+		mm.separator,
+		"responseStatusCode",
+		statusString,
+		fmt.Sprintf("method=%s", fullMethod))
+	mm.client.Increment(statName)
 }

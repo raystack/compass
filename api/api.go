@@ -1,7 +1,11 @@
 package api
 
 import (
-	"github.com/gorilla/mux"
+	"fmt"
+	"net/http"
+
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/odpf/columbus/api/httpapi"
 	"github.com/odpf/columbus/api/httpapi/handlers"
 	"github.com/odpf/columbus/api/httpapi/middleware"
@@ -10,6 +14,7 @@ import (
 	"github.com/odpf/columbus/discovery"
 	"github.com/odpf/columbus/discussion"
 	"github.com/odpf/columbus/lineage"
+	"github.com/odpf/columbus/metrics"
 	"github.com/odpf/columbus/star"
 	"github.com/odpf/columbus/tag"
 	"github.com/odpf/columbus/user"
@@ -18,6 +23,8 @@ import (
 
 type Dependencies struct {
 	Logger               log.Logger
+	NRApp                *newrelic.Application
+	StatsdMonitor        *metrics.StatsdMonitor
 	AssetRepository      asset.Repository
 	DiscoveryRepository  discovery.Repository
 	TagService           *tag.Service
@@ -46,18 +53,6 @@ func NewHandlers(logger log.Logger, deps *Dependencies) *Handlers {
 }
 
 func NewHTTPHandlers(deps *Dependencies) *httpapi.Handler {
-	typeHandler := handlers.NewTypeHandler(
-		deps.Logger,
-		deps.TypeRepository,
-	)
-
-	assetHandler := handlers.NewAssetHandler(
-		deps.Logger,
-		deps.AssetRepository,
-		deps.DiscoveryRepository,
-		deps.StarRepository,
-		deps.LineageRepository,
-	)
 
 	recordHandler := handlers.NewRecordHandler(
 		deps.Logger,
@@ -65,43 +60,9 @@ func NewHTTPHandlers(deps *Dependencies) *httpapi.Handler {
 		deps.DiscoveryService,
 		deps.RecordRepositoryFactory,
 	)
-	searchHandler := handlers.NewSearchHandler(
-		deps.Logger,
-		deps.DiscoveryService,
-	)
-	lineageHandler := handlers.NewLineageHandler(
-		deps.Logger,
-		deps.LineageRepository,
-	)
-	tagHandler := handlers.NewTagHandler(
-		deps.Logger,
-		deps.TagService,
-	)
-	tagTemplateHandler := handlers.NewTagTemplateHandler(
-		deps.Logger,
-		deps.TagTemplateService,
-	)
-	userHandler := handlers.NewUserHandler(
-		deps.Logger,
-		deps.StarRepository,
-		deps.DiscussionRepository,
-	)
-
-	discussionHandler := handlers.NewDiscussionHandler(
-		deps.Logger,
-		deps.DiscussionRepository,
-	)
 
 	return &httpapi.Handler{
-		Asset:       assetHandler,
-		Type:        typeHandler,
-		Record:      recordHandler,
-		Search:      searchHandler,
-		Lineage:     lineageHandler,
-		Tag:         tagHandler,
-		TagTemplate: tagTemplateHandler,
-		User:        userHandler,
-		Discussion:  discussionHandler,
+		Record: recordHandler,
 	}
 }
 
@@ -118,26 +79,31 @@ func NewGRPCHandler(l log.Logger, deps *Dependencies) *v1beta1.Handler {
 		DiscoveryRepository:  deps.DiscoveryRepository,
 
 		//deprecated
+		TypeRepository:   deps.TypeRepository,
 		DiscoveryService: deps.DiscoveryService,
 	}
 }
 
-func RegisterHTTPRoutes(cfg Config, router *mux.Router, deps *Dependencies, handlerCollection *httpapi.Handler) {
-	// By default mux will decode url and then match the decoded url against the route
-	// we reverse the steps by telling mux to use encoded path to match the url
-	// then we manually decode via custom middleware (decodeURLMiddleware).
-	//
-	// This is to allow urn that has "/" to be matched correctly to the route
-	router.UseEncodedPath()
-	router.Use(middleware.DecodeURL())
+func RegisterHTTPRoutes(cfg Config, mux *runtime.ServeMux, deps *Dependencies, handlerCollection *httpapi.Handler) error {
+	if err := mux.HandlePath(http.MethodGet, "/ping", runtime.HandlerFunc(func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+		fmt.Fprintf(w, "pong")
+	})); err != nil {
+		return err
+	}
 
-	router.PathPrefix("/ping").Handler(handlers.NewHeartbeatHandler())
+	if err := mux.HandlePath(http.MethodGet, "/v1beta1/types/{name}/records",
+		middleware.NewRelic(deps.NRApp, http.MethodGet, "/v1beta1/types/{name}/records",
+			middleware.StatsD(deps.StatsdMonitor,
+				middleware.ValidateUser(cfg.IdentityHeaderKey, deps.UserService, handlerCollection.Record.GetByType)))); err != nil {
+		return err
+	}
 
-	v1Beta1SubRouter := router.PathPrefix("/v1beta1").Subrouter()
-	v1Beta1SubRouter.Use(middleware.ValidateUser(cfg.IdentityHeaderKey, deps.UserService))
+	if err := mux.HandlePath(http.MethodGet, "/v1beta1/types/{name}/records/{id}",
+		middleware.NewRelic(deps.NRApp, http.MethodGet, "/v1beta1/types/{name}/records/{id}",
+			middleware.StatsD(deps.StatsdMonitor,
+				middleware.ValidateUser(cfg.IdentityHeaderKey, deps.UserService, handlerCollection.Record.GetOneByType)))); err != nil {
+		return err
+	}
 
-	httpapi.RegisterRoutes(v1Beta1SubRouter, handlerCollection)
-
-	// router.NotFoundHandler = http.HandlerFunc(handlers.NotFound)
-	// router.MethodNotAllowedHandler = http.HandlerFunc(handlers.MethodNotAllowed)
+	return nil
 }

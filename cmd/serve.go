@@ -5,16 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
-	"strconv"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -33,9 +31,11 @@ import (
 	"github.com/odpf/columbus/tag"
 	"github.com/odpf/columbus/user"
 	"github.com/odpf/salt/log"
-	"github.com/odpf/salt/server"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -45,9 +45,9 @@ var (
 	Version string
 )
 
-func Serve() {
+func Serve() error {
 	if err := loadConfig(); err != nil {
-		panic(err)
+		return err
 	}
 
 	logger := initLogger(config.LogLevel)
@@ -56,87 +56,123 @@ func Serve() {
 	esClient := initElasticsearch(config, logger)
 	newRelicMonitor := initNewRelicMonitor(config, logger)
 	statsdMonitor := initStatsdMonitor(config, logger)
-	deps := initDependencies(logger, esClient)
+	pgClient := initPostgres(logger, config)
+	deps := initDependencies(logger, esClient, pgClient, newRelicMonitor.Application(), statsdMonitor)
 
 	handlers := api.NewHandlers(logger, deps)
 
-	// old http: to be removed
-	router := mux.NewRouter()
-	if newRelicMonitor != nil {
-		newRelicMonitor.MonitorRouter(router)
-	}
-	if statsdMonitor != nil {
-		statsdMonitor.MonitorRouter(router)
-	}
-	router.Use(requestLoggerMiddleware(
-		logger.Writer(),
-	))
-
-	api.RegisterHTTPRoutes(api.Config{IdentityHeaderKey: config.IdentityHeader}, router, deps, handlers.HTTPHandler)
-	// old http: to be removed
-
-	// grpc
-	ctx, cancelFunc := context.WithCancel(
-		server.HandleSignals(context.Background()),
+	// int grpc
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			grpc_recovery.UnaryServerInterceptor(),
+			grpc_ctxtags.UnaryServerInterceptor(),
+			grpc_logrus.UnaryServerInterceptor(logrus.NewEntry(logrus.New())), //TODO: expose *logrus.Logger in salt
+			nrgrpc.UnaryServerInterceptor(newRelicMonitor.Application()),
+			grpc_interceptor.StatsD(statsdMonitor),
+			grpc_interceptor.ValidateUser(config.IdentityHeader, deps.UserService),
+		)),
 	)
-	defer cancelFunc()
 
-	muxServer, gw, err := newGRPCServer(
-		config,
-		grpc_recovery.UnaryServerInterceptor(),
-		grpc_ctxtags.UnaryServerInterceptor(),
-		grpc_logrus.UnaryServerInterceptor(logrus.NewEntry(logrus.New())), //TODO: expose *logrus.Logger in salt
-		nrgrpc.UnaryServerInterceptor(newRelicMonitor.Application()),      // TODO: newRelicMonitor might be nil
-		grpc_interceptor.ValidateUser(config.IdentityHeader, deps.UserService),
+	compassv1beta1.RegisterCompassServiceServer(grpcServer, handlers.GRPCHandler)
+
+	// init http proxy
+	grpcDialCtx, grpcDialCancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer grpcDialCancel()
+
+	headerMatcher := makeHeaderMatcher(config)
+	gwmux := runtime.NewServeMux(
+		runtime.WithErrorHandler(runtime.DefaultHTTPErrorHandler),
+		runtime.WithIncomingHeaderMatcher(headerMatcher),
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+			MarshalOptions: protojson.MarshalOptions{
+				UseProtoNames: true,
+			},
+			UnmarshalOptions: protojson.UnmarshalOptions{
+				DiscardUnknown: true,
+			},
+		}),
 	)
+	address := fmt.Sprintf(":%s", config.ServerPort)
+	grpcConn, err := grpc.DialContext(grpcDialCtx, address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	err = gw.RegisterHandler(ctx, compassv1beta1.RegisterCompassServiceHandlerFromEndpoint)
-	if err != nil {
-		panic(err)
+	runtimeCtx, runtimeCancel := context.WithCancel(context.Background())
+	defer runtimeCancel()
+
+	if err := compassv1beta1.RegisterCompassServiceHandler(runtimeCtx, gwmux, grpcConn); err != nil {
+		return err
+	}
+	if err := api.RegisterHTTPRoutes(api.Config{IdentityHeaderKey: config.IdentityHeader}, gwmux, deps, handlers.HTTPHandler); err != nil {
+		return err
 	}
 
-	muxServer.RegisterService(
-		&compassv1beta1.CompassService_ServiceDesc,
-		handlers.GRPCHandler,
-	)
+	baseMux := http.NewServeMux()
+	baseMux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "pong")
+	})
+	baseMux.Handle("/", gwmux)
 
-	muxServer.RegisterHandler("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "pong")
-	}))
+	httpServer := &http.Server{
+		Handler:      grpcHandlerFunc(grpcServer, baseMux),
+		Addr:         address,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
 
-	muxServer.SetGateway("/", gw)
-
-	logger.Info("starting server", "host", config.ServerHost, "port", config.ServerPort)
-
-	serverErrorChan := make(chan error)
-
+	idleConnsClosed := make(chan struct{})
+	interrupt := make(chan os.Signal, 1)
 	go func() {
-		logger.Info(fmt.Sprintf("starting grpc gateway server on %s:%s", config.ServerHost, config.GRPCServerPort))
-		serverErrorChan <- muxServer.Serve()
+		signal.Notify(interrupt, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+		<-interrupt
+
+		if httpServer != nil {
+			// We received an interrupt signal, shut down.
+			logger.Warn("stopping http server...")
+			if err := httpServer.Shutdown(context.Background()); err != nil {
+				logger.Error("HTTP server Shutdown", "err", err)
+			}
+		}
+
+		if grpcServer != nil {
+			logger.Warn("stopping grpc server...")
+			grpcServer.GracefulStop()
+		}
+
+		if pgClient != nil {
+			logger.Warn("closing db...")
+			if err := pgClient.Close(); err != nil {
+				logger.Error("error when closing db", "err", err)
+			}
+		}
+
+		close(idleConnsClosed)
 	}()
 
 	go func() {
-		serverAddr := fmt.Sprintf("%s:%s", config.ServerHost, config.ServerPort)
-		logger.Info(fmt.Sprintf("starting http server on %s", serverAddr))
-		serverErrorChan <- http.ListenAndServe(serverAddr, router)
+		defer func() { interrupt <- syscall.SIGTERM }()
+		if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
+			logger.Error("HTTP server ListenAndServe", "err", err)
+		}
 	}()
 
-	select {
-	case <-ctx.Done():
-		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), time.Second*30)
-		defer shutdownCancel()
-		muxServer.Shutdown(shutdownCtx)
-	case serverError := <-serverErrorChan:
-		panic(serverError)
-	}
+	logger.Info("server started")
+
+	<-idleConnsClosed
+
+	logger.Info("server stopped")
+
+	return nil
 }
 
 func initDependencies(
 	logger log.Logger,
 	esClient *elasticsearch.Client,
+	pgClient *postgres.Client,
+	nrApp *newrelic.Application,
+	statsdMonitor *metrics.StatsdMonitor,
 ) *api.Dependencies {
 	typeRepository := esStore.NewTypeRepository(esClient)
 	recordRepositoryFactory := esStore.NewRecordRepositoryFactory(esClient)
@@ -146,8 +182,6 @@ func initDependencies(
 	if err != nil {
 		logger.Fatal("error creating searcher", "error", err)
 	}
-
-	pgClient := initPostgres(logger, config)
 
 	// init tag
 	tagRepository, err := postgres.NewTagRepository(pgClient)
@@ -195,6 +229,8 @@ func initDependencies(
 
 	return &api.Dependencies{
 		Logger:                  logger,
+		NRApp:                   nrApp,
+		StatsdMonitor:           statsdMonitor,
 		AssetRepository:         assetRepository,
 		DiscoveryRepository:     discoveryRepo,
 		TypeRepository:          typeRepository,
@@ -291,12 +327,6 @@ func initStatsdMonitor(config Config, logger log.Logger) *metrics.StatsdMonitor 
 	return metricsMonitor
 }
 
-func requestLoggerMiddleware(dst io.Writer) mux.MiddlewareFunc {
-	return func(handler http.Handler) http.Handler {
-		return handlers.LoggingHandler(dst, handler)
-	}
-}
-
 func esInfo(cli *elasticsearch.Client) (string, error) {
 	res, err := cli.Info()
 	if err != nil {
@@ -321,51 +351,6 @@ func esInfo(cli *elasticsearch.Client) (string, error) {
 	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
 }
 
-func newGRPCServer(cfg Config, middleware ...grpc.UnaryServerInterceptor) (*server.MuxServer, *server.GRPCGateway, error) {
-	grpcPortInt, err := strconv.Atoi(config.GRPCServerPort)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	headerMatcher := makeHeaderMatcher(cfg)
-	muxServer, err := server.NewMux(
-		server.Config{
-			Port: grpcPortInt,
-			Host: cfg.ServerHost,
-		},
-
-		server.WithMuxGRPCServerOptions(
-			grpc.UnaryInterceptor(
-				grpc_middleware.ChainUnaryServer(
-					middleware...,
-				),
-			),
-		),
-	)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	gw, err := server.NewGateway(cfg.ServerHost, grpcPortInt,
-		server.WithGatewayMuxOptions(
-			runtime.WithErrorHandler(runtime.DefaultHTTPErrorHandler),
-			runtime.WithIncomingHeaderMatcher(headerMatcher),
-			runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
-				MarshalOptions: protojson.MarshalOptions{
-					UseProtoNames: true,
-				},
-				UnmarshalOptions: protojson.UnmarshalOptions{
-					DiscardUnknown: true,
-				},
-			}),
-		))
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return muxServer, gw, nil
-}
-
 func makeHeaderMatcher(c Config) func(key string) (string, bool) {
 	return func(key string) (string, bool) {
 		switch strings.ToLower(key) {
@@ -375,4 +360,21 @@ func makeHeaderMatcher(c Config) func(key string) (string, bool) {
 			return runtime.DefaultHeaderMatcher(key)
 		}
 	}
+}
+
+// grpcHandlerFunc routes http1 calls to baseMux and http2 with grpc header to grpcServer.
+// Using a single port for proxying both http1 & 2 protocols will degrade http performance
+// but for our usecase the convenience per performance tradeoff is better suited
+// if in future, this does become a bottleneck(which I highly doubt), we can break the service
+// into two ports, default port for grpc and default+1 for grpc-gateway proxy.
+// We can also use something like a connection multiplexer
+// https://github.com/soheilhy/cmux to achieve the same.
+func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Handler {
+	return h2c.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+			grpcServer.ServeHTTP(w, r)
+		} else {
+			otherHandler.ServeHTTP(w, r)
+		}
+	}), &http2.Server{})
 }
