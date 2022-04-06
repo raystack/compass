@@ -39,8 +39,6 @@ func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset
 		return nil, fmt.Errorf("error building query: %w", err)
 	}
 
-	fmt.Println("query: ", query)
-
 	var ams []*AssetModel
 	err = r.client.db.SelectContext(ctx, &ams, query, args...)
 	if err != nil {
@@ -636,6 +634,7 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 		LeftJoin("users u ON a.updated_by = u.id")
 }
 
+// buildFilterQuery retrieves the sql query based on applied filter in the queryString
 func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
 	if len(cfg.Types) > 0 {
 		builder = builder.Where(sq.Eq{"type": cfg.Types})
@@ -649,25 +648,19 @@ func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.C
 		orClause := sq.Or{}
 
 		for _, field := range cfg.QueryFields {
-			// data.name.entity.urn
-			// data -> name -> entity ->> urn
+			finalQuery := field
+
 			if strings.Contains(field, "data") {
 				query := strings.TrimPrefix(field, "data.")
-				finalQuery := nestedDataQuery(query)
-				orClause = append(orClause, sq.ILike{
-					finalQuery: fmt.Sprint("%", cfg.Query, "%"),
-				})
-			} else {
-				orClause = append(orClause, sq.ILike{
-					field: fmt.Sprint("%", cfg.Query, "%"),
-				})
+				finalQuery = nestedDataQuery(query)
 			}
+			orClause = append(orClause, sq.ILike{
+				finalQuery: fmt.Sprint("%", cfg.Query, "%"),
+			})
 		}
 		builder = builder.Where(orClause)
 	}
 
-	//name.entity.urn
-	// data -> name -> entity ->> urn
 	if len(cfg.Data) > 0 {
 		for key, val := range cfg.Data {
 			finalQuery := nestedDataQuery(key)
@@ -678,23 +671,7 @@ func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.C
 	return builder
 }
 
-func nestedDataQuery(key string) (finalQuery string) {
-	var queries []string
-	queries = append(queries, "data")
-	//query := strings.TrimPrefix(key, "data.")
-	nestedParams := strings.Split(key, ".")
-	length := len(nestedParams)
-	for i := 0; i < length-1; i++ {
-		nestedQuery := fmt.Sprintf(" -> '%s'", nestedParams[i])
-		queries = append(queries, nestedQuery)
-	}
-	lastParam := fmt.Sprintf(" ->> '%s'", nestedParams[length-1])
-	queries = append(queries, lastParam)
-	finalQuery = strings.Join(queries, "")
-
-	return finalQuery
-}
-
+// buildFilterQuery retrieves the ordered sql query based on the sorting filter used in queryString
 func (r *AssetRepository) buildOrderQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
 	if cfg.SortBy == "" {
 		return builder
@@ -726,4 +703,22 @@ func NewAssetRepository(c *Client, userRepo *UserRepository, defaultGetMaxSize i
 		defaultUserProvider: defaultUserProvider,
 		userRepo:            userRepo,
 	}, nil
+}
+
+// nestedDataQuery is a helper function to query nested data fields
+func nestedDataQuery(key string) (finalQuery string) {
+	var queries []string
+
+	queries = append(queries, "data")
+	nestedParams := strings.Split(key, ".")
+	totalParams := len(nestedParams)
+	for i := 0; i < totalParams-1; i++ {
+		nestedQuery := fmt.Sprintf("->'%s'", nestedParams[i])
+		queries = append(queries, nestedQuery)
+	}
+	lastParam := fmt.Sprintf("->>'%s'", nestedParams[totalParams-1])
+	queries = append(queries, lastParam)
+	finalQuery = strings.Join(queries, "")
+
+	return finalQuery
 }

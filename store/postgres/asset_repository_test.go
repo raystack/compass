@@ -207,7 +207,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		}
 	})
 
-	r.Run("should filter using nested query data fields", func() {
+	r.Run("should filter only using nested query data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			QueryFields: []string{"data.landscape.properties.project-id", "data.title"},
 			Query:       "columbus_001",
@@ -222,22 +222,22 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		}
 	})
 
-	r.Run("should filter using nested query data fields", func() {
+	r.Run("should filter using query field with nested query data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			QueryFields: []string{"data.landscape.properties.project-id", "description"},
-			Query:       "columbus_001",
+			Query:       "columbus_002",
 			SortBy:      "urn",
 		})
 		r.Require().NoError(err)
 
-		expectedURNs := []string{"h-test-new-kafka", "j-xcvcx"}
+		expectedURNs := []string{"g-jane-kafka-1a", "h-test-new-kafka"}
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
 			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})
 
-	r.Run("should filter using asset's Data fields", func() {
+	r.Run("should filter using asset's data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			Data: map[string]string{
 				"entity":  "odpf",
