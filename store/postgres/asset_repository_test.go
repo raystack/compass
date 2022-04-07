@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	sq "github.com/Masterminds/squirrel"
 	"io/ioutil"
+	"strings"
 	"testing"
 	"time"
 
@@ -29,6 +31,7 @@ type AssetRepositoryTestSuite struct {
 	repository *postgres.AssetRepository
 	userRepo   *postgres.UserRepository
 	users      []user.User
+	builder    sq.SelectBuilder
 }
 
 func (r *AssetRepositoryTestSuite) SetupSuite() {
@@ -127,6 +130,104 @@ func (r *AssetRepositoryTestSuite) insertRecord() (assets []asset.Asset) {
 	return assets
 }
 
+func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
+	r.builder = sq.Select(`a.test as test`)
+
+	r.Run("should not return all assets limited by default size", func() {
+		results := r.repository.BuildFilterQuery(r.builder, asset.Config{})
+		query, _, err := results.ToSql()
+		r.Require().NoError(err)
+
+		var check bool
+		if strings.Contains(query, "WHERE") {
+			check = true
+		}
+		r.Equal(false, check)
+	})
+
+	r.Run("should return sql query with types filter", func() {
+		results := r.repository.BuildFilterQuery(r.builder, asset.Config{
+			Types: []asset.Type{asset.TypeTable},
+		})
+		query, _, err := results.ToSql()
+		r.Require().NoError(err)
+
+		query, err = sq.Dollar.ReplacePlaceholders(query)
+		expectedQuery := strings.Split(query, "WHERE ")
+		actualQuery := `type IN ($1)`
+		r.Equal(actualQuery, expectedQuery[1])
+	})
+
+	r.Run("should return sql query with services filter", func() {
+		results := r.repository.BuildFilterQuery(r.builder, asset.Config{
+			Services: []string{"mysql", "kafka"},
+		})
+		query, _, err := results.ToSql()
+		r.Require().NoError(err)
+
+		query, err = sq.Dollar.ReplacePlaceholders(query)
+		expectedQuery := strings.Split(query, "WHERE ")
+		actualQuery := `service IN ($1,$2)`
+		r.Equal(actualQuery, expectedQuery[1])
+	})
+
+	r.Run("should return sql query with query fields filter", func() {
+		results := r.repository.BuildFilterQuery(r.builder, asset.Config{
+			QueryFields: []string{"name", "description"},
+			Query:       "demo",
+		})
+		query, _, err := results.ToSql()
+		r.Require().NoError(err)
+		query, err = sq.Dollar.ReplacePlaceholders(query)
+		expectedQuery := strings.Split(query, "WHERE ")
+		actualQuery := `(name ILIKE $1 OR description ILIKE $2)`
+		r.Equal(actualQuery, expectedQuery[1])
+	})
+
+	r.Run("should return sql query with nested data query filter", func() {
+		results := r.repository.BuildFilterQuery(r.builder, asset.Config{
+			QueryFields: []string{"data.landscape.properties.project-id", "data.title"},
+			Query:       "columbus_001",
+		})
+		query, _, err := results.ToSql()
+		r.Require().NoError(err)
+		query, err = sq.Dollar.ReplacePlaceholders(query)
+		expectedQuery := strings.Split(query, "WHERE ")
+		actualQuery := `(data->'landscape'->'properties'->>'project-id' ILIKE $1 OR data->>'title' ILIKE $2)`
+		r.Equal(actualQuery, expectedQuery[1])
+	})
+
+	r.Run("should return sql query with asset's data fields filter", func() {
+		results := r.repository.BuildFilterQuery(r.builder, asset.Config{
+			Data: map[string]string{
+				"entity":  "odpf",
+				"country": "th",
+			},
+		})
+		query, _, err := results.ToSql()
+		r.Require().NoError(err)
+		query, err = sq.Dollar.ReplacePlaceholders(query)
+		expectedQuery := strings.Split(query, "WHERE ")
+		actualQuery := `data->>'entity' = 'odpf' AND data->>'country' = 'th'`
+		r.Equal(actualQuery, expectedQuery[1])
+	})
+
+	r.Run("should return sql query with asset's nested data fields filter", func() {
+		results := r.repository.BuildFilterQuery(r.builder, asset.Config{
+			Data: map[string]string{
+				"landscape.properties.project-id": "columbus_001",
+				"country":                         "vn",
+			},
+		})
+		query, _, err := results.ToSql()
+		r.Require().NoError(err)
+		query, err = sq.Dollar.ReplacePlaceholders(query)
+		expectedQuery := strings.Split(query, "WHERE ")
+		actualQuery := `data->'landscape'->'properties'->>'project-id' = 'columbus_001' AND data->>'country' = 'vn'`
+		r.Equal(actualQuery, expectedQuery[1])
+	})
+}
+
 func (r *AssetRepositoryTestSuite) TestGetAll() {
 	assets := r.insertRecord()
 
@@ -187,7 +288,6 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		expectedURNs := []string{"c-demo-kafka", "f-john-test-001", "i-test-grant", "i-undefined-dfgdgd-avi"}
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
-			fmt.Println(results[i].URN)
 			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})
@@ -249,7 +349,6 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		expectedURNs := []string{"e-test-grant2", "h-test-new-kafka", "i-test-grant"}
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
-			fmt.Println(results[i].URN)
 			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})
@@ -266,7 +365,6 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		expectedURNs := []string{"j-xcvcx"}
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
-			fmt.Println(results[i].URN)
 			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})

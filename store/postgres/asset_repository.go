@@ -32,7 +32,7 @@ func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset
 	}
 
 	builder := r.getAssetSQL().Limit(uint64(size)).Offset(uint64(cfg.Offset))
-	builder = r.buildFilterQuery(builder, cfg)
+	builder = r.BuildFilterQuery(builder, cfg)
 	builder = r.buildOrderQuery(builder, cfg)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
@@ -56,7 +56,7 @@ func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset
 // GetCount retrieves number of assets for every type
 func (r *AssetRepository) GetCount(ctx context.Context, config asset.Config) (total int, err error) {
 	builder := sq.Select("count(1)").From("assets")
-	builder = r.buildFilterQuery(builder, config)
+	builder = r.BuildFilterQuery(builder, config)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
 		err = fmt.Errorf("error building count query: %w", err)
@@ -634,8 +634,8 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 		LeftJoin("users u ON a.updated_by = u.id")
 }
 
-// buildFilterQuery retrieves the sql query based on applied filter in the queryString
-func (r *AssetRepository) buildFilterQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
+// BuildFilterQuery retrieves the sql query based on applied filter in the queryString
+func (r *AssetRepository) BuildFilterQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
 	if len(cfg.Types) > 0 {
 		builder = builder.Where(sq.Eq{"type": cfg.Types})
 	}
