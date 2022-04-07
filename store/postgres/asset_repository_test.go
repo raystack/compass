@@ -133,99 +133,75 @@ func (r *AssetRepositoryTestSuite) insertRecord() (assets []asset.Asset) {
 func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 	r.builder = sq.Select(`a.test as test`)
 
-	r.Run("should not return all assets limited by default size", func() {
-		results := r.repository.BuildFilterQuery(r.builder, asset.Config{})
-		query, _, err := results.ToSql()
-		r.Require().NoError(err)
-
-		var check bool
-		if strings.Contains(query, "WHERE") {
-			check = true
-		}
-		r.Equal(false, check)
-	})
-
-	r.Run("should return sql query with types filter", func() {
-		results := r.repository.BuildFilterQuery(r.builder, asset.Config{
-			Types: []asset.Type{asset.TypeTable},
-		})
-		query, _, err := results.ToSql()
-		r.Require().NoError(err)
-
-		query, err = sq.Dollar.ReplacePlaceholders(query)
-		expectedQuery := strings.Split(query, "WHERE ")
-		actualQuery := `type IN ($1)`
-		r.Equal(actualQuery, expectedQuery[1])
-	})
-
-	r.Run("should return sql query with services filter", func() {
-		results := r.repository.BuildFilterQuery(r.builder, asset.Config{
-			Services: []string{"mysql", "kafka"},
-		})
-		query, _, err := results.ToSql()
-		r.Require().NoError(err)
-
-		query, err = sq.Dollar.ReplacePlaceholders(query)
-		expectedQuery := strings.Split(query, "WHERE ")
-		actualQuery := `service IN ($1,$2)`
-		r.Equal(actualQuery, expectedQuery[1])
-	})
-
-	r.Run("should return sql query with query fields filter", func() {
-		results := r.repository.BuildFilterQuery(r.builder, asset.Config{
-			QueryFields: []string{"name", "description"},
-			Query:       "demo",
-		})
-		query, _, err := results.ToSql()
-		r.Require().NoError(err)
-		query, err = sq.Dollar.ReplacePlaceholders(query)
-		expectedQuery := strings.Split(query, "WHERE ")
-		actualQuery := `(name ILIKE $1 OR description ILIKE $2)`
-		r.Equal(actualQuery, expectedQuery[1])
-	})
-
-	r.Run("should return sql query with nested data query filter", func() {
-		results := r.repository.BuildFilterQuery(r.builder, asset.Config{
-			QueryFields: []string{"data.landscape.properties.project-id", "data.title"},
-			Query:       "columbus_001",
-		})
-		query, _, err := results.ToSql()
-		r.Require().NoError(err)
-		query, err = sq.Dollar.ReplacePlaceholders(query)
-		expectedQuery := strings.Split(query, "WHERE ")
-		actualQuery := `(data->'landscape'->'properties'->>'project-id' ILIKE $1 OR data->>'title' ILIKE $2)`
-		r.Equal(actualQuery, expectedQuery[1])
-	})
-
-	r.Run("should return sql query with asset's data fields filter", func() {
-		results := r.repository.BuildFilterQuery(r.builder, asset.Config{
-			Data: map[string]string{
-				"entity":  "odpf",
-				"country": "th",
+	testCases := []struct {
+		description   string
+		config        asset.Config
+		expectedQuery string
+	}{
+		{
+			description: "should return sql query with types filter",
+			config: asset.Config{
+				Types: []asset.Type{asset.TypeTable},
 			},
-		})
-		query, _, err := results.ToSql()
-		r.Require().NoError(err)
-		query, err = sq.Dollar.ReplacePlaceholders(query)
-		expectedQuery := strings.Split(query, "WHERE ")
-		actualQuery := `data->>'entity' = 'odpf' AND data->>'country' = 'th'`
-		r.Equal(actualQuery, expectedQuery[1])
-	})
-
-	r.Run("should return sql query with asset's nested data fields filter", func() {
-		results := r.repository.BuildFilterQuery(r.builder, asset.Config{
-			Data: map[string]string{
-				"landscape.properties.project-id": "columbus_001",
-				"country":                         "vn",
+			expectedQuery: `type IN ($1)`,
+		},
+		{
+			description: "should return sql query with services filter",
+			config: asset.Config{
+				Services: []string{"mysql", "kafka"},
 			},
+			expectedQuery: `service IN ($1,$2)`,
+		},
+		{
+			description: "should return sql query with query fields filter",
+			config: asset.Config{
+				QueryFields: []string{"name", "description"},
+				Query:       "demo",
+			},
+			expectedQuery: `(name ILIKE $1 OR description ILIKE $2)`,
+		},
+		{
+			description: "should return sql query with nested data query filter",
+			config: asset.Config{
+				QueryFields: []string{"data.landscape.properties.project-id", "description"},
+				Query:       "columbus_002",
+			},
+			expectedQuery: `(data->'landscape'->'properties'->>'project-id' ILIKE $1 OR description ILIKE $2)`,
+		},
+		{
+			description: "should return sql query with asset's data fields filter",
+			config: asset.Config{
+				Data: map[string]string{
+					"entity":  "odpf",
+					"country": "th",
+				},
+			},
+			expectedQuery: `data->>'entity' = 'odpf' AND data->>'country' = 'th'`,
+		},
+		{
+			description: "should return sql query with asset's nested data fields filter",
+			config: asset.Config{
+				Data: map[string]string{
+					"landscape.properties.project-id": "columbus_001",
+					"country":                         "vn",
+				},
+			},
+			expectedQuery: `data->'landscape'->'properties'->>'project-id' = 'columbus_001' AND data->>'country' = 'vn'`,
+		},
+	}
+
+	for _, testCase := range testCases {
+		r.Run(testCase.description, func() {
+			result := r.repository.BuildFilterQuery(r.builder, testCase.config)
+			query, _, err := result.ToSql()
+			r.Require().NoError(err)
+			query, err = sq.Dollar.ReplacePlaceholders(query)
+			r.Require().NoError(err)
+
+			actualQuery := strings.Split(query, "WHERE ")
+			r.Equal(testCase.expectedQuery, actualQuery[1])
 		})
-		query, _, err := results.ToSql()
-		r.Require().NoError(err)
-		query, err = sq.Dollar.ReplacePlaceholders(query)
-		expectedQuery := strings.Split(query, "WHERE ")
-		actualQuery := `data->'landscape'->'properties'->>'project-id' = 'columbus_001' AND data->>'country' = 'vn'`
-		r.Equal(actualQuery, expectedQuery[1])
-	})
+	}
 }
 
 func (r *AssetRepositoryTestSuite) TestGetAll() {
