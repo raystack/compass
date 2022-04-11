@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	sq "github.com/Masterminds/squirrel"
 	"io/ioutil"
+	"strings"
 	"testing"
 	"time"
 
@@ -29,6 +31,7 @@ type AssetRepositoryTestSuite struct {
 	repository *postgres.AssetRepository
 	userRepo   *postgres.UserRepository
 	users      []user.User
+	builder    sq.SelectBuilder
 }
 
 func (r *AssetRepositoryTestSuite) SetupSuite() {
@@ -127,6 +130,80 @@ func (r *AssetRepositoryTestSuite) insertRecord() (assets []asset.Asset) {
 	return assets
 }
 
+func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
+	r.builder = sq.Select(`a.test as test`)
+
+	testCases := []struct {
+		description   string
+		config        asset.Config
+		expectedQuery string
+	}{
+		{
+			description: "should return sql query with types filter",
+			config: asset.Config{
+				Types: []asset.Type{asset.TypeTable},
+			},
+			expectedQuery: `type IN ($1)`,
+		},
+		{
+			description: "should return sql query with services filter",
+			config: asset.Config{
+				Services: []string{"mysql", "kafka"},
+			},
+			expectedQuery: `service IN ($1,$2)`,
+		},
+		{
+			description: "should return sql query with query fields filter",
+			config: asset.Config{
+				QueryFields: []string{"name", "description"},
+				Query:       "demo",
+			},
+			expectedQuery: `(name ILIKE $1 OR description ILIKE $2)`,
+		},
+		{
+			description: "should return sql query with nested data query filter",
+			config: asset.Config{
+				QueryFields: []string{"data.landscape.properties.project-id", "description"},
+				Query:       "columbus_002",
+			},
+			expectedQuery: `(data->'landscape'->'properties'->>'project-id' ILIKE $1 OR description ILIKE $2)`,
+		},
+		{
+			description: "should return sql query with asset's data fields filter",
+			config: asset.Config{
+				Data: map[string]string{
+					"entity":  "odpf",
+					"country": "th",
+				},
+			},
+			expectedQuery: `data->>'entity' = 'odpf' AND data->>'country' = 'th'`,
+		},
+		{
+			description: "should return sql query with asset's nested data fields filter",
+			config: asset.Config{
+				Data: map[string]string{
+					"landscape.properties.project-id": "columbus_001",
+					"country":                         "vn",
+				},
+			},
+			expectedQuery: `data->'landscape'->'properties'->>'project-id' = 'columbus_001' AND data->>'country' = 'vn'`,
+		},
+	}
+
+	for _, testCase := range testCases {
+		r.Run(testCase.description, func() {
+			result := r.repository.BuildFilterQuery(r.builder, testCase.config)
+			query, _, err := result.ToSql()
+			r.Require().NoError(err)
+			query, err = sq.Dollar.ReplacePlaceholders(query)
+			r.Require().NoError(err)
+
+			actualQuery := strings.Split(query, "WHERE ")
+			r.Equal(testCase.expectedQuery, actualQuery[1])
+		})
+	}
+}
+
 func (r *AssetRepositoryTestSuite) TestGetAll() {
 	assets := r.insertRecord()
 
@@ -187,7 +264,6 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		expectedURNs := []string{"c-demo-kafka", "f-john-test-001", "i-test-grant", "i-undefined-dfgdgd-avi"}
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
-			fmt.Println(results[i].URN)
 			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})
@@ -207,7 +283,37 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		}
 	})
 
-	r.Run("should filter using asset's Data fields", func() {
+	r.Run("should filter only using nested query data fields", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			QueryFields: []string{"data.landscape.properties.project-id", "data.title"},
+			Query:       "columbus_001",
+			SortBy:      "urn",
+		})
+		r.Require().NoError(err)
+
+		expectedURNs := []string{"i-test-grant", "j-xcvcx"}
+		r.Equal(len(expectedURNs), len(results))
+		for i := range results {
+			r.Equal(expectedURNs[i], results[i].URN)
+		}
+	})
+
+	r.Run("should filter using query field with nested query data fields", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			QueryFields: []string{"data.landscape.properties.project-id", "description"},
+			Query:       "columbus_002",
+			SortBy:      "urn",
+		})
+		r.Require().NoError(err)
+
+		expectedURNs := []string{"g-jane-kafka-1a", "h-test-new-kafka"}
+		r.Equal(len(expectedURNs), len(results))
+		for i := range results {
+			r.Equal(expectedURNs[i], results[i].URN)
+		}
+	})
+
+	r.Run("should filter using asset's data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Config{
 			Data: map[string]string{
 				"entity":  "odpf",
@@ -219,7 +325,22 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		expectedURNs := []string{"e-test-grant2", "h-test-new-kafka", "i-test-grant"}
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
-			fmt.Println(results[i].URN)
+			r.Equal(expectedURNs[i], results[i].URN)
+		}
+	})
+
+	r.Run("should filter using asset's nested data fields", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Config{
+			Data: map[string]string{
+				"landscape.properties.project-id": "columbus_001",
+				"country":                         "vn",
+			},
+		})
+		r.Require().NoError(err)
+
+		expectedURNs := []string{"j-xcvcx"}
+		r.Equal(len(expectedURNs), len(results))
+		for i := range results {
 			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})
