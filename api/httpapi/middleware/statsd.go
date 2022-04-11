@@ -10,6 +10,10 @@ import (
 
 func StatsD(mm *metrics.StatsdMonitor, h runtime.HandlerFunc) runtime.HandlerFunc {
 	return runtime.HandlerFunc(func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+		if mm == nil {
+			h(w, r, pathParams)
+			return
+		}
 		start := time.Now()
 		rw := responseWriter(w)
 		h(w, r, pathParams)
