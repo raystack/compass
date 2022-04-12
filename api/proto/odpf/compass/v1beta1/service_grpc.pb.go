@@ -36,6 +36,7 @@ type CompassServiceClient interface {
 	SearchAssets(ctx context.Context, in *SearchAssetsRequest, opts ...grpc.CallOption) (*SearchAssetsResponse, error)
 	SuggestAssets(ctx context.Context, in *SuggestAssetsRequest, opts ...grpc.CallOption) (*SuggestAssetsResponse, error)
 	GetGraph(ctx context.Context, in *GetGraphRequest, opts ...grpc.CallOption) (*GetGraphResponse, error)
+	GetAllTypes(ctx context.Context, in *GetAllTypesRequest, opts ...grpc.CallOption) (*GetAllTypesResponse, error)
 	GetAllAssets(ctx context.Context, in *GetAllAssetsRequest, opts ...grpc.CallOption) (*GetAllAssetsResponse, error)
 	GetAssetByID(ctx context.Context, in *GetAssetByIDRequest, opts ...grpc.CallOption) (*GetAssetByIDResponse, error)
 	UpsertAsset(ctx context.Context, in *UpsertAssetRequest, opts ...grpc.CallOption) (*UpsertAssetResponse, error)
@@ -174,6 +175,15 @@ func (c *compassServiceClient) SuggestAssets(ctx context.Context, in *SuggestAss
 func (c *compassServiceClient) GetGraph(ctx context.Context, in *GetGraphRequest, opts ...grpc.CallOption) (*GetGraphResponse, error) {
 	out := new(GetGraphResponse)
 	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetGraph", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetAllTypes(ctx context.Context, in *GetAllTypesRequest, opts ...grpc.CallOption) (*GetAllTypesResponse, error) {
+	out := new(GetAllTypesResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAllTypes", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -414,6 +424,7 @@ type CompassServiceServer interface {
 	SearchAssets(context.Context, *SearchAssetsRequest) (*SearchAssetsResponse, error)
 	SuggestAssets(context.Context, *SuggestAssetsRequest) (*SuggestAssetsResponse, error)
 	GetGraph(context.Context, *GetGraphRequest) (*GetGraphResponse, error)
+	GetAllTypes(context.Context, *GetAllTypesRequest) (*GetAllTypesResponse, error)
 	GetAllAssets(context.Context, *GetAllAssetsRequest) (*GetAllAssetsResponse, error)
 	GetAssetByID(context.Context, *GetAssetByIDRequest) (*GetAssetByIDResponse, error)
 	UpsertAsset(context.Context, *UpsertAssetRequest) (*UpsertAssetResponse, error)
@@ -482,6 +493,9 @@ func (UnimplementedCompassServiceServer) SuggestAssets(context.Context, *Suggest
 }
 func (UnimplementedCompassServiceServer) GetGraph(context.Context, *GetGraphRequest) (*GetGraphResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetGraph not implemented")
+}
+func (UnimplementedCompassServiceServer) GetAllTypes(context.Context, *GetAllTypesRequest) (*GetAllTypesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllTypes not implemented")
 }
 func (UnimplementedCompassServiceServer) GetAllAssets(context.Context, *GetAllAssetsRequest) (*GetAllAssetsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllAssets not implemented")
@@ -780,6 +794,24 @@ func _CompassService_GetGraph_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetGraph(ctx, req.(*GetGraphRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetAllTypes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllTypesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetAllTypes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAllTypes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetAllTypes(ctx, req.(*GetAllTypesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1270,6 +1302,10 @@ var CompassService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetGraph",
 			Handler:    _CompassService_GetGraph_Handler,
+		},
+		{
+			MethodName: "GetAllTypes",
+			Handler:    _CompassService_GetAllTypes_Handler,
 		},
 		{
 			MethodName: "GetAllAssets",

@@ -145,7 +145,7 @@ func (r *AssetRepository) Find(ctx context.Context, assetURN string, assetType a
 	return
 }
 
-// GetVersionHistory retrieves the previous versions of an asset
+// GetVersionHistory retrieves the versions of an asset
 func (r *AssetRepository) GetVersionHistory(ctx context.Context, cfg asset.Config, id string) (avs []asset.Asset, err error) {
 	if !isValidUUID(id) {
 		err = asset.InvalidError{AssetID: id}
@@ -323,6 +323,12 @@ func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id stri
 			return fmt.Errorf("error running insert owners query: %w", err)
 		}
 
+		// insert versions
+		ast.ID = id
+		if err = r.insertAssetVersion(ctx, tx, ast, diff.Changelog{}); err != nil {
+			return err
+		}
+
 		return nil
 	})
 
@@ -345,6 +351,8 @@ func (r *AssetRepository) update(ctx context.Context, assetID string, newAsset *
 		if err != nil {
 			return err
 		}
+		newAsset.Version = newVersion
+		newAsset.ID = oldAsset.ID
 
 		err = r.execContext(ctx, tx,
 			`UPDATE assets
@@ -360,13 +368,13 @@ func (r *AssetRepository) update(ctx context.Context, assetID string, newAsset *
 				version = $10
 			WHERE id = $11;
 			`,
-			newAsset.URN, newAsset.Type, newAsset.Service, newAsset.Name, newAsset.Description, newAsset.Data, newAsset.Labels, time.Now(), newAsset.UpdatedBy.ID, newVersion, assetID)
+			newAsset.URN, newAsset.Type, newAsset.Service, newAsset.Name, newAsset.Description, newAsset.Data, newAsset.Labels, time.Now(), newAsset.UpdatedBy.ID, newAsset.Version, assetID)
 		if err != nil {
 			return fmt.Errorf("error running update asset query: %w", err)
 		}
 
 		// insert versions
-		if err = r.insertAssetVersion(ctx, tx, oldAsset, clog); err != nil {
+		if err = r.insertAssetVersion(ctx, tx, newAsset, clog); err != nil {
 			return err
 		}
 

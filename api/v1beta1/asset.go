@@ -31,7 +31,7 @@ func (h *Handler) GetAllAssets(ctx context.Context, req *compassv1beta1.GetAllAs
 
 	assetsProto := []*compassv1beta1.Asset{}
 	for _, a := range assets {
-		ap, err := a.ToProto()
+		ap, err := a.ToProto(false)
 		if err != nil {
 			return nil, internalServerError(h.Logger, err.Error())
 		}
@@ -72,7 +72,7 @@ func (h *Handler) GetAssetByID(ctx context.Context, req *compassv1beta1.GetAsset
 		return nil, internalServerError(h.Logger, err.Error())
 	}
 
-	astProto, err := ast.ToProto()
+	astProto, err := ast.ToProto(false)
 	if err != nil {
 		return nil, internalServerError(h.Logger, err.Error())
 	}
@@ -129,6 +129,7 @@ func (h *Handler) UpsertAsset(ctx context.Context, req *compassv1beta1.UpsertAss
 		Id: assetID,
 	}, nil
 }
+
 func (h *Handler) UpsertPatchAsset(ctx context.Context, req *compassv1beta1.UpsertPatchAssetRequest) (*compassv1beta1.UpsertPatchAssetResponse, error) {
 	userID := user.FromContext(ctx)
 	if userID == "" {
@@ -246,7 +247,7 @@ func (h *Handler) GetAssetVersionHistory(ctx context.Context, req *compassv1beta
 
 	assetsPB := []*compassv1beta1.Asset{}
 	for _, av := range assetVersions {
-		avPB, err := av.ToProto()
+		avPB, err := av.ToProto(true)
 		if err != nil {
 			return nil, internalServerError(h.Logger, err.Error())
 		}
@@ -274,7 +275,7 @@ func (h *Handler) GetAssetByVersion(ctx context.Context, req *compassv1beta1.Get
 		return nil, internalServerError(h.Logger, err.Error())
 	}
 
-	assetPB, err := ast.ToProto()
+	assetPB, err := ast.ToProto(true)
 	if err != nil {
 		return nil, internalServerError(h.Logger, err.Error())
 	}

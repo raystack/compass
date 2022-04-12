@@ -43,7 +43,7 @@ type Asset struct {
 }
 
 // ToProto transforms struct to proto
-func (a Asset) ToProto() (assetPB *compassv1beta1.Asset, err error) {
+func (a Asset) ToProto(withChangelog bool) (assetPB *compassv1beta1.Asset, err error) {
 	var data *structpb.Struct
 	if len(a.Data) > 0 {
 		data, err = structpb.NewStruct(a.Data)
@@ -69,9 +69,12 @@ func (a Asset) ToProto() (assetPB *compassv1beta1.Asset, err error) {
 		owners = append(owners, o.ToProto())
 	}
 
-	changelogProto, err := changelogToProto(a.Changelog)
-	if err != nil {
-		return nil, err
+	var changelogProto []*compassv1beta1.Change
+	if withChangelog {
+		changelogProto, err = changelogToProto(a.Changelog)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var createdAtPB *timestamppb.Timestamp
@@ -145,8 +148,8 @@ func NewFromProto(pb *compassv1beta1.Asset) Asset {
 	}
 
 	var clog diff.Changelog
-	if pb.GetChangelog() != nil {
-		for _, cg := range pb.GetChangelog().GetChanges() {
+	if len(pb.GetChangelog()) > 0 {
+		for _, cg := range pb.GetChangelog() {
 			if cg == nil {
 				continue
 			}

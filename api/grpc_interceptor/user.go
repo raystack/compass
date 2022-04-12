@@ -36,6 +36,5 @@ func ValidateUser(identityHeaderKey string, userSvc *user.Service) grpc.UnarySer
 		}
 		newCtx := user.NewContext(ctx, userID)
 		return handler(newCtx, req)
-
 	}
 }

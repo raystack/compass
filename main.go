@@ -70,9 +70,7 @@ func serveCmd() *cobra.Command {
 			"group:core": "true",
 		},
 		RunE: func(command *cobra.Command, args []string) error {
-			cmd.Serve()
-
-			return nil
+			return cmd.Serve()
 		},
 	}
 }

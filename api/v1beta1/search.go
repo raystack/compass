@@ -36,7 +36,7 @@ func (h *Handler) SearchAssets(ctx context.Context, req *compassv1beta1.SearchAs
 
 	assetsPB := []*compassv1beta1.Asset{}
 	for _, sr := range results {
-		assetPB, err := sr.ToAsset().ToProto()
+		assetPB, err := sr.ToAsset().ToProto(false)
 		if err != nil {
 			return nil, internalServerError(h.Logger, err.Error())
 		}

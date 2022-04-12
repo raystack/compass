@@ -31,11 +31,11 @@ func IncreaseMinorVersion(v string) (string, error) {
 }
 
 // changelogToProto transforms changelog struct to proto
-func changelogToProto(cl diff.Changelog) (*compassv1beta1.Changelog, error) {
+func changelogToProto(cl diff.Changelog) ([]*compassv1beta1.Change, error) {
 	if len(cl) == 0 {
 		return nil, nil
 	}
-	protoChanges := []*compassv1beta1.Change{}
+	var protoChanges []*compassv1beta1.Change
 	for _, ch := range cl {
 		chProto, err := diffChangeToProto(ch)
 		if err != nil {
@@ -44,9 +44,7 @@ func changelogToProto(cl diff.Changelog) (*compassv1beta1.Changelog, error) {
 
 		protoChanges = append(protoChanges, chProto)
 	}
-	return &compassv1beta1.Changelog{
-		Changes: protoChanges,
-	}, nil
+	return protoChanges, nil
 }
 
 func diffChangeToProto(dc diff.Change) (*compassv1beta1.Change, error) {
