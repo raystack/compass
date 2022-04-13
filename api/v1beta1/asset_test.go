@@ -137,6 +137,8 @@ func TestGetAllAssets(t *testing.T) {
 				ar.On("GetCount", ctx, asset.Filter{
 					Types:    []asset.Type{"job"},
 					Services: []string{"kafka"},
+					Size:     10,
+					Offset:   5,
 				}).Return(150, nil, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAllAssetsResponse) error {
