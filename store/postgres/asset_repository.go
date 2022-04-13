@@ -24,16 +24,16 @@ type AssetRepository struct {
 	defaultUserProvider string
 }
 
-// GetAll retrieves list of assets with filters via config
-func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset.Asset, error) {
-	size := cfg.Size
+// GetAll retrieves list of assets with filters
+func (r *AssetRepository) GetAll(ctx context.Context, flt asset.Filter) ([]asset.Asset, error) {
+	size := flt.Size
 	if size == 0 {
 		size = r.defaultGetMaxSize
 	}
 
-	builder := r.getAssetSQL().Limit(uint64(size)).Offset(uint64(cfg.Offset))
-	builder = r.BuildFilterQuery(builder, cfg)
-	builder = r.buildOrderQuery(builder, cfg)
+	builder := r.getAssetSQL().Limit(uint64(size)).Offset(uint64(flt.Offset))
+	builder = r.BuildFilterQuery(builder, flt)
+	builder = r.buildOrderQuery(builder, flt)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
 		return nil, fmt.Errorf("error building query: %w", err)
@@ -54,9 +54,9 @@ func (r *AssetRepository) GetAll(ctx context.Context, cfg asset.Config) ([]asset
 }
 
 // GetCount retrieves number of assets for every type
-func (r *AssetRepository) GetCount(ctx context.Context, config asset.Config) (total int, err error) {
+func (r *AssetRepository) GetCount(ctx context.Context, flt asset.Filter) (total int, err error) {
 	builder := sq.Select("count(1)").From("assets")
-	builder = r.BuildFilterQuery(builder, config)
+	builder = r.BuildFilterQuery(builder, flt)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
 		err = fmt.Errorf("error building count query: %w", err)
@@ -146,13 +146,13 @@ func (r *AssetRepository) Find(ctx context.Context, assetURN string, assetType a
 }
 
 // GetVersionHistory retrieves the versions of an asset
-func (r *AssetRepository) GetVersionHistory(ctx context.Context, cfg asset.Config, id string) (avs []asset.Asset, err error) {
+func (r *AssetRepository) GetVersionHistory(ctx context.Context, flt asset.Filter, id string) (avs []asset.Asset, err error) {
 	if !isValidUUID(id) {
 		err = asset.InvalidError{AssetID: id}
 		return
 	}
 
-	size := cfg.Size
+	size := flt.Size
 	if size == 0 {
 		size = r.defaultGetMaxSize
 	}
@@ -161,7 +161,7 @@ func (r *AssetRepository) GetVersionHistory(ctx context.Context, cfg asset.Confi
 		Where(sq.Eq{"a.asset_id": id}).
 		OrderBy("version DESC").
 		Limit(uint64(size)).
-		Offset(uint64(cfg.Offset))
+		Offset(uint64(flt.Offset))
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
 		err = fmt.Errorf("error building query: %w", err)
@@ -643,19 +643,19 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 }
 
 // BuildFilterQuery retrieves the sql query based on applied filter in the queryString
-func (r *AssetRepository) BuildFilterQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
-	if len(cfg.Types) > 0 {
-		builder = builder.Where(sq.Eq{"type": cfg.Types})
+func (r *AssetRepository) BuildFilterQuery(builder sq.SelectBuilder, flt asset.Filter) sq.SelectBuilder {
+	if len(flt.Types) > 0 {
+		builder = builder.Where(sq.Eq{"type": flt.Types})
 	}
 
-	if len(cfg.Services) > 0 {
-		builder = builder.Where(sq.Eq{"service": cfg.Services})
+	if len(flt.Services) > 0 {
+		builder = builder.Where(sq.Eq{"service": flt.Services})
 	}
 
-	if len(cfg.QueryFields) > 0 && cfg.Query != "" {
+	if len(flt.QueryFields) > 0 && flt.Query != "" {
 		orClause := sq.Or{}
 
-		for _, field := range cfg.QueryFields {
+		for _, field := range flt.QueryFields {
 			finalQuery := field
 
 			if strings.Contains(field, "data") {
@@ -663,14 +663,14 @@ func (r *AssetRepository) BuildFilterQuery(builder sq.SelectBuilder, cfg asset.C
 				finalQuery = nestedDataQuery(query)
 			}
 			orClause = append(orClause, sq.ILike{
-				finalQuery: fmt.Sprint("%", cfg.Query, "%"),
+				finalQuery: fmt.Sprint("%", flt.Query, "%"),
 			})
 		}
 		builder = builder.Where(orClause)
 	}
 
-	if len(cfg.Data) > 0 {
-		for key, val := range cfg.Data {
+	if len(flt.Data) > 0 {
+		for key, val := range flt.Data {
 			finalQuery := nestedDataQuery(key)
 			builder = builder.Where(fmt.Sprintf("%s = '%s'", finalQuery, val))
 		}
@@ -680,17 +680,17 @@ func (r *AssetRepository) BuildFilterQuery(builder sq.SelectBuilder, cfg asset.C
 }
 
 // buildFilterQuery retrieves the ordered sql query based on the sorting filter used in queryString
-func (r *AssetRepository) buildOrderQuery(builder sq.SelectBuilder, cfg asset.Config) sq.SelectBuilder {
-	if cfg.SortBy == "" {
+func (r *AssetRepository) buildOrderQuery(builder sq.SelectBuilder, flt asset.Filter) sq.SelectBuilder {
+	if flt.SortBy == "" {
 		return builder
 	}
 
 	orderDirection := "ASC"
-	if cfg.SortDirection != "" {
-		orderDirection = cfg.SortDirection
+	if flt.SortDirection != "" {
+		orderDirection = flt.SortDirection
 	}
 
-	return builder.OrderBy(cfg.SortBy + " " + orderDirection)
+	return builder.OrderBy(flt.SortBy + " " + orderDirection)
 }
 
 // NewAssetRepository initializes user repository clients

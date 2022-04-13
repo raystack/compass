@@ -136,26 +136,26 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 
 	testCases := []struct {
 		description   string
-		config        asset.Config
+		config        asset.Filter
 		expectedQuery string
 	}{
 		{
 			description: "should return sql query with types filter",
-			config: asset.Config{
+			config: asset.Filter{
 				Types: []asset.Type{asset.TypeTable},
 			},
 			expectedQuery: `type IN ($1)`,
 		},
 		{
 			description: "should return sql query with services filter",
-			config: asset.Config{
+			config: asset.Filter{
 				Services: []string{"mysql", "kafka"},
 			},
 			expectedQuery: `service IN ($1,$2)`,
 		},
 		{
 			description: "should return sql query with query fields filter",
-			config: asset.Config{
+			config: asset.Filter{
 				QueryFields: []string{"name", "description"},
 				Query:       "demo",
 			},
@@ -163,7 +163,7 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 		},
 		{
 			description: "should return sql query with nested data query filter",
-			config: asset.Config{
+			config: asset.Filter{
 				QueryFields: []string{"data.landscape.properties.project-id", "description"},
 				Query:       "columbus_002",
 			},
@@ -171,7 +171,7 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 		},
 		{
 			description: "should return sql query with asset's data fields filter",
-			config: asset.Config{
+			config: asset.Filter{
 				Data: map[string]string{
 					"entity":  "odpf",
 					"country": "th",
@@ -181,7 +181,7 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 		},
 		{
 			description: "should return sql query with asset's nested data fields filter",
-			config: asset.Config{
+			config: asset.Filter{
 				Data: map[string]string{
 					"landscape.properties.project-id": "columbus_001",
 					"country":                         "vn",
@@ -209,7 +209,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	assets := r.insertRecord()
 
 	r.Run("should return all assets limited by default size", func() {
-		results, err := r.repository.GetAll(r.ctx, asset.Config{})
+		results, err := r.repository.GetAll(r.ctx, asset.Filter{})
 		r.Require().NoError(err)
 		r.Require().Len(results, defaultGetMaxSize)
 		for i := 0; i < defaultGetMaxSize; i++ {
@@ -219,7 +219,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 
 	r.Run("should override default size using GetConfig.Size", func() {
 		size := 6
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
+		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			Size: size,
 		})
 		r.Require().NoError(err)
@@ -231,7 +231,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 
 	r.Run("should fetch assets by offset defined in GetConfig.Offset", func() {
 		offset := 2
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
+		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			Offset: offset,
 		})
 		r.Require().NoError(err)
@@ -241,7 +241,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	})
 
 	r.Run("should filter using type", func() {
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
+		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			Types:         []asset.Type{asset.TypeTable},
 			SortBy:        "urn",
 			SortDirection: "desc",
@@ -256,7 +256,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	})
 
 	r.Run("should filter using service", func() {
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
+		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			Services: []string{"mysql", "kafka"},
 			SortBy:   "urn",
 		})
@@ -270,7 +270,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	})
 
 	r.Run("should filter using query fields", func() {
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
+		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			QueryFields: []string{"name", "description"},
 			Query:       "demo",
 			SortBy:      "urn",
@@ -285,7 +285,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	})
 
 	r.Run("should filter only using nested query data fields", func() {
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
+		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			QueryFields: []string{"data.landscape.properties.project-id", "data.title"},
 			Query:       "columbus_001",
 			SortBy:      "urn",
@@ -300,7 +300,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	})
 
 	r.Run("should filter using query field with nested query data fields", func() {
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
+		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			QueryFields: []string{"data.landscape.properties.project-id", "description"},
 			Query:       "columbus_002",
 			SortBy:      "urn",
@@ -315,7 +315,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	})
 
 	r.Run("should filter using asset's data fields", func() {
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
+		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			Data: map[string]string{
 				"entity":  "odpf",
 				"country": "th",
@@ -331,7 +331,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	})
 
 	r.Run("should filter using asset's nested data fields", func() {
-		results, err := r.repository.GetAll(r.ctx, asset.Config{
+		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			Data: map[string]string{
 				"landscape.properties.project-id": "columbus_001",
 				"country":                         "vn",
@@ -366,7 +366,7 @@ func (r *AssetRepositoryTestSuite) TestGetCount() {
 	}
 
 	r.Run("should return total assets with filter", func() {
-		actual, err := r.repository.GetCount(r.ctx, asset.Config{
+		actual, err := r.repository.GetCount(r.ctx, asset.Filter{
 			Types:    []asset.Type{typ},
 			Services: service,
 		})
@@ -617,7 +617,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 			},
 		}
 
-		assetVersions, err := r.repository.GetVersionHistory(r.ctx, asset.Config{Size: 3}, astVersioning.ID)
+		assetVersions, err := r.repository.GetVersionHistory(r.ctx, asset.Filter{Size: 3}, astVersioning.ID)
 		r.NoError(err)
 		// making updatedby user time empty to make ast comparable
 		for i := 0; i < len(assetVersions); i++ {

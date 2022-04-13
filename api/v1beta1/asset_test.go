@@ -40,7 +40,7 @@ func TestGetAllAssets(t *testing.T) {
 			ExpectStatus: codes.Internal,
 			Request:      &compassv1beta1.GetAllAssetsRequest{},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{}, errors.New("unknown error"))
+				ar.On("GetAll", ctx, asset.Filter{}).Return([]asset.Asset{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -50,8 +50,8 @@ func TestGetAllAssets(t *testing.T) {
 			},
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{}, nil, nil)
-				ar.On("GetCount", ctx, asset.Config{}).Return(0, errors.New("unknown error"))
+				ar.On("GetAll", ctx, asset.Filter{}).Return([]asset.Asset{}, nil, nil)
+				ar.On("GetCount", ctx, asset.Filter{}).Return(0, errors.New("unknown error"))
 			},
 		},
 		{
@@ -73,7 +73,7 @@ func TestGetAllAssets(t *testing.T) {
 			},
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				cfg := asset.Config{
+				cfg := asset.Filter{
 					Types:         []asset.Type{"table", "topic"},
 					Services:      []string{"bigquery", "kafka"},
 					Size:          30,
@@ -94,7 +94,7 @@ func TestGetAllAssets(t *testing.T) {
 			Description:  "should return status OK along with list of assets",
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Config{}).Return([]asset.Asset{
+				ar.On("GetAll", ctx, asset.Filter{}).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 				}, nil, nil)
@@ -124,7 +124,7 @@ func TestGetAllAssets(t *testing.T) {
 				WithTotal: true,
 			},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Config{
+				ar.On("GetAll", ctx, asset.Filter{
 					Types:    []asset.Type{"job"},
 					Services: []string{"kafka"},
 					Size:     10,
@@ -134,7 +134,7 @@ func TestGetAllAssets(t *testing.T) {
 					{ID: "testid-2"},
 					{ID: "testid-3"},
 				}, nil, nil)
-				ar.On("GetCount", ctx, asset.Config{
+				ar.On("GetCount", ctx, asset.Filter{
 					Types:    []asset.Type{"job"},
 					Services: []string{"kafka"},
 				}).Return(150, nil, nil)
@@ -854,7 +854,7 @@ func TestGetAssetStargazers(t *testing.T) {
 	var (
 		offset         = 10
 		size           = 20
-		defaultStarCfg = star.Config{Offset: offset, Size: size}
+		defaultStarCfg = star.Filter{Offset: offset, Size: size}
 		assetID        = uuid.NewString()
 		userID         = uuid.NewString()
 	)
@@ -956,7 +956,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 				Id: assetID,
 			},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetVersionHistory(ctx, asset.Config{}, assetID).Return([]asset.Asset{}, asset.InvalidError{AssetID: assetID})
+				ar.EXPECT().GetVersionHistory(ctx, asset.Filter{}, assetID).Return([]asset.Asset{}, asset.InvalidError{AssetID: assetID})
 			},
 		},
 		{
@@ -966,7 +966,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 				Id: assetID,
 			},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetVersionHistory(ctx, asset.Config{}, assetID).Return([]asset.Asset{}, errors.New("unknown error"))
+				ar.EXPECT().GetVersionHistory(ctx, asset.Filter{}, assetID).Return([]asset.Asset{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -978,7 +978,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 			},
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetVersionHistory(ctx, asset.Config{
+				ar.EXPECT().GetVersionHistory(ctx, asset.Filter{
 					Size:   30,
 					Offset: 50,
 				}, assetID).Return([]asset.Asset{}, nil)
@@ -991,7 +991,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 				Id: assetID,
 			},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetVersionHistory(ctx, asset.Config{}, assetID).Return([]asset.Asset{
+				ar.EXPECT().GetVersionHistory(ctx, asset.Filter{}, assetID).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 				}, nil)

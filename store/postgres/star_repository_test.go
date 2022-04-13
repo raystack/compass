@@ -139,7 +139,7 @@ func (r *StarRepositoryTestSuite) TestCreate() {
 func (r *StarRepositoryTestSuite) TestGetStargazers() {
 	ownerEmail := "test-getstargazers@odpf.io"
 
-	defaultCfg := star.Config{}
+	defaultCfg := star.Filter{}
 	r.Run("return ErrEmptyAssetID if asset id is empty", func() {
 		users, err := r.repository.GetStargazers(r.ctx, defaultCfg, "")
 		r.ErrorIs(err, star.ErrEmptyAssetID)
@@ -212,7 +212,7 @@ func (r *StarRepositoryTestSuite) TestGetStargazers() {
 			assetID = createdAsset.ID
 		}
 
-		cfg := star.Config{Size: 7}
+		cfg := star.Filter{Size: 7}
 		actualUsers, err := r.repository.GetStargazers(r.ctx, cfg, assetID)
 		r.NoError(err)
 
@@ -223,7 +223,7 @@ func (r *StarRepositoryTestSuite) TestGetStargazers() {
 func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
 	ownerEmail := "test-getallbyuserid@odpf.io"
 
-	defaultCfg := star.Config{}
+	defaultCfg := star.Filter{}
 	r.Run("return invalid error if user id is empty", func() {
 		assets, err := r.repository.GetAllAssetsByUserID(r.ctx, defaultCfg, "")
 		r.ErrorIs(err, star.ErrEmptyUserID)
@@ -298,7 +298,7 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
 			r.NotEmpty(id)
 		}
 
-		cfg := star.Config{Size: 7}
+		cfg := star.Filter{Size: 7}
 		actualAssets, err := r.repository.GetAllAssetsByUserID(r.ctx, cfg, userID)
 		r.NoError(err)
 		r.NoError(err)
@@ -309,7 +309,7 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
 
 func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserEmail() {
 	userEmail := "user@odpf.io"
-	defaultCfg := star.Config{}
+	defaultCfg := star.Filter{}
 	r.Run("return invalid error if user email is empty", func() {
 		assets, err := r.repository.GetAllAssetsByUserEmail(r.ctx, defaultCfg, "")
 		r.ErrorIs(err, star.ErrEmptyUserID)
@@ -377,7 +377,7 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserEmail() {
 			r.NotEmpty(id)
 		}
 
-		cfg := star.Config{Size: 7}
+		cfg := star.Filter{Size: 7}
 		actualAssets, err := r.repository.GetAllAssetsByUserEmail(r.ctx, cfg, userEmail)
 		r.NoError(err)
 		r.NoError(err)
@@ -510,7 +510,7 @@ func (r *StarRepositoryTestSuite) TestDelete() {
 		r.NoError(err)
 		r.NotEmpty(id)
 
-		actualAssets, err := r.repository.GetAllAssetsByUserID(r.ctx, star.Config{}, userID1)
+		actualAssets, err := r.repository.GetAllAssetsByUserID(r.ctx, star.Filter{}, userID1)
 		r.NoError(err)
 
 		r.Len(actualAssets, 3)
@@ -518,7 +518,7 @@ func (r *StarRepositoryTestSuite) TestDelete() {
 		err = r.repository.Delete(r.ctx, userID1, createdAsset3.ID)
 		r.NoError(err)
 
-		actualAssets, err = r.repository.GetAllAssetsByUserID(r.ctx, star.Config{}, userID1)
+		actualAssets, err = r.repository.GetAllAssetsByUserID(r.ctx, star.Filter{}, userID1)
 		r.NoError(err)
 
 		assetIDs := []string{}
