@@ -3337,17 +3337,31 @@ func (m *GetAllAssetsRequest) validate(all bool) error {
 
 	var errors []error
 
-	if m.GetText() != "" {
+	if m.GetQ() != "" {
 
 	}
 
-	if m.GetType() != "" {
+	if m.GetQFields() != "" {
 
 	}
 
-	if m.GetService() != "" {
+	if m.GetTypes() != "" {
 
 	}
+
+	if m.GetServices() != "" {
+
+	}
+
+	if m.GetSort() != "" {
+
+	}
+
+	if m.GetDirection() != "" {
+
+	}
+
+	// no validation rules for Data
 
 	if m.GetSize() != 0 {
 
@@ -11581,6 +11595,40 @@ func (m *UpsertAssetRequest_BaseAsset) validate(all bool) error {
 		}
 	}
 
+	for idx, item := range m.GetOwners() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, UpsertAssetRequest_BaseAssetValidationError{
+						field:  fmt.Sprintf("Owners[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, UpsertAssetRequest_BaseAssetValidationError{
+						field:  fmt.Sprintf("Owners[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return UpsertAssetRequest_BaseAssetValidationError{
+					field:  fmt.Sprintf("Owners[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return UpsertAssetRequest_BaseAssetMultiError(errors)
 	}
@@ -11763,6 +11811,40 @@ func (m *UpsertPatchAssetRequest_BaseAsset) validate(all bool) error {
 				cause:  err,
 			}
 		}
+	}
+
+	for idx, item := range m.GetOwners() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, UpsertPatchAssetRequest_BaseAssetValidationError{
+						field:  fmt.Sprintf("Owners[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, UpsertPatchAssetRequest_BaseAssetValidationError{
+						field:  fmt.Sprintf("Owners[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return UpsertPatchAssetRequest_BaseAssetValidationError{
+					field:  fmt.Sprintf("Owners[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
 	if len(errors) > 0 {

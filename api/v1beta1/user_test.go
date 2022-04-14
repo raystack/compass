@@ -39,28 +39,28 @@ func TestGetUserStarredAssets(t *testing.T) {
 			Description:  "should return internal server error if failed to fetch starred",
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, er *mocks.StarRepository) {
-				er.EXPECT().GetAllAssetsByUserID(ctx, star.Config{Offset: offset, Size: size}, userID).Return(nil, errors.New("failed to fetch starred"))
+				er.EXPECT().GetAllAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return(nil, errors.New("failed to fetch starred"))
 			},
 		},
 		{
 			Description:  "should return invalid argument if star repository return invalid error",
 			ExpectStatus: codes.InvalidArgument,
 			Setup: func(ctx context.Context, er *mocks.StarRepository) {
-				er.EXPECT().GetAllAssetsByUserID(ctx, star.Config{Offset: offset, Size: size}, userID).Return(nil, star.InvalidError{})
+				er.EXPECT().GetAllAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return(nil, star.InvalidError{})
 			},
 		},
 		{
 			Description:  "should return not found if starred not found",
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, er *mocks.StarRepository) {
-				er.EXPECT().GetAllAssetsByUserID(ctx, star.Config{Offset: offset, Size: size}, userID).Return(nil, star.NotFoundError{})
+				er.EXPECT().GetAllAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return(nil, star.NotFoundError{})
 			},
 		},
 		{
 			Description:  "should return starred assets of a user if no error",
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, er *mocks.StarRepository) {
-				er.EXPECT().GetAllAssetsByUserID(ctx, star.Config{Offset: offset, Size: size}, userID).Return([]asset.Asset{
+				er.EXPECT().GetAllAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return([]asset.Asset{
 					{ID: "1", URN: "asset-urn-1", Type: "asset-type"},
 					{ID: "2", URN: "asset-urn-2", Type: "asset-type"},
 					{ID: "3", URN: "asset-urn-3", Type: "asset-type"},
@@ -147,28 +147,28 @@ func TestGetMyStarredAssets(t *testing.T) {
 			Description:  "should return internal server error if failed to fetch starred",
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, er *mocks.StarRepository) {
-				er.EXPECT().GetAllAssetsByUserID(ctx, star.Config{Offset: offset, Size: size}, userID).Return(nil, errors.New("failed to fetch starred"))
+				er.EXPECT().GetAllAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return(nil, errors.New("failed to fetch starred"))
 			},
 		},
 		{
 			Description:  "should return invalid argument if star repository return invalid error",
 			ExpectStatus: codes.InvalidArgument,
 			Setup: func(ctx context.Context, er *mocks.StarRepository) {
-				er.EXPECT().GetAllAssetsByUserID(ctx, star.Config{Offset: offset, Size: size}, userID).Return(nil, star.InvalidError{})
+				er.EXPECT().GetAllAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return(nil, star.InvalidError{})
 			},
 		},
 		{
 			Description:  "should return not found if starred not found",
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, er *mocks.StarRepository) {
-				er.EXPECT().GetAllAssetsByUserID(ctx, star.Config{Offset: offset, Size: size}, userID).Return(nil, star.NotFoundError{})
+				er.EXPECT().GetAllAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return(nil, star.NotFoundError{})
 			},
 		},
 		{
 			Description:  "should return starred assets of a user if no error",
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, er *mocks.StarRepository) {
-				er.EXPECT().GetAllAssetsByUserID(ctx, star.Config{Offset: offset, Size: size}, userID).Return([]asset.Asset{
+				er.EXPECT().GetAllAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return([]asset.Asset{
 					{ID: "1", URN: "asset-urn-1", Type: "asset-type"},
 					{ID: "2", URN: "asset-urn-2", Type: "asset-type"},
 					{ID: "3", URN: "asset-urn-3", Type: "asset-type"},

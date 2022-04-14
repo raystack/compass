@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/columbus/asset"
@@ -15,16 +16,17 @@ import (
 )
 
 func (h *Handler) GetAllAssets(ctx context.Context, req *compassv1beta1.GetAllAssetsRequest) (*compassv1beta1.GetAllAssetsResponse, error) {
-	config := asset.GRPCConfig{
-		Text:    req.GetText(),
-		Type:    asset.Type(req.GetType()),
-		Service: req.GetService(),
-		Size:    int(req.GetSize()),
-		Offset:  int(req.GetOffset()),
-	}
-	cfg := config.ToConfig()
 
-	assets, err := h.AssetRepository.GetAll(ctx, cfg)
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+
+	flt, err := h.buildGetAllAssetsFilter(req)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+
+	assets, err := h.AssetRepository.GetAll(ctx, flt)
 	if err != nil {
 		return nil, internalServerError(h.Logger, err.Error())
 	}
@@ -43,14 +45,7 @@ func (h *Handler) GetAllAssets(ctx context.Context, req *compassv1beta1.GetAllAs
 	}
 
 	if req.GetWithTotal() {
-		grpcConfig := asset.GRPCConfig{
-			Type:    config.Type,
-			Service: config.Service,
-			Text:    config.Text,
-		}
-		cfg = grpcConfig.ToConfig()
-
-		total, err := h.AssetRepository.GetCount(ctx, cfg)
+		total, err := h.AssetRepository.GetCount(ctx, flt)
 		if err != nil {
 			return nil, internalServerError(h.Logger, err.Error())
 		}
@@ -58,6 +53,38 @@ func (h *Handler) GetAllAssets(ctx context.Context, req *compassv1beta1.GetAllAs
 	}
 
 	return response, nil
+}
+
+func (h *Handler) buildGetAllAssetsFilter(req *compassv1beta1.GetAllAssetsRequest) (asset.Filter, error) {
+
+	flt := asset.Filter{
+		Size:          int(req.GetSize()),
+		Offset:        int(req.GetOffset()),
+		SortBy:        req.GetSort(),
+		SortDirection: req.GetDirection(),
+		Query:         req.GetQ(),
+		Data:          req.GetData(),
+	}
+
+	if req.GetTypes() != "" {
+		typs := strings.Split(req.GetTypes(), ",")
+		for _, typeVal := range typs {
+			flt.Types = append(flt.Types, asset.Type(typeVal))
+		}
+	}
+	if req.GetServices() != "" {
+		flt.Services = strings.Split(req.GetServices(), ",")
+	}
+
+	if req.GetQFields() != "" {
+		flt.QueryFields = strings.Split(req.GetQFields(), ",")
+	}
+
+	if err := flt.Validate(); err != nil {
+		return asset.Filter{}, err
+	}
+
+	return flt, nil
 }
 
 func (h *Handler) GetAssetByID(ctx context.Context, req *compassv1beta1.GetAssetByIDRequest) (*compassv1beta1.GetAssetByIDResponse, error) {
@@ -206,7 +233,7 @@ func (h *Handler) DeleteAsset(ctx context.Context, req *compassv1beta1.DeleteAss
 
 func (h *Handler) GetAssetStargazers(ctx context.Context, req *compassv1beta1.GetAssetStargazersRequest) (*compassv1beta1.GetAssetStargazersResponse, error) {
 
-	users, err := h.StarRepository.GetStargazers(ctx, star.Config{
+	users, err := h.StarRepository.GetStargazers(ctx, star.Filter{
 		Size:   int(req.GetSize()),
 		Offset: int(req.GetOffset()),
 	}, req.GetId())
@@ -231,7 +258,7 @@ func (h *Handler) GetAssetStargazers(ctx context.Context, req *compassv1beta1.Ge
 }
 
 func (h *Handler) GetAssetVersionHistory(ctx context.Context, req *compassv1beta1.GetAssetVersionHistoryRequest) (*compassv1beta1.GetAssetVersionHistoryResponse, error) {
-	assetVersions, err := h.AssetRepository.GetVersionHistory(ctx, asset.Config{
+	assetVersions, err := h.AssetRepository.GetVersionHistory(ctx, asset.Filter{
 		Size:   int(req.GetSize()),
 		Offset: int(req.GetOffset()),
 	}, req.GetId())

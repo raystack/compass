@@ -28,7 +28,7 @@
     "/v1beta1/assets": {
       "get": {
         "summary": "Get list of assets",
-        "description": "Returns list of assets, optionally filtered by type and service",
+        "description": "Returns list of assets, optionally filtered by types, services, sorting, fields in asset.data and querying fields ",
         "operationId": "CompassService_GetAllAssets",
         "responses": {
           "200": {
@@ -70,22 +70,43 @@
         },
         "parameters": [
           {
-            "name": "text",
-            "description": "filter by text",
+            "name": "q",
+            "description": "filter by specific query",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
-            "name": "type",
-            "description": "filter by type",
+            "name": "qFields",
+            "description": "filter by multiple query fields",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
-            "name": "service",
-            "description": "filter by service",
+            "name": "types",
+            "description": "filter by multiple types",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "services",
+            "description": "filter by multiple services",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "sort",
+            "description": "sorting based on fields",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "direction",
+            "description": "sorting direction can either be asc or desc ",
             "in": "query",
             "required": false,
             "type": "string"
@@ -3337,6 +3358,13 @@
         "labels": {
           "type": "object",
           "description": "labels of an asset"
+        },
+        "owners": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1User"
+          },
+          "description": "list of owners of the asset"
         }
       }
     },
@@ -3395,6 +3423,13 @@
         "labels": {
           "type": "object",
           "description": "labels of an asset"
+        },
+        "owners": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1User"
+          },
+          "description": "list of owners of the asset"
         }
       }
     },

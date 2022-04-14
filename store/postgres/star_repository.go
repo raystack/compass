@@ -64,7 +64,7 @@ func (r *StarRepository) Create(ctx context.Context, userID string, assetID stri
 }
 
 // GetStargazers fetch list of user IDs that star an asset
-func (r *StarRepository) GetStargazers(ctx context.Context, cfg star.Config, assetID string) ([]user.User, error) {
+func (r *StarRepository) GetStargazers(ctx context.Context, flt star.Filter, assetID string) ([]user.User, error) {
 	if assetID == "" {
 		return nil, star.ErrEmptyAssetID
 	}
@@ -73,7 +73,7 @@ func (r *StarRepository) GetStargazers(ctx context.Context, cfg star.Config, ass
 		return nil, star.InvalidError{AssetID: assetID}
 	}
 
-	starClausesValue := r.buildClausesValue(cfg)
+	starClausesValue := r.buildClausesValue(flt)
 
 	var userModels UserModels
 	if err := r.client.db.SelectContext(ctx, &userModels, `
@@ -103,7 +103,7 @@ func (r *StarRepository) GetStargazers(ctx context.Context, cfg star.Config, ass
 }
 
 // GetAllAssetsByUserID fetch list of assets starred by a user
-func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Config, userID string) ([]asset.Asset, error) {
+func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, flt star.Filter, userID string) ([]asset.Asset, error) {
 	if userID == "" {
 		return nil, star.ErrEmptyUserID
 	}
@@ -112,7 +112,7 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Conf
 		return nil, star.InvalidError{UserID: userID}
 	}
 
-	starClausesValue := r.buildClausesValue(cfg)
+	starClausesValue := r.buildClausesValue(flt)
 
 	var assetModels []AssetModel
 	if err := r.client.db.SelectContext(ctx, &assetModels, fmt.Sprintf(`
@@ -164,12 +164,12 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, cfg star.Conf
 
 // GetAllAssetsByUserEmail fetch list of assets starred by a user
 // TODO: this function is temporary and might be remove in the future version
-func (r *StarRepository) GetAllAssetsByUserEmail(ctx context.Context, cfg star.Config, userEmail string) ([]asset.Asset, error) {
+func (r *StarRepository) GetAllAssetsByUserEmail(ctx context.Context, flt star.Filter, userEmail string) ([]asset.Asset, error) {
 	if userEmail == "" {
 		return nil, star.ErrEmptyUserID
 	}
 
-	starClausesValue := r.buildClausesValue(cfg)
+	starClausesValue := r.buildClausesValue(flt)
 
 	var assetModels []AssetModel
 	if err := r.client.db.SelectContext(ctx, &assetModels, fmt.Sprintf(`
@@ -314,7 +314,7 @@ func (r *StarRepository) Delete(ctx context.Context, userID string, assetID stri
 	return nil
 }
 
-func (r *StarRepository) buildClausesValue(cfg star.Config) StarClauses {
+func (r *StarRepository) buildClausesValue(flt star.Filter) StarClauses {
 	sCfg := StarClauses{
 		Offset:           0,
 		Limit:            DEFAULT_MAX_RESULT_SIZE,
@@ -322,22 +322,22 @@ func (r *StarRepository) buildClausesValue(cfg star.Config) StarClauses {
 		SortDirectionKey: sortDirectionDescending,
 	}
 
-	if cfg.Size > 0 {
-		sCfg.Limit = cfg.Size
+	if flt.Size > 0 {
+		sCfg.Limit = flt.Size
 	}
 
-	if cfg.Offset < 1 {
-		cfg.Offset = 0
+	if flt.Offset < 1 {
+		flt.Offset = 0
 	}
 
-	switch cfg.Sort {
+	switch flt.Sort {
 	case star.SortKeyCreated:
 		sCfg.SortKey = columnNameCreatedAt
 	case star.SortKeyUpdated:
 		sCfg.SortKey = columnNameUpdatedAt
 	}
 
-	switch cfg.SortDirection {
+	switch flt.SortDirection {
 	case star.SortDirectionKeyAscending:
 		sCfg.SortDirectionKey = sortDirectionAscending
 	case star.SortDirectionKeyDescending:

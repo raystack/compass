@@ -16,12 +16,12 @@ import (
 
 func (h *Handler) GetUserStarredAssets(ctx context.Context, req *compassv1beta1.GetUserStarredAssetsRequest) (*compassv1beta1.GetUserStarredAssetsResponse, error) {
 
-	starCfg := star.Config{
+	starFilter := star.Filter{
 		Size:   int(req.GetSize()),
 		Offset: int(req.GetOffset()),
 	}
 
-	starredAssets, err := h.StarRepository.GetAllAssetsByUserID(ctx, starCfg, req.GetUserId())
+	starredAssets, err := h.StarRepository.GetAllAssetsByUserID(ctx, starFilter, req.GetUserId())
 
 	if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -53,12 +53,12 @@ func (h *Handler) GetMyStarredAssets(ctx context.Context, req *compassv1beta1.Ge
 		return nil, status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
 	}
 
-	starCfg := star.Config{
+	starFilter := star.Filter{
 		Size:   int(req.GetSize()),
 		Offset: int(req.GetOffset()),
 	}
 
-	starredAssets, err := h.StarRepository.GetAllAssetsByUserID(ctx, starCfg, userID)
+	starredAssets, err := h.StarRepository.GetAllAssetsByUserID(ctx, starFilter, userID)
 
 	if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 		return nil, status.Error(codes.InvalidArgument, err.Error())

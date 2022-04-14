@@ -14,11 +14,11 @@ import (
 )
 
 type Repository interface {
-	GetAll(context.Context, Config) ([]Asset, error)
-	GetCount(context.Context, Config) (int, error)
+	GetAll(context.Context, Filter) ([]Asset, error)
+	GetCount(context.Context, Filter) (int, error)
 	GetByID(ctx context.Context, id string) (Asset, error)
 	Find(ctx context.Context, urn string, typ Type, service string) (Asset, error)
-	GetVersionHistory(ctx context.Context, cfg Config, id string) ([]Asset, error)
+	GetVersionHistory(ctx context.Context, flt Filter, id string) ([]Asset, error)
 	GetByVersion(ctx context.Context, id string, version string) (Asset, error)
 	Upsert(ctx context.Context, ast *Asset) (string, error)
 	Delete(ctx context.Context, id string) error

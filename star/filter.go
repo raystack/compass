@@ -7,8 +7,8 @@ const (
 	SortDirectionKeyDescending = "desc"
 )
 
-// Config is a config of star domain
-type Config struct {
+// Filter is a config of star domain
+type Filter struct {
 	// Number of relevant results to return
 	Size int
 
