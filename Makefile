@@ -1,7 +1,7 @@
 NAME="github.com/odpf/columbus"
 VERSION=$(shell git describe --always --tags 2>/dev/null)
 COVERFILE="/tmp/columbus.coverprofile"
-PROTON_COMMIT := "0e3ef79a86b8aeb2d86318d7d93cf673989073ae"
+PROTON_COMMIT := "2481c008a1eb2525eca058b0729abc036ddcbe6a"
 
 .PHONY: all build test clean install proto
 
