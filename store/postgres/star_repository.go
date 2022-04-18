@@ -75,11 +75,11 @@ func (r *StarRepository) GetStargazers(ctx context.Context, flt star.Filter, ass
 	}
 
 	starClausesValue := r.buildClausesValue(flt)
-
 	var userModels UserModels
 	if err := r.client.db.SelectContext(ctx, &userModels, `
 		SELECT
 			DISTINCT ON (u.id) u.id,
+      u.uuid,
 			u.email,
 			u.provider,
 			u.created_at,
