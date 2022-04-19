@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"github.com/odpf/columbus/lineage"
+	"github.com/odpf/compass/lineage"
 )
 
 type GraphModel []EdgeModel

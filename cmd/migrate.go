@@ -7,9 +7,9 @@ import (
 
 	"github.com/odpf/salt/log"
 
-	"github.com/odpf/columbus/asset"
-	esStore "github.com/odpf/columbus/store/elasticsearch"
-	"github.com/odpf/columbus/store/postgres"
+	"github.com/odpf/compass/asset"
+	esStore "github.com/odpf/compass/store/elasticsearch"
+	"github.com/odpf/compass/store/postgres"
 )
 
 const (
@@ -23,7 +23,7 @@ func RunMigrate() {
 	}
 
 	logger := initLogger(config.LogLevel)
-	logger.Info("columbus is migrating", "version", Version)
+	logger.Info("compass is migrating", "version", Version)
 
 	logger.Info("Migrating Postgres...")
 	if err := migratePostgres(logger); err != nil {

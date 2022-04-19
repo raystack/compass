@@ -3,7 +3,7 @@ package metrics_test
 import (
 	"testing"
 
-	"github.com/odpf/columbus/metrics"
+	"github.com/odpf/compass/metrics"
 )
 
 func TestMonitoringHandler(t *testing.T) {

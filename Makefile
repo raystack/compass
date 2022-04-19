@@ -1,6 +1,6 @@
-NAME="github.com/odpf/columbus"
+NAME="github.com/odpf/compass"
 VERSION=$(shell git describe --always --tags 2>/dev/null)
-COVERFILE="/tmp/columbus.coverprofile"
+COVERFILE="/tmp/compass.coverprofile"
 PROTON_COMMIT := "2481c008a1eb2525eca058b0729abc036ddcbe6a"
 
 .PHONY: all build test clean install proto
@@ -11,7 +11,7 @@ build:
 	go build -ldflags "-X cmd.Version=${VERSION}" ${NAME}
 
 clean:
-	rm -rf columbus dist/
+	rm -rf compass dist/
 
 test:
 	go test -race ./... -coverprofile=coverage.txt

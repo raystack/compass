@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/odpf/columbus/star"
-	"github.com/odpf/columbus/store/postgres"
+	"github.com/odpf/compass/star"
+	"github.com/odpf/compass/store/postgres"
 	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"

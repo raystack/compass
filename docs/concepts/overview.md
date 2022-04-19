@@ -1,15 +1,15 @@
 # Overview
 
-Columbus has two major concepts when it comes to data ingestion: Types and Records. Types define a ‘type’ of resource. For example, if you wanted to push data for bigquery dataset\(s\) to Columbus, you would need to first define the ‘bigquery’ type in columbus.
+Compass has two major concepts when it comes to data ingestion: Types and Records. Types define a ‘type’ of resource. For example, if you wanted to push data for bigquery dataset\(s\) to Compass, you would need to first define the ‘bigquery’ type in compass.
 
 Records are arbitrary JSON objects that define a searchable data-point for an type. These don’t have a fixed schema, but must have certain fields in them. \(more on this later\)
 
 ## Types
 
-‘Types’ define a resource type and its corresponding metadata. Before you can push data to Columbus for a given resource, you need to first define that resource. You can define an type by making a HTTP PUT call to the /v1/types/ API, with the body containing the type definition. Here’s an example:
+‘Types’ define a resource type and its corresponding metadata. Before you can push data to Compass for a given resource, you need to first define that resource. You can define an type by making a HTTP PUT call to the /v1/types/ API, with the body containing the type definition. Here’s an example:
 
 ```text
-curl -XPUT http://${COLUMBUS_HOST} \
+curl -XPUT http://${COMPASS_HOST} \
     -H 'content-type: application/json' \
     -d '
 {
@@ -44,7 +44,7 @@ Let’s briefly discuss the type definition:
 * lineage is used to define IO relationship between a certain type and another type. Any type can declare it's lineage with respect to another. In this case, `firehose` type declares that it reads from a `topic`, the ID if which can be found using the `$.topic` json path query on respective firehose documents.
 * boost is used for defining the relative relevancy of each field in the type documents. By default, all fields have a boost value of `1.0`. You can change this value to fine-tune the order in which search results show up for a given type.
 
-When Columbus answers a search request, it uses the fields defined in record\_attributes to generate the response. This lets you change how the response for a particular type will look, without changing the data \(records\) for that type. The id field is also used as the primary identifier for a record, and is for referenced making create/replace decisions internally.
+When Compass answers a search request, it uses the fields defined in record\_attributes to generate the response. This lets you change how the response for a particular type will look, without changing the data \(records\) for that type. The id field is also used as the primary identifier for a record, and is for referenced making create/replace decisions internally.
 
 ## Records
 

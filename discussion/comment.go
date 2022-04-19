@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
-	"github.com/odpf/columbus/user"
+	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/user"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

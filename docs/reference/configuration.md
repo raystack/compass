@@ -1,6 +1,6 @@
 # Configurations
 
-This page contains reference for all the application configurations for Columbus.
+This page contains reference for all the application configurations for Compass.
 
 ## Table of Contents
 
@@ -11,7 +11,7 @@ This page contains reference for all the application configurations for Columbus
 
 ## Generic
 
-Columbus's required variables to start using it.
+Compass's required variables to start using it.
 
 ### `SERVER_HOST`
 
@@ -40,7 +40,7 @@ Columbus's required variables to start using it.
 
 ## Search
 
-Variables for Columbus's Search or Discovery feature.
+Variables for Compass's Search or Discovery feature.
 
 ### `SEARCH_WHITELIST`
 
@@ -59,7 +59,7 @@ Variables for Columbus's Search or Discovery feature.
 
 ## Lineage
 
-Variables for Columbus's Lineage feature.
+Variables for Compass's Lineage feature.
 
 ### `LINEAGE_REFRESH_INTERVAL`
 
@@ -82,7 +82,7 @@ Variables for metrics gathering.
 
 * Example value: `discovery`
 * Type: `optional`
-* Default: `columbusApi`
+* Default: `compassApi`
 * Prefix for statsd metrics names.
 
 ### `STATSD_ENABLED`
@@ -94,9 +94,9 @@ Variables for metrics gathering.
 
 ### `NEW_RELIC_APP_NAME`
 
-* Example value: `columbus-integration`
+* Example value: `compass-integration`
 * Type: `optional`
-* Default: `columbus`
+* Default: `compass`
 * New Relic application name.
 
 ### `NEW_RELIC_LICENSE_KEY`

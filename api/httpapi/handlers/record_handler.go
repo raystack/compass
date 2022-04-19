@@ -8,8 +8,8 @@ import (
 
 	"github.com/odpf/salt/log"
 
-	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/discovery"
+	"github.com/odpf/compass/asset"
+	"github.com/odpf/compass/discovery"
 )
 
 // RecordHandler exposes a REST interface to types

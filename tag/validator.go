@@ -5,7 +5,7 @@ import (
 
 	ut "github.com/go-playground/universal-translator"
 	v "github.com/go-playground/validator/v10"
-	"github.com/odpf/columbus/tag/validator"
+	"github.com/odpf/compass/tag/validator"
 )
 
 // newValidator initializes validator for tag

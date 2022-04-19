@@ -11,8 +11,8 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
-	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/user"
+	"github.com/odpf/compass/asset"
+	"github.com/odpf/compass/user"
 	"github.com/r3labs/diff/v2"
 )
 

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/lineage"
-	"github.com/odpf/columbus/store/postgres"
+	"github.com/odpf/compass/asset"
+	"github.com/odpf/compass/lineage"
+	"github.com/odpf/compass/store/postgres"
 	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"

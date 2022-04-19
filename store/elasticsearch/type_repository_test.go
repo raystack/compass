@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/odpf/columbus/asset"
-	store "github.com/odpf/columbus/store/elasticsearch"
+	"github.com/odpf/compass/asset"
+	store "github.com/odpf/compass/store/elasticsearch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

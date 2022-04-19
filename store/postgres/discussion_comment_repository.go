@@ -8,7 +8,7 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/odpf/columbus/discussion"
+	"github.com/odpf/compass/discussion"
 )
 
 // Create adds a new comment to a specific discussion

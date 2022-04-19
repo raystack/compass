@@ -8,9 +8,9 @@ import (
 
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v4/stdlib"
-	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/store/postgres"
-	"github.com/odpf/columbus/user"
+	"github.com/odpf/compass/asset"
+	"github.com/odpf/compass/store/postgres"
+	"github.com/odpf/compass/user"
 	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"

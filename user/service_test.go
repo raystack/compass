@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/odpf/columbus/lib/mocks"
-	"github.com/odpf/columbus/user"
+	"github.com/odpf/compass/lib/mocks"
+	"github.com/odpf/compass/user"
 	"github.com/odpf/salt/log"
 	"github.com/stretchr/testify/assert"
 )

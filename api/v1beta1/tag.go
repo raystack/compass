@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
-	"github.com/odpf/columbus/tag"
+	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/tag"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

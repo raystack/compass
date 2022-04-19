@@ -1,6 +1,6 @@
 package discovery
 
-import "github.com/odpf/columbus/asset"
+import "github.com/odpf/compass/asset"
 
 // RecordFilter is a filter intended to be used as a search
 // criteria for operations involving record search

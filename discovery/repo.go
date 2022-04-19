@@ -5,7 +5,7 @@ package discovery
 import (
 	"context"
 
-	"github.com/odpf/columbus/asset"
+	"github.com/odpf/compass/asset"
 )
 
 type RecordIterator interface {

@@ -5,7 +5,7 @@ import (
 	"context"
 	"time"
 
-	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
+	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

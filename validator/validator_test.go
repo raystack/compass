@@ -3,7 +3,7 @@ package validator_test
 import (
 	"testing"
 
-	"github.com/odpf/columbus/validator"
+	"github.com/odpf/compass/validator"
 	"gotest.tools/assert"
 )
 

@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/odpf/columbus/api/httpapi/handlers"
-	"github.com/odpf/columbus/user"
+	"github.com/odpf/compass/api/httpapi/handlers"
+	"github.com/odpf/compass/user"
 )
 
 // ValidateUser middleware will propagate a valid user ID as string

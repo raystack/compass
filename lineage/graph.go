@@ -1,8 +1,8 @@
 package lineage
 
 import (
-	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
-	"github.com/odpf/columbus/asset"
+	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/asset"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 

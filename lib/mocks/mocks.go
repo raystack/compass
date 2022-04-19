@@ -3,8 +3,8 @@ package mocks
 import (
 	"context"
 
-	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/discovery"
+	"github.com/odpf/compass/asset"
+	"github.com/odpf/compass/discovery"
 	"github.com/stretchr/testify/mock"
 )
 

@@ -1,7 +1,7 @@
 package asset
 
 import (
-	"github.com/odpf/columbus/user"
+	"github.com/odpf/compass/user"
 	"github.com/peterbourgon/mergemap"
 )
 

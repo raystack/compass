@@ -6,21 +6,21 @@ import (
 	"testing"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/odpf/columbus/lib/mocks"
-	"github.com/odpf/columbus/metrics"
+	"github.com/odpf/compass/lib/mocks"
+	"github.com/odpf/compass/metrics"
 	"github.com/stretchr/testify/require"
 )
 
 func TestStatsD(t *testing.T) {
 	var (
-		statsdPrefix     = "columbusApi"
+		statsdPrefix     = "compassApi"
 		metricsSeparator = "."
 	)
 
 	t.Run("StatsD should be called if not nil", func(t *testing.T) {
 		statsdClient := new(mocks.StatsdClient)
-		statsdClient.EXPECT().Increment("columbusApi.responseStatusCode,statusCode=200,method=POST,url=/").Once()
-		statsdClient.EXPECT().Timing("columbusApi.responseTime,method=POST,url=/", int64(0)).Once()
+		statsdClient.EXPECT().Increment("compassApi.responseStatusCode,statusCode=200,method=POST,url=/").Once()
+		statsdClient.EXPECT().Timing("compassApi.responseTime,method=POST,url=/", int64(0)).Once()
 		monitor := metrics.NewStatsdMonitor(statsdClient, statsdPrefix, metricsSeparator)
 		router := runtime.NewServeMux()
 		handler := runtime.HandlerFunc(func(res http.ResponseWriter, req *http.Request, pathParams map[string]string) {

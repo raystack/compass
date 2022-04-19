@@ -12,9 +12,9 @@ import (
 	sq "github.com/Masterminds/squirrel"
 
 	"github.com/google/uuid"
-	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/store/postgres"
-	"github.com/odpf/columbus/user"
+	"github.com/odpf/compass/asset"
+	"github.com/odpf/compass/store/postgres"
+	"github.com/odpf/compass/user"
 	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/r3labs/diff/v2"
@@ -165,7 +165,7 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 			description: "should return sql query with nested data query filter",
 			config: asset.Filter{
 				QueryFields: []string{"data.landscape.properties.project-id", "description"},
-				Query:       "columbus_002",
+				Query:       "compass_002",
 			},
 			expectedQuery: `(data->'landscape'->'properties'->>'project-id' ILIKE $1 OR description ILIKE $2)`,
 		},
@@ -183,11 +183,11 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 			description: "should return sql query with asset's nested data fields filter",
 			config: asset.Filter{
 				Data: map[string]string{
-					"landscape.properties.project-id": "columbus_001",
+					"landscape.properties.project-id": "compass_001",
 					"country":                         "vn",
 				},
 			},
-			expectedQuery: `data->'landscape'->'properties'->>'project-id' = 'columbus_001' AND data->>'country' = 'vn'`,
+			expectedQuery: `data->'landscape'->'properties'->>'project-id' = 'compass_001' AND data->>'country' = 'vn'`,
 		},
 	}
 
@@ -287,7 +287,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	r.Run("should filter only using nested query data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			QueryFields: []string{"data.landscape.properties.project-id", "data.title"},
-			Query:       "columbus_001",
+			Query:       "compass_001",
 			SortBy:      "urn",
 		})
 		r.Require().NoError(err)
@@ -302,7 +302,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	r.Run("should filter using query field with nested query data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			QueryFields: []string{"data.landscape.properties.project-id", "description"},
-			Query:       "columbus_002",
+			Query:       "compass_002",
 			SortBy:      "urn",
 		})
 		r.Require().NoError(err)
@@ -333,7 +333,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	r.Run("should filter using asset's nested data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			Data: map[string]string{
-				"landscape.properties.project-id": "columbus_001",
+				"landscape.properties.project-id": "compass_001",
 				"country":                         "vn",
 			},
 		})

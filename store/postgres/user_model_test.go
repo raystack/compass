@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/odpf/columbus/user"
+	"github.com/odpf/compass/user"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +19,7 @@ func TestUserModel(t *testing.T) {
 			ID:        sql.NullString{String: "12", Valid: true},
 			UUID:      sql.NullString{String: someUUID, Valid: true},
 			Email:     sql.NullString{String: "user@odpf.io", Valid: true},
-			Provider:  sql.NullString{String: "columbus", Valid: true},
+			Provider:  sql.NullString{String: "compass", Valid: true},
 			CreatedAt: sql.NullTime{Time: timestamp, Valid: true},
 			UpdatedAt: sql.NullTime{Time: timestamp, Valid: true},
 		}
@@ -42,7 +42,7 @@ func TestUserModel(t *testing.T) {
 			ID:        "12",
 			UUID:      someUUID,
 			Email:     "user@odpf.io",
-			Provider:  "columbus",
+			Provider:  "compass",
 			CreatedAt: timestamp,
 			UpdatedAt: timestamp,
 		}

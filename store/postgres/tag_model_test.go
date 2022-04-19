@@ -4,7 +4,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/odpf/columbus/tag"
+	"github.com/odpf/compass/tag"
 	"github.com/stretchr/testify/assert"
 )
 

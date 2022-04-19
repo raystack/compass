@@ -10,12 +10,12 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/odpf/columbus/asset"
+	"github.com/odpf/compass/asset"
 )
 
 var (
 	SERVER_HOST         = "http://localhost:8080"
-	IDENTITY_HEADER_KEY = "Columbus-User-Email"
+	IDENTITY_HEADER_KEY = "Compass-User-Email"
 )
 
 // Client is the http client implementation
@@ -128,7 +128,7 @@ func (c *Client) makeRequest(method, url string, payload interface{}, data inter
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set(IDENTITY_HEADER_KEY, "columbusendtoendtest@odpf.io")
+	req.Header.Set(IDENTITY_HEADER_KEY, "compassendtoendtest@odpf.io")
 
 	for key, value := range c.headers {
 		req.Header.Set(key, value)

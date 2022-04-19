@@ -5,11 +5,11 @@ import (
 	"errors"
 	"strings"
 
-	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
-	"github.com/odpf/columbus/discussion"
-	"github.com/odpf/columbus/star"
-	"github.com/odpf/columbus/user"
-	"github.com/odpf/columbus/validator"
+	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/discussion"
+	"github.com/odpf/compass/star"
+	"github.com/odpf/compass/user"
+	"github.com/odpf/compass/validator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

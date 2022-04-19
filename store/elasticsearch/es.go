@@ -11,7 +11,7 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
-	"github.com/odpf/columbus/asset"
+	"github.com/odpf/compass/asset"
 	"github.com/olivere/elastic/v7"
 )
 

@@ -8,8 +8,8 @@ import (
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_testing "github.com/grpc-ecosystem/go-grpc-middleware/testing"
 	pb_testproto "github.com/grpc-ecosystem/go-grpc-middleware/testing/testproto"
-	"github.com/odpf/columbus/lib/mocks"
-	"github.com/odpf/columbus/user"
+	"github.com/odpf/compass/lib/mocks"
+	"github.com/odpf/compass/user"
 	"github.com/odpf/salt/log"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	identityUUIDHeaderKey  = "Columbus-User-ID"
-	identityEmailHeaderKey = "Columbus-User-Email"
+	identityUUIDHeaderKey  = "Compass-User-ID"
+	identityEmailHeaderKey = "Compass-User-Email"
 	userID                 = "user-id"
 )
 

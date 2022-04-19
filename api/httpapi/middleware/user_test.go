@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/odpf/columbus/lib/mocks"
-	"github.com/odpf/columbus/user"
+	"github.com/odpf/compass/lib/mocks"
+	"github.com/odpf/compass/user"
 	"github.com/odpf/salt/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -17,8 +17,8 @@ import (
 
 const (
 	dummyRoute             = "/v1beta1/dummy"
-	identityUUIDHeaderKey  = "Columbus-User-ID"
-	identityEmailHeaderKey = "Columbus-User-Email"
+	identityUUIDHeaderKey  = "Compass-User-ID"
+	identityEmailHeaderKey = "Compass-User-Email"
 	userUUID               = "user-uuid"
 	userID                 = "user-id"
 	userEmail              = "some-email"

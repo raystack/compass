@@ -1,4 +1,4 @@
-module github.com/odpf/columbus
+module github.com/odpf/compass
 
 go 1.16
 
@@ -7,7 +7,6 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/Masterminds/squirrel v1.5.2
 	github.com/benbjohnson/clock v1.3.0 // indirect
-	github.com/bufbuild/buf v1.3.1 // indirect
 	github.com/dhui/dktest v0.3.7 // indirect
 	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/elastic/go-elasticsearch/v7 v7.16.0
@@ -52,9 +51,9 @@ require (
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce // indirect
 	golang.org/x/net v0.0.0-20220325170049-de3da57026de
+	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8 // indirect
 	google.golang.org/genproto v0.0.0-20220324131243-acbaeb5b85eb // indirec
 	google.golang.org/grpc v1.45.0
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0 // indirect
 	google.golang.org/protobuf v1.28.0
 	gotest.tools v2.2.0+incompatible
 )

@@ -7,8 +7,8 @@ import (
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_testing "github.com/grpc-ecosystem/go-grpc-middleware/testing"
 	pb_testproto "github.com/grpc-ecosystem/go-grpc-middleware/testing/testproto"
-	"github.com/odpf/columbus/lib/mocks"
-	"github.com/odpf/columbus/metrics"
+	"github.com/odpf/compass/lib/mocks"
+	"github.com/odpf/compass/metrics"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/grpc"
@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	statsdPrefix     = "columbusApi"
+	statsdPrefix     = "compassApi"
 	metricsSeparator = "."
 )
 
@@ -44,8 +44,8 @@ func TestStatsDSuite(t *testing.T) {
 }
 
 func (s *StatsDTestSuite) TestUnary_StatsDMetrics() {
-	s.statsdClient.EXPECT().Increment("columbusApi.responseStatusCode,statusCode=OK,method=/mwitkow.testproto.TestService/Ping").Once()
-	s.statsdClient.EXPECT().Timing("columbusApi.responseTime,method=/mwitkow.testproto.TestService/Ping", int64(0)).Once()
+	s.statsdClient.EXPECT().Increment("compassApi.responseStatusCode,statusCode=OK,method=/mwitkow.testproto.TestService/Ping").Once()
+	s.statsdClient.EXPECT().Timing("compassApi.responseTime,method=/mwitkow.testproto.TestService/Ping", int64(0)).Once()
 	_, err := s.Client.Ping(context.Background(), &pb_testproto.PingRequest{Value: "something", SleepTimeMs: 9999})
 	code := status.Code(err)
 	require.Equal(s.T(), codes.OK, code)
