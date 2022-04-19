@@ -1,5 +1,6 @@
 package api
 
 type Config struct {
-	IdentityHeaderKey string
+	IdentityUUIDHeaderKey  string
+	IdentityEmailHeaderKey string
 }

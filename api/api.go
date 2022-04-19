@@ -94,14 +94,14 @@ func RegisterHTTPRoutes(cfg Config, mux *runtime.ServeMux, deps *Dependencies, h
 	if err := mux.HandlePath(http.MethodGet, "/v1beta1/types/{name}/records",
 		middleware.NewRelic(deps.NRApp, http.MethodGet, "/v1beta1/types/{name}/records",
 			middleware.StatsD(deps.StatsdMonitor,
-				middleware.ValidateUser(cfg.IdentityHeaderKey, deps.UserService, handlerCollection.Record.GetByType)))); err != nil {
+				middleware.ValidateUser(cfg.IdentityUUIDHeaderKey, cfg.IdentityEmailHeaderKey, deps.UserService, handlerCollection.Record.GetByType)))); err != nil {
 		return err
 	}
 
 	if err := mux.HandlePath(http.MethodGet, "/v1beta1/types/{name}/records/{id}",
 		middleware.NewRelic(deps.NRApp, http.MethodGet, "/v1beta1/types/{name}/records/{id}",
 			middleware.StatsD(deps.StatsdMonitor,
-				middleware.ValidateUser(cfg.IdentityHeaderKey, deps.UserService, handlerCollection.Record.GetOneByType)))); err != nil {
+				middleware.ValidateUser(cfg.IdentityUUIDHeaderKey, cfg.IdentityEmailHeaderKey, deps.UserService, handlerCollection.Record.GetOneByType)))); err != nil {
 		return err
 	}
 

@@ -12,14 +12,15 @@ import (
 // ValidateUser middleware will propagate a valid user ID as string
 // within request context
 // use `user.FromContext` function to get the user ID string
-func ValidateUser(identityHeaderKey string, userSvc *user.Service, h runtime.HandlerFunc) runtime.HandlerFunc {
+func ValidateUser(identityUUIDHeaderKey, identityEmailHeaderKey string, userSvc *user.Service, h runtime.HandlerFunc) runtime.HandlerFunc {
 	return runtime.HandlerFunc(func(rw http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-		userEmail := r.Header.Get(identityHeaderKey)
-		if userEmail == "" {
-			handlers.WriteJSONError(rw, http.StatusBadRequest, "identity header is empty")
+		userUUID := r.Header.Get(identityUUIDHeaderKey)
+		if userUUID == "" {
+			handlers.WriteJSONError(rw, http.StatusBadRequest, "identity header uuid is empty")
 			return
 		}
-		userID, err := userSvc.ValidateUser(r.Context(), userEmail)
+		userEmail := r.Header.Get(identityEmailHeaderKey)
+		userID, err := userSvc.ValidateUser(r.Context(), userUUID, userEmail)
 		if err != nil {
 			if errors.Is(err, user.ErrNoUserInformation) {
 				handlers.WriteJSONError(rw, http.StatusBadRequest, err.Error())

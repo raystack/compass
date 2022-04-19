@@ -75,7 +75,7 @@ func (r *StarRepositoryTestSuite) TestCreate() {
 
 		id, err := r.repository.Create(r.ctx, userID, createdAsset.ID)
 		r.NoError(err)
-		r.Equal(lengthOfString(id), 36) // uuid
+		r.NotEmpty(id)
 	})
 
 	r.Run("return ErrEmptyUserID if user id is empty", func() {
@@ -115,7 +115,7 @@ func (r *StarRepositoryTestSuite) TestCreate() {
 
 		id, err := r.repository.Create(r.ctx, userID, createdAsset.ID)
 		r.NoError(err)
-		r.Equal(lengthOfString(id), 36) // uuid
+		r.NotEmpty(id)
 
 		id, err = r.repository.Create(r.ctx, userID, createdAsset.ID)
 		r.ErrorIs(err, star.DuplicateRecordError{UserID: userID, AssetID: createdAsset.ID})
@@ -300,85 +300,6 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
 
 		cfg := star.Filter{Size: 7}
 		actualAssets, err := r.repository.GetAllAssetsByUserID(r.ctx, cfg, userID)
-		r.NoError(err)
-		r.NoError(err)
-
-		r.Len(actualAssets, 7)
-	})
-}
-
-func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserEmail() {
-	userEmail := "user@odpf.io"
-	defaultCfg := star.Filter{}
-	r.Run("return invalid error if user email is empty", func() {
-		assets, err := r.repository.GetAllAssetsByUserEmail(r.ctx, defaultCfg, "")
-		r.ErrorIs(err, star.ErrEmptyUserID)
-		r.Empty(assets)
-	})
-
-	r.Run("return not found error if starred asset not found in db", func() {
-		assets, err := r.repository.GetAllAssetsByUserEmail(r.ctx, defaultCfg, "somerandom@email.com")
-		r.ErrorIs(err, star.NotFoundError{UserID: "somerandom@email.com"})
-		r.Empty(assets)
-	})
-
-	r.Run("return list of starred assets if get by user email success", func() {
-		err := setup(r.ctx, r.client)
-		r.NoError(err)
-
-		userID1, err := createUser(r.userRepository, userEmail)
-		r.NoError(err)
-
-		createdAsset1, err := createAsset(r.assetRepository, userID1, userEmail, "asset-urn-1", "table")
-		r.NoError(err)
-		id, err := r.repository.Create(r.ctx, userID1, createdAsset1.ID)
-		r.NoError(err)
-		r.NotEmpty(id)
-
-		createdAsset2, err := createAsset(r.assetRepository, userID1, userEmail, "asset-urn-2", "table")
-		r.NoError(err)
-		id, err = r.repository.Create(r.ctx, userID1, createdAsset2.ID)
-		r.NoError(err)
-		r.NotEmpty(id)
-
-		createdAsset3, err := createAsset(r.assetRepository, userID1, userEmail, "asset-urn-3", "table")
-		r.NoError(err)
-		id, err = r.repository.Create(r.ctx, userID1, createdAsset3.ID)
-		r.NoError(err)
-		r.NotEmpty(id)
-
-		actualAssets, err := r.repository.GetAllAssetsByUserEmail(r.ctx, defaultCfg, userEmail)
-		r.NoError(err)
-
-		assetIDs := []string{}
-		for _, asset := range actualAssets {
-			assetIDs = append(assetIDs, asset.ID)
-		}
-
-		r.Len(actualAssets, 3)
-		r.Contains(assetIDs, createdAsset1.ID)
-		r.Contains(assetIDs, createdAsset2.ID)
-		r.Contains(assetIDs, createdAsset3.ID)
-	})
-
-	r.Run("return limited paginated list of starred assets if get by user id success", func() {
-		err := setup(r.ctx, r.client)
-		r.NoError(err)
-
-		userID, err := createUser(r.userRepository, userEmail)
-		r.NoError(err)
-
-		for i := 1; i < 20; i++ {
-			starURN := fmt.Sprintf("asset-urn-%d", i)
-			createdAsset, err := createAsset(r.assetRepository, userID, userEmail, starURN, "table")
-			r.NoError(err)
-			id, err := r.repository.Create(r.ctx, userID, createdAsset.ID)
-			r.NoError(err)
-			r.NotEmpty(id)
-		}
-
-		cfg := star.Filter{Size: 7}
-		actualAssets, err := r.repository.GetAllAssetsByUserEmail(r.ctx, cfg, userEmail)
 		r.NoError(err)
 		r.NoError(err)
 

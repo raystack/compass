@@ -313,7 +313,7 @@ func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id stri
 			return fmt.Errorf("error running insert query: %w", err)
 		}
 
-		users, err := r.createOrFetchUserIDs(ctx, tx, ast.Owners)
+		users, err := r.createOrFetchUsers(ctx, tx, ast.Owners)
 		if err != nil {
 			return fmt.Errorf("error creating and fetching owners: %w", err)
 		}
@@ -379,7 +379,7 @@ func (r *AssetRepository) update(ctx context.Context, assetID string, newAsset *
 		}
 
 		// managing owners
-		newAssetOwners, err := r.createOrFetchUserIDs(ctx, tx, newAsset.Owners)
+		newAssetOwners, err := r.createOrFetchUsers(ctx, tx, newAsset.Owners)
 		if err != nil {
 			return fmt.Errorf("error creating and fetching owners: %w", err)
 		}
@@ -433,23 +433,29 @@ func (r *AssetRepository) getOwners(ctx context.Context, assetID string) (owners
 		return nil, asset.InvalidError{AssetID: assetID}
 	}
 
+	var userModels UserModels
+
 	query := `
 		SELECT
 			u.id as "id",
+			u.uuid as "uuid",
 			u.email as "email",
 			u.provider as "provider"
 		FROM asset_owners ao
 		JOIN users u on ao.user_id = u.id
 		WHERE asset_id = $1`
 
-	err = r.client.db.SelectContext(ctx, &owners, query, assetID)
+	err = r.client.db.SelectContext(ctx, &userModels, query, assetID)
 	if err != nil {
 		err = fmt.Errorf("error getting asset's owners: %w", err)
 	}
 
+	owners = userModels.toUsers()
+
 	return
 }
 
+// insertOwners inserts relation of asset id and user id
 func (r *AssetRepository) insertOwners(ctx context.Context, execer sqlx.ExecerContext, assetID string, owners []user.User) (err error) {
 	if len(owners) == 0 {
 		return
@@ -534,14 +540,16 @@ func (r *AssetRepository) compareOwners(current, newOwners []user.User) (toInser
 	return
 }
 
-func (r *AssetRepository) createOrFetchUserIDs(ctx context.Context, tx *sqlx.Tx, users []user.User) (results []user.User, err error) {
+func (r *AssetRepository) createOrFetchUsers(ctx context.Context, tx *sqlx.Tx, users []user.User) (results []user.User, err error) {
 	for _, u := range users {
-		if u.ID != "" {
+		if u.UUID != "" {
 			results = append(results, u)
 			continue
 		}
 		var userID string
-		userID, err = r.userRepo.GetID(ctx, u.Email)
+		var fetchedUser user.User
+		fetchedUser, err = r.userRepo.GetByEmail(ctx, u.Email)
+		userID = fetchedUser.ID
 		if errors.As(err, &user.NotFoundError{}) {
 			u.Provider = r.defaultUserProvider
 			userID, err = r.userRepo.CreateWithTx(ctx, tx, &u)
@@ -608,6 +616,7 @@ func (r *AssetRepository) getAssetSQL() sq.SelectBuilder {
 		a.created_at as created_at,
 		a.updated_at as updated_at,
 		u.id as "updated_by.id",
+		u.uuid as "updated_by.uuid",
 		u.email as "updated_by.email",
 		u.provider as "updated_by.provider",
 		u.created_at as "updated_by.created_at",
@@ -633,6 +642,7 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 		a.changelog as changelog,
 		a.owners as owners,
 		u.id as "updated_by.id",
+		u.uuid as "updated_by.uuid",
 		u.email as "updated_by.email",
 		u.provider as "updated_by.provider",
 		u.created_at as "updated_by.created_at",

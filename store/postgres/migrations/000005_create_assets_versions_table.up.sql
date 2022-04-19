@@ -1,5 +1,5 @@
 CREATE TABLE assets_versions (
-    id serial PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     asset_id uuid NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
     urn text NOT NULL,
     type text NOT NULL,

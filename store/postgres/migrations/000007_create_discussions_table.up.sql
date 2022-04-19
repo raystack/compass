@@ -1,5 +1,5 @@
 CREATE TABLE discussions (
-  id serial PRIMARY KEY,
+  id bigserial PRIMARY KEY,
   title text NOT NULL,
   body text NOT NULL,
   state text NOT NULL,

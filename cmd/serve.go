@@ -69,7 +69,7 @@ func Serve() error {
 			grpc_logrus.UnaryServerInterceptor(logrus.NewEntry(logrus.New())), //TODO: expose *logrus.Logger in salt
 			nrgrpc.UnaryServerInterceptor(newRelicMonitor.Application()),
 			grpc_interceptor.StatsD(statsdMonitor),
-			grpc_interceptor.ValidateUser(config.IdentityHeader, deps.UserService),
+			grpc_interceptor.ValidateUser(config.IdentityUUIDHeaderKey, config.IdentityEmailHeaderKey, deps.UserService),
 		)),
 	)
 
@@ -104,7 +104,10 @@ func Serve() error {
 	if err := compassv1beta1.RegisterCompassServiceHandler(runtimeCtx, gwmux, grpcConn); err != nil {
 		return err
 	}
-	if err := api.RegisterHTTPRoutes(api.Config{IdentityHeaderKey: config.IdentityHeader}, gwmux, deps, handlers.HTTPHandler); err != nil {
+	if err := api.RegisterHTTPRoutes(api.Config{
+		IdentityUUIDHeaderKey:  config.IdentityUUIDHeaderKey,
+		IdentityEmailHeaderKey: config.IdentityEmailHeaderKey,
+	}, gwmux, deps, handlers.HTTPHandler); err != nil {
 		return err
 	}
 
@@ -200,9 +203,7 @@ func initDependencies(
 	if err != nil {
 		logger.Fatal("failed to create new user repository", "error", err)
 	}
-	userService := user.NewService(userRepository, user.Config{
-		IdentityProviderDefaultName: config.IdentityProviderDefaultName,
-	})
+	userService := user.NewService(logger, userRepository)
 
 	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0, config.IdentityProviderDefaultName)
 	if err != nil {
@@ -354,7 +355,9 @@ func esInfo(cli *elasticsearch.Client) (string, error) {
 func makeHeaderMatcher(c Config) func(key string) (string, bool) {
 	return func(key string) (string, bool) {
 		switch strings.ToLower(key) {
-		case strings.ToLower(c.IdentityHeader):
+		case strings.ToLower(c.IdentityUUIDHeaderKey):
+			return key, true
+		case strings.ToLower(c.IdentityEmailHeaderKey):
 			return key, true
 		default:
 			return runtime.DefaultHeaderMatcher(key)

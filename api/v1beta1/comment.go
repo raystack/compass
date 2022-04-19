@@ -44,7 +44,7 @@ func (h *Handler) CreateComment(ctx context.Context, req *compassv1beta1.CreateC
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, internalServerError(h.Logger, err.Error())
 	}
 
 	return &compassv1beta1.CreateCommentResponse{Id: id}, nil
@@ -72,7 +72,7 @@ func (h *Handler) GetAllComments(ctx context.Context, req *compassv1beta1.GetAll
 
 	cmts, err := h.DiscussionRepository.GetAllComments(ctx, req.DiscussionId, flt)
 	if err != nil {
-		return nil, status.Error(codes.Internal, bodyParserErrorMsg(err))
+		return nil, internalServerError(h.Logger, err.Error())
 	}
 
 	commentsProto := []*compassv1beta1.Comment{}
@@ -103,7 +103,7 @@ func (h *Handler) GetComment(ctx context.Context, req *compassv1beta1.GetComment
 		return nil, status.Error(codes.NotFound, errMissingUserInfo.Error())
 	}
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, internalServerError(h.Logger, err.Error())
 	}
 
 	return &compassv1beta1.GetCommentResponse{Data: cmt.ToProto()}, nil
@@ -144,7 +144,7 @@ func (h *Handler) UpdateComment(ctx context.Context, req *compassv1beta1.UpdateC
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, internalServerError(h.Logger, err.Error())
 	}
 
 	return &compassv1beta1.UpdateCommentResponse{}, nil
@@ -174,7 +174,7 @@ func (h *Handler) DeleteComment(ctx context.Context, req *compassv1beta1.DeleteC
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, internalServerError(h.Logger, err.Error())
 	}
 
 	return &compassv1beta1.DeleteCommentResponse{}, nil

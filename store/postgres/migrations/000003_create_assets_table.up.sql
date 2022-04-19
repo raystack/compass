@@ -16,7 +16,7 @@ CREATE TABLE assets (
 CREATE UNIQUE INDEX assets_idx_urn_type_service ON assets(urn,type,service);
 
 CREATE TABLE asset_owners (
-    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     asset_id uuid NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
     user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE
 );

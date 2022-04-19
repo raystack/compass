@@ -2356,7 +2356,7 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetGraph", runtime.WithHTTPPathPattern("/v1beta1/lineage/{urn}"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetGraph", runtime.WithHTTPPathPattern("/v1beta1/lineage/{urn=**}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3213,7 +3213,7 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetGraph", runtime.WithHTTPPathPattern("/v1beta1/lineage/{urn}"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetGraph", runtime.WithHTTPPathPattern("/v1beta1/lineage/{urn=**}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3755,7 +3755,7 @@ var (
 
 	pattern_CompassService_SuggestAssets_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1beta1", "search", "suggest"}, ""))
 
-	pattern_CompassService_GetGraph_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1beta1", "lineage", "urn"}, ""))
+	pattern_CompassService_GetGraph_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 3, 0, 4, 1, 5, 2}, []string{"v1beta1", "lineage", "urn"}, ""))
 
 	pattern_CompassService_GetAllTypes_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1beta1", "types"}, ""))
 

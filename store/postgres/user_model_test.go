@@ -13,10 +13,11 @@ import (
 func TestUserModel(t *testing.T) {
 
 	t.Run("should return user domain entitiy", func(t *testing.T) {
-		id := uuid.New()
+		someUUID := uuid.NewString()
 		timestamp := time.Now().UTC()
 		um := UserModel{
-			ID:        sql.NullString{String: id.String(), Valid: true},
+			ID:        sql.NullString{String: "12", Valid: true},
+			UUID:      sql.NullString{String: someUUID, Valid: true},
 			Email:     sql.NullString{String: "user@odpf.io", Valid: true},
 			Provider:  sql.NullString{String: "columbus", Valid: true},
 			CreatedAt: sql.NullTime{Time: timestamp, Valid: true},
@@ -26,6 +27,7 @@ func TestUserModel(t *testing.T) {
 		ud := um.toUser()
 
 		assert.Equal(t, um.ID.String, ud.ID)
+		assert.Equal(t, um.UUID.String, ud.UUID)
 		assert.Equal(t, um.Email.String, ud.Email)
 		assert.Equal(t, um.Provider.String, ud.Provider)
 		assert.True(t, um.CreatedAt.Time.Equal(ud.CreatedAt))
@@ -33,11 +35,12 @@ func TestUserModel(t *testing.T) {
 	})
 
 	t.Run("should properly create user model from user", func(t *testing.T) {
-		id := uuid.New()
+		someUUID := uuid.NewString()
 		timestamp := time.Now().UTC()
 
 		ud := &user.User{
-			ID:        id.String(),
+			ID:        "12",
+			UUID:      someUUID,
 			Email:     "user@odpf.io",
 			Provider:  "columbus",
 			CreatedAt: timestamp,
@@ -47,6 +50,7 @@ func TestUserModel(t *testing.T) {
 		um := newUserModel(ud)
 
 		assert.Equal(t, um.ID.String, ud.ID)
+		assert.Equal(t, um.UUID.String, ud.UUID)
 		assert.Equal(t, um.Email.String, ud.Email)
 		assert.Equal(t, um.Provider.String, ud.Provider)
 		assert.True(t, um.CreatedAt.Time.Equal(ud.CreatedAt))

@@ -36,6 +36,7 @@ func (r *StarRepository) Create(ctx context.Context, userID string, assetID stri
 	if !isValidUUID(userID) {
 		return "", star.InvalidError{UserID: userID}
 	}
+
 	if !isValidUUID(assetID) {
 		return "", star.InvalidError{AssetID: assetID}
 	}
@@ -74,11 +75,11 @@ func (r *StarRepository) GetStargazers(ctx context.Context, flt star.Filter, ass
 	}
 
 	starClausesValue := r.buildClausesValue(flt)
-
 	var userModels UserModels
 	if err := r.client.db.SelectContext(ctx, &userModels, `
 		SELECT
 			DISTINCT ON (u.id) u.id,
+      u.uuid,
 			u.email,
 			u.provider,
 			u.created_at,
@@ -129,6 +130,7 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, flt star.Filt
 			a.created_at as created_at,
 			a.updated_at as updated_at,
 			u.id as "updated_by.id",
+			u.uuid as "updated_by.uuid",
 			u.email as "updated_by.email",
 			u.provider as "updated_by.provider",
 			u.created_at as "updated_by.created_at",
@@ -153,65 +155,6 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, flt star.Filt
 
 	if len(assetModels) == 0 {
 		return nil, star.NotFoundError{UserID: userID}
-	}
-
-	assets := []asset.Asset{}
-	for _, am := range assetModels {
-		assets = append(assets, am.toAsset(nil))
-	}
-	return assets, nil
-}
-
-// GetAllAssetsByUserEmail fetch list of assets starred by a user
-// TODO: this function is temporary and might be remove in the future version
-func (r *StarRepository) GetAllAssetsByUserEmail(ctx context.Context, flt star.Filter, userEmail string) ([]asset.Asset, error) {
-	if userEmail == "" {
-		return nil, star.ErrEmptyUserID
-	}
-
-	starClausesValue := r.buildClausesValue(flt)
-
-	var assetModels []AssetModel
-	if err := r.client.db.SelectContext(ctx, &assetModels, fmt.Sprintf(`
-		SELECT
-			a.id as id,
-			a.urn as urn,
-			a.type as type,
-			a.name as name,
-			a.service as service,
-			a.description as description,
-			a.data as data,
-			a.labels as labels,
-			a.version as version,
-			a.created_at as created_at,
-			a.updated_at as updated_at,
-			ub.id as "updated_by.id",
-			ub.email as "updated_by.email",
-			ub.provider as "updated_by.provider",
-			ub.created_at as "updated_by.created_at",
-			ub.updated_at as "updated_by.updated_at"
-		FROM
-			stars s
-		INNER JOIN
-			assets a ON s.asset_id = a.id
-		LEFT JOIN
-			users ub ON a.updated_by = ub.id
-		INNER JOIN
-			users u ON s.user_id = u.id
-		WHERE
-			u.email = $1
-		ORDER BY
-			$2 %s
-		LIMIT
-			$3
-		OFFSET
-			$4
-	`, starClausesValue.SortDirectionKey), userEmail, starClausesValue.SortKey, starClausesValue.Limit, starClausesValue.Offset); err != nil {
-		return nil, fmt.Errorf("failed fetching stars by user: %w", err)
-	}
-
-	if len(assetModels) == 0 {
-		return nil, star.NotFoundError{UserID: userEmail}
 	}
 
 	assets := []asset.Asset{}
@@ -252,6 +195,7 @@ func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, as
 			a.created_at,
 			a.updated_at,
 			u.id as "updated_by.id",
+			u.uuid as "updated_by.uuid",
 			u.email as "updated_by.email",
 			u.provider as "updated_by.provider",
 			u.created_at as "updated_by.created_at",

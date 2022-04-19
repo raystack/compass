@@ -33,7 +33,7 @@ func (h *Handler) GetAllDiscussions(ctx context.Context, req *compassv1beta1.Get
 
 	dscs, err := h.DiscussionRepository.GetAll(ctx, flt)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, internalServerError(h.Logger, err.Error())
 	}
 
 	discussionsProto := []*compassv1beta1.Discussion{}
@@ -73,7 +73,7 @@ func (h *Handler) CreateDiscussion(ctx context.Context, req *compassv1beta1.Crea
 
 	id, err := h.DiscussionRepository.Create(ctx, &dsc)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, internalServerError(h.Logger, err.Error())
 	}
 
 	return &compassv1beta1.CreateDiscussionResponse{Id: id}, nil
@@ -98,7 +98,7 @@ func (h *Handler) GetDiscussion(ctx context.Context, req *compassv1beta1.GetDisc
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, internalServerError(h.Logger, err.Error())
 	}
 
 	return &compassv1beta1.GetDiscussionResponse{Data: dsc.ToProto()}, nil
@@ -149,7 +149,7 @@ func (h *Handler) PatchDiscussion(ctx context.Context, req *compassv1beta1.Patch
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, internalServerError(h.Logger, err.Error())
 	}
 
 	return &compassv1beta1.PatchDiscussionResponse{}, nil

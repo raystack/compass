@@ -184,6 +184,7 @@ func (r *DiscussionRepository) selectSQL() sq.SelectBuilder {
 		d.created_at as created_at,
 		d.updated_at as updated_at,
 		u.id as "owner.id",
+		u.uuid as "owner.uuid",
 		u.email as "owner.email",
 		u.provider as "owner.provider",
 		u.created_at as "owner.created_at",

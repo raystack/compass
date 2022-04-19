@@ -2,7 +2,9 @@ package user
 
 import (
 	"context"
-	"fmt"
+	"errors"
+
+	"github.com/odpf/salt/log"
 )
 
 type contextKeyType struct{}
@@ -16,31 +18,35 @@ var (
 // Service is a type of service that manages business process
 type Service struct {
 	repository Repository
-	cfg        Config
+	logger     log.Logger
 }
 
-// ValidateUser checks if user information is already in DB
+// ValidateUser checks if user uuid is already in DB
 // if exist in DB, return user ID, if not exist in DB, create a new one
-func (s *Service) ValidateUser(ctx context.Context, email string) (string, error) {
-	if email == "" {
+func (s *Service) ValidateUser(ctx context.Context, uuid, email string) (string, error) {
+	if uuid == "" {
 		return "", ErrNoUserInformation
 	}
 
-	userID, err := s.repository.GetID(ctx, email)
+	usr, err := s.repository.GetByUUID(ctx, uuid)
 	if err == nil {
-		if userID != "" {
-			return userID, nil
+		if usr.ID != "" {
+			return usr.ID, nil
 		}
-		return "", fmt.Errorf("%w, fetched user id from DB is nil with email: %s", ErrNoUserInformation, email)
-	}
-	user := &User{
-		Email:    email,
-		Provider: s.cfg.IdentityProviderDefaultName,
-	}
-	if userID, err = s.repository.Create(ctx, user); err != nil {
+		err := errors.New("fetched user uuid from DB is empty")
+		s.logger.Error(err.Error())
 		return "", err
 	}
-	return userID, nil
+
+	uid, err := s.repository.UpsertByEmail(ctx, &User{
+		UUID:  uuid,
+		Email: email,
+	})
+	if err != nil {
+		s.logger.Error("error when UpsertByEmail in ValidateUser service", "err", err.Error())
+		return "", err
+	}
+	return uid, nil
 }
 
 // NewContext returns a new context.Context that carries the provided
@@ -63,9 +69,9 @@ func FromContext(ctx context.Context) string {
 }
 
 // NewService initializes user service
-func NewService(repository Repository, cfg Config) *Service {
+func NewService(logger log.Logger, repository Repository) *Service {
 	return &Service{
 		repository: repository,
-		cfg:        cfg,
+		logger:     logger,
 	}
 }
