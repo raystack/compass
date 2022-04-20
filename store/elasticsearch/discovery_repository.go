@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/odpf/columbus/asset"
+	"github.com/odpf/compass/asset"
 )
 
 const (

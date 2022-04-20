@@ -76,7 +76,7 @@ initialise a type
 
 ##### Description:
 
-used for initialising/update a type. A type in columbus's nomenclature is a "collection" of documents that belong to a single named type. Type holds metadata about this collection, used when serving search requests
+used for initialising/update a type. A type in compass' nomenclature is a "collection" of documents that belong to a single named type. Type holds metadata about this collection, used when serving search requests
 
 ##### Parameters
 
@@ -241,7 +241,7 @@ API for querying documents. 'text' is fuzzy matched against all the available da
 | filter.environment | query | restrict results to specified environment(s) eg, integrated, test, staging, production | No | string |
 | filter.landscape | query | restrict results to specified landscape(s) | No | string |
 | filter.entity | query | restrict results to specified organisation | No | string |
-| filter.type | query | restrict results to the specified types (as in a Columbus type, for instance "dagger", or "firehose") | No | string |
+| filter.type | query | restrict results to the specified types (as in a Compass type, for instance "dagger", or "firehose") | No | string |
 
 ##### Responses
 

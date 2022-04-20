@@ -1,7 +1,7 @@
 package asset
 
 import (
-	"github.com/odpf/columbus/validator"
+	"github.com/odpf/compass/validator"
 )
 
 type Filter struct {

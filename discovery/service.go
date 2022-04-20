@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/odpf/columbus/asset"
+	"github.com/odpf/compass/asset"
 )
 
 type Service struct {

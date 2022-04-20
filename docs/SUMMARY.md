@@ -2,7 +2,7 @@
 
 * [Introduction](README.md)
 * [Roadmap](roadmap.md)
-* [Changelog](https://github.com/odpf/columbus/blob/main/CHANGELOG.md)
+* [Changelog](https://github.com/odpf/compass/blob/main/CHANGELOG.md)
 
 ## Guides
 

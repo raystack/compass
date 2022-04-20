@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/odpf/columbus/discovery"
+	"github.com/odpf/compass/discovery"
 	"github.com/olivere/elastic/v7"
 )
 

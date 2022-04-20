@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/odpf/columbus/discussion"
+	"github.com/odpf/compass/discussion"
 )
 
 // DiscussionRepository is a type that manages discussion operation to the primary database

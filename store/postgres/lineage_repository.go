@@ -7,7 +7,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
-	"github.com/odpf/columbus/lineage"
+	"github.com/odpf/compass/lineage"
 )
 
 type LineageRepository struct {

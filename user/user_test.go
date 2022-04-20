@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
+	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"

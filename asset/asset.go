@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
-	"github.com/odpf/columbus/user"
+	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/user"
 	"github.com/r3labs/diff/v2"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -24,7 +24,7 @@ type Repository interface {
 	Delete(ctx context.Context, id string) error
 }
 
-// Asset is a model that wraps arbitrary data with Columbus' context
+// Asset is a model that wraps arbitrary data with Compass' context
 type Asset struct {
 	ID          string                 `json:"id" diff:"-"`
 	URN         string                 `json:"urn" diff:"-"`

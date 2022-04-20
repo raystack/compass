@@ -22,5 +22,5 @@ vendor/
 
 # Project specific ignore
 .env
-columbus
+compass
 config.yaml

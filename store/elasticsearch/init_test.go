@@ -8,8 +8,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/store/elasticsearch/testutil"
+	"github.com/odpf/compass/asset"
+	"github.com/odpf/compass/store/elasticsearch/testutil"
 )
 
 var daggerType = asset.Type("dagger")

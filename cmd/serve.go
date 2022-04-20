@@ -21,15 +21,15 @@ import (
 	nrelasticsearch "github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
 	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/odpf/columbus/api"
-	"github.com/odpf/columbus/api/grpc_interceptor"
-	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
-	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/metrics"
-	esStore "github.com/odpf/columbus/store/elasticsearch"
-	"github.com/odpf/columbus/store/postgres"
-	"github.com/odpf/columbus/tag"
-	"github.com/odpf/columbus/user"
+	"github.com/odpf/compass/api"
+	"github.com/odpf/compass/api/grpc_interceptor"
+	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/discovery"
+	"github.com/odpf/compass/metrics"
+	esStore "github.com/odpf/compass/store/elasticsearch"
+	"github.com/odpf/compass/store/postgres"
+	"github.com/odpf/compass/tag"
+	"github.com/odpf/compass/user"
 	"github.com/odpf/salt/log"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/http2"
@@ -51,7 +51,7 @@ func Serve() error {
 	}
 
 	logger := initLogger(config.LogLevel)
-	logger.Info("columbus starting", "version", Version)
+	logger.Info("compass starting", "version", Version)
 
 	esClient := initElasticsearch(config, logger)
 	newRelicMonitor := initNewRelicMonitor(config, logger)

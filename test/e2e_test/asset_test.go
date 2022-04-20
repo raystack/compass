@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/odpf/columbus/asset"
+	"github.com/odpf/compass/asset"
 	"github.com/stretchr/testify/suite"
 )
 

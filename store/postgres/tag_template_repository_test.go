@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/odpf/columbus/store/postgres"
-	"github.com/odpf/columbus/tag"
+	"github.com/odpf/compass/store/postgres"
+	"github.com/odpf/compass/tag"
 	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"

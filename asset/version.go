@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Masterminds/semver/v3"
-	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
+	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/r3labs/diff/v2"
 	"google.golang.org/protobuf/types/known/structpb"
 )

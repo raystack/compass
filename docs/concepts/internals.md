@@ -1,6 +1,6 @@
 # Internals
 
-This document details information about how Columbus interfaces with elasticsearch. It is meant to give an overview of how some concepts work internally, to help streamline understanding of how things work under the hood.
+This document details information about how Compass interfaces with elasticsearch. It is meant to give an overview of how some concepts work internally, to help streamline understanding of how things work under the hood.
 
 ## Index Setup
 
@@ -87,7 +87,7 @@ for typ in all_types
 
 From pseudo-code above we can see that we practically fetch all records and types from Elastisearch then process all of them to build the lineage graph.
 
-Doing it for every request would consume a lot of computing power and memory, especially if you have a lot of records stored. So instead of building it for each lineage request, Columbus will builds lineage graph on two conditions:
+Doing it for every request would consume a lot of computing power and memory, especially if you have a lot of records stored. So instead of building it for each lineage request, Compass will builds lineage graph on two conditions:
 
 * on app start
 * a configurable time interval \(default to 5 minutes\) after previous building process

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/odpf/columbus/tag"
+	"github.com/odpf/compass/tag"
 )
 
 var (

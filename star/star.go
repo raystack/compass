@@ -5,8 +5,8 @@ package star
 import (
 	"context"
 
-	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/user"
+	"github.com/odpf/compass/asset"
+	"github.com/odpf/compass/user"
 )
 
 type Repository interface {

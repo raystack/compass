@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"strings"
 
-	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
-	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/lineage"
-	"github.com/odpf/columbus/star"
-	"github.com/odpf/columbus/user"
+	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/asset"
+	"github.com/odpf/compass/lineage"
+	"github.com/odpf/compass/star"
+	"github.com/odpf/compass/user"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

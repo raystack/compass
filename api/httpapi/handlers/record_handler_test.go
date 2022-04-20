@@ -11,10 +11,10 @@ import (
 
 	"github.com/odpf/salt/log"
 
-	"github.com/odpf/columbus/api/httpapi/handlers"
-	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/discovery"
-	"github.com/odpf/columbus/lib/mocks"
+	"github.com/odpf/compass/api/httpapi/handlers"
+	"github.com/odpf/compass/asset"
+	"github.com/odpf/compass/discovery"
+	"github.com/odpf/compass/lib/mocks"
 	"github.com/stretchr/testify/mock"
 )
 

@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/odpf/columbus/store/postgres"
-	"github.com/odpf/columbus/user"
+	"github.com/odpf/compass/store/postgres"
+	"github.com/odpf/compass/user"
 	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
@@ -93,11 +93,11 @@ func (r *UserRepositoryTestSuite) TestCreate() {
 func (r *UserRepositoryTestSuite) TestCreateWithTx() {
 	validUserWithoutUUID := &user.User{
 		Email:    "userWithTx@odpf.io",
-		Provider: "columbus",
+		Provider: "compass",
 	}
 	validUserWithoutEmail := &user.User{
 		UUID:     "a-uuid",
-		Provider: "columbus",
+		Provider: "compass",
 	}
 	r.Run("return no error if succesfully create user without uuid", func() {
 		var id string

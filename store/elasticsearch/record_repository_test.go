@@ -11,9 +11,9 @@ import (
 
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/discovery"
-	store "github.com/odpf/columbus/store/elasticsearch"
+	"github.com/odpf/compass/asset"
+	"github.com/odpf/compass/discovery"
+	store "github.com/odpf/compass/store/elasticsearch"
 	"github.com/stretchr/testify/assert"
 )
 

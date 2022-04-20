@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
-	"github.com/odpf/columbus/asset"
+	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/asset"
 )
 
 func (h *Handler) GetAllTypes(ctx context.Context, req *compassv1beta1.GetAllTypesRequest) (*compassv1beta1.GetAllTypesResponse, error) {

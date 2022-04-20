@@ -3,7 +3,7 @@ package user_test
 import (
 	"testing"
 
-	"github.com/odpf/columbus/user"
+	"github.com/odpf/compass/user"
 )
 
 func TestErrors(t *testing.T) {

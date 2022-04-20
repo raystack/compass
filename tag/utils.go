@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/odpf/columbus/tag/validator"
+	"github.com/odpf/compass/tag/validator"
 )
 
 func buildFieldError(key string, message string) error {

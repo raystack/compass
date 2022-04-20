@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/odpf/columbus/cmd"
+	"github.com/odpf/compass/cmd"
 	"github.com/odpf/salt/cmdx"
 	"github.com/spf13/cobra"
 )
@@ -18,23 +18,23 @@ const (
 
 func main() {
 	var command = &cobra.Command{
-		Use:           "columbus <command>",
+		Use:           "compass <command>",
 		Short:         "Discovery & Lineage Service",
 		Long:          "Metadata Discovery & Lineage Service.",
 		SilenceErrors: true,
 		SilenceUsage:  false,
 		Example: heredoc.Doc(`
-			$ columbus serve
-			$ columbus migrate
+			$ compass serve
+			$ compass migrate
 		`),
 		Annotations: map[string]string{
 			"group:core": "true",
 			"help:learn": heredoc.Doc(`
-				Use 'columbus <command> <subcommand> --help' for more information about a command.
-				Read the manual at https://odpf.github.io/columbus/
+				Use 'compass <command> <subcommand> --help' for more information about a command.
+				Read the manual at https://odpf.github.io/compass/
 			`),
 			"help:feedback": heredoc.Doc(`
-				Open an issue here https://github.com/odpf/columbus/issues
+				Open an issue here https://github.com/odpf/compass/issues
 			`),
 		},
 	}
@@ -63,7 +63,7 @@ func serveCmd() *cobra.Command {
 		Short: "Serve HTTP service",
 		Long:  heredoc.Doc(`Serve a HTTP service on a port defined in PORT env var.`),
 		Example: heredoc.Doc(`
-			$ columbus serve
+			$ compass serve
 		`),
 		Args: cobra.NoArgs,
 		Annotations: map[string]string{
@@ -80,7 +80,7 @@ func migrateCmd() *cobra.Command {
 		Use:   "migrate",
 		Short: "Run storage migration",
 		Example: heredoc.Doc(`
-			$ columbus migrate
+			$ compass migrate
 		`),
 		Args: cobra.NoArgs,
 		Annotations: map[string]string{

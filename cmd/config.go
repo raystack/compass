@@ -19,7 +19,7 @@ type Config struct {
 
 	// StatsD
 	StatsdAddress string `mapstructure:"STATSD_ADDRESS" default:"127.0.0.1:8125"`
-	StatsdPrefix  string `mapstructure:"STATSD_PREFIX" default:"columbusApi"`
+	StatsdPrefix  string `mapstructure:"STATSD_PREFIX" default:"compassApi"`
 	StatsdEnabled bool   `mapstructure:"STATSD_ENABLED" default:"false"`
 
 	TypeWhiteListStr         string `mapstructure:"SEARCH_WHITELIST" default:""`
@@ -30,7 +30,7 @@ type Config struct {
 
 	// NewRelic
 	NewRelicEnabled    bool   `mapstructure:"NEW_RELIC_ENABLED" default:"false"`
-	NewRelicAppName    string `mapstructure:"NEW_RELIC_APP_NAME" default:"columbus"`
+	NewRelicAppName    string `mapstructure:"NEW_RELIC_APP_NAME" default:"compass"`
 	NewRelicLicenseKey string `mapstructure:"NEW_RELIC_LICENSE_KEY" default:""`
 
 	// Log
@@ -45,8 +45,8 @@ type Config struct {
 	DBSSLMode  string `mapstructure:"DB_SSL_MODE" default:"disable"`
 
 	// User Identity
-	IdentityUUIDHeaderKey       string `mapstructure:"IDENTITY_UUID_HEADER" default:"Columbus-User-UUID"`
-	IdentityEmailHeaderKey      string `mapstructure:"IDENTITY_EMAIL_HEADER" default:"Columbus-User-Email"`
+	IdentityUUIDHeaderKey       string `mapstructure:"IDENTITY_UUID_HEADER" default:"Compass-User-UUID"`
+	IdentityEmailHeaderKey      string `mapstructure:"IDENTITY_EMAIL_HEADER" default:"Compass-User-Email"`
 	IdentityProviderDefaultName string `mapstructure:"IDENTITY_PROVIDER_DEFAULT_NAME" default:""`
 }
 

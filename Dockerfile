@@ -1,7 +1,7 @@
 FROM alpine:latest
 
-COPY columbus /usr/bin/columbus
+COPY compass /usr/bin/compass
 RUN apk update
 RUN apk add ca-certificates
 
-CMD ["columbus"]
+CMD ["compass"]

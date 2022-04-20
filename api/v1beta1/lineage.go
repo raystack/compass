@@ -3,8 +3,8 @@ package v1beta1
 import (
 	"context"
 
-	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
-	"github.com/odpf/columbus/lineage"
+	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/lineage"
 )
 
 func (h *Handler) GetGraph(ctx context.Context, req *compassv1beta1.GetGraphRequest) (*compassv1beta1.GetGraphResponse, error) {

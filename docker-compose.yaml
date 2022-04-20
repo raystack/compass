@@ -10,7 +10,7 @@ services:
       - 5432:5432
     image: 'postgres:13'
     environment:
-      POSTGRES_USER: columbus
-      POSTGRES_PASSWORD: columbus_password
-      POSTGRES_DB: columbus
+      POSTGRES_USER: compass
+      POSTGRES_PASSWORD: compass_password
+      POSTGRES_DB: compass
       discovery.type: single-node

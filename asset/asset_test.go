@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
-	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/user"
+	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/asset"
+	"github.com/odpf/compass/user"
 	"github.com/r3labs/diff/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

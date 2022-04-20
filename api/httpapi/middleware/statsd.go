@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/odpf/columbus/metrics"
+	"github.com/odpf/compass/metrics"
 )
 
 func StatsD(mm *metrics.StatsdMonitor, h runtime.HandlerFunc) runtime.HandlerFunc {

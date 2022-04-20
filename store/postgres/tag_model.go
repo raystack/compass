@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/odpf/columbus/tag"
+	"github.com/odpf/compass/tag"
 )
 
 // TagModel is a model for tag value in database table

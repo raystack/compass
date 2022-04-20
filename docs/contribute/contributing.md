@@ -4,10 +4,10 @@
 
 We are always interested in adding new contributors. What we look for is a series of contributions, good taste, and an ongoing interest in the project.
 
-* Committers will have write access to the Columbus repositories.
+* Committers will have write access to the Compass repositories.
 * There is no strict protocol for becoming a committer or PMC member. Candidates for new committers are typically people that are active contributors and community members.
 * Candidates for new committers can also be suggested by current committers or PMC members.
-* If you would like to become a committer, you should start contributing to Columbus in any of the ways mentioned. You might also want to talk to other committers and ask for their advice and guidance.
+* If you would like to become a committer, you should start contributing to Compass in any of the ways mentioned. You might also want to talk to other committers and ask for their advice and guidance.
 
 ## WHAT CAN YOU DO?
 

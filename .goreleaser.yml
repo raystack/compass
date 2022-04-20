@@ -1,4 +1,4 @@
-project_name: columbus
+project_name: compass
 
 release:  
   prerelease: auto
@@ -11,13 +11,13 @@ before:
 
 builds:
   - main: ./main.go
-    id: columbus
-    binary: columbus
+    id: compass
+    binary: compass
     flags: [-a]
     ldflags:
-      - -X github.com/odpf/columbus/cmd.Version={{.Tag}} 
-      - -X github.com/odpf/columbus/cmd.BuildCommit={{.FullCommit}} 
-      - -X github.com/odpf/columbus/cmd.BuildDate={{.Date}}
+      - -X github.com/odpf/compass/cmd.Version={{.Tag}} 
+      - -X github.com/odpf/compass/cmd.BuildCommit={{.FullCommit}} 
+      - -X github.com/odpf/compass/cmd.BuildDate={{.Date}}
     goos: [linux, darwin, windows]
     goarch: [amd64, 386, arm, arm64] # skip goarch 386 and arm due to conflicts with "github.com/blastrain/vitess-sqlparser" library
     env:
@@ -53,7 +53,7 @@ dockers:
     goos: linux
     goarch: amd64
     ids:
-      - columbus
+      - compass
     dockerfile: Dockerfile
     image_templates:
       - 'docker.io/odpf/{{.ProjectName}}:latest'
@@ -61,8 +61,8 @@ dockers:
       - 'docker.io/odpf/{{.ProjectName}}:{{ .Version }}-amd64'
 
 brews:
-  - name: columbus
-    homepage: "https://github.com/odpf/columbus"
+  - name: compass
+    homepage: "https://github.com/odpf/compass"
     description: "Metadata Discovery and Lineage Service"
     tap:
       owner: odpf
@@ -73,7 +73,7 @@ brews:
     dependencies:
       - name: git
     install: |-
-      bin.install "columbus"
+      bin.install "compass"
     commit_author:
       name: Ravi Suhag
       email: suhag.ravi@gmail.com

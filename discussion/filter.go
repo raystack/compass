@@ -3,7 +3,7 @@ package discussion
 import (
 	"strings"
 
-	"github.com/odpf/columbus/validator"
+	validator "github.com/odpf/compass/validator"
 )
 
 type Filter struct {

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"strings"
 
-	compassv1beta1 "github.com/odpf/columbus/api/proto/odpf/compass/v1beta1"
-	"github.com/odpf/columbus/discussion"
-	"github.com/odpf/columbus/user"
+	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/discussion"
+	"github.com/odpf/compass/user"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

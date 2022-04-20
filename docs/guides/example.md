@@ -1,14 +1,14 @@
 # End to End Usage example
 
-This document showcases columbus usage, from producing data, to using APIs for specific use-cases. This guide is geared towards adminstrators, more than users. It is meant to give the administrators an introduction of different configuration options available, and how they affect the behaviour of the application.
+This document showcases compass usage, from producing data, to using APIs for specific use-cases. This guide is geared towards adminstrators, more than users. It is meant to give the administrators an introduction of different configuration options available, and how they affect the behaviour of the application.
 
 ## Prerequisites
 
-This guide assumes that you have a local instance of columbus running and listening on `localhost:8080`. See [Usage](usage.md) guide for information on how to run Columbus.
+This guide assumes that you have a local instance of compass running and listening on `localhost:8080`. See [Usage](usage.md) guide for information on how to run Compass.
 
 ## Creating an type
 
-Let’s say that you have a hypothetical tool called Piccolo and you have several deployments of this tool on your platform. Before we can push data for Piccolo deployments to Columbus, we need to first define the Piccolo type. To do this, we'll call to type create API `PUT /v1/types`
+Let’s say that you have a hypothetical tool called Piccolo and you have several deployments of this tool on your platform. Before we can push data for Piccolo deployments to Compass, we need to first define the Piccolo type. To do this, we'll call to type create API `PUT /v1/types`
 
 ```text
 $ curl -XPUT http://localhost:8080/v1/types/ \
@@ -157,7 +157,7 @@ $ curl -XPUT http://localhost:8080/v1/types/sensu/ \
 ]'
 ```
 
-`sensu` is the data store that `piccolo` instances read from. In order to configure lineage, we need to declare the lineage as a part of the type definition. In Columbus, any type can declare it's lineage, as long as it's records have information on the ID of related type instance.
+`sensu` is the data store that `piccolo` instances read from. In order to configure lineage, we need to declare the lineage as a part of the type definition. In Compass, any type can declare it's lineage, as long as it's records have information on the ID of related type instance.
 
 For instance, if you look at the `src` field of `piccolo` instances, you'll see that they are id's of `sensu` instances. This means we can define the relationship between `piccolo` and `sensu` resources by declaring this relationship in `piccolo`'s definition. Note that it is sufficient \(and preferred\) that one type declare it's relationship to another. Both need not do this.
 

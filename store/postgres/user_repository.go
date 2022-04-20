@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/odpf/columbus/user"
+	"github.com/odpf/compass/user"
 )
 
 // UserRepository is a type that manages user operation to the primary database

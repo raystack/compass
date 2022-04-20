@@ -4,12 +4,12 @@ COPY . .
 RUN ["make"]
 
 FROM alpine:latest
-WORKDIR /opt/columbus
-COPY --from=base /build/columbus /opt/columbus/bin/columbus
+WORKDIR /opt/compass
+COPY --from=base /build/compass /opt/compass/bin/compass
 RUN ["apk", "update"]
 EXPOSE 8080
 
 # glibc compatibility library, since go binaries 
 # don't work well with musl libc that alpine uses
 RUN ["apk", "add", "libc6-compat"] 
-ENTRYPOINT ["/opt/columbus/bin/columbus"]
+ENTRYPOINT ["/opt/compass/bin/compass"]

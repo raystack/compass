@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	discovery "github.com/odpf/columbus/discovery"
+	discovery "github.com/odpf/compass/discovery"
 	mock "github.com/stretchr/testify/mock"
 )
 

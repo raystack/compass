@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/odpf/columbus/lib/set"
+	"github.com/odpf/compass/lib/set"
 )
 
 func TestStringSet(t *testing.T) {

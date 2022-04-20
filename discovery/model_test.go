@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/odpf/columbus/asset"
-	"github.com/odpf/columbus/discovery"
+	"github.com/odpf/compass/asset"
+	"github.com/odpf/compass/discovery"
 )
 
 func TestToAsset(t *testing.T) {

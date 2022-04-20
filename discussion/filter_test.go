@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/odpf/columbus/discussion"
+	"github.com/odpf/compass/discussion"
 	"github.com/stretchr/testify/assert"
 )
 

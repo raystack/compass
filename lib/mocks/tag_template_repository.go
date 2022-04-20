@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	tag "github.com/odpf/columbus/tag"
+	tag "github.com/odpf/compass/tag"
 	mock "github.com/stretchr/testify/mock"
 )
 

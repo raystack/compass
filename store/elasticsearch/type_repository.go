@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/odpf/columbus/asset"
+	"github.com/odpf/compass/asset"
 )
 
 // TypeRepository is an implementation of discovery.TypeRepository

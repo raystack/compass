@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/odpf/columbus/lib/mocks"
-	"github.com/odpf/columbus/tag"
-	"github.com/odpf/columbus/tag/validator"
+	"github.com/odpf/compass/lib/mocks"
+	"github.com/odpf/compass/tag"
+	"github.com/odpf/compass/tag/validator"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
