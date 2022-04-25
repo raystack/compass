@@ -29,7 +29,7 @@ func (r *AssetRepository) GetAll(ctx context.Context, flt asset.Filter) ([]asset
 	builder := r.getAssetSQL().Offset(uint64(flt.Offset))
 	size := flt.Size
 
-	if size != 0 {
+	if size > 0 {
 		builder = r.getAssetSQL().Limit(uint64(size)).Offset(uint64(flt.Offset))
 	}
 	builder = r.BuildFilterQuery(builder, flt)
