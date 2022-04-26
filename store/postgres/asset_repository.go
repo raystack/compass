@@ -26,12 +26,12 @@ type AssetRepository struct {
 
 // GetAll retrieves list of assets with filters
 func (r *AssetRepository) GetAll(ctx context.Context, flt asset.Filter) ([]asset.Asset, error) {
+	builder := r.getAssetSQL().Offset(uint64(flt.Offset))
 	size := flt.Size
-	if size == 0 {
-		size = r.defaultGetMaxSize
-	}
 
-	builder := r.getAssetSQL().Limit(uint64(size)).Offset(uint64(flt.Offset))
+	if size > 0 {
+		builder = r.getAssetSQL().Limit(uint64(size)).Offset(uint64(flt.Offset))
+	}
 	builder = r.BuildFilterQuery(builder, flt)
 	builder = r.buildOrderQuery(builder, flt)
 	query, args, err := r.buildSQL(builder)

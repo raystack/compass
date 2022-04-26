@@ -208,17 +208,20 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 func (r *AssetRepositoryTestSuite) TestGetAll() {
 	assets := r.insertRecord()
 
-	r.Run("should return all assets limited by default size", func() {
+	r.Run("should return all assets without filtering based on size", func() {
+		expectedSize := 8
+
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{})
 		r.Require().NoError(err)
-		r.Require().Len(results, defaultGetMaxSize)
-		for i := 0; i < defaultGetMaxSize; i++ {
+		r.Require().Len(results, expectedSize)
+		for i := 0; i < expectedSize; i++ {
 			r.assertAsset(&assets[i], &results[i])
 		}
 	})
 
 	r.Run("should override default size using GetConfig.Size", func() {
 		size := 6
+
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			Size: size,
 		})
@@ -231,11 +234,12 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 
 	r.Run("should fetch assets by offset defined in GetConfig.Offset", func() {
 		offset := 2
+
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			Offset: offset,
 		})
 		r.Require().NoError(err)
-		for i := offset; i > defaultGetMaxSize+offset; i++ {
+		for i := offset; i > len(results)+offset; i++ {
 			r.assertAsset(&assets[i], &results[i-offset])
 		}
 	})
