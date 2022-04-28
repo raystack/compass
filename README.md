@@ -24,7 +24,7 @@ Discover why users choose Compass as their main data discovery and lineage servi
 
 Explore the following resources to get started with Compass:
 
-* [Guides](docs/guides) provides guidance on ingesting and queying metadata from Compass.
+* [Guides](docs/guides) provides guidance on ingesting and querying metadata from Compass.
 * [Concepts](docs/concepts) describes all important Compass concepts.
 * [Reference](docs/reference) contains details about configurations, metrics and other aspects of Compass.
 * [Contribute](docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Compass.

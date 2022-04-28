@@ -1,7 +1,7 @@
 NAME="github.com/odpf/compass"
 VERSION=$(shell git describe --always --tags 2>/dev/null)
 COVERFILE="/tmp/compass.coverprofile"
-PROTON_COMMIT := "2481c008a1eb2525eca058b0729abc036ddcbe6a"
+PROTON_COMMIT := "97069f032661fa27d016063e0aef1e2ab2a5c330"
 
 .PHONY: all build test clean install proto
 
@@ -40,6 +40,7 @@ proto: ## Generate the protobuf files
 install: ## install required dependencies
 	@echo "> installing dependencies"
 	go mod tidy
+	go get github.com/vektra/mockery/v2@v2.10.4
 	go get google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
 	go get google.golang.org/protobuf/proto@v1.27.1
 	go get google.golang.org/grpc@v1.45.0

@@ -1678,13 +1678,6 @@
             "type": "string"
           },
           {
-            "name": "searchby",
-            "description": "search on a specific records field. the nested field is written with period separated field name. eg, \"searchby[data.schema.columns.name]\"",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
             "name": "size",
             "description": "number of results to return",
             "in": "query",
@@ -1744,32 +1737,10 @@
         "parameters": [
           {
             "name": "text",
-            "description": "text to search for (fuzzy)",
+            "description": "text to search for suggestions",
             "in": "query",
             "required": false,
             "type": "string"
-          },
-          {
-            "name": "rankby",
-            "description": "descendingly sort based on a numeric field in the record. the nested field is written with period separated field name. eg, \"rankby[data.profile.usage_count]\"",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "searchby",
-            "description": "search on a specific records field. the nested field is written with period separated field name. eg, \"searchby[data.schema.columns.name]\"",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "size",
-            "description": "number of results to return",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int64"
           }
         ],
         "tags": [
