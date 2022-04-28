@@ -8,6 +8,12 @@
 
 Compass is a search and discovery engine built for querying application deployments, datasets and meta resources. It can also optionally track data flow relationships between these resources and allow the user to view a representation of the data flow graph.
 
+```
+Notes
+---
+Compass was previously called 'Columbus'. We we were migrating to the new name to accomodate our current and future use cases considering this platform does not only about metadata discovery and lineage but also revolve around metadata management. 
+```
+
 <p align="center"><img src="./docs/assets/overview.svg" /></p>
 
 ## Key Features
