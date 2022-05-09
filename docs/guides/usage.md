@@ -1,43 +1,8 @@
 # Usage
 
-## Starting the server
+## Prerequisites
 
-Compass interfaces with a postgres and elasticsearch cluster. Run compass using:
-
-```text
-./compass -elasticsearch-brokers "http://<broker-host-name>" -db-host "<postgres-host-name>" -db-port 5432 -db-name "<postgres-db-name>" -db-user "<postgres-db-user>" -db-password "<postgres-db-password>"
-```
-
-PostgreSQL details and Elasticsearch brokers can alternatively be specified via the environment variable, `ELASTICSEARCH_BROKERS` for elasticsearch and `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` for postgres.
-
-If you used Docker to build compass, then configuring networking requires extra steps. Following is one of doing it by running postgres and elasticsearch inside with `docker-compose` first.
-
-Go to the root of this project and run `docker-compose`.
-
-```text
-$ docker-compose up
-```
-Once postgres and elasticsearch has been ready, we can run Compass by passing in the config of postgres and elasticsearch defined in `docker-compose.yaml` file.
-
-Run the migration.
-```text
-$ docker run --rm --net compass_storage -p 8080:8080 -e ELASTICSEARCH_BROKERS=http://es:9200 -e DB_HOST=postgres -e DB_PORT=5432 -e DB_NAME=compass -e DB_USER=compass -e DB_PASSWORD=compass_password odpf/compass compass migrate
-```
-
-Run the Compass app.
-```text
-$ docker run --net compass_storage -p 8080:8080 -e ELASTICSEARCH_BROKERS=http://es:9200 -e DB_HOST=postgres -e DB_PORT=5432 -e DB_NAME=compass -e DB_USER=compass -e DB_PASSWORD=compass_password odpf/compass compass serve
-```
-
-If everything goes ok, you should see something like this:
-```text
-time="2022-04-27T09:18:08Z" level=info msg="compass starting" version=v0.2.0
-time="2022-04-27T09:18:08Z" level=info msg="connected to elasticsearch cluster" config="\"docker-cluster\" (server version 7.6.1)"
-time="2022-04-27T09:18:08Z" level=info msg="New Relic monitoring is disabled."
-time="2022-04-27T09:18:08Z" level=info msg="statsd metrics monitoring is disabled."
-time="2022-04-27T09:18:08Z" level=info msg="connected to postgres server" host=postgres port=5432
-time="2022-04-27T09:18:08Z" level=info msg="server started"
-```
+This guide assumes that you have a local instance of compass running and listening on `localhost:8080`. See [Installation](installation.md) guide for information on how to run Compass.
 
 ## Storage Migration
 Compass has a `migrate` command that could be used to initialize the system. The command will migrate PostgreSQl and Elasticsearch.

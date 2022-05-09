@@ -2,10 +2,9 @@
 
 This document showcases compass usage, from producing data, to using APIs for specific use-cases. This guide is geared towards adminstrators, more than users. It is meant to give the administrators an introduction of different configuration options available, and how they affect the behaviour of the application.
 
-
 ## Prerequisites
 
-This guide assumes that you have a local instance of compass running and listening on `localhost:8080`. See [Usage](usage.md) guide for information on how to run Compass.
+This guide assumes that you have a local instance of compass running and listening on `localhost:8080`. See [Installation](installation.md) guide for information on how to run Compass.
 
 ## Adding Data
 
