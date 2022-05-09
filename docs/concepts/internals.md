@@ -40,7 +40,7 @@ The script filter is designed to match a document if:
 To demonstrate, the following API call:
 
 ```text
-curl http://localhost:8080/v1beta1/search?text=log&filter[landscape]=id
+$ curl http://localhost:8080/v1beta1/search?text=log&filter[landscape]=id
 ```
 
 is internally translated to the following elasticsearch query
@@ -71,7 +71,7 @@ Compass also supports filter with fuzzy match with `query` query params. The scr
 * the document contains the filter key and it's value is fuzzily matches the `query` value
 
 ```text
-curl http://localhost:8080/v1beta1/search?text=log&filter[landscape]=id
+$ curl http://localhost:8080/v1beta1/search?text=log&filter[landscape]=id
 ```
 
 is internally translated to the following elasticsearch query

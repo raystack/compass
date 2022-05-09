@@ -100,7 +100,9 @@ Compass decouple identifier from external system with the one that is being used
 Compass search API also supports restricting search results via filter by passing it in query params.
 Filter query params format is `filter[{field_key}]={value}` where `field_key` is the field name that we want to restrict and `value` is what value that should be matched. Filter could also support nested field by chaining key `field_key` with `.` \(dot\) such as `filter[{field_key}.{nested_field_key}]={value}`. For instance, to restrict search results to the ‘id’ landscape for ‘odpf’ organisation, run:
 
-$ curl [http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=vn&filter[labels.entity]=odpf](http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=vn&filter[labels.entity]=odpf) --header 'Compass-User-UUID:odpf@email.com' 
+```text
+$ curl [http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=vn&filter[labels.entity]=odpf](http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=vn&filter[labels.entity]=odpf) --header 'Compass-User-UUID:odpf@email.com'
+```
 
 Under the hood, filter's work by checking whether the matching document's contain the filter key and checking if their values match. Filters can be specified multiple times to specify a set of filter criteria. For example, to search for ‘booking’ in both ‘vn’ and ‘th’ landscape, run:
 
@@ -181,7 +183,7 @@ Lineage API returns a list of directed edges. For each edge, there are `source` 
 Here's a sample API call:
 
 ```text
-curl http://localhost:8080/v1beta1/lineage/data-project%3Adatalake.events --header 'Compass-User-UUID:odpf@email.com' 
+$ curl http://localhost:8080/v1beta1/lineage/data-project%3Adatalake.events --header 'Compass-User-UUID:odpf@email.com' 
 
 {
     data: [
