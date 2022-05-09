@@ -2,195 +2,219 @@
 
 ## Starting the server
 
-Compass interfaces with an elasticsearch cluster. Run compass using:
+Compass interfaces with a postgres and elasticsearch cluster. Run compass using:
 
 ```text
-./compass -elasticsearch-brokers "http://<broker-host-name>"
+./compass -elasticsearch-brokers "http://<broker-host-name>" -db-host "<postgres-host-name>" -db-port 5432 -db-name "<postgres-db-name>" -db-user "<postgres-db-user>" -db-password "<postgres-db-password>"
 ```
 
-Elasticsearch brokers can alternatively be specified via the `ELASTICSEARCH_BROKERS` environment variable.
+PostgreSQL details and Elasticsearch brokers can alternatively be specified via the environment variable, `ELASTICSEARCH_BROKERS` for elasticsearch and `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` for postgres.
 
-If you used Docker to build compass, then configuring networking requires extra steps. Following is one of doing it, running elasticsearch inside docker
+If you used Docker to build compass, then configuring networking requires extra steps. Following is one of doing it by running postgres and elasticsearch inside with `docker-compose` first.
+
+Go to the root of this project and run `docker-compose`.
 
 ```text
-# create a docker network where compass and elasticsearch will reside 
-$ docker network create compass-net
+$ docker-compose up
+```
+Once postgres and elasticsearch has been ready, we can run Compass by passing in the config of postgres and elasticsearch defined in `docker-compose.yaml` file.
 
-# run elasticsearch, bound to the network we created. Since we are using the -d flag to docker run, the command inside the subshell returns the container id
-$ ES_CONTAINER_ID=$(docker run -d -e "discovery.type=single-node" --net compass-net elasticsearch:7.5.2)
+Run the migration.
+```text
+$ docker run --rm --net compass_storage -p 8080:8080 -e ELASTICSEARCH_BROKERS=http://es:9200 -e DB_HOST=postgres -e DB_PORT=5432 -e DB_NAME=compass -e DB_USER=compass -e DB_PASSWORD=compass_password odpf/compass compass migrate
+```
 
-# run compass, passing in the hostname (container id) of the elasticsearch server
-# if everything goes ok, you should say something like this:
-# time="2020-04-01T18:41:00Z" level=info msg="compass v0.1.0-103-g83b909b starting on 0.0.0.0:8080" reporter=main
-# time="2020-04-01T18:41:00Z" level=info msg="connected to elasticsearch cluster \"docker-cluster\" (server version 7.5.2)" reporter=main
-$ docker run --net compass-net compass -p 8080:8080 -elasticsearch-brokers http://${ES_CONTAINER_ID}:9200
+Run the Compass app.
+```text
+$ docker run --net compass_storage -p 8080:8080 -e ELASTICSEARCH_BROKERS=http://es:9200 -e DB_HOST=postgres -e DB_PORT=5432 -e DB_NAME=compass -e DB_USER=compass -e DB_PASSWORD=compass_password odpf/compass compass serve
+```
+
+If everything goes ok, you should see something like this:
+```text
+time="2022-04-27T09:18:08Z" level=info msg="compass starting" version=v0.2.0
+time="2022-04-27T09:18:08Z" level=info msg="connected to elasticsearch cluster" config="\"docker-cluster\" (server version 7.6.1)"
+time="2022-04-27T09:18:08Z" level=info msg="New Relic monitoring is disabled."
+time="2022-04-27T09:18:08Z" level=info msg="statsd metrics monitoring is disabled."
+time="2022-04-27T09:18:08Z" level=info msg="connected to postgres server" host=postgres port=5432
+time="2022-04-27T09:18:08Z" level=info msg="server started"
 ```
 
 ## Using the Search API
 
-The API contract is available here: [http://localhost:3000/swagger.yaml](http://localhost:3000/swagger.yaml)
+The API contract is available [here](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
 
 To demonstrate how to use compass, we’re going to query it for resources that contain the word ‘booking’.
 
 ```text
-$ curl http://localhost:3000/v1/search?text=booking
+$ curl http://localhost:8080/v1beta1/search?text=booking --header 'Compass-User-UUID:odpf@email.com' 
 ```
 
 This will return a list of search results. Here’s a sample response:
 
 ```text
-[
-  {
-    "title": "g-godata-id-seg-enriched-booking-dagger",
-    "id": "g-godata-id-seg-enriched-booking-dagger",
-    "type": "dagger",
-    "description": "",
-    "labels": {
-      "flink_name": "g-godata-id-playground",
-      "sink_type": "kafka"
-    }
-  },
-  {
-    "title": "g-godata-id-booking-bach-test-dagger",
-    "id": "g-godata-id-booking-bach-test-dagger",
-    "type": "dagger",
-    "description": "",
-    "labels": {
-      "flink_name": "g-godata-id-playground",
-      "sink_type": "kafka"
-    }
-  },
-  {
-    "title": "g-godata-id-booking-bach-test-3-dagger",
-    "id": "g-godata-id-booking-bach-test-3-dagger",
-    "type": "dagger",
-    "description": "",
-    "labels": {
-      "flink_name": "g-godata-id-playground",
-      "sink_type": "kafka"
-    }
-  }
-]
+{
+    "data": [
+        {
+            "id": "00c06ef7-badb-4236-9d9e-889697cbda46",
+            "urn": "kafka::g-godata-id-playground/ g-godata-id-seg-enriched-booking-dagger",
+            "type": "topic",
+            "service": "kafka",
+            "name": "g-godata-id-seg-enriched-booking-dagger",
+            "description": "",
+            "labels": {
+                "flink_name": "g-godata-id-playground",
+                "sink_type": "kafka"
+            }
+        },
+        {
+            "id": "9e69c08a-c3c2-4e04-957f-c8010c1e6515",
+            "urn": "kafka::g-godata-id-playground/ g-godata-id-booking-bach-test-dagger",
+            "type": "topic",
+            "service": "kafka",
+            "name": "g-godata-id-booking-bach-test-dagger",
+            "description": "",
+            "labels": {
+                "flink_name": "g-godata-id-playground",
+                "sink_type": "kafka"
+            }
+        },
+        {
+            "id": "ff597a0f-8062-4370-a54c-fd6f6c12d2a0",
+            "urn": "kafka::g-godata-id-playground/ g-godata-id-booking-bach-test-3-dagger",
+            "type": "topic",
+            "service": "kafka",
+            "title": "g-godata-id-booking-bach-test-3-dagger",
+            "description": "",
+            "labels": {
+                "flink_name": "g-godata-id-playground",
+                "sink_type": "kafka"
+            }
+        }
+    ]
+}
 ```
 
-ID is the URN of the resource, while Title is the human friendly name for it. See the complete API spec to learn more about what the rest of the fields mean.
+Compass decouple identifier from external system with the one that is being used internally. ID is the internally auto-generated unique identifier. URN is the external identifier of the asset, while Name is the human friendly name for it. See the complete API spec to learn more about what the rest of the fields mean.
 
-Compass also supports restricting search results via filters. For instance, to restrict search results to the ‘id’ landscape for ‘odpf’ organisation, run:
+### Filter
+Compass search API also supports restricting search results via filter by passing it in query params.
+Filter query params format is `filter[{field_key}]={value}` where `field_key` is the field name that we want to restrict and `value` is what value that should be matched. Filter could also support nested field by chaining key `field_key` with `.` \(dot\) such as `filter[{field_key}.{nested_field_key}]={value}`. For instance, to restrict search results to the ‘id’ landscape for ‘odpf’ organisation, run:
 
-$ curl [http://localhost:3000/v1/search?text=booking&filter.landscape=vn&filter.entity=odpf](http://localhost:3000/v1/search?text=booking&filter.landscape=vn&filter.entity=odpf)
+$ curl [http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=vn&filter[labels.entity]=odpf](http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=vn&filter[labels.entity]=odpf) --header 'Compass-User-UUID:odpf@email.com' 
 
 Under the hood, filter's work by checking whether the matching document's contain the filter key and checking if their values match. Filters can be specified multiple times to specify a set of filter criteria. For example, to search for ‘booking’ in both ‘vn’ and ‘th’ landscape, run:
 
 ```text
-$ curl http://localhost:3000/v1/search?text=booking&filter.landscape=id&filter.landscape=th
+$ curl http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=id&filter[labels.landscape]=th --header 'Compass-User-UUID:odpf@email.com' 
 ```
 
+### Query
+Apart from filters, Compass search API also supports fuzzy restriction in its query params. The difference of filter and query are, filter is for exact match on a specific field in asset while query is for fuzzy match.
+
+Query format is not different with filter `query[{field_key}]={value}` where `field_key` is the field name that we want to query and `value` is what value that should be fuzzy matched. Query could also support nested field by chaining key `field_key` with `.` \(dot\) such as `query[{field_key}.{nested_field_key}]={value}`. For instance, to search results that has a name `kafka` and belongs to the team `data_engineering`, run:
+
+```text
+$ curl http://localhost:8080/v1beta1/search?text=booking&query[name]=kafka&query[labels.team]=data_eng --header 'Compass-User-UUID:odpf@email.com' 
+```
+
+### Ranking Results
+Compass allows user to rank the results based on a numeric field in the asset. It supports nested field by using the `.` \(dot\) to point to the nested field. For instance, to rank the search results based on `usage_count` in `data` field, run:
+
+```text
+$ curl http://localhost:8080/v1beta1/search?text=booking&rankby=data.usage_count --header 'Compass-User-UUID:odpf@email.com' 
+```
+
+### Size
 You can also specify the number of maximum results you want compass to return using the ‘size’ parameter
 
 ```text
-$ curl http://localhost:3000/v1/search?text=booking&size=5
+$ curl http://localhost:8080/v1beta1/search?text=booking&size=5 --header 'Compass-User-UUID:odpf@email.com' 
 ```
+
+## Using the Suggest API
+The Suggest API gives a number of suggestion based on asset's name. There are 5 suggestions by default return by this API.
+
+The API contract is available [here](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
+
+Example of searching assets suggestion that has a name ‘booking’.
+
+```text
+$ curl http://localhost:8080/v1beta1/search/suggest?text=booking --header 'Compass-User-UUID:odpf@email.com' 
+```
+This will return a list of suggestions. Here’s a sample response:
+
+```text
+{
+    "data": [
+        "booking-daily-test-962ZFY",
+        "booking-daily-test-c7OUZv",
+        "booking-weekly-test-fmDeUf",
+        "booking-daily-test-jkQS2b",
+        "booking-daily-test-m6Oe9M"
+    ]
+}
+```
+## Using the Get Assets API
+The Get Assets API returns assets from Compass' main storage (PostgreSQL) while the Search API returns assets from Elasticsearch. The Get Assets API has several options (filters, size, offset, etc...) in its query params.
+
+
+|  Query Params | Description |
+|---|---|
+|`types=topic,table`| filter by types |
+|`services=kafka,postgres`| filter by services |
+|`data[dataset]=booking&data[project]=p-godata-id`| filter by field in asset.data |
+|`q=internal&q_fields=name,urn,description,services`| querying by field|
+|`sort=created_at`|sort by certain fields|
+|`direction=desc`|sorting direction (asc / desc)|
+
+
+The API contract is available [here](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
 
 ## Using the Lineage API
 
-The Lineage API allows the clients to query the data flow relationship between different types \(formerly called entities\) managed by Compass.
+The Lineage API allows the clients to query the data flow relationship between different assets managed by Compass.
 
-See the swagger definition of [Lineage API](http://localhost:3000/swagger.yaml) for more information.
+See the swagger definition of [Lineage API](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json)) for more information.
 
-Lineage API returns a hashmap representation of a graph \(called AdjacencyMap\). The values of the hashmap contain a description of the resources, along with references to it's upstreams and downstreams.
+Lineage API returns a list of directed edges. For each edge, there are `source` and `target` fields that represent nodes to indicate the direction of the edge. Each edge could have an optional property in the `props` field.
 
 Here's a sample API call:
 
 ```text
-curl http://localhost:3000/v1/lineage?filter.type=bqtable
+curl http://localhost:8080/v1beta1/lineage/data-project%3Adatalake.events --header 'Compass-User-UUID:odpf@email.com' 
 
 {
-    "topic/events": {
-        "urn": "events",
-        "type": "topic",
-        "downstreams": [
-            "beast/events-ingestion"
-        ],
-        "upstreams": []
-    },
-    "beast/events-ingestion": {
-        "urn": "events-ingestion",
-        "type": "beast",
-        "upstreams": [],
-        "downstreams": [
-            "bqtable/data-project:datalake.events"
-        ]
-    },
-    "s3/events-transform-dwh": {
-        "urn": "events-transform-dwh",
-        "type": "s3",
-        "upstreams": [
-            "bqtable/data-project:datalake.events"
-        ],
-        "downstreams": [
-            "bqtable/data-project:datawarehouse.events"
-        ]
-    },
-    "bqtable/data-project:datalake.events": {
-        "urn": "data-project:datalake.events",
-        "type": "bqtable",
-        "upstreams": [
-            "beast/events-ingestion"
-        ],
-        "downstreams": [
-            "s3/events-transform-dwh"
-        ]
-    },
-    "bqtable/data-project:datawarehouse.events": {
-        "urn": "data-project:datawarehouse.events",
-        "type": "bqtable",
-        "upstreams": [
-            "s3/events-transform-dwh"
-        ],
-        "downstreams": []
-    }
+    data: [
+        {
+            "source": {
+                "urn": "data-project:datalake.events",
+                "type": "table",
+                "service": "bigquery",
+            },
+            "target": {
+                "urn": "events-transform-dwh",
+                "type": "csv",
+                "service": "s3",
+            },
+            "props": nil
+        },
+        {
+            "source": {
+                "urn": "events-ingestion",
+                "type": "topic",
+                "service": "beast",
+            },
+            "target": {
+                "urn": "data-project:datalake.events",
+                "type": "table",
+                "service": "bigquery",
+            },
+            "props": nil
+        },
+    ]
 }
 ```
 
-The node id's are are a concatentation of the resources "type" and it's "urn", separated by a `/`. This particular response depicts a data pipeline consisting of a "beast" application that persists data from a kafka topic to a bigquery table, and then a Optimus \(Bigquery Orchestrator\) job that processes and writes that data to a warehouse table.
-
-Notice how we only queried for the `bqtable` lineage, yet the response contained resources of other types of resources that were related. This reflects how `bqtables` interfaces with other resources types. Anytime you query for a certain resources types, all resources types related to that resource, whether directly or indirectly are also returned.
-
-But what if all you wished to know was how data flow's between two bigquery tables? Well, the Lineage API can optionally transform the requested lineage graph with just the dataflow information of the requested types using the `collapse` parameter.
-
-by requesting the results to be collapse, the returned Lineage Graph is pre-processed by Compass to only contain the requested resources, and to mutate the references so that they point to the indirect ancestor/decendant that they're related to.
-
-To demonstrate, let's make the same API call as above, but with `collapse` set to true.
-
-```text
-curl http://localhost:3000/v1/lineage?filter.type=bqtable&collapse=true
-
-
-{
-    "bqtable/data-project:datalake.events": {
-        "urn": "data-project:datalake.events",
-        "type": "bqtable",
-        "upstreams": [],
-        "downstreams": [
-            "bqtable/data-project:datawarehouse.events"
-        ]
-    },
-    "bqtable/data-project:datawarehouse.events": {
-        "urn": "data-project:datawarehouse.events",
-        "type": "bqtable",
-        "upstreams": [
-            "bqtable/data-project:datalake.events"
-        ],
-        "downstreams": []
-    }
-}
-```
-
-In this case, all other related resources and their references have been removed from the response. Additionally, notice how `bqtable/data-project:datalake.events` now declares `bqtable/data-project:datawarehouse.events` as it's downstream and vice versa.
-
-Collapse can be used to request custom graphs of a specific subset of resources, ignoring any intermediate resource types that facilitate the data flow. For instance, to request the lineage graph containing just `beast` to `bqtable` dataflow, you can make the following API request:
-
-```text
-curl http://localhost:3000/v1/lineage?filter.type=bqtable&filter.type=beast&collapse=true
-```
+The lineage is fetched from the perspective of an asset. The response shows it has a list of upstreams and downstreams assets of the requested asset.
+Notice that in the URL, we are using `urn` instead of `id`. The reason is because we use `urn` as a main identifier in our lineage storage. We don't use `id` to store the lineage as a main identifier, because `id` is internally auto generated and in lineage, there might be some assets that we don't store in our Compass' storage yet.
 

@@ -162,7 +162,19 @@ This will return a list of suggestions. Here’s a sample response:
     ]
 }
 ```
-## !TODO Using the Get Assets API
+## Using the Get Assets API
+The Get Assets API returns assets from Compass' main storage (PostgreSQL) while the Search API returns assets from Elasticsearch. The Get Assets API has several options (filters, size, offset, etc...) in its query params.
+
+
+|  Query Params | Description |
+|---|---|
+|`types=topic,table`| filter by types |
+|`services=kafka,postgres`| filter by services |
+|`data[dataset]=booking&data[project]=p-godata-id`| filter by field in asset.data |
+|`q=internal&q_fields=name,urn,description,services`| querying by field|
+|`sort=created_at`|sort by certain fields|
+|`direction=desc`|sorting direction (asc / desc)|
+
 
 The API contract is available [here](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
 
@@ -177,7 +189,7 @@ Lineage API returns a list of directed edges. For each edge, there are `source` 
 Here's a sample API call:
 
 ```text
-curl http://localhost:8080/v1beta1/lineage/data-project:datalake.events --header 'Compass-User-UUID:odpf@email.com' 
+curl http://localhost:8080/v1beta1/lineage/data-project%3Adatalake.events --header 'Compass-User-UUID:odpf@email.com' 
 
 {
     data: [

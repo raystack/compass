@@ -8,5 +8,4 @@ We’re planning to iterate on the format of the roadmap itself, and we see pote
 
 ### Compass 0.2.x
 
-* Core Entity remodeling for Lineage.
-* GraphDB for main persistence storage.
+* User Activity and Notification

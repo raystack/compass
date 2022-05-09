@@ -1225,7 +1225,7 @@
     "/v1beta1/lineage/{urn}": {
       "get": {
         "summary": "Get Lineage Graph",
-        "description": "Get lineage graph of an asset",
+        "description": "Returns the lineage graph. Each entry in the graph describes a (edge) directed relation of assets with source and destination using it's urn, type, and service.",
         "operationId": "CompassService_GetGraph",
         "responses": {
           "200": {
@@ -1565,7 +1565,7 @@
       },
       "put": {
         "summary": "Star an asset",
-        "description": "Mark an asset by me with a star",
+        "description": "Mark an asset with a star",
         "operationId": "CompassService_StarAsset",
         "responses": {
           "200": {
@@ -1622,7 +1622,7 @@
     "/v1beta1/search": {
       "get": {
         "summary": "Search for an asset",
-        "description": "API for querying documents. 'text' is fuzzy matched against all the available datasets, and matched results are returned. You can specify additional match criteria using 'filter.*' query parameters. You can specify each filter multiple times to specify a set of values for those filters. For instance, to specify two landscape 'vn' and 'th', the query could be `/search/?text=\u003ctext\u003e\u0026filter.environment=integration\u0026filter.landscape=vn\u0026filter.landscape=th`",
+        "description": "API for querying documents. 'text' is fuzzy matched against all the available datasets, and matched results are returned. You can specify additional match criteria using 'filter[.*]' query parameters. You can specify each filter multiple times to specify a set of values for those filters. For instance, to specify two landscape 'vn' and 'th', the query could be `/search/?text=\u003ctext\u003e\u0026filter[environment]=integration\u0026filter[landscape]=vn\u0026filter[landscape]=th`. As an alternative, this API also supports fuzzy filter match with 'query' query params. For instance, searching assets that has 'bigqu' term in its description `/search/?text=\u003ctext\u003e\u0026query[description]=bigqu`",
         "operationId": "CompassService_SearchAssets",
         "responses": {
           "200": {
@@ -1695,6 +1695,7 @@
     "/v1beta1/search/suggest": {
       "get": {
         "summary": "Suggest an asset",
+        "description": "API for retreiving N number of asset names that similar with the `text`. By default, N = 5 for now and hardcoded in the code.",
         "operationId": "CompassService_SuggestAssets",
         "responses": {
           "200": {
@@ -2405,7 +2406,7 @@
     "/v1beta1/types": {
       "get": {
         "summary": "fetch all types",
-        "description": "used to fetch all types",
+        "description": "Fetch all types supported in Compass",
         "operationId": "CompassService_GetAllTypes",
         "responses": {
           "200": {

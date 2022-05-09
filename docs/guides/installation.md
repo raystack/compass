@@ -6,7 +6,7 @@ Compass is written in Golang, and requires go version &gt;= 1.16. Please make su
 
 Alternatively, you can use docker to build Compass as a docker image. More on this in the next section.
 
-Compass uses postgres 13 as its main storage and elasticsearch v7 as the secondary storage to power the search. In order to run compass locally, you’ll need to have an instance of postgres and elasticsearch running. You can either download them and run it manually, or you can run them inside docker by using `docker-compose` with `docker-compose.yaml` provided in the root of this project and run the following command in a terminal
+Compass uses PostgreSQL 13 as its main storage and Elasticsearch v7 as the secondary storage to power the search. In order to run compass locally, you’ll need to have an instance of postgres and elasticsearch running. You can either download them and run it manually, or you can run them inside docker by using `docker-compose` with `docker-compose.yaml` provided in the root of this project and run the following command in a terminal
 
 ```text
 $ docker-compose up
