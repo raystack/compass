@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRecordRepository(t *testing.T) {
+func TestAssetRepository(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("CreateOrReplaceMany", func(t *testing.T) {
@@ -93,7 +93,7 @@ func TestRecordRepository(t *testing.T) {
 						t.Errorf("error setting up testcase: %v", err)
 					}
 				}
-				factory := store.NewRecordRepositoryFactory(cli)
+				factory := store.NewAssetRepositoryFactory(cli)
 				repo, err := factory.For(testCase.Type)
 				if err != nil {
 					t.Fatalf("error creating asset repository: %s", err)
@@ -117,19 +117,19 @@ func TestRecordRepository(t *testing.T) {
 	})
 
 	cli := esTestServer.NewClient()
-	rrf := store.NewRecordRepositoryFactory(cli)
+	rrf := store.NewAssetRepositoryFactory(cli)
 	assetRepo, err := rrf.For("topic")
 	if err != nil {
 		t.Fatalf("failed to construct asset repository: %v", err)
 		return
 	}
 
-	assets := insertRecord(ctx, t, assetRepo)
+	assets := insertAsset(ctx, t, assetRepo)
 
 	t.Run("GetAll", func(t *testing.T) {
 		type testCase struct {
 			Description   string
-			Filter        discovery.RecordFilter
+			Filter        discovery.AssetFilter
 			ResultsFile   string
 			From          int
 			Size          int
@@ -270,7 +270,7 @@ func TestRecordRepository(t *testing.T) {
 	})
 }
 
-func insertRecord(ctx context.Context, t *testing.T, repo discovery.RecordRepository) (assets []asset.Asset) {
+func insertAsset(ctx context.Context, t *testing.T, repo discovery.AssetRepository) (assets []asset.Asset) {
 	src, err := ioutil.ReadFile("./testdata/assets.json")
 	if err != nil {
 		t.Fatalf("error reading testdata: %v", err)

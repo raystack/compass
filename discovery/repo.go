@@ -1,14 +1,18 @@
 package discovery
 
 //go:generate mockery --name Repository --outpkg mocks --output ../lib/mocks/ --with-expecter --structname DiscoveryRepository --filename discovery_repository.go
-//go:generate mockery --name RecordSearcher --outpkg mocks --output ../lib/mocks/ --with-expecter --structname DiscoveryRecordSearcher --filename discovery_record_searcher.go
+//go:generate mockery --name AssetSearcher --outpkg mocks --output ../lib/mocks/ --with-expecter --structname DiscoveryAssetSearcher --filename discovery_asset_searcher.go
+//go:generate mockery --name AssetIterator --outpkg mocks --output ../lib/mocks/ --with-expecter --structname DiscoveryAssetIterator --filename discovery_asset_iterator.go
+//go:generate mockery --name AssetRepository --outpkg mocks --output ../lib/mocks/ --with-expecter --structname DiscoveryAssetRepository --filename discovery_asset_repository.go
+//go:generate mockery --name AssetRepositoryFactory --outpkg mocks --output ../lib/mocks/ --with-expecter --structname DiscoveryAssetRepositoryFactory --filename discovery_asset_repository_factory.go
+//go:generate mockery --name TypeRepository --outpkg mocks --output ../lib/mocks/ --with-expecter --structname TypeRepository --filename type_repository.go
 import (
 	"context"
 
 	"github.com/odpf/compass/asset"
 )
 
-type RecordIterator interface {
+type AssetIterator interface {
 	Scan() bool
 	Next() []asset.Asset
 	Close() error
@@ -19,35 +23,35 @@ type Repository interface {
 	Delete(ctx context.Context, assetID string) error
 }
 
-// RecordRepository is an abstract storage for Assets
-type RecordRepository interface {
+// AssetRepository is an abstract storage for Assets
+type AssetRepository interface {
 	CreateOrReplaceMany(context.Context, []asset.Asset) error
 
 	// GetAll returns specific assets from storage
 	// GetConfig is used to configure fetching such as filters and offset
-	GetAll(ctx context.Context, cfg GetConfig) (RecordList, error)
+	GetAll(ctx context.Context, cfg GetConfig) (AssetList, error)
 
-	// GetAllIterator returns RecordIterator to iterate records by batches
-	GetAllIterator(context.Context) (RecordIterator, error)
+	// GetAllIterator returns AssetIterator to iterate assets by batches
+	GetAllIterator(context.Context) (AssetIterator, error)
 
-	// GetByID returns a record by it's id.
+	// GetByID returns a asset by it's id.
 	// The field that contains this ID is defined by the
-	// type to which this record belongs
+	// type to which this asset belongs
 	GetByID(context.Context, string) (asset.Asset, error)
 
-	// Delete deletes a record by it's id.
+	// Delete deletes a asset by it's id.
 	// The field that contains this ID is defined by the
-	// type to which this record belongs
+	// type to which this asset belongs
 	Delete(context.Context, string) error
 }
 
-// RecordRepositoryFactory represents a type capable
-// of constructing a RecordRepository for a certain type
-type RecordRepositoryFactory interface {
-	For(Type string) (RecordRepository, error)
+// AssetRepositoryFactory represents a type capable
+// of constructing a AssetRepository for a certain type
+type AssetRepositoryFactory interface {
+	For(Type string) (AssetRepository, error)
 }
 
-type RecordSearcher interface {
+type AssetSearcher interface {
 	Search(ctx context.Context, cfg SearchConfig) (results []SearchResult, err error)
 	Suggest(ctx context.Context, cfg SearchConfig) (suggestions []string, err error)
 }

@@ -2,9 +2,9 @@ package discovery
 
 import "github.com/odpf/compass/asset"
 
-// RecordFilter is a filter intended to be used as a search
+// AssetFilter is a filter intended to be used as a search
 // criteria for operations involving record search
-type RecordFilter = map[string][]string
+type AssetFilter = map[string][]string
 
 // SearchResult represents an item/result in a list of search results
 type SearchResult struct {
@@ -38,7 +38,7 @@ type SearchConfig struct {
 
 	// Filters specifies document level values to look for.
 	// Multiple values can be specified for a single key
-	Filters RecordFilter
+	Filters AssetFilter
 
 	// Number of relevant results to return
 	MaxResults int
@@ -59,7 +59,7 @@ type SearchConfig struct {
 type GetConfig struct {
 	// Filters specifies document level values to look for.
 	// Multiple values can be specified for a single key
-	Filters RecordFilter
+	Filters AssetFilter
 
 	// Number of relevant results to return
 	Size int
@@ -68,8 +68,8 @@ type GetConfig struct {
 	From int
 }
 
-// RecordList is a struct that wraps list of assets with total
-type RecordList struct {
+// AssetList is a struct that wraps list of assets with total
+type AssetList struct {
 	// Data contains list of fetched assets
 	Data []asset.Asset `json:"data"`
 

@@ -249,8 +249,8 @@ func loadTestFixture(esClient *elasticsearch.Client, filePath string) (err error
 		if err := store.Migrate(ctx, esClient, testdata.Type); err != nil {
 			return err
 		}
-		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(testdata.Type.String())
-		if err := recordRepo.CreateOrReplaceMany(ctx, testdata.Assets); err != nil {
+		assetRepo, _ := store.NewAssetRepositoryFactory(esClient).For(testdata.Type.String())
+		if err := assetRepo.CreateOrReplaceMany(ctx, testdata.Assets); err != nil {
 			return err
 		}
 	}

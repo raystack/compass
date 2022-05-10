@@ -30,21 +30,21 @@ func TestGetAllTypes(t *testing.T) {
 			Description:  "should return internal server error if failing to fetch types",
 			ExpectStatus: codes.Internal,
 			Setup: func(tc *testCase, er *mocks.TypeRepository) {
-				er.On("GetAll", context.Background()).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
+				er.EXPECT().GetAll(context.Background()).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
 			},
 		},
 		{
 			Description:  "should return internal server error if failing to fetch counts",
 			ExpectStatus: codes.Internal,
 			Setup: func(tc *testCase, er *mocks.TypeRepository) {
-				er.On("GetAll", context.Background()).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
+				er.EXPECT().GetAll(context.Background()).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
 			},
 		},
 		{
 			Description:  "should return all valid types with its record count",
 			ExpectStatus: codes.OK,
 			Setup: func(tc *testCase, er *mocks.TypeRepository) {
-				er.On("GetAll", context.Background()).Return(map[asset.Type]int{
+				er.EXPECT().GetAll(context.Background()).Return(map[asset.Type]int{
 					asset.Type("table"): 10,
 					asset.Type("topic"): 30,
 					asset.Type("job"):   15,

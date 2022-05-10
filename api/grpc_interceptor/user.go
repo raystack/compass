@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/odpf/compass/user"
 	"google.golang.org/grpc"
@@ -17,6 +18,10 @@ import (
 // use `user.FromContext` function to get the user ID string
 func ValidateUser(identityUUIDHeaderKey, identityEmailHeaderKey string, userSvc *user.Service) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+		if strings.EqualFold(info.FullMethod, "/grpc.health.v1.Health/Check") || strings.EqualFold(info.FullMethod, "/grpc.health.v1.Health/Watch") {
+			return handler(ctx, req)
+		}
+
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
 			return "", fmt.Errorf("metadata in grpc doesn't exist")

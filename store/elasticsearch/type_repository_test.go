@@ -59,7 +59,7 @@ func TestTypeRepository(t *testing.T) {
 			_, err = repo.GetAll(ctx)
 			require.NoError(t, err)
 
-			rrf := store.NewRecordRepositoryFactory(esClient)
+			rrf := store.NewAssetRepositoryFactory(esClient)
 			rr, err := rrf.For(typName.String())
 			require.NoError(t, err)
 			err = rr.CreateOrReplaceMany(ctx, assets)

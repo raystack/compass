@@ -17,14 +17,14 @@ import (
 	"github.com/olivere/elastic/v7"
 )
 
-// RecordRepository implements discovery.RecordRepository
+// AssetRepository implements discovery.AssetRepository
 // with elasticsearch as the backing store.
-type RecordRepository struct {
+type AssetRepository struct {
 	typeName string
 	cli      *elasticsearch.Client
 }
 
-func (repo *RecordRepository) GetAll(ctx context.Context, cfg discovery.GetConfig) (recordList discovery.RecordList, err error) {
+func (repo *AssetRepository) GetAll(ctx context.Context, cfg discovery.GetConfig) (assetList discovery.AssetList, err error) {
 	// XXX(Aman): we should probably think about result ordering, if the client
 	// is going to slice the data for pagination. Does ES guarantee the result order?
 	body, err := repo.getAllQuery(cfg.Filters)
@@ -61,17 +61,17 @@ func (repo *RecordRepository) GetAll(ctx context.Context, cfg discovery.GetConfi
 		err = fmt.Errorf("error decoding es response: %w", err)
 		return
 	}
-	var assets = repo.toRecordList(response)
+	var assets = repo.toAssetList(response)
 
-	recordList.Data = assets
-	recordList.Count = len(assets)
-	recordList.Total = int(response.Hits.Total.Value)
+	assetList.Data = assets
+	assetList.Count = len(assets)
+	assetList.Total = int(response.Hits.Total.Value)
 
 	return
 }
 
-func (repo *RecordRepository) GetAllIterator(ctx context.Context) (discovery.RecordIterator, error) {
-	body, err := repo.getAllQuery(discovery.RecordFilter{})
+func (repo *AssetRepository) GetAllIterator(ctx context.Context) (discovery.AssetIterator, error) {
+	body, err := repo.getAllQuery(discovery.AssetFilter{})
 	if err != nil {
 		return nil, fmt.Errorf("error building search query: %w", err)
 	}
@@ -95,17 +95,17 @@ func (repo *RecordRepository) GetAllIterator(ctx context.Context) (discovery.Rec
 	if err != nil {
 		return nil, fmt.Errorf("error decoding es response: %w", err)
 	}
-	var results = repo.toRecordList(response)
-	it := recordIterator{
+	var results = repo.toAssetList(response)
+	it := assetIterator{
 		resp:     resp,
-		records:  results,
+		assets:   results,
 		scrollID: response.ScrollID,
 		repo:     repo,
 	}
 	return &it, nil
 }
 
-func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, assets []asset.Asset) error {
+func (repo *AssetRepository) CreateOrReplaceMany(ctx context.Context, assets []asset.Asset) error {
 	requestPayload, err := repo.createBulkInsertPayload(assets)
 	if err != nil {
 		return fmt.Errorf("error serialising payload: %w", err)
@@ -125,7 +125,7 @@ func (repo *RecordRepository) CreateOrReplaceMany(ctx context.Context, assets []
 	return nil
 }
 
-func (repo *RecordRepository) GetByID(ctx context.Context, id string) (r asset.Asset, err error) {
+func (repo *AssetRepository) GetByID(ctx context.Context, id string) (r asset.Asset, err error) {
 	res, err := repo.cli.Get(
 		repo.typeName,
 		url.PathEscape(id),
@@ -157,7 +157,7 @@ func (repo *RecordRepository) GetByID(ctx context.Context, id string) (r asset.A
 	return
 }
 
-func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
+func (repo *AssetRepository) Delete(ctx context.Context, id string) error {
 	res, err := repo.cli.Delete(
 		repo.typeName,
 		url.PathEscape(id),
@@ -165,7 +165,7 @@ func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 		repo.cli.Delete.WithContext(ctx),
 	)
 	if err != nil {
-		return fmt.Errorf("error deleting record: %w", err)
+		return fmt.Errorf("error deleting asset: %w", err)
 	}
 	defer res.Body.Close()
 	if res.IsError() {
@@ -178,7 +178,7 @@ func (repo *RecordRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (repo *RecordRepository) createBulkInsertPayload(assets []asset.Asset) (io.Reader, error) {
+func (repo *AssetRepository) createBulkInsertPayload(assets []asset.Asset) (io.Reader, error) {
 	payload := bytes.NewBuffer(nil)
 	for _, ast := range assets {
 		err := repo.writeInsertAction(payload, ast)
@@ -187,15 +187,15 @@ func (repo *RecordRepository) createBulkInsertPayload(assets []asset.Asset) (io.
 		}
 		err = json.NewEncoder(payload).Encode(ast)
 		if err != nil {
-			return nil, fmt.Errorf("error serialising record: %w", err)
+			return nil, fmt.Errorf("error serialising asset: %w", err)
 		}
 	}
 	return payload, nil
 }
 
-func (repo *RecordRepository) writeInsertAction(w io.Writer, ast asset.Asset) error {
+func (repo *AssetRepository) writeInsertAction(w io.Writer, ast asset.Asset) error {
 	if strings.TrimSpace(ast.URN) == "" {
-		return fmt.Errorf("URN record field cannot be empty")
+		return fmt.Errorf("URN asset field cannot be empty")
 	}
 	type obj map[string]interface{}
 	action := obj{
@@ -207,7 +207,7 @@ func (repo *RecordRepository) writeInsertAction(w io.Writer, ast asset.Asset) er
 	return json.NewEncoder(w).Encode(action)
 }
 
-func (repo *RecordRepository) toRecordList(res searchResponse) []asset.Asset {
+func (repo *AssetRepository) toAssetList(res searchResponse) []asset.Asset {
 	assets := []asset.Asset{}
 	for _, entry := range res.Hits.Hits {
 		assets = append(assets, entry.Source)
@@ -215,18 +215,18 @@ func (repo *RecordRepository) toRecordList(res searchResponse) []asset.Asset {
 	return assets
 }
 
-func (repo *RecordRepository) getAllQuery(filters discovery.RecordFilter) (io.Reader, error) {
+func (repo *AssetRepository) getAllQuery(filters discovery.AssetFilter) (io.Reader, error) {
 	if len(filters) == 0 {
 		return repo.matchAllQuery(), nil
 	}
 	return repo.termsQuery(filters)
 }
 
-func (repo *RecordRepository) matchAllQuery() io.Reader {
+func (repo *AssetRepository) matchAllQuery() io.Reader {
 	return strings.NewReader(`{"query":{"match_all":{}}}`)
 }
 
-func (repo *RecordRepository) termsQuery(filters discovery.RecordFilter) (io.Reader, error) {
+func (repo *AssetRepository) termsQuery(filters discovery.AssetFilter) (io.Reader, error) {
 	var termQueries []elastic.Query
 	for key, rawValues := range filters {
 		var values []interface{}
@@ -252,7 +252,7 @@ func (repo *RecordRepository) termsQuery(filters discovery.RecordFilter) (io.Rea
 	return payload, json.NewEncoder(payload).Encode(raw)
 }
 
-func (repo *RecordRepository) scrollRecords(ctx context.Context, scrollID string) ([]asset.Asset, string, error) {
+func (repo *AssetRepository) scrollAssets(ctx context.Context, scrollID string) ([]asset.Asset, string, error) {
 	resp, err := repo.cli.Scroll(
 		repo.cli.Scroll.WithScrollID(scrollID),
 		repo.cli.Scroll.WithScroll(defaultScrollTimeout),
@@ -271,53 +271,53 @@ func (repo *RecordRepository) scrollRecords(ctx context.Context, scrollID string
 	if err != nil {
 		return nil, "", fmt.Errorf("error decoding es response: %w", err)
 	}
-	return repo.toRecordList(response), response.ScrollID, nil
+	return repo.toAssetList(response), response.ScrollID, nil
 }
 
-// recordIterator is the internal implementation of record.RecordIterator by RecordRepository
-type recordIterator struct {
+// assetIterator is the internal implementation of AssetIterator by AssetRepository
+type assetIterator struct {
 	resp     *esapi.Response
-	records  []asset.Asset
-	repo     *RecordRepository
+	assets   []asset.Asset
+	repo     *AssetRepository
 	scrollID string
 }
 
-func (it *recordIterator) Scan() bool {
+func (it *assetIterator) Scan() bool {
 	return len(strings.TrimSpace(it.scrollID)) > 0
 }
 
-func (it *recordIterator) Next() (prev []asset.Asset) {
-	prev = it.records
+func (it *assetIterator) Next() (prev []asset.Asset) {
+	prev = it.assets
 	var err error
-	it.records, it.scrollID, err = it.repo.scrollRecords(context.Background(), it.scrollID)
+	it.assets, it.scrollID, err = it.repo.scrollAssets(context.Background(), it.scrollID)
 	if err != nil {
 		panic("error scrolling results:" + err.Error())
 	}
-	if len(it.records) == 0 {
+	if len(it.assets) == 0 {
 		it.scrollID = ""
 	}
 	return
 }
 
-func (it *recordIterator) Close() error {
+func (it *assetIterator) Close() error {
 	return it.resp.Body.Close()
 }
 
-// RecordRepositoryFactory can be used to construct a RecordRepository
+// AssetRepositoryFactory can be used to construct a AssetRepository
 // for a certain type
-type RecordRepositoryFactory struct {
+type AssetRepositoryFactory struct {
 	cli *elasticsearch.Client
 }
 
-func (factory *RecordRepositoryFactory) For(typeName string) (discovery.RecordRepository, error) {
-	return &RecordRepository{
+func (factory *AssetRepositoryFactory) For(typeName string) (discovery.AssetRepository, error) {
+	return &AssetRepository{
 		cli:      factory.cli,
 		typeName: typeName,
 	}, nil
 }
 
-func NewRecordRepositoryFactory(cli *elasticsearch.Client) *RecordRepositoryFactory {
-	return &RecordRepositoryFactory{
+func NewAssetRepositoryFactory(cli *elasticsearch.Client) *AssetRepositoryFactory {
+	return &AssetRepositoryFactory{
 		cli: cli,
 	}
 }

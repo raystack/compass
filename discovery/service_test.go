@@ -13,16 +13,16 @@ import (
 
 func TestServiceUpsert(t *testing.T) {
 	ctx := context.TODO()
-	sampleRecord := asset.Asset{
+	sampleAsset := asset.Asset{
 		URN:     "sample-urn",
 		Service: "bigquery",
 	}
 
 	t.Run("should return error if factory returns error", func(t *testing.T) {
-		assets := []asset.Asset{sampleRecord}
+		assets := []asset.Asset{sampleAsset}
 
-		rrf := new(mocks.RecordRepositoryFactory)
-		rrf.On("For", "table").Return(new(mocks.RecordRepository), errors.New("error"))
+		rrf := new(mocks.DiscoveryAssetRepositoryFactory)
+		rrf.EXPECT().For("table").Return(new(mocks.DiscoveryAssetRepository), errors.New("error"))
 		defer rrf.AssertExpectations(t)
 
 		service := discovery.NewService(rrf, nil)
@@ -31,13 +31,13 @@ func TestServiceUpsert(t *testing.T) {
 	})
 
 	t.Run("should return error if repo returns error", func(t *testing.T) {
-		assets := []asset.Asset{sampleRecord}
+		assets := []asset.Asset{sampleAsset}
 
-		rr := new(mocks.RecordRepository)
-		rr.On("CreateOrReplaceMany", ctx, assets).Return(errors.New("error"))
+		rr := new(mocks.DiscoveryAssetRepository)
+		rr.EXPECT().CreateOrReplaceMany(ctx, assets).Return(errors.New("error"))
 		defer rr.AssertExpectations(t)
-		rrf := new(mocks.RecordRepositoryFactory)
-		rrf.On("For", "table").Return(rr, nil)
+		rrf := new(mocks.DiscoveryAssetRepositoryFactory)
+		rrf.EXPECT().For("table").Return(rr, nil)
 		defer rrf.AssertExpectations(t)
 
 		service := discovery.NewService(rrf, nil)
@@ -46,13 +46,13 @@ func TestServiceUpsert(t *testing.T) {
 	})
 
 	t.Run("should return no error on success", func(t *testing.T) {
-		assets := []asset.Asset{sampleRecord}
+		assets := []asset.Asset{sampleAsset}
 
-		rr := new(mocks.RecordRepository)
-		rr.On("CreateOrReplaceMany", ctx, assets).Return(nil)
+		rr := new(mocks.DiscoveryAssetRepository)
+		rr.EXPECT().CreateOrReplaceMany(ctx, assets).Return(nil)
 		defer rr.AssertExpectations(t)
-		rrf := new(mocks.RecordRepositoryFactory)
-		rrf.On("For", "table").Return(rr, nil)
+		rrf := new(mocks.DiscoveryAssetRepositoryFactory)
+		rrf.EXPECT().For("table").Return(rr, nil)
 		defer rrf.AssertExpectations(t)
 
 		service := discovery.NewService(rrf, nil)
@@ -61,43 +61,43 @@ func TestServiceUpsert(t *testing.T) {
 	})
 }
 
-func TestServiceDeleteRecord(t *testing.T) {
+func TestServiceDeleteAsset(t *testing.T) {
 	ctx := context.TODO()
-	recordURN := "sample-urn"
+	assetURN := "sample-urn"
 
 	t.Run("should return error if factory returns error", func(t *testing.T) {
-		rrf := new(mocks.RecordRepositoryFactory)
-		rrf.On("For", "table").Return(new(mocks.RecordRepository), errors.New("error"))
+		rrf := new(mocks.DiscoveryAssetRepositoryFactory)
+		rrf.EXPECT().For("table").Return(new(mocks.DiscoveryAssetRepository), errors.New("error"))
 		defer rrf.AssertExpectations(t)
 
 		service := discovery.NewService(rrf, nil)
-		err := service.DeleteRecord(ctx, "table", recordURN)
+		err := service.DeleteAsset(ctx, "table", assetURN)
 		assert.Error(t, err)
 	})
 
 	t.Run("should return error if repo returns error", func(t *testing.T) {
-		rr := new(mocks.RecordRepository)
-		rr.On("Delete", ctx, recordURN).Return(errors.New("error"))
+		rr := new(mocks.AssetRepository)
+		rr.EXPECT().Delete(ctx, assetURN).Return(errors.New("error"))
 		defer rr.AssertExpectations(t)
-		rrf := new(mocks.RecordRepositoryFactory)
-		rrf.On("For", "table").Return(rr, nil)
+		rrf := new(mocks.DiscoveryAssetRepositoryFactory)
+		rrf.EXPECT().For("table").Return(rr, nil)
 		defer rrf.AssertExpectations(t)
 
 		service := discovery.NewService(rrf, nil)
-		err := service.DeleteRecord(ctx, "table", recordURN)
+		err := service.DeleteAsset(ctx, "table", assetURN)
 		assert.Error(t, err)
 	})
 
-	t.Run("should delete record", func(t *testing.T) {
-		rr := new(mocks.RecordRepository)
-		rr.On("Delete", ctx, recordURN).Return(nil)
+	t.Run("should delete asset", func(t *testing.T) {
+		rr := new(mocks.AssetRepository)
+		rr.EXPECT().Delete(ctx, assetURN).Return(nil)
 		defer rr.AssertExpectations(t)
-		rrf := new(mocks.RecordRepositoryFactory)
-		rrf.On("For", "table").Return(rr, nil)
+		rrf := new(mocks.DiscoveryAssetRepositoryFactory)
+		rrf.EXPECT().For("table").Return(rr, nil)
 		defer rrf.AssertExpectations(t)
 
 		service := discovery.NewService(rrf, nil)
-		err := service.DeleteRecord(ctx, "table", recordURN)
+		err := service.DeleteAsset(ctx, "table", assetURN)
 		assert.NoError(t, err)
 	})
 }
@@ -111,8 +111,8 @@ func TestServiceSearch(t *testing.T) {
 		},
 	}
 	t.Run("should return error if searcher fails", func(t *testing.T) {
-		searcher := new(mocks.RecordSearcher)
-		searcher.On("Search", ctx, cfg).Return([]discovery.SearchResult{}, errors.New("error"))
+		searcher := new(mocks.DiscoveryAssetSearcher)
+		searcher.EXPECT().Search(ctx, cfg).Return([]discovery.SearchResult{}, errors.New("error"))
 		defer searcher.AssertExpectations(t)
 
 		service := discovery.NewService(nil, searcher)
@@ -123,12 +123,12 @@ func TestServiceSearch(t *testing.T) {
 
 	t.Run("should return assets from searcher", func(t *testing.T) {
 		expected := []discovery.SearchResult{
-			{ID: "record-1"},
-			{ID: "record-2"},
-			{ID: "record-3"},
+			{ID: "asset-1"},
+			{ID: "asset-2"},
+			{ID: "asset-3"},
 		}
-		searcher := new(mocks.RecordSearcher)
-		searcher.On("Search", ctx, cfg).Return(expected, nil)
+		searcher := new(mocks.DiscoveryAssetSearcher)
+		searcher.EXPECT().Search(ctx, cfg).Return(expected, nil)
 		defer searcher.AssertExpectations(t)
 
 		service := discovery.NewService(nil, searcher)
@@ -148,8 +148,8 @@ func TestServiceSuggest(t *testing.T) {
 		},
 	}
 	t.Run("should return error if searcher fails", func(t *testing.T) {
-		searcher := new(mocks.RecordSearcher)
-		searcher.On("Suggest", ctx, cfg).Return([]string{}, errors.New("error"))
+		searcher := new(mocks.DiscoveryAssetSearcher)
+		searcher.EXPECT().Suggest(ctx, cfg).Return([]string{}, errors.New("error"))
 		defer searcher.AssertExpectations(t)
 
 		service := discovery.NewService(nil, searcher)
@@ -160,12 +160,12 @@ func TestServiceSuggest(t *testing.T) {
 
 	t.Run("should return assets from searcher", func(t *testing.T) {
 		expected := []string{
-			"record-1",
-			"record-2",
-			"record-3",
+			"asset-1",
+			"asset-2",
+			"asset-3",
 		}
-		searcher := new(mocks.RecordSearcher)
-		searcher.On("Suggest", ctx, cfg).Return(expected, nil)
+		searcher := new(mocks.DiscoveryAssetSearcher)
+		searcher.EXPECT().Suggest(ctx, cfg).Return(expected, nil)
 		defer searcher.AssertExpectations(t)
 
 		service := discovery.NewService(nil, searcher)

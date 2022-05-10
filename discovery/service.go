@@ -8,14 +8,14 @@ import (
 )
 
 type Service struct {
-	factory        RecordRepositoryFactory
-	recordSearcher RecordSearcher
+	factory       AssetRepositoryFactory
+	assetSearcher AssetSearcher
 }
 
-func NewService(factory RecordRepositoryFactory, recordSearcher RecordSearcher) *Service {
+func NewService(factory AssetRepositoryFactory, assetSearcher AssetSearcher) *Service {
 	return &Service{
-		factory:        factory,
-		recordSearcher: recordSearcher,
+		factory:       factory,
+		assetSearcher: assetSearcher,
 	}
 }
 
@@ -33,13 +33,13 @@ func (s *Service) Upsert(ctx context.Context, typeName string, assets []asset.As
 	return nil
 }
 
-func (s *Service) DeleteRecord(ctx context.Context, typeName string, recordURN string) error {
+func (s *Service) DeleteAsset(ctx context.Context, typeName string, assetURN string) error {
 	repo, err := s.factory.For(typeName)
 	if err != nil {
 		return fmt.Errorf("error building repo for type \"%s\": %w", typeName, err)
 	}
 
-	err = repo.Delete(ctx, recordURN)
+	err = repo.Delete(ctx, assetURN)
 	if err != nil {
 		return err
 	}
@@ -48,9 +48,9 @@ func (s *Service) DeleteRecord(ctx context.Context, typeName string, recordURN s
 }
 
 func (s *Service) Search(ctx context.Context, cfg SearchConfig) ([]SearchResult, error) {
-	return s.recordSearcher.Search(ctx, cfg)
+	return s.assetSearcher.Search(ctx, cfg)
 }
 
 func (s *Service) Suggest(ctx context.Context, cfg SearchConfig) ([]string, error) {
-	return s.recordSearcher.Suggest(ctx, cfg)
+	return s.assetSearcher.Suggest(ctx, cfg)
 }

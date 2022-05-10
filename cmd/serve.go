@@ -36,6 +36,7 @@ import (
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -61,7 +62,7 @@ func Serve() error {
 
 	handlers := api.NewHandlers(logger, deps)
 
-	// int grpc
+	// init grpc
 	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 			grpc_recovery.UnaryServerInterceptor(),
@@ -74,12 +75,23 @@ func Serve() error {
 	)
 
 	compassv1beta1.RegisterCompassServiceServer(grpcServer, handlers.GRPCHandler)
+	grpc_health_v1.RegisterHealthServer(grpcServer, handlers.HealthHandler)
 
 	// init http proxy
 	grpcDialCtx, grpcDialCancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer grpcDialCancel()
 
 	headerMatcher := makeHeaderMatcher(config)
+
+	address := fmt.Sprintf(":%s", config.ServerPort)
+	grpcConn, err := grpc.DialContext(grpcDialCtx, address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return err
+	}
+
+	runtimeCtx, runtimeCancel := context.WithCancel(context.Background())
+	defer runtimeCancel()
+
 	gwmux := runtime.NewServeMux(
 		runtime.WithErrorHandler(runtime.DefaultHTTPErrorHandler),
 		runtime.WithIncomingHeaderMatcher(headerMatcher),
@@ -91,30 +103,14 @@ func Serve() error {
 				DiscardUnknown: true,
 			},
 		}),
+		runtime.WithHealthEndpointAt(grpc_health_v1.NewHealthClient(grpcConn), "/ping"),
 	)
-	address := fmt.Sprintf(":%s", config.ServerPort)
-	grpcConn, err := grpc.DialContext(grpcDialCtx, address, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return err
-	}
-
-	runtimeCtx, runtimeCancel := context.WithCancel(context.Background())
-	defer runtimeCancel()
 
 	if err := compassv1beta1.RegisterCompassServiceHandler(runtimeCtx, gwmux, grpcConn); err != nil {
 		return err
 	}
-	if err := api.RegisterHTTPRoutes(api.Config{
-		IdentityUUIDHeaderKey:  config.IdentityUUIDHeaderKey,
-		IdentityEmailHeaderKey: config.IdentityEmailHeaderKey,
-	}, gwmux, deps, handlers.HTTPHandler); err != nil {
-		return err
-	}
 
 	baseMux := http.NewServeMux()
-	baseMux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "pong")
-	})
 	baseMux.Handle("/", gwmux)
 
 	httpServer := &http.Server{
@@ -178,8 +174,8 @@ func initDependencies(
 	statsdMonitor *metrics.StatsdMonitor,
 ) *api.Dependencies {
 	typeRepository := esStore.NewTypeRepository(esClient)
-	recordRepositoryFactory := esStore.NewRecordRepositoryFactory(esClient)
-	recordSearcher, err := esStore.NewSearcher(esStore.SearcherConfig{
+	discoveryAssetRepositoryFactory := esStore.NewAssetRepositoryFactory(esClient)
+	discoveryAssetSearcher, err := esStore.NewSearcher(esStore.SearcherConfig{
 		Client: esClient,
 	})
 	if err != nil {
@@ -229,20 +225,20 @@ func initDependencies(
 	}
 
 	return &api.Dependencies{
-		Logger:                  logger,
-		NRApp:                   nrApp,
-		StatsdMonitor:           statsdMonitor,
-		AssetRepository:         assetRepository,
-		DiscoveryRepository:     discoveryRepo,
-		TypeRepository:          typeRepository,
-		DiscoveryService:        discovery.NewService(recordRepositoryFactory, recordSearcher),
-		RecordRepositoryFactory: recordRepositoryFactory,
-		LineageRepository:       lineageRepo,
-		TagService:              tagService,
-		TagTemplateService:      tagTemplateService,
-		UserService:             userService,
-		StarRepository:          starRepository,
-		DiscussionRepository:    discussionRepository,
+		Logger:                          logger,
+		NRApp:                           nrApp,
+		StatsdMonitor:                   statsdMonitor,
+		AssetRepository:                 assetRepository,
+		DiscoveryRepository:             discoveryRepo,
+		TypeRepository:                  typeRepository,
+		DiscoveryService:                discovery.NewService(discoveryAssetRepositoryFactory, discoveryAssetSearcher),
+		DiscoveryAssetRepositoryFactory: discoveryAssetRepositoryFactory,
+		LineageRepository:               lineageRepo,
+		TagService:                      tagService,
+		TagTemplateService:              tagTemplateService,
+		UserService:                     userService,
+		StarRepository:                  starRepository,
+		DiscussionRepository:            discussionRepository,
 	}
 }
 
