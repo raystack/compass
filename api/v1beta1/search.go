@@ -56,12 +56,7 @@ func (h *Handler) SuggestAssets(ctx context.Context, req *compassv1beta1.Suggest
 	}
 
 	cfg := discovery.SearchConfig{
-		Text:          text,
-		MaxResults:    int(req.GetSize()),
-		Filters:       filterConfigFromValues(req.GetFilter()),
-		RankBy:        req.GetRankby(),
-		Queries:       queryConfigFromValues(req.GetQuery()),
-		TypeWhiteList: parseTypeWhiteList(req.GetFilter()),
+		Text: text,
 	}
 
 	suggestions, err := h.DiscoveryService.Suggest(ctx, cfg)
@@ -89,14 +84,6 @@ func filterConfigFromValues(fltMap map[string]string) map[string][]string {
 		filter[key] = filterValues
 	}
 	return filter
-}
-
-func queryConfigFromValues(queryMap map[string]string) map[string]string {
-	var query = make(map[string]string)
-	if len(queryMap) > 0 {
-		query = queryMap
-	}
-	return query
 }
 
 func parseTypeWhiteList(fltMap map[string]string) (types []string) {

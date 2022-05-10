@@ -258,42 +258,11 @@ func TestSuggest(t *testing.T) {
 			},
 			Setup: func(ctx context.Context, drs *mocks.DiscoveryRecordSearcher) {
 				cfg := discovery.SearchConfig{
-					Text:    "test",
-					Filters: map[string][]string{},
-					Queries: make(map[string]string),
+					Text: "test",
 				}
 				drs.EXPECT().Suggest(ctx, cfg).Return([]string{}, fmt.Errorf("service unavailable"))
 			},
 			ExpectStatus: codes.Internal,
-		},
-		{
-			Description: "should pass filter to search config format",
-			Request: &compassv1beta1.SuggestAssetsRequest{
-				Text: "resource",
-				Query: map[string]string{
-					"description": "this is my dashboard",
-				},
-				Filter: map[string]string{
-					"data.landscape": "th",
-					"type":           "topic",
-					"service":        "kafka,rabbitmq",
-				},
-			},
-			Setup: func(ctx context.Context, drs *mocks.DiscoveryRecordSearcher) {
-
-				cfg := discovery.SearchConfig{
-					Text:          "resource",
-					TypeWhiteList: []string{"topic"},
-					Filters: map[string][]string{
-						"service":        {"kafka", "rabbitmq"},
-						"data.landscape": {"th"},
-					},
-					Queries: map[string]string{
-						"description": "this is my dashboard",
-					},
-				}
-				drs.EXPECT().Suggest(ctx, cfg).Return([]string{}, nil)
-			},
 		},
 		{
 			Description: "should return suggestions",
@@ -303,9 +272,7 @@ func TestSuggest(t *testing.T) {
 			Setup: func(ctx context.Context, drs *mocks.DiscoveryRecordSearcher) {
 
 				cfg := discovery.SearchConfig{
-					Text:    "test",
-					Filters: make(map[string][]string),
-					Queries: make(map[string]string),
+					Text: "test",
 				}
 				response := []string{
 					"test",

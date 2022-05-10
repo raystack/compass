@@ -2367,10 +2367,6 @@ func (m *SearchAssetsRequest) validate(all bool) error {
 
 	}
 
-	if m.GetSearchby() != "" {
-
-	}
-
 	if m.GetSize() != 0 {
 
 		if m.GetSize() < 0 {
@@ -2631,33 +2627,6 @@ func (m *SuggestAssetsRequest) validate(all bool) error {
 	if m.GetText() != "" {
 
 	}
-
-	if m.GetRankby() != "" {
-
-	}
-
-	if m.GetSearchby() != "" {
-
-	}
-
-	if m.GetSize() != 0 {
-
-		if m.GetSize() < 0 {
-			err := SuggestAssetsRequestValidationError{
-				field:  "Size",
-				reason: "value must be greater than or equal to 0",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-
-	}
-
-	// no validation rules for Filter
-
-	// no validation rules for Query
 
 	if len(errors) > 0 {
 		return SuggestAssetsRequestMultiError(errors)

@@ -4,7 +4,7 @@ This document details information about how Compass interfaces with elasticsearc
 
 ## Index Setup
 
-When an type is created, an index is created in elasticsearch by it's name. All created indices are aliased to the `universe` index, which is used to run the search when all types need to be searched, or when `filter.type` is not specifed in the Search API.
+There is a migration command in compass to setup all storages. Once the migration is executed, all types are being created (if does not exist). When a type is created, an index is created in elasticsearch by it's name. All created indices are aliased to the `universe` index, which is used to run the search when all types need to be searched, or when `filter[type]` is not specifed in the Search API.
 
 The indices are also configured with a camel case tokenizer, to support proper lexing of some resources that use camel case in their nomenclature \(protobuf names for instance\). Given below is a sample of the index settings that are used:
 
@@ -30,7 +30,7 @@ The indices are also configured with a camel case tokenizer, to support proper l
 
 ## Search
 
-We use elasticsearch's `multi_match` search for running our queries. Depending on whether there are additional filter's specified during search, we augument the query with a custom script query that filter's the result set.
+We use elasticsearch's `multi_match` search for running our queries. Depending on whether there are additional filter's specified during search, we augment the query with a custom script query that filter's the result set.
 
 The script filter is designed to match a document if:
 
@@ -40,13 +40,12 @@ The script filter is designed to match a document if:
 To demonstrate, the following API call:
 
 ```text
-curl http://localhost:3000/v1beta1/search?text=log&filter.landscape=id
+$ curl http://localhost:8080/v1beta1/search?text=log&filter[landscape]=id
 ```
 
 is internally translated to the following elasticsearch query
 
 ```javascript
-// GET http://${ES_HOST}/universe/_search
 {
     "query": {
         "bool": {
@@ -67,32 +66,64 @@ is internally translated to the following elasticsearch query
 }
 ```
 
-## Lineage
+Compass also supports filter with fuzzy match with `query` query params. The script query is designed to match a document if:
 
-The process of building Lineage's graph is considered heavy and consumes more memories as more resource and types are added.
+* the document contains the filter key and it's value is fuzzily matches the `query` value
 
-The building process can be expressed using the following pseudo-code:
-
-```javascript
-graph = {} // an empty map
-all_types = fetch_all_types()
-for typ in all_types
-    all_type_resources = fetch_all_resources(typ)
-    for resource in all_type_resources
-        entry = populate_upstreams(resource)
-        add_entry_to_graph(entry)
-   for entry in graph:
-        populate_downstreams(entry)
+```text
+$ curl http://localhost:8080/v1beta1/search?text=log&filter[landscape]=id
 ```
 
-From pseudo-code above we can see that we practically fetch all records and types from Elastisearch then process all of them to build the lineage graph.
+is internally translated to the following elasticsearch query
 
-Doing it for every request would consume a lot of computing power and memory, especially if you have a lot of records stored. So instead of building it for each lineage request, Compass will builds lineage graph on two conditions:
-
-* on app start
-* a configurable time interval \(default to 5 minutes\) after previous building process
-
-The lineage graph is then cached in memory by adding or replacing the previous graph.
-
-This cached graph will then be used to serve lineage request until it is being replaced by a newly built graph.
-
+```javascript
+{
+   "query":{
+      "bool":{
+         "filter":{
+            "match":{
+               "description":{
+                  "fuzziness":"AUTO",
+                  "query":"test"
+               }
+            }
+         },
+         "should":{
+            "bool":{
+               "should":[
+                  {
+                     "multi_match":{
+                        "fields":[
+                           "urn^10",
+                           "name^5"
+                        ],
+                        "query":"log"
+                     }
+                  },
+                  {
+                     "multi_match":{
+                        "fields":[
+                           "urn^10",
+                           "name^5"
+                        ],
+                        "fuzziness":"AUTO",
+                        "query":"log"
+                     }
+                  },
+                  {
+                     "multi_match":{
+                        "fields":[
+                           
+                        ],
+                        "fuzziness":"AUTO",
+                        "query":"log"
+                     }
+                  }
+               ]
+            }
+         }
+      }
+   },
+   "min_score":0.01
+}
+```

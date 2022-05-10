@@ -53,7 +53,6 @@ func NewHandlers(logger log.Logger, deps *Dependencies) *Handlers {
 }
 
 func NewHTTPHandlers(deps *Dependencies) *httpapi.Handler {
-
 	recordHandler := handlers.NewRecordHandler(
 		deps.Logger,
 		deps.TypeRepository,
@@ -78,13 +77,18 @@ func NewGRPCHandler(l log.Logger, deps *Dependencies) *v1beta1.Handler {
 		TagTemplateService:   deps.TagTemplateService,
 		DiscoveryRepository:  deps.DiscoveryRepository,
 
-		//deprecated
+		// deprecated
 		TypeRepository:   deps.TypeRepository,
 		DiscoveryService: deps.DiscoveryService,
 	}
 }
 
-func RegisterHTTPRoutes(cfg Config, mux *runtime.ServeMux, deps *Dependencies, handlerCollection *httpapi.Handler) error {
+func RegisterHTTPRoutes(
+	cfg Config,
+	mux *runtime.ServeMux,
+	deps *Dependencies,
+	handlerCollection *httpapi.Handler,
+) error {
 	if err := mux.HandlePath(http.MethodGet, "/ping", runtime.HandlerFunc(func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		fmt.Fprintf(w, "pong")
 	})); err != nil {
