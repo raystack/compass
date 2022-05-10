@@ -1750,16 +1750,16 @@
         ]
       }
     },
-    "/v1beta1/tags": {
+    "/v1beta1/tags/assets": {
       "post": {
-        "summary": "Tag a record",
-        "description": "Tag a record in a type with a tag template",
-        "operationId": "CompassService_CreateTag",
+        "summary": "Tag an asset",
+        "description": "Tag an asset with a tag template",
+        "operationId": "CompassService_CreateTagAsset",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1beta1CreateTagResponse"
+              "$ref": "#/definitions/v1beta1CreateTagAssetResponse"
             }
           },
           "400": {
@@ -1799,7 +1799,273 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1beta1CreateTagRequest"
+              "$ref": "#/definitions/v1beta1CreateTagAssetRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Tag"
+        ]
+      }
+    },
+    "/v1beta1/tags/assets/{assetId}": {
+      "get": {
+        "summary": "Get an asset's tags",
+        "description": "Get all tags for an assets",
+        "operationId": "CompassService_GetAllTagsByAsset",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1GetAllTagsByAssetResponse"
+            }
+          },
+          "400": {
+            "description": "Returned when the data that user input is wrong.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "409": {
+            "description": "Returned when the resource already exist.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "500": {
+            "description": "Returned when theres is something wrong on the server side.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "assetId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Tag"
+        ]
+      }
+    },
+    "/v1beta1/tags/assets/{assetId}/templates/{templateUrn}": {
+      "get": {
+        "summary": "Find a tag by asset and template",
+        "description": "Find a single tag using asset id and template urn",
+        "operationId": "CompassService_GetTagsByAssetAndTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1GetTagsByAssetAndTemplateResponse"
+            }
+          },
+          "400": {
+            "description": "Returned when the data that user input is wrong.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "409": {
+            "description": "Returned when the resource already exist.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "500": {
+            "description": "Returned when theres is something wrong on the server side.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "assetId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "templateUrn",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Tag"
+        ]
+      },
+      "delete": {
+        "summary": "Remove a tag on an asset",
+        "description": "Remove a tag on an asset in a type",
+        "operationId": "CompassService_DeleteTagAsset",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1DeleteTagAssetResponse"
+            }
+          },
+          "400": {
+            "description": "Returned when the data that user input is wrong.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "409": {
+            "description": "Returned when the resource already exist.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "500": {
+            "description": "Returned when theres is something wrong on the server side.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "assetId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "templateUrn",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Tag"
+        ]
+      },
+      "put": {
+        "summary": "Update a tag on an asset",
+        "description": "Update a tag on an asset",
+        "operationId": "CompassService_UpdateTagAsset",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1beta1UpdateTagAssetResponse"
+            }
+          },
+          "400": {
+            "description": "Returned when the data that user input is wrong.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "409": {
+            "description": "Returned when the resource already exist.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "500": {
+            "description": "Returned when theres is something wrong on the server side.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "assetId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "templateUrn",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "tagValues": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/v1beta1TagValue"
+                  }
+                },
+                "templateDisplayName": {
+                  "type": "string"
+                },
+                "templateDescription": {
+                  "type": "string"
+                }
+              },
+              "description": "Request to be sent to update an asset tag",
+              "title": "UpdateTagAssetRequest",
+              "required": [
+                "assetId",
+                "tagValues"
+              ]
             }
           }
         ],
@@ -2114,295 +2380,6 @@
         ]
       }
     },
-    "/v1beta1/tags/types/{type}/records/{recordUrn}": {
-      "get": {
-        "summary": "Get a record's tags",
-        "description": "Get all tags for a record in a type",
-        "operationId": "CompassService_GetTagsByRecord",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1beta1GetTagsByRecordResponse"
-            }
-          },
-          "400": {
-            "description": "Returned when the data that user input is wrong.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "409": {
-            "description": "Returned when the resource already exist.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "500": {
-            "description": "Returned when theres is something wrong on the server side.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "type",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "recordUrn",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "Tag"
-        ]
-      }
-    },
-    "/v1beta1/tags/types/{type}/records/{recordUrn}/templates/{templateUrn}": {
-      "get": {
-        "summary": "Find a tag by record and template",
-        "description": "Find a single tag using record urn and template urn",
-        "operationId": "CompassService_GetTagsByRecordAndTemplate",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1beta1GetTagsByRecordAndTemplateResponse"
-            }
-          },
-          "400": {
-            "description": "Returned when the data that user input is wrong.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "409": {
-            "description": "Returned when the resource already exist.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "500": {
-            "description": "Returned when theres is something wrong on the server side.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "type",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "recordUrn",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "templateUrn",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "Tag"
-        ]
-      },
-      "delete": {
-        "summary": "Remove a tag on a record",
-        "description": "Remove a tag on a record in a type",
-        "operationId": "CompassService_DeleteTag",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1beta1DeleteTagResponse"
-            }
-          },
-          "400": {
-            "description": "Returned when the data that user input is wrong.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "409": {
-            "description": "Returned when the resource already exist.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "500": {
-            "description": "Returned when theres is something wrong on the server side.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "type",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "recordUrn",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "templateUrn",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "Tag"
-        ]
-      },
-      "put": {
-        "summary": "Update a tag on a record",
-        "description": "Update a tag on a record in a type",
-        "operationId": "CompassService_UpdateTag",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1beta1UpdateTagResponse"
-            }
-          },
-          "400": {
-            "description": "Returned when the data that user input is wrong.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "404": {
-            "description": "Returned when the resource does not exist.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "409": {
-            "description": "Returned when the resource already exist.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "500": {
-            "description": "Returned when theres is something wrong on the server side.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "type",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "recordUrn",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "templateUrn",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "tagValues": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/v1beta1TagValue"
-                  }
-                },
-                "templateDisplayName": {
-                  "type": "string"
-                },
-                "templateDescription": {
-                  "type": "string"
-                }
-              },
-              "description": "Request to be sent to update a tag",
-              "title": "UpdateTagRequest",
-              "required": [
-                "tagValues"
-              ]
-            }
-          }
-        ],
-        "tags": [
-          "Tag"
-        ]
-      }
-    },
     "/v1beta1/types": {
       "get": {
         "summary": "fetch all types",
@@ -2527,10 +2504,7 @@
     "compassv1beta1Tag": {
       "type": "object",
       "properties": {
-        "recordType": {
-          "type": "string"
-        },
-        "recordUrn": {
+        "assetId": {
           "type": "string"
         },
         "templateUrn": {
@@ -2760,13 +2734,10 @@
         }
       }
     },
-    "v1beta1CreateTagRequest": {
+    "v1beta1CreateTagAssetRequest": {
       "type": "object",
       "properties": {
-        "recordType": {
-          "type": "string"
-        },
-        "recordUrn": {
+        "assetId": {
           "type": "string"
         },
         "templateUrn": {
@@ -2786,14 +2757,14 @@
         }
       },
       "description": "Request to be sent to create a tag",
-      "title": "CreateTagRequest",
+      "title": "CreateTagAssetRequest",
       "required": [
-        "recordUrn",
+        "assetId",
         "templateUrn",
         "tagValues"
       ]
     },
-    "v1beta1CreateTagResponse": {
+    "v1beta1CreateTagAssetResponse": {
       "type": "object",
       "properties": {
         "data": {
@@ -2843,7 +2814,7 @@
     "v1beta1DeleteCommentResponse": {
       "type": "object"
     },
-    "v1beta1DeleteTagResponse": {
+    "v1beta1DeleteTagAssetResponse": {
       "type": "object"
     },
     "v1beta1DeleteTagTemplateResponse": {
@@ -2943,6 +2914,17 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1beta1TagTemplate"
+          }
+        }
+      }
+    },
+    "v1beta1GetAllTagsByAssetResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/compassv1beta1Tag"
           }
         }
       }
@@ -3061,22 +3043,11 @@
         }
       }
     },
-    "v1beta1GetTagsByRecordAndTemplateResponse": {
+    "v1beta1GetTagsByAssetAndTemplateResponse": {
       "type": "object",
       "properties": {
         "data": {
           "$ref": "#/definitions/compassv1beta1Tag"
-        }
-      }
-    },
-    "v1beta1GetTagsByRecordResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/compassv1beta1Tag"
-          }
         }
       }
     },
@@ -3270,7 +3241,7 @@
     "v1beta1UpdateCommentResponse": {
       "type": "object"
     },
-    "v1beta1UpdateTagResponse": {
+    "v1beta1UpdateTagAssetResponse": {
       "type": "object",
       "properties": {
         "data": {

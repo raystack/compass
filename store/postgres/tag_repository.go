@@ -11,9 +11,8 @@ import (
 )
 
 var (
-	errNilTag          = errors.New("tag is nil")
-	errEmptyRecordType = errors.New("record type should not be empty")
-	errEmptyRecordURN  = errors.New("record urn should not be empty")
+	errNilTag       = errors.New("tag is nil")
+	errEmptyAssetID = errors.New("asset id should not be empty")
 )
 
 // TagRepository is a type that manages tag operation ot the primary database
@@ -48,26 +47,24 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 				continue
 			}
 			tagToInsert := &TagModel{
-				RecordType: domainTag.RecordType,
-				RecordURN:  domainTag.RecordURN,
-				FieldID:    tv.FieldID,
-				Value:      fmt.Sprintf("%v", tv.FieldValue),
-				CreatedAt:  timestamp,
-				UpdatedAt:  timestamp,
+				AssetID:   domainTag.AssetID,
+				FieldID:   tv.FieldID,
+				Value:     fmt.Sprintf("%v", tv.FieldValue),
+				CreatedAt: timestamp,
+				UpdatedAt: timestamp,
 			}
 
 			if err := tx.QueryRowxContext(ctx, `
 						INSERT INTO tags
-							(value, record_urn, record_type, field_id, created_at, updated_at)
+							(value, asset_id, field_id, created_at, updated_at)
 						VALUES
-							($1, $2, $3, $4, $5, $6)
+							($1, $2, $3, $4, $5)
 						RETURNING *`,
-				tagToInsert.Value, tagToInsert.RecordURN, tagToInsert.RecordType, tagToInsert.FieldID, tagToInsert.CreatedAt, tagToInsert.UpdatedAt).
+				tagToInsert.Value, tagToInsert.AssetID, tagToInsert.FieldID, tagToInsert.CreatedAt, tagToInsert.UpdatedAt).
 				StructScan(&insertedTagValue); err != nil {
 				if err := checkPostgresError(err); errors.Is(err, errDuplicateKey) {
 					return tag.DuplicateError{
-						RecordURN:   tagToInsert.RecordURN,
-						RecordType:  tagToInsert.RecordType,
+						AssetID:     tagToInsert.AssetID,
 						TemplateURN: domainTag.TemplateURN,
 					}
 				}
@@ -87,18 +84,15 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 // Read reads tags grouped by its template
 func (r *TagRepository) Read(ctx context.Context, filter tag.Tag) ([]tag.Tag, error) {
 
-	if filter.RecordType == "" {
-		return nil, errEmptyRecordType
-	}
-	if filter.RecordURN == "" {
-		return nil, errEmptyRecordURN
+	if filter.AssetID == "" {
+		return nil, errEmptyAssetID
 	}
 
 	sqlQuery := `
 		SELECT 
 			t.urn as "tag_templates.urn", t.display_name as "tag_templates.display_name", t.description as "tag_templates.description",
 			t.created_at as "tag_templates.created_at", t.updated_at as "tag_templates.updated_at",
-			tg.id as "tags.id", tg.value as "tags.value", tg.record_urn as "tags.record_urn", tg.record_type as "tags.record_type",
+			tg.id as "tags.id", tg.value as "tags.value", tg.asset_id as "tags.asset_id",
 			tg.field_id as "tags.field_id", tg.created_at as "tags.created_at", tg.updated_at as "tags.updated_at",
 			f.id as "tag_template_fields.id", f.urn as "tag_template_fields.urn", f.display_name as "tag_template_fields.display_name", f.description as "tag_template_fields.description",
 			f.data_type as "tag_template_fields.data_type", f.options as "tag_template_fields.options", f.required as "tag_template_fields.required", f.template_urn as "tag_template_fields.template_urn",
@@ -110,12 +104,12 @@ func (r *TagRepository) Read(ctx context.Context, filter tag.Tag) ([]tag.Tag, er
 		JOIN
 			tags tg ON f.id = tg.field_id
 		WHERE
-			tg.record_urn = $1 AND tg.record_type = $2`
-	sqlArgs := []interface{}{filter.RecordURN, filter.RecordType}
+			tg.asset_id = $1`
+	sqlArgs := []interface{}{filter.AssetID}
 
 	if filter.TemplateURN != "" {
-		// filter by record and template
-		sqlQuery += " AND t.urn = $3"
+		// filter by asset and template
+		sqlQuery += " AND t.urn = $2"
 		sqlArgs = append(sqlArgs, filter.TemplateURN)
 	}
 
@@ -124,19 +118,18 @@ func (r *TagRepository) Read(ctx context.Context, filter tag.Tag) ([]tag.Tag, er
 		return nil, fmt.Errorf("failed reading domain tag: %w", err)
 	}
 
-	// (nil, not found error) if no record and template urn = ""
-	// (empty, nil) if no record and template urn != ""
+	// (nil, not found error) if no asset id and template urn = ""
+	// (empty, nil) if no asset id and template urn != ""
 	if len(templateTagFields) == 0 && filter.TemplateURN != "" {
 		return nil, tag.NotFoundError{
-			URN:      filter.RecordURN,
-			Type:     filter.RecordType,
+			AssetID:  filter.AssetID,
 			Template: filter.TemplateURN,
 		}
 	}
 
 	templates, tags := templateTagFields.toTemplateAndTagModels()
 
-	return tags.toTags(filter.RecordType, filter.RecordURN, templates), nil
+	return tags.toTags(filter.AssetID, templates), nil
 }
 
 // Update updates tags in the database
@@ -165,28 +158,27 @@ func (r *TagRepository) Update(ctx context.Context, domainTag *tag.Tag) error {
 			}
 			valueStr := fmt.Sprintf("%v", value.FieldValue)
 			tagModel := &TagModel{
-				Value:      valueStr,
-				RecordURN:  domainTag.RecordURN,
-				RecordType: domainTag.RecordType,
-				FieldID:    value.FieldID,
-				CreatedAt:  timestamp,
-				UpdatedAt:  timestamp,
+				Value:     valueStr,
+				AssetID:   domainTag.AssetID,
+				FieldID:   value.FieldID,
+				CreatedAt: timestamp,
+				UpdatedAt: timestamp,
 			}
 
 			var updatedModelTag TagModel
 			if err := tx.QueryRowxContext(ctx, `
 							INSERT INTO
 							tags 
-								(value, record_urn, record_type, field_id, created_at, updated_at)
+								(value, asset_id, field_id, created_at, updated_at)
 							VALUES
-								($1, $2, $3, $4, $5, $6)
+								($1, $2, $3, $4, $5)
 							ON CONFLICT 
-								(record_urn, record_type, field_id)
+								(asset_id, field_id)
 							DO UPDATE SET 
-								(value, record_urn, record_type, field_id, created_at, updated_at) = 
-								($1, $2, $3, $4, $5, $6) 
+								(value, asset_id, field_id, created_at, updated_at) = 
+								($1, $2, $3, $4, $5) 
 							RETURNING *`,
-				tagModel.Value, tagModel.RecordURN, tagModel.RecordType, tagModel.FieldID, tagModel.CreatedAt, tagModel.UpdatedAt).
+				tagModel.Value, tagModel.AssetID, tagModel.FieldID, tagModel.CreatedAt, tagModel.UpdatedAt).
 				StructScan(&updatedModelTag); err != nil {
 				return err
 			}
@@ -202,40 +194,38 @@ func (r *TagRepository) Update(ctx context.Context, domainTag *tag.Tag) error {
 
 // Delete deletes tags from database
 func (r *TagRepository) Delete(ctx context.Context, domainTag tag.Tag) error {
-	if domainTag.RecordURN == "" {
-		return errEmptyRecordURN
+	if domainTag.AssetID == "" {
+		return errEmptyAssetID
 	}
 	deletedModelTags := []TagModel{}
 	fieldIDMap := map[uint]bool{}
 	if domainTag.TemplateURN != "" {
-		recordTemplatesFields, err := readTemplatesByURNFromDB(ctx, r.client.db, domainTag.TemplateURN)
+		assetTemplatesFields, err := readTemplatesByURNFromDB(ctx, r.client.db, domainTag.TemplateURN)
 		if err != nil {
 			return err
 		}
-		if len(recordTemplatesFields) < 1 {
+		if len(assetTemplatesFields) < 1 {
 			return tag.TemplateNotFoundError{URN: domainTag.TemplateURN}
 		}
-		for _, tf := range recordTemplatesFields {
+		for _, tf := range assetTemplatesFields {
 			fieldIDMap[tf.Field.ID] = true
 			deletedModelTags = append(deletedModelTags, TagModel{
-				RecordURN:  domainTag.RecordURN,
-				RecordType: domainTag.RecordType,
-				FieldID:    tf.Field.ID,
+				AssetID: domainTag.AssetID,
+				FieldID: tf.Field.ID,
 			})
 		}
 	} else {
 		deletedModelTags = append(deletedModelTags, TagModel{
-			RecordURN:  domainTag.RecordURN,
-			RecordType: domainTag.RecordType,
+			AssetID: domainTag.AssetID,
 		})
 	}
 
 	for _, tagModel := range deletedModelTags {
-		sqlQuery := "DELETE FROM tags WHERE tags.record_urn = $1 AND tags.record_type = $2"
-		sqlArgs := []interface{}{tagModel.RecordURN, tagModel.RecordType}
+		sqlQuery := "DELETE FROM tags WHERE tags.asset_id = $1"
+		sqlArgs := []interface{}{tagModel.AssetID}
 
 		if tagModel.FieldID != 0 {
-			sqlQuery += " AND tags.field_id = $3"
+			sqlQuery += " AND tags.field_id = $2"
 			sqlArgs = append(sqlArgs, tagModel.FieldID)
 		}
 

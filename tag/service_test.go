@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/odpf/compass/lib/mocks"
 	"github.com/odpf/compass/tag"
 	"github.com/odpf/compass/tag/validator"
@@ -44,31 +45,14 @@ func (s *ServiceTestSuite) TestValidate() {
 	templateService := tag.NewTemplateService(&mocks.TagTemplateRepository{})
 	tagService := tag.NewService(repository, templateService)
 
-	s.Run("should return error if record URN is empty", func() {
+	s.Run("should return error if asset id is empty", func() {
 		t := s.buildTag()
-		t.RecordURN = ""
+		t.AssetID = ""
 
-		expectedErrorMsg := "error with [record_urn : cannot be empty]"
+		expectedErrorMsg := "error with [asset_id : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
-				"record_urn": "cannot be empty",
-			},
-		}
-
-		actualError := tagService.Validate(&t)
-
-		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
-	})
-
-	s.Run("should return error if record Type is empty", func() {
-		t := s.buildTag()
-		t.RecordType = ""
-
-		expectedErrorMsg := "error with [record_type : cannot be empty]"
-		expectedFieldError := tag.ValidationError{
-			validator.FieldError{
-				"record_type": "cannot be empty",
+				"asset_id": "cannot be empty",
 			},
 		}
 
@@ -170,12 +154,12 @@ func (s *ServiceTestSuite) TestCreate() {
 	s.Run("should return error if value validations return error", func() {
 		s.Setup()
 		t := s.buildTag()
-		t.RecordURN = ""
+		t.AssetID = ""
 
-		expectedErrorMsg := "error with [record_urn : cannot be empty]"
+		expectedErrorMsg := "error with [asset_id : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
-				"record_urn": "cannot be empty",
+				"asset_id": "cannot be empty",
 			},
 		}
 
@@ -188,7 +172,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		s.Setup()
 		t := s.buildTag()
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return(nil, errors.New("random error"))
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return(nil, errors.New("random error"))
 
 		err := s.tagService.Create(ctx, &t)
 		s.Error(err)
@@ -200,7 +184,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		t.TagValues[0].FieldID = 5
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 
 		expectedErrorMsg := "error with [fields[0].id : not part of template [governance_policy]]"
 		expectedFieldError := tag.ValidationError{
@@ -221,7 +205,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		t.TagValues = t.TagValues[:1]
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 
 		expectedErrorMsg := "error with [fields[1].id : required by template [governance_policy]]"
 		expectedFieldError := tag.ValidationError{
@@ -242,7 +226,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		t.TagValues[1].FieldValue = "hello"
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 
 		expectedErrorMsg := "error with [fields[1].value : template [governance_policy] on field [2] should be boolean]"
 		expectedFieldError := tag.ValidationError{
@@ -261,8 +245,8 @@ func (s *ServiceTestSuite) TestCreate() {
 		s.Setup()
 		t := s.buildTag()
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.repository.On("Create", mock.Anything, &t).Return(errors.New("random error"))
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
+		s.repository.EXPECT().Create(mock.Anything, &t).Return(errors.New("random error"))
 
 		err := s.tagService.Create(ctx, &t)
 		s.Error(err)
@@ -273,8 +257,8 @@ func (s *ServiceTestSuite) TestCreate() {
 		t := s.buildTag()
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.repository.On("Create", mock.Anything, &t).Return(nil)
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
+		s.repository.EXPECT().Create(mock.Anything, &t).Return(nil)
 
 		actualError := s.tagService.Create(ctx, &t)
 
@@ -282,7 +266,7 @@ func (s *ServiceTestSuite) TestCreate() {
 	})
 }
 
-func (s *ServiceTestSuite) TestGetByRecord() {
+func (s *ServiceTestSuite) TestGetByAsset() {
 	ctx := context.TODO()
 
 	s.Run("should return tags and error based on the repository", func() {
@@ -291,48 +275,44 @@ func (s *ServiceTestSuite) TestGetByRecord() {
 		template := s.buildTemplate()
 		expectedTag := []tag.Tag{t}
 
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.repository.On("Read", mock.Anything, tag.Tag{
-			RecordType: t.RecordType,
-			RecordURN:  t.RecordURN,
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
+		s.repository.EXPECT().Read(mock.Anything, tag.Tag{
+			AssetID: t.AssetID,
 		}).Return(expectedTag, nil)
 
-		actualTag, actualError := s.tagService.GetByRecord(ctx, t.RecordType, t.RecordURN)
+		actualTag, actualError := s.tagService.GetByAsset(ctx, t.AssetID)
 
 		s.EqualValues(expectedTag, actualTag)
 		s.NoError(actualError)
 	})
 }
 
-func (s *ServiceTestSuite) TestFindByRecordAndTemplate() {
+func (s *ServiceTestSuite) TestFindByAssetAndTemplate() {
 	ctx := context.TODO()
 
 	s.Run("should return error if error retrieving template", func() {
 		s.Setup()
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return(nil, errors.New("random error"))
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return(nil, errors.New("random error"))
 
-		_, err := s.tagService.FindByRecordAndTemplate(ctx, "record-type", "record-urn", template.URN)
+		_, err := s.tagService.FindByAssetAndTemplate(ctx, uuid.NewString(), template.URN)
 		s.Error(err)
 	})
 
 	s.Run("should return nil and error if tag is not found", func() {
 		s.Setup()
-		var recordType string = "record-type"
-		var urn string = "record-urn"
+		var assetID string = uuid.NewString()
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.repository.On("Read", mock.Anything, tag.Tag{
-			RecordType:  recordType,
-			RecordURN:   urn,
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
+		s.repository.EXPECT().Read(mock.Anything, tag.Tag{
+			AssetID:     assetID,
 			TemplateURN: template.URN,
 		}).Return([]tag.Tag{}, nil)
 
-		_, err := s.tagService.FindByRecordAndTemplate(ctx, recordType, urn, template.URN)
+		_, err := s.tagService.FindByAssetAndTemplate(ctx, assetID, template.URN)
 		s.ErrorIs(err, tag.NotFoundError{
-			Type:     recordType,
-			URN:      urn,
+			AssetID:  assetID,
 			Template: template.URN,
 		})
 	})
@@ -342,16 +322,15 @@ func (s *ServiceTestSuite) TestFindByRecordAndTemplate() {
 		t := s.buildTag()
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.repository.On("Read", mock.Anything, tag.Tag{
-			RecordType:  t.RecordType,
-			RecordURN:   t.RecordURN,
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
+		s.repository.EXPECT().Read(mock.Anything, tag.Tag{
+			AssetID:     t.AssetID,
 			TemplateURN: t.TemplateURN,
 		}).Return([]tag.Tag{t}, nil)
 
 		expectedTag := t
 
-		actualTag, actualError := s.tagService.FindByRecordAndTemplate(ctx, t.RecordType, t.RecordURN, template.URN)
+		actualTag, actualError := s.tagService.FindByAssetAndTemplate(ctx, t.AssetID, template.URN)
 
 		s.EqualValues(expectedTag, actualTag)
 		s.NoError(actualError)
@@ -364,12 +343,12 @@ func (s *ServiceTestSuite) TestUpdate() {
 	s.Run("should return error if value validations return error", func() {
 		s.Setup()
 		t := s.buildTag()
-		t.RecordURN = ""
+		t.AssetID = ""
 
-		expectedErrorMsg := "error with [record_urn : cannot be empty]"
+		expectedErrorMsg := "error with [asset_id : cannot be empty]"
 		expectedFieldError := tag.ValidationError{
 			validator.FieldError{
-				"record_urn": "cannot be empty",
+				"asset_id": "cannot be empty",
 			},
 		}
 		actualError := s.tagService.Update(ctx, &t)
@@ -383,7 +362,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 		t := s.buildTag()
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return(nil, errors.New("random error"))
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return(nil, errors.New("random error"))
 
 		err := s.tagService.Update(ctx, &t)
 		s.Error(err)
@@ -394,17 +373,16 @@ func (s *ServiceTestSuite) TestUpdate() {
 		t := s.buildTag()
 		template := s.buildTemplate()
 
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.repository.On("Read", mock.Anything, tag.Tag{
-			RecordType:  t.RecordType,
-			RecordURN:   t.RecordURN,
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
+		s.repository.EXPECT().Read(mock.Anything, tag.Tag{
+			AssetID:     t.AssetID,
 			TemplateURN: t.TemplateURN,
 		}).Return([]tag.Tag{}, nil)
 
 		err := s.tagService.Update(ctx, &t)
 
 		s.Error(err)
-		s.ErrorIs(err, tag.NotFoundError{URN: t.RecordURN, Type: t.RecordType, Template: t.TemplateURN})
+		s.ErrorIs(err, tag.NotFoundError{AssetID: t.AssetID, Template: t.TemplateURN})
 	})
 
 	s.Run("should return error if specified field is not part of the template", func() {
@@ -413,10 +391,9 @@ func (s *ServiceTestSuite) TestUpdate() {
 		t.TagValues[0].FieldID = 5
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.repository.On("Read", mock.Anything, tag.Tag{
-			RecordType:  t.RecordType,
-			RecordURN:   t.RecordURN,
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
+		s.repository.EXPECT().Read(mock.Anything, tag.Tag{
+			AssetID:     t.AssetID,
 			TemplateURN: t.TemplateURN,
 		}).Return([]tag.Tag{t}, nil)
 
@@ -438,10 +415,9 @@ func (s *ServiceTestSuite) TestUpdate() {
 		t.TagValues[1].FieldValue = "hello"
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.repository.On("Read", mock.Anything, tag.Tag{
-			RecordType:  t.RecordType,
-			RecordURN:   t.RecordURN,
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
+		s.repository.EXPECT().Read(mock.Anything, tag.Tag{
+			AssetID:     t.AssetID,
 			TemplateURN: t.TemplateURN,
 		}).Return([]tag.Tag{t}, nil)
 
@@ -463,13 +439,12 @@ func (s *ServiceTestSuite) TestUpdate() {
 		t := s.buildTag()
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.repository.On("Read", mock.Anything, tag.Tag{
-			RecordType:  t.RecordType,
-			RecordURN:   t.RecordURN,
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
+		s.repository.EXPECT().Read(mock.Anything, tag.Tag{
+			AssetID:     t.AssetID,
 			TemplateURN: t.TemplateURN,
 		}).Return([]tag.Tag{t}, nil)
-		s.repository.On("Update", mock.Anything, &t).Return(errors.New("random error"))
+		s.repository.EXPECT().Update(mock.Anything, &t).Return(errors.New("random error"))
 
 		err := s.tagService.Update(ctx, &t)
 		s.Error(err)
@@ -480,13 +455,12 @@ func (s *ServiceTestSuite) TestUpdate() {
 		t := s.buildTag()
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.repository.On("Read", mock.Anything, tag.Tag{
-			RecordType:  t.RecordType,
-			RecordURN:   t.RecordURN,
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
+		s.repository.EXPECT().Read(mock.Anything, tag.Tag{
+			AssetID:     t.AssetID,
 			TemplateURN: t.TemplateURN,
 		}).Return([]tag.Tag{t}, nil)
-		s.repository.On("Update", mock.Anything, &t).Return(nil)
+		s.repository.EXPECT().Update(mock.Anything, &t).Return(nil)
 
 		actualError := s.tagService.Update(ctx, &t)
 
@@ -501,26 +475,24 @@ func (s *ServiceTestSuite) TestDelete() {
 		s.Setup()
 
 		templateURN := "template-urn"
-		s.templateRepo.On("Read", mock.Anything, templateURN).Return(nil, errors.New("random error"))
+		s.templateRepo.EXPECT().Read(mock.Anything, templateURN).Return(nil, errors.New("random error"))
 
-		err := s.tagService.Delete(ctx, "record-type", "record-urn", templateURN)
+		err := s.tagService.Delete(ctx, uuid.NewString(), templateURN)
 		s.Error(err)
 	})
 
 	s.Run("should return error if repository error", func() {
 		s.Setup()
-		recordType := "sample-type"
-		recordURN := "sample-urn"
+		assetID := uuid.NewString()
 
 		template := s.buildTemplate()
-		s.templateRepo.On("Read", mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.repository.On("Delete", mock.Anything, tag.Tag{
-			RecordType:  recordType,
-			RecordURN:   recordURN,
+		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
+		s.repository.EXPECT().Delete(mock.Anything, tag.Tag{
+			AssetID:     assetID,
 			TemplateURN: template.URN,
 		}).Return(errors.New("random error"))
 
-		err := s.tagService.Delete(ctx, recordType, recordURN, template.URN)
+		err := s.tagService.Delete(ctx, assetID, template.URN)
 		s.Error(err)
 	})
 }
@@ -535,7 +507,7 @@ func (s *ServiceTestSuite) buildTemplate() tag.Template {
 				ID:          1,
 				URN:         "classification",
 				DisplayName: "classification",
-				Description: "The classification of this record",
+				Description: "The classification of this asset",
 				DataType:    "enumerated",
 				Required:    true,
 				Options:     []string{"Public", "Restricted"},
@@ -544,7 +516,7 @@ func (s *ServiceTestSuite) buildTemplate() tag.Template {
 				ID:          2,
 				URN:         "is_encrypted",
 				DisplayName: "Is Encrypted?",
-				Description: "Specify whether this record is encrypted or not.",
+				Description: "Specify whether this asset is encrypted or not.",
 				DataType:    "boolean",
 				Required:    true,
 			},
@@ -554,8 +526,7 @@ func (s *ServiceTestSuite) buildTemplate() tag.Template {
 
 func (s *ServiceTestSuite) buildTag() tag.Tag {
 	return tag.Tag{
-		RecordURN:           "record-urn",
-		RecordType:          "sample-record-type",
+		AssetID:             uuid.NewString(),
 		TemplateURN:         "governance_policy",
 		TemplateDisplayName: "Governance Policy",
 		TemplateDescription: "Template that is mandatory to be used.",
@@ -565,7 +536,7 @@ func (s *ServiceTestSuite) buildTag() tag.Tag {
 				FieldValue:       "Public",
 				FieldURN:         "classification",
 				FieldDisplayName: "classification",
-				FieldDescription: "The classification of this record",
+				FieldDescription: "The classification of this asset",
 				FieldDataType:    "enumerated",
 				FieldRequired:    true,
 				FieldOptions:     []string{"Public", "Restricted"},
@@ -575,7 +546,7 @@ func (s *ServiceTestSuite) buildTag() tag.Tag {
 				FieldValue:       true,
 				FieldURN:         "is_encrypted",
 				FieldDisplayName: "Is Encrypted?",
-				FieldDescription: "Specify whether this record is encrypted or not.",
+				FieldDescription: "Specify whether this asset is encrypted or not.",
 				FieldDataType:    "boolean",
 				FieldRequired:    true,
 			},

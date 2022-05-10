@@ -54,25 +54,25 @@ func (s *Service) Create(ctx context.Context, tag *Tag) error {
 	return nil
 }
 
-// GetByRecord handles business process to get tags by its resource urn
-func (s *Service) GetByRecord(ctx context.Context, recordType, recordURN string) ([]Tag, error) {
-	tag := Tag{RecordType: recordType, RecordURN: recordURN}
+// GetByAsset handles business process to get tags by its asset id
+func (s *Service) GetByAsset(ctx context.Context, assetID string) ([]Tag, error) {
+	tag := Tag{AssetID: assetID}
 	return s.repository.Read(ctx, tag)
 }
 
-// FindByRecordAndTemplate handles business process to get tags by its resource id and template id
-func (s *Service) FindByRecordAndTemplate(ctx context.Context, recordType, recordURN, templateURN string) (Tag, error) {
+// FindByAssetAndTemplate handles business process to get tags by its asset id and template id
+func (s *Service) FindByAssetAndTemplate(ctx context.Context, assetID, templateURN string) (Tag, error) {
 	_, err := s.templateService.Find(ctx, templateURN)
 	if err != nil {
 		return Tag{}, err
 	}
-	listOfTag, err := s.repository.Read(ctx, Tag{RecordType: recordType, RecordURN: recordURN, TemplateURN: templateURN})
+	listOfTag, err := s.repository.Read(ctx, Tag{AssetID: assetID, TemplateURN: templateURN})
 	if err != nil {
 		return Tag{}, err
 	}
 	var output Tag
 	if len(listOfTag) == 0 {
-		return Tag{}, NotFoundError{Type: recordType, URN: recordURN, Template: templateURN}
+		return Tag{}, NotFoundError{AssetID: assetID, Template: templateURN}
 	}
 
 	output = listOfTag[0]
@@ -80,14 +80,13 @@ func (s *Service) FindByRecordAndTemplate(ctx context.Context, recordType, recor
 }
 
 // Delete handles business process to delete a tag
-func (s *Service) Delete(ctx context.Context, recordType, recordURN, templateURN string) error {
+func (s *Service) Delete(ctx context.Context, assetID, templateURN string) error {
 	_, err := s.templateService.Find(ctx, templateURN)
 	if err != nil {
 		return fmt.Errorf("error finding template: %w", err)
 	}
 	if err := s.repository.Delete(ctx, Tag{
-		RecordType:  recordType,
-		RecordURN:   recordURN,
+		AssetID:     assetID,
 		TemplateURN: templateURN,
 	}); err != nil {
 		return fmt.Errorf("error deleting tag: %w", err)
@@ -105,15 +104,14 @@ func (s *Service) Update(ctx context.Context, tag *Tag) error {
 		return fmt.Errorf("error finding template: %w", err)
 	}
 	existingTags, err := s.repository.Read(ctx, Tag{
-		RecordType:  tag.RecordType,
-		RecordURN:   tag.RecordURN,
+		AssetID:     tag.AssetID,
 		TemplateURN: tag.TemplateURN,
 	})
 	if err != nil {
 		return fmt.Errorf("error finding existing tag: %w", err)
 	}
 	if len(existingTags) == 0 {
-		return NotFoundError{URN: tag.RecordURN, Type: tag.RecordType, Template: tag.TemplateURN}
+		return NotFoundError{AssetID: tag.AssetID, Template: tag.TemplateURN}
 	}
 
 	if err = s.validateFieldIsMemberOfTemplate(*tag, template); err != nil {

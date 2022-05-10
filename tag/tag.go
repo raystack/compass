@@ -20,8 +20,7 @@ type TagRepository interface {
 
 // Tag is the tag to be managed
 type Tag struct {
-	RecordType          string     `json:"record_type" validate:"required"`
-	RecordURN           string     `json:"record_urn" validate:"required"`
+	AssetID             string     `json:"asset_id" validate:"required"`
 	TemplateURN         string     `json:"template_urn" validate:"required"`
 	TagValues           []TagValue `json:"tag_values" validate:"required,min=1,dive"`
 	TemplateDisplayName string     `json:"template_display_name"`
@@ -40,8 +39,7 @@ func (t Tag) ToProto() (*compassv1beta1.Tag, error) {
 	}
 
 	return &compassv1beta1.Tag{
-		RecordType:          t.RecordType,
-		RecordUrn:           t.RecordURN,
+		AssetId:             t.AssetID,
 		TemplateUrn:         t.TemplateURN,
 		TagValues:           tagValuesPB,
 		TemplateDisplayName: t.TemplateDisplayName,
@@ -60,8 +58,7 @@ func NewFromProto(pb *compassv1beta1.Tag) Tag {
 	}
 
 	return Tag{
-		RecordType:          pb.GetRecordType(),
-		RecordURN:           pb.GetRecordUrn(),
+		AssetID:             pb.GetAssetId(),
 		TemplateURN:         pb.GetTemplateUrn(),
 		TagValues:           tagValues,
 		TemplateDisplayName: pb.GetTemplateDisplayName(),

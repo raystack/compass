@@ -12,34 +12,30 @@ import (
 )
 
 var (
-	errEmptyRecordURN   = errors.New("record urn is empty")
-	errEmptyRecordType  = errors.New("type is empty")
+	errEmptyAssetID     = errors.New("asset id is empty")
 	errNilTagService    = errors.New("tag service is nil")
 	errEmptyTemplateURN = errors.New("template urn is empty")
 )
 
-// GetTagsByRecordAndTemplate handles get tag by record requests
-func (h *Handler) GetTagsByRecordAndTemplate(ctx context.Context, req *compassv1beta1.GetTagsByRecordAndTemplateRequest) (*compassv1beta1.GetTagsByRecordAndTemplateResponse, error) {
+// GetTagsByAssetAndTemplate handles get tag by asset requests
+func (h *Handler) GetTagsByAssetAndTemplate(ctx context.Context, req *compassv1beta1.GetTagsByAssetAndTemplateRequest) (*compassv1beta1.GetTagsByAssetAndTemplateResponse, error) {
 	if h.TagService == nil {
 		return nil, internalServerError(h.Logger, errNilTagService.Error())
 	}
 
-	if req.GetType() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyRecordType.Error())
-	}
-	if req.GetRecordUrn() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyRecordURN.Error())
+	if req.GetAssetId() == "" {
+		return nil, status.Error(codes.InvalidArgument, errEmptyAssetID.Error())
 	}
 	if req.GetTemplateUrn() == "" {
 		return nil, status.Error(codes.InvalidArgument, errEmptyTemplateURN.Error())
 	}
 
-	tg, err := h.TagService.FindByRecordAndTemplate(ctx, req.GetType(), req.GetRecordUrn(), req.GetTemplateUrn())
+	tg, err := h.TagService.FindByAssetAndTemplate(ctx, req.GetAssetId(), req.GetTemplateUrn())
 	if errors.As(err, new(tag.NotFoundError)) || errors.As(err, new(tag.TemplateNotFoundError)) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 	if err != nil {
-		return nil, internalServerError(h.Logger, fmt.Sprintf("error finding a tag with record and template: %s", err.Error()))
+		return nil, internalServerError(h.Logger, fmt.Sprintf("error finding a tag with asset and template: %s", err.Error()))
 	}
 
 	tagPB, err := tg.ToProto()
@@ -47,22 +43,19 @@ func (h *Handler) GetTagsByRecordAndTemplate(ctx context.Context, req *compassv1
 		return nil, internalServerError(h.Logger, err.Error())
 	}
 
-	return &compassv1beta1.GetTagsByRecordAndTemplateResponse{
+	return &compassv1beta1.GetTagsByAssetAndTemplateResponse{
 		Data: tagPB,
 	}, nil
 }
 
-// CreateTag handles tag creation requests
-func (h *Handler) CreateTag(ctx context.Context, req *compassv1beta1.CreateTagRequest) (*compassv1beta1.CreateTagResponse, error) {
+// CreateTagAsset handles tag creation requests
+func (h *Handler) CreateTagAsset(ctx context.Context, req *compassv1beta1.CreateTagAssetRequest) (*compassv1beta1.CreateTagAssetResponse, error) {
 	if h.TagService == nil {
 		return nil, internalServerError(h.Logger, errNilTagService.Error())
 	}
 
-	if req.GetRecordType() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyRecordType.Error())
-	}
-	if req.GetRecordUrn() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyRecordURN.Error())
+	if req.GetAssetId() == "" {
+		return nil, status.Error(codes.InvalidArgument, errEmptyAssetID.Error())
 	}
 	if req.GetTemplateUrn() == "" {
 		return nil, status.Error(codes.InvalidArgument, errEmptyTemplateURN.Error())
@@ -77,8 +70,7 @@ func (h *Handler) CreateTag(ctx context.Context, req *compassv1beta1.CreateTagRe
 	}
 
 	tagDomain := tag.Tag{
-		RecordType:          req.GetRecordType(),
-		RecordURN:           req.GetRecordUrn(),
+		AssetID:             req.GetAssetId(),
 		TemplateURN:         req.GetTemplateUrn(),
 		TagValues:           tagValues,
 		TemplateDisplayName: req.GetTemplateDisplayName(),
@@ -106,22 +98,19 @@ func (h *Handler) CreateTag(ctx context.Context, req *compassv1beta1.CreateTagRe
 		return nil, internalServerError(h.Logger, err.Error())
 	}
 
-	return &compassv1beta1.CreateTagResponse{
+	return &compassv1beta1.CreateTagAssetResponse{
 		Data: tagPB,
 	}, nil
 }
 
-// UpdateTag handles tag update requests
-func (h *Handler) UpdateTag(ctx context.Context, req *compassv1beta1.UpdateTagRequest) (*compassv1beta1.UpdateTagResponse, error) {
+// UpdateTagAsset handles tag update requests
+func (h *Handler) UpdateTagAsset(ctx context.Context, req *compassv1beta1.UpdateTagAssetRequest) (*compassv1beta1.UpdateTagAssetResponse, error) {
 	if h.TagService == nil {
 		return nil, internalServerError(h.Logger, errNilTagService.Error())
 	}
 
-	if req.GetType() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyRecordType.Error())
-	}
-	if req.GetRecordUrn() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyRecordURN.Error())
+	if req.GetAssetId() == "" {
+		return nil, status.Error(codes.InvalidArgument, errEmptyAssetID.Error())
 	}
 	if req.GetTemplateUrn() == "" {
 		return nil, status.Error(codes.InvalidArgument, errEmptyTemplateURN.Error())
@@ -137,8 +126,7 @@ func (h *Handler) UpdateTag(ctx context.Context, req *compassv1beta1.UpdateTagRe
 	}
 
 	tagDomain := tag.Tag{
-		RecordType:          req.GetType(),
-		RecordURN:           req.GetRecordUrn(),
+		AssetID:             req.GetAssetId(),
 		TemplateURN:         req.GetTemplateUrn(),
 		TagValues:           tagValues,
 		TemplateDisplayName: req.GetTemplateDisplayName(),
@@ -161,28 +149,25 @@ func (h *Handler) UpdateTag(ctx context.Context, req *compassv1beta1.UpdateTagRe
 		return nil, internalServerError(h.Logger, err.Error())
 	}
 
-	return &compassv1beta1.UpdateTagResponse{
+	return &compassv1beta1.UpdateTagAssetResponse{
 		Data: tagPB,
 	}, nil
 }
 
-// DeleteTag handles delete tag by record and template requests
-func (h *Handler) DeleteTag(ctx context.Context, req *compassv1beta1.DeleteTagRequest) (*compassv1beta1.DeleteTagResponse, error) {
+// DeleteTagAsset handles delete tag by asset and template requests
+func (h *Handler) DeleteTagAsset(ctx context.Context, req *compassv1beta1.DeleteTagAssetRequest) (*compassv1beta1.DeleteTagAssetResponse, error) {
 	if h.TagService == nil {
 		return nil, internalServerError(h.Logger, errNilTagService.Error())
 	}
 
-	if req.GetType() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyRecordType.Error())
-	}
-	if req.GetRecordUrn() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyRecordURN.Error())
+	if req.GetAssetId() == "" {
+		return nil, status.Error(codes.InvalidArgument, errEmptyAssetID.Error())
 	}
 	if req.GetTemplateUrn() == "" {
 		return nil, status.Error(codes.InvalidArgument, errEmptyTemplateURN.Error())
 	}
 
-	err := h.TagService.Delete(ctx, req.GetType(), req.GetRecordUrn(), req.GetTemplateUrn())
+	err := h.TagService.Delete(ctx, req.GetAssetId(), req.GetTemplateUrn())
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
@@ -190,25 +175,22 @@ func (h *Handler) DeleteTag(ctx context.Context, req *compassv1beta1.DeleteTagRe
 		return nil, internalServerError(h.Logger, fmt.Sprintf("error deleting a template: %s", err.Error()))
 	}
 
-	return &compassv1beta1.DeleteTagResponse{}, nil
+	return &compassv1beta1.DeleteTagAssetResponse{}, nil
 }
 
-// GetByRecord handles get tag by record requests
-func (h *Handler) GetTagsByRecord(ctx context.Context, req *compassv1beta1.GetTagsByRecordRequest) (*compassv1beta1.GetTagsByRecordResponse, error) {
+// GetAllTagsByAsset handles get all tags by asset requests
+func (h *Handler) GetAllTagsByAsset(ctx context.Context, req *compassv1beta1.GetAllTagsByAssetRequest) (*compassv1beta1.GetAllTagsByAssetResponse, error) {
 	if h.TagService == nil {
 		return nil, internalServerError(h.Logger, errNilTagService.Error())
 	}
 
-	if req.GetType() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyRecordType.Error())
-	}
-	if req.GetRecordUrn() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyRecordURN.Error())
+	if req.GetAssetId() == "" {
+		return nil, status.Error(codes.InvalidArgument, errEmptyAssetID.Error())
 	}
 
-	tags, err := h.TagService.GetByRecord(ctx, req.GetType(), req.GetRecordUrn())
+	tags, err := h.TagService.GetByAsset(ctx, req.GetAssetId())
 	if err != nil {
-		return nil, internalServerError(h.Logger, fmt.Sprintf("error getting record tags: %s", err.Error()))
+		return nil, internalServerError(h.Logger, fmt.Sprintf("error getting asset tags: %s", err.Error()))
 	}
 
 	var tagsPB []*compassv1beta1.Tag
@@ -220,7 +202,7 @@ func (h *Handler) GetTagsByRecord(ctx context.Context, req *compassv1beta1.GetTa
 		tagsPB = append(tagsPB, tgPB)
 	}
 
-	return &compassv1beta1.GetTagsByRecordResponse{
+	return &compassv1beta1.GetAllTagsByAssetResponse{
 		Data: tagsPB,
 	}, nil
 }

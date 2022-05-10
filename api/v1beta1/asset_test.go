@@ -40,7 +40,7 @@ func TestGetAllAssets(t *testing.T) {
 			ExpectStatus: codes.Internal,
 			Request:      &compassv1beta1.GetAllAssetsRequest{},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Filter{}).Return([]asset.Asset{}, errors.New("unknown error"))
+				ar.EXPECT().GetAll(ctx, asset.Filter{}).Return([]asset.Asset{}, errors.New("unknown error"))
 			},
 		},
 		{
@@ -50,8 +50,8 @@ func TestGetAllAssets(t *testing.T) {
 			},
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Filter{}).Return([]asset.Asset{}, nil, nil)
-				ar.On("GetCount", ctx, asset.Filter{}).Return(0, errors.New("unknown error"))
+				ar.EXPECT().GetAll(ctx, asset.Filter{}).Return([]asset.Asset{}, nil)
+				ar.EXPECT().GetCount(ctx, asset.Filter{}).Return(0, errors.New("unknown error"))
 			},
 		},
 		{
@@ -87,17 +87,17 @@ func TestGetAllAssets(t *testing.T) {
 						"project": "p-godata-id",
 					},
 				}
-				ar.On("GetAll", ctx, cfg).Return([]asset.Asset{}, nil, nil)
+				ar.EXPECT().GetAll(ctx, cfg).Return([]asset.Asset{}, nil)
 			},
 		},
 		{
 			Description:  "should return status OK along with list of assets",
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Filter{}).Return([]asset.Asset{
+				ar.EXPECT().GetAll(ctx, asset.Filter{}).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
-				}, nil, nil)
+				}, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAllAssetsResponse) error {
 				expected := &compassv1beta1.GetAllAssetsResponse{
@@ -124,7 +124,7 @@ func TestGetAllAssets(t *testing.T) {
 				WithTotal: true,
 			},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetAll", ctx, asset.Filter{
+				ar.EXPECT().GetAll(ctx, asset.Filter{
 					Types:    []asset.Type{"job"},
 					Services: []string{"kafka"},
 					Size:     10,
@@ -133,13 +133,13 @@ func TestGetAllAssets(t *testing.T) {
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 					{ID: "testid-3"},
-				}, nil, nil)
-				ar.On("GetCount", ctx, asset.Filter{
+				}, nil)
+				ar.EXPECT().GetCount(ctx, asset.Filter{
 					Types:    []asset.Type{"job"},
 					Services: []string{"kafka"},
 					Size:     10,
 					Offset:   5,
-				}).Return(150, nil, nil)
+				}).Return(150, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAllAssetsResponse) error {
 				expected := &compassv1beta1.GetAllAssetsResponse{
@@ -210,28 +210,28 @@ func TestGetAssetByID(t *testing.T) {
 			Description:  `should return invalid argument if asset id is not uuid`,
 			ExpectStatus: codes.InvalidArgument,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetByID", ctx, assetID).Return(asset.Asset{}, asset.InvalidError{AssetID: assetID})
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, asset.InvalidError{AssetID: assetID})
 			},
 		},
 		{
 			Description:  `should return not found if asset doesn't exist`,
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetByID", ctx, assetID).Return(asset.Asset{}, asset.NotFoundError{AssetID: assetID})
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, asset.NotFoundError{AssetID: assetID})
 			},
 		},
 		{
 			Description:  `should return internal server error if fetching fails`,
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetByID", ctx, assetID).Return(asset.Asset{}, errors.New("unknown error"))
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, errors.New("unknown error"))
 			},
 		},
 		{
 			Description:  "should return http 200 status along with the asset, if found",
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.On("GetByID", ctx, assetID).Return(ast, nil, nil)
+				ar.EXPECT().GetByID(ctx, assetID).Return(ast, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAssetByIDResponse) error {
 				expected := &compassv1beta1.GetAssetByIDResponse{
@@ -405,7 +405,7 @@ func TestUpsertAsset(t *testing.T) {
 			Description: "should return internal server error when the asset repository fails",
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
 				expectedErr := errors.New("unknown error")
-				ar.On("Upsert", ctx, mock.AnythingOfType("*asset.Asset")).Return("1234-5678", expectedErr)
+				ar.EXPECT().Upsert(ctx, mock.AnythingOfType("*asset.Asset")).Return("1234-5678", expectedErr)
 			},
 			Request:      validPayload,
 			ExpectStatus: codes.Internal,
@@ -414,8 +414,8 @@ func TestUpsertAsset(t *testing.T) {
 			Description: "should return internal server error when the discovery repository fails",
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
 				expectedErr := errors.New("unknown error")
-				ar.On("Upsert", ctx, mock.AnythingOfType("*asset.Asset")).Return("1234-5678", nil, nil)
-				dr.On("Upsert", ctx, mock.AnythingOfType("asset.Asset")).Return(expectedErr)
+				ar.EXPECT().Upsert(ctx, mock.AnythingOfType("*asset.Asset")).Return("1234-5678", nil)
+				dr.EXPECT().Upsert(ctx, mock.AnythingOfType("asset.Asset")).Return(expectedErr)
 			},
 			Request:      validPayload,
 			ExpectStatus: codes.Internal,
@@ -793,7 +793,7 @@ func TestDeleteAsset(t *testing.T) {
 			AssetID:      uuid.NewString(),
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, astID string) {
-				ar.On("Delete", ctx, astID).Return(asset.NotFoundError{AssetID: astID})
+				ar.EXPECT().Delete(ctx, astID).Return(asset.NotFoundError{AssetID: astID})
 			},
 		},
 		{
@@ -801,7 +801,7 @@ func TestDeleteAsset(t *testing.T) {
 			AssetID:      uuid.NewString(),
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, astID string) {
-				ar.On("Delete", ctx, astID).Return(errors.New("error deleting asset"))
+				ar.EXPECT().Delete(ctx, astID).Return(errors.New("error deleting asset"))
 			},
 		},
 		{
@@ -809,8 +809,8 @@ func TestDeleteAsset(t *testing.T) {
 			AssetID:      uuid.NewString(),
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, astID string) {
-				ar.On("Delete", ctx, astID).Return(nil)
-				dr.On("Delete", ctx, astID).Return(asset.NotFoundError{AssetID: astID})
+				ar.EXPECT().Delete(ctx, astID).Return(nil)
+				dr.EXPECT().Delete(ctx, astID).Return(asset.NotFoundError{AssetID: astID})
 			},
 		},
 		{
@@ -818,8 +818,8 @@ func TestDeleteAsset(t *testing.T) {
 			AssetID:      uuid.NewString(),
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, astID string) {
-				ar.On("Delete", ctx, astID).Return(nil)
-				dr.On("Delete", ctx, astID).Return(nil)
+				ar.EXPECT().Delete(ctx, astID).Return(nil)
+				dr.EXPECT().Delete(ctx, astID).Return(nil)
 			},
 		},
 	}
