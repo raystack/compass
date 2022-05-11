@@ -7,12 +7,16 @@
 ## Guides
 
 * [Installation](guides/installation.md)
-* [Ingesting metadata](guides/types.md)
-* [Querying  metadata](guides/querying.md)
+* [Ingesting metadata](guides/ingestion.md)
+* [Querying metadata](guides/querying.md)
+* [Discussion feature](guides/discussion.md)
+* [Starring feature](guides/starring.md)
+* [Tagging feature](guides/tagging.md)
 
 ## Concepts
 
 * [Overview](concepts/overview.md)
+* [Architecture](concepts/architecture.md)
 * [Internals](concepts/internals.md)
 
 ## Reference

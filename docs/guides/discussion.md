@@ -6,7 +6,7 @@ Discussion is a new feature in Compass. One could create a discussion and all us
 
 A discussion thread can be created with the Discussion API. The API contract is available [here](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
 
-```text
+```bash
 $ curl --request POST 'http://localhost:8080/v1beta1/discussions' \
 --header 'Compass-User-UUID:odpf@email.com' \
 --data-raw '{
@@ -20,13 +20,13 @@ $ curl --request POST 'http://localhost:8080/v1beta1/discussions' \
 
 The Get Discussions will fetch all discussions in Compass.
 
-```text
+```bash
 $ curl 'http://localhost:8080/v1beta1/discussions' \
 --header 'Compass-User-UUID:odpf@email.com'
 ```
 
 The response will be something like
-```text
+```javascript
 {
     "data": [
         {
@@ -55,7 +55,7 @@ Notice the state is `open` by default once we create a new discussion. There are
 
 If we are not labelling and assigning users & assets to the discussion in the creation step, there are also a dedicated API to do those.
 
-```text
+```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/discussions/1' \
 --header 'Compass-User-UUID:odpf@email.com' \
 --data-raw '{
@@ -67,7 +67,7 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/discussions/1' \
 We just need to send the fields that we want to patch for a discussion. Some fields have array type, in this case the PATCH will overwrite the fields with the new value.
 
 For example we have this labelled discussion.
-```text
+```bash
 $ curl 'http://localhost:8080/v1beta1/discussions' \
 --header 'Compass-User-UUID:odpf@email.com'
 
@@ -98,7 +98,7 @@ $ curl 'http://localhost:8080/v1beta1/discussions' \
 
 If we patch the label with the new values.
 
-```text
+```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/discussions/1' \
 --header 'Compass-User-UUID:odpf@email.com' \
 --data-raw '{
@@ -107,7 +107,7 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/discussions/1' \
 ```
 
 The discussion with id 1 will be updated like this.
-```text
+```bash
 $ curl 'http://localhost:8080/v1beta1/discussions' \
 --header 'Compass-User-UUID:odpf@email.com'
 
@@ -138,7 +138,7 @@ $ curl 'http://localhost:8080/v1beta1/discussions' \
 
 One could also comment a specific discussion with discussion comment API.
 
-```text
+```bash
 $ curl --request POST 'http://localhost:8080/v1beta1/discussions/1/comments' \
 --header 'Compass-User-UUID:odpf@email.com' \
 --data-raw '{
@@ -149,7 +149,7 @@ $ curl --request POST 'http://localhost:8080/v1beta1/discussions/1/comments' \
 ## Getting All My Discussions
 
 Compass integrates discussions with User API so we could fetch all discussions belong to us with this API.
-```text
+```bash
 $ curl 'http://localhost:8080/v1beta1/me/discussions' \
 --header 'Compass-User-UUID:odpf@email.com'
 

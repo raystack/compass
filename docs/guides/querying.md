@@ -9,13 +9,14 @@ The API contract is available [here](https://github.com/odpf/compass/blob/main/t
 
 To demonstrate how to use compass, we’re going to query it for resources that contain the word ‘booking’.
 
-```text
-$ curl http://localhost:8080/v1beta1/search?text=booking --header 'Compass-User-UUID:odpf@email.com' 
+```bash
+$ curl 'http://localhost:8080/v1beta1/search?text=booking' \
+--header 'Compass-User-UUID:odpf@email.com' 
 ```
 
 This will return a list of search results. Here’s a sample response:
 
-```text
+```bash
 {
     "data": [
         {
@@ -64,14 +65,16 @@ Compass decouple identifier from external system with the one that is being used
 Compass search API also supports restricting search results via filter by passing it in query params.
 Filter query params format is `filter[{field_key}]={value}` where `field_key` is the field name that we want to restrict and `value` is what value that should be matched. Filter could also support nested field by chaining key `field_key` with `.` \(dot\) such as `filter[{field_key}.{nested_field_key}]={value}`. For instance, to restrict search results to the ‘id’ landscape for ‘odpf’ organisation, run:
 
-```text
-$ curl [http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=vn&filter[labels.entity]=odpf](http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=vn&filter[labels.entity]=odpf) --header 'Compass-User-UUID:odpf@email.com'
+```bash
+$ curl 'http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=vn&filter[labels.entity]=odpf' \
+--header 'Compass-User-UUID:odpf@email.com'
 ```
 
 Under the hood, filter's work by checking whether the matching document's contain the filter key and checking if their values match. Filters can be specified multiple times to specify a set of filter criteria. For example, to search for ‘booking’ in both ‘vn’ and ‘th’ landscape, run:
 
-```text
-$ curl http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=id&filter[labels.landscape]=th --header 'Compass-User-UUID:odpf@email.com' 
+```bash
+$ curl 'http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=id&filter[labels.landscape]=th' \
+--header 'Compass-User-UUID:odpf@email.com' 
 ```
 
 ### Query
@@ -79,22 +82,25 @@ Apart from filters, Compass search API also supports fuzzy restriction in its qu
 
 Query format is not different with filter `query[{field_key}]={value}` where `field_key` is the field name that we want to query and `value` is what value that should be fuzzy matched. Query could also support nested field by chaining key `field_key` with `.` \(dot\) such as `query[{field_key}.{nested_field_key}]={value}`. For instance, to search results that has a name `kafka` and belongs to the team `data_engineering`, run:
 
-```text
-$ curl http://localhost:8080/v1beta1/search?text=booking&query[name]=kafka&query[labels.team]=data_eng --header 'Compass-User-UUID:odpf@email.com' 
+```bash
+$ curl 'http://localhost:8080/v1beta1/search?text=booking&query[name]=kafka&query[labels.team]=data_eng' \
+--header 'Compass-User-UUID:odpf@email.com' 
 ```
 
 ### Ranking Results
 Compass allows user to rank the results based on a numeric field in the asset. It supports nested field by using the `.` \(dot\) to point to the nested field. For instance, to rank the search results based on `usage_count` in `data` field, run:
 
-```text
-$ curl http://localhost:8080/v1beta1/search?text=booking&rankby=data.usage_count --header 'Compass-User-UUID:odpf@email.com' 
+```bash
+$ curl 'http://localhost:8080/v1beta1/search?text=booking&rankby=data.usage_count' \
+--header 'Compass-User-UUID:odpf@email.com' 
 ```
 
 ### Size
 You can also specify the number of maximum results you want compass to return using the ‘size’ parameter
 
-```text
-$ curl http://localhost:8080/v1beta1/search?text=booking&size=5 --header 'Compass-User-UUID:odpf@email.com' 
+```bash
+$ curl 'http://localhost:8080/v1beta1/search?text=booking&size=5' \
+--header 'Compass-User-UUID:odpf@email.com' 
 ```
 
 ## Using the Suggest API
@@ -104,12 +110,13 @@ The API contract is available [here](https://github.com/odpf/compass/blob/main/t
 
 Example of searching assets suggestion that has a name ‘booking’.
 
-```text
-$ curl http://localhost:8080/v1beta1/search/suggest?text=booking --header 'Compass-User-UUID:odpf@email.com' 
+```bash
+$ curl 'http://localhost:8080/v1beta1/search/suggest?text=booking' \
+--header 'Compass-User-UUID:odpf@email.com' 
 ```
 This will return a list of suggestions. Here’s a sample response:
 
-```text
+```bash
 {
     "data": [
         "booking-daily-test-962ZFY",
@@ -146,8 +153,9 @@ Lineage API returns a list of directed edges. For each edge, there are `source` 
 
 Here's a sample API call:
 
-```text
-$ curl http://localhost:8080/v1beta1/lineage/data-project%3Adatalake.events --header 'Compass-User-UUID:odpf@email.com' 
+```bash
+$ curl 'http://localhost:8080/v1beta1/lineage/data-project%3Adatalake.events' \
+--header 'Compass-User-UUID:odpf@email.com' 
 
 {
     data: [
