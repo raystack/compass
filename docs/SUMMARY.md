@@ -9,9 +9,9 @@
 * [Installation](guides/installation.md)
 * [Ingesting metadata](guides/ingestion.md)
 * [Querying metadata](guides/querying.md)
+* [Starring Asset](guides/starring.md)
+* [Tagging Asset](guides/tagging.md)
 * [Discussion feature](guides/discussion.md)
-* [Starring feature](guides/starring.md)
-* [Tagging feature](guides/tagging.md)
 
 ## Concepts
 
