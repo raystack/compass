@@ -20,6 +20,8 @@ plugins:
     out: third_party/OpenAPI
     opt:
       - allow_repeated_fields_in_body=true
+      - output_format=yaml
       - allow_merge=true
       - merge_file_name=compass
+      - openapi_naming_strategy=simple
 

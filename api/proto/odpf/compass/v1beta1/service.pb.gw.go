@@ -2023,12 +2023,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllDiscussions", runtime.WithHTTPPathPattern("/v1beta1/discussions"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllDiscussions", runtime.WithHTTPPathPattern("/v1beta1/discussions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetAllDiscussions_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetAllDiscussions_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2046,12 +2047,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateDiscussion", runtime.WithHTTPPathPattern("/v1beta1/discussions"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateDiscussion", runtime.WithHTTPPathPattern("/v1beta1/discussions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_CreateDiscussion_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_CreateDiscussion_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2069,12 +2071,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetDiscussion", runtime.WithHTTPPathPattern("/v1beta1/discussions/{id}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetDiscussion", runtime.WithHTTPPathPattern("/v1beta1/discussions/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetDiscussion_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetDiscussion_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2092,12 +2095,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/PatchDiscussion", runtime.WithHTTPPathPattern("/v1beta1/discussions/{id}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/PatchDiscussion", runtime.WithHTTPPathPattern("/v1beta1/discussions/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_PatchDiscussion_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_PatchDiscussion_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2115,12 +2119,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_CreateComment_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_CreateComment_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2138,12 +2143,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllComments", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllComments", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetAllComments_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetAllComments_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2161,12 +2167,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments/{id}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetComment_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetComment_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2184,12 +2191,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpdateComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments/{id}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpdateComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_UpdateComment_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_UpdateComment_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2207,12 +2215,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments/{id}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_DeleteComment_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_DeleteComment_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2230,12 +2239,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/SearchAssets", runtime.WithHTTPPathPattern("/v1beta1/search"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/SearchAssets", runtime.WithHTTPPathPattern("/v1beta1/search"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_SearchAssets_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_SearchAssets_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2253,12 +2263,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/SuggestAssets", runtime.WithHTTPPathPattern("/v1beta1/search/suggest"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/SuggestAssets", runtime.WithHTTPPathPattern("/v1beta1/search/suggest"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_SuggestAssets_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_SuggestAssets_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2276,12 +2287,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetGraph", runtime.WithHTTPPathPattern("/v1beta1/lineage/{urn=**}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetGraph", runtime.WithHTTPPathPattern("/v1beta1/lineage/{urn=**}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetGraph_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetGraph_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2299,12 +2311,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllTypes", runtime.WithHTTPPathPattern("/v1beta1/types"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllTypes", runtime.WithHTTPPathPattern("/v1beta1/types"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetAllTypes_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetAllTypes_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2322,12 +2335,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllAssets", runtime.WithHTTPPathPattern("/v1beta1/assets"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllAssets", runtime.WithHTTPPathPattern("/v1beta1/assets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetAllAssets_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetAllAssets_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2345,12 +2359,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByID", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByID", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetAssetByID_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetAssetByID_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2368,12 +2383,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertAsset", runtime.WithHTTPPathPattern("/v1beta1/assets"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertAsset", runtime.WithHTTPPathPattern("/v1beta1/assets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_UpsertAsset_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_UpsertAsset_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2391,12 +2407,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertPatchAsset", runtime.WithHTTPPathPattern("/v1beta1/assets"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertPatchAsset", runtime.WithHTTPPathPattern("/v1beta1/assets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_UpsertPatchAsset_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_UpsertPatchAsset_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2414,12 +2431,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteAsset", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteAsset", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_DeleteAsset_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_DeleteAsset_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2437,12 +2455,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetStargazers", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/stargazers"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetStargazers", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/stargazers"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetAssetStargazers_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetAssetStargazers_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2460,12 +2479,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetVersionHistory", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/versions"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetVersionHistory", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/versions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetAssetVersionHistory_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetAssetVersionHistory_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2483,12 +2503,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByVersion", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/versions/{version}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByVersion", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/versions/{version}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetAssetByVersion_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetAssetByVersion_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2506,12 +2527,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetUserStarredAssets", runtime.WithHTTPPathPattern("/v1beta1/users/{user_id}/starred"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetUserStarredAssets", runtime.WithHTTPPathPattern("/v1beta1/users/{user_id}/starred"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetUserStarredAssets_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetUserStarredAssets_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2529,12 +2551,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetMyStarredAssets", runtime.WithHTTPPathPattern("/v1beta1/me/starred"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetMyStarredAssets", runtime.WithHTTPPathPattern("/v1beta1/me/starred"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetMyStarredAssets_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetMyStarredAssets_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2552,12 +2575,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetMyStarredAsset", runtime.WithHTTPPathPattern("/v1beta1/me/starred/{asset_id}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetMyStarredAsset", runtime.WithHTTPPathPattern("/v1beta1/me/starred/{asset_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetMyStarredAsset_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetMyStarredAsset_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2575,12 +2599,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/StarAsset", runtime.WithHTTPPathPattern("/v1beta1/me/starred/{asset_id}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/StarAsset", runtime.WithHTTPPathPattern("/v1beta1/me/starred/{asset_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_StarAsset_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_StarAsset_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2598,12 +2623,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UnstarAsset", runtime.WithHTTPPathPattern("/v1beta1/me/starred/{asset_id}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UnstarAsset", runtime.WithHTTPPathPattern("/v1beta1/me/starred/{asset_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_UnstarAsset_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_UnstarAsset_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2621,12 +2647,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetMyDiscussions", runtime.WithHTTPPathPattern("/v1beta1/me/discussions"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetMyDiscussions", runtime.WithHTTPPathPattern("/v1beta1/me/discussions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetMyDiscussions_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetMyDiscussions_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2644,12 +2671,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateTagAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateTagAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_CreateTagAsset_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_CreateTagAsset_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2667,12 +2695,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetTagsByAssetAndTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetTagsByAssetAndTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetTagsByAssetAndTemplate_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetTagsByAssetAndTemplate_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2690,12 +2719,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpdateTagAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpdateTagAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_UpdateTagAsset_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_UpdateTagAsset_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2713,12 +2743,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteTagAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteTagAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_DeleteTagAsset_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_DeleteTagAsset_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2736,12 +2767,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllTagsByAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllTagsByAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetAllTagsByAsset_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetAllTagsByAsset_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2759,12 +2791,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllTagTemplates", runtime.WithHTTPPathPattern("/v1beta1/tags/templates"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllTagTemplates", runtime.WithHTTPPathPattern("/v1beta1/tags/templates"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetAllTagTemplates_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetAllTagTemplates_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2782,12 +2815,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_CreateTagTemplate_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_CreateTagTemplate_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2805,12 +2839,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates/{template_urn}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates/{template_urn}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetTagTemplate_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetTagTemplate_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2828,12 +2863,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpdateTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates/{template_urn}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpdateTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates/{template_urn}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_UpdateTagTemplate_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_UpdateTagTemplate_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2851,12 +2887,13 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates/{template_urn}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates/{template_urn}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_DeleteTagTemplate_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_DeleteTagTemplate_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2913,12 +2950,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllDiscussions", runtime.WithHTTPPathPattern("/v1beta1/discussions"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllDiscussions", runtime.WithHTTPPathPattern("/v1beta1/discussions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetAllDiscussions_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetAllDiscussions_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2933,12 +2971,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateDiscussion", runtime.WithHTTPPathPattern("/v1beta1/discussions"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateDiscussion", runtime.WithHTTPPathPattern("/v1beta1/discussions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_CreateDiscussion_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_CreateDiscussion_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2953,12 +2992,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetDiscussion", runtime.WithHTTPPathPattern("/v1beta1/discussions/{id}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetDiscussion", runtime.WithHTTPPathPattern("/v1beta1/discussions/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetDiscussion_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetDiscussion_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2973,12 +3013,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/PatchDiscussion", runtime.WithHTTPPathPattern("/v1beta1/discussions/{id}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/PatchDiscussion", runtime.WithHTTPPathPattern("/v1beta1/discussions/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_PatchDiscussion_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_PatchDiscussion_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -2993,12 +3034,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_CreateComment_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_CreateComment_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3013,12 +3055,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllComments", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllComments", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetAllComments_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetAllComments_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3033,12 +3076,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments/{id}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetComment_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetComment_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3053,12 +3097,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpdateComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments/{id}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpdateComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_UpdateComment_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_UpdateComment_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3073,12 +3118,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments/{id}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteComment", runtime.WithHTTPPathPattern("/v1beta1/discussions/{discussion_id}/comments/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_DeleteComment_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_DeleteComment_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3093,12 +3139,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/SearchAssets", runtime.WithHTTPPathPattern("/v1beta1/search"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/SearchAssets", runtime.WithHTTPPathPattern("/v1beta1/search"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_SearchAssets_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_SearchAssets_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3113,12 +3160,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/SuggestAssets", runtime.WithHTTPPathPattern("/v1beta1/search/suggest"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/SuggestAssets", runtime.WithHTTPPathPattern("/v1beta1/search/suggest"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_SuggestAssets_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_SuggestAssets_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3133,12 +3181,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetGraph", runtime.WithHTTPPathPattern("/v1beta1/lineage/{urn=**}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetGraph", runtime.WithHTTPPathPattern("/v1beta1/lineage/{urn=**}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetGraph_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetGraph_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3153,12 +3202,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllTypes", runtime.WithHTTPPathPattern("/v1beta1/types"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllTypes", runtime.WithHTTPPathPattern("/v1beta1/types"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetAllTypes_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetAllTypes_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3173,12 +3223,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllAssets", runtime.WithHTTPPathPattern("/v1beta1/assets"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllAssets", runtime.WithHTTPPathPattern("/v1beta1/assets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetAllAssets_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetAllAssets_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3193,12 +3244,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByID", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByID", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetAssetByID_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetAssetByID_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3213,12 +3265,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertAsset", runtime.WithHTTPPathPattern("/v1beta1/assets"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertAsset", runtime.WithHTTPPathPattern("/v1beta1/assets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_UpsertAsset_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_UpsertAsset_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3233,12 +3286,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertPatchAsset", runtime.WithHTTPPathPattern("/v1beta1/assets"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertPatchAsset", runtime.WithHTTPPathPattern("/v1beta1/assets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_UpsertPatchAsset_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_UpsertPatchAsset_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3253,12 +3307,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteAsset", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteAsset", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_DeleteAsset_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_DeleteAsset_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3273,12 +3328,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetStargazers", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/stargazers"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetStargazers", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/stargazers"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetAssetStargazers_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetAssetStargazers_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3293,12 +3349,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetVersionHistory", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/versions"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetVersionHistory", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/versions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetAssetVersionHistory_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetAssetVersionHistory_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3313,12 +3370,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByVersion", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/versions/{version}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByVersion", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/versions/{version}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetAssetByVersion_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetAssetByVersion_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3333,12 +3391,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetUserStarredAssets", runtime.WithHTTPPathPattern("/v1beta1/users/{user_id}/starred"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetUserStarredAssets", runtime.WithHTTPPathPattern("/v1beta1/users/{user_id}/starred"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetUserStarredAssets_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetUserStarredAssets_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3353,12 +3412,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetMyStarredAssets", runtime.WithHTTPPathPattern("/v1beta1/me/starred"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetMyStarredAssets", runtime.WithHTTPPathPattern("/v1beta1/me/starred"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetMyStarredAssets_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetMyStarredAssets_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3373,12 +3433,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetMyStarredAsset", runtime.WithHTTPPathPattern("/v1beta1/me/starred/{asset_id}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetMyStarredAsset", runtime.WithHTTPPathPattern("/v1beta1/me/starred/{asset_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetMyStarredAsset_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetMyStarredAsset_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3393,12 +3454,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/StarAsset", runtime.WithHTTPPathPattern("/v1beta1/me/starred/{asset_id}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/StarAsset", runtime.WithHTTPPathPattern("/v1beta1/me/starred/{asset_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_StarAsset_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_StarAsset_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3413,12 +3475,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UnstarAsset", runtime.WithHTTPPathPattern("/v1beta1/me/starred/{asset_id}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UnstarAsset", runtime.WithHTTPPathPattern("/v1beta1/me/starred/{asset_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_UnstarAsset_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_UnstarAsset_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3433,12 +3496,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetMyDiscussions", runtime.WithHTTPPathPattern("/v1beta1/me/discussions"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetMyDiscussions", runtime.WithHTTPPathPattern("/v1beta1/me/discussions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetMyDiscussions_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetMyDiscussions_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3453,12 +3517,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateTagAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateTagAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_CreateTagAsset_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_CreateTagAsset_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3473,12 +3538,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetTagsByAssetAndTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetTagsByAssetAndTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetTagsByAssetAndTemplate_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetTagsByAssetAndTemplate_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3493,12 +3559,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpdateTagAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpdateTagAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_UpdateTagAsset_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_UpdateTagAsset_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3513,12 +3580,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteTagAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteTagAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_DeleteTagAsset_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_DeleteTagAsset_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3533,12 +3601,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllTagsByAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllTagsByAsset", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetAllTagsByAsset_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetAllTagsByAsset_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3553,12 +3622,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllTagTemplates", runtime.WithHTTPPathPattern("/v1beta1/tags/templates"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllTagTemplates", runtime.WithHTTPPathPattern("/v1beta1/tags/templates"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetAllTagTemplates_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetAllTagTemplates_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3573,12 +3643,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_CreateTagTemplate_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_CreateTagTemplate_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3593,12 +3664,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates/{template_urn}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates/{template_urn}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetTagTemplate_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetTagTemplate_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3613,12 +3685,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpdateTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates/{template_urn}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpdateTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates/{template_urn}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_UpdateTagTemplate_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_UpdateTagTemplate_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -3633,12 +3706,13 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates/{template_urn}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteTagTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/templates/{template_urn}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_DeleteTagTemplate_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_DeleteTagTemplate_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
