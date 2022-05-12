@@ -1,7 +1,7 @@
 NAME="github.com/odpf/compass"
 VERSION=$(shell git describe --always --tags 2>/dev/null)
 COVERFILE="/tmp/compass.coverprofile"
-PROTON_COMMIT := "efc71a54e643624f2f809bac8c095c069576c4dd"
+PROTON_COMMIT := "4d2fb0f0b145c31c02ccd65fb4a83510d58712e2"
 
 .PHONY: all build test clean install proto
 
@@ -40,12 +40,12 @@ proto: ## Generate the protobuf files
 install: ## install required dependencies
 	@echo "> installing dependencies"
 	go mod tidy
-	go get github.com/vektra/mockery/v2@v2.10.4
-	go get google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
-	go get google.golang.org/protobuf/proto@v1.27.1
-	go get google.golang.org/grpc@v1.45.0
-	go get google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2.0
-	go get github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.8.0
-	go get github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.8.0
-	go get github.com/bufbuild/buf/cmd/buf@v1.3.1
-	go get github.com/envoyproxy/protoc-gen-validate@v0.6.7
+	go install github.com/vektra/mockery/v2@v2.12.2
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.0
+	go get google.golang.org/protobuf/proto@v1.28.0
+	go get google.golang.org/grpc@v1.46.0
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2.0
+	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.9.0
+	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.9.0
+	go install github.com/bufbuild/buf/cmd/buf@v1.4.0
+	go install github.com/envoyproxy/protoc-gen-validate@v0.6.7

@@ -5,16 +5,14 @@ import (
 )
 
 type NotFoundError struct {
-	URN      string
-	Type     string
+	AssetID  string
 	Template string
 }
 
 func (e NotFoundError) Error() string {
 	return fmt.Sprintf(
-		"could not find tag with record type: \"%s\", record: \"%s\", template: \"%s\"",
-		e.Type,
-		e.URN,
+		"could not find tag with asset id: \"%s\", template: \"%s\"",
+		e.AssetID,
 		e.Template,
 	)
 }
@@ -28,13 +26,12 @@ func (e TemplateNotFoundError) Error() string {
 }
 
 type DuplicateError struct {
-	RecordURN   string
-	RecordType  string
+	AssetID     string
 	TemplateURN string
 }
 
 func (e DuplicateError) Error() string {
-	return fmt.Sprintf("tag of record URN \"%s\" with type \"%s\" and template URN \"%s\" already exists", e.RecordURN, e.RecordType, e.TemplateURN)
+	return fmt.Sprintf("tag of asset ID \"%s\" and template URN \"%s\" already exists", e.AssetID, e.TemplateURN)
 }
 
 type DuplicateTemplateError struct {

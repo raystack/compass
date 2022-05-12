@@ -9,14 +9,13 @@ import (
 
 // TagModel is a model for tag value in database table
 type TagModel struct {
-	ID         uint                  `db:"id"`
-	Value      string                `db:"value"`
-	RecordURN  string                `db:"record_urn"`
-	RecordType string                `db:"record_type"`
-	FieldID    uint                  `db:"field_id"`
-	CreatedAt  time.Time             `db:"created_at"`
-	UpdatedAt  time.Time             `db:"updated_at"`
-	Field      TagTemplateFieldModel `db:"-"`
+	ID        uint                  `db:"id"`
+	Value     string                `db:"value"`
+	AssetID   string                `db:"asset_id"`
+	FieldID   uint                  `db:"field_id"`
+	CreatedAt time.Time             `db:"created_at"`
+	UpdatedAt time.Time             `db:"updated_at"`
+	Field     TagTemplateFieldModel `db:"-"`
 }
 
 type TagModels []TagModel
@@ -33,7 +32,7 @@ func (ts TagModels) buildMapByTemplateURN() map[string][]TagModel {
 	return tagsByTemplateURN
 }
 
-func (ts TagModels) toTags(recordType, recordURN string, templates TagTemplateModels) []tag.Tag {
+func (ts TagModels) toTags(assetID string, templates TagTemplateModels) []tag.Tag {
 	templateByURN := templates.buildMapByURN()
 	tagsByTemplateURN := ts.buildMapByTemplateURN()
 
@@ -61,8 +60,7 @@ func (ts TagModels) toTags(recordType, recordURN string, templates TagTemplateMo
 			})
 		}
 		output = append(output, tag.Tag{
-			RecordType:          recordType,
-			RecordURN:           recordURN,
+			AssetID:             assetID,
 			TemplateURN:         templateModel.URN,
 			TagValues:           listOfTagValue,
 			TemplateDisplayName: templateModel.DisplayName,

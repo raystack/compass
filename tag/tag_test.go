@@ -23,13 +23,13 @@ func TestTagToProto(t *testing.T) {
 	var testCases = []testCase{
 		{
 			Title:       "should return empty field value pb if tag values is empty",
-			Tag:         tag.Tag{RecordType: "type", RecordURN: "urn"},
-			ExpectProto: &compassv1beta1.Tag{RecordType: "type", RecordUrn: "urn"},
+			Tag:         tag.Tag{AssetID: "1111-2222-3333-4444"},
+			ExpectProto: &compassv1beta1.Tag{AssetId: "1111-2222-3333-4444"},
 		},
 		{
 			Title:       "should return tag value pb if tag values is not empty",
-			Tag:         tag.Tag{RecordType: "type", RecordURN: "urn", TagValues: []tag.TagValue{{FieldID: 123, FieldURN: "urn"}}},
-			ExpectProto: &compassv1beta1.Tag{RecordType: "type", RecordUrn: "urn", TagValues: []*compassv1beta1.TagValue{{FieldId: 123, FieldUrn: "urn"}}},
+			Tag:         tag.Tag{AssetID: "1111-2222-3333-4444", TagValues: []tag.TagValue{{FieldID: 123, FieldURN: "urn"}}},
+			ExpectProto: &compassv1beta1.Tag{AssetId: "1111-2222-3333-4444", TagValues: []*compassv1beta1.TagValue{{FieldId: 123, FieldUrn: "urn"}}},
 		},
 	}
 	for _, tc := range testCases {
@@ -56,13 +56,13 @@ func TestNewTagFromProto(t *testing.T) {
 	var testCases = []testCase{
 		{
 			Title:  "should return non empty tag values if tag values pb are not empty",
-			PB:     &compassv1beta1.Tag{RecordType: "type", RecordUrn: "urn", TagValues: []*compassv1beta1.TagValue{{FieldId: 123, FieldUrn: "urn"}}},
-			Expect: tag.Tag{RecordType: "type", RecordURN: "urn", TagValues: []tag.TagValue{{FieldID: 123, FieldURN: "urn"}}},
+			PB:     &compassv1beta1.Tag{AssetId: "1111-2222-3333-4444", TagValues: []*compassv1beta1.TagValue{{FieldId: 123, FieldUrn: "urn"}}},
+			Expect: tag.Tag{AssetID: "1111-2222-3333-4444", TagValues: []tag.TagValue{{FieldID: 123, FieldURN: "urn"}}},
 		},
 		{
 			Title:  "should return empty tag values if tag values pb are empty",
-			PB:     &compassv1beta1.Tag{RecordType: "type", RecordUrn: "urn"},
-			Expect: tag.Tag{RecordType: "type", RecordURN: "urn"},
+			PB:     &compassv1beta1.Tag{AssetId: "1111-2222-3333-4444"},
+			Expect: tag.Tag{AssetID: "1111-2222-3333-4444"},
 		},
 	}
 	for _, tc := range testCases {

@@ -19,8 +19,8 @@ Discover why users choose Compass as their main data discovery and lineage servi
 
 Explore the following resources to get started with Compass:
 
-* [Guides](https://github.com/odpf/compass/tree/1093c7e9a2c862b0b1dbd45812e7c3837125ef79/docs/guides/README.md) provides guidance on ingesting and queying metadata from Compass.
-* [Concepts](https://github.com/odpf/compass/tree/1093c7e9a2c862b0b1dbd45812e7c3837125ef79/docs/concepts/README.md) describes all important Compass concepts.
-* [Reference](https://github.com/odpf/compass/tree/1093c7e9a2c862b0b1dbd45812e7c3837125ef79/docs/reference/README.md) contains details about configurations, metrics and other aspects of Compass.
-* [Contribute](https://github.com/odpf/compass/tree/1093c7e9a2c862b0b1dbd45812e7c3837125ef79/docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Compass.
+* [Guides](https://github.com/odpf/compass/tree/main/docs/guides) provides guidance on ingesting and queying metadata from Compass.
+* [Concepts](https://github.com/odpf/compass/tree/main/docs/concepts) describes all important Compass concepts.
+* [Reference](https://github.com/odpf/compass/tree/main/docs/reference) contains details about configurations, metrics and other aspects of Compass.
+* [Contribute](https://github.com/odpf/compass/tree/main/docs/contribute) contains resources for anyone who wants to contribute to Compass.
 
