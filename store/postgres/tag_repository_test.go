@@ -338,7 +338,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	r.Run("should delete tags related to the asset id and return error if the asset id has one", func() {
+	r.Run("should delete tags related to the asset id and return no error if the asset id has one", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
@@ -384,7 +384,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		r.ErrorIs(err, tag.TemplateNotFoundError{URN: templateURN})
 	})
 
-	r.Run("should delete only the tag for asset id and template and return no error if asset id has one", func() {
+	r.Run("should delete only the tag for asset id and template and return error if asset id has none", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
@@ -399,7 +399,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		}
 
 		actualError := r.repository.Delete(r.ctx, paramDomainTag)
-		r.NoError(actualError)
+		r.Error(actualError)
 	})
 }
 
