@@ -220,20 +220,31 @@ func (r *TagRepository) Delete(ctx context.Context, domainTag tag.Tag) error {
 		})
 	}
 
-	for _, tagModel := range deletedModelTags {
-		sqlQuery := "DELETE FROM tags WHERE tags.asset_id = $1"
-		sqlArgs := []interface{}{tagModel.AssetID}
+	return r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
+		for _, tagModel := range deletedModelTags {
+			sqlQuery := "DELETE FROM tags WHERE tags.asset_id = $1"
+			sqlArgs := []interface{}{tagModel.AssetID}
 
-		if tagModel.FieldID != 0 {
-			sqlQuery += " AND tags.field_id = $2"
-			sqlArgs = append(sqlArgs, tagModel.FieldID)
-		}
+			if tagModel.FieldID != 0 {
+				sqlQuery += " AND tags.field_id = $2"
+				sqlArgs = append(sqlArgs, tagModel.FieldID)
+			}
 
-		if _, err := r.client.db.ExecContext(ctx, sqlQuery, sqlArgs...); err != nil {
-			return fmt.Errorf("failed to delete a domain tag: %w", err)
+			res, err := tx.ExecContext(ctx, sqlQuery, sqlArgs...)
+			if err != nil {
+				return fmt.Errorf("failed to delete a tag: %w", err)
+			}
+			rowsAffected, err := res.RowsAffected()
+			if err != nil {
+				return fmt.Errorf("failed to get row affected of deleting tag: %w", err)
+			}
+
+			if rowsAffected == 0 {
+				return tag.NotFoundError{AssetID: tagModel.AssetID, Template: domainTag.TemplateURN}
+			}
 		}
-	}
-	return nil
+		return nil
+	})
 }
 
 func (r *TagRepository) complementTag(domainTag *tag.Tag, template tag.Template, tagModels []TagModel) error {

@@ -1,4 +1,4 @@
-# API
+# Compass
 Documentation of our Compass API with gRPC and gRPC-Gateway.
 
 ## Version: 0.2.1
@@ -22,14 +22,14 @@ Returns list of assets, optionally filtered by types, services, sorting, fields 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
 | q | query | filter by specific query | No | string |
-| qFields | query | filter by multiple query fields | No | string |
+| q_fields | query | filter by multiple query fields | No | string |
 | types | query | filter by multiple types | No | string |
 | services | query | filter by multiple services | No | string |
 | sort | query | sorting based on fields | No | string |
 | direction | query | sorting direction can either be asc or desc  | No | string |
 | size | query | maximum size to fetch | No | long |
 | offset | query | offset to fetch from | No | long |
-| withTotal | query | if set include total field in response | No | boolean |
+| with_total | query | if set include total field in response | No | boolean |
 
 ##### Responses
 
@@ -292,7 +292,7 @@ Create a discussion
 | 500 | Returned when theres is something wrong on the server side. | [Status](#status) |
 | default | An unexpected error response. | [Status](#status) |
 
-### /v1beta1/discussions/{discussionId}/comments
+### /v1beta1/discussions/{discussion_id}/comments
 
 #### GET
 ##### Summary
@@ -303,7 +303,7 @@ Get all comments of a discussion
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| discussionId | path |  | Yes | string |
+| discussion_id | path |  | Yes | string |
 | sort | query |  | No | string |
 | direction | query |  | No | string |
 | size | query |  | No | long |
@@ -329,7 +329,7 @@ Create a comment of a discussion
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| discussionId | path |  | Yes | string |
+| discussion_id | path |  | Yes | string |
 | body | body |  | Yes | object |
 
 ##### Responses
@@ -343,7 +343,7 @@ Create a comment of a discussion
 | 500 | Returned when theres is something wrong on the server side. | [Status](#status) |
 | default | An unexpected error response. | [Status](#status) |
 
-### /v1beta1/discussions/{discussionId}/comments/{id}
+### /v1beta1/discussions/{discussion_id}/comments/{id}
 
 #### GET
 ##### Summary
@@ -354,7 +354,7 @@ Get a comment of a discussion
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| discussionId | path |  | Yes | string |
+| discussion_id | path |  | Yes | string |
 | id | path |  | Yes | string |
 
 ##### Responses
@@ -377,7 +377,7 @@ Delete a comment of a discussion
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| discussionId | path |  | Yes | string |
+| discussion_id | path |  | Yes | string |
 | id | path |  | Yes | string |
 
 ##### Responses
@@ -400,7 +400,7 @@ Update a comment of a discussion
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| discussionId | path |  | Yes | string |
+| discussion_id | path |  | Yes | string |
 | id | path |  | Yes | string |
 | body | body |  | Yes | object |
 
@@ -555,7 +555,7 @@ Get all assets starred by me
 | 500 | Returned when theres is something wrong on the server side. | [Status](#status) |
 | default | An unexpected error response. | [Status](#status) |
 
-### /v1beta1/me/starred/{assetId}
+### /v1beta1/me/starred/{asset_id}
 
 #### GET
 ##### Summary
@@ -570,7 +570,7 @@ Get an asset starred by me
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| assetId | path |  | Yes | string |
+| asset_id | path |  | Yes | string |
 
 ##### Responses
 
@@ -596,7 +596,7 @@ Unmark my starred asset
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| assetId | path |  | Yes | string |
+| asset_id | path |  | Yes | string |
 
 ##### Responses
 
@@ -622,7 +622,7 @@ Mark an asset with a star
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| assetId | path |  | Yes | string |
+| asset_id | path |  | Yes | string |
 
 ##### Responses
 
@@ -721,7 +721,7 @@ Tag an asset with a tag template
 | 500 | Returned when theres is something wrong on the server side. | [Status](#status) |
 | default | An unexpected error response. | [Status](#status) |
 
-### /v1beta1/tags/assets/{assetId}
+### /v1beta1/tags/assets/{asset_id}
 
 #### GET
 ##### Summary
@@ -736,7 +736,7 @@ Get all tags for an assets
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| assetId | path |  | Yes | string |
+| asset_id | path |  | Yes | string |
 
 ##### Responses
 
@@ -749,7 +749,7 @@ Get all tags for an assets
 | 500 | Returned when theres is something wrong on the server side. | [Status](#status) |
 | default | An unexpected error response. | [Status](#status) |
 
-### /v1beta1/tags/assets/{assetId}/templates/{templateUrn}
+### /v1beta1/tags/assets/{asset_id}/templates/{template_urn}
 
 #### GET
 ##### Summary
@@ -764,8 +764,8 @@ Find a single tag using asset id and template urn
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| assetId | path |  | Yes | string |
-| templateUrn | path |  | Yes | string |
+| asset_id | path |  | Yes | string |
+| template_urn | path |  | Yes | string |
 
 ##### Responses
 
@@ -791,8 +791,8 @@ Remove a tag on an asset in a type
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| assetId | path |  | Yes | string |
-| templateUrn | path |  | Yes | string |
+| asset_id | path |  | Yes | string |
+| template_urn | path |  | Yes | string |
 
 ##### Responses
 
@@ -818,8 +818,8 @@ Update a tag on an asset
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| assetId | path |  | Yes | string |
-| templateUrn | path |  | Yes | string |
+| asset_id | path |  | Yes | string |
+| template_urn | path |  | Yes | string |
 | body | body |  | Yes | object |
 
 ##### Responses
@@ -887,7 +887,7 @@ Create a new tag template
 | 500 | Returned when theres is something wrong on the server side. | [Status](#status) |
 | default | An unexpected error response. | [Status](#status) |
 
-### /v1beta1/tags/templates/{templateUrn}
+### /v1beta1/tags/templates/{template_urn}
 
 #### GET
 ##### Summary
@@ -902,7 +902,7 @@ Get a single tag template
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| templateUrn | path |  | Yes | string |
+| template_urn | path |  | Yes | string |
 
 ##### Responses
 
@@ -928,7 +928,7 @@ Delete a single tag template
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| templateUrn | path |  | Yes | string |
+| template_urn | path |  | Yes | string |
 
 ##### Responses
 
@@ -954,7 +954,7 @@ Update an existing tag template
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| templateUrn | path |  | Yes | string |
+| template_urn | path |  | Yes | string |
 | body | body |  | Yes | object |
 
 ##### Responses
@@ -990,7 +990,7 @@ Fetch all types supported in Compass
 | 500 | Returned when theres is something wrong on the server side. | [Status](#status) |
 | default | An unexpected error response. | [Status](#status) |
 
-### /v1beta1/users/{userId}/starred
+### /v1beta1/users/{user_id}/starred
 
 #### GET
 ##### Summary
@@ -1005,7 +1005,7 @@ Get all assets starred by a user
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| userId | path |  | Yes | string |
+| user_id | path |  | Yes | string |
 | size | query |  | No | long |
 | offset | query |  | No | long |
 
@@ -1042,10 +1042,10 @@ Get all assets starred by a user
 | labels | object |  | No |
 | owners | [ [User](#user) ] |  | No |
 | version | string |  | No |
-| updatedBy | [User](#user) |  | No |
+| updated_by | [User](#user) |  | No |
 | changelog | [ [Change](#change) ] |  | No |
-| createdAt | dateTime |  | No |
-| updatedAt | dateTime |  | No |
+| created_at | dateTime |  | No |
+| updated_at | dateTime |  | No |
 
 #### Change
 
@@ -1061,12 +1061,12 @@ Get all assets starred by a user
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
 | id | string |  | No |
-| discussionId | string |  | No |
+| discussion_id | string |  | No |
 | body | string |  | No |
 | owner | [User](#user) |  | No |
-| updatedBy | [User](#user) |  | No |
-| createdAt | dateTime |  | No |
-| updatedAt | dateTime |  | No |
+| updated_by | [User](#user) |  | No |
+| created_at | dateTime |  | No |
+| updated_at | dateTime |  | No |
 
 #### CreateCommentResponse
 
@@ -1100,11 +1100,11 @@ Request to be sent to create a tag
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
-| assetId | string |  | Yes |
-| templateUrn | string |  | Yes |
-| tagValues | [ [TagValue](#tagvalue) ] |  | Yes |
-| templateDisplayName | string |  | No |
-| templateDescription | string |  | No |
+| asset_id | string |  | Yes |
+| template_urn | string |  | Yes |
+| tag_values | [ [TagValue](#tagvalue) ] |  | Yes |
+| template_display_name | string |  | No |
+| template_description | string |  | No |
 
 #### CreateTagAssetResponse
 
@@ -1119,7 +1119,7 @@ Request to be sent to create a tag's template
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
 | urn | string |  | Yes |
-| displayName | string |  | Yes |
+| display_name | string |  | Yes |
 | description | string |  | Yes |
 | fields | [ [TagTemplateField](#tagtemplatefield) ] |  | No |
 
@@ -1166,8 +1166,8 @@ Request to be sent to create a tag's template
 | assets | [ string ] |  | No |
 | assignees | [ string ] |  | No |
 | owner | [User](#user) |  | No |
-| createdAt | dateTime |  | No |
-| updatedAt | dateTime |  | No |
+| created_at | dateTime |  | No |
+| updated_at | dateTime |  | No |
 
 #### GetAllAssetsResponse
 
@@ -1350,11 +1350,11 @@ Request to be sent to create a tag's template
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
 | urn | string |  | No |
-| displayName | string |  | No |
+| display_name | string |  | No |
 | description | string |  | No |
 | fields | [ [TagTemplateField](#tagtemplatefield) ] |  | No |
-| createdAt | dateTime |  | No |
-| updatedAt | dateTime |  | No |
+| created_at | dateTime |  | No |
+| updated_at | dateTime |  | No |
 
 #### TagTemplateField
 
@@ -1362,28 +1362,28 @@ Request to be sent to create a tag's template
 | ---- | ---- | ----------- | -------- |
 | id | long |  | No |
 | urn | string |  | No |
-| displayName | string |  | No |
+| display_name | string |  | No |
 | description | string |  | No |
-| dataType | string |  | No |
+| data_type | string |  | No |
 | options | [ string ] |  | No |
 | required | boolean |  | No |
-| createdAt | dateTime |  | No |
-| updatedAt | dateTime |  | No |
+| created_at | dateTime |  | No |
+| updated_at | dateTime |  | No |
 
 #### TagValue
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
-| fieldId | long |  | No |
-| fieldValue | object |  | No |
-| fieldUrn | string |  | No |
-| fieldDisplayName | string |  | No |
-| fieldDescription | string |  | No |
-| fieldDataType | string |  | No |
-| fieldOptions | [ string ] |  | No |
-| fieldRequired | boolean |  | No |
-| createdAt | dateTime |  | No |
-| updatedAt | dateTime |  | No |
+| field_id | long |  | No |
+| field_value | object |  | No |
+| field_urn | string |  | No |
+| field_display_name | string |  | No |
+| field_description | string |  | No |
+| field_data_type | string |  | No |
+| field_options | [ string ] |  | No |
+| field_required | boolean |  | No |
+| created_at | dateTime |  | No |
+| updated_at | dateTime |  | No |
 
 #### UnstarAssetResponse
 
@@ -1471,18 +1471,18 @@ Request to be sent to create a tag's template
 | uuid | string |  | No |
 | email | string |  | No |
 | provider | string |  | No |
-| createdAt | dateTime |  | No |
-| updatedAt | dateTime |  | No |
+| created_at | dateTime |  | No |
+| updated_at | dateTime |  | No |
 
 #### v1beta1.Tag
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
-| assetId | string |  | No |
-| templateUrn | string |  | No |
-| tagValues | [ [TagValue](#tagvalue) ] |  | No |
-| templateDisplayName | string |  | No |
-| templateDescription | string |  | No |
+| asset_id | string |  | No |
+| template_urn | string |  | No |
+| tag_values | [ [TagValue](#tagvalue) ] |  | No |
+| template_display_name | string |  | No |
+| template_description | string |  | No |
 
 #### v1beta1.Type
 

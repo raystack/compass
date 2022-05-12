@@ -134,14 +134,14 @@ func (h *Handler) UpdateTagAsset(ctx context.Context, req *compassv1beta1.Update
 	}
 
 	err := h.TagService.Update(ctx, &tagDomain)
-	if errors.As(err, new(tag.NotFoundError)) {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
-	if errors.As(err, new(tag.ValidationError)) {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
 	if err != nil {
-		return nil, internalServerError(h.Logger, fmt.Sprintf("error updating a template: %s", err.Error()))
+		if errors.As(err, new(tag.NotFoundError)) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		if errors.As(err, new(tag.ValidationError)) {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
+		return nil, internalServerError(h.Logger, fmt.Sprintf("error updating an asset's tag: %s", err.Error()))
 	}
 
 	tagPB, err := tagDomain.ToProto()
@@ -168,11 +168,11 @@ func (h *Handler) DeleteTagAsset(ctx context.Context, req *compassv1beta1.Delete
 	}
 
 	err := h.TagService.Delete(ctx, req.GetAssetId(), req.GetTemplateUrn())
-	if errors.As(err, new(tag.TemplateNotFoundError)) {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
 	if err != nil {
-		return nil, internalServerError(h.Logger, fmt.Sprintf("error deleting a template: %s", err.Error()))
+		if errors.As(err, new(tag.TemplateNotFoundError)) || errors.As(err, new(tag.NotFoundError)) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		return nil, internalServerError(h.Logger, fmt.Sprintf("error deleting a tag: %s", err.Error()))
 	}
 
 	return &compassv1beta1.DeleteTagAssetResponse{}, nil

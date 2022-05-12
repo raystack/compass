@@ -53,7 +53,7 @@ paths:
         in: query
         required: false
         type: string
-      - name: qFields
+      - name: q_fields
         description: filter by multiple query fields
         in: query
         required: false
@@ -90,7 +90,7 @@ paths:
         required: false
         type: integer
         format: int64
-      - name: withTotal
+      - name: with_total
         description: if set include total field in response
         in: query
         required: false
@@ -490,7 +490,7 @@ paths:
           $ref: '#/definitions/CreateDiscussionRequest'
       tags:
       - Discussion
-  /v1beta1/discussions/{discussionId}/comments:
+  /v1beta1/discussions/{discussion_id}/comments:
     get:
       summary: Get all comments of a discussion
       operationId: CompassService_GetAllComments
@@ -520,7 +520,7 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: discussionId
+      - name: discussion_id
         in: path
         required: true
         type: string
@@ -574,7 +574,7 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: discussionId
+      - name: discussion_id
         in: path
         required: true
         type: string
@@ -589,7 +589,7 @@ paths:
       tags:
       - Discussion
       - Comment
-  /v1beta1/discussions/{discussionId}/comments/{id}:
+  /v1beta1/discussions/{discussion_id}/comments/{id}:
     get:
       summary: Get a comment of a discussion
       operationId: CompassService_GetComment
@@ -619,7 +619,7 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: discussionId
+      - name: discussion_id
         in: path
         required: true
         type: string
@@ -659,7 +659,7 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: discussionId
+      - name: discussion_id
         in: path
         required: true
         type: string
@@ -699,7 +699,7 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: discussionId
+      - name: discussion_id
         in: path
         required: true
         type: string
@@ -972,7 +972,7 @@ paths:
       tags:
       - User
       - Star
-  /v1beta1/me/starred/{assetId}:
+  /v1beta1/me/starred/{asset_id}:
     get:
       summary: Get my starred asset
       description: Get an asset starred by me
@@ -1003,7 +1003,7 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: assetId
+      - name: asset_id
         in: path
         required: true
         type: string
@@ -1040,7 +1040,7 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: assetId
+      - name: asset_id
         in: path
         required: true
         type: string
@@ -1077,7 +1077,7 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: assetId
+      - name: asset_id
         in: path
         required: true
         type: string
@@ -1220,7 +1220,7 @@ paths:
           $ref: '#/definitions/CreateTagAssetRequest'
       tags:
       - Tag
-  /v1beta1/tags/assets/{assetId}:
+  /v1beta1/tags/assets/{asset_id}:
     get:
       summary: Get an asset's tags
       description: Get all tags for an assets
@@ -1251,13 +1251,13 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: assetId
+      - name: asset_id
         in: path
         required: true
         type: string
       tags:
       - Tag
-  /v1beta1/tags/assets/{assetId}/templates/{templateUrn}:
+  /v1beta1/tags/assets/{asset_id}/templates/{template_urn}:
     get:
       summary: Find a tag by asset and template
       description: Find a single tag using asset id and template urn
@@ -1288,11 +1288,11 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: assetId
+      - name: asset_id
         in: path
         required: true
         type: string
-      - name: templateUrn
+      - name: template_urn
         in: path
         required: true
         type: string
@@ -1328,11 +1328,11 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: assetId
+      - name: asset_id
         in: path
         required: true
         type: string
-      - name: templateUrn
+      - name: template_urn
         in: path
         required: true
         type: string
@@ -1368,11 +1368,11 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: assetId
+      - name: asset_id
         in: path
         required: true
         type: string
-      - name: templateUrn
+      - name: template_urn
         in: path
         required: true
         type: string
@@ -1382,19 +1382,18 @@ paths:
         schema:
           type: object
           properties:
-            tagValues:
+            tag_values:
               type: array
               items:
                 $ref: '#/definitions/TagValue'
-            templateDisplayName:
+            template_display_name:
               type: string
-            templateDescription:
+            template_description:
               type: string
           description: Request to be sent to update an asset tag
           title: UpdateTagAssetRequest
           required:
-          - assetId
-          - tagValues
+          - tag_values
       tags:
       - Tag
   /v1beta1/tags/templates:
@@ -1471,7 +1470,7 @@ paths:
           $ref: '#/definitions/CreateTagTemplateRequest'
       tags:
       - Tag
-  /v1beta1/tags/templates/{templateUrn}:
+  /v1beta1/tags/templates/{template_urn}:
     get:
       summary: Get a tag template
       description: Get a single tag template
@@ -1502,7 +1501,7 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: templateUrn
+      - name: template_urn
         in: path
         required: true
         type: string
@@ -1538,7 +1537,7 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: templateUrn
+      - name: template_urn
         in: path
         required: true
         type: string
@@ -1574,7 +1573,7 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: templateUrn
+      - name: template_urn
         in: path
         required: true
         type: string
@@ -1584,7 +1583,7 @@ paths:
         schema:
           type: object
           properties:
-            displayName:
+            display_name:
               type: string
             description:
               type: string
@@ -1595,8 +1594,7 @@ paths:
           description: Request to be sent to update a tag's template
           title: UpdateTagTemplateRequest
           required:
-          - templateUrn
-          - displayName
+          - display_name
           - description
           - fields
       tags:
@@ -1633,7 +1631,7 @@ paths:
             $ref: '#/definitions/Status'
       tags:
       - Type
-  /v1beta1/users/{userId}/starred:
+  /v1beta1/users/{user_id}/starred:
     get:
       summary: Get assets starred by a user
       description: Get all assets starred by a user
@@ -1664,7 +1662,7 @@ paths:
           schema:
             $ref: '#/definitions/Status'
       parameters:
-      - name: userId
+      - name: user_id
         in: path
         required: true
         type: string
@@ -1713,16 +1711,16 @@ definitions:
           $ref: '#/definitions/User'
       version:
         type: string
-      updatedBy:
+      updated_by:
         $ref: '#/definitions/User'
       changelog:
         type: array
         items:
           $ref: '#/definitions/Change'
-      createdAt:
+      created_at:
         type: string
         format: date-time
-      updatedAt:
+      updated_at:
         type: string
         format: date-time
     title: Asset
@@ -1745,18 +1743,18 @@ definitions:
     properties:
       id:
         type: string
-      discussionId:
+      discussion_id:
         type: string
       body:
         type: string
       owner:
         $ref: '#/definitions/User'
-      updatedBy:
+      updated_by:
         $ref: '#/definitions/User'
-      createdAt:
+      created_at:
         type: string
         format: date-time
-      updatedAt:
+      updated_at:
         type: string
         format: date-time
     title: Comment
@@ -1800,24 +1798,24 @@ definitions:
   CreateTagAssetRequest:
     type: object
     properties:
-      assetId:
+      asset_id:
         type: string
-      templateUrn:
+      template_urn:
         type: string
-      tagValues:
+      tag_values:
         type: array
         items:
           $ref: '#/definitions/TagValue'
-      templateDisplayName:
+      template_display_name:
         type: string
-      templateDescription:
+      template_description:
         type: string
     description: Request to be sent to create a tag
     title: CreateTagAssetRequest
     required:
-    - assetId
-    - templateUrn
-    - tagValues
+    - asset_id
+    - template_urn
+    - tag_values
   CreateTagAssetResponse:
     type: object
     properties:
@@ -1828,7 +1826,7 @@ definitions:
     properties:
       urn:
         type: string
-      displayName:
+      display_name:
         type: string
       description:
         type: string
@@ -1840,9 +1838,9 @@ definitions:
     title: CreateTagTemplateRequest
     required:
     - urn
-    - displayName
+    - display_name
     - description
-    - tagValues
+    - tag_values
   CreateTagTemplateResponse:
     type: object
     properties:
@@ -1883,10 +1881,10 @@ definitions:
           type: string
       owner:
         $ref: '#/definitions/User'
-      createdAt:
+      created_at:
         type: string
         format: date-time
-      updatedAt:
+      updated_at:
         type: string
         format: date-time
     title: Discussion
@@ -2082,7 +2080,7 @@ definitions:
     properties:
       urn:
         type: string
-      displayName:
+      display_name:
         type: string
       description:
         type: string
@@ -2090,10 +2088,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/TagTemplateField'
-      createdAt:
+      created_at:
         type: string
         format: date-time
-      updatedAt:
+      updated_at:
         type: string
         format: date-time
     title: TagTemplate
@@ -2105,11 +2103,11 @@ definitions:
         format: int64
       urn:
         type: string
-      displayName:
+      display_name:
         type: string
       description:
         type: string
-      dataType:
+      data_type:
         type: string
       options:
         type: array
@@ -2117,39 +2115,39 @@ definitions:
           type: string
       required:
         type: boolean
-      createdAt:
+      created_at:
         type: string
         format: date-time
-      updatedAt:
+      updated_at:
         type: string
         format: date-time
     title: TagTemplateField
   TagValue:
     type: object
     properties:
-      fieldId:
+      field_id:
         type: integer
         format: int64
-      fieldValue:
+      field_value:
         type: object
-      fieldUrn:
+      field_urn:
         type: string
-      fieldDisplayName:
+      field_display_name:
         type: string
-      fieldDescription:
+      field_description:
         type: string
-      fieldDataType:
+      field_data_type:
         type: string
-      fieldOptions:
+      field_options:
         type: array
         items:
           type: string
-      fieldRequired:
+      field_required:
         type: boolean
-      createdAt:
+      created_at:
         type: string
         format: date-time
-      updatedAt:
+      updated_at:
         type: string
         format: date-time
     title: TagValue
@@ -2264,27 +2262,27 @@ definitions:
         type: string
       provider:
         type: string
-      createdAt:
+      created_at:
         type: string
         format: date-time
-      updatedAt:
+      updated_at:
         type: string
         format: date-time
     title: User
   v1beta1.Tag:
     type: object
     properties:
-      assetId:
+      asset_id:
         type: string
-      templateUrn:
+      template_urn:
         type: string
-      tagValues:
+      tag_values:
         type: array
         items:
           $ref: '#/definitions/TagValue'
-      templateDisplayName:
+      template_display_name:
         type: string
-      templateDescription:
+      template_description:
         type: string
     title: Tag
   v1beta1.Type:

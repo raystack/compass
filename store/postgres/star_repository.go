@@ -249,7 +249,7 @@ func (r *StarRepository) Delete(ctx context.Context, userID string, assetID stri
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("failed to get row affected  unstarring an asset: %w", err)
+		return fmt.Errorf("failed to get row affected unstarring an asset: %w", err)
 	}
 
 	if rowsAffected == 0 {

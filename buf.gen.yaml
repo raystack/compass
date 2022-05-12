@@ -24,4 +24,5 @@ plugins:
       - allow_merge=true
       - merge_file_name=compass
       - openapi_naming_strategy=simple
+      - json_names_for_fields=false
 

@@ -89,7 +89,7 @@ func (s *Service) Delete(ctx context.Context, assetID, templateURN string) error
 		AssetID:     assetID,
 		TemplateURN: templateURN,
 	}); err != nil {
-		return fmt.Errorf("error deleting tag: %w", err)
+		return err
 	}
 	return nil
 }
@@ -101,14 +101,14 @@ func (s *Service) Update(ctx context.Context, tag *Tag) error {
 	}
 	template, err := s.templateService.Find(ctx, tag.TemplateURN)
 	if err != nil {
-		return fmt.Errorf("error finding template: %w", err)
+		return TemplateNotFoundError{URN: tag.TemplateURN}
 	}
 	existingTags, err := s.repository.Read(ctx, Tag{
 		AssetID:     tag.AssetID,
 		TemplateURN: tag.TemplateURN,
 	})
 	if err != nil {
-		return fmt.Errorf("error finding existing tag: %w", err)
+		return NotFoundError{AssetID: tag.AssetID, Template: tag.TemplateURN}
 	}
 	if len(existingTags) == 0 {
 		return NotFoundError{AssetID: tag.AssetID, Template: tag.TemplateURN}
