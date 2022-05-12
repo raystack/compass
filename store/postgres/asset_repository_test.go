@@ -209,7 +209,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	assets := r.insertRecord()
 
 	r.Run("should return all assets without filtering based on size", func() {
-		expectedSize := 8
+		expectedSize := 12
 
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{})
 		r.Require().NoError(err)
@@ -252,7 +252,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		})
 		r.Require().NoError(err)
 
-		expectedURNs := []string{"i-undefined-dfgdgd-avi", "e-test-grant2"}
+		expectedURNs := []string{"twelfth-mock", "i-undefined-dfgdgd-avi", "e-test-grant2"}
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
 			r.Equal(expectedURNs[i], results[i].URN)
@@ -344,6 +344,40 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		r.Require().NoError(err)
 
 		expectedURNs := []string{"j-xcvcx"}
+		r.Equal(len(expectedURNs), len(results))
+		for i := range results {
+			r.Equal(expectedURNs[i], results[i].URN)
+		}
+	})
+
+	r.Run("should filter using asset's nonempty data fields", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Filter{
+			Data: map[string]string{
+				"properties.dependencies": "_nonempty",
+				"entity":                  "odpf",
+			},
+		})
+		r.Require().NoError(err)
+
+		expectedURNs := []string{"nine-mock", "ten-mock", "eleven-mock"}
+		r.Equal(len(expectedURNs), len(results))
+		for i := range results {
+			r.Equal(expectedURNs[i], results[i].URN)
+		}
+	})
+
+	r.Run("should filter using asset's different nonempty data fields", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Filter{
+			Data: map[string]string{
+				"properties.dependencies": "_nonempty",
+				"entity":                  "odpf",
+				"urn":                     "j-xcvcx",
+				"country":                 "vn",
+			},
+		})
+		r.Require().NoError(err)
+
+		expectedURNs := []string{"nine-mock", "ten-mock"}
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
 			r.Equal(expectedURNs[i], results[i].URN)

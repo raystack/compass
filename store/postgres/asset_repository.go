@@ -681,8 +681,12 @@ func (r *AssetRepository) BuildFilterQuery(builder sq.SelectBuilder, flt asset.F
 
 	if len(flt.Data) > 0 {
 		for key, val := range flt.Data {
-			finalQuery := nestedDataQuery(key)
-			builder = builder.Where(fmt.Sprintf("%s = '%s'", finalQuery, val))
+			finalQuery := nestedEmptyDataQuery(key, val)
+			if val == "_nonempty" {
+				builder = builder.Where(fmt.Sprintf("%s IS NOT NULL", finalQuery))
+			} else {
+				builder = builder.Where(fmt.Sprintf("%s = '%s'", finalQuery, val))
+			}
 		}
 	}
 
@@ -735,6 +739,27 @@ func nestedDataQuery(key string) (finalQuery string) {
 		queries = append(queries, nestedQuery)
 	}
 	lastParam := fmt.Sprintf("->>'%s'", nestedParams[totalParams-1])
+	queries = append(queries, lastParam)
+	finalQuery = strings.Join(queries, "")
+
+	return finalQuery
+}
+
+// nestedDataQuery is a helper function to query nested data fields
+func nestedEmptyDataQuery(key string, val string) (finalQuery string) {
+	var queries []string
+
+	queries = append(queries, "data")
+	nestedParams := strings.Split(key, ".")
+	totalParams := len(nestedParams)
+	for i := 0; i < totalParams-1; i++ {
+		nestedQuery := fmt.Sprintf("->'%s'", nestedParams[i])
+		queries = append(queries, nestedQuery)
+	}
+	lastParam := fmt.Sprintf("->>'%s'", nestedParams[totalParams-1])
+	if val == "_nonempty" {
+		lastParam = fmt.Sprintf("->'%s'", nestedParams[totalParams-1])
+	}
 	queries = append(queries, lastParam)
 	finalQuery = strings.Join(queries, "")
 
