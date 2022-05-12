@@ -135,7 +135,7 @@ func (h *Handler) UpdateTagAsset(ctx context.Context, req *compassv1beta1.Update
 
 	err := h.TagService.Update(ctx, &tagDomain)
 	if err != nil {
-		if errors.As(err, new(tag.NotFoundError)) {
+		if errors.As(err, new(tag.NotFoundError)) || errors.As(err, new(tag.TemplateNotFoundError)) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
 		if errors.As(err, new(tag.ValidationError)) {
