@@ -24,7 +24,6 @@ import (
 	"github.com/odpf/compass/api"
 	"github.com/odpf/compass/api/grpc_interceptor"
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
-	"github.com/odpf/compass/discovery"
 	"github.com/odpf/compass/metrics"
 	esStore "github.com/odpf/compass/store/elasticsearch"
 	"github.com/odpf/compass/store/postgres"
@@ -173,15 +172,6 @@ func initDependencies(
 	nrApp *newrelic.Application,
 	statsdMonitor *metrics.StatsdMonitor,
 ) *api.Dependencies {
-	typeRepository := esStore.NewTypeRepository(esClient)
-	discoveryAssetRepositoryFactory := esStore.NewAssetRepositoryFactory(esClient)
-	discoveryAssetSearcher, err := esStore.NewSearcher(esStore.SearcherConfig{
-		Client: esClient,
-	})
-	if err != nil {
-		logger.Fatal("error creating searcher", "error", err)
-	}
-
 	// init tag
 	tagRepository, err := postgres.NewTagRepository(pgClient)
 	if err != nil {
@@ -225,20 +215,17 @@ func initDependencies(
 	}
 
 	return &api.Dependencies{
-		Logger:                          logger,
-		NRApp:                           nrApp,
-		StatsdMonitor:                   statsdMonitor,
-		AssetRepository:                 assetRepository,
-		DiscoveryRepository:             discoveryRepo,
-		TypeRepository:                  typeRepository,
-		DiscoveryService:                discovery.NewService(discoveryAssetRepositoryFactory, discoveryAssetSearcher),
-		DiscoveryAssetRepositoryFactory: discoveryAssetRepositoryFactory,
-		LineageRepository:               lineageRepo,
-		TagService:                      tagService,
-		TagTemplateService:              tagTemplateService,
-		UserService:                     userService,
-		StarRepository:                  starRepository,
-		DiscussionRepository:            discussionRepository,
+		Logger:               logger,
+		NRApp:                nrApp,
+		StatsdMonitor:        statsdMonitor,
+		AssetRepository:      assetRepository,
+		DiscoveryRepository:  discoveryRepo,
+		LineageRepository:    lineageRepo,
+		TagService:           tagService,
+		TagTemplateService:   tagTemplateService,
+		UserService:          userService,
+		StarRepository:       starRepository,
+		DiscussionRepository: discussionRepository,
 	}
 }
 

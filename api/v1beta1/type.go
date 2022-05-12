@@ -9,7 +9,7 @@ import (
 )
 
 func (h *Handler) GetAllTypes(ctx context.Context, req *compassv1beta1.GetAllTypesRequest) (*compassv1beta1.GetAllTypesResponse, error) {
-	typesNameMap, err := h.TypeRepository.GetAll(ctx)
+	typesNameMap, err := h.DiscoveryRepository.GetTypes(ctx)
 	if err != nil {
 		return nil, internalServerError(h.Logger, fmt.Sprintf("error fetching types: %s", err.Error()))
 	}

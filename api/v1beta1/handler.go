@@ -31,10 +31,6 @@ type Handler struct {
 	DiscussionRepository discussion.Repository
 	DiscoveryRepository  discovery.Repository
 	HealthServer         grpc_health_v1.HealthServer
-
-	// deprecated
-	TypeRepository   discovery.TypeRepository
-	DiscoveryService *discovery.Service
 }
 
 func internalServerError(logger log.Logger, msg string) error {

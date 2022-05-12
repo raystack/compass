@@ -46,7 +46,7 @@ func newTestClient(logger log.Logger) (*postgres.Client, *dockertest.Pool, *dock
 	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
 	pool, err := dockertest.NewPool("")
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("Could not create dockertest pool: %w", err)
+		return nil, nil, nil, fmt.Errorf("could not create dockertest pool: %w", err)
 	}
 
 	// pulls an image, creates a container based on it and runs it
@@ -56,7 +56,7 @@ func newTestClient(logger log.Logger) (*postgres.Client, *dockertest.Pool, *dock
 		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 	})
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("Could not start resource: %w", err)
+		return nil, nil, nil, fmt.Errorf("could not start resource: %w", err)
 	}
 
 	pgConfig.Port, err = strconv.Atoi(resource.GetPort("5432/tcp"))
@@ -76,17 +76,17 @@ func newTestClient(logger log.Logger) (*postgres.Client, *dockertest.Pool, *dock
 			Stream:       true,
 		})
 		if err != nil {
-			logger.Fatal("Could not connect to postgres container log output", "error", err)
+			logger.Fatal("could not connect to postgres container log output", "error", err)
 		}
 		defer func() {
 			err = logWaiter.Close()
 			if err != nil {
-				logger.Fatal("Could not close container log", "error", err)
+				logger.Fatal("could not close container log", "error", err)
 			}
 
 			err = logWaiter.Wait()
 			if err != nil {
-				logger.Fatal("Could not wait for container log to close", "error", err)
+				logger.Fatal("could not wait for container log to close", "error", err)
 			}
 		}()
 	}
@@ -108,7 +108,7 @@ func newTestClient(logger log.Logger) (*postgres.Client, *dockertest.Pool, *dock
 
 		return nil
 	}); err != nil {
-		return nil, nil, nil, fmt.Errorf("Could not connect to docker: %w", err)
+		return nil, nil, nil, fmt.Errorf("could not connect to docker: %w", err)
 	}
 
 	err = setup(context.Background(), pgClient)
@@ -120,7 +120,7 @@ func newTestClient(logger log.Logger) (*postgres.Client, *dockertest.Pool, *dock
 
 func purgeDocker(pool *dockertest.Pool, resource *dockertest.Resource) error {
 	if err := pool.Purge(resource); err != nil {
-		return fmt.Errorf("Could not purge resource: %w", err)
+		return fmt.Errorf("could not purge resource: %w", err)
 	}
 	return nil
 }

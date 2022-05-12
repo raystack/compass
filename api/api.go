@@ -26,11 +26,6 @@ type Dependencies struct {
 	StarRepository       star.Repository
 	LineageRepository    lineage.Repository
 	DiscussionRepository discussion.Repository
-
-	// Deprecated
-	DiscoveryService                *discovery.Service
-	TypeRepository                  discovery.TypeRepository
-	DiscoveryAssetRepositoryFactory discovery.AssetRepositoryFactory
 }
 
 type Handlers struct {
@@ -56,9 +51,5 @@ func NewGRPCHandler(l log.Logger, deps *Dependencies) *v1beta1.Handler {
 		TagService:           deps.TagService,
 		TagTemplateService:   deps.TagTemplateService,
 		DiscoveryRepository:  deps.DiscoveryRepository,
-
-		// deprecated
-		TypeRepository:   deps.TypeRepository,
-		DiscoveryService: deps.DiscoveryService,
 	}
 }
