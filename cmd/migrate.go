@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/odpf/salt/log"
+	"github.com/spf13/cobra"
 
 	"github.com/odpf/compass/asset"
 	esStore "github.com/odpf/compass/store/elasticsearch"
@@ -15,6 +17,25 @@ import (
 const (
 	esMigrationTimeout = 5 * time.Second
 )
+
+func migrateCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "migrate",
+		Short: "Run storage migration",
+		Example: heredoc.Doc(`
+			$ compass migrate
+		`),
+		Args: cobra.NoArgs,
+		Annotations: map[string]string{
+			"group:core": "true",
+		},
+		RunE: func(command *cobra.Command, args []string) error {
+			RunMigrate()
+
+			return nil
+		},
+	}
+}
 
 func RunMigrate() {
 	fmt.Println("Preparing migration...")

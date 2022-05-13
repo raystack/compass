@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/elastic/go-elasticsearch/v7"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
@@ -32,6 +33,7 @@ import (
 	"github.com/odpf/compass/user"
 	"github.com/odpf/salt/log"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
@@ -44,6 +46,24 @@ import (
 var (
 	Version string
 )
+
+func serveCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "serve",
+		Short: "Serve HTTP service",
+		Long:  heredoc.Doc(`Serve a HTTP service on a port defined in PORT env var.`),
+		Example: heredoc.Doc(`
+			$ compass serve
+		`),
+		Args: cobra.NoArgs,
+		Annotations: map[string]string{
+			"group:core": "true",
+		},
+		RunE: func(command *cobra.Command, args []string) error {
+			return Serve()
+		},
+	}
+}
 
 func Serve() error {
 	if err := loadConfig(); err != nil {

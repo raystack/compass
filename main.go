@@ -5,10 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MakeNowJust/heredoc"
 	"github.com/odpf/compass/cmd"
-	"github.com/odpf/salt/cmdx"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -17,31 +14,7 @@ const (
 )
 
 func main() {
-	var command = &cobra.Command{
-		Use:           "compass <command>",
-		Short:         "Discovery & Lineage Service",
-		Long:          "Metadata Discovery & Lineage Service.",
-		SilenceErrors: true,
-		SilenceUsage:  false,
-		Example: heredoc.Doc(`
-			$ compass serve
-			$ compass migrate
-		`),
-		Annotations: map[string]string{
-			"group:core": "true",
-			"help:learn": heredoc.Doc(`
-				Use 'compass <command> <subcommand> --help' for more information about a command.
-				Read the manual at https://odpf.github.io/compass/
-			`),
-			"help:feedback": heredoc.Doc(`
-				Open an issue here https://github.com/odpf/compass/issues
-			`),
-		},
-	}
-
-	cmdx.SetHelp(command)
-	command.AddCommand(serveCmd())
-	command.AddCommand(migrateCmd())
+	command := cmd.New()
 
 	if err := command.Execute(); err != nil {
 		if strings.HasPrefix(err.Error(), "unknown command") {
@@ -54,42 +27,5 @@ func main() {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(exitError)
 		}
-	}
-}
-
-func serveCmd() *cobra.Command {
-	return &cobra.Command{
-		Use:   "serve",
-		Short: "Serve HTTP service",
-		Long:  heredoc.Doc(`Serve a HTTP service on a port defined in PORT env var.`),
-		Example: heredoc.Doc(`
-			$ compass serve
-		`),
-		Args: cobra.NoArgs,
-		Annotations: map[string]string{
-			"group:core": "true",
-		},
-		RunE: func(command *cobra.Command, args []string) error {
-			return cmd.Serve()
-		},
-	}
-}
-
-func migrateCmd() *cobra.Command {
-	return &cobra.Command{
-		Use:   "migrate",
-		Short: "Run storage migration",
-		Example: heredoc.Doc(`
-			$ compass migrate
-		`),
-		Args: cobra.NoArgs,
-		Annotations: map[string]string{
-			"group:core": "true",
-		},
-		RunE: func(command *cobra.Command, args []string) error {
-			cmd.RunMigrate()
-
-			return nil
-		},
 	}
 }
