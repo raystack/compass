@@ -131,7 +131,7 @@ func (r *AssetRepositoryTestSuite) insertRecord() (assets []asset.Asset) {
 	return assets
 }
 
-func (r *AssetRepositoryTestSuite) testBuildFilterQuery() {
+func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 	r.builder = sq.Select(`a.test as test`)
 
 	testCases := []struct {
