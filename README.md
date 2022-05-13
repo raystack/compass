@@ -37,68 +37,86 @@ Explore the following resources to get started with Compass:
 
 ## Requirements
 
-Compass is written in golang, and requires go version >= 1.16. Please make sure that the go tool chain is available on your machine. See golang’s [documentation](https://golang.org/) for installation instructions. Compass is also using [mockery](https://github.com/vektra/mockery) v2.10.0 to generate mocks.
+Compass is written in Golang, and requires go version &gt;= 1.16. Please make sure that the go toolchain is available on your machine. See Golang’s [documentation](https://golang.org/) for installation instructions.
 
-Alternatively, you can use docker to build compass as a docker image. More on this in the next section.
+Alternatively, you can use docker to build Compass as a docker image. More on this in the next section.
 
-Compass uses elasticsearch v7 as the query and storage backend. In order to run compass locally, you’ll need to have an instance of elasticsearch running.  You can either download elasticsearch and run it manually, or you can run elasticsearch inside docker by running the following command in a terminal
+Compass uses PostgreSQL 13 as its main storage and Elasticsearch v7 as the secondary storage to power the search. In order to run compass locally, you’ll need to have an instance of postgres and elasticsearch running. You can either download them and run it manually, or you can run them inside docker by using `docker-compose` with `docker-compose.yaml` provided in the root of this project.
+
+PostgreSQL details and Elasticsearch brokers can alternatively be specified via the environment variable, `ELASTICSEARCH_BROKERS` for elasticsearch and `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` for postgres.
+
+If you use Docker to build compass, then configuring networking requires extra steps. Following is one of doing it by running postgres and elasticsearch inside with `docker-compose` first.
+
+Go to the root of this project and run `docker-compose`.
+
+```text
+$ docker-compose up
 ```
-$ docker run -d -p 9200:9200 -e "discovery.type=single-node" elasticsearch:7.6.1
-```
+Once postgres and elasticsearch has been ready, we can run Compass by passing in the config of postgres and elasticsearch defined in `docker-compose.yaml` file.
 
-## Running locally
-Begin by cloning this repository, then you have two ways in which you can build compass
+## Building Compass
+
+Begin by cloning this repository then you have two ways in which you can build compass
+
 * As a native executable
 * As a docker image
 
 To build compass as a native executable, run `make` inside the cloned repository.
-```
+
+```text
 $ make
 ```
 
 This will create the `compass` binary in the root directory
 
 Building compass' Docker image is just a simple, just run docker build command and optionally name the image
-```
+
+```text
 $ docker build . -t compass
 ```
 
-Compass interfaces with an elasticsearch cluster. Run compass using:
+## Migration
+Before serving Compass app, we need to run the migration first. Run this docker command to migrate Compass.
 
-```
-./compass -elasticsearch-brokers "http://<broker-host-name>"
-```
-
-Elasticsearch brokers can alternatively be specified via the `ELASTICSEARCH_BROKERS` environment variable.
-
-If you used Docker to build compass, then configuring networking requires extra steps. Following is one of doing it, running elasticsearch inside docker
-
-```
-# create a docker network where compass and elasticsearch will reside 
-$ docker network create compass-net
-
-# run elasticsearch, bound to the network we created. Since we are using the -d flag to docker run, the command inside the subshell returns the container id
-$ ES_CONTAINER_ID=$(docker run -d -e "discovery.type=single-node" --net compass-net elasticsearch:7.5.2)
-
-# run compass, passing in the hostname (container id) of the elasticsearch server
-# if everything goes ok, you should say something like this:
-
-# time="2020-04-01T18:41:00Z" level=info msg="compass v0.1.0-103-g83b909b starting on 0.0.0.0:8080" reporter=main
-# time="2020-04-01T18:41:00Z" level=info msg="connected to elasticsearch cluster \"docker-cluster\" (server version 7.5.2)" reporter=main
-$ docker run --net compass-net compass -p 8080:8080 -elasticsearch-brokers http://${ES_CONTAINER_ID}:9200 
+```text
+$ docker run --rm --net compass_storage -p 8080:8080 -e ELASTICSEARCH_BROKERS=http://es:9200 -e DB_HOST=postgres -e DB_PORT=5432 -e DB_NAME=compass -e DB_USER=compass -e DB_PASSWORD=compass_password odpf/compass compass migrate
 ```
 
+If you are using Compass binary, you can run this command.
+```text
+./compass -elasticsearch-brokers "http://<broker-host-name>" -db-host "<postgres-host-name>" -db-port 5432 -db-name "<postgres-db-name>" -db-user "<postgres-db-user>" -db-password "<postgres-db-password> migrate"
+```
+
+## Serving Locally
+
+Once the migration has been done, Compass server can be started with this command.
+
+```text
+$ docker run --net compass_storage -p 8080:8080 -e ELASTICSEARCH_BROKERS=http://es:9200 -e DB_HOST=postgres -e DB_PORT=5432 -e DB_NAME=compass -e DB_USER=compass -e DB_PASSWORD=compass_password odpf/compass compass serve
+```
+
+If you are using Compass binary, you can run this command.
+```text
+./compass -elasticsearch-brokers "http://<broker-host-name>" -db-host "<postgres-host-name>" -db-port 5432 -db-name "<postgres-db-name>" -db-user "<postgres-db-user>" -db-password "<postgres-db-password> serve"
+```
+
+If everything goes ok, you should see something like this:
+```text
+time="2022-04-27T09:18:08Z" level=info msg="compass starting" version=v0.2.0
+time="2022-04-27T09:18:08Z" level=info msg="connected to elasticsearch cluster" config="\"docker-cluster\" (server version 7.6.1)"
+time="2022-04-27T09:18:08Z" level=info msg="New Relic monitoring is disabled."
+time="2022-04-27T09:18:08Z" level=info msg="statsd metrics monitoring is disabled."
+time="2022-04-27T09:18:08Z" level=info msg="connected to postgres server" host=postgres port=5432
+time="2022-04-27T09:18:08Z" level=info msg="server started"
+```
 ## Running tests
 
 ```
-# Run unit tests
-$ make unit-test
-
-# Run integration tests
+# Run tests
 $ make test
 ```
 
-The integration test suite requires docker to run elasticsearch. In case you wish to test against an existing 
+The tests combine both unit and integration tests, the test suite requires docker to run elasticsearch. In case you wish to test against an existing 
 elasticsearch cluster, set the value of `ES_TEST_SERVER_URL` to the URL of the elasticsearch server.
 
 

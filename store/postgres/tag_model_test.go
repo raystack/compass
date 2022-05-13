@@ -4,14 +4,14 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/odpf/compass/tag"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTagModel(t *testing.T) {
 
-	recordType := "sample-type"
-	recordURN := "sample-urn"
+	assetID := uuid.NewString()
 
 	templates := getTemplateModels()
 	tags := getTagModels()
@@ -29,8 +29,7 @@ func TestTagModel(t *testing.T) {
 
 		expectedTagDomains := []tag.Tag{
 			{
-				RecordType:  "sample-type",
-				RecordURN:   "sample-urn",
+				AssetID:     assetID,
 				TemplateURN: "governance_policy",
 				TagValues: []tag.TagValue{
 					{
@@ -38,7 +37,7 @@ func TestTagModel(t *testing.T) {
 						FieldValue:       "Public",
 						FieldURN:         "classification",
 						FieldDisplayName: "classification",
-						FieldDescription: "The classification of this record",
+						FieldDescription: "The classification of this asset",
 						FieldDataType:    "enumerated",
 						FieldOptions:     []string{"Public", "Restricted"},
 						FieldRequired:    true,
@@ -47,7 +46,7 @@ func TestTagModel(t *testing.T) {
 						FieldValue:       "dexter@odpf.io",
 						FieldURN:         "admin_email",
 						FieldDisplayName: "Admin Email",
-						FieldDescription: "Email of the admin of theasset.",
+						FieldDescription: "Email of the admin of the asset.",
 						FieldDataType:    "string",
 						FieldRequired:    true,
 					}},
@@ -55,7 +54,7 @@ func TestTagModel(t *testing.T) {
 				TemplateDescription: "Template that is mandatory to be used.",
 			}}
 
-		actualTagDomains := tags.toTags(recordType, recordURN, templates)
+		actualTagDomains := tags.toTags(assetID, templates)
 
 		assert.EqualValues(t, expectedTagDomains, actualTagDomains)
 	})
@@ -75,7 +74,7 @@ func TestTemplateModel(t *testing.T) {
 					ID:          1,
 					URN:         "classification",
 					DisplayName: "classification",
-					Description: "The classification of this record",
+					Description: "The classification of this asset",
 					DataType:    "enumerated",
 					Options:     []string{"Public", "Restricted"},
 					Required:    true,
@@ -84,7 +83,7 @@ func TestTemplateModel(t *testing.T) {
 					ID:          2,
 					URN:         "admin_email",
 					DisplayName: "Admin Email",
-					Description: "Email of the admin of theasset.",
+					Description: "Email of the admin of the asset.",
 					DataType:    "string",
 					Required:    true,
 				},
@@ -108,7 +107,7 @@ func TestTemplateModel(t *testing.T) {
 					ID:          1,
 					URN:         "classification",
 					DisplayName: "classification",
-					Description: "The classification of this record",
+					Description: "The classification of this asset",
 					DataType:    "enumerated",
 					Options:     &option,
 					Required:    true,
@@ -117,7 +116,7 @@ func TestTemplateModel(t *testing.T) {
 					ID:          0x2,
 					URN:         "admin_email",
 					DisplayName: "Admin Email",
-					Description: "Email of the admin of theasset.",
+					Description: "Email of the admin of the asset.",
 					DataType:    "string",
 					Required:    true,
 				},
@@ -138,7 +137,7 @@ func TestFieldModels(t *testing.T) {
 				ID:          1,
 				URN:         "classification",
 				DisplayName: "classification",
-				Description: "The classification of this record",
+				Description: "The classification of this asset",
 				DataType:    "enumerated",
 				Options:     []string{"Public", "Restricted"},
 				Required:    true,
@@ -147,7 +146,7 @@ func TestFieldModels(t *testing.T) {
 				ID:          2,
 				URN:         "admin_email",
 				DisplayName: "Admin Email",
-				Description: "Email of the admin of theasset.",
+				Description: "Email of the admin of the asset.",
 				DataType:    "string",
 				Required:    true,
 			},
@@ -165,7 +164,7 @@ func TestFieldModels(t *testing.T) {
 				ID:          1,
 				URN:         "classification",
 				DisplayName: "classification",
-				Description: "The classification of this record",
+				Description: "The classification of this asset",
 				DataType:    "enumerated",
 				Options:     &option,
 				Required:    true,
@@ -174,7 +173,7 @@ func TestFieldModels(t *testing.T) {
 				ID:          2,
 				URN:         "admin_email",
 				DisplayName: "Admin Email",
-				Description: "Email of the admin of theasset.",
+				Description: "Email of the admin of the asset.",
 				DataType:    "string",
 				Required:    true,
 			},
@@ -236,7 +235,7 @@ func getFieldModels() TagTemplateFieldModels {
 			ID:          1,
 			URN:         "classification",
 			DisplayName: "classification",
-			Description: "The classification of this record",
+			Description: "The classification of this asset",
 			DataType:    "enumerated",
 			Options:     &option,
 			Required:    true,
@@ -246,7 +245,7 @@ func getFieldModels() TagTemplateFieldModels {
 			ID:          2,
 			URN:         "admin_email",
 			DisplayName: "Admin Email",
-			Description: "Email of the admin of theasset.",
+			Description: "Email of the admin of the asset.",
 			DataType:    "string",
 			Options:     nil,
 			Required:    true,
@@ -265,7 +264,7 @@ func getTemplate() *tag.Template {
 				ID:          1,
 				URN:         "classification",
 				DisplayName: "classification",
-				Description: "The classification of this record",
+				Description: "The classification of this asset",
 				DataType:    "enumerated",
 				Required:    true,
 				Options:     []string{"Public", "Restricted"},
@@ -274,7 +273,7 @@ func getTemplate() *tag.Template {
 				ID:          2,
 				URN:         "admin_email",
 				DisplayName: "Admin Email",
-				Description: "Email of the admin of theasset.",
+				Description: "Email of the admin of the asset.",
 				DataType:    "string",
 				Required:    true,
 			},
@@ -298,20 +297,18 @@ func getTagModels() TagModels {
 	fields := getFieldModels()
 	return TagModels{
 		{
-			ID:         1,
-			Value:      "Public",
-			RecordURN:  "sample-urn",
-			RecordType: "sample-type",
-			FieldID:    1,
-			Field:      fields[0],
+			ID:      1,
+			Value:   "Public",
+			AssetID: "an-asset-id",
+			FieldID: 1,
+			Field:   fields[0],
 		},
 		{
-			ID:         2,
-			Value:      "dexter@odpf.io",
-			RecordURN:  "sample-urn",
-			RecordType: "sample-type",
-			FieldID:    2,
-			Field:      fields[1],
+			ID:      2,
+			Value:   "dexter@odpf.io",
+			AssetID: "an-asset-id",
+			FieldID: 2,
+			Field:   fields[1],
 		},
 	}
 }

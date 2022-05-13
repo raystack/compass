@@ -6,12 +6,15 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/odpf/compass/store/postgres"
 	"github.com/odpf/compass/tag"
 	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
+
+var domainAssetID = uuid.NewString()
 
 type TagRepositoryTestSuite struct {
 	suite.Suite
@@ -105,8 +108,7 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 		tags, err := r.repository.Read(r.ctx, domainTag)
 		r.NoError(err)
 
-		r.Equal(domainTag.RecordType, tags[0].RecordType)
-		r.Equal(domainTag.RecordURN, tags[0].RecordURN)
+		r.Equal(domainTag.AssetID, tags[0].AssetID)
 		r.Equal(domainTag.TemplateDescription, tags[0].TemplateDescription)
 		r.Equal(domainTag.TemplateDisplayName, tags[0].TemplateDisplayName)
 		r.Equal(domainTag.TemplateURN, tags[0].TemplateURN)
@@ -144,16 +146,15 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 }
 
 func (r *TagRepositoryTestSuite) TestRead() {
-	r.Run("should return error if record type is empty", func() {
+	r.Run("should return error if asset id is empty", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		paramDomainTag := tag.Tag{
-			RecordType: "",
-			RecordURN:  "sample-urn",
+			AssetID: "",
 		}
 
-		expectedErrorMsg := "record type should not be empty"
+		expectedErrorMsg := "asset id should not be empty"
 
 		actualTag, actualError := r.repository.Read(r.ctx, paramDomainTag)
 
@@ -161,31 +162,12 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	r.Run("should return nil and error if record urn is empty", func() {
-		err := setup(r.ctx, r.client)
-		r.NoError(err)
-
-		var recordURN string = ""
-		paramDomainTag := tag.Tag{
-			RecordType: "sample-type",
-			RecordURN:  recordURN,
-		}
-
-		expectedErrorMsg := "record urn should not be empty"
-
-		actualTag, actualError := r.repository.Read(r.ctx, paramDomainTag)
-
-		r.Nil(actualTag)
-		r.EqualError(actualError, expectedErrorMsg)
-	})
-
-	r.Run("should return empty and nil if no record found for the specified record", func() {
+	r.Run("should return empty and nil if no tags found for the specified asset", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
 		paramDomainTag := tag.Tag{
-			RecordType: "sample-type",
-			RecordURN:  "sample-urn",
+			AssetID: uuid.NewString(),
 		}
 
 		actualTag, actualError := r.repository.Read(r.ctx, paramDomainTag)
@@ -193,7 +175,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		r.Empty(actualTag)
 	})
 
-	r.Run("should return record if found for the specified record", func() {
+	r.Run("should return tags if found for the specified asset", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
@@ -206,8 +188,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		r.Require().NoError(err)
 
 		tags, err := r.repository.Read(r.ctx, tag.Tag{
-			RecordType: domainTag.RecordType,
-			RecordURN:  domainTag.RecordURN,
+			AssetID: domainTag.AssetID,
 		})
 
 		r.NoError(err)
@@ -215,12 +196,11 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		r.Len(tags[0].TagValues, 2)
 	})
 
-	r.Run("should return nil and not found error if no record found for the specified record and template", func() {
+	r.Run("should return nil and not found error if no tags found for the specified asset id and template", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		var recordType string = "sample-type"
-		var recordURN string = "sample-urn"
+		var assetID string = uuid.NewString()
 		var templateURN string = "governance_policy"
 
 		domainTemplate := getTemplate()
@@ -228,13 +208,12 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		r.NoError(err)
 
 		paramDomainTag := tag.Tag{
-			RecordType:  recordType,
-			RecordURN:   recordURN,
+			AssetID:     assetID,
 			TemplateURN: templateURN,
 		}
 
-		expectedErrorMsg := fmt.Sprintf("could not find tag with record type: \"%s\", record: \"%s\", template: \"%s\"",
-			recordType, recordURN, templateURN,
+		expectedErrorMsg := fmt.Sprintf("could not find tag with asset id: \"%s\", template: \"%s\"",
+			assetID, templateURN,
 		)
 
 		actualTag, actualError := r.repository.Read(r.ctx, paramDomainTag)
@@ -243,12 +222,11 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		r.Nil(actualTag)
 	})
 
-	r.Run("should return maximum of one tag for the specified record and template", func() {
+	r.Run("should return maximum of one tag for the specified asset id and template", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		var recordType string = "sample-type"
-		var recordURN string = "sample-urn"
+		var assetID string = domainAssetID
 		var templateURN string = "governance_policy"
 
 		domainTemplate := getTemplate()
@@ -260,8 +238,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 			panic(err)
 		}
 		paramDomainTag := tag.Tag{
-			RecordType:  recordType,
-			RecordURN:   recordURN,
+			AssetID:     assetID,
 			TemplateURN: templateURN,
 		}
 
@@ -346,23 +323,22 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 }
 
 func (r *TagRepositoryTestSuite) TestDelete() {
-	r.Run("should return error if record urn is empty", func() {
+	r.Run("should return error if asset id is empty", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		var recordURN string = ""
 		paramDomainTag := tag.Tag{
-			RecordURN: recordURN,
+			AssetID: "",
 		}
 
-		expectedErrorMsg := "record urn should not be empty"
+		expectedErrorMsg := "asset id should not be empty"
 
 		actualError := r.repository.Delete(r.ctx, paramDomainTag)
 
 		r.EqualError(actualError, expectedErrorMsg)
 	})
 
-	r.Run("should delete tags related to the record and return error if record has one", func() {
+	r.Run("should delete tags related to the asset id and return no error if the asset id has one", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
@@ -377,16 +353,14 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		}
 
 		paramDomainTag := tag.Tag{
-			RecordType: domainTag.RecordType,
-			RecordURN:  domainTag.RecordURN,
+			AssetID: domainTag.AssetID,
 		}
 
 		actualError := r.repository.Delete(r.ctx, paramDomainTag)
 		r.NoError(actualError)
 
 		foundTags, err := r.repository.Read(r.ctx, tag.Tag{
-			RecordURN:  paramDomainTag.RecordURN,
-			RecordType: paramDomainTag.RecordType,
+			AssetID: paramDomainTag.AssetID,
 		})
 		if err != nil {
 			r.T().Fatal(err)
@@ -399,10 +373,10 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		var recordURN string = "sample-urn"
+		var assetID string = uuid.NewString()
 		var templateURN string = "random-urn"
 		paramDomainTag := tag.Tag{
-			RecordURN:   recordURN,
+			AssetID:     assetID,
 			TemplateURN: templateURN,
 		}
 
@@ -410,22 +384,22 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		r.ErrorIs(err, tag.TemplateNotFoundError{URN: templateURN})
 	})
 
-	r.Run("should delete only the tag for record and template and return no error if record has one", func() {
+	r.Run("should delete only the tag for asset id and template and return error if asset id has none", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		var recordURN string = "sample-urn"
+		var assetID string = uuid.NewString()
 		domainTemplate := getTemplate()
 		err = r.templateRepository.Create(r.ctx, domainTemplate)
 		r.NoError(err)
 
 		paramDomainTag := tag.Tag{
-			RecordURN:   recordURN,
+			AssetID:     assetID,
 			TemplateURN: domainTemplate.URN,
 		}
 
 		actualError := r.repository.Delete(r.ctx, paramDomainTag)
-		r.NoError(actualError)
+		r.Error(actualError)
 	})
 }
 
@@ -439,7 +413,7 @@ func getTemplate() *tag.Template {
 				ID:          1,
 				URN:         "classification",
 				DisplayName: "classification",
-				Description: "The classification of this record",
+				Description: "The classification of this asset",
 				DataType:    "enumerated",
 				Required:    true,
 				Options:     []string{"Public", "Restricted"},
@@ -448,7 +422,7 @@ func getTemplate() *tag.Template {
 				ID:          2,
 				URN:         "admin_email",
 				DisplayName: "Admin Email",
-				Description: "Email of the admin of theasset.",
+				Description: "Email of the admin of the asset.",
 				DataType:    "string",
 				Required:    true,
 			},
@@ -458,8 +432,7 @@ func getTemplate() *tag.Template {
 
 func getDomainTag() tag.Tag {
 	return tag.Tag{
-		RecordType:          "sample-type",
-		RecordURN:           "sample-urn",
+		AssetID:             domainAssetID,
 		TemplateURN:         "governance_policy",
 		TemplateDisplayName: "Governance Policy",
 		TemplateDescription: "Template that is mandatory to be used.",
@@ -469,7 +442,7 @@ func getDomainTag() tag.Tag {
 				FieldValue:       "Public",
 				FieldURN:         "classification",
 				FieldDisplayName: "classification",
-				FieldDescription: "The classification of this record",
+				FieldDescription: "The classification of this asset",
 				FieldDataType:    "enumerated",
 				FieldRequired:    true,
 				FieldOptions:     []string{"Public", "Restricted"},
@@ -479,7 +452,7 @@ func getDomainTag() tag.Tag {
 				FieldValue:       "dexter@odpf.io",
 				FieldURN:         "admin_email",
 				FieldDisplayName: "Admin Email",
-				FieldDescription: "Email of the admin of theasset.",
+				FieldDescription: "Email of the admin of the asset.",
 				FieldDataType:    "string",
 				FieldRequired:    true,
 			},

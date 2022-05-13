@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/uuid"
 	"github.com/odpf/compass/api"
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/lib/mocks"
@@ -18,9 +19,9 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
+var assetID = uuid.NewString()
 var sampleTag = tag.Tag{
-	RecordURN:           "sample-urn",
-	RecordType:          "sample-type",
+	AssetID:             assetID,
 	TemplateURN:         "governance_policy",
 	TemplateDisplayName: "Governance Policy",
 	TemplateDescription: "Template that is mandatory to be used.",
@@ -30,7 +31,7 @@ var sampleTag = tag.Tag{
 			FieldValue:       "Public",
 			FieldURN:         "classification",
 			FieldDisplayName: "classification",
-			FieldDescription: "The classification of this record",
+			FieldDescription: "The classification of this asset",
 			FieldDataType:    "enumerated",
 			FieldRequired:    true,
 			FieldOptions:     []string{"Public", "Restricted"},
@@ -40,7 +41,7 @@ var sampleTag = tag.Tag{
 			FieldValue:       true,
 			FieldURN:         "is_encrypted",
 			FieldDisplayName: "Is Encrypted?",
-			FieldDescription: "Specify whether this record is encrypted or not.",
+			FieldDescription: "Specify whether this asset is encrypted or not.",
 			FieldDataType:    "boolean",
 			FieldRequired:    true,
 		},
@@ -48,8 +49,7 @@ var sampleTag = tag.Tag{
 }
 
 var sampleTagPB = &compassv1beta1.Tag{
-	RecordUrn:           "sample-urn",
-	RecordType:          "sample-type",
+	AssetId:             assetID,
 	TemplateUrn:         "governance_policy",
 	TemplateDisplayName: "Governance Policy",
 	TemplateDescription: "Template that is mandatory to be used.",
@@ -59,7 +59,7 @@ var sampleTagPB = &compassv1beta1.Tag{
 			FieldValue:       structpb.NewStringValue("Public"),
 			FieldUrn:         "classification",
 			FieldDisplayName: "classification",
-			FieldDescription: "The classification of this record",
+			FieldDescription: "The classification of this asset",
 			FieldDataType:    "enumerated",
 			FieldRequired:    true,
 			FieldOptions:     []string{"Public", "Restricted"},
@@ -69,55 +69,43 @@ var sampleTagPB = &compassv1beta1.Tag{
 			FieldValue:       structpb.NewBoolValue(true),
 			FieldUrn:         "is_encrypted",
 			FieldDisplayName: "Is Encrypted?",
-			FieldDescription: "Specify whether this record is encrypted or not.",
+			FieldDescription: "Specify whether this asset is encrypted or not.",
 			FieldDataType:    "boolean",
 			FieldRequired:    true,
 		},
 	},
 }
 
-func TestGetTagsByRecordAndTemplate(t *testing.T) {
+func TestGetTagsByAssetAndTemplate(t *testing.T) {
 	type testCase struct {
 		Description  string
-		Request      *compassv1beta1.GetTagsByRecordAndTemplateRequest
+		Request      *compassv1beta1.GetTagsByAssetAndTemplateRequest
 		ExpectStatus codes.Code
 		Setup        func(context.Context, *mocks.TagRepository, *mocks.TagTemplateRepository)
-		PostCheck    func(resp *compassv1beta1.GetTagsByRecordAndTemplateResponse) error
+		PostCheck    func(resp *compassv1beta1.GetTagsByAssetAndTemplateResponse) error
 	}
 
 	var testCases = []testCase{
 		{
-			Description: `should return invalid argument if record urn is empty`,
-			Request: &compassv1beta1.GetTagsByRecordAndTemplateRequest{
-				Type:        "sample-type",
-				RecordUrn:   "",
-				TemplateUrn: "sample-template",
-			},
-			ExpectStatus: codes.InvalidArgument,
-		},
-		{
-			Description: `should return invalid argument if type is empty`,
-			Request: &compassv1beta1.GetTagsByRecordAndTemplateRequest{
-				Type:        "",
-				RecordUrn:   "sample-urn",
+			Description: `should return invalid argument if asset id is empty`,
+			Request: &compassv1beta1.GetTagsByAssetAndTemplateRequest{
+				AssetId:     "",
 				TemplateUrn: "sample-template",
 			},
 			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: `should return invalid argument if template urn is empty`,
-			Request: &compassv1beta1.GetTagsByRecordAndTemplateRequest{
-				Type:        "sample-type",
-				RecordUrn:   "sample-urn",
+			Request: &compassv1beta1.GetTagsByAssetAndTemplateRequest{
+				AssetId:     assetID,
 				TemplateUrn: "",
 			},
 			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: `should return not found if template does not exist`,
-			Request: &compassv1beta1.GetTagsByRecordAndTemplateRequest{
-				Type:        "sample-type",
-				RecordUrn:   "sample-urn",
+			Request: &compassv1beta1.GetTagsByAssetAndTemplateRequest{
+				AssetId:     assetID,
 				TemplateUrn: sampleTemplate.URN,
 			},
 			ExpectStatus: codes.NotFound,
@@ -127,59 +115,52 @@ func TestGetTagsByRecordAndTemplate(t *testing.T) {
 		},
 		{
 			Description: `should return not found if tag does not exist`,
-			Request: &compassv1beta1.GetTagsByRecordAndTemplateRequest{
-				Type:        "sample-type",
-				RecordUrn:   "sample-urn",
+			Request: &compassv1beta1.GetTagsByAssetAndTemplateRequest{
+				AssetId:     assetID,
 				TemplateUrn: sampleTemplate.URN,
 			},
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, tr *mocks.TagRepository, ttr *mocks.TagTemplateRepository) {
 				ttr.EXPECT().Read(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
 				tr.EXPECT().Read(ctx, tag.Tag{
-					RecordType:  "sample-type",
-					RecordURN:   "sample-urn",
+					AssetID:     assetID,
 					TemplateURN: sampleTemplate.URN,
 				}).Return(nil, tag.NotFoundError{
-					URN:      "sample-urn",
-					Type:     "sample-type",
+					AssetID:  assetID,
 					Template: sampleTemplate.URN,
 				})
 			},
 		},
 		{
 			Description: `should return internal server error if found unexpected error`,
-			Request: &compassv1beta1.GetTagsByRecordAndTemplateRequest{
-				Type:        "sample-type",
-				RecordUrn:   "sample-urn",
+			Request: &compassv1beta1.GetTagsByAssetAndTemplateRequest{
+				AssetId:     assetID,
 				TemplateUrn: sampleTemplate.URN,
 			},
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, tr *mocks.TagRepository, ttr *mocks.TagTemplateRepository) {
 				ttr.EXPECT().Read(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
 				tr.EXPECT().Read(ctx, tag.Tag{
-					RecordType:  "sample-type",
-					RecordURN:   "sample-urn",
+					AssetID:     assetID,
 					TemplateURN: sampleTemplate.URN,
 				}).Return(nil, errors.New("unexpected error"))
 			},
 		},
 		{
 			Description: `should return ok and tag`,
-			Request: &compassv1beta1.GetTagsByRecordAndTemplateRequest{
-				Type:        "sample-type",
-				RecordUrn:   "sample-urn",
+			Request: &compassv1beta1.GetTagsByAssetAndTemplateRequest{
+				AssetId:     assetID,
 				TemplateUrn: sampleTemplate.URN,
 			},
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, tr *mocks.TagRepository, ttr *mocks.TagTemplateRepository) {
 				ttr.EXPECT().Read(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
 				tr.EXPECT().Read(ctx, tag.Tag{
-					RecordType:  "sample-type",
-					RecordURN:   "sample-urn",
+					AssetID:     assetID,
 					TemplateURN: sampleTemplate.URN,
 				}).Return([]tag.Tag{sampleTag}, nil)
 			},
-			PostCheck: func(resp *compassv1beta1.GetTagsByRecordAndTemplateResponse) error {
+			PostCheck: func(resp *compassv1beta1.GetTagsByAssetAndTemplateResponse) error {
 				var tagValuesPB []*compassv1beta1.TagValue
 				for _, tv := range sampleTag.TagValues {
 					tvPB, err := tv.ToProto()
@@ -189,10 +170,9 @@ func TestGetTagsByRecordAndTemplate(t *testing.T) {
 					tagValuesPB = append(tagValuesPB, tvPB)
 				}
 
-				expected := &compassv1beta1.GetTagsByRecordAndTemplateResponse{
+				expected := &compassv1beta1.GetTagsByAssetAndTemplateResponse{
 					Data: &compassv1beta1.Tag{
-						RecordType:          sampleTag.RecordType,
-						RecordUrn:           sampleTag.RecordURN,
+						AssetId:             sampleTag.AssetID,
 						TemplateUrn:         sampleTag.TemplateURN,
 						TagValues:           tagValuesPB,
 						TemplateDisplayName: sampleTag.TemplateDisplayName,
@@ -225,7 +205,7 @@ func TestGetTagsByRecordAndTemplate(t *testing.T) {
 				TagService: service,
 			})
 
-			got, err := handler.GetTagsByRecordAndTemplate(ctx, tc.Request)
+			got, err := handler.GetTagsByAssetAndTemplate(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
 				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
@@ -241,10 +221,9 @@ func TestGetTagsByRecordAndTemplate(t *testing.T) {
 	}
 }
 
-func TestCreateTag(t *testing.T) {
-	validRequest := &compassv1beta1.CreateTagRequest{
-		RecordType:          sampleTagPB.GetRecordType(),
-		RecordUrn:           sampleTagPB.GetRecordUrn(),
+func TestCreateTagAsset(t *testing.T) {
+	validRequest := &compassv1beta1.CreateTagAssetRequest{
+		AssetId:             sampleTagPB.GetAssetId(),
 		TemplateUrn:         sampleTagPB.GetTemplateUrn(),
 		TagValues:           sampleTagPB.TagValues,
 		TemplateDisplayName: sampleTagPB.TemplateDisplayName,
@@ -252,28 +231,17 @@ func TestCreateTag(t *testing.T) {
 	}
 	type testCase struct {
 		Description  string
-		Request      *compassv1beta1.CreateTagRequest
+		Request      *compassv1beta1.CreateTagAssetRequest
 		ExpectStatus codes.Code
 		Setup        func(context.Context, *mocks.TagRepository, *mocks.TagTemplateRepository)
-		PostCheck    func(resp *compassv1beta1.CreateTagResponse) error
+		PostCheck    func(resp *compassv1beta1.CreateTagAssetResponse) error
 	}
 
 	var testCases = []testCase{
 		{
-			Description: `should return invalid argument if record type is empty`,
-			Request: &compassv1beta1.CreateTagRequest{
-				RecordType:  "",
-				RecordUrn:   sampleTagPB.GetRecordUrn(),
-				TemplateUrn: sampleTagPB.GetTemplateUrn(),
-				TagValues:   sampleTagPB.TagValues,
-			},
-			ExpectStatus: codes.InvalidArgument,
-		},
-		{
-			Description: `should return invalid argument if record urn is empty`,
-			Request: &compassv1beta1.CreateTagRequest{
-				RecordType:  sampleTagPB.GetRecordType(),
-				RecordUrn:   "",
+			Description: `should return invalid argument if asset id is empty`,
+			Request: &compassv1beta1.CreateTagAssetRequest{
+				AssetId:     "",
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 				TagValues:   sampleTagPB.TagValues,
 			},
@@ -281,9 +249,8 @@ func TestCreateTag(t *testing.T) {
 		},
 		{
 			Description: `should return invalid argument if template urn is empty`,
-			Request: &compassv1beta1.CreateTagRequest{
-				RecordType:  sampleTagPB.GetRecordType(),
-				RecordUrn:   sampleTagPB.GetRecordUrn(),
+			Request: &compassv1beta1.CreateTagAssetRequest{
+				AssetId:     assetID,
 				TemplateUrn: "",
 				TagValues:   sampleTagPB.TagValues,
 			},
@@ -291,9 +258,8 @@ func TestCreateTag(t *testing.T) {
 		},
 		{
 			Description: `should return invalid argument if tag values is empty`,
-			Request: &compassv1beta1.CreateTagRequest{
-				RecordType:  sampleTagPB.GetRecordType(),
-				RecordUrn:   sampleTagPB.GetRecordUrn(),
+			Request: &compassv1beta1.CreateTagAssetRequest{
+				AssetId:     assetID,
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 			},
 			ExpectStatus: codes.InvalidArgument,
@@ -326,7 +292,7 @@ func TestCreateTag(t *testing.T) {
 			},
 		},
 		{
-			Description:  `should return already exist if found duplicated record during insert`,
+			Description:  `should return already exist if found duplicated asset during insert`,
 			Request:      validRequest,
 			ExpectStatus: codes.AlreadyExists,
 			Setup: func(ctx context.Context, tr *mocks.TagRepository, ttr *mocks.TagTemplateRepository) {
@@ -342,8 +308,8 @@ func TestCreateTag(t *testing.T) {
 				ttr.EXPECT().Read(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
 				tr.EXPECT().Create(ctx, &sampleTag).Return(nil)
 			},
-			PostCheck: func(resp *compassv1beta1.CreateTagResponse) error {
-				expected := &compassv1beta1.CreateTagResponse{
+			PostCheck: func(resp *compassv1beta1.CreateTagAssetResponse) error {
+				expected := &compassv1beta1.CreateTagAssetResponse{
 					Data: sampleTagPB,
 				}
 
@@ -372,7 +338,7 @@ func TestCreateTag(t *testing.T) {
 				TagService: service,
 			})
 
-			got, err := handler.CreateTag(ctx, tc.Request)
+			got, err := handler.CreateTagAsset(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
 				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
@@ -388,10 +354,9 @@ func TestCreateTag(t *testing.T) {
 	}
 }
 
-func TestUpdateTag(t *testing.T) {
-	validRequest := &compassv1beta1.UpdateTagRequest{
-		Type:                sampleTagPB.GetRecordType(),
-		RecordUrn:           sampleTagPB.GetRecordUrn(),
+func TestUpdateTagAsset(t *testing.T) {
+	validRequest := &compassv1beta1.UpdateTagAssetRequest{
+		AssetId:             sampleTagPB.GetAssetId(),
 		TemplateUrn:         sampleTagPB.GetTemplateUrn(),
 		TagValues:           sampleTagPB.TagValues,
 		TemplateDisplayName: sampleTagPB.TemplateDisplayName,
@@ -399,28 +364,17 @@ func TestUpdateTag(t *testing.T) {
 	}
 	type testCase struct {
 		Description  string
-		Request      *compassv1beta1.UpdateTagRequest
+		Request      *compassv1beta1.UpdateTagAssetRequest
 		ExpectStatus codes.Code
 		Setup        func(context.Context, *mocks.TagRepository, *mocks.TagTemplateRepository)
-		PostCheck    func(resp *compassv1beta1.UpdateTagResponse) error
+		PostCheck    func(resp *compassv1beta1.UpdateTagAssetResponse) error
 	}
 
 	var testCases = []testCase{
 		{
-			Description: `should return invalid argument if type is empty`,
-			Request: &compassv1beta1.UpdateTagRequest{
-				Type:        "",
-				RecordUrn:   sampleTagPB.GetRecordUrn(),
-				TemplateUrn: sampleTagPB.GetTemplateUrn(),
-				TagValues:   sampleTagPB.TagValues,
-			},
-			ExpectStatus: codes.InvalidArgument,
-		},
-		{
-			Description: `should return invalid argument if record urn is empty`,
-			Request: &compassv1beta1.UpdateTagRequest{
-				Type:        sampleTagPB.GetRecordType(),
-				RecordUrn:   "",
+			Description: `should return invalid argument if asset id is empty`,
+			Request: &compassv1beta1.UpdateTagAssetRequest{
+				AssetId:     "",
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 				TagValues:   sampleTagPB.TagValues,
 			},
@@ -428,9 +382,8 @@ func TestUpdateTag(t *testing.T) {
 		},
 		{
 			Description: `should return invalid argument if template urn is empty`,
-			Request: &compassv1beta1.UpdateTagRequest{
-				Type:        sampleTagPB.GetRecordType(),
-				RecordUrn:   sampleTagPB.GetRecordUrn(),
+			Request: &compassv1beta1.UpdateTagAssetRequest{
+				AssetId:     assetID,
 				TemplateUrn: "",
 				TagValues:   sampleTagPB.TagValues,
 			},
@@ -438,9 +391,8 @@ func TestUpdateTag(t *testing.T) {
 		},
 		{
 			Description: `should return invalid argument if tag values is empty`,
-			Request: &compassv1beta1.UpdateTagRequest{
-				Type:        sampleTagPB.GetRecordType(),
-				RecordUrn:   sampleTagPB.GetRecordUrn(),
+			Request: &compassv1beta1.UpdateTagAssetRequest{
+				AssetId:     assetID,
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 			},
 			ExpectStatus: codes.InvalidArgument,
@@ -452,8 +404,7 @@ func TestUpdateTag(t *testing.T) {
 			Setup: func(ctx context.Context, tr *mocks.TagRepository, ttr *mocks.TagTemplateRepository) {
 				ttr.EXPECT().Read(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
 				tr.EXPECT().Read(ctx, tag.Tag{
-					RecordType:  sampleTagPB.RecordType,
-					RecordURN:   sampleTagPB.RecordUrn,
+					AssetID:     assetID,
 					TemplateURN: sampleTagPB.TemplateUrn,
 				}).Return([]tag.Tag{}, nil)
 			},
@@ -465,8 +416,7 @@ func TestUpdateTag(t *testing.T) {
 			Setup: func(ctx context.Context, tr *mocks.TagRepository, ttr *mocks.TagTemplateRepository) {
 				ttr.EXPECT().Read(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
 				tr.EXPECT().Read(ctx, tag.Tag{
-					RecordType:  sampleTagPB.RecordType,
-					RecordURN:   sampleTagPB.RecordUrn,
+					AssetID:     assetID,
 					TemplateURN: sampleTagPB.TemplateUrn,
 				}).Return([]tag.Tag{sampleTag}, nil)
 				tr.EXPECT().Update(ctx, &sampleTag).Return(errors.New("unexpected error during update"))
@@ -479,14 +429,13 @@ func TestUpdateTag(t *testing.T) {
 			Setup: func(ctx context.Context, tr *mocks.TagRepository, ttr *mocks.TagTemplateRepository) {
 				ttr.EXPECT().Read(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
 				tr.EXPECT().Read(ctx, tag.Tag{
-					RecordType:  sampleTagPB.RecordType,
-					RecordURN:   sampleTagPB.RecordUrn,
+					AssetID:     assetID,
 					TemplateURN: sampleTagPB.TemplateUrn,
 				}).Return([]tag.Tag{sampleTag}, nil)
 				tr.EXPECT().Update(ctx, &sampleTag).Return(nil)
 			},
-			PostCheck: func(resp *compassv1beta1.UpdateTagResponse) error {
-				expected := &compassv1beta1.UpdateTagResponse{
+			PostCheck: func(resp *compassv1beta1.UpdateTagAssetResponse) error {
+				expected := &compassv1beta1.UpdateTagAssetResponse{
 					Data: sampleTagPB,
 				}
 
@@ -515,7 +464,7 @@ func TestUpdateTag(t *testing.T) {
 				TagService: service,
 			})
 
-			got, err := handler.UpdateTag(ctx, tc.Request)
+			got, err := handler.UpdateTagAsset(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
 				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
@@ -531,89 +480,72 @@ func TestUpdateTag(t *testing.T) {
 	}
 }
 
-func TestDeleteTag(t *testing.T) {
+func TestDeleteTagAsset(t *testing.T) {
 	type testCase struct {
 		Description  string
-		Request      *compassv1beta1.DeleteTagRequest
+		Request      *compassv1beta1.DeleteTagAssetRequest
 		ExpectStatus codes.Code
 		Setup        func(context.Context, *mocks.TagRepository, *mocks.TagTemplateRepository)
 	}
 
 	var testCases = []testCase{
 		{
-			Description: `should return invalid argument if type is empty`,
-			Request: &compassv1beta1.DeleteTagRequest{
-				Type:        "",
-				RecordUrn:   sampleTagPB.GetRecordUrn(),
-				TemplateUrn: sampleTagPB.GetTemplateUrn(),
-			},
-			ExpectStatus: codes.InvalidArgument,
-		},
-		{
-			Description: `should return invalid argument if record urn is empty`,
-			Request: &compassv1beta1.DeleteTagRequest{
-				Type:        sampleTagPB.GetRecordType(),
-				RecordUrn:   "",
+			Description: `should return invalid argument if asset id is empty`,
+			Request: &compassv1beta1.DeleteTagAssetRequest{
+				AssetId:     "",
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 			},
 			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: `should return invalid argument if template urn is empty`,
-			Request: &compassv1beta1.DeleteTagRequest{
-				Type:        sampleTagPB.GetRecordType(),
-				RecordUrn:   sampleTagPB.GetRecordUrn(),
+			Request: &compassv1beta1.DeleteTagAssetRequest{
+				AssetId:     assetID,
 				TemplateUrn: "",
 			},
 			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: `should return not found if template does not exist`,
-			Request: &compassv1beta1.DeleteTagRequest{
-				Type:        sampleTagPB.GetRecordType(),
-				RecordUrn:   sampleTagPB.GetRecordUrn(),
+			Request: &compassv1beta1.DeleteTagAssetRequest{
+				AssetId:     assetID,
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 			},
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, tr *mocks.TagRepository, ttr *mocks.TagTemplateRepository) {
 				ttr.EXPECT().Read(ctx, sampleTemplate.URN).Return([]tag.Template{{}}, nil)
 				tr.EXPECT().Delete(ctx, tag.Tag{
-					RecordType:  sampleTagPB.RecordType,
-					RecordURN:   sampleTagPB.RecordUrn,
+					AssetID:     assetID,
 					TemplateURN: sampleTagPB.TemplateUrn,
 				}).Return(tag.TemplateNotFoundError{})
 			},
 		},
 		{
 			Description: `should return internal server error found unexpected error`,
-			Request: &compassv1beta1.DeleteTagRequest{
-				Type:        sampleTagPB.GetRecordType(),
-				RecordUrn:   sampleTagPB.GetRecordUrn(),
+			Request: &compassv1beta1.DeleteTagAssetRequest{
+				AssetId:     assetID,
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 			},
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, tr *mocks.TagRepository, ttr *mocks.TagTemplateRepository) {
 				ttr.EXPECT().Read(ctx, sampleTemplate.URN).Return([]tag.Template{{}}, nil)
 				tr.EXPECT().Delete(ctx, tag.Tag{
-					RecordType:  sampleTagPB.RecordType,
-					RecordURN:   sampleTagPB.RecordUrn,
+					AssetID:     assetID,
 					TemplateURN: sampleTagPB.TemplateUrn,
 				}).Return(errors.New("unexpected error"))
 			},
 		},
 		{
 			Description: `should return ok if delete success`,
-			Request: &compassv1beta1.DeleteTagRequest{
-				Type:        sampleTagPB.GetRecordType(),
-				RecordUrn:   sampleTagPB.GetRecordUrn(),
+			Request: &compassv1beta1.DeleteTagAssetRequest{
+				AssetId:     assetID,
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 			},
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, tr *mocks.TagRepository, ttr *mocks.TagTemplateRepository) {
 				ttr.EXPECT().Read(ctx, sampleTemplate.URN).Return([]tag.Template{{}}, nil)
 				tr.EXPECT().Delete(ctx, tag.Tag{
-					RecordType:  sampleTagPB.RecordType,
-					RecordURN:   sampleTagPB.RecordUrn,
+					AssetID:     assetID,
 					TemplateURN: sampleTagPB.TemplateUrn,
 				}).Return(nil)
 			},
@@ -637,7 +569,7 @@ func TestDeleteTag(t *testing.T) {
 				TagService: service,
 			})
 
-			_, err := handler.DeleteTag(ctx, tc.Request)
+			_, err := handler.DeleteTagAsset(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
 				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
@@ -647,33 +579,23 @@ func TestDeleteTag(t *testing.T) {
 	}
 }
 
-func TestGetTagsByRecord(t *testing.T) {
-	validRequest := &compassv1beta1.GetTagsByRecordRequest{
-		Type:      sampleTagPB.GetRecordType(),
-		RecordUrn: sampleTagPB.GetRecordUrn(),
+func TestGetAllTagsByAsset(t *testing.T) {
+	validRequest := &compassv1beta1.GetAllTagsByAssetRequest{
+		AssetId: assetID,
 	}
 	type testCase struct {
 		Description  string
-		Request      *compassv1beta1.GetTagsByRecordRequest
+		Request      *compassv1beta1.GetAllTagsByAssetRequest
 		ExpectStatus codes.Code
 		Setup        func(context.Context, *mocks.TagRepository, *mocks.TagTemplateRepository)
-		PostCheck    func(resp *compassv1beta1.GetTagsByRecordResponse) error
+		PostCheck    func(resp *compassv1beta1.GetAllTagsByAssetResponse) error
 	}
 
 	var testCases = []testCase{
 		{
-			Description: `should return invalid argument if type is empty`,
-			Request: &compassv1beta1.GetTagsByRecordRequest{
-				Type:      "",
-				RecordUrn: sampleTagPB.GetRecordUrn(),
-			},
-			ExpectStatus: codes.InvalidArgument,
-		},
-		{
-			Description: `should return invalid argument if record urn is empty`,
-			Request: &compassv1beta1.GetTagsByRecordRequest{
-				Type:      sampleTagPB.GetRecordType(),
-				RecordUrn: "",
+			Description: `should return invalid argument if asset id is empty`,
+			Request: &compassv1beta1.GetAllTagsByAssetRequest{
+				AssetId: "",
 			},
 			ExpectStatus: codes.InvalidArgument,
 		},
@@ -683,23 +605,21 @@ func TestGetTagsByRecord(t *testing.T) {
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, tr *mocks.TagRepository, ttr *mocks.TagTemplateRepository) {
 				tr.EXPECT().Read(ctx, tag.Tag{
-					RecordType: sampleTagPB.RecordType,
-					RecordURN:  sampleTagPB.RecordUrn,
+					AssetID: sampleTagPB.AssetId,
 				}).Return(nil, errors.New("unexpected error"))
 			},
 		},
 		{
-			Description:  `should return ok and tags for the specified record`,
+			Description:  `should return ok and tags for the specified asset`,
 			Request:      validRequest,
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, tr *mocks.TagRepository, ttr *mocks.TagTemplateRepository) {
 				tr.EXPECT().Read(ctx, tag.Tag{
-					RecordType: sampleTagPB.RecordType,
-					RecordURN:  sampleTagPB.RecordUrn,
+					AssetID: sampleTagPB.AssetId,
 				}).Return([]tag.Tag{sampleTag}, nil)
 			},
-			PostCheck: func(resp *compassv1beta1.GetTagsByRecordResponse) error {
-				expected := &compassv1beta1.GetTagsByRecordResponse{
+			PostCheck: func(resp *compassv1beta1.GetAllTagsByAssetResponse) error {
+				expected := &compassv1beta1.GetAllTagsByAssetResponse{
 					Data: []*compassv1beta1.Tag{sampleTagPB},
 				}
 
@@ -728,7 +648,7 @@ func TestGetTagsByRecord(t *testing.T) {
 				TagService: service,
 			})
 
-			got, err := handler.GetTagsByRecord(ctx, tc.Request)
+			got, err := handler.GetAllTagsByAsset(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
 				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
