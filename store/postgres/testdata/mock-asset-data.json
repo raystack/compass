@@ -67,6 +67,9 @@
     "service": "kafka",
     "description": "the data contains topic",
     "data": {
+      "properties": {
+        "dependencies": ""
+      },
       "urn": "f-john-test-001",
       "title": "john_test_001",
       "description": "fifth data description",
@@ -81,6 +84,9 @@
     "service": "optimus",
     "description": "compass_002",
     "data": {
+      "properties": {
+        "dependencies": {}
+      },
       "urn": "h-test-new-kafka-1-a-b-kafka",
       "title": "test-new-kafka-1-a-b",
       "description": "sixth data description",
@@ -95,6 +101,9 @@
     "service": "kafka",
     "description": "topic information",
     "data": {
+      "properties": {
+        "dependencies": null
+      },
       "urn": "i-test-grant",
       "title": "compass_001",
       "description": "seventh data description",
@@ -129,9 +138,9 @@
     "description": "tableau information",
     "data": {
       "properties": {
-        "dependencies": {
-          "check": "aefk"
-        }
+        "dependencies": [
+          "test"
+        ]
       },
       "urn": "j-xcvcx",
       "title": "xcvcx",

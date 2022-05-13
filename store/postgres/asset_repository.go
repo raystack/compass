@@ -669,8 +669,10 @@ func (r *AssetRepository) BuildFilterQuery(builder sq.SelectBuilder, flt asset.F
 			finalQuery := field
 
 			if strings.Contains(field, "data") {
-				query := strings.TrimPrefix(field, "data.")
-				finalQuery = nestedDataQuery(query)
+				finalQuery = r.buildDataField(
+					strings.TrimPrefix(field, "data."),
+					false,
+				)
 			}
 			orClause = append(orClause, sq.ILike{
 				finalQuery: fmt.Sprint("%", flt.Query, "%"),
@@ -681,10 +683,18 @@ func (r *AssetRepository) BuildFilterQuery(builder sq.SelectBuilder, flt asset.F
 
 	if len(flt.Data) > 0 {
 		for key, val := range flt.Data {
-			finalQuery := nestedEmptyDataQuery(key, val)
 			if val == "_nonempty" {
-				builder = builder.Where(fmt.Sprintf("%s IS NOT NULL", finalQuery))
+				field := r.buildDataField(key, true)
+				whereClause := sq.And{
+					sq.NotEq{field: nil},    // IS NOT NULL (field exists)
+					sq.NotEq{field: "null"}, // field is not "null" JSON
+					sq.NotEq{field: "[]"},   // field is not empty array
+					sq.NotEq{field: "{}"},   // field is not empty object
+					sq.NotEq{field: "\"\""}, // field is not empty string
+				}
+				builder = builder.Where(whereClause)
 			} else {
+				finalQuery := r.buildDataField(key, false)
 				builder = builder.Where(fmt.Sprintf("%s = '%s'", finalQuery, val))
 			}
 		}
@@ -707,6 +717,31 @@ func (r *AssetRepository) buildOrderQuery(builder sq.SelectBuilder, flt asset.Fi
 	return builder.OrderBy(flt.SortBy + " " + orderDirection)
 }
 
+// buildDataField is a helper function to query nested data fields
+func (r *AssetRepository) buildDataField(key string, asJsonB bool) (finalQuery string) {
+	var queries []string // []
+
+	queries = append(queries, "data")
+	nestedParams := strings.Split(key, ".")
+	totalParams := len(nestedParams)
+	for i := 0; i < totalParams-1; i++ {
+		nestedQuery := fmt.Sprintf("->'%s'", nestedParams[i])
+		queries = append(queries, nestedQuery)
+	}
+
+	var lastParam string
+	if asJsonB {
+		lastParam = fmt.Sprintf("->'%s'", nestedParams[totalParams-1])
+	} else {
+		lastParam = fmt.Sprintf("->>'%s'", nestedParams[totalParams-1])
+	}
+
+	queries = append(queries, lastParam)
+	finalQuery = strings.Join(queries, "")
+
+	return finalQuery
+}
+
 // NewAssetRepository initializes user repository clients
 func NewAssetRepository(c *Client, userRepo *UserRepository, defaultGetMaxSize int, defaultUserProvider string) (*AssetRepository, error) {
 	if c == nil {
@@ -727,41 +762,20 @@ func NewAssetRepository(c *Client, userRepo *UserRepository, defaultGetMaxSize i
 	}, nil
 }
 
-// nestedDataQuery is a helper function to query nested data fields
-func nestedDataQuery(key string) (finalQuery string) {
-	var queries []string
+// buildDataField is a helper function to query nested data fields
+// func buildDataField(key string) (finalQuery string) {
+// 	var queries []string
 
-	queries = append(queries, "data")
-	nestedParams := strings.Split(key, ".")
-	totalParams := len(nestedParams)
-	for i := 0; i < totalParams-1; i++ {
-		nestedQuery := fmt.Sprintf("->'%s'", nestedParams[i])
-		queries = append(queries, nestedQuery)
-	}
-	lastParam := fmt.Sprintf("->>'%s'", nestedParams[totalParams-1])
-	queries = append(queries, lastParam)
-	finalQuery = strings.Join(queries, "")
+// 	queries = append(queries, "data")
+// 	nestedParams := strings.Split(key, ".")
+// 	totalParams := len(nestedParams)
+// 	for i := 0; i < totalParams-1; i++ {
+// 		nestedQuery := fmt.Sprintf("->'%s'", nestedParams[i])
+// 		queries = append(queries, nestedQuery)
+// 	}
+// 	lastParam := fmt.Sprintf("->>'%s'", nestedParams[totalParams-1])
+// 	queries = append(queries, lastParam)
+// 	finalQuery = strings.Join(queries, "")
 
-	return finalQuery
-}
-
-// nestedDataQuery is a helper function to query nested data fields
-func nestedEmptyDataQuery(key string, val string) (finalQuery string) {
-	var queries []string
-
-	queries = append(queries, "data")
-	nestedParams := strings.Split(key, ".")
-	totalParams := len(nestedParams)
-	for i := 0; i < totalParams-1; i++ {
-		nestedQuery := fmt.Sprintf("->'%s'", nestedParams[i])
-		queries = append(queries, nestedQuery)
-	}
-	lastParam := fmt.Sprintf("->>'%s'", nestedParams[totalParams-1])
-	if val == "_nonempty" {
-		lastParam = fmt.Sprintf("->'%s'", nestedParams[totalParams-1])
-	}
-	queries = append(queries, lastParam)
-	finalQuery = strings.Join(queries, "")
-
-	return finalQuery
-}
+// 	return finalQuery
+// }
