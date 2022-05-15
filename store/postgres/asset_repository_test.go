@@ -365,23 +365,23 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		}
 	})
 
-	// r.Run("should filter using asset's different nonempty data fields", func() {
-	// 	results, err := r.repository.GetAll(r.ctx, asset.Filter{
-	// 		Data: map[string]string{
-	// 			"properties.dependencies": "_nonempty",
-	// 			"entity":                  "odpf",
-	// 			"urn":                     "j-xcvcx",
-	// 			"country":                 "vn",
-	// 		},
-	// 	})
-	// 	r.Require().NoError(err)
+	r.Run("should filter using asset's different nonempty data fields", func() {
+		results, err := r.repository.GetAll(r.ctx, asset.Filter{
+			Data: map[string]string{
+				"properties.dependencies": "_nonempty",
+				"entity":                  "odpf",
+				"urn":                     "j-xcvcx",
+				"country":                 "vn",
+			},
+		})
+		r.Require().NoError(err)
 
-	// 	expectedURNs := []string{"nine-mock", "ten-mock"}
-	// 	r.Equal(len(expectedURNs), len(results))
-	// 	for i := range results {
-	// 		r.Equal(expectedURNs[i], results[i].URN)
-	// 	}
-	// })
+		expectedURNs := []string{"nine-mock"}
+		r.Equal(len(expectedURNs), len(results))
+		for i := range results {
+			r.Equal(expectedURNs[i], results[i].URN)
+		}
+	})
 }
 
 func (r *AssetRepositoryTestSuite) TestGetCount() {

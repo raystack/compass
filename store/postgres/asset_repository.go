@@ -717,9 +717,9 @@ func (r *AssetRepository) buildOrderQuery(builder sq.SelectBuilder, flt asset.Fi
 	return builder.OrderBy(flt.SortBy + " " + orderDirection)
 }
 
-// buildDataField is a helper function to query nested data fields
+// buildDataField is a helper function to build nested data fields
 func (r *AssetRepository) buildDataField(key string, asJsonB bool) (finalQuery string) {
-	var queries []string // []
+	var queries []string
 
 	queries = append(queries, "data")
 	nestedParams := strings.Split(key, ".")
@@ -761,21 +761,3 @@ func NewAssetRepository(c *Client, userRepo *UserRepository, defaultGetMaxSize i
 		userRepo:            userRepo,
 	}, nil
 }
-
-// buildDataField is a helper function to query nested data fields
-// func buildDataField(key string) (finalQuery string) {
-// 	var queries []string
-
-// 	queries = append(queries, "data")
-// 	nestedParams := strings.Split(key, ".")
-// 	totalParams := len(nestedParams)
-// 	for i := 0; i < totalParams-1; i++ {
-// 		nestedQuery := fmt.Sprintf("->'%s'", nestedParams[i])
-// 		queries = append(queries, nestedQuery)
-// 	}
-// 	lastParam := fmt.Sprintf("->>'%s'", nestedParams[totalParams-1])
-// 	queries = append(queries, lastParam)
-// 	finalQuery = strings.Join(queries, "")
-
-// 	return finalQuery
-// }
