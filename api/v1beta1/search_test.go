@@ -26,7 +26,7 @@ func TestSearch(t *testing.T) {
 		Description  string
 		Request      *compassv1beta1.SearchAssetsRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.DiscoveryRecordSearcher)
+		Setup        func(context.Context, *mocks.DiscoveryRepository)
 		PostCheck    func(resp *compassv1beta1.SearchAssetsResponse) error
 	}
 
@@ -37,11 +37,11 @@ func TestSearch(t *testing.T) {
 			Request:      &compassv1beta1.SearchAssetsRequest{},
 		},
 		{
-			Description: "should report internal serverif record searcher fails",
+			Description: "should report internal server if asset searcher fails",
 			Request: &compassv1beta1.SearchAssetsRequest{
 				Text: "test",
 			},
-			Setup: func(ctx context.Context, drs *mocks.DiscoveryRecordSearcher) {
+			Setup: func(ctx context.Context, drs *mocks.DiscoveryRepository) {
 				err := fmt.Errorf("service unavailable")
 				drs.EXPECT().Search(ctx, mock.AnythingOfType("discovery.SearchConfig")).
 					Return([]discovery.SearchResult{}, err)
@@ -58,7 +58,7 @@ func TestSearch(t *testing.T) {
 					"service":        "kafka,rabbitmq",
 				},
 			},
-			Setup: func(ctx context.Context, drs *mocks.DiscoveryRecordSearcher) {
+			Setup: func(ctx context.Context, drs *mocks.DiscoveryRepository) {
 
 				cfg := discovery.SearchConfig{
 					Text:          "resource",
@@ -86,7 +86,7 @@ func TestSearch(t *testing.T) {
 					"owners.email":      "john.doe@email.com",
 				},
 			},
-			Setup: func(ctx context.Context, drs *mocks.DiscoveryRecordSearcher) {
+			Setup: func(ctx context.Context, drs *mocks.DiscoveryRepository) {
 
 				cfg := discovery.SearchConfig{
 					Text:          "resource",
@@ -109,7 +109,7 @@ func TestSearch(t *testing.T) {
 			Request: &compassv1beta1.SearchAssetsRequest{
 				Text: "test",
 			},
-			Setup: func(ctx context.Context, drs *mocks.DiscoveryRecordSearcher) {
+			Setup: func(ctx context.Context, drs *mocks.DiscoveryRepository) {
 
 				cfg := discovery.SearchConfig{
 					Text:    "test",
@@ -164,7 +164,7 @@ func TestSearch(t *testing.T) {
 				Text: "resource",
 				Size: 10,
 			},
-			Setup: func(ctx context.Context, drs *mocks.DiscoveryRecordSearcher) {
+			Setup: func(ctx context.Context, drs *mocks.DiscoveryRepository) {
 
 				cfg := discovery.SearchConfig{
 					Text:       "resource",
@@ -208,15 +208,14 @@ func TestSearch(t *testing.T) {
 			ctx := user.NewContext(context.Background(), userID)
 
 			logger := log.NewNoop()
-			mockDiscovery := new(mocks.DiscoveryRecordSearcher)
+			mockDiscovery := new(mocks.DiscoveryRepository)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockDiscovery)
 			}
 			defer mockDiscovery.AssertExpectations(t)
 
-			discoveryService := discovery.NewService(nil, mockDiscovery)
 			handler := api.NewGRPCHandler(logger, &api.Dependencies{
-				DiscoveryService: discoveryService,
+				DiscoveryRepository: mockDiscovery,
 			})
 
 			got, err := handler.SearchAssets(ctx, tc.Request)
@@ -241,7 +240,7 @@ func TestSuggest(t *testing.T) {
 		Description  string
 		Request      *compassv1beta1.SuggestAssetsRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.DiscoveryRecordSearcher)
+		Setup        func(context.Context, *mocks.DiscoveryRepository)
 		PostCheck    func(resp *compassv1beta1.SuggestAssetsResponse) error
 	}
 
@@ -256,7 +255,7 @@ func TestSuggest(t *testing.T) {
 			Request: &compassv1beta1.SuggestAssetsRequest{
 				Text: "test",
 			},
-			Setup: func(ctx context.Context, drs *mocks.DiscoveryRecordSearcher) {
+			Setup: func(ctx context.Context, drs *mocks.DiscoveryRepository) {
 				cfg := discovery.SearchConfig{
 					Text: "test",
 				}
@@ -269,7 +268,7 @@ func TestSuggest(t *testing.T) {
 			Request: &compassv1beta1.SuggestAssetsRequest{
 				Text: "test",
 			},
-			Setup: func(ctx context.Context, drs *mocks.DiscoveryRecordSearcher) {
+			Setup: func(ctx context.Context, drs *mocks.DiscoveryRepository) {
 
 				cfg := discovery.SearchConfig{
 					Text: "test",
@@ -304,15 +303,14 @@ func TestSuggest(t *testing.T) {
 			ctx := user.NewContext(context.Background(), userID)
 
 			logger := log.NewNoop()
-			mockDiscovery := new(mocks.DiscoveryRecordSearcher)
+			mockDiscovery := new(mocks.DiscoveryRepository)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockDiscovery)
 			}
 			defer mockDiscovery.AssertExpectations(t)
 
-			discoveryService := discovery.NewService(nil, mockDiscovery)
 			handler := api.NewGRPCHandler(logger, &api.Dependencies{
-				DiscoveryService: discoveryService,
+				DiscoveryRepository: mockDiscovery,
 			})
 
 			got, err := handler.SuggestAssets(ctx, tc.Request)

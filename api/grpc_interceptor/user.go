@@ -17,6 +17,11 @@ import (
 // use `user.FromContext` function to get the user ID string
 func ValidateUser(identityUUIDHeaderKey, identityEmailHeaderKey string, userSvc *user.Service) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+		switch info.FullMethod {
+		case "/grpc.health.v1.Health/Check", "/grpc.health.v1.Health/Watch":
+			return handler(ctx, req)
+		}
+
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
 			return "", fmt.Errorf("metadata in grpc doesn't exist")

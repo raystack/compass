@@ -81,7 +81,7 @@ func NewElasticsearchTestServer() *ElasticsearchTestServer {
 	}
 
 	// wait for the elasticsearch server to come up
-	timeout := 1 * time.Minute
+	timeout := 5 * time.Minute
 	if err := server.wait4Ready(timeout); err != nil {
 		panic(fmt.Sprintf("error checking elasticsearch status: %v", err))
 	}
@@ -111,11 +111,11 @@ func NewElasticsearchTestServer() *ElasticsearchTestServer {
 // NewClient returns an elasticsearch client for the test server
 // Calling this method issues a DELETE /_all call to the elasticsearch
 // server, effectively resetting it.
-func (srv *ElasticsearchTestServer) NewClient() *elasticsearch.Client {
+func (srv *ElasticsearchTestServer) NewClient() (*elasticsearch.Client, error) {
 	if err := srv.purge(srv.client); err != nil {
-		panic(fmt.Sprintf("error purging elasticsearch: %v", err))
+		return nil, fmt.Errorf("error purging elasticsearch: %w", err)
 	}
-	return srv.client
+	return srv.client, nil
 }
 
 func (srv *ElasticsearchTestServer) Close() error {
@@ -137,7 +137,7 @@ func (srv *ElasticsearchTestServer) purge(cli *elasticsearch.Client) (err error)
 	}
 	res, err := cli.Perform(req)
 	if err != nil {
-		return
+		return err
 	}
 	if res.StatusCode > 299 {
 		return fmt.Errorf("elasticsearch server returned status code %d", res.StatusCode)

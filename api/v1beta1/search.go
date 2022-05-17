@@ -30,9 +30,9 @@ func (h *Handler) SearchAssets(ctx context.Context, req *compassv1beta1.SearchAs
 		TypeWhiteList: parseTypeWhiteList(req.GetFilter()),
 	}
 
-	results, err := h.DiscoveryService.Search(ctx, cfg)
+	results, err := h.DiscoveryRepository.Search(ctx, cfg)
 	if err != nil {
-		return nil, internalServerError(h.Logger, fmt.Sprintf("error searching record: %s", err.Error()))
+		return nil, internalServerError(h.Logger, fmt.Sprintf("error searching asset: %s", err.Error()))
 	}
 
 	assetsPB := []*compassv1beta1.Asset{}
@@ -59,7 +59,7 @@ func (h *Handler) SuggestAssets(ctx context.Context, req *compassv1beta1.Suggest
 		Text: text,
 	}
 
-	suggestions, err := h.DiscoveryService.Suggest(ctx, cfg)
+	suggestions, err := h.DiscoveryRepository.Suggest(ctx, cfg)
 	if err != nil {
 		return nil, internalServerError(h.Logger, err.Error())
 	}

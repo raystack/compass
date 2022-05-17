@@ -16,9 +16,11 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("should return error if id empty", func(t *testing.T) {
-		cli := esTestServer.NewClient()
+		cli, err := esTestServer.NewClient()
+		require.NoError(t, err)
+
 		repo := store.NewDiscoveryRepository(cli)
-		err := repo.Upsert(ctx, asset.Asset{
+		err = repo.Upsert(ctx, asset.Asset{
 			ID:   "",
 			Type: asset.TypeTable,
 		})
@@ -26,9 +28,11 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 	})
 
 	t.Run("should return error if type is not known", func(t *testing.T) {
-		cli := esTestServer.NewClient()
+		cli, err := esTestServer.NewClient()
+		require.NoError(t, err)
+
 		repo := store.NewDiscoveryRepository(cli)
-		err := repo.Upsert(ctx, asset.Asset{
+		err = repo.Upsert(ctx, asset.Asset{
 			ID:   "sample-id",
 			Type: asset.Type("unknown-type"),
 		})
@@ -55,9 +59,11 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 			UpdatedAt: time.Now(),
 		}
 
-		cli := esTestServer.NewClient()
+		cli, err := esTestServer.NewClient()
+		require.NoError(t, err)
+
 		repo := store.NewDiscoveryRepository(cli)
-		err := repo.Upsert(ctx, ast)
+		err = repo.Upsert(ctx, ast)
 		assert.NoError(t, err)
 
 		res, err := cli.API.Get("table", ast.ID)
@@ -96,10 +102,12 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		newAsset.Name = "new-name"
 		newAsset.Description = "new-description"
 
-		cli := esTestServer.NewClient()
+		cli, err := esTestServer.NewClient()
+		require.NoError(t, err)
+
 		repo := store.NewDiscoveryRepository(cli)
 
-		err := repo.Upsert(ctx, existingAsset)
+		err = repo.Upsert(ctx, existingAsset)
 		assert.NoError(t, err)
 		err = repo.Upsert(ctx, newAsset)
 		assert.NoError(t, err)
@@ -125,9 +133,11 @@ func TestDiscoveryRepositoryDelete(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("should return error if id empty", func(t *testing.T) {
-		cli := esTestServer.NewClient()
+		cli, err := esTestServer.NewClient()
+		require.NoError(t, err)
+
 		repo := store.NewDiscoveryRepository(cli)
-		err := repo.Delete(ctx, "")
+		err = repo.Delete(ctx, "")
 		assert.ErrorIs(t, err, asset.ErrEmptyID)
 	})
 
@@ -138,13 +148,84 @@ func TestDiscoveryRepositoryDelete(t *testing.T) {
 			URN:  "some-urn",
 		}
 
-		cli := esTestServer.NewClient()
+		cli, err := esTestServer.NewClient()
+		require.NoError(t, err)
+
 		repo := store.NewDiscoveryRepository(cli)
 
-		err := repo.Upsert(ctx, ast)
+		err = repo.Upsert(ctx, ast)
 		require.NoError(t, err)
 
 		err = repo.Delete(ctx, ast.ID)
 		assert.NoError(t, err)
+	})
+}
+
+func TestDiscoveryRepositoryGetTypes(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("should return empty map if no type is available", func(t *testing.T) {
+		cli, err := esTestServer.NewClient()
+		require.NoError(t, err)
+
+		repo := store.NewDiscoveryRepository(cli)
+		counts, err := repo.GetTypes(ctx)
+		require.NoError(t, err)
+
+		assert.Equal(t, map[asset.Type]int{}, counts)
+	})
+
+	t.Run("should return map with 0 count if type has not been populated yet", func(t *testing.T) {
+		typ := asset.TypeTable
+		cli, err := esTestServer.NewClient()
+		require.NoError(t, err)
+
+		err = store.Migrate(ctx, cli, typ)
+		require.NoError(t, err)
+
+		repo := store.NewDiscoveryRepository(cli)
+		counts, err := repo.GetTypes(ctx)
+		require.NoError(t, err)
+
+		expected := map[asset.Type]int{
+			asset.TypeTable: 0,
+		}
+		assert.Equal(t, expected, counts)
+	})
+
+	t.Run("should return maps of asset count with valid type as its key", func(t *testing.T) {
+		typ := asset.TypeDashboard
+		assets := []asset.Asset{
+			{ID: "id-asset-1", URN: "asset-1", Name: "asset-1", Type: typ},
+			{ID: "id-asset-2", URN: "asset-2", Name: "asset-2", Type: typ},
+			{ID: "id-asset-3", URN: "asset-3", Name: "asset-3", Type: typ},
+		}
+
+		esClient, err := esTestServer.NewClient()
+		require.NoError(t, err)
+
+		err = store.Migrate(ctx, esClient, asset.TypeDashboard)
+		require.NoError(t, err)
+
+		invalidType := "invalid-type"
+		err = store.Migrate(ctx, esClient, asset.Type(invalidType))
+		require.NoError(t, err)
+
+		repo := store.NewDiscoveryRepository(esClient)
+		_, err = repo.GetTypes(ctx)
+		require.NoError(t, err)
+
+		for _, ast := range assets {
+			err = repo.Upsert(ctx, ast)
+			require.NoError(t, err)
+		}
+
+		counts, err := repo.GetTypes(ctx)
+		require.NoError(t, err)
+
+		expected := map[asset.Type]int{
+			asset.TypeDashboard: len(assets),
+		}
+		assert.Equal(t, expected, counts)
 	})
 }

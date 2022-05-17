@@ -15,6 +15,7 @@ import (
 	"github.com/odpf/compass/user"
 	"github.com/odpf/salt/log"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/status"
 )
 
@@ -29,10 +30,7 @@ type Handler struct {
 	LineageRepository    lineage.Repository
 	DiscussionRepository discussion.Repository
 	DiscoveryRepository  discovery.Repository
-
-	// deprecated
-	TypeRepository   discovery.TypeRepository
-	DiscoveryService *discovery.Service
+	HealthServer         grpc_health_v1.HealthServer
 }
 
 func internalServerError(logger log.Logger, msg string) error {

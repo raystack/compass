@@ -1,6 +1,7 @@
 [{
         "type": "topic",
         "assets": [{
+                "id": "order-topic",
                 "urn": "order-topic",
                 "name": "order-topic",
                 "service": "kafka",
@@ -12,9 +13,11 @@
                     "environment": "integration",
                     "country": "us",
                     "partition": 250
-                }
+                },
+                "type": "topic"
             },
             {
+                "id": "purchase-topic",
                 "urn": "purchase-topic",
                 "name": "purchase-topic",
                 "service": "kafka",
@@ -26,9 +29,11 @@
                     "environment": "integration",
                     "country": "id",
                     "partition": 100
-                }
+                },
+                "type": "topic"
             },
             {
+                "id": "consumer-topic",
                 "urn": "consumer-topic",
                 "name": "consumer-topic",
                 "service": "rabbitmq",
@@ -45,9 +50,11 @@
                     "urn": "owner::topic/1",
                     "role": "user",
                     "email": "john.doe@email.com"
-                }]
+                }],
+                "type": "topic"
             },
             {
+                "id": "consumer-mq-2",
                 "urn": "consumer-mq-2",
                 "name": "consumer-mq-2",
                 "service": "rabbitmq",
@@ -64,9 +71,11 @@
                     "urn": "owner::topic/22",
                     "role": "user",
                     "email": "mary.jane@email.com"
-                }]
+                }],
+                "type": "topic"
             },
             {
+                "id": "transaction",
                 "urn": "transaction",
                 "name": "transaction",
                 "service": "rabbitmq",
@@ -77,13 +86,15 @@
                     "company": "odpf",
                     "environment": "production",
                     "partition": 1
-                }
+                },
+                "type": "topic"
             }
         ]
     },
     {
         "type": "table",
         "assets": [{
+                "id": "au2-microsoft-invoice",
                 "urn": "au2-microsoft-invoice",
                 "name": "microsoft-invoice",
                 "service": "postgres",
@@ -108,9 +119,11 @@
                             "description": "item identifications"
                         }
                     ]
-                }
+                },
+                "type": "table"
             },
             {
+                "id": "us1-apple-invoice",
                 "urn": "us1-apple-invoice",
                 "name": "apple-invoice",
                 "service": "mysql",
@@ -135,9 +148,11 @@
                             "description": "item identifications"
                         }
                     ]
-                }
+                },
+                "type": "table"
             },
             {
+                "id": "bigquery::gcpproject/dataset/tablename-1",
                 "urn": "bigquery::gcpproject/dataset/tablename-1",
                 "name": "tablename-1",
                 "service": "bigquery",
@@ -213,9 +228,11 @@
                     "name": "Mrs Unique",
                     "role": "user",
                     "email": "mrs.unique@email.com"
-                }]
+                }],
+                "type": "table"
             },
             {
+                "id": "bigquery::gcpproject/dataset/tablename-common",
                 "urn": "bigquery::gcpproject/dataset/tablename-common",
                 "name": "tablename-common",
                 "service": "bigquery",
@@ -298,9 +315,11 @@
                         "role": "user",
                         "email": "mr.y@email.com"
                     }
-                ]
+                ],
+                "type": "table"
             },
             {
+                "id": "bigquery::gcpproject/dataset/tablename-mid",
                 "urn": "bigquery::gcpproject/dataset/tablename-mid",
                 "name": "tablename-mid",
                 "service": "bigquery",
@@ -391,7 +410,8 @@
                         "role": "user",
                         "email": "paul.smith@email.com"
                     }
-                ]
+                ],
+                "type": "table"
             }
         ]
     }

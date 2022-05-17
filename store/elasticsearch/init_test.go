@@ -1,9 +1,6 @@
 package elasticsearch_test
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -19,8 +16,9 @@ var esTestServer *testutil.ElasticsearchTestServer
 func TestMain(m *testing.M) {
 	// TODO(Aman): this block makes it impossible to skip starting
 	// an elasticsearch server. That means you can't run unit tests
-	// standlone :/
+	// standalone :/
 	esTestServer = testutil.NewElasticsearchTestServer()
+
 	exitCode := m.Run()
 
 	if err := esTestServer.Close(); err != nil {
@@ -28,22 +26,4 @@ func TestMain(m *testing.M) {
 		return
 	}
 	os.Exit(exitCode)
-}
-
-// name this somethings that's more generic
-func incorrectResultsError(expect, actual interface{}) error {
-	out := new(bytes.Buffer)
-	out.WriteString("\n=== Expected ===\n")
-	encoder := json.NewEncoder(out)
-	encoder.SetIndent("", "  ")
-	err := encoder.Encode(expect)
-	if err != nil {
-		panic(err)
-	}
-	out.WriteString("=== Actual ===\n")
-	err = encoder.Encode(actual)
-	if err != nil {
-		panic(err)
-	}
-	return errors.New(out.String())
 }

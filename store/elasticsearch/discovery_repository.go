@@ -6,15 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/odpf/compass/asset"
-)
-
-const (
-	defaultGetSize   = 20
-	defaultSortField = "name.keyword"
 )
 
 var indexTypeMap = map[asset.Type]string{
@@ -27,7 +23,9 @@ var indexTypeMap = map[asset.Type]string{
 // DiscoveryRepository implements discovery.Repository
 // with elasticsearch as the backing store.
 type DiscoveryRepository struct {
-	cli *elasticsearch.Client
+	cli              *elasticsearch.Client
+	typeWhiteList    []string
+	typeWhiteListSet map[string]bool
 }
 
 func NewDiscoveryRepository(cli *elasticsearch.Client) *DiscoveryRepository {
@@ -74,7 +72,7 @@ func (repo *DiscoveryRepository) Delete(ctx context.Context, assetID string) err
 		repo.cli.DeleteByQuery.WithContext(ctx),
 	)
 	if err != nil {
-		return fmt.Errorf("error deleting record: %w", err)
+		return fmt.Errorf("error deleting asset: %w", err)
 	}
 	defer res.Body.Close()
 	if res.IsError() {
@@ -82,6 +80,40 @@ func (repo *DiscoveryRepository) Delete(ctx context.Context, assetID string) err
 	}
 
 	return nil
+}
+
+func (repo *DiscoveryRepository) GetTypes(ctx context.Context) (map[asset.Type]int, error) {
+	resp, err := repo.cli.Cat.Indices(
+		repo.cli.Cat.Indices.WithFormat("json"),
+		repo.cli.Cat.Indices.WithContext(ctx),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error from es client %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.IsError() {
+		return nil, fmt.Errorf("error from es server: %s", errorReasonFromResponse(resp))
+	}
+	var indices []esIndex
+	err = json.NewDecoder(resp.Body).Decode(&indices)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding es response %w", err)
+	}
+
+	results := map[asset.Type]int{}
+	for _, index := range indices {
+		count, err := strconv.Atoi(index.DocsCount)
+		if err != nil {
+			return results, fmt.Errorf("error converting docs count to a number: %w", err)
+		}
+		typName := asset.Type(index.Index)
+		if !typName.IsValid() {
+			continue
+		}
+		results[typName] = count
+	}
+
+	return results, nil
 }
 
 func (repo *DiscoveryRepository) createUpsertBody(ast asset.Asset) (io.Reader, error) {
@@ -93,7 +125,7 @@ func (repo *DiscoveryRepository) createUpsertBody(ast asset.Asset) (io.Reader, e
 
 	err = json.NewEncoder(payload).Encode(ast)
 	if err != nil {
-		return nil, fmt.Errorf("error serialising record: %w", err)
+		return nil, fmt.Errorf("error serialising asset: %w", err)
 	}
 	return payload, nil
 }
