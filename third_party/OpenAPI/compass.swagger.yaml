@@ -97,44 +97,6 @@ paths:
         type: boolean
       tags:
       - Asset
-    put:
-      summary: Upsert an asset
-      description: Create a new asset if a combination of urn, type and service does
-        not exist. If exists update instead
-      operationId: CompassService_UpsertAsset
-      responses:
-        "200":
-          description: A successful response.
-          schema:
-            $ref: '#/definitions/UpsertAssetResponse'
-        "400":
-          description: Returned when the data that user input is wrong.
-          schema:
-            $ref: '#/definitions/Status'
-        "404":
-          description: Returned when the resource does not exist.
-          schema:
-            $ref: '#/definitions/Status'
-        "409":
-          description: Returned when the resource already exist.
-          schema:
-            $ref: '#/definitions/Status'
-        "500":
-          description: Returned when theres is something wrong on the server side.
-          schema:
-            $ref: '#/definitions/Status'
-        default:
-          description: An unexpected error response.
-          schema:
-            $ref: '#/definitions/Status'
-      parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/UpsertAssetRequest'
-      tags:
-      - Asset
     patch:
       summary: Patch/Create an asset
       description: Similar to Upsert but with patch strategy and different body format
@@ -1128,7 +1090,7 @@ paths:
         required: false
         type: string
       - name: rankby
-        description: descendingly sort based on a numeric field in the record. the
+        description: descendingly sort based on a numeric field in the asset. the
           nested field is written with period separated field name. eg, "rankby[data.profile.usage_count]"
         in: query
         required: false
@@ -1724,6 +1686,32 @@ definitions:
         type: string
         format: date-time
     title: Asset
+  BaseAsset:
+    type: object
+    properties:
+      urn:
+        type: string
+      type:
+        type: string
+      name:
+        type: string
+        description: name of an asset
+      service:
+        type: string
+      description:
+        type: string
+        description: description of an asset
+      data:
+        type: object
+        description: dynamic data of an asset
+      labels:
+        type: object
+        description: labels of an asset
+      owners:
+        type: array
+        items:
+          $ref: '#/definitions/User'
+        description: list of owners of the asset
   Change:
     type: object
     properties:
@@ -2165,53 +2153,11 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/TagTemplate'
-  UpsertAssetRequest:
-    type: object
-    properties:
-      asset:
-        $ref: '#/definitions/UpsertAssetRequest.BaseAsset'
-      upstreams:
-        type: array
-        items:
-          $ref: '#/definitions/LineageNode'
-      downstreams:
-        type: array
-        items:
-          $ref: '#/definitions/LineageNode'
-  UpsertAssetRequest.BaseAsset:
-    type: object
-    properties:
-      urn:
-        type: string
-      type:
-        type: string
-      name:
-        type: string
-      service:
-        type: string
-      description:
-        type: string
-        description: description of an asset
-      data:
-        type: object
-      labels:
-        type: object
-        description: labels of an asset
-      owners:
-        type: array
-        items:
-          $ref: '#/definitions/User'
-        description: list of owners of the asset
-  UpsertAssetResponse:
-    type: object
-    properties:
-      id:
-        type: string
   UpsertPatchAssetRequest:
     type: object
     properties:
       asset:
-        $ref: '#/definitions/UpsertPatchAssetRequest.BaseAsset'
+        $ref: '#/definitions/BaseAsset'
       upstreams:
         type: array
         items:
@@ -2220,32 +2166,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/LineageNode'
-  UpsertPatchAssetRequest.BaseAsset:
-    type: object
-    properties:
-      urn:
-        type: string
-      type:
-        type: string
-      name:
-        type: string
-        description: name of an asset
-      service:
-        type: string
-      description:
-        type: string
-        description: description of an asset
-      data:
-        type: object
-        description: dynamic data of an asset
-      labels:
-        type: object
-        description: labels of an asset
-      owners:
-        type: array
-        items:
-          $ref: '#/definitions/User'
-        description: list of owners of the asset
   UpsertPatchAssetResponse:
     type: object
     properties:

@@ -1,8 +1,7 @@
 NAME="github.com/odpf/compass"
 VERSION=$(shell git describe --always --tags 2>/dev/null)
 COVERFILE="/tmp/compass.coverprofile"
-PROTON_COMMIT := "4d2fb0f0b145c31c02ccd65fb4a83510d58712e2"
-
+PROTON_COMMIT := "657671ca01a31124e1f0bb2c3a12be5a82c2fc10"
 .PHONY: all build test clean install proto
 
 all: build
