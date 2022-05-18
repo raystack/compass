@@ -5,6 +5,7 @@ import (
 
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/salt/printer"
+	"github.com/odpf/salt/term"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -29,6 +30,7 @@ func assetsCommand() *cobra.Command {
 	cmd.AddCommand(listAllAssetsCommand())
 	cmd.AddCommand(getAssetByIDCommand())
 	cmd.AddCommand(postAssetCommand())
+	cmd.AddCommand(deleteAssetByIDCommand())
 
 	return cmd
 }
@@ -48,6 +50,7 @@ func listAllAssetsCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
+			cs := term.NewColorScheme()
 
 			client, cancel, err := createClient(cmd, host)
 			if err != nil {
@@ -61,7 +64,7 @@ func listAllAssetsCommand() *cobra.Command {
 				return err
 			}
 
-			fmt.Println(prettyPrint(res.GetData()))
+			fmt.Println(cs.Bluef(prettyPrint(res.GetData())))
 
 			return nil
 		},
@@ -90,6 +93,7 @@ func getAssetByIDCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
+			cs := term.NewColorScheme()
 
 			client, cancel, err := createClient(cmd, host)
 			if err != nil {
@@ -107,7 +111,7 @@ func getAssetByIDCommand() *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println(prettyPrint(res.GetData()))
+			fmt.Println(cs.Bluef(prettyPrint(res.GetData())))
 			return nil
 		},
 	}
@@ -135,6 +139,7 @@ func postAssetCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
+			cs := term.NewColorScheme()
 
 			var reqBody compassv1beta1.UpsertAssetRequest
 			if err := parseFile(filePath, &reqBody); err != nil {
@@ -152,7 +157,6 @@ func postAssetCommand() *cobra.Command {
 			}
 			defer cancel()
 
-			// WIP
 			ctx := setCtxHeader(cmd.Context(), header)
 			res, err := client.UpsertAsset(ctx, &compassv1beta1.UpsertAssetRequest{
 				Asset:     reqBody.Asset,
@@ -164,12 +168,57 @@ func postAssetCommand() *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println("ID: \t", res.Id)
+			fmt.Println("ID: \t", cs.Greenf(res.Id))
 			return nil
 		},
 	}
 	cmd.Flags().StringVarP(&filePath, "body", "b", "", "filepath to body that has to be upserted")
 	cmd.MarkFlagRequired("body")
+	cmd.Flags().StringVarP(&header, "header", "H", "", "Header <key>:<value>")
+	cmd.MarkFlagRequired("header")
+	cmd.Flags().StringVarP(&host, "host", "h", "", "Compass service to connect to")
+	cmd.MarkFlagRequired("host")
+
+	return cmd
+}
+
+func deleteAssetByIDCommand() *cobra.Command {
+	var host, header string
+
+	cmd := &cobra.Command{
+		Use:   "delete <id>",
+		Short: "delete asset with the given ID",
+		Example: heredoc.Doc(`
+			$ compass asset delete <id> --host=<hostaddress> --header=<key>:<value>
+		`),
+		Annotations: map[string]string{
+			"action:core": "true",
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			spinner := printer.Spin("")
+			defer spinner.Stop()
+			cs := term.NewColorScheme()
+
+			client, cancel, err := createClient(cmd, host)
+			if err != nil {
+				return err
+			}
+			defer cancel()
+
+			assetID := args[0]
+			ctx := setCtxHeader(cmd.Context(), header)
+			_, err = client.DeleteAsset(ctx, &compassv1beta1.DeleteAssetRequest{
+				Id: assetID,
+			})
+			if err != nil {
+				return err
+			}
+			spinner.Stop()
+			fmt.Println("Asset ", cs.Redf(assetID), " Deleted Successfully")
+			return nil
+		},
+	}
+
 	cmd.Flags().StringVarP(&header, "header", "H", "", "Header <key>:<value>")
 	cmd.MarkFlagRequired("header")
 	cmd.Flags().StringVarP(&host, "host", "h", "", "Compass service to connect to")
