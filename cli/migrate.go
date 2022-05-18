@@ -1,44 +1,70 @@
-package cmd
+package cli
 
 import (
 	"context"
 	"fmt"
+	"os/signal"
+	"syscall"
 	"time"
 
-	"github.com/odpf/salt/log"
-
+	"github.com/MakeNowJust/heredoc"
 	"github.com/odpf/compass/asset"
 	esStore "github.com/odpf/compass/store/elasticsearch"
 	"github.com/odpf/compass/store/postgres"
+	"github.com/odpf/salt/log"
+	"github.com/spf13/cobra"
 )
 
 const (
 	esMigrationTimeout = 5 * time.Second
 )
 
-func RunMigrate() {
-	fmt.Println("Preparing migration...")
-	if err := loadConfig(); err != nil {
-		panic(err)
+func cmdMigrate() *cobra.Command {
+	return &cobra.Command{
+		Use:   "migrate",
+		Short: "Run storage migration",
+		Example: heredoc.Doc(`
+			$ compass migrate
+		`),
+		Args: cobra.NoArgs,
+		Annotations: map[string]string{
+			"group:core": "true",
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+			defer cancel()
+
+			cfg, err := loadConfig(cmd)
+			if err != nil {
+				return err
+			}
+
+			return runMigrations(ctx, cfg)
+		},
 	}
+}
+
+func runMigrations(ctx context.Context, config Config) error {
+	fmt.Println("Preparing migration...")
 
 	logger := initLogger(config.LogLevel)
 	logger.Info("compass is migrating", "version", Version)
 
 	logger.Info("Migrating Postgres...")
-	if err := migratePostgres(logger); err != nil {
-		panic(err)
+	if err := migratePostgres(logger, config); err != nil {
+		return err
 	}
 	logger.Info("Migration Postgres done.")
 
 	logger.Info("Migrating ES...")
-	if err := migrateElasticsearch(logger); err != nil {
-		panic(err)
+	if err := migrateElasticsearch(logger, config); err != nil {
+		return err
 	}
 	logger.Info("Migration ES done.")
+	return nil
 }
 
-func migratePostgres(logger log.Logger) (err error) {
+func migratePostgres(logger log.Logger, config Config) (err error) {
 	logger.Info("Initiating Postgres client...")
 
 	pgConfig := postgres.Config{
@@ -64,7 +90,7 @@ func migratePostgres(logger log.Logger) (err error) {
 	return nil
 }
 
-func migrateElasticsearch(logger log.Logger) error {
+func migrateElasticsearch(logger log.Logger, config Config) error {
 	logger.Info("Initiating ES client...")
 	esClient := initElasticsearch(config, logger)
 	for _, supportedType := range asset.AllSupportedTypes {

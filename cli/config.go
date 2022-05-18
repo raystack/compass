@@ -1,13 +1,30 @@
-package cmd
+package cli
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/jeremywohl/flatten"
-	"github.com/mcuadros/go-defaults"
-	"github.com/mitchellh/mapstructure"
-	"github.com/spf13/viper"
+	"github.com/odpf/salt/config"
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
+
+const configFlag = "config"
+
+func cmdShowConfigs() *cobra.Command {
+	return &cobra.Command{
+		Use:   "configs",
+		Short: "Display configurations currently loaded",
+		Run: func(cmd *cobra.Command, args []string) {
+			cfg, err := loadConfig(cmd)
+			if err != nil {
+				fmt.Printf("failed to read configs: %v\n", err)
+				os.Exit(1)
+			}
+			_ = yaml.NewEncoder(os.Stdout).Encode(cfg)
+		},
+	}
+}
 
 type Config struct {
 	// Server Config
@@ -50,66 +67,23 @@ type Config struct {
 	IdentityProviderDefaultName string `mapstructure:"IDENTITY_PROVIDER_DEFAULT_NAME" default:""`
 }
 
-var config Config
+func loadConfig(cmd *cobra.Command) (Config, error) {
+	var opts []config.LoaderOption
 
-// LoadConfig returns application configuration
-func loadConfig() error {
-	viper.SetConfigName("config")
-	viper.AddConfigPath("./")
-	viper.AddConfigPath("../")
-	viper.SetConfigType("yaml")
-	viper.AutomaticEnv()
+	cfgFile, _ := cmd.Flags().GetString(configFlag)
+	if cfgFile != "" {
+		opts = append(opts, config.WithFile(cfgFile))
+	} else {
+		opts = append(opts,
+			config.WithPath("./"),
+			config.WithName("compass"),
+		)
+	}
 
-	err := viper.ReadInConfig()
+	var cfg Config
+	err := config.NewLoader(opts...).Load(&cfg)
 	if err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			fmt.Println("config file was not found. Env vars and defaults will be used")
-		} else {
-			return err
-		}
+		return cfg, err
 	}
-
-	bindEnvVars()
-	defaults.SetDefaults(&config)
-	err = viper.Unmarshal(&config)
-	if err != nil {
-		return fmt.Errorf("unable to unmarshal config to struct: %w", err)
-	}
-
-	return nil
-}
-
-func bindEnvVars() {
-	configKeys, err := getFlattenedStructKeys(Config{})
-	if err != nil {
-		panic(err)
-	}
-
-	// Bind each conf fields to environment vars
-	for key := range configKeys {
-		err := viper.BindEnv(configKeys[key])
-		if err != nil {
-			panic(err)
-		}
-	}
-}
-
-func getFlattenedStructKeys(config Config) ([]string, error) {
-	var structMap map[string]interface{}
-	err := mapstructure.Decode(config, &structMap)
-	if err != nil {
-		return nil, err
-	}
-
-	flat, err := flatten.Flatten(structMap, "", flatten.DotStyle)
-	if err != nil {
-		return nil, err
-	}
-
-	keys := make([]string, 0, len(flat))
-	for k := range flat {
-		keys = append(keys, k)
-	}
-
-	return keys, nil
+	return cfg, nil
 }

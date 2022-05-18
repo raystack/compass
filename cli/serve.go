@@ -1,4 +1,4 @@
-package cmd
+package cli
 
 import (
 	"context"
@@ -12,13 +12,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/elastic/go-elasticsearch/v7"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	nrelasticsearch "github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
+	"github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
 	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/odpf/compass/api"
@@ -31,6 +32,7 @@ import (
 	"github.com/odpf/compass/user"
 	"github.com/odpf/salt/log"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
@@ -45,10 +47,30 @@ var (
 	Version string
 )
 
-func Serve() error {
-	if err := loadConfig(); err != nil {
-		return err
+func cmdServe() *cobra.Command {
+	return &cobra.Command{
+		Use:     "serve",
+		Short:   "Serve gRPC & HTTP service",
+		Long:    heredoc.Doc(`Serve gRPC & HTTP on a port defined in PORT env var.`),
+		Aliases: []string{"server", "start"},
+		Example: heredoc.Doc(`
+			$ compass serve
+		`),
+		Args: cobra.NoArgs,
+		Annotations: map[string]string{
+			"group:core": "true",
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cfg, err := loadConfig(cmd)
+			if err != nil {
+				return err
+			}
+			return runServer(cfg)
+		},
 	}
+}
+
+func runServer(config Config) error {
 
 	logger := initLogger(config.LogLevel)
 	logger.Info("compass starting", "version", Version)
@@ -57,7 +79,7 @@ func Serve() error {
 	newRelicMonitor := initNewRelicMonitor(config, logger)
 	statsdMonitor := initStatsdMonitor(config, logger)
 	pgClient := initPostgres(logger, config)
-	deps := initDependencies(logger, esClient, pgClient, newRelicMonitor.Application(), statsdMonitor)
+	deps := initDependencies(logger, config, esClient, pgClient, newRelicMonitor.Application(), statsdMonitor)
 
 	handlers := api.NewHandlers(logger, deps)
 
@@ -167,6 +189,7 @@ func Serve() error {
 
 func initDependencies(
 	logger log.Logger,
+	config Config,
 	esClient *elasticsearch.Client,
 	pgClient *postgres.Client,
 	nrApp *newrelic.Application,
