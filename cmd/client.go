@@ -19,14 +19,6 @@ func createConnection(ctx context.Context, host string) (*grpc.ClientConn, error
 }
 
 func createClient(cmd *cobra.Command, host string) (compassv1beta1.CompassServiceClient, func(), error) {
-	// host, err := cmd.Flags().GetString("host")
-	// if err != nil {
-	// 	return nil, nil, err
-	// }
-	// if host == "" {
-	// 	return nil, nil, errors.New("\"host\" not set")
-	// }
-
 	dialTimeoutCtx, dialCancel := context.WithTimeout(cmd.Context(), time.Second*2)
 	conn, err := createConnection(dialTimeoutCtx, host)
 	if err != nil {

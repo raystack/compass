@@ -24,3 +24,4 @@ vendor/
 .env
 compass
 config.yaml
+asset-body.yaml
