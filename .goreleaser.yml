@@ -22,17 +22,6 @@ builds:
     goarch: [amd64, 386, arm, arm64] # skip goarch 386 and arm due to conflicts with "github.com/blastrain/vitess-sqlparser" library
     env:
       - CGO_ENABLED=0
-  - main: ./main.go
-    id: dev
-    binary: compass
-    flags: [-a]
-    ldflags:
-      - -X github.com/odpf/compass/cmd.BuildCommit={{.FullCommit}} 
-      - -X github.com/odpf/compass/cmd.BuildDate={{.Date}}
-    goos: [linux]
-    goarch: [amd64]
-    env:
-      - CGO_ENABLED=0
 
 archives:
   - replacements:
@@ -73,8 +62,6 @@ dockers:
 
 brews:
   - name: compass
-    ids:
-      - compass
     homepage: "https://github.com/odpf/compass"
     description: "Metadata Discovery and Lineage Service"
     tap:
