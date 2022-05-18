@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/odpf/compass/asset"
+	"github.com/odpf/compass/core/asset"
 )
 
 var (

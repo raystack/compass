@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/odpf/compass/asset"
-	esStore "github.com/odpf/compass/store/elasticsearch"
-	"github.com/odpf/compass/store/postgres"
+	"github.com/odpf/compass/core/asset"
+	esStore "github.com/odpf/compass/internal/store/elasticsearch"
+	"github.com/odpf/compass/internal/store/postgres"
 	"github.com/odpf/salt/log"
 	"github.com/spf13/cobra"
 )
