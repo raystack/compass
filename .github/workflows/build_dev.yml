@@ -30,11 +30,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GO_RELEASER_TOKEN }}
       - name: Print artifacts
-        run: echo ${{ steps.goreleaser.artifacts }}
-      - name: Print
-        run: echo ${{ steps.goreleaser.metadata }}
+        run: |
+          echo "${{ steps.goreleaser.artifacts }}"
+      - name: Print metadata
+        run: |
+          echo "${{ steps.goreleaser.metadata }}"
       - name: Move and push
-        run: cp dist/dev_linux_amd64/compass compass
+        run: cp dist/dev_linux_amd64_v1/compass compass
       - name: Move and push
         id: docker_build
         uses: docker/build-push-action@v2
