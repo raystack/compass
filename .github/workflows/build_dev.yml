@@ -1,23 +1,45 @@
 name: Build Dev
 
-on: workflow_dispatch
+on: push
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Login to DockerHub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Build and push
-      id: docker_build
-      uses: docker/build-push-action@v2
-      with:
-        push: true
-        file: "./Dockerfile.dev"
-        tags: |
-            odpf/compass:dev
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16'
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Run GoReleaser
+        id: goreleaser
+        uses: goreleaser/goreleaser-action@v2.6.1
+        with:
+          distribution: goreleaser
+          version: latest
+          args: build --id dev --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GO_RELEASER_TOKEN }}
+      - name: Print artifacts
+        run: echo ${{ steps.goreleaser.artifacts }}
+      - name: Print
+        run: echo ${{ steps.goreleaser.metadata }}
+      - name: Move and push
+        run: cp dist/dev_linux_amd64/compass compass
+      - name: Move and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          file: "Dockerfile"
+          tags: |
+              odpf/compass:dev
