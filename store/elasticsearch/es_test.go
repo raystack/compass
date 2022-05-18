@@ -14,16 +14,17 @@ import (
 	"github.com/odpf/compass/asset"
 	store "github.com/odpf/compass/store/elasticsearch"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestElasticsearch(t *testing.T) {
 	ctx := context.Background()
-	t.Run("CreateOrReplace", func(t *testing.T) {
+	t.Run("Migrate", func(t *testing.T) {
 		var testCases = []struct {
 			Title      string
 			Type       asset.Type
 			ShouldFail bool
-			Validate   func(cli *elasticsearch.Client, recordType asset.Type) error
+			Validate   func(cli *elasticsearch.Client, assetType asset.Type) error
 		}{
 			{
 				Title:      "should successfully write the document to elasticsearch",
@@ -31,22 +32,22 @@ func TestElasticsearch(t *testing.T) {
 				ShouldFail: false,
 			},
 			{
-				Title:      "should create the index ${recordType.Name} in elasticsearch",
+				Title:      "should create the index ${assetType} in elasticsearch",
 				Type:       daggerType,
 				ShouldFail: false,
-				Validate: func(cli *elasticsearch.Client, recordType asset.Type) error {
+				Validate: func(cli *elasticsearch.Client, assetType asset.Type) error {
 					idxRequest := &esapi.IndicesExistsRequest{
 						Index: []string{
-							recordType.String(),
+							assetType.String(),
 						},
 					}
 					res, err := idxRequest.Do(context.Background(), cli)
 					if err != nil {
-						return fmt.Errorf("failed to query elasticsearch for index %q: %w", recordType, err)
+						return fmt.Errorf("failed to query elasticsearch for index %q: %w", assetType, err)
 					}
 					defer res.Body.Close()
 					if res.IsError() {
-						return fmt.Errorf("elasticsearch: error querying existence of %q index: %s", recordType, res.Status())
+						return fmt.Errorf("elasticsearch: error querying existence of %q index: %s", assetType, res.Status())
 					}
 					return nil
 				},
@@ -59,7 +60,7 @@ func TestElasticsearch(t *testing.T) {
 			{
 				Title: "should alias the type to the search index",
 				Type:  daggerType,
-				Validate: func(cli *elasticsearch.Client, recordType asset.Type) error {
+				Validate: func(cli *elasticsearch.Client, assetType asset.Type) error {
 					searchIndex := "universe"
 					req, err := http.NewRequest("GET", "/_alias/"+searchIndex, nil)
 					if err != nil {
@@ -76,8 +77,8 @@ func TestElasticsearch(t *testing.T) {
 					if err != nil {
 						return fmt.Errorf("error decoding elasticsearch response: %w", err)
 					}
-					if _, created := aliases[recordType.String()]; !created {
-						return fmt.Errorf("expected %q index to be aliased to %q, but it was not", recordType, searchIndex)
+					if _, created := aliases[assetType.String()]; !created {
+						return fmt.Errorf("expected %q index to be aliased to %q, but it was not", assetType, searchIndex)
 					}
 					return nil
 				},
@@ -85,7 +86,7 @@ func TestElasticsearch(t *testing.T) {
 			{
 				Title: "type creation should be idempotent",
 				Type:  daggerType,
-				Validate: func(cli *elasticsearch.Client, recordType asset.Type) error {
+				Validate: func(cli *elasticsearch.Client, assetType asset.Type) error {
 					// we'll try to save the type again, with the expectation
 					// that it should succeed as normal
 					err := store.Migrate(ctx, cli, daggerType)
@@ -98,9 +99,9 @@ func TestElasticsearch(t *testing.T) {
 			{
 				Title: "created index should be able to correctly tokenize CamelCase text",
 				Type:  daggerType,
-				Validate: func(cli *elasticsearch.Client, recordType asset.Type) error {
+				Validate: func(cli *elasticsearch.Client, assetType asset.Type) error {
 					textToAnalyze := "HelloWorld"
-					analyzerPath := fmt.Sprintf("/%s/_analyze", recordType)
+					analyzerPath := fmt.Sprintf("/%s/_analyze", assetType)
 					analyzerPayload := fmt.Sprintf(`{"analyzer": "my_analyzer", "text": %q}`, textToAnalyze)
 
 					req, err := http.NewRequest("POST", analyzerPath, strings.NewReader(analyzerPayload))
@@ -142,8 +143,10 @@ func TestElasticsearch(t *testing.T) {
 
 		for _, testCase := range testCases {
 			t.Run(testCase.Title, func(t *testing.T) {
-				cli := esTestServer.NewClient()
-				err := store.Migrate(ctx, cli, testCase.Type)
+				cli, err := esTestServer.NewClient()
+				require.NoError(t, err)
+
+				err = store.Migrate(ctx, cli, testCase.Type)
 				if testCase.ShouldFail {
 					assert.Error(t, err)
 					return

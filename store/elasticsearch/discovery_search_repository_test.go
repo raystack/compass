@@ -22,15 +22,10 @@ type searchTestData struct {
 func TestSearcherSearch(t *testing.T) {
 	ctx := context.TODO()
 	t.Run("should return an error if search string is empty", func(t *testing.T) {
-		esClient := esTestServer.NewClient()
-		searcher, err := store.NewSearcher(store.SearcherConfig{
-			Client: esClient,
-		})
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		_, err = searcher.Search(ctx, discovery.SearchConfig{
+		esClient, err := esTestServer.NewClient()
+		require.NoError(t, err)
+		repo := store.NewDiscoveryRepository(esClient)
+		_, err = repo.Search(ctx, discovery.SearchConfig{
 			Text: "",
 		})
 
@@ -38,14 +33,12 @@ func TestSearcherSearch(t *testing.T) {
 	})
 
 	t.Run("fixtures", func(t *testing.T) {
-		esClient := esTestServer.NewClient()
-		err := loadTestFixture(esClient, "./testdata/search-test-fixture.json")
+		esClient, err := esTestServer.NewClient()
+		require.NoError(t, err)
+		err = loadTestFixture(esClient, "./testdata/search-test-fixture.json")
 		require.NoError(t, err)
 
-		searcher, err := store.NewSearcher(store.SearcherConfig{
-			Client: esClient,
-		})
-		require.NoError(t, err)
+		repo := store.NewDiscoveryRepository(esClient)
 
 		type expectedRow struct {
 			Type    string
@@ -68,6 +61,7 @@ func TestSearcherSearch(t *testing.T) {
 					{Type: "topic", AssetID: "purchase-topic"},
 					{Type: "topic", AssetID: "consumer-topic"},
 					{Type: "topic", AssetID: "consumer-mq-2"},
+					{Type: "topic", AssetID: "transaction"},
 				},
 			},
 			{
@@ -80,6 +74,7 @@ func TestSearcherSearch(t *testing.T) {
 					{Type: "topic", AssetID: "purchase-topic"},
 					{Type: "topic", AssetID: "consumer-topic"},
 					{Type: "topic", AssetID: "consumer-mq-2"},
+					{Type: "topic", AssetID: "transaction"},
 				},
 			},
 			{
@@ -118,6 +113,7 @@ func TestSearcherSearch(t *testing.T) {
 					{Type: "topic", AssetID: "order-topic"},
 					{Type: "topic", AssetID: "consumer-topic"},
 					{Type: "topic", AssetID: "consumer-mq-2"},
+					{Type: "topic", AssetID: "transaction"},
 				},
 			},
 			{
@@ -187,7 +183,7 @@ func TestSearcherSearch(t *testing.T) {
 		}
 		for _, test := range tests {
 			t.Run(test.Description, func(t *testing.T) {
-				results, err := searcher.Search(ctx, test.Config)
+				results, err := repo.Search(ctx, test.Config)
 				require.NoError(t, err)
 
 				require.Equal(t, len(test.Expected), len(results))
@@ -202,14 +198,12 @@ func TestSearcherSearch(t *testing.T) {
 
 func TestSearcherSuggest(t *testing.T) {
 	ctx := context.TODO()
-	esClient := esTestServer.NewClient()
-	err := loadTestFixture(esClient, "./testdata/suggest-test-fixture.json")
+	esClient, err := esTestServer.NewClient()
+	require.NoError(t, err)
+	err = loadTestFixture(esClient, "./testdata/suggest-test-fixture.json")
 	require.NoError(t, err)
 
-	searcher, err := store.NewSearcher(store.SearcherConfig{
-		Client: esClient,
-	})
-	require.NoError(t, err)
+	repo := store.NewDiscoveryRepository(esClient)
 
 	t.Run("fixtures", func(t *testing.T) {
 		testCases := []struct {
@@ -224,7 +218,7 @@ func TestSearcherSuggest(t *testing.T) {
 
 		for i, tc := range testCases {
 			config := discovery.SearchConfig{Text: tc.term}
-			actual, err := searcher.Suggest(ctx, config)
+			actual, err := repo.Suggest(ctx, config)
 			assert.NoError(t, err)
 
 			assert.Equal(t, tc.expected, actual, "suggestions are not as expected for term: %s and index: %d", tc.term, i)
@@ -249,9 +243,11 @@ func loadTestFixture(esClient *elasticsearch.Client, filePath string) (err error
 		if err := store.Migrate(ctx, esClient, testdata.Type); err != nil {
 			return err
 		}
-		recordRepo, _ := store.NewRecordRepositoryFactory(esClient).For(testdata.Type.String())
-		if err := recordRepo.CreateOrReplaceMany(ctx, testdata.Assets); err != nil {
-			return err
+		repo := store.NewDiscoveryRepository(esClient)
+		for _, ast := range testdata.Assets {
+			if err := repo.Upsert(ctx, ast); err != nil {
+				return err
+			}
 		}
 	}
 

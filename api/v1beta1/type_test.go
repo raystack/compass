@@ -17,11 +17,11 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
-func TestGetAllTypes(t *testing.T) {
+func TestGetTypesTypes(t *testing.T) {
 	type testCase struct {
 		Description  string
 		ExpectStatus codes.Code
-		Setup        func(tc *testCase, er *mocks.TypeRepository)
+		Setup        func(tc *testCase, er *mocks.DiscoveryRepository)
 		PostCheck    func(resp *compassv1beta1.GetAllTypesResponse) error
 	}
 
@@ -29,22 +29,22 @@ func TestGetAllTypes(t *testing.T) {
 		{
 			Description:  "should return internal server error if failing to fetch types",
 			ExpectStatus: codes.Internal,
-			Setup: func(tc *testCase, er *mocks.TypeRepository) {
-				er.On("GetAll", context.Background()).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
+			Setup: func(tc *testCase, er *mocks.DiscoveryRepository) {
+				er.EXPECT().GetTypes(context.Background()).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
 			},
 		},
 		{
 			Description:  "should return internal server error if failing to fetch counts",
 			ExpectStatus: codes.Internal,
-			Setup: func(tc *testCase, er *mocks.TypeRepository) {
-				er.On("GetAll", context.Background()).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
+			Setup: func(tc *testCase, er *mocks.DiscoveryRepository) {
+				er.EXPECT().GetTypes(context.Background()).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
 			},
 		},
 		{
-			Description:  "should return all valid types with its record count",
+			Description:  "should return all valid types with its asset count",
 			ExpectStatus: codes.OK,
-			Setup: func(tc *testCase, er *mocks.TypeRepository) {
-				er.On("GetAll", context.Background()).Return(map[asset.Type]int{
+			Setup: func(tc *testCase, er *mocks.DiscoveryRepository) {
+				er.EXPECT().GetTypes(context.Background()).Return(map[asset.Type]int{
 					asset.Type("table"): 10,
 					asset.Type("topic"): 30,
 					asset.Type("job"):   15,
@@ -81,13 +81,13 @@ func TestGetAllTypes(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			er := new(mocks.TypeRepository)
+			er := new(mocks.DiscoveryRepository)
 			logger := log.NewNoop()
 			defer er.AssertExpectations(t)
 			tc.Setup(&tc, er)
 
 			handler := api.NewGRPCHandler(logger, &api.Dependencies{
-				TypeRepository: er,
+				DiscoveryRepository: er,
 			})
 
 			got, err := handler.GetAllTypes(context.TODO(), &compassv1beta1.GetAllTypesRequest{})

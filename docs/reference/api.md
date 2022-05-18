@@ -651,7 +651,7 @@ API for querying documents. 'text' is fuzzy matched against all the available da
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
 | text | query | text to search for (fuzzy) | No | string |
-| rankby | query | descendingly sort based on a numeric field in the record. the nested field is written with period separated field name. eg, "rankby[data.profile.usage_count]" | No | string |
+| rankby | query | descendingly sort based on a numeric field in the asset. the nested field is written with period separated field name. eg, "rankby[data.profile.usage_count]" | No | string |
 | size | query | number of results to return | No | long |
 
 ##### Responses
