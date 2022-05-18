@@ -13,17 +13,17 @@ import (
 
 func assetsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "asset",
+		Use:     "assets",
 		Aliases: []string{"assets"},
 		Short:   "Manage assets",
 		Annotations: map[string]string{
 			"group:core": "true",
 		},
 		Example: heredoc.Doc(`
-			$ compass asset list
-			$ compass asset get
-			$ compass asset delete
-			$ compass asset post
+			$ compass assets list
+			$ compass assets get
+			$ compass assets delete
+			$ compass assets post
 		`),
 	}
 
@@ -42,7 +42,7 @@ func listAllAssetsCommand() *cobra.Command {
 		Use:   "list",
 		Short: "lists all assets",
 		Example: heredoc.Doc(`
-			$ compass asset list --host=<hostaddress> --header=<key>:<value>
+			$ compass assets list --host=<hostaddress> --header=<key>:<value>
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
@@ -83,9 +83,9 @@ func getAssetByIDCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "get <id>",
-		Short: "get asset for the given ID",
+		Short: "get assets for the given ID",
 		Example: heredoc.Doc(`
-			$ compass asset get <id> --host=<hostaddress> --header=<key>:<value>
+			$ compass assets get <id> --host=<hostaddress> --header=<key>:<value>
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
@@ -129,9 +129,9 @@ func postAssetCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "post",
-		Short: "post asset, add ",
+		Short: "post assets, add ",
 		Example: heredoc.Doc(`
-			$ compass asset post --host=<hostaddress> --header=<key>:<value> --body=filePath
+			$ compass assets post --host=<hostaddress> --header=<key>:<value> --body=filePath
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
@@ -187,9 +187,9 @@ func deleteAssetByIDCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "delete <id>",
-		Short: "delete asset with the given ID",
+		Short: "delete assets with the given ID",
 		Example: heredoc.Doc(`
-			$ compass asset delete <id> --host=<hostaddress> --header=<key>:<value>
+			$ compass assets delete <id> --host=<hostaddress> --header=<key>:<value>
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
