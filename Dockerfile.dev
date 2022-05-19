@@ -6,6 +6,7 @@ RUN ["make"]
 FROM alpine:latest
 
 COPY --from=base /build/compass /usr/bin/compass
+WORKDIR /usr/bin
 RUN apk update
 RUN apk add ca-certificates
 
