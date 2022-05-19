@@ -14,8 +14,9 @@ import (
 )
 
 var (
-	SERVER_HOST         = "http://localhost:8080"
-	IDENTITY_HEADER_KEY = "Compass-User-Email"
+	SERVER_HOST               = "http://localhost:8080"
+	IDENTITY_HEADER_KEY_UUID  = "Compass-User-UUID"
+	IDENTITY_HEADER_KEY_EMAIL = "Compass-User-Email"
 )
 
 // Client is the http client implementation
@@ -128,7 +129,8 @@ func (c *Client) makeRequest(method, url string, payload interface{}, data inter
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set(IDENTITY_HEADER_KEY, "compassendtoendtest@odpf.io")
+	req.Header.Set(IDENTITY_HEADER_KEY_UUID, "compassendtoendtest@odpf.io")
+	req.Header.Set(IDENTITY_HEADER_KEY_Email, "compassendtoendtest@odpf.io")
 
 	for key, value := range c.headers {
 		req.Header.Set(key, value)
