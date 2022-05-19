@@ -34,8 +34,6 @@ func discussionsCommand() *cobra.Command {
 }
 
 func listAllDiscussionsCommand() *cobra.Command {
-	var host, header string
-
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "lists all discussions",
@@ -68,17 +66,10 @@ func listAllDiscussionsCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&header, "header", "H", "", "Header <key>:<value>")
-	cmd.MarkFlagRequired("header")
-	cmd.Flags().StringVarP(&host, "host", "h", "", "Compass service to connect to")
-	cmd.MarkFlagRequired("host")
-
 	return cmd
 }
 
 func getdiscussionByIDCommand() *cobra.Command {
-	var host, header string
-
 	cmd := &cobra.Command{
 		Use:   "get <id>",
 		Short: "get discussions for the given ID",
@@ -114,16 +105,11 @@ func getdiscussionByIDCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&header, "header", "H", "", "Header <key>:<value>")
-	cmd.MarkFlagRequired("header")
-	cmd.Flags().StringVarP(&host, "host", "h", "", "Compass service to connect to")
-	cmd.MarkFlagRequired("host")
-
 	return cmd
 }
 
 func postdiscussionCommand() *cobra.Command {
-	var host, header, filePath string
+	var filePath string
 
 	cmd := &cobra.Command{
 		Use:   "post",
@@ -175,10 +161,6 @@ func postdiscussionCommand() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&filePath, "body", "b", "", "filepath to body that has to be upserted")
 	cmd.MarkFlagRequired("body")
-	cmd.Flags().StringVarP(&header, "header", "H", "", "Header <key>:<value>")
-	cmd.MarkFlagRequired("header")
-	cmd.Flags().StringVarP(&host, "host", "h", "", "Compass service to connect to")
-	cmd.MarkFlagRequired("host")
 
 	return cmd
 }

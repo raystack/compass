@@ -11,8 +11,10 @@ import (
 
 type Config struct {
 	// Server Config
-	ServerHost string `mapstructure:"SERVER_HOST" default:"0.0.0.0"`
-	ServerPort string `mapstructure:"SERVER_PORT" default:"8080"`
+	ServerHost    string `mapstructure:"SERVER_HOST" default:"0.0.0.0"`
+	ServerPort    string `mapstructure:"SERVER_PORT" default:"8080"`
+	ServerBaseUrl string `mapstructure:"SERVER_BASE_URL" default:"localhost:8080"`
+	AuthHeader    string `mapstructure:"AUTH_HEADER" default:"Compass-User-UUID:odpf@email.com"`
 
 	// Elasticsearch
 	ElasticSearchBrokers string `mapstructure:"ELASTICSEARCH_BROKERS" default:"http://localhost:9200"`

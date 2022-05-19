@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var host, header string
+
 func New() *cobra.Command {
 	var command = &cobra.Command{
 		Use:           "compass <command>",
@@ -28,6 +30,13 @@ func New() *cobra.Command {
 			`),
 		},
 	}
+
+	if err := loadConfig(); err != nil {
+		panic(err)
+	}
+
+	host = config.ServerBaseUrl
+	header = config.AuthHeader
 
 	cmdx.SetHelp(command)
 	command.AddCommand(serveCmd())

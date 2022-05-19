@@ -36,8 +36,6 @@ func assetsCommand() *cobra.Command {
 }
 
 func listAllAssetsCommand() *cobra.Command {
-	var host, header string
-
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "lists all assets",
@@ -51,7 +49,7 @@ func listAllAssetsCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 			cs := term.NewColorScheme()
-
+			fmt.Println("header:", header)
 			client, cancel, err := createClient(cmd, host)
 			if err != nil {
 				return err
@@ -70,17 +68,10 @@ func listAllAssetsCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&header, "header", "H", "", "Header <key>:<value>")
-	cmd.MarkFlagRequired("header")
-	cmd.Flags().StringVarP(&host, "host", "h", "", "Compass service to connect to")
-	cmd.MarkFlagRequired("host")
-
 	return cmd
 }
 
 func getAssetByIDCommand() *cobra.Command {
-	var host, header string
-
 	cmd := &cobra.Command{
 		Use:   "get <id>",
 		Short: "get assets for the given ID",
@@ -116,16 +107,11 @@ func getAssetByIDCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&header, "header", "H", "", "Header <key>:<value>")
-	cmd.MarkFlagRequired("header")
-	cmd.Flags().StringVarP(&host, "host", "h", "", "Compass service to connect to")
-	cmd.MarkFlagRequired("host")
-
 	return cmd
 }
 
 func postAssetCommand() *cobra.Command {
-	var host, header, filePath string
+	var filePath string
 
 	cmd := &cobra.Command{
 		Use:   "post",
@@ -174,17 +160,11 @@ func postAssetCommand() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&filePath, "body", "b", "", "filepath to body that has to be upserted")
 	cmd.MarkFlagRequired("body")
-	cmd.Flags().StringVarP(&header, "header", "H", "", "Header <key>:<value>")
-	cmd.MarkFlagRequired("header")
-	cmd.Flags().StringVarP(&host, "host", "h", "", "Compass service to connect to")
-	cmd.MarkFlagRequired("host")
 
 	return cmd
 }
 
 func deleteAssetByIDCommand() *cobra.Command {
-	var host, header string
-
 	cmd := &cobra.Command{
 		Use:   "delete <id>",
 		Short: "delete assets with the given ID",
@@ -218,11 +198,6 @@ func deleteAssetByIDCommand() *cobra.Command {
 			return nil
 		},
 	}
-
-	cmd.Flags().StringVarP(&header, "header", "H", "", "Header <key>:<value>")
-	cmd.MarkFlagRequired("header")
-	cmd.Flags().StringVarP(&host, "host", "h", "", "Compass service to connect to")
-	cmd.MarkFlagRequired("host")
 
 	return cmd
 }
