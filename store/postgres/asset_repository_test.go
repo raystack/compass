@@ -132,7 +132,7 @@ func (r *AssetRepositoryTestSuite) insertRecord() (assets []asset.Asset) {
 }
 
 func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
-	r.builder = sq.Select(`data, type, name, service`)
+	r.builder = sq.Select(`a.test as test`)
 
 	testCases := []struct {
 		description   string
@@ -169,25 +169,25 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 			},
 			expectedQuery: `(data->'landscape'->'properties'->>'project-id' ILIKE $1 OR description ILIKE $2)`,
 		},
+		// NOTE: The data entries contain in the map does not produce any specific order for query, generated query
+		// will be of random order.
 		{
 			description: "should return sql query with asset's data fields filter",
 			config: asset.Filter{
 				Data: map[string]string{
-					"entity":  "odpf",
-					"country": "th",
+					"entity": "odpf",
 				},
 			},
-			expectedQuery: `data->>'entity' = 'odpf' AND data->>'country' = 'th'`,
+			expectedQuery: `data->>'entity' = 'odpf'`,
 		},
 		{
 			description: "should return sql query with asset's nested data fields filter",
 			config: asset.Filter{
 				Data: map[string]string{
 					"landscape.properties.project-id": "compass_001",
-					"country":                         "vn",
 				},
 			},
-			expectedQuery: `data->'landscape'->'properties'->>'project-id' = 'compass_001' AND data->>'country' = 'vn'`,
+			expectedQuery: `data->'landscape'->'properties'->>'project-id' = 'compass_001'`,
 		},
 	}
 
@@ -199,9 +199,8 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 			query, err = sq.Dollar.ReplacePlaceholders(query)
 			r.Require().NoError(err)
 
-			tempQuery := strings.Split(query, "WHERE ")
-			actualQuery := strings.Split(tempQuery[1], " ORDER")
-			r.Equal(testCase.expectedQuery, actualQuery[0])
+			actualQuery := strings.Split(query, "WHERE ")
+			r.Equal(testCase.expectedQuery, actualQuery[1])
 		})
 	}
 }

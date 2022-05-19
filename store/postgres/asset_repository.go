@@ -678,7 +678,7 @@ func (r *AssetRepository) BuildFilterQuery(builder sq.SelectBuilder, flt asset.F
 				finalQuery: fmt.Sprint("%", flt.Query, "%"),
 			})
 		}
-		builder = builder.Where(orClause).OrderBy("data")
+		builder = builder.Where(orClause)
 	}
 
 	if len(flt.Data) > 0 {
@@ -692,10 +692,10 @@ func (r *AssetRepository) BuildFilterQuery(builder sq.SelectBuilder, flt asset.F
 					sq.NotEq{field: "{}"},   // field is not empty object
 					sq.NotEq{field: "\"\""}, // field is not empty string
 				}
-				builder = builder.Where(whereClause).OrderBy("data")
+				builder = builder.Where(whereClause)
 			} else {
 				finalQuery := r.buildDataField(key, false)
-				builder = builder.Where(fmt.Sprintf("%s = '%s'", finalQuery, val)).OrderBy("data")
+				builder = builder.Where(fmt.Sprintf("%s = '%s'", finalQuery, val))
 			}
 		}
 	}
