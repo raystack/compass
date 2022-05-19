@@ -58,7 +58,7 @@ func runServer(config Config) error {
 	logger := initLogger(config.LogLevel)
 	logger.Info("compass starting", "version", Version)
 
-	newRelicMonitor, err := initNewRelicMonitor(config, logger)
+	nrApp, err := initNewRelicMonitor(config, logger)
 	if err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func runServer(config Config) error {
 		config.Service,
 		logger,
 		pgClient,
-		newRelicMonitor.Application(),
+		nrApp,
 		statsdMonitor,
 		assetService,
 		starService,
@@ -164,7 +164,7 @@ func initPostgres(logger log.Logger, config Config) (*postgres.Client, error) {
 	return pgClient, nil
 }
 
-func initNewRelicMonitor(config Config, logger log.Logger) (*metrics.NewRelicMonitor, error) {
+func initNewRelicMonitor(config Config, logger log.Logger) (*newrelic.Application, error) {
 	if !config.NewRelic.Enabled {
 		logger.Info("New Relic monitoring is disabled.")
 		return nil, nil
@@ -178,8 +178,7 @@ func initNewRelicMonitor(config Config, logger log.Logger) (*metrics.NewRelicMon
 	}
 	logger.Info("New Relic monitoring is enabled for", "config", config.NewRelic.AppName)
 
-	monitor := metrics.NewNewRelicMonitor(app)
-	return monitor, nil
+	return app, nil
 }
 
 func initStatsDMonitor(config Config, logger log.Logger) *metrics.StatsDMonitor {

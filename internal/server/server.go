@@ -55,7 +55,7 @@ func Serve(
 	config Config,
 	logger log.Logger,
 	pgClient *postgres.Client,
-	nr *newrelic.Application,
+	nrApp *newrelic.Application,
 	statsd *metrics.StatsDMonitor,
 	assetService handlersv1beta1.AssetService,
 	starService handlersv1beta1.StarService,
@@ -83,7 +83,7 @@ func Serve(
 			grpc_recovery.UnaryServerInterceptor(),
 			grpc_ctxtags.UnaryServerInterceptor(),
 			grpc_logrus.UnaryServerInterceptor(logrus.NewEntry(logrus.New())), //TODO: expose *logrus.Logger in salt
-			nrgrpc.UnaryServerInterceptor(nr),
+			nrgrpc.UnaryServerInterceptor(nrApp),
 			grpc_interceptor.StatsD(statsd),
 			grpc_interceptor.UserHeaderCtx(config.Identity.HeaderKeyUUID, config.Identity.HeaderKeyEmail),
 		)),
