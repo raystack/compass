@@ -5,12 +5,14 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"time"
 
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/discussion"
 	"github.com/odpf/compass/core/user"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type DiscussionService interface {
@@ -51,7 +53,7 @@ func (server *APIServer) GetAllDiscussions(ctx context.Context, req *compassv1be
 
 	discussionsProto := []*compassv1beta1.Discussion{}
 	for _, dsc := range dscs {
-		discussionsProto = append(discussionsProto, dsc.ToProto())
+		discussionsProto = append(discussionsProto, discussionToProto(dsc))
 	}
 
 	return &compassv1beta1.GetAllDiscussionsResponse{Data: discussionsProto}, nil
@@ -114,7 +116,7 @@ func (server *APIServer) GetDiscussion(ctx context.Context, req *compassv1beta1.
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	return &compassv1beta1.GetDiscussionResponse{Data: dsc.ToProto()}, nil
+	return &compassv1beta1.GetDiscussionResponse{Data: discussionToProto(dsc)}, nil
 }
 
 // Patch updates a specific field in discussion
@@ -179,4 +181,64 @@ func (server *APIServer) validateIDInteger(id string) error {
 	}
 
 	return nil
+}
+
+// discussionToProto transforms struct to proto
+func discussionToProto(d discussion.Discussion) *compassv1beta1.Discussion {
+
+	var createdAtPB *timestamppb.Timestamp
+	if !d.CreatedAt.IsZero() {
+		createdAtPB = timestamppb.New(d.CreatedAt)
+	}
+
+	var updatedAtPB *timestamppb.Timestamp
+	if !d.UpdatedAt.IsZero() {
+		updatedAtPB = timestamppb.New(d.UpdatedAt)
+	}
+
+	return &compassv1beta1.Discussion{
+		Id:        d.ID,
+		Title:     d.Title,
+		Body:      d.Body,
+		Type:      d.Type.String(),
+		State:     d.State.String(),
+		Labels:    d.Labels,
+		Assets:    d.Assets,
+		Assignees: d.Assignees,
+		Owner:     userToProto(d.Owner),
+		CreatedAt: createdAtPB,
+		UpdatedAt: updatedAtPB,
+	}
+}
+
+// discussionFromProto transforms proto to struct
+func discussionFromProto(pb *compassv1beta1.Discussion) discussion.Discussion {
+	var createdAt time.Time
+	if pb.GetCreatedAt() != nil {
+		createdAt = pb.GetCreatedAt().AsTime()
+	}
+
+	var updatedAt time.Time
+	if pb.GetUpdatedAt() != nil {
+		updatedAt = pb.GetUpdatedAt().AsTime()
+	}
+
+	var owner user.User
+	if pb.GetOwner() != nil {
+		owner = userFromProto(pb.GetOwner())
+	}
+
+	return discussion.Discussion{
+		ID:        pb.GetId(),
+		Title:     pb.GetTitle(),
+		Body:      pb.GetBody(),
+		Type:      discussion.GetTypeEnum(pb.GetType()),
+		State:     discussion.GetStateEnum(pb.GetState()),
+		Labels:    pb.GetLabels(),
+		Assets:    pb.GetAssets(),
+		Assignees: pb.GetAssignees(),
+		Owner:     owner,
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
+	}
 }

@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"time"
 
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/discussion"
 	"github.com/odpf/compass/core/user"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // CreateComment will create a new comment of a discussion
@@ -77,7 +79,7 @@ func (server *APIServer) GetAllComments(ctx context.Context, req *compassv1beta1
 
 	commentsProto := []*compassv1beta1.Comment{}
 	for _, cmt := range cmts {
-		commentsProto = append(commentsProto, cmt.ToProto())
+		commentsProto = append(commentsProto, commentToProto(cmt))
 	}
 
 	return &compassv1beta1.GetAllCommentsResponse{Data: commentsProto}, nil
@@ -106,7 +108,7 @@ func (server *APIServer) GetComment(ctx context.Context, req *compassv1beta1.Get
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	return &compassv1beta1.GetCommentResponse{Data: cmt.ToProto()}, nil
+	return &compassv1beta1.GetCommentResponse{Data: commentToProto(cmt)}, nil
 }
 
 // UpdateComment is an api to update a comment by discussion id
@@ -234,4 +236,61 @@ func (server *APIServer) buildGetAllCommentsFilter(req *compassv1beta1.GetAllCom
 	fl.AssignDefault()
 
 	return fl, nil
+}
+
+// commentToProto transforms struct to proto
+func commentToProto(c discussion.Comment) *compassv1beta1.Comment {
+
+	var createdAtPB *timestamppb.Timestamp
+	if !c.CreatedAt.IsZero() {
+		createdAtPB = timestamppb.New(c.CreatedAt)
+	}
+
+	var updatedAtPB *timestamppb.Timestamp
+	if !c.UpdatedAt.IsZero() {
+		updatedAtPB = timestamppb.New(c.UpdatedAt)
+	}
+
+	return &compassv1beta1.Comment{
+		Id:           c.ID,
+		DiscussionId: c.DiscussionID,
+		Body:         c.Body,
+		Owner:        userToProto(c.Owner),
+		UpdatedBy:    userToProto(c.UpdatedBy),
+		CreatedAt:    createdAtPB,
+		UpdatedAt:    updatedAtPB,
+	}
+}
+
+// commentFromProto transforms proto to struct
+func commentFromProto(pb *compassv1beta1.Comment) discussion.Comment {
+	var createdAt time.Time
+	if pb.GetCreatedAt() != nil {
+		createdAt = pb.GetCreatedAt().AsTime()
+	}
+
+	var updatedAt time.Time
+	if pb.GetUpdatedAt() != nil {
+		updatedAt = pb.GetUpdatedAt().AsTime()
+	}
+
+	var owner user.User
+	if pb.GetOwner() != nil {
+		owner = userFromProto(pb.GetOwner())
+	}
+
+	var updatedBy user.User
+	if pb.GetUpdatedBy() != nil {
+		updatedBy = userFromProto(pb.GetUpdatedBy())
+	}
+
+	return discussion.Comment{
+		ID:           pb.GetId(),
+		DiscussionID: pb.GetDiscussionId(),
+		Body:         pb.GetBody(),
+		Owner:        owner,
+		UpdatedBy:    updatedBy,
+		CreatedAt:    createdAt,
+		UpdatedAt:    updatedAt,
+	}
 }

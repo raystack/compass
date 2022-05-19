@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
@@ -18,6 +20,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/testing/protocmp"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestGetUserStarredAssets(t *testing.T) {
@@ -654,6 +657,104 @@ func TestGetMyDiscussions(t *testing.T) {
 					t.Error(err)
 					return
 				}
+			}
+		})
+	}
+}
+
+func TestUserToProto(t *testing.T) {
+	timeDummy := time.Date(2000, time.January, 7, 0, 0, 0, 0, time.UTC)
+	type testCase struct {
+		Title       string
+		User        user.User
+		ExpectProto *compassv1beta1.User
+	}
+
+	var testCases = []testCase{
+		{
+			Title:       "should return nil if UUID is empty",
+			User:        user.User{},
+			ExpectProto: nil,
+		},
+		{
+			Title:       "should return fields without timestamp",
+			User:        user.User{UUID: "uuid1", Email: "email@email.com", Provider: "provider", CreatedAt: timeDummy, UpdatedAt: timeDummy},
+			ExpectProto: &compassv1beta1.User{Uuid: "uuid1", Email: "email@email.com"},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Title, func(t *testing.T) {
+
+			got := userToProto(tc.User)
+			if diff := cmp.Diff(got, tc.ExpectProto, protocmp.Transform()); diff != "" {
+				t.Errorf("expected response to be %+v, was %+v", tc.ExpectProto, got)
+			}
+		})
+	}
+}
+
+func TestUserToFullProto(t *testing.T) {
+	timeDummy := time.Date(2000, time.January, 7, 0, 0, 0, 0, time.UTC)
+	type testCase struct {
+		Title       string
+		User        user.User
+		ExpectProto *compassv1beta1.User
+	}
+
+	var testCases = []testCase{
+		{
+			Title:       "should return nil if UUID is empty",
+			User:        user.User{},
+			ExpectProto: nil,
+		},
+		{
+			Title:       "should return without timestamp pb if timestamp is zero",
+			User:        user.User{UUID: "uuid1", Provider: "provider"},
+			ExpectProto: &compassv1beta1.User{Uuid: "uuid1", Provider: "provider"},
+		},
+		{
+			Title:       "should return with timestamp pb if timestamp is not zero",
+			User:        user.User{UUID: "uuid1", Provider: "provider", CreatedAt: timeDummy, UpdatedAt: timeDummy},
+			ExpectProto: &compassv1beta1.User{Uuid: "uuid1", Provider: "provider", CreatedAt: timestamppb.New(timeDummy), UpdatedAt: timestamppb.New(timeDummy)},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Title, func(t *testing.T) {
+
+			got := userToFullProto(tc.User)
+			if diff := cmp.Diff(got, tc.ExpectProto, protocmp.Transform()); diff != "" {
+				t.Errorf("expected response to be %+v, was %+v", tc.ExpectProto, got)
+			}
+		})
+	}
+}
+
+func TestUserFromProto(t *testing.T) {
+	timeDummy := time.Date(2000, time.January, 7, 0, 0, 0, 0, time.UTC)
+	type testCase struct {
+		Title      string
+		UserPB     *compassv1beta1.User
+		ExpectUser user.User
+	}
+
+	var testCases = []testCase{
+		{
+			Title:      "should return non empty time.Time if timestamp pb is not zero",
+			UserPB:     &compassv1beta1.User{Uuid: "uuid1", Provider: "provider", CreatedAt: timestamppb.New(timeDummy), UpdatedAt: timestamppb.New(timeDummy)},
+			ExpectUser: user.User{UUID: "uuid1", Provider: "provider", CreatedAt: timeDummy, UpdatedAt: timeDummy},
+		},
+		{
+			Title:      "should return empty time.Time if timestamp pb is zero",
+			UserPB:     &compassv1beta1.User{Uuid: "uuid1", Provider: "provider"},
+			ExpectUser: user.User{UUID: "uuid1", Provider: "provider"},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Title, func(t *testing.T) {
+
+			got := userFromProto(tc.UserPB)
+			if reflect.DeepEqual(got, tc.ExpectUser) == false {
+				t.Errorf("expected returned asset to be %+v, was %+v", tc.ExpectUser, got)
 			}
 		})
 	}

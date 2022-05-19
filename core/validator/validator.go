@@ -25,9 +25,6 @@ func newValidator() *validator.Validate {
 }
 
 func ValidateStruct(f interface{}) error {
-	if validate == nil {
-		validate = newValidator()
-	}
 	err := getValidator().Struct(f)
 	return checkError(err)
 }

@@ -5,13 +5,16 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"time"
 
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/discussion"
 	"github.com/odpf/compass/core/star"
+	"github.com/odpf/compass/core/user"
 	"github.com/odpf/compass/core/validator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type UserService interface {
@@ -43,7 +46,7 @@ func (server *APIServer) GetUserStarredAssets(ctx context.Context, req *compassv
 
 	var starredAssetsPB []*compassv1beta1.Asset
 	for _, ast := range starredAssets {
-		astPB, err := ast.ToProto(false)
+		astPB, err := assetToProto(ast, false)
 		if err != nil {
 			return nil, internalServerError(server.logger, err.Error())
 		}
@@ -80,7 +83,7 @@ func (server *APIServer) GetMyStarredAssets(ctx context.Context, req *compassv1b
 
 	var starredAssetsPB []*compassv1beta1.Asset
 	for _, ast := range starredAssets {
-		astPB, err := ast.ToProto(false)
+		astPB, err := assetToProto(ast, false)
 		if err != nil {
 			return nil, internalServerError(server.logger, err.Error())
 		}
@@ -109,7 +112,7 @@ func (server *APIServer) GetMyStarredAsset(ctx context.Context, req *compassv1be
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	astPB, err := ast.ToProto(false)
+	astPB, err := assetToProto(ast, false)
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())
 	}
@@ -185,7 +188,7 @@ func (server *APIServer) GetMyDiscussions(ctx context.Context, req *compassv1bet
 
 	var dscsPB []*compassv1beta1.Discussion
 	for _, dsc := range dscs {
-		dscsPB = append(dscsPB, dsc.ToProto())
+		dscsPB = append(dscsPB, discussionToProto(dsc))
 	}
 
 	return &compassv1beta1.GetMyDiscussionsResponse{
@@ -241,4 +244,64 @@ func (server *APIServer) buildGetDiscussionsFilter(req *compassv1beta1.GetMyDisc
 
 	fl.AssignDefault()
 	return fl, nil
+}
+
+// userToProto transforms struct with some fields only to proto
+func userToProto(u user.User) *compassv1beta1.User {
+	if u.UUID == "" {
+		return nil
+	}
+
+	return &compassv1beta1.User{
+		Uuid:  u.UUID,
+		Email: u.Email,
+	}
+}
+
+// userToFullProto transforms struct with all fields to proto
+func userToFullProto(u user.User) *compassv1beta1.User {
+	if u.UUID == "" {
+		return nil
+	}
+
+	var createdAtPB *timestamppb.Timestamp
+	if !u.CreatedAt.IsZero() {
+		createdAtPB = timestamppb.New(u.CreatedAt)
+	}
+
+	var updatedAtPB *timestamppb.Timestamp
+	if !u.UpdatedAt.IsZero() {
+		updatedAtPB = timestamppb.New(u.UpdatedAt)
+	}
+
+	return &compassv1beta1.User{
+		Id:        u.ID,
+		Uuid:      u.UUID,
+		Email:     u.Email,
+		Provider:  u.Provider,
+		CreatedAt: createdAtPB,
+		UpdatedAt: updatedAtPB,
+	}
+}
+
+// userFromProto transforms proto to struct
+func userFromProto(proto *compassv1beta1.User) user.User {
+	var createdAt time.Time
+	if proto.GetCreatedAt() != nil {
+		createdAt = proto.GetCreatedAt().AsTime()
+	}
+
+	var updatedAt time.Time
+	if proto.GetUpdatedAt() != nil {
+		updatedAt = proto.GetUpdatedAt().AsTime()
+	}
+
+	return user.User{
+		ID:        proto.GetId(),
+		UUID:      proto.GetUuid(),
+		Email:     proto.GetEmail(),
+		Provider:  proto.GetProvider(),
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
+	}
 }

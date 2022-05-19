@@ -42,7 +42,7 @@ func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.S
 
 	assetsPB := []*compassv1beta1.Asset{}
 	for _, sr := range results {
-		assetPB, err := sr.ToAsset().ToProto(false)
+		assetPB, err := assetToProto(sr.ToAsset(), false)
 		if err != nil {
 			return nil, internalServerError(server.logger, fmt.Sprintf("error converting assets to proto: %s", err.Error()))
 		}

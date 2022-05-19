@@ -8,9 +8,7 @@ import (
 	"strings"
 	"time"
 
-	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/user"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const MAX_ARRAY_FIELD_NUM = 10
@@ -39,66 +37,6 @@ type Discussion struct {
 	Owner     user.User `json:"owner"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-}
-
-// ToProto transforms struct to proto
-func (d Discussion) ToProto() *compassv1beta1.Discussion {
-
-	var createdAtPB *timestamppb.Timestamp
-	if !d.CreatedAt.IsZero() {
-		createdAtPB = timestamppb.New(d.CreatedAt)
-	}
-
-	var updatedAtPB *timestamppb.Timestamp
-	if !d.UpdatedAt.IsZero() {
-		updatedAtPB = timestamppb.New(d.UpdatedAt)
-	}
-
-	return &compassv1beta1.Discussion{
-		Id:        d.ID,
-		Title:     d.Title,
-		Body:      d.Body,
-		Type:      d.Type.String(),
-		State:     d.State.String(),
-		Labels:    d.Labels,
-		Assets:    d.Assets,
-		Assignees: d.Assignees,
-		Owner:     d.Owner.ToProto(),
-		CreatedAt: createdAtPB,
-		UpdatedAt: updatedAtPB,
-	}
-}
-
-// NewFromProto transforms proto to struct
-func NewFromProto(pb *compassv1beta1.Discussion) Discussion {
-	var createdAt time.Time
-	if pb.GetCreatedAt() != nil {
-		createdAt = pb.GetCreatedAt().AsTime()
-	}
-
-	var updatedAt time.Time
-	if pb.GetUpdatedAt() != nil {
-		updatedAt = pb.GetUpdatedAt().AsTime()
-	}
-
-	var owner user.User
-	if pb.GetOwner() != nil {
-		owner = user.NewFromProto(pb.GetOwner())
-	}
-
-	return Discussion{
-		ID:        pb.GetId(),
-		Title:     pb.GetTitle(),
-		Body:      pb.GetBody(),
-		Type:      GetTypeEnum(pb.GetType()),
-		State:     GetStateEnum(pb.GetState()),
-		Labels:    pb.GetLabels(),
-		Assets:    pb.GetAssets(),
-		Assignees: pb.GetAssignees(),
-		Owner:     owner,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
-	}
 }
 
 // IsEmpty returns true if all fields inside discussion are considered empty

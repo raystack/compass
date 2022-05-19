@@ -6,12 +6,17 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/asset"
 	"github.com/odpf/compass/core/star"
+	"github.com/odpf/compass/core/user"
+	"github.com/r3labs/diff/v2"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type AssetService interface {
@@ -52,7 +57,7 @@ func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.G
 
 	assetsProto := []*compassv1beta1.Asset{}
 	for _, a := range assets {
-		ap, err := a.ToProto(false)
+		ap, err := assetToProto(a, false)
 		if err != nil {
 			return nil, internalServerError(server.logger, err.Error())
 		}
@@ -119,7 +124,7 @@ func (server *APIServer) GetAssetByID(ctx context.Context, req *compassv1beta1.G
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	astProto, err := ast.ToProto(false)
+	astProto, err := assetToProto(ast, false)
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())
 	}
@@ -151,7 +156,7 @@ func (server *APIServer) GetAssetStargazers(ctx context.Context, req *compassv1b
 
 	usersPB := []*compassv1beta1.User{}
 	for _, us := range users {
-		usersPB = append(usersPB, us.ToProto())
+		usersPB = append(usersPB, userToProto(us))
 	}
 
 	return &compassv1beta1.GetAssetStargazersResponse{
@@ -181,7 +186,7 @@ func (server *APIServer) GetAssetVersionHistory(ctx context.Context, req *compas
 
 	assetsPB := []*compassv1beta1.Asset{}
 	for _, av := range assetVersions {
-		avPB, err := av.ToProto(true)
+		avPB, err := assetToProto(av, true)
 		if err != nil {
 			return nil, internalServerError(server.logger, err.Error())
 		}
@@ -214,7 +219,7 @@ func (server *APIServer) GetAssetByVersion(ctx context.Context, req *compassv1be
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	assetPB, err := ast.ToProto(true)
+	assetPB, err := assetToProto(ast, true)
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())
 	}
@@ -384,4 +389,192 @@ func decodePatchAssetToMap(pb *compassv1beta1.UpsertPatchAssetRequest_BaseAsset)
 	}
 
 	return m
+}
+
+// assetToProto transforms struct to proto
+func assetToProto(a asset.Asset, withChangelog bool) (assetPB *compassv1beta1.Asset, err error) {
+	var data *structpb.Struct
+	if len(a.Data) > 0 {
+		data, err = structpb.NewStruct(a.Data)
+		if err != nil {
+			return
+		}
+	}
+
+	var labels *structpb.Struct
+	if len(a.Labels) > 0 {
+		labelsMapInterface := make(map[string]interface{}, len(a.Labels))
+		for k, v := range a.Labels {
+			labelsMapInterface[k] = v
+		}
+		labels, err = structpb.NewStruct(labelsMapInterface)
+		if err != nil {
+			return
+		}
+	}
+
+	owners := []*compassv1beta1.User{}
+	for _, o := range a.Owners {
+		owners = append(owners, userToProto(o))
+	}
+
+	var changelogProto []*compassv1beta1.Change
+	if withChangelog {
+		changelogProto, err = changelogToProto(a.Changelog)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var createdAtPB *timestamppb.Timestamp
+	if !a.CreatedAt.IsZero() {
+		createdAtPB = timestamppb.New(a.CreatedAt)
+	}
+
+	var updatedAtPB *timestamppb.Timestamp
+	if !a.UpdatedAt.IsZero() {
+		updatedAtPB = timestamppb.New(a.UpdatedAt)
+	}
+
+	assetPB = &compassv1beta1.Asset{
+		Id:          a.ID,
+		Urn:         a.URN,
+		Type:        string(a.Type),
+		Service:     a.Service,
+		Name:        a.Name,
+		Description: a.Description,
+		Data:        data,
+		Labels:      labels,
+		Owners:      owners,
+		Version:     a.Version,
+		UpdatedBy:   userToProto(a.UpdatedBy),
+		Changelog:   changelogProto,
+		CreatedAt:   createdAtPB,
+		UpdatedAt:   updatedAtPB,
+	}
+	return
+}
+
+// changelogToProto transforms changelog struct to proto
+func changelogToProto(cl diff.Changelog) ([]*compassv1beta1.Change, error) {
+	if len(cl) == 0 {
+		return nil, nil
+	}
+	var protoChanges []*compassv1beta1.Change
+	for _, ch := range cl {
+		chProto, err := diffChangeToProto(ch)
+		if err != nil {
+			return nil, err
+		}
+
+		protoChanges = append(protoChanges, chProto)
+	}
+	return protoChanges, nil
+}
+
+func diffChangeToProto(dc diff.Change) (*compassv1beta1.Change, error) {
+	from, err := structpb.NewValue(dc.From)
+	if err != nil {
+		return nil, err
+	}
+	to, err := structpb.NewValue(dc.To)
+	if err != nil {
+		return nil, err
+	}
+
+	return &compassv1beta1.Change{
+		Type: dc.Type,
+		Path: dc.Path,
+		From: from,
+		To:   to,
+	}, nil
+}
+
+// assetFromProto transforms proto to struct
+// changelog is not populated by user, it should always be processed and coming from the server
+func assetFromProto(pb *compassv1beta1.Asset) asset.Asset {
+	var assetOwners []user.User
+	for _, op := range pb.GetOwners() {
+		if op == nil {
+			continue
+		}
+		assetOwners = append(assetOwners, userFromProto(op))
+	}
+
+	var labels map[string]string
+	if pb.GetLabels() != nil {
+		labels = make(map[string]string)
+		for key, value := range pb.GetLabels().AsMap() {
+			strKey := fmt.Sprintf("%v", key)
+			strValue := fmt.Sprintf("%v", value)
+			labels[strKey] = strValue
+		}
+	}
+
+	var dataValue map[string]interface{}
+	if pb.GetData() != nil {
+		dataValue = pb.GetData().AsMap()
+	}
+
+	var createdAt time.Time
+	if pb.GetCreatedAt() != nil {
+		createdAt = pb.GetCreatedAt().AsTime()
+	}
+
+	var updatedAt time.Time
+	if pb.GetUpdatedAt() != nil {
+		updatedAt = pb.GetUpdatedAt().AsTime()
+	}
+
+	var updatedBy user.User
+	if pb.GetUpdatedBy() != nil {
+		updatedBy = userFromProto(pb.GetUpdatedBy())
+	}
+
+	var clog diff.Changelog
+	if len(pb.GetChangelog()) > 0 {
+		for _, cg := range pb.GetChangelog() {
+			if cg == nil {
+				continue
+			}
+			clog = append(clog, diffChangeFromProto(cg))
+		}
+	}
+
+	return asset.Asset{
+		ID:          pb.GetId(),
+		URN:         pb.GetUrn(),
+		Type:        asset.Type(pb.GetType()),
+		Service:     pb.GetService(),
+		Name:        pb.GetName(),
+		Description: pb.GetDescription(),
+		Data:        dataValue,
+		Labels:      labels,
+		Owners:      assetOwners,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+		Version:     pb.GetVersion(),
+		Changelog:   clog,
+		UpdatedBy:   updatedBy,
+	}
+}
+
+// diffChangeFromProto converts Change proto to diff.Change
+func diffChangeFromProto(pb *compassv1beta1.Change) diff.Change {
+	var fromItf interface{}
+	if pb.GetFrom() != nil {
+		fromItf = pb.GetFrom().AsInterface()
+	}
+
+	var toItf interface{}
+	if pb.GetTo() != nil {
+		toItf = pb.GetTo().AsInterface()
+	}
+
+	return diff.Change{
+		Type: pb.GetType(),
+		Path: pb.GetPath(),
+		From: fromItf,
+		To:   toItf,
+	}
 }

@@ -5,11 +5,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/tag"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type TagTemplateService interface {
@@ -35,7 +37,7 @@ func (server *APIServer) GetAllTagTemplates(ctx context.Context, req *compassv1b
 
 	var templatesPB []*compassv1beta1.TagTemplate
 	for _, template := range listOfDomainTemplate {
-		templatesPB = append(templatesPB, template.ToProto())
+		templatesPB = append(templatesPB, tagTemplateToProto(template))
 	}
 
 	return &compassv1beta1.GetAllTagTemplatesResponse{
@@ -65,7 +67,7 @@ func (server *APIServer) CreateTagTemplate(ctx context.Context, req *compassv1be
 
 	var templateFields []tag.Field
 	for _, fPB := range req.GetFields() {
-		templateFields = append(templateFields, tag.NewTemplateFieldFromProto(fPB))
+		templateFields = append(templateFields, tagTemplateFieldFromProto(fPB))
 	}
 
 	template := tag.Template{
@@ -83,7 +85,7 @@ func (server *APIServer) CreateTagTemplate(ctx context.Context, req *compassv1be
 	}
 
 	return &compassv1beta1.CreateTagTemplateResponse{
-		Data: template.ToProto(),
+		Data: tagTemplateToProto(template),
 	}, nil
 }
 
@@ -103,7 +105,7 @@ func (server *APIServer) GetTagTemplate(ctx context.Context, req *compassv1beta1
 	}
 
 	return &compassv1beta1.GetTagTemplateResponse{
-		Data: domainTemplate.ToProto(),
+		Data: tagTemplateToProto(domainTemplate),
 	}, nil
 }
 
@@ -125,7 +127,7 @@ func (server *APIServer) UpdateTagTemplate(ctx context.Context, req *compassv1be
 
 	var templateFields []tag.Field
 	for _, fPB := range req.GetFields() {
-		templateFields = append(templateFields, tag.NewTemplateFieldFromProto(fPB))
+		templateFields = append(templateFields, tagTemplateFieldFromProto(fPB))
 	}
 
 	template := tag.Template{
@@ -145,7 +147,7 @@ func (server *APIServer) UpdateTagTemplate(ctx context.Context, req *compassv1be
 	}
 
 	return &compassv1beta1.UpdateTagTemplateResponse{
-		Data: template.ToProto(),
+		Data: tagTemplateToProto(template),
 	}, nil
 }
 
@@ -164,4 +166,110 @@ func (server *APIServer) DeleteTagTemplate(ctx context.Context, req *compassv1be
 		return nil, internalServerError(server.logger, fmt.Sprintf("error deleting a template: %s", err.Error()))
 	}
 	return &compassv1beta1.DeleteTagTemplateResponse{}, nil
+}
+
+// tagTemplateToProto convert domain to protobuf
+func tagTemplateToProto(t tag.Template) *compassv1beta1.TagTemplate {
+	var templateFieldsPB []*compassv1beta1.TagTemplateField
+	for _, tf := range t.Fields {
+		templateFieldsPB = append(templateFieldsPB, tagTemplateFieldToProto(tf))
+	}
+
+	var createdAtPB *timestamppb.Timestamp
+	if !t.CreatedAt.IsZero() {
+		createdAtPB = timestamppb.New(t.CreatedAt)
+	}
+
+	var updatedAtPB *timestamppb.Timestamp
+	if !t.UpdatedAt.IsZero() {
+		updatedAtPB = timestamppb.New(t.UpdatedAt)
+	}
+
+	return &compassv1beta1.TagTemplate{
+		Urn:         t.URN,
+		DisplayName: t.DisplayName,
+		Description: t.Description,
+		Fields:      templateFieldsPB,
+		CreatedAt:   createdAtPB,
+		UpdatedAt:   updatedAtPB,
+	}
+}
+
+// tagTemplateFromProto converts proto to tag.Template
+func tagTemplateFromProto(pb *compassv1beta1.TagTemplate) tag.Template {
+	var createdAt time.Time
+	if pb.GetCreatedAt() != nil {
+		createdAt = pb.GetCreatedAt().AsTime()
+	}
+
+	var updatedAt time.Time
+	if pb.GetUpdatedAt() != nil {
+		updatedAt = pb.GetUpdatedAt().AsTime()
+	}
+
+	var fields []tag.Field
+	if pb.GetFields() != nil {
+		for _, tfPB := range pb.GetFields() {
+			fields = append(fields, tagTemplateFieldFromProto(tfPB))
+		}
+	}
+
+	return tag.Template{
+		URN:         pb.GetUrn(),
+		DisplayName: pb.GetDisplayName(),
+		Description: pb.GetDescription(),
+		Fields:      fields,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+	}
+}
+
+// tagTemplateFieldToProto convert domain to protobuf
+func tagTemplateFieldToProto(f tag.Field) *compassv1beta1.TagTemplateField {
+	var createdAtPB *timestamppb.Timestamp
+	if !f.CreatedAt.IsZero() {
+		createdAtPB = timestamppb.New(f.CreatedAt)
+	}
+
+	var updatedAtPB *timestamppb.Timestamp
+	if !f.UpdatedAt.IsZero() {
+		updatedAtPB = timestamppb.New(f.UpdatedAt)
+	}
+
+	return &compassv1beta1.TagTemplateField{
+		Id:          uint32(f.ID),
+		Urn:         f.URN,
+		DisplayName: f.DisplayName,
+		Description: f.Description,
+		DataType:    f.DataType,
+		Options:     f.Options,
+		Required:    f.Required,
+		CreatedAt:   createdAtPB,
+		UpdatedAt:   updatedAtPB,
+	}
+}
+
+// tagTemplateFieldFromProto converts proto to tag.Field
+func tagTemplateFieldFromProto(pb *compassv1beta1.TagTemplateField) tag.Field {
+	var createdAt time.Time
+	if pb.GetCreatedAt() != nil {
+		createdAt = pb.GetCreatedAt().AsTime()
+	}
+
+	var updatedAt time.Time
+	if pb.GetUpdatedAt() != nil {
+		updatedAt = pb.GetUpdatedAt().AsTime()
+	}
+
+	return tag.Field{
+		ID:          uint(pb.GetId()),
+		URN:         pb.GetUrn(),
+		DisplayName: pb.GetDisplayName(),
+		Description: pb.GetDescription(),
+		DataType:    pb.GetDataType(),
+		Options:     pb.GetOptions(),
+		Required:    pb.GetRequired(),
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+	}
 }

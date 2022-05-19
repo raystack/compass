@@ -75,7 +75,7 @@ func Serve(
 		userService,
 	)
 
-	healthHandler := &health.HealthHandler{}
+	healthHandler := health.NewHandler()
 
 	// init grpc
 	grpcServer := grpc.NewServer(

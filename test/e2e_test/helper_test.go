@@ -130,7 +130,7 @@ func (c *Client) makeRequest(method, url string, payload interface{}, data inter
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set(IDENTITY_HEADER_KEY_UUID, "compassendtoendtest@odpf.io")
-	req.Header.Set(IDENTITY_HEADER_KEY_Email, "compassendtoendtest@odpf.io")
+	req.Header.Set(IDENTITY_HEADER_KEY_EMAIL, "compassendtoendtest@odpf.io")
 
 	for key, value := range c.headers {
 		req.Header.Set(key, value)

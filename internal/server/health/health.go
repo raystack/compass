@@ -18,3 +18,7 @@ func (h *HealthHandler) Watch(in *grpc_health_v1.HealthCheckRequest, _ grpc_heal
 	// Example of how to register both methods but only implement the Check method.
 	return status.Error(codes.Unimplemented, "unimplemented")
 }
+
+func NewHandler() *HealthHandler {
+	return &HealthHandler{}
+}
