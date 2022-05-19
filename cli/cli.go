@@ -43,7 +43,6 @@ func Execute() {
 	rootCmd.AddCommand(
 		cmdServe(),
 		cmdMigrate(),
-		cmdVersion(),
 		cmdShowConfigs(),
 	)
 

@@ -8,6 +8,12 @@ import (
 	statsd "github.com/etsy/statsd/examples/go"
 )
 
+type StatsdConfig struct {
+	Enabled bool   `mapstructure:"enabled" default:"false"`
+	Address string `mapstructure:"address" default:"127.0.0.1:8125"`
+	Prefix  string `mapstructure:"prefix" default:"compassApi"`
+}
+
 //go:generate mockery --name=StatsdClient -r --case underscore --with-expecter --structname StatsdClient --filename statsd_monitor.go --output=./mocks
 type StatsdClient interface {
 	Timing(string, int64)

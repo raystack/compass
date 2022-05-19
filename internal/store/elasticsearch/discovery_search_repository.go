@@ -51,13 +51,13 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 		return
 	}
 
-	res, err := repo.cli.Search(
-		repo.cli.Search.WithBody(query),
-		repo.cli.Search.WithIndex(indices...),
-		repo.cli.Search.WithSize(maxResults),
-		repo.cli.Search.WithIgnoreUnavailable(true),
-		repo.cli.Search.WithSourceIncludes(returnedAssetFieldsResult...),
-		repo.cli.Search.WithContext(ctx),
+	res, err := repo.cli.client.Search(
+		repo.cli.client.Search.WithBody(query),
+		repo.cli.client.Search.WithIndex(indices...),
+		repo.cli.client.Search.WithSize(maxResults),
+		repo.cli.client.Search.WithIgnoreUnavailable(true),
+		repo.cli.client.Search.WithSourceIncludes(returnedAssetFieldsResult...),
+		repo.cli.client.Search.WithContext(ctx),
 	)
 	if err != nil {
 		err = fmt.Errorf("error executing search %w", err)
@@ -87,12 +87,12 @@ func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.Searc
 		err = fmt.Errorf("error building query: %s", err)
 		return
 	}
-	res, err := repo.cli.Search(
-		repo.cli.Search.WithBody(query),
-		repo.cli.Search.WithIndex(indices...),
-		repo.cli.Search.WithSize(maxResults),
-		repo.cli.Search.WithIgnoreUnavailable(true),
-		repo.cli.Search.WithContext(ctx),
+	res, err := repo.cli.client.Search(
+		repo.cli.client.Search.WithBody(query),
+		repo.cli.client.Search.WithIndex(indices...),
+		repo.cli.client.Search.WithSize(maxResults),
+		repo.cli.client.Search.WithIgnoreUnavailable(true),
+		repo.cli.client.Search.WithContext(ctx),
 	)
 	if err != nil {
 		err = fmt.Errorf("error executing search %w", err)

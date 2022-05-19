@@ -9,7 +9,6 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/odpf/compass/core/asset"
-	esStore "github.com/odpf/compass/internal/store/elasticsearch"
 	"github.com/odpf/compass/internal/store/postgres"
 	"github.com/odpf/salt/log"
 	"github.com/spf13/cobra"
@@ -67,22 +66,13 @@ func runMigrations(ctx context.Context, config Config) error {
 func migratePostgres(logger log.Logger, config Config) (err error) {
 	logger.Info("Initiating Postgres client...")
 
-	pgConfig := postgres.Config{
-		Host:     config.DBHost,
-		Port:     config.DBPort,
-		Name:     config.DBName,
-		User:     config.DBUser,
-		Password: config.DBPassword,
-		SSLMode:  config.DBSSLMode,
-	}
-
-	pgClient, err := postgres.NewClient(pgConfig)
+	pgClient, err := postgres.NewClient(config.DB)
 	if err != nil {
 		logger.Error("failed to prepare migration", "error", err)
 		return err
 	}
 
-	err = pgClient.Migrate(pgConfig)
+	err = pgClient.Migrate(config.DB)
 	if err != nil {
 		return fmt.Errorf("problem with migration %w", err)
 	}
@@ -92,12 +82,16 @@ func migratePostgres(logger log.Logger, config Config) (err error) {
 
 func migrateElasticsearch(logger log.Logger, config Config) error {
 	logger.Info("Initiating ES client...")
-	esClient := initElasticsearch(config, logger)
+	esClient, err := initElasticsearch(logger, config.Elasticsearch)
+	if err != nil {
+		return err
+	}
+
 	for _, supportedType := range asset.AllSupportedTypes {
 		logger.Info("Migrating type\n", "type", supportedType)
 		ctx, cancel := context.WithTimeout(context.Background(), esMigrationTimeout)
 		defer cancel()
-		err := esStore.Migrate(ctx, esClient, supportedType)
+		err := esClient.Migrate(ctx, supportedType)
 		if err != nil {
 			return fmt.Errorf("error creating/replacing type %q: %w", supportedType, err)
 		}

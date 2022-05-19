@@ -28,19 +28,16 @@ import (
 var fs embed.FS
 
 const (
+	columnNameCreatedAt     = "created_at"
+	columnNameUpdatedAt     = "updated_at"
+	sortDirectionAscending  = "ASC"
+	sortDirectionDescending = "DESC"
 	DEFAULT_MAX_RESULT_SIZE = 100
 )
 
 type Client struct {
 	db *sqlx.DB
 }
-
-const (
-	columnNameCreatedAt     = "created_at"
-	columnNameUpdatedAt     = "updated_at"
-	sortDirectionAscending  = "ASC"
-	sortDirectionDescending = "DESC"
-)
 
 func (c *Client) RunWithinTx(ctx context.Context, f func(tx *sqlx.Tx) error) error {
 	tx, err := c.db.BeginTxx(ctx, nil)

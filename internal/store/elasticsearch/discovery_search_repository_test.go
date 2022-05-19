@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/odpf/compass/core/asset"
 	store "github.com/odpf/compass/internal/store/elasticsearch"
+	"github.com/odpf/salt/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,8 +21,15 @@ type searchTestData struct {
 func TestSearcherSearch(t *testing.T) {
 	ctx := context.TODO()
 	t.Run("should return an error if search string is empty", func(t *testing.T) {
-		esClient, err := esTestServer.NewClient()
+		cli, err := esTestServer.NewClient()
 		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
+		require.NoError(t, err)
+
 		repo := store.NewDiscoveryRepository(esClient)
 		_, err = repo.Search(ctx, asset.SearchConfig{
 			Text: "",
@@ -32,8 +39,15 @@ func TestSearcherSearch(t *testing.T) {
 	})
 
 	t.Run("fixtures", func(t *testing.T) {
-		esClient, err := esTestServer.NewClient()
+		cli, err := esTestServer.NewClient()
 		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
+		require.NoError(t, err)
+
 		err = loadTestFixture(esClient, "./testdata/search-test-fixture.json")
 		require.NoError(t, err)
 
@@ -197,8 +211,15 @@ func TestSearcherSearch(t *testing.T) {
 
 func TestSearcherSuggest(t *testing.T) {
 	ctx := context.TODO()
-	esClient, err := esTestServer.NewClient()
+	cli, err := esTestServer.NewClient()
 	require.NoError(t, err)
+	esClient, err := store.NewClient(
+		log.NewNoop(),
+		store.Config{},
+		store.WithClient(cli),
+	)
+	require.NoError(t, err)
+
 	err = loadTestFixture(esClient, "./testdata/suggest-test-fixture.json")
 	require.NoError(t, err)
 
@@ -225,7 +246,7 @@ func TestSearcherSuggest(t *testing.T) {
 	})
 }
 
-func loadTestFixture(esClient *elasticsearch.Client, filePath string) (err error) {
+func loadTestFixture(esClient *store.Client, filePath string) (err error) {
 	testFixtureJSON, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return
@@ -239,7 +260,7 @@ func loadTestFixture(esClient *elasticsearch.Client, filePath string) (err error
 
 	ctx := context.TODO()
 	for _, testdata := range data {
-		if err := store.Migrate(ctx, esClient, testdata.Type); err != nil {
+		if err := esClient.Migrate(ctx, testdata.Type); err != nil {
 			return err
 		}
 		repo := store.NewDiscoveryRepository(esClient)

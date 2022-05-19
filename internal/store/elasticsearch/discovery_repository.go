@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/odpf/compass/core/asset"
 )
 
@@ -23,12 +22,12 @@ var indexTypeMap = map[asset.Type]string{
 // DiscoveryRepository implements discovery.Repository
 // with elasticsearch as the backing store.
 type DiscoveryRepository struct {
-	cli              *elasticsearch.Client
+	cli              *Client
 	typeWhiteList    []string
 	typeWhiteListSet map[string]bool
 }
 
-func NewDiscoveryRepository(cli *elasticsearch.Client) *DiscoveryRepository {
+func NewDiscoveryRepository(cli *Client) *DiscoveryRepository {
 	return &DiscoveryRepository{
 		cli: cli,
 	}
@@ -46,10 +45,10 @@ func (repo *DiscoveryRepository) Upsert(ctx context.Context, ast asset.Asset) er
 	if err != nil {
 		return fmt.Errorf("error serialising payload: %w", err)
 	}
-	res, err := repo.cli.Bulk(
+	res, err := repo.cli.client.Bulk(
 		body,
-		repo.cli.Bulk.WithRefresh("true"),
-		repo.cli.Bulk.WithContext(ctx),
+		repo.cli.client.Bulk.WithRefresh("true"),
+		repo.cli.client.Bulk.WithContext(ctx),
 	)
 	if err != nil {
 		return elasticSearchError(err)
@@ -66,10 +65,10 @@ func (repo *DiscoveryRepository) Delete(ctx context.Context, assetID string) err
 		return asset.ErrEmptyID
 	}
 
-	res, err := repo.cli.DeleteByQuery(
+	res, err := repo.cli.client.DeleteByQuery(
 		[]string{"_all"},
 		strings.NewReader(fmt.Sprintf(`{"query":{"terms":{"_id": ["%s"]}}}`, assetID)),
-		repo.cli.DeleteByQuery.WithContext(ctx),
+		repo.cli.client.DeleteByQuery.WithContext(ctx),
 	)
 	if err != nil {
 		return fmt.Errorf("error deleting asset: %w", err)
@@ -83,9 +82,9 @@ func (repo *DiscoveryRepository) Delete(ctx context.Context, assetID string) err
 }
 
 func (repo *DiscoveryRepository) GetTypes(ctx context.Context) (map[asset.Type]int, error) {
-	resp, err := repo.cli.Cat.Indices(
-		repo.cli.Cat.Indices.WithFormat("json"),
-		repo.cli.Cat.Indices.WithContext(ctx),
+	resp, err := repo.cli.client.Cat.Indices(
+		repo.cli.client.Cat.Indices.WithFormat("json"),
+		repo.cli.client.Cat.Indices.WithContext(ctx),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error from es client %w", err)

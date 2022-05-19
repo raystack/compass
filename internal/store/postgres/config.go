@@ -7,12 +7,12 @@ import (
 )
 
 type Config struct {
-	Host     string
-	Port     int
-	Name     string
-	User     string
-	Password string
-	SSLMode  string
+	Host     string `mapstructure:"host" default:"localhost"`
+	Port     int    `mapstructure:"port" default:"5432"`
+	Name     string `mapstructure:"name" default:"postgres"`
+	User     string `mapstructure:"user" default:"root"`
+	Password string `mapstructure:"password" default:""`
+	SSLMode  string `mapstructure:"ssl_mode" default:"disable"`
 }
 
 // ConnectionURL

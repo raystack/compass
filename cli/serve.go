@@ -2,17 +2,12 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/odpf/compass/core/asset"
 	"github.com/odpf/compass/core/discussion"
@@ -63,10 +58,20 @@ func runServer(config Config) error {
 	logger := initLogger(config.LogLevel)
 	logger.Info("compass starting", "version", Version)
 
-	esClient := initElasticsearch(config, logger)
-	newRelicMonitor := initNewRelicMonitor(config, logger)
+	newRelicMonitor, err := initNewRelicMonitor(config, logger)
+	if err != nil {
+		return err
+	}
 	statsdMonitor := initStatsdMonitor(config, logger)
-	pgClient := initPostgres(logger, config)
+
+	esClient, err := initElasticsearch(logger, config.Elasticsearch)
+	if err != nil {
+		return err
+	}
+	pgClient, err := initPostgres(logger, config)
+	if err != nil {
+		return err
+	}
 
 	// init tag
 	tagRepository, err := postgres.NewTagRepository(pgClient)
@@ -136,100 +141,57 @@ func initLogger(logLevel string) *log.Logrus {
 	return logger
 }
 
-func initElasticsearch(config Config, logger log.Logger) *elasticsearch.Client {
-	brokers := strings.Split(config.ElasticSearchBrokers, ",")
-	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
-		Addresses: brokers,
-		Transport: nrelasticsearch.NewRoundTripper(nil),
-		// uncomment below code to debug request and response to elasticsearch
-		// Logger: &estransport.ColorLogger{
-		//	Output:             os.Stdout,
-		//	EnableRequestBody:  true,
-		//	EnableResponseBody: true,
-		// },
-	})
+func initElasticsearch(logger log.Logger, config esStore.Config) (*esStore.Client, error) {
+	esClient, err := esStore.NewClient(logger, config)
 	if err != nil {
-		logger.Fatal("error connecting to elasticsearch", "error", err)
+		return nil, fmt.Errorf("failed to create new elasticsearch client: %w", err)
 	}
-	info, err := esInfo(esClient)
+	got, err := esClient.Init()
 	if err != nil {
-		logger.Fatal("error obtaining elasticsearch info", "error", err)
+		return nil, fmt.Errorf("failed to establish connection to elasticsearch: %w", err)
 	}
-	logger.Info("connected to elasticsearch cluster", "config", info)
-
-	return esClient
+	logger.Info("connected to elasticsearch", "info", got)
+	return esClient, nil
 }
 
-func initPostgres(logger log.Logger, config Config) *postgres.Client {
-	pgClient, err := postgres.NewClient(
-		postgres.Config{
-			Port:     config.DBPort,
-			Host:     config.DBHost,
-			Name:     config.DBName,
-			User:     config.DBUser,
-			Password: config.DBPassword,
-			SSLMode:  config.DBSSLMode,
-		})
+func initPostgres(logger log.Logger, config Config) (*postgres.Client, error) {
+	pgClient, err := postgres.NewClient(config.DB)
 	if err != nil {
-		logger.Fatal("error creating postgres client", "error", err)
+		return nil, fmt.Errorf("error creating postgres client: %w", err)
 	}
-	logger.Info("connected to postgres server", "host", config.DBHost, "port", config.DBPort)
+	logger.Info("connected to postgres server", "host", config.DB.Host, "port", config.DB.Port)
 
-	return pgClient
+	return pgClient, nil
 }
 
-func initNewRelicMonitor(config Config, logger log.Logger) *metrics.NewrelicMonitor {
-	if !config.NewRelicEnabled {
+func initNewRelicMonitor(config Config, logger log.Logger) (*metrics.NewRelicMonitor, error) {
+	if !config.NewRelic.Enabled {
 		logger.Info("New Relic monitoring is disabled.")
-		return nil
+		return nil, nil
 	}
 	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName(config.NewRelicAppName),
-		newrelic.ConfigLicense(config.NewRelicLicenseKey),
+		newrelic.ConfigAppName(config.NewRelic.AppName),
+		newrelic.ConfigLicense(config.NewRelic.LicenseKey),
 	)
 	if err != nil {
-		logger.Fatal("unable to create New Relic Application", "error", err)
+		return nil, fmt.Errorf("unable to create New Relic Application: %w", err)
 	}
-	logger.Info("New Relic monitoring is enabled for", "config", config.NewRelicAppName)
+	logger.Info("New Relic monitoring is enabled for", "config", config.NewRelic.AppName)
 
-	monitor := metrics.NewNewrelicMonitor(app)
-	return monitor
+	monitor := metrics.NewNewRelicMonitor(app)
+	return monitor, nil
 }
 
 func initStatsdMonitor(config Config, logger log.Logger) *metrics.StatsdMonitor {
 	var metricsMonitor *metrics.StatsdMonitor
-	if !config.StatsdEnabled {
+	if !config.StatsD.Enabled {
 		logger.Info("statsd metrics monitoring is disabled.")
 		return nil
 	}
 	metricsSeparator := "."
-	statsdClient := metrics.NewStatsdClient(config.StatsdAddress)
-	metricsMonitor = metrics.NewStatsdMonitor(statsdClient, config.StatsdPrefix, metricsSeparator)
-	logger.Info("statsd metrics monitoring is enabled", "statsd address", config.StatsdAddress)
+	statsdClient := metrics.NewStatsdClient(config.StatsD.Address)
+	metricsMonitor = metrics.NewStatsdMonitor(statsdClient, config.StatsD.Prefix, metricsSeparator)
+	logger.Info("statsd metrics monitoring is enabled", "statsd address", config.StatsD.Address)
 
 	return metricsMonitor
-}
-
-func esInfo(cli *elasticsearch.Client) (string, error) {
-	res, err := cli.Info()
-	if err != nil {
-		return "", err
-	}
-	defer res.Body.Close()
-	if res.IsError() {
-		return "", errors.New(res.Status())
-	}
-	var info = struct {
-		ClusterName string `json:"cluster_name"`
-		Version     struct {
-			Number string `json:"number"`
-		} `json:"version"`
-	}{}
-
-	err = json.NewDecoder(res.Body).Decode(&info)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
 }

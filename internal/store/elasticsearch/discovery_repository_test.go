@@ -8,6 +8,7 @@ import (
 
 	"github.com/odpf/compass/core/asset"
 	store "github.com/odpf/compass/internal/store/elasticsearch"
+	"github.com/odpf/salt/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,8 +19,14 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 	t.Run("should return error if id empty", func(t *testing.T) {
 		cli, err := esTestServer.NewClient()
 		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
+		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(cli)
+		repo := store.NewDiscoveryRepository(esClient)
 		err = repo.Upsert(ctx, asset.Asset{
 			ID:   "",
 			Type: asset.TypeTable,
@@ -30,8 +37,14 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 	t.Run("should return error if type is not known", func(t *testing.T) {
 		cli, err := esTestServer.NewClient()
 		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
+		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(cli)
+		repo := store.NewDiscoveryRepository(esClient)
 		err = repo.Upsert(ctx, asset.Asset{
 			ID:   "sample-id",
 			Type: asset.Type("unknown-type"),
@@ -61,8 +74,14 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 
 		cli, err := esTestServer.NewClient()
 		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
+		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(cli)
+		repo := store.NewDiscoveryRepository(esClient)
 		err = repo.Upsert(ctx, ast)
 		assert.NoError(t, err)
 
@@ -104,8 +123,14 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 
 		cli, err := esTestServer.NewClient()
 		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
+		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(cli)
+		repo := store.NewDiscoveryRepository(esClient)
 
 		err = repo.Upsert(ctx, existingAsset)
 		assert.NoError(t, err)
@@ -135,8 +160,14 @@ func TestDiscoveryRepositoryDelete(t *testing.T) {
 	t.Run("should return error if id empty", func(t *testing.T) {
 		cli, err := esTestServer.NewClient()
 		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
+		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(cli)
+		repo := store.NewDiscoveryRepository(esClient)
 		err = repo.Delete(ctx, "")
 		assert.ErrorIs(t, err, asset.ErrEmptyID)
 	})
@@ -150,8 +181,14 @@ func TestDiscoveryRepositoryDelete(t *testing.T) {
 
 		cli, err := esTestServer.NewClient()
 		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
+		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(cli)
+		repo := store.NewDiscoveryRepository(esClient)
 
 		err = repo.Upsert(ctx, ast)
 		require.NoError(t, err)
@@ -167,8 +204,14 @@ func TestDiscoveryRepositoryGetTypes(t *testing.T) {
 	t.Run("should return empty map if no type is available", func(t *testing.T) {
 		cli, err := esTestServer.NewClient()
 		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
+		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(cli)
+		repo := store.NewDiscoveryRepository(esClient)
 		counts, err := repo.GetTypes(ctx)
 		require.NoError(t, err)
 
@@ -179,11 +222,17 @@ func TestDiscoveryRepositoryGetTypes(t *testing.T) {
 		typ := asset.TypeTable
 		cli, err := esTestServer.NewClient()
 		require.NoError(t, err)
-
-		err = store.Migrate(ctx, cli, typ)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
 		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(cli)
+		err = esClient.Migrate(ctx, typ)
+		require.NoError(t, err)
+
+		repo := store.NewDiscoveryRepository(esClient)
 		counts, err := repo.GetTypes(ctx)
 		require.NoError(t, err)
 
@@ -201,14 +250,20 @@ func TestDiscoveryRepositoryGetTypes(t *testing.T) {
 			{ID: "id-asset-3", URN: "asset-3", Name: "asset-3", Type: typ},
 		}
 
-		esClient, err := esTestServer.NewClient()
+		cli, err := esTestServer.NewClient()
+		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
 		require.NoError(t, err)
 
-		err = store.Migrate(ctx, esClient, asset.TypeDashboard)
+		err = esClient.Migrate(ctx, asset.TypeDashboard)
 		require.NoError(t, err)
 
 		invalidType := "invalid-type"
-		err = store.Migrate(ctx, esClient, asset.Type(invalidType))
+		err = esClient.Migrate(ctx, asset.Type(invalidType))
 		require.NoError(t, err)
 
 		repo := store.NewDiscoveryRepository(esClient)

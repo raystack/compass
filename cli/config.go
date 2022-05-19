@@ -5,6 +5,9 @@ import (
 	"os"
 
 	"github.com/odpf/compass/internal/server"
+	esStore "github.com/odpf/compass/internal/store/elasticsearch"
+	"github.com/odpf/compass/internal/store/postgres"
+	"github.com/odpf/compass/pkg/metrics"
 	"github.com/odpf/salt/config"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -32,27 +35,18 @@ type Config struct {
 	LogLevel string `mapstructure:"LOG_LEVEL" default:"info"`
 
 	// StatsD
-	StatsdAddress string `mapstructure:"STATSD_ADDRESS" default:"127.0.0.1:8125"`
-	StatsdPrefix  string `mapstructure:"STATSD_PREFIX" default:"compassApi"`
-	StatsdEnabled bool   `mapstructure:"STATSD_ENABLED" default:"false"`
+	StatsD metrics.StatsdConfig `mapstructure:"statsd"`
 
 	// NewRelic
-	NewRelicEnabled    bool   `mapstructure:"NEW_RELIC_ENABLED" default:"false"`
-	NewRelicAppName    string `mapstructure:"NEW_RELIC_APP_NAME" default:"compass"`
-	NewRelicLicenseKey string `mapstructure:"NEW_RELIC_LICENSE_KEY" default:""`
+	NewRelic metrics.NewRelicConfig `mapstructure:"newrelic"`
 
 	// Elasticsearch
-	ElasticSearchBrokers string `mapstructure:"ELASTICSEARCH_BROKERS" default:"http://localhost:9200"`
+	Elasticsearch esStore.Config `mapstructure:"elasticsearch"`
 
 	// Database
-	DBHost     string `mapstructure:"DB_HOST" default:"localhost"`
-	DBPort     int    `mapstructure:"DB_PORT" default:"5432"`
-	DBName     string `mapstructure:"DB_NAME" default:"postgres"`
-	DBUser     string `mapstructure:"DB_USER" default:"root"`
-	DBPassword string `mapstructure:"DB_PASSWORD" default:""`
-	DBSSLMode  string `mapstructure:"DB_SSL_MODE" default:"disable"`
+	DB postgres.Config `mapstructure:"db"`
 
-	// // User Identity
+	// Service
 	Service server.Config `mapstructure:"service"`
 }
 

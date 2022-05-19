@@ -4,13 +4,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
+	"github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
 	"github.com/odpf/compass/core/asset"
+	"github.com/odpf/salt/log"
 	"github.com/olivere/elastic/v7"
 )
 
@@ -18,6 +21,10 @@ const (
 	// name of the search index
 	defaultSearchIndex = "universe"
 )
+
+type Config struct {
+	Brokers string `mapstructure:"brokers" default:"http://localhost:9200"`
+}
 
 // used as a utility for generating request payload
 // since github.com/olivere/elastic generates the
@@ -85,38 +92,94 @@ func elasticSearchError(err error) error {
 }
 
 type Client struct {
-	*elasticsearch.Client
+	client *elasticsearch.Client
+	logger log.Logger
 }
 
-func Migrate(ctx context.Context, cli *elasticsearch.Client, assetType asset.Type) error {
+func NewClient(logger log.Logger, config Config, opts ...ClientOption) (*Client, error) {
+	c := &Client{
+		logger: logger,
+	}
+
+	for _, opt := range opts {
+		opt(c)
+	}
+
+	if c.client != nil {
+		return c, nil
+	}
+
+	brokers := strings.Split(config.Brokers, ",")
+	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: brokers,
+		Transport: nrelasticsearch.NewRoundTripper(nil),
+		// uncomment below code to debug request and response to elasticsearch
+		// Logger: &estransport.ColorLogger{
+		//	Output:             os.Stdout,
+		//	EnableRequestBody:  true,
+		//	EnableResponseBody: true,
+		// },
+	})
+	if err != nil {
+		return nil, err
+	}
+	c.client = esClient
+
+	return c, nil
+}
+
+func (c *Client) Init() (string, error) {
+	res, err := c.client.Info()
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		return "", errors.New(res.Status())
+	}
+	var info = struct {
+		ClusterName string `json:"cluster_name"`
+		Version     struct {
+			Number string `json:"number"`
+		} `json:"version"`
+	}{}
+
+	err = json.NewDecoder(res.Body).Decode(&info)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
+}
+
+func (c *Client) Migrate(ctx context.Context, assetType asset.Type) error {
 	// checking for the existence of index before adding the metadata entry
-	idxExists, err := indexExists(ctx, cli, assetType.String())
+	idxExists, err := c.indexExists(ctx, assetType.String())
 	if err != nil {
 		return fmt.Errorf("error checking index existence: %w", err)
 	}
 
 	// update/create the index
 	if idxExists {
-		err = updateIdx(ctx, cli, assetType)
-		if err != nil {
-			err = fmt.Errorf("error updating index: %w", err)
+		c.logger.Info("index already exist, updating it instead")
+		if err = c.updateIdx(ctx, assetType); err != nil {
+			return fmt.Errorf("error updating index: %w", err)
 		}
-	} else {
-		err = createIdx(ctx, cli, assetType)
-		if err != nil {
-			err = fmt.Errorf("error creating index: %w", err)
-		}
+		return nil
 	}
 
-	return err
+	if err = c.createIdx(ctx, assetType); err != nil {
+		return fmt.Errorf("error creating index: %w", err)
+	}
+	return nil
 }
 
-func createIdx(ctx context.Context, cli *elasticsearch.Client, assetType asset.Type) error {
+func (c *Client) createIdx(ctx context.Context, assetType asset.Type) error {
 	indexSettings := buildTypeIndexSettings()
-	res, err := cli.Indices.Create(
+	res, err := c.client.Indices.Create(
 		assetType.String(),
-		cli.Indices.Create.WithBody(strings.NewReader(indexSettings)),
-		cli.Indices.Create.WithContext(ctx),
+		c.client.Indices.Create.WithBody(strings.NewReader(indexSettings)),
+		c.client.Indices.Create.WithContext(ctx),
 	)
 	if err != nil {
 		return elasticSearchError(err)
@@ -128,11 +191,11 @@ func createIdx(ctx context.Context, cli *elasticsearch.Client, assetType asset.T
 	return nil
 }
 
-func updateIdx(ctx context.Context, cli *elasticsearch.Client, assetType asset.Type) error {
-	res, err := cli.Indices.PutMapping(
+func (c *Client) updateIdx(ctx context.Context, assetType asset.Type) error {
+	res, err := c.client.Indices.PutMapping(
 		strings.NewReader(typeIndexMapping),
-		cli.Indices.PutMapping.WithIndex(assetType.String()),
-		cli.Indices.PutMapping.WithContext(ctx),
+		c.client.Indices.PutMapping.WithIndex(assetType.String()),
+		c.client.Indices.PutMapping.WithContext(ctx),
 	)
 	if err != nil {
 		return elasticSearchError(err)
@@ -149,10 +212,10 @@ func buildTypeIndexSettings() string {
 }
 
 // checks for the existence of an index
-func indexExists(ctx context.Context, cli *elasticsearch.Client, name string) (bool, error) {
-	res, err := cli.Indices.Exists(
+func (c *Client) indexExists(ctx context.Context, name string) (bool, error) {
+	res, err := c.client.Indices.Exists(
 		[]string{name},
-		cli.Indices.Exists.WithContext(ctx),
+		c.client.Indices.Exists.WithContext(ctx),
 	)
 	if err != nil {
 		return false, fmt.Errorf("indexExists: %w", elasticSearchError(err))

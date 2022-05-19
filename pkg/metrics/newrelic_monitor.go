@@ -8,24 +8,30 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
-type NewrelicMonitor struct {
+type NewRelicConfig struct {
+	Enabled    bool   `mapstructure:"enabled" default:"false"`
+	AppName    string `mapstructure:"app_name" default:"compass"`
+	LicenseKey string `mapstructure:"license_key" default:""`
+}
+
+type NewRelicMonitor struct {
 	app *newrelic.Application
 }
 
-func NewNewrelicMonitor(app *newrelic.Application) *NewrelicMonitor {
-	return &NewrelicMonitor{
+func NewNewRelicMonitor(app *newrelic.Application) *NewRelicMonitor {
+	return &NewRelicMonitor{
 		app: app,
 	}
 }
 
-func (mon *NewrelicMonitor) Application() *newrelic.Application {
+func (mon *NewRelicMonitor) Application() *newrelic.Application {
 	if mon != nil {
 		return mon.app
 	}
 	return nil
 }
 
-func (mon *NewrelicMonitor) MonitorRouter(router *mux.Router) {
+func (mon *NewRelicMonitor) MonitorRouter(router *mux.Router) {
 	router.Use(nrgorilla.Middleware(mon.app))
 
 	// below handlers still have to be manually wrapped by newrelic core library
@@ -33,7 +39,7 @@ func (mon *NewrelicMonitor) MonitorRouter(router *mux.Router) {
 	_, router.MethodNotAllowedHandler = newrelic.WrapHandle(mon.app, "MethodNotAllowedHandler", router.MethodNotAllowedHandler)
 }
 
-func (mon *NewrelicMonitor) StartTransaction(ctx context.Context, operation string) (context.Context, func()) {
+func (mon *NewRelicMonitor) StartTransaction(ctx context.Context, operation string) (context.Context, func()) {
 	txn := mon.app.StartTransaction(operation)
 	ctx = newrelic.NewContext(ctx, txn)
 
