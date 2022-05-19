@@ -42,32 +42,6 @@ Returns list of assets, optionally filtered by types, services, sorting, fields 
 | 500 | Returned when theres is something wrong on the server side. | [Status](#status) |
 | default | An unexpected error response. | [Status](#status) |
 
-#### PUT
-##### Summary
-
-Upsert an asset
-
-##### Description
-
-Create a new asset if a combination of urn, type and service does not exist. If exists update instead
-
-##### Parameters
-
-| Name | Located in | Description | Required | Schema |
-| ---- | ---------- | ----------- | -------- | ---- |
-| body | body |  | Yes | [UpsertAssetRequest](#upsertassetrequest) |
-
-##### Responses
-
-| Code | Description | Schema |
-| ---- | ----------- | ------ |
-| 200 | A successful response. | [UpsertAssetResponse](#upsertassetresponse) |
-| 400 | Returned when the data that user input is wrong. | [Status](#status) |
-| 404 | Returned when the resource does not exist. | [Status](#status) |
-| 409 | Returned when the resource already exist. | [Status](#status) |
-| 500 | Returned when theres is something wrong on the server side. | [Status](#status) |
-| default | An unexpected error response. | [Status](#status) |
-
 #### PATCH
 ##### Summary
 
@@ -1047,6 +1021,19 @@ Get all assets starred by a user
 | created_at | dateTime |  | No |
 | updated_at | dateTime |  | No |
 
+#### BaseAsset
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| urn | string |  | No |
+| type | string |  | No |
+| name | string | name of an asset | No |
+| service | string |  | No |
+| description | string | description of an asset | No |
+| data | object | dynamic data of an asset | No |
+| labels | object | labels of an asset | No |
+| owners | [ [User](#user) ] | list of owners of the asset | No |
+
 #### Change
 
 | Name | Type | Description | Required |
@@ -1409,53 +1396,13 @@ Request to be sent to create a tag's template
 | ---- | ---- | ----------- | -------- |
 | data | [TagTemplate](#tagtemplate) |  | No |
 
-#### UpsertAssetRequest
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| asset | [UpsertAssetRequest.BaseAsset](#upsertassetrequestbaseasset) |  | No |
-| upstreams | [ [LineageNode](#lineagenode) ] |  | No |
-| downstreams | [ [LineageNode](#lineagenode) ] |  | No |
-
-#### UpsertAssetRequest.BaseAsset
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| urn | string |  | No |
-| type | string |  | No |
-| name | string |  | No |
-| service | string |  | No |
-| description | string | description of an asset | No |
-| data | object |  | No |
-| labels | object | labels of an asset | No |
-| owners | [ [User](#user) ] | list of owners of the asset | No |
-
-#### UpsertAssetResponse
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| id | string |  | No |
-
 #### UpsertPatchAssetRequest
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
-| asset | [UpsertPatchAssetRequest.BaseAsset](#upsertpatchassetrequestbaseasset) |  | No |
+| asset | [BaseAsset](#baseasset) |  | No |
 | upstreams | [ [LineageNode](#lineagenode) ] |  | No |
 | downstreams | [ [LineageNode](#lineagenode) ] |  | No |
-
-#### UpsertPatchAssetRequest.BaseAsset
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| urn | string |  | No |
-| type | string |  | No |
-| name | string | name of an asset | No |
-| service | string |  | No |
-| description | string | description of an asset | No |
-| data | object | dynamic data of an asset | No |
-| labels | object | labels of an asset | No |
-| owners | [ [User](#user) ] | list of owners of the asset | No |
 
 #### UpsertPatchAssetResponse
 
