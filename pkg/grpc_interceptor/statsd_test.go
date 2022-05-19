@@ -24,13 +24,13 @@ var (
 
 type StatsDTestSuite struct {
 	*grpc_testing.InterceptorTestSuite
-	statsdClient *mocks.StatsdClient
+	statsdClient *mocks.StatsDClient
 }
 
 func TestStatsDSuite(t *testing.T) {
-	statsdClient := new(mocks.StatsdClient)
+	statsdClient := new(mocks.StatsDClient)
 
-	monitor := metrics.NewStatsdMonitor(statsdClient, statsdPrefix, metricsSeparator)
+	monitor := metrics.NewStatsDMonitor(statsdClient, statsdPrefix, metricsSeparator)
 	s := &StatsDTestSuite{
 		InterceptorTestSuite: &grpc_testing.InterceptorTestSuite{
 			TestService: &dummyService{TestServiceServer: &grpc_testing.TestPingService{T: t}},

@@ -7,8 +7,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/uuid"
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/asset"
+	"github.com/odpf/compass/core/user"
 	"github.com/odpf/compass/internal/server/v1beta1/mocks"
 	"github.com/odpf/salt/log"
 	"google.golang.org/grpc/codes"
@@ -16,11 +18,15 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
-func TestGetTypesTypes(t *testing.T) {
+func TestGetTypes(t *testing.T) {
+	var (
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+	)
 	type testCase struct {
 		Description  string
 		ExpectStatus codes.Code
-		Setup        func(tc *testCase, as *mocks.AssetService)
+		Setup        func(tc *testCase, ctx context.Context, as *mocks.AssetService)
 		PostCheck    func(resp *compassv1beta1.GetAllTypesResponse) error
 	}
 
@@ -28,22 +34,22 @@ func TestGetTypesTypes(t *testing.T) {
 		{
 			Description:  "should return internal server error if failing to fetch types",
 			ExpectStatus: codes.Internal,
-			Setup: func(tc *testCase, as *mocks.AssetService) {
-				as.EXPECT().GetTypes(context.Background()).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
+			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
+				as.EXPECT().GetTypes(ctx).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
 			},
 		},
 		{
 			Description:  "should return internal server error if failing to fetch counts",
 			ExpectStatus: codes.Internal,
-			Setup: func(tc *testCase, as *mocks.AssetService) {
-				as.EXPECT().GetTypes(context.Background()).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
+			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
+				as.EXPECT().GetTypes(ctx).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
 			},
 		},
 		{
 			Description:  "should return all valid types with its asset count",
 			ExpectStatus: codes.OK,
-			Setup: func(tc *testCase, as *mocks.AssetService) {
-				as.EXPECT().GetTypes(context.Background()).Return(map[asset.Type]int{
+			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
+				as.EXPECT().GetTypes(ctx).Return(map[asset.Type]int{
 					asset.Type("table"): 10,
 					asset.Type("topic"): 30,
 					asset.Type("job"):   15,
@@ -80,14 +86,22 @@ func TestGetTypesTypes(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+
+			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.AssetService)
 			logger := log.NewNoop()
 			defer mockSvc.AssertExpectations(t)
-			tc.Setup(&tc, mockSvc)
+			tc.Setup(&tc, ctx, mockSvc)
 
-			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, nil)
+			defer mockUserSvc.AssertExpectations(t)
+			defer mockSvc.AssertExpectations(t)
 
-			got, err := handler.GetAllTypes(context.TODO(), &compassv1beta1.GetAllTypesRequest{})
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, mockUserSvc)
+
+			got, err := handler.GetAllTypes(ctx, &compassv1beta1.GetAllTypesRequest{})
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
 				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())

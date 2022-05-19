@@ -1223,12 +1223,12 @@ paths:
     get:
       summary: Find a tag by asset and template
       description: Find a single tag using asset id and template urn
-      operationId: CompassService_GetTagsByAssetAndTemplate
+      operationId: CompassService_GetTagByAssetAndTemplate
       responses:
         "200":
           description: A successful response.
           schema:
-            $ref: '#/definitions/GetTagsByAssetAndTemplateResponse'
+            $ref: '#/definitions/GetTagByAssetAndTemplateResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
@@ -1981,16 +1981,16 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Asset'
+  GetTagByAssetAndTemplateResponse:
+    type: object
+    properties:
+      data:
+        $ref: '#/definitions/v1beta1.Tag'
   GetTagTemplateResponse:
     type: object
     properties:
       data:
         $ref: '#/definitions/TagTemplate'
-  GetTagsByAssetAndTemplateResponse:
-    type: object
-    properties:
-      data:
-        $ref: '#/definitions/v1beta1.Tag'
   GetUserStarredAssetsResponse:
     type: object
     properties:

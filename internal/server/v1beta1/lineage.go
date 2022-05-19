@@ -8,6 +8,11 @@ import (
 )
 
 func (server *APIServer) GetGraph(ctx context.Context, req *compassv1beta1.GetGraphRequest) (*compassv1beta1.GetGraphResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	graph, err := server.assetService.GetLineage(ctx, asset.Node{URN: req.GetUrn()})
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())

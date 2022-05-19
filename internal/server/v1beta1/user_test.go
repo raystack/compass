@@ -22,9 +22,10 @@ import (
 
 func TestGetUserStarredAssets(t *testing.T) {
 	var (
-		userID = uuid.NewString()
-		offset = 2
-		size   = 10
+		userUUID = uuid.NewString()
+		userID   = uuid.NewString()
+		offset   = 2
+		size     = 10
 	)
 	type testCase struct {
 		Description  string
@@ -95,16 +96,21 @@ func TestGetUserStarredAssets(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+
+			mockUserSvc := new(mocks.UserService)
 			mockStarSvc := new(mocks.StarService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockStarSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockStarSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, mockStarSvc, nil, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetUserStarredAssets(ctx, &compassv1beta1.GetUserStarredAssetsRequest{
 				UserId: userID,
@@ -128,9 +134,10 @@ func TestGetUserStarredAssets(t *testing.T) {
 
 func TestGetMyStarredAssets(t *testing.T) {
 	var (
-		userID = uuid.NewString()
-		offset = 2
-		size   = 10
+		userUUID = uuid.NewString()
+		userID   = uuid.NewString()
+		offset   = 2
+		size     = 10
 	)
 	type testCase struct {
 		Description  string
@@ -201,16 +208,21 @@ func TestGetMyStarredAssets(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+
+			mockUserSvc := new(mocks.UserService)
 			mockStarSvc := new(mocks.StarService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockStarSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockStarSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, mockStarSvc, nil, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetMyStarredAssets(ctx, &compassv1beta1.GetMyStarredAssetsRequest{
 				Offset: uint32(offset),
@@ -233,6 +245,7 @@ func TestGetMyStarredAssets(t *testing.T) {
 
 func TestGetMyStarredAsset(t *testing.T) {
 	var (
+		userUUID  = uuid.NewString()
 		userID    = uuid.NewString()
 		assetID   = uuid.NewString()
 		assetType = "an-asset-type"
@@ -297,17 +310,21 @@ func TestGetMyStarredAsset(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
 
+			mockUserSvc := new(mocks.UserService)
 			mockStarSvc := new(mocks.StarService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockStarSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockStarSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, mockStarSvc, nil, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetMyStarredAsset(ctx, &compassv1beta1.GetMyStarredAssetRequest{
 				AssetId: assetID,
@@ -329,8 +346,9 @@ func TestGetMyStarredAsset(t *testing.T) {
 
 func TestStarAsset(t *testing.T) {
 	var (
-		userID  = uuid.NewString()
-		assetID = uuid.NewString()
+		userID   = uuid.NewString()
+		assetID  = uuid.NewString()
+		userUUID = uuid.NewString()
 	)
 	type testCase struct {
 		Description  string
@@ -384,17 +402,21 @@ func TestStarAsset(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
 
+			mockUserSvc := new(mocks.UserService)
 			mockStarSvc := new(mocks.StarService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockStarSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockStarSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, mockStarSvc, nil, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			_, err := handler.StarAsset(ctx, &compassv1beta1.StarAssetRequest{
 				AssetId: assetID,
@@ -410,8 +432,9 @@ func TestStarAsset(t *testing.T) {
 
 func TestUnstarAsset(t *testing.T) {
 	var (
-		userID  = uuid.NewString()
-		assetID = uuid.NewString()
+		userID   = uuid.NewString()
+		assetID  = uuid.NewString()
+		userUUID = uuid.NewString()
 	)
 	type testCase struct {
 		Description  string
@@ -451,17 +474,21 @@ func TestUnstarAsset(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
 
+			mockUserSvc := new(mocks.UserService)
 			mockStarSvc := new(mocks.StarService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockStarSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockStarSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, mockStarSvc, nil, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			_, err := handler.UnstarAsset(ctx, &compassv1beta1.UnstarAssetRequest{
 				AssetId: assetID,
@@ -477,7 +504,8 @@ func TestUnstarAsset(t *testing.T) {
 
 func TestGetMyDiscussions(t *testing.T) {
 	var (
-		userID = uuid.NewString()
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
 	)
 	type testCase struct {
 		Description  string
@@ -599,16 +627,21 @@ func TestGetMyDiscussions(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+
+			mockUserSvc := new(mocks.UserService)
 			mockDiscussionSvc := new(mocks.DiscussionService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockDiscussionSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockDiscussionSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, mockDiscussionSvc, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, mockDiscussionSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetMyDiscussions(ctx, tc.Request)
 			code := status.Code(err)

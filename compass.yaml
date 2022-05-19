@@ -1,15 +1,14 @@
-log:
-    level: info
+log_level: info
 
 statsd:
     enabled: false
     address: 127.0.0.1:8125
     prefix: compass
 
-new_relic:
+newrelic:
     enabled: false
-    app_name: compass
-    license_key: ____LICENSE_STRING_OF_40_CHARACTERS_____
+    appname: compass
+    licensekey: ____LICENSE_STRING_OF_40_CHARACTERS_____
 
 elasticsearch:
     brokers: http://localhost:9200
@@ -20,13 +19,12 @@ db:
     name: compass
     user: postgres
     password: ~
-    ssl_mode: disable
+    sslmode: disable
 
 service:
     host: localhost
     port: 8080
     identity:
-        header:
-            uuid: X-Goog-Authenticated-User-Email
-            email: Compass-User-Email
+        headerkey_uuid: X-Goog-Authenticated-User-Email
+        headerkey_email: Compass-User-Email
         provider_default_name: shield

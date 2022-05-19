@@ -62,7 +62,7 @@ func runServer(config Config) error {
 	if err != nil {
 		return err
 	}
-	statsdMonitor := initStatsdMonitor(config, logger)
+	statsdMonitor := initStatsDMonitor(config, logger)
 
 	esClient, err := initElasticsearch(logger, config.Elasticsearch)
 	if err != nil {
@@ -92,7 +92,7 @@ func runServer(config Config) error {
 	}
 	userService := user.NewService(logger, userRepository)
 
-	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0, config.Service.IdentityProviderDefaultName)
+	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0, config.Service.Identity.ProviderDefaultName)
 	if err != nil {
 		return fmt.Errorf("failed to create new asset repository: %w", err)
 	}
@@ -182,15 +182,15 @@ func initNewRelicMonitor(config Config, logger log.Logger) (*metrics.NewRelicMon
 	return monitor, nil
 }
 
-func initStatsdMonitor(config Config, logger log.Logger) *metrics.StatsdMonitor {
-	var metricsMonitor *metrics.StatsdMonitor
+func initStatsDMonitor(config Config, logger log.Logger) *metrics.StatsDMonitor {
+	var metricsMonitor *metrics.StatsDMonitor
 	if !config.StatsD.Enabled {
 		logger.Info("statsd metrics monitoring is disabled.")
 		return nil
 	}
 	metricsSeparator := "."
-	statsdClient := metrics.NewStatsdClient(config.StatsD.Address)
-	metricsMonitor = metrics.NewStatsdMonitor(statsdClient, config.StatsD.Prefix, metricsSeparator)
+	statsdClient := metrics.NewStatsDClient(config.StatsD.Address)
+	metricsMonitor = metrics.NewStatsDMonitor(statsdClient, config.StatsD.Prefix, metricsSeparator)
 	logger.Info("statsd metrics monitoring is enabled", "statsd address", config.StatsD.Address)
 
 	return metricsMonitor

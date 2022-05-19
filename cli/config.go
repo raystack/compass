@@ -32,10 +32,10 @@ func cmdShowConfigs() *cobra.Command {
 
 type Config struct {
 	// Log
-	LogLevel string `mapstructure:"LOG_LEVEL" default:"info"`
+	LogLevel string `mapstructure:"log_level" default:"info"`
 
 	// StatsD
-	StatsD metrics.StatsdConfig `mapstructure:"statsd"`
+	StatsD metrics.StatsDConfig `mapstructure:"statsd"`
 
 	// NewRelic
 	NewRelic metrics.NewRelicConfig `mapstructure:"newrelic"`

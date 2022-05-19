@@ -9,7 +9,6 @@ import (
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/discussion"
 	"github.com/odpf/compass/core/star"
-	"github.com/odpf/compass/core/user"
 	"github.com/odpf/compass/core/validator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -20,6 +19,10 @@ type UserService interface {
 }
 
 func (server *APIServer) GetUserStarredAssets(ctx context.Context, req *compassv1beta1.GetUserStarredAssetsRequest) (*compassv1beta1.GetUserStarredAssetsResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	starFilter := star.Filter{
 		Size:   int(req.GetSize()),
@@ -53,9 +56,9 @@ func (server *APIServer) GetUserStarredAssets(ctx context.Context, req *compassv
 }
 
 func (server *APIServer) GetMyStarredAssets(ctx context.Context, req *compassv1beta1.GetMyStarredAssetsRequest) (*compassv1beta1.GetMyStarredAssetsResponse, error) {
-	userID := user.FromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
+	userID, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	starFilter := star.Filter{
@@ -90,9 +93,9 @@ func (server *APIServer) GetMyStarredAssets(ctx context.Context, req *compassv1b
 }
 
 func (server *APIServer) GetMyStarredAsset(ctx context.Context, req *compassv1beta1.GetMyStarredAssetRequest) (*compassv1beta1.GetMyStarredAssetResponse, error) {
-	userID := user.FromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
+	userID, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	ast, err := server.starService.GetStarredAssetByUserID(ctx, userID, req.GetAssetId())
@@ -117,9 +120,9 @@ func (server *APIServer) GetMyStarredAsset(ctx context.Context, req *compassv1be
 }
 
 func (server *APIServer) StarAsset(ctx context.Context, req *compassv1beta1.StarAssetRequest) (*compassv1beta1.StarAssetResponse, error) {
-	userID := user.FromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
+	userID, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	starID, err := server.starService.Stars(ctx, userID, req.GetAssetId())
@@ -145,12 +148,12 @@ func (server *APIServer) StarAsset(ctx context.Context, req *compassv1beta1.Star
 }
 
 func (server *APIServer) UnstarAsset(ctx context.Context, req *compassv1beta1.UnstarAssetRequest) (*compassv1beta1.UnstarAssetResponse, error) {
-	userID := user.FromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
+	userID, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	err := server.starService.Unstars(ctx, userID, req.GetAssetId())
+	err = server.starService.Unstars(ctx, userID, req.GetAssetId())
 	if err != nil {
 		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -165,9 +168,9 @@ func (server *APIServer) UnstarAsset(ctx context.Context, req *compassv1beta1.Un
 }
 
 func (server *APIServer) GetMyDiscussions(ctx context.Context, req *compassv1beta1.GetMyDiscussionsRequest) (*compassv1beta1.GetMyDiscussionsResponse, error) {
-	userID := user.FromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
+	userID, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	flt, err := server.buildGetDiscussionsFilter(req, userID)

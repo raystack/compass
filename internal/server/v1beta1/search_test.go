@@ -20,7 +20,10 @@ import (
 )
 
 func TestSearch(t *testing.T) {
-	var userID = uuid.NewString()
+	var (
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.SearchAssetsRequest
@@ -204,16 +207,21 @@ func TestSearch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.AssetService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockSvc)
 			}
+
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.SearchAssets(ctx, tc.Request)
 			code := status.Code(err)
@@ -232,7 +240,10 @@ func TestSearch(t *testing.T) {
 }
 
 func TestSuggest(t *testing.T) {
-	var userID = uuid.NewString()
+	var (
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.SuggestAssetsRequest
@@ -297,16 +308,21 @@ func TestSuggest(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.AssetService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockSvc)
 			}
+
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.SuggestAssets(ctx, tc.Request)
 			code := status.Code(err)

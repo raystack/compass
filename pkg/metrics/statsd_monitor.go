@@ -8,44 +8,44 @@ import (
 	statsd "github.com/etsy/statsd/examples/go"
 )
 
-type StatsdConfig struct {
+type StatsDConfig struct {
 	Enabled bool   `mapstructure:"enabled" default:"false"`
 	Address string `mapstructure:"address" default:"127.0.0.1:8125"`
 	Prefix  string `mapstructure:"prefix" default:"compassApi"`
 }
 
-//go:generate mockery --name=StatsdClient -r --case underscore --with-expecter --structname StatsdClient --filename statsd_monitor.go --output=./mocks
-type StatsdClient interface {
+//go:generate mockery --name=StatsDClient -r --case underscore --with-expecter --structname StatsDClient --filename statsd_monitor.go --output=./mocks
+type StatsDClient interface {
 	Timing(string, int64)
 	Increment(string)
 }
 
-func NewStatsdClient(statsdAddress string) *statsd.StatsdClient {
+func NewStatsDClient(statsdAddress string) *statsd.StatsdClient {
 	statsdHost, statsdPortStr, _ := net.SplitHostPort(statsdAddress)
 	statsdPort, _ := strconv.Atoi(statsdPortStr)
 	return statsd.New(statsdHost, statsdPort)
 }
 
-type StatsdMonitor struct {
-	client    StatsdClient
+type StatsDMonitor struct {
+	client    StatsDClient
 	prefix    string
 	separator string
 }
 
-func NewStatsdMonitor(client StatsdClient, prefix string, separator string) *StatsdMonitor {
-	return &StatsdMonitor{
+func NewStatsDMonitor(client StatsDClient, prefix string, separator string) *StatsDMonitor {
+	return &StatsDMonitor{
 		client:    client,
 		prefix:    prefix,
 		separator: separator,
 	}
 }
 
-func (mm *StatsdMonitor) Duration(operation string, duration int) {
+func (mm *StatsDMonitor) Duration(operation string, duration int) {
 	statName := fmt.Sprintf("%s%s%s,operation=%s", mm.prefix, mm.separator, "duration", operation)
 	mm.client.Timing(statName, int64(duration))
 }
 
-func (mm *StatsdMonitor) ResponseTime(requestMethod string, requestUrl string, responseTime int64) {
+func (mm *StatsDMonitor) ResponseTime(requestMethod string, requestUrl string, responseTime int64) {
 	statName := fmt.Sprintf("%s%s%s,%s",
 		mm.prefix,
 		mm.separator,
@@ -54,7 +54,7 @@ func (mm *StatsdMonitor) ResponseTime(requestMethod string, requestUrl string, r
 	mm.client.Timing(statName, responseTime)
 }
 
-func (mm *StatsdMonitor) ResponseStatus(requestMethod string, requestUrl string, responseCode int) {
+func (mm *StatsDMonitor) ResponseStatus(requestMethod string, requestUrl string, responseCode int) {
 	statName := fmt.Sprintf("%s%s%s,statusCode=%d,%s",
 		mm.prefix,
 		mm.separator,
@@ -64,7 +64,7 @@ func (mm *StatsdMonitor) ResponseStatus(requestMethod string, requestUrl string,
 	mm.client.Increment(statName)
 }
 
-func (mm *StatsdMonitor) ResponseTimeGRPC(FullMethod string, responseTime int64) {
+func (mm *StatsDMonitor) ResponseTimeGRPC(FullMethod string, responseTime int64) {
 	statName := fmt.Sprintf("%s%s%s,%s",
 		mm.prefix,
 		mm.separator,
@@ -73,7 +73,7 @@ func (mm *StatsdMonitor) ResponseTimeGRPC(FullMethod string, responseTime int64)
 	mm.client.Timing(statName, responseTime)
 }
 
-func (mm *StatsdMonitor) ResponseStatusGRPC(fullMethod string, statusString string) {
+func (mm *StatsDMonitor) ResponseStatusGRPC(fullMethod string, statusString string) {
 	statName := fmt.Sprintf("%s%s%s,statusCode=%s,%s",
 		mm.prefix,
 		mm.separator,

@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func StatsD(mm *metrics.StatsdMonitor) grpc.UnaryServerInterceptor {
+func StatsD(mm *metrics.StatsDMonitor) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		if mm == nil {
 			return handler(ctx, req)

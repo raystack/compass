@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/tag"
+	"github.com/odpf/compass/core/user"
 	"github.com/odpf/compass/internal/server/v1beta1/mocks"
 	"github.com/odpf/salt/log"
 	"google.golang.org/grpc/codes"
@@ -75,19 +76,23 @@ var sampleTagPB = &compassv1beta1.Tag{
 	},
 }
 
-func TestGetTagsByAssetAndTemplate(t *testing.T) {
+func TestGetTagByAssetAndTemplate(t *testing.T) {
+	var (
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+	)
 	type testCase struct {
 		Description  string
-		Request      *compassv1beta1.GetTagsByAssetAndTemplateRequest
+		Request      *compassv1beta1.GetTagByAssetAndTemplateRequest
 		ExpectStatus codes.Code
 		Setup        func(context.Context, *mocks.TagService, *mocks.TagTemplateService)
-		PostCheck    func(resp *compassv1beta1.GetTagsByAssetAndTemplateResponse) error
+		PostCheck    func(resp *compassv1beta1.GetTagByAssetAndTemplateResponse) error
 	}
 
 	var testCases = []testCase{
 		{
 			Description: `should return invalid argument if asset id is empty`,
-			Request: &compassv1beta1.GetTagsByAssetAndTemplateRequest{
+			Request: &compassv1beta1.GetTagByAssetAndTemplateRequest{
 				AssetId:     "",
 				TemplateUrn: "sample-template",
 			},
@@ -95,7 +100,7 @@ func TestGetTagsByAssetAndTemplate(t *testing.T) {
 		},
 		{
 			Description: `should return invalid argument if template urn is empty`,
-			Request: &compassv1beta1.GetTagsByAssetAndTemplateRequest{
+			Request: &compassv1beta1.GetTagByAssetAndTemplateRequest{
 				AssetId:     assetID,
 				TemplateUrn: "",
 			},
@@ -103,28 +108,24 @@ func TestGetTagsByAssetAndTemplate(t *testing.T) {
 		},
 		{
 			Description: `should return not found if template does not exist`,
-			Request: &compassv1beta1.GetTagsByAssetAndTemplateRequest{
+			Request: &compassv1beta1.GetTagByAssetAndTemplateRequest{
 				AssetId:     assetID,
 				TemplateUrn: sampleTemplate.URN,
 			},
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{}, tag.TemplateNotFoundError{URN: sampleTemplate.URN})
+				ts.EXPECT().FindTagByAssetIDAndTemplateURN(ctx, assetID, sampleTemplate.URN).Return(tag.Tag{}, tag.TemplateNotFoundError{URN: sampleTemplate.URN})
 			},
 		},
 		{
 			Description: `should return not found if tag does not exist`,
-			Request: &compassv1beta1.GetTagsByAssetAndTemplateRequest{
+			Request: &compassv1beta1.GetTagByAssetAndTemplateRequest{
 				AssetId:     assetID,
 				TemplateUrn: sampleTemplate.URN,
 			},
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
-				ts.EXPECT().GetTagByAssetID(ctx, tag.Tag{
-					AssetID:     assetID,
-					TemplateURN: sampleTemplate.URN,
-				}).Return(nil, tag.NotFoundError{
+				ts.EXPECT().FindTagByAssetIDAndTemplateURN(ctx, assetID, sampleTemplate.URN).Return(tag.Tag{}, tag.NotFoundError{
 					AssetID:  assetID,
 					Template: sampleTemplate.URN,
 				})
@@ -132,34 +133,26 @@ func TestGetTagsByAssetAndTemplate(t *testing.T) {
 		},
 		{
 			Description: `should return internal server error if found unexpected error`,
-			Request: &compassv1beta1.GetTagsByAssetAndTemplateRequest{
+			Request: &compassv1beta1.GetTagByAssetAndTemplateRequest{
 				AssetId:     assetID,
 				TemplateUrn: sampleTemplate.URN,
 			},
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
-				ts.EXPECT().GetTagByAssetID(ctx, tag.Tag{
-					AssetID:     assetID,
-					TemplateURN: sampleTemplate.URN,
-				}).Return(nil, errors.New("unexpected error"))
+				ts.EXPECT().FindTagByAssetIDAndTemplateURN(ctx, assetID, sampleTemplate.URN).Return(tag.Tag{}, errors.New("unexpected error"))
 			},
 		},
 		{
 			Description: `should return ok and tag`,
-			Request: &compassv1beta1.GetTagsByAssetAndTemplateRequest{
+			Request: &compassv1beta1.GetTagByAssetAndTemplateRequest{
 				AssetId:     assetID,
 				TemplateUrn: sampleTemplate.URN,
 			},
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
-				ts.EXPECT().GetTagByAssetID(ctx, tag.Tag{
-					AssetID:     assetID,
-					TemplateURN: sampleTemplate.URN,
-				}).Return([]tag.Tag{sampleTag}, nil)
+				ts.EXPECT().FindTagByAssetIDAndTemplateURN(ctx, assetID, sampleTemplate.URN).Return(sampleTag, nil)
 			},
-			PostCheck: func(resp *compassv1beta1.GetTagsByAssetAndTemplateResponse) error {
+			PostCheck: func(resp *compassv1beta1.GetTagByAssetAndTemplateResponse) error {
 				var tagValuesPB []*compassv1beta1.TagValue
 				for _, tv := range sampleTag.TagValues {
 					tvPB, err := tv.ToProto()
@@ -169,7 +162,7 @@ func TestGetTagsByAssetAndTemplate(t *testing.T) {
 					tagValuesPB = append(tagValuesPB, tvPB)
 				}
 
-				expected := &compassv1beta1.GetTagsByAssetAndTemplateResponse{
+				expected := &compassv1beta1.GetTagByAssetAndTemplateResponse{
 					Data: &compassv1beta1.Tag{
 						AssetId:             sampleTag.AssetID,
 						TemplateUrn:         sampleTag.TemplateURN,
@@ -188,19 +181,23 @@ func TestGetTagsByAssetAndTemplate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockTagSvc, mockTemplateSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			got, err := handler.GetTagsByAssetAndTemplate(ctx, tc.Request)
+			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+
+			got, err := handler.GetTagByAssetAndTemplate(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
 				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
@@ -217,13 +214,17 @@ func TestGetTagsByAssetAndTemplate(t *testing.T) {
 }
 
 func TestCreateTagAsset(t *testing.T) {
-	validRequest := &compassv1beta1.CreateTagAssetRequest{
-		AssetId:             sampleTagPB.GetAssetId(),
-		TemplateUrn:         sampleTagPB.GetTemplateUrn(),
-		TagValues:           sampleTagPB.TagValues,
-		TemplateDisplayName: sampleTagPB.TemplateDisplayName,
-		TemplateDescription: sampleTagPB.TemplateDescription,
-	}
+	var (
+		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
+		validRequest = &compassv1beta1.CreateTagAssetRequest{
+			AssetId:             sampleTagPB.GetAssetId(),
+			TemplateUrn:         sampleTagPB.GetTemplateUrn(),
+			TagValues:           sampleTagPB.TagValues,
+			TemplateDisplayName: sampleTagPB.TemplateDisplayName,
+			TemplateDescription: sampleTagPB.TemplateDescription,
+		}
+	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.CreateTagAssetRequest
@@ -264,7 +265,6 @@ func TestCreateTagAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
 				ts.EXPECT().CreateTag(ctx, &sampleTag).Return(tag.TemplateNotFoundError{URN: sampleTemplate.URN})
 			},
 		},
@@ -273,7 +273,6 @@ func TestCreateTagAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.InvalidArgument,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
 				ts.EXPECT().CreateTag(ctx, &sampleTag).Return(tag.ValidationError{Err: errors.New("validation error")})
 			},
 		},
@@ -282,7 +281,6 @@ func TestCreateTagAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
 				ts.EXPECT().CreateTag(ctx, &sampleTag).Return(errors.New("unexpected error during insert"))
 			},
 		},
@@ -291,7 +289,6 @@ func TestCreateTagAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.AlreadyExists,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
 				ts.EXPECT().CreateTag(ctx, &sampleTag).Return(tag.DuplicateError{})
 			},
 		},
@@ -300,7 +297,6 @@ func TestCreateTagAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
 				ts.EXPECT().CreateTag(ctx, &sampleTag).Return(nil)
 			},
 			PostCheck: func(resp *compassv1beta1.CreateTagAssetResponse) error {
@@ -317,17 +313,21 @@ func TestCreateTagAsset(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockTagSvc, mockTemplateSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.CreateTagAsset(ctx, tc.Request)
 			code := status.Code(err)
@@ -346,13 +346,17 @@ func TestCreateTagAsset(t *testing.T) {
 }
 
 func TestUpdateTagAsset(t *testing.T) {
-	validRequest := &compassv1beta1.UpdateTagAssetRequest{
-		AssetId:             sampleTagPB.GetAssetId(),
-		TemplateUrn:         sampleTagPB.GetTemplateUrn(),
-		TagValues:           sampleTagPB.TagValues,
-		TemplateDisplayName: sampleTagPB.TemplateDisplayName,
-		TemplateDescription: sampleTagPB.TemplateDescription,
-	}
+	var (
+		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
+		validRequest = &compassv1beta1.UpdateTagAssetRequest{
+			AssetId:             sampleTagPB.GetAssetId(),
+			TemplateUrn:         sampleTagPB.GetTemplateUrn(),
+			TagValues:           sampleTagPB.TagValues,
+			TemplateDisplayName: sampleTagPB.TemplateDisplayName,
+			TemplateDescription: sampleTagPB.TemplateDescription,
+		}
+	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.UpdateTagAssetRequest
@@ -393,11 +397,7 @@ func TestUpdateTagAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
-				ts.EXPECT().GetTagByAssetID(ctx, tag.Tag{
-					AssetID:     assetID,
-					TemplateURN: sampleTagPB.TemplateUrn,
-				}).Return([]tag.Tag{}, nil)
+				ts.EXPECT().UpdateTag(ctx, &sampleTag).Return(tag.NotFoundError{})
 			},
 		},
 		{
@@ -405,11 +405,6 @@ func TestUpdateTagAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
-				ts.EXPECT().GetTagByAssetID(ctx, tag.Tag{
-					AssetID:     assetID,
-					TemplateURN: sampleTagPB.TemplateUrn,
-				}).Return([]tag.Tag{sampleTag}, nil)
 				ts.EXPECT().UpdateTag(ctx, &sampleTag).Return(errors.New("unexpected error during update"))
 			},
 		},
@@ -418,11 +413,6 @@ func TestUpdateTagAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
-				ts.EXPECT().GetTagByAssetID(ctx, tag.Tag{
-					AssetID:     assetID,
-					TemplateURN: sampleTagPB.TemplateUrn,
-				}).Return([]tag.Tag{sampleTag}, nil)
 				ts.EXPECT().UpdateTag(ctx, &sampleTag).Return(nil)
 			},
 			PostCheck: func(resp *compassv1beta1.UpdateTagAssetResponse) error {
@@ -439,17 +429,21 @@ func TestUpdateTagAsset(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockTagSvc, mockTemplateSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.UpdateTagAsset(ctx, tc.Request)
 			code := status.Code(err)
@@ -468,6 +462,10 @@ func TestUpdateTagAsset(t *testing.T) {
 }
 
 func TestDeleteTagAsset(t *testing.T) {
+	var (
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.DeleteTagAssetRequest
@@ -500,8 +498,7 @@ func TestDeleteTagAsset(t *testing.T) {
 			},
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{{}}, nil)
-				ts.EXPECT().DeleteTagByAssetIDAndTemplateURN(ctx, assetID, sampleTagPB.TemplateUrn).Return(tag.TemplateNotFoundError{})
+				ts.EXPECT().DeleteTag(ctx, assetID, sampleTagPB.TemplateUrn).Return(tag.TemplateNotFoundError{})
 			},
 		},
 		{
@@ -512,8 +509,7 @@ func TestDeleteTagAsset(t *testing.T) {
 			},
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{{}}, nil)
-				ts.EXPECT().DeleteTagByAssetIDAndTemplateURN(ctx, assetID, sampleTagPB.TemplateUrn).Return(errors.New("unexpected error"))
+				ts.EXPECT().DeleteTag(ctx, assetID, sampleTagPB.TemplateUrn).Return(errors.New("unexpected error"))
 			},
 		},
 		{
@@ -524,24 +520,27 @@ func TestDeleteTagAsset(t *testing.T) {
 			},
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{{}}, nil)
-				ts.EXPECT().DeleteTagByAssetIDAndTemplateURN(ctx, assetID, sampleTagPB.TemplateUrn).Return(nil)
+				ts.EXPECT().DeleteTag(ctx, assetID, sampleTagPB.TemplateUrn).Return(nil)
 			},
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockTagSvc, mockTemplateSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			_, err := handler.DeleteTagAsset(ctx, tc.Request)
 			code := status.Code(err)
@@ -554,9 +553,13 @@ func TestDeleteTagAsset(t *testing.T) {
 }
 
 func TestGetAllTagsByAsset(t *testing.T) {
-	validRequest := &compassv1beta1.GetAllTagsByAssetRequest{
-		AssetId: assetID,
-	}
+	var (
+		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
+		validRequest = &compassv1beta1.GetAllTagsByAssetRequest{
+			AssetId: assetID,
+		}
+	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.GetAllTagsByAssetRequest
@@ -578,9 +581,7 @@ func TestGetAllTagsByAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				ts.EXPECT().GetTagByAssetID(ctx, tag.Tag{
-					AssetID: sampleTagPB.AssetId,
-				}).Return(nil, errors.New("unexpected error"))
+				ts.EXPECT().GetTagsByAssetID(ctx, sampleTagPB.AssetId).Return(nil, errors.New("unexpected error"))
 			},
 		},
 		{
@@ -588,9 +589,7 @@ func TestGetAllTagsByAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				ts.EXPECT().GetTagByAssetID(ctx, tag.Tag{
-					AssetID: sampleTagPB.AssetId,
-				}).Return([]tag.Tag{sampleTag}, nil)
+				ts.EXPECT().GetTagsByAssetID(ctx, sampleTagPB.AssetId).Return([]tag.Tag{sampleTag}, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAllTagsByAssetResponse) error {
 				expected := &compassv1beta1.GetAllTagsByAssetResponse{
@@ -606,17 +605,21 @@ func TestGetAllTagsByAsset(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockTagSvc, mockTemplateSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.GetAllTagsByAsset(ctx, tc.Request)
 			code := status.Code(err)

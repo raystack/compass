@@ -92,21 +92,3 @@ func TestValidateUser(t *testing.T) {
 		})
 	}
 }
-
-func TestContext(t *testing.T) {
-	t.Run("should return passed string if exist in context", func(t *testing.T) {
-		passedString := "passed-string"
-		userCtx := user.NewContext(context.Background(), passedString)
-		actual := user.FromContext(userCtx)
-		if actual != passedString {
-			t.Fatalf("actual is \"%+v\" but expected was \"%+v\"", actual, passedString)
-		}
-	})
-
-	t.Run("should return empty string if not exist in context", func(t *testing.T) {
-		actual := user.FromContext(context.Background())
-		if actual != "" {
-			t.Fatalf("actual is \"%+v\" but expected was \"%+v\"", actual, "")
-		}
-	})
-}

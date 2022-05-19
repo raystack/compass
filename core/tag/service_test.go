@@ -280,7 +280,7 @@ func (s *ServiceTestSuite) TestGetByAsset() {
 			AssetID: t.AssetID,
 		}).Return(expectedTag, nil)
 
-		actualTag, actualError := s.tagService.GetTagByAssetID(ctx, t.AssetID)
+		actualTag, actualError := s.tagService.GetTagsByAssetID(ctx, t.AssetID)
 
 		s.EqualValues(expectedTag, actualTag)
 		s.NoError(actualError)
@@ -477,7 +477,7 @@ func (s *ServiceTestSuite) TestDelete() {
 		templateURN := "template-urn"
 		s.templateRepo.EXPECT().Read(mock.Anything, templateURN).Return(nil, errors.New("random error"))
 
-		err := s.tagService.DeleteTagByAssetIDAndTemplateURN(ctx, uuid.NewString(), templateURN)
+		err := s.tagService.DeleteTag(ctx, uuid.NewString(), templateURN)
 		s.Error(err)
 	})
 
@@ -492,7 +492,7 @@ func (s *ServiceTestSuite) TestDelete() {
 			TemplateURN: template.URN,
 		}).Return(errors.New("random error"))
 
-		err := s.tagService.DeleteTagByAssetIDAndTemplateURN(ctx, assetID, template.URN)
+		err := s.tagService.DeleteTag(ctx, assetID, template.URN)
 		s.Error(err)
 	})
 }

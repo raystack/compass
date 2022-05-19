@@ -23,6 +23,11 @@ type TagTemplateService interface {
 
 // GetAllTagTemplates handles template read requests
 func (server *APIServer) GetAllTagTemplates(ctx context.Context, req *compassv1beta1.GetAllTagTemplatesRequest) (*compassv1beta1.GetAllTagTemplatesResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	listOfDomainTemplate, err := server.tagTemplateService.GetTemplates(ctx, req.GetUrn())
 	if err != nil {
 		return nil, internalServerError(server.logger, fmt.Sprintf("error finding templates: %s", err.Error()))
@@ -40,6 +45,10 @@ func (server *APIServer) GetAllTagTemplates(ctx context.Context, req *compassv1b
 
 // CreateTagTemplate handles template creation requests
 func (server *APIServer) CreateTagTemplate(ctx context.Context, req *compassv1beta1.CreateTagTemplateRequest) (*compassv1beta1.CreateTagTemplateResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	if req.GetUrn() == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty urn")
@@ -65,7 +74,7 @@ func (server *APIServer) CreateTagTemplate(ctx context.Context, req *compassv1be
 		Description: req.GetDescription(),
 		Fields:      templateFields,
 	}
-	err := server.tagTemplateService.CreateTemplate(ctx, &template)
+	err = server.tagTemplateService.CreateTemplate(ctx, &template)
 	if errors.As(err, new(tag.DuplicateTemplateError)) {
 		return nil, status.Error(codes.AlreadyExists, err.Error())
 	}
@@ -80,11 +89,16 @@ func (server *APIServer) CreateTagTemplate(ctx context.Context, req *compassv1be
 
 // GetTagTemplate handles template read requests based on URN
 func (server *APIServer) GetTagTemplate(ctx context.Context, req *compassv1beta1.GetTagTemplateRequest) (*compassv1beta1.GetTagTemplateResponse, error) {
-	domainTemplate, err := server.tagTemplateService.GetTemplate(ctx, req.GetTemplateUrn())
-	if errors.As(err, new(tag.TemplateNotFoundError)) {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
+	_, err := server.validateUserInCtx(ctx)
 	if err != nil {
+		return nil, err
+	}
+
+	domainTemplate, err := server.tagTemplateService.GetTemplate(ctx, req.GetTemplateUrn())
+	if err != nil {
+		if errors.As(err, new(tag.TemplateNotFoundError)) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
 		return nil, internalServerError(server.logger, fmt.Sprintf("error finding a template: %s", err.Error()))
 	}
 
@@ -94,6 +108,10 @@ func (server *APIServer) GetTagTemplate(ctx context.Context, req *compassv1beta1
 }
 
 func (server *APIServer) UpdateTagTemplate(ctx context.Context, req *compassv1beta1.UpdateTagTemplateRequest) (*compassv1beta1.UpdateTagTemplateResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	if req.GetDisplayName() == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty display name")
@@ -116,14 +134,13 @@ func (server *APIServer) UpdateTagTemplate(ctx context.Context, req *compassv1be
 		Description: req.GetDescription(),
 		Fields:      templateFields,
 	}
-	err := server.tagTemplateService.UpdateTemplate(ctx, req.TemplateUrn, &template)
-	if errors.As(err, new(tag.TemplateNotFoundError)) {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
-	if errors.As(err, new(tag.ValidationError)) {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-	if err != nil {
+	if err = server.tagTemplateService.UpdateTemplate(ctx, req.TemplateUrn, &template); err != nil {
+		if errors.As(err, new(tag.TemplateNotFoundError)) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		if errors.As(err, new(tag.ValidationError)) {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
 		return nil, internalServerError(server.logger, fmt.Sprintf("error updating template: %s", err.Error()))
 	}
 
@@ -134,7 +151,12 @@ func (server *APIServer) UpdateTagTemplate(ctx context.Context, req *compassv1be
 
 // DeleteTagTemplate handles template delete request based on URN
 func (server *APIServer) DeleteTagTemplate(ctx context.Context, req *compassv1beta1.DeleteTagTemplateRequest) (*compassv1beta1.DeleteTagTemplateResponse, error) {
-	err := server.tagTemplateService.DeleteTemplate(ctx, req.GetTemplateUrn())
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = server.tagTemplateService.DeleteTemplate(ctx, req.GetTemplateUrn())
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}

@@ -5,8 +5,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/uuid"
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/asset"
+	"github.com/odpf/compass/core/user"
 	"github.com/odpf/compass/internal/server/v1beta1/mocks"
 	"github.com/odpf/salt/log"
 	"google.golang.org/grpc/codes"
@@ -16,9 +18,13 @@ import (
 
 func TestGetLineageGraph(t *testing.T) {
 
+	var (
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+	)
 	t.Run("get Lineage", func(t *testing.T) {
 		t.Run("should return a graph containing the requested resource, along with it's related resources", func(t *testing.T) {
-			ctx := context.Background()
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			logger := log.NewNoop()
 			node := asset.Node{
 				URN: "job-1",
@@ -29,9 +35,14 @@ func TestGetLineageGraph(t *testing.T) {
 				{Source: "table-31", Target: "dashboard-30"},
 			}
 			mockSvc := new(mocks.AssetService)
-			mockSvc.EXPECT().GetLineage(ctx, node).Return(graph, nil)
+			mockUserSvc := new(mocks.UserService)
+			defer mockUserSvc.AssertExpectations(t)
+			defer mockSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, nil)
+			mockSvc.EXPECT().GetLineage(ctx, node).Return(graph, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetGraph(ctx, &compassv1beta1.GetGraphRequest{
 				Urn: node.URN,

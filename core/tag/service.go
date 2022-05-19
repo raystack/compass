@@ -54,8 +54,8 @@ func (s *Service) CreateTag(ctx context.Context, tag *Tag) error {
 	return nil
 }
 
-// GetByAsset handles business process to get tags by its asset id
-func (s *Service) GetTagByAssetID(ctx context.Context, assetID string) ([]Tag, error) {
+// GetTagsByAssetID handles business process to get tags by its asset id
+func (s *Service) GetTagsByAssetID(ctx context.Context, assetID string) ([]Tag, error) {
 	tag := Tag{AssetID: assetID}
 	return s.repository.Read(ctx, tag)
 }
@@ -79,8 +79,8 @@ func (s *Service) FindTagByAssetIDAndTemplateURN(ctx context.Context, assetID, t
 	return output, err
 }
 
-// DeleteTagByAssetIDAndTemplateURN handles business process to delete a tag
-func (s *Service) DeleteTagByAssetIDAndTemplateURN(ctx context.Context, assetID, templateURN string) error {
+// DeleteTag handles business process to delete a tag
+func (s *Service) DeleteTag(ctx context.Context, assetID, templateURN string) error {
 	_, err := s.templateService.GetTemplate(ctx, templateURN)
 	if err != nil {
 		return fmt.Errorf("error finding template: %w", err)

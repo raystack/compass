@@ -21,7 +21,10 @@ import (
 )
 
 func TestGetAllDiscussions(t *testing.T) {
-	var userID = uuid.NewString()
+	var (
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.GetAllDiscussionsRequest
@@ -105,14 +108,20 @@ func TestGetAllDiscussions(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockSvc)
+			}
+			defer mockUserSvc.AssertExpectations(t)
+			defer mockSvc.AssertExpectations(t)
 
-			tc.Setup(ctx, mockSvc)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, nil)
+			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAllDiscussions(ctx, tc.Request)
 			code := status.Code(err)
@@ -131,7 +140,10 @@ func TestGetAllDiscussions(t *testing.T) {
 }
 
 func TestCreateDiscussion(t *testing.T) {
-	var userID = uuid.NewString()
+	var (
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+	)
 	var validRequest = &compassv1beta1.CreateDiscussionRequest{
 		Title: "Lorem Ipsum",
 		Body:  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
@@ -225,16 +237,20 @@ func TestCreateDiscussion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, mockUserSvc)
 			_, err := handler.CreateDiscussion(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
@@ -248,6 +264,7 @@ func TestCreateDiscussion(t *testing.T) {
 func TestGetDiscussion(t *testing.T) {
 	var (
 		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
 		discussionID = "123"
 	)
 
@@ -320,16 +337,19 @@ func TestGetDiscussion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
-
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
+			defer mockSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetDiscussion(ctx, tc.Request)
 			code := status.Code(err)
@@ -350,6 +370,7 @@ func TestGetDiscussion(t *testing.T) {
 func TestPatchDiscussion(t *testing.T) {
 	var (
 		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
 		discussionID = "123"
 	)
 
@@ -454,16 +475,20 @@ func TestPatchDiscussion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, mockUserSvc)
 			_, err := handler.PatchDiscussion(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {

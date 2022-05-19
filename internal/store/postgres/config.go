@@ -12,7 +12,7 @@ type Config struct {
 	Name     string `mapstructure:"name" default:"postgres"`
 	User     string `mapstructure:"user" default:"root"`
 	Password string `mapstructure:"password" default:""`
-	SSLMode  string `mapstructure:"ssl_mode" default:"disable"`
+	SSLMode  string `mapstructure:"sslmode" default:"disable"`
 }
 
 // ConnectionURL

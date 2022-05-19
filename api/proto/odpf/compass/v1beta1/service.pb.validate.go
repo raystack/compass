@@ -6863,23 +6863,22 @@ var _ interface {
 	ErrorName() string
 } = CreateTagAssetResponseValidationError{}
 
-// Validate checks the field values on GetTagsByAssetAndTemplateRequest with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the first error encountered is returned, or nil if there are
-// no violations.
-func (m *GetTagsByAssetAndTemplateRequest) Validate() error {
+// Validate checks the field values on GetTagByAssetAndTemplateRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetTagByAssetAndTemplateRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on GetTagsByAssetAndTemplateRequest with
+// ValidateAll checks the field values on GetTagByAssetAndTemplateRequest with
 // the rules defined in the proto definition for this message. If any rules
 // are violated, the result is a list of violation errors wrapped in
-// GetTagsByAssetAndTemplateRequestMultiError, or nil if none found.
-func (m *GetTagsByAssetAndTemplateRequest) ValidateAll() error {
+// GetTagByAssetAndTemplateRequestMultiError, or nil if none found.
+func (m *GetTagByAssetAndTemplateRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *GetTagsByAssetAndTemplateRequest) validate(all bool) error {
+func (m *GetTagByAssetAndTemplateRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -6891,20 +6890,19 @@ func (m *GetTagsByAssetAndTemplateRequest) validate(all bool) error {
 	// no validation rules for TemplateUrn
 
 	if len(errors) > 0 {
-		return GetTagsByAssetAndTemplateRequestMultiError(errors)
+		return GetTagByAssetAndTemplateRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// GetTagsByAssetAndTemplateRequestMultiError is an error wrapping multiple
-// validation errors returned by
-// GetTagsByAssetAndTemplateRequest.ValidateAll() if the designated
-// constraints aren't met.
-type GetTagsByAssetAndTemplateRequestMultiError []error
+// GetTagByAssetAndTemplateRequestMultiError is an error wrapping multiple
+// validation errors returned by GetTagByAssetAndTemplateRequest.ValidateAll()
+// if the designated constraints aren't met.
+type GetTagByAssetAndTemplateRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m GetTagsByAssetAndTemplateRequestMultiError) Error() string {
+func (m GetTagByAssetAndTemplateRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -6913,12 +6911,12 @@ func (m GetTagsByAssetAndTemplateRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m GetTagsByAssetAndTemplateRequestMultiError) AllErrors() []error { return m }
+func (m GetTagByAssetAndTemplateRequestMultiError) AllErrors() []error { return m }
 
-// GetTagsByAssetAndTemplateRequestValidationError is the validation error
-// returned by GetTagsByAssetAndTemplateRequest.Validate if the designated
+// GetTagByAssetAndTemplateRequestValidationError is the validation error
+// returned by GetTagByAssetAndTemplateRequest.Validate if the designated
 // constraints aren't met.
-type GetTagsByAssetAndTemplateRequestValidationError struct {
+type GetTagByAssetAndTemplateRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -6926,24 +6924,24 @@ type GetTagsByAssetAndTemplateRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e GetTagsByAssetAndTemplateRequestValidationError) Field() string { return e.field }
+func (e GetTagByAssetAndTemplateRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e GetTagsByAssetAndTemplateRequestValidationError) Reason() string { return e.reason }
+func (e GetTagByAssetAndTemplateRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e GetTagsByAssetAndTemplateRequestValidationError) Cause() error { return e.cause }
+func (e GetTagByAssetAndTemplateRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e GetTagsByAssetAndTemplateRequestValidationError) Key() bool { return e.key }
+func (e GetTagByAssetAndTemplateRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e GetTagsByAssetAndTemplateRequestValidationError) ErrorName() string {
-	return "GetTagsByAssetAndTemplateRequestValidationError"
+func (e GetTagByAssetAndTemplateRequestValidationError) ErrorName() string {
+	return "GetTagByAssetAndTemplateRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e GetTagsByAssetAndTemplateRequestValidationError) Error() string {
+func (e GetTagByAssetAndTemplateRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -6955,14 +6953,14 @@ func (e GetTagsByAssetAndTemplateRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sGetTagsByAssetAndTemplateRequest.%s: %s%s",
+		"invalid %sGetTagByAssetAndTemplateRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = GetTagsByAssetAndTemplateRequestValidationError{}
+var _ error = GetTagByAssetAndTemplateRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -6970,25 +6968,25 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = GetTagsByAssetAndTemplateRequestValidationError{}
+} = GetTagByAssetAndTemplateRequestValidationError{}
 
-// Validate checks the field values on GetTagsByAssetAndTemplateResponse with
+// Validate checks the field values on GetTagByAssetAndTemplateResponse with
 // the rules defined in the proto definition for this message. If any rules
 // are violated, the first error encountered is returned, or nil if there are
 // no violations.
-func (m *GetTagsByAssetAndTemplateResponse) Validate() error {
+func (m *GetTagByAssetAndTemplateResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on GetTagsByAssetAndTemplateResponse
-// with the rules defined in the proto definition for this message. If any
-// rules are violated, the result is a list of violation errors wrapped in
-// GetTagsByAssetAndTemplateResponseMultiError, or nil if none found.
-func (m *GetTagsByAssetAndTemplateResponse) ValidateAll() error {
+// ValidateAll checks the field values on GetTagByAssetAndTemplateResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetTagByAssetAndTemplateResponseMultiError, or nil if none found.
+func (m *GetTagByAssetAndTemplateResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *GetTagsByAssetAndTemplateResponse) validate(all bool) error {
+func (m *GetTagByAssetAndTemplateResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -6999,7 +6997,7 @@ func (m *GetTagsByAssetAndTemplateResponse) validate(all bool) error {
 		switch v := interface{}(m.GetData()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, GetTagsByAssetAndTemplateResponseValidationError{
+				errors = append(errors, GetTagByAssetAndTemplateResponseValidationError{
 					field:  "Data",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -7007,7 +7005,7 @@ func (m *GetTagsByAssetAndTemplateResponse) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, GetTagsByAssetAndTemplateResponseValidationError{
+				errors = append(errors, GetTagByAssetAndTemplateResponseValidationError{
 					field:  "Data",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -7016,7 +7014,7 @@ func (m *GetTagsByAssetAndTemplateResponse) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetData()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return GetTagsByAssetAndTemplateResponseValidationError{
+			return GetTagByAssetAndTemplateResponseValidationError{
 				field:  "Data",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -7025,20 +7023,20 @@ func (m *GetTagsByAssetAndTemplateResponse) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return GetTagsByAssetAndTemplateResponseMultiError(errors)
+		return GetTagByAssetAndTemplateResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// GetTagsByAssetAndTemplateResponseMultiError is an error wrapping multiple
+// GetTagByAssetAndTemplateResponseMultiError is an error wrapping multiple
 // validation errors returned by
-// GetTagsByAssetAndTemplateResponse.ValidateAll() if the designated
+// GetTagByAssetAndTemplateResponse.ValidateAll() if the designated
 // constraints aren't met.
-type GetTagsByAssetAndTemplateResponseMultiError []error
+type GetTagByAssetAndTemplateResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m GetTagsByAssetAndTemplateResponseMultiError) Error() string {
+func (m GetTagByAssetAndTemplateResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -7047,12 +7045,12 @@ func (m GetTagsByAssetAndTemplateResponseMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m GetTagsByAssetAndTemplateResponseMultiError) AllErrors() []error { return m }
+func (m GetTagByAssetAndTemplateResponseMultiError) AllErrors() []error { return m }
 
-// GetTagsByAssetAndTemplateResponseValidationError is the validation error
-// returned by GetTagsByAssetAndTemplateResponse.Validate if the designated
+// GetTagByAssetAndTemplateResponseValidationError is the validation error
+// returned by GetTagByAssetAndTemplateResponse.Validate if the designated
 // constraints aren't met.
-type GetTagsByAssetAndTemplateResponseValidationError struct {
+type GetTagByAssetAndTemplateResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -7060,24 +7058,24 @@ type GetTagsByAssetAndTemplateResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e GetTagsByAssetAndTemplateResponseValidationError) Field() string { return e.field }
+func (e GetTagByAssetAndTemplateResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e GetTagsByAssetAndTemplateResponseValidationError) Reason() string { return e.reason }
+func (e GetTagByAssetAndTemplateResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e GetTagsByAssetAndTemplateResponseValidationError) Cause() error { return e.cause }
+func (e GetTagByAssetAndTemplateResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e GetTagsByAssetAndTemplateResponseValidationError) Key() bool { return e.key }
+func (e GetTagByAssetAndTemplateResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e GetTagsByAssetAndTemplateResponseValidationError) ErrorName() string {
-	return "GetTagsByAssetAndTemplateResponseValidationError"
+func (e GetTagByAssetAndTemplateResponseValidationError) ErrorName() string {
+	return "GetTagByAssetAndTemplateResponseValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e GetTagsByAssetAndTemplateResponseValidationError) Error() string {
+func (e GetTagByAssetAndTemplateResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -7089,14 +7087,14 @@ func (e GetTagsByAssetAndTemplateResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sGetTagsByAssetAndTemplateResponse.%s: %s%s",
+		"invalid %sGetTagByAssetAndTemplateResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = GetTagsByAssetAndTemplateResponseValidationError{}
+var _ error = GetTagByAssetAndTemplateResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -7104,7 +7102,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = GetTagsByAssetAndTemplateResponseValidationError{}
+} = GetTagByAssetAndTemplateResponseValidationError{}
 
 // Validate checks the field values on UpdateTagAssetRequest with the rules
 // defined in the proto definition for this message. If any rules are

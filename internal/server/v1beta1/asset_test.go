@@ -23,7 +23,10 @@ import (
 )
 
 func TestGetAllAssets(t *testing.T) {
-	var userID = uuid.NewString()
+	var (
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.GetAllAssetsRequest
@@ -151,16 +154,20 @@ func TestGetAllAssets(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockAssetSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAllAssets(ctx, tc.Request)
 			code := status.Code(err)
@@ -180,9 +187,10 @@ func TestGetAllAssets(t *testing.T) {
 
 func TestGetAssetByID(t *testing.T) {
 	var (
-		userID  = uuid.NewString()
-		assetID = uuid.NewString()
-		ast     = asset.Asset{
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+		assetID  = uuid.NewString()
+		ast      = asset.Asset{
 			ID: assetID,
 		}
 	)
@@ -237,16 +245,20 @@ func TestGetAssetByID(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockAssetSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAssetByID(ctx, &compassv1beta1.GetAssetByIDRequest{Id: assetID})
 			code := status.Code(err)
@@ -267,6 +279,7 @@ func TestGetAssetByID(t *testing.T) {
 func TestUpsertPatchAsset(t *testing.T) {
 	var (
 		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
 		assetID      = uuid.NewString()
 		validPayload = &compassv1beta1.UpsertPatchAssetRequest{
 			Asset: &compassv1beta1.UpsertPatchAssetRequest_BaseAsset{
@@ -390,7 +403,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
 				expectedErr := errors.New("unknown error")
 				as.EXPECT().GetAssetByURN(ctx, "test dagger", asset.TypeTable, "kafka").Return(currentAsset, nil)
-				as.EXPECT().UpsertPatchAsset(ctx, mock.AnythingOfType("*asset.Asset"), nil, nil).Return("1234-5678", expectedErr)
+				as.EXPECT().UpsertPatchAsset(ctx, mock.AnythingOfType("*asset.Asset"), mock.AnythingOfType("[]asset.Node"), mock.AnythingOfType("[]asset.Node")).Return("1234-5678", expectedErr)
 			},
 			Request:      validPayload,
 			ExpectStatus: codes.Internal,
@@ -438,16 +451,20 @@ func TestUpsertPatchAsset(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockAssetSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.UpsertPatchAsset(ctx, tc.Request)
 			code := status.Code(err)
@@ -467,9 +484,9 @@ func TestUpsertPatchAsset(t *testing.T) {
 
 func TestDeleteAsset(t *testing.T) {
 	var (
-		userID = uuid.NewString()
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
 	)
-
 	type TestCase struct {
 		Description  string
 		AssetID      string
@@ -483,12 +500,12 @@ func TestDeleteAsset(t *testing.T) {
 			AssetID:      "not-uuid",
 			ExpectStatus: codes.InvalidArgument,
 			Setup: func(ctx context.Context, as *mocks.AssetService, astID string) {
-				as.EXPECT().DeleteAsset(ctx, astID).Return(asset.InvalidError{AssetID: astID})
+				as.EXPECT().DeleteAsset(ctx, "not-uuid").Return(asset.InvalidError{AssetID: astID})
 			},
 		},
 		{
 			Description:  "should return not found when asset cannot be found",
-			AssetID:      uuid.NewString(),
+			AssetID:      assetID,
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, as *mocks.AssetService, astID string) {
 				as.EXPECT().DeleteAsset(ctx, astID).Return(asset.NotFoundError{AssetID: astID})
@@ -496,7 +513,7 @@ func TestDeleteAsset(t *testing.T) {
 		},
 		{
 			Description:  "should return 500 on error deleting asset",
-			AssetID:      uuid.NewString(),
+			AssetID:      assetID,
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, as *mocks.AssetService, astID string) {
 				as.EXPECT().DeleteAsset(ctx, astID).Return(errors.New("error deleting asset"))
@@ -504,7 +521,7 @@ func TestDeleteAsset(t *testing.T) {
 		},
 		{
 			Description:  "should return OK on success",
-			AssetID:      uuid.NewString(),
+			AssetID:      assetID,
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, as *mocks.AssetService, astID string) {
 				as.EXPECT().DeleteAsset(ctx, astID).Return(nil)
@@ -513,16 +530,20 @@ func TestDeleteAsset(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockAssetSvc, tc.AssetID)
+				tc.Setup(ctx, mockAssetSvc, assetID)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockAssetSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			_, err := handler.DeleteAsset(ctx, &compassv1beta1.DeleteAssetRequest{Id: tc.AssetID})
 			code := status.Code(err)
@@ -542,6 +563,7 @@ func TestGetAssetStargazers(t *testing.T) {
 		defaultStarCfg = star.Filter{Offset: offset, Size: size}
 		assetID        = uuid.NewString()
 		userID         = uuid.NewString()
+		userUUID       = uuid.NewString()
 	)
 
 	type TestCase struct {
@@ -592,16 +614,19 @@ func TestGetAssetStargazers(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockStarSvc := new(mocks.StarService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockStarSvc)
 			}
 			defer mockStarSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, mockStarSvc, nil, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAssetStargazers(ctx, tc.Request)
 			code := status.Code(err)
@@ -621,7 +646,11 @@ func TestGetAssetStargazers(t *testing.T) {
 
 func TestGetAssetVersionHistory(t *testing.T) {
 
-	var assetID = uuid.NewString()
+	var (
+		assetID  = uuid.NewString()
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+	)
 
 	type TestCase struct {
 		Description  string
@@ -699,15 +728,20 @@ func TestGetAssetVersionHistory(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockAssetSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAssetVersionHistory(ctx, tc.Request)
 			code := status.Code(err)
@@ -728,9 +762,11 @@ func TestGetAssetVersionHistory(t *testing.T) {
 func TestGetAssetByVersion(t *testing.T) {
 
 	var (
-		assetID = uuid.NewString()
-		version = "0.2"
-		ast     = asset.Asset{
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+		assetID  = uuid.NewString()
+		version  = "0.2"
+		ast      = asset.Asset{
 			ID:      assetID,
 			Version: version,
 		}
@@ -804,15 +840,20 @@ func TestGetAssetByVersion(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockAssetSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAssetByVersion(ctx, tc.Request)
 			code := status.Code(err)

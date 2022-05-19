@@ -22,6 +22,7 @@ import (
 func TestCreateComment(t *testing.T) {
 	var (
 		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
 		discussionID = "11111"
 		validRequest = &compassv1beta1.CreateCommentRequest{
 			DiscussionId: discussionID,
@@ -88,16 +89,20 @@ func TestCreateComment(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.CreateComment(ctx, tc.Request)
 			code := status.Code(err)
@@ -116,6 +121,7 @@ func TestCreateComment(t *testing.T) {
 func TestGetAllComments(t *testing.T) {
 	var (
 		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
 		discussionID = "11111"
 	)
 	type testCase struct {
@@ -210,16 +216,20 @@ func TestGetAllComments(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAllComments(ctx, tc.Request)
 			code := status.Code(err)
@@ -240,6 +250,7 @@ func TestGetAllComments(t *testing.T) {
 func TestGetComment(t *testing.T) {
 	var (
 		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
 		discussionID = "123"
 		commentID    = "11"
 	)
@@ -332,16 +343,20 @@ func TestGetComment(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetComment(ctx, tc.Request)
 			code := status.Code(err)
@@ -362,6 +377,7 @@ func TestGetComment(t *testing.T) {
 func TestUpdateComment(t *testing.T) {
 	var (
 		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
 		discussionID = "123"
 		commentID    = "11"
 	)
@@ -473,16 +489,19 @@ func TestUpdateComment(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			_, err := handler.UpdateComment(ctx, tc.Request)
 			code := status.Code(err)
@@ -497,6 +516,7 @@ func TestUpdateComment(t *testing.T) {
 func TestDeleteComment(t *testing.T) {
 	var (
 		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
 		discussionID = "123"
 		commentID    = "11"
 	)
@@ -578,16 +598,20 @@ func TestDeleteComment(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), userID)
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			_, err := handler.DeleteComment(ctx, tc.Request)
 			code := status.Code(err)

@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/uuid"
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/tag"
+	"github.com/odpf/compass/core/user"
 	"github.com/odpf/compass/internal/server/v1beta1/mocks"
 	"github.com/odpf/salt/log"
 	"google.golang.org/grpc/codes"
@@ -68,6 +70,10 @@ var sampleTemplatePB = &compassv1beta1.TagTemplate{
 }
 
 func TestGetAllTagTemplates(t *testing.T) {
+	var (
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.GetAllTagTemplatesRequest
@@ -131,17 +137,22 @@ func TestGetAllTagTemplates(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockTagSvc, mockTemplateSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.GetAllTagTemplates(ctx, tc.Request)
 			code := status.Code(err)
@@ -160,12 +171,16 @@ func TestGetAllTagTemplates(t *testing.T) {
 }
 
 func TestCreateTagTemplate(t *testing.T) {
-	validRequest := &compassv1beta1.CreateTagTemplateRequest{
-		Urn:         sampleTemplatePB.GetUrn(),
-		DisplayName: sampleTemplatePB.GetDisplayName(),
-		Description: sampleTemplatePB.GetDescription(),
-		Fields:      sampleTemplatePB.GetFields(),
-	}
+	var (
+		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
+		validRequest = &compassv1beta1.CreateTagTemplateRequest{
+			Urn:         sampleTemplatePB.GetUrn(),
+			DisplayName: sampleTemplatePB.GetDisplayName(),
+			Description: sampleTemplatePB.GetDescription(),
+			Fields:      sampleTemplatePB.GetFields(),
+		}
+	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.CreateTagTemplateRequest
@@ -180,7 +195,6 @@ func TestCreateTagTemplate(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.AlreadyExists,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return(nil, nil)
 				tts.EXPECT().CreateTemplate(ctx, &sampleTemplate).Return(tag.DuplicateTemplateError{URN: sampleTemplate.URN})
 			},
 		},
@@ -189,7 +203,6 @@ func TestCreateTagTemplate(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return(nil, nil)
 				tts.EXPECT().CreateTemplate(ctx, &sampleTemplate).Return(errors.New("unexpected error during insert"))
 			},
 		},
@@ -198,7 +211,6 @@ func TestCreateTagTemplate(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return(nil, nil)
 				tts.EXPECT().CreateTemplate(ctx, &sampleTemplate).Return(nil)
 			},
 			PostCheck: func(resp *compassv1beta1.CreateTagTemplateResponse) error {
@@ -215,17 +227,22 @@ func TestCreateTagTemplate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockTagSvc, mockTemplateSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.CreateTagTemplate(ctx, tc.Request)
 			code := status.Code(err)
@@ -244,9 +261,13 @@ func TestCreateTagTemplate(t *testing.T) {
 }
 
 func TestGetTagTemplate(t *testing.T) {
-	validRequest := &compassv1beta1.GetTagTemplateRequest{
-		TemplateUrn: sampleTemplatePB.GetUrn(),
-	}
+	var (
+		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
+		validRequest = &compassv1beta1.GetTagTemplateRequest{
+			TemplateUrn: sampleTemplatePB.GetUrn(),
+		}
+	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.GetTagTemplateRequest
@@ -257,11 +278,11 @@ func TestGetTagTemplate(t *testing.T) {
 
 	var testCases = []testCase{
 		{
-			Description:  `should returnnot found if template is not found`,
+			Description:  `should return not found if template is not found`,
 			Request:      validRequest,
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{}, nil)
+				tts.EXPECT().GetTemplate(ctx, sampleTemplate.URN).Return(tag.Template{}, tag.TemplateNotFoundError{URN: sampleTemplate.URN})
 			},
 		},
 		{
@@ -269,7 +290,7 @@ func TestGetTagTemplate(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
+				tts.EXPECT().GetTemplate(ctx, sampleTemplate.URN).Return(sampleTemplate, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetTagTemplateResponse) error {
 				expected := &compassv1beta1.GetTagTemplateResponse{
@@ -285,21 +306,26 @@ func TestGetTagTemplate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockTagSvc, mockTemplateSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 			got, err := handler.GetTagTemplate(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
+				t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
 				return
 			}
 			if tc.PostCheck != nil {
@@ -313,12 +339,16 @@ func TestGetTagTemplate(t *testing.T) {
 }
 
 func TestUpdateTagTemplate(t *testing.T) {
-	validRequest := &compassv1beta1.UpdateTagTemplateRequest{
-		TemplateUrn: sampleTemplatePB.GetUrn(),
-		DisplayName: sampleTemplatePB.GetDisplayName(),
-		Description: sampleTemplatePB.GetDescription(),
-		Fields:      sampleTemplatePB.GetFields(),
-	}
+	var (
+		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
+		validRequest = &compassv1beta1.UpdateTagTemplateRequest{
+			TemplateUrn: sampleTemplatePB.GetUrn(),
+			DisplayName: sampleTemplatePB.GetDisplayName(),
+			Description: sampleTemplatePB.GetDescription(),
+			Fields:      sampleTemplatePB.GetFields(),
+		}
+	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.UpdateTagTemplateRequest
@@ -333,7 +363,7 @@ func TestUpdateTagTemplate(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{}, nil)
+				tts.EXPECT().UpdateTemplate(ctx, sampleTemplate.URN, &sampleTemplate).Return(tag.TemplateNotFoundError{URN: sampleTemplate.URN})
 			},
 		},
 		{
@@ -341,7 +371,7 @@ func TestUpdateTagTemplate(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.InvalidArgument,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return(nil, tag.ValidationError{Err: errors.New("validation error")})
+				tts.EXPECT().UpdateTemplate(ctx, sampleTemplate.URN, &sampleTemplate).Return(tag.ValidationError{Err: errors.New("validation error")})
 			},
 		},
 		{
@@ -349,7 +379,7 @@ func TestUpdateTagTemplate(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return(nil, errors.New("unexpected error"))
+				tts.EXPECT().UpdateTemplate(ctx, sampleTemplate.URN, &sampleTemplate).Return(errors.New("unexpected error"))
 			},
 		},
 		{
@@ -357,7 +387,6 @@ func TestUpdateTagTemplate(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
 				tts.EXPECT().UpdateTemplate(ctx, sampleTemplate.URN, &sampleTemplate).Run(func(ctx context.Context, templateURN string, template *tag.Template) {
 					template.UpdatedAt = time.Now()
 				}).Return(nil)
@@ -378,17 +407,22 @@ func TestUpdateTagTemplate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockTagSvc, mockTemplateSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 			got, err := handler.UpdateTagTemplate(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
@@ -406,9 +440,13 @@ func TestUpdateTagTemplate(t *testing.T) {
 }
 
 func TestDeleteTagTemplate(t *testing.T) {
-	validRequest := &compassv1beta1.DeleteTagTemplateRequest{
-		TemplateUrn: sampleTemplatePB.GetUrn(),
-	}
+	var (
+		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
+		validRequest = &compassv1beta1.DeleteTagTemplateRequest{
+			TemplateUrn: sampleTemplatePB.GetUrn(),
+		}
+	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.DeleteTagTemplateRequest
@@ -436,17 +474,22 @@ func TestDeleteTagTemplate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+
 			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockTagSvc, mockTemplateSvc)
 			}
+			defer mockUserSvc.AssertExpectations(t)
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			_, err := handler.DeleteTagTemplate(ctx, tc.Request)
 			code := status.Code(err)

@@ -16,6 +16,11 @@ const (
 )
 
 func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.SearchAssetsRequest) (*compassv1beta1.SearchAssetsResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	text := strings.TrimSpace(req.GetText())
 	if text == "" {
 		return nil, status.Error(codes.InvalidArgument, "'text' must be specified")
@@ -50,6 +55,11 @@ func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.S
 }
 
 func (server *APIServer) SuggestAssets(ctx context.Context, req *compassv1beta1.SuggestAssetsRequest) (*compassv1beta1.SuggestAssetsResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	text := strings.TrimSpace(req.GetText())
 	if text == "" {
 		return nil, status.Error(codes.InvalidArgument, "'text' must be specified")

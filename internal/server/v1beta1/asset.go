@@ -10,7 +10,6 @@ import (
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/asset"
 	"github.com/odpf/compass/core/star"
-	"github.com/odpf/compass/core/user"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -32,6 +31,10 @@ type AssetService interface {
 }
 
 func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.GetAllAssetsRequest) (*compassv1beta1.GetAllAssetsResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	if err := req.ValidateAll(); err != nil {
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
@@ -100,6 +103,11 @@ func (server *APIServer) buildGetAllAssetsFilter(req *compassv1beta1.GetAllAsset
 }
 
 func (server *APIServer) GetAssetByID(ctx context.Context, req *compassv1beta1.GetAssetByIDRequest) (*compassv1beta1.GetAssetByIDResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	ast, err := server.assetService.GetAssetByID(ctx, req.GetId())
 	if err != nil {
 		if errors.As(err, new(asset.InvalidError)) {
@@ -122,6 +130,10 @@ func (server *APIServer) GetAssetByID(ctx context.Context, req *compassv1beta1.G
 }
 
 func (server *APIServer) GetAssetStargazers(ctx context.Context, req *compassv1beta1.GetAssetStargazersRequest) (*compassv1beta1.GetAssetStargazersResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	users, err := server.starService.GetStargazers(ctx, star.Filter{
 		Size:   int(req.GetSize()),
@@ -148,6 +160,11 @@ func (server *APIServer) GetAssetStargazers(ctx context.Context, req *compassv1b
 }
 
 func (server *APIServer) GetAssetVersionHistory(ctx context.Context, req *compassv1beta1.GetAssetVersionHistoryRequest) (*compassv1beta1.GetAssetVersionHistoryResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	assetVersions, err := server.assetService.GetAssetVersionHistory(ctx, asset.Filter{
 		Size:   int(req.GetSize()),
 		Offset: int(req.GetOffset()),
@@ -177,6 +194,11 @@ func (server *APIServer) GetAssetVersionHistory(ctx context.Context, req *compas
 }
 
 func (server *APIServer) GetAssetByVersion(ctx context.Context, req *compassv1beta1.GetAssetByVersionRequest) (*compassv1beta1.GetAssetByVersionResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if _, err := asset.ParseVersion(req.GetVersion()); err != nil {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
@@ -203,9 +225,9 @@ func (server *APIServer) GetAssetByVersion(ctx context.Context, req *compassv1be
 }
 
 func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1beta1.UpsertPatchAssetRequest) (*compassv1beta1.UpsertPatchAssetResponse, error) {
-	userID := user.FromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
+	userID, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	baseAsset := req.GetAsset()
@@ -254,9 +276,9 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1bet
 }
 
 func (server *APIServer) DeleteAsset(ctx context.Context, req *compassv1beta1.DeleteAssetRequest) (*compassv1beta1.DeleteAssetResponse, error) {
-	userID := user.FromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	if err := server.assetService.DeleteAsset(ctx, req.GetId()); err != nil {

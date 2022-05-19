@@ -1,12 +1,14 @@
 package handlersv1beta1
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/core/user"
 	"github.com/odpf/salt/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -30,16 +32,8 @@ type APIServer struct {
 	discussionService  DiscussionService
 	tagService         TagService
 	tagTemplateService TagTemplateService
-	UserService        UserService
-	// assetRepository      asset.Repository
-	// tagService           *tag.Service
-	// tagTemplateService   *tag.TemplateService
-	// userService          *user.Service
-	// starRepository       star.Repository
-	// lineageRepository    lineage.Repository
-	// discussionRepository discussion.Repository
-	// discoveryRepository  discovery.Repository
-	logger log.Logger
+	userService        UserService
+	logger             log.Logger
 }
 
 var (
@@ -61,16 +55,24 @@ func NewAPIServer(
 		discussionService:  discussionService,
 		tagService:         tagService,
 		tagTemplateService: tagTemplateService,
-		// assetRepository:      deps.AssetRepository,
-		// tagService:           deps.TagService,
-		// tagTemplateService:   deps.TagTemplateService,
-		// userService:          deps.UserService,
-		// starRepository:       deps.StarRepository,
-		// lineageRepository:    deps.LineageRepository,
-		// discussionRepository: deps.DiscussionRepository,
-		// discoveryRepository:  deps.DiscoveryRepository,
-		logger: logger,
+		userService:        userService,
+		logger:             logger,
 	}
+}
+
+func (server *APIServer) validateUserInCtx(ctx context.Context) (string, error) {
+	usr := user.FromContext(ctx)
+	userID, err := server.userService.ValidateUser(ctx, usr.UUID, usr.Email)
+	if err != nil {
+		if errors.Is(err, user.ErrNoUserInformation) {
+			return "", status.Errorf(codes.InvalidArgument, err.Error())
+		}
+		return "", status.Errorf(codes.Internal, codes.Internal.String())
+	}
+	if userID == "" {
+		return "", status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
+	}
+	return userID, nil
 }
 
 func internalServerError(logger log.Logger, msg string) error {

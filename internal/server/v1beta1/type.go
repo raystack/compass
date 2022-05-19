@@ -9,6 +9,11 @@ import (
 )
 
 func (server *APIServer) GetAllTypes(ctx context.Context, req *compassv1beta1.GetAllTypesRequest) (*compassv1beta1.GetAllTypesResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	typesNameMap, err := server.assetService.GetTypes(ctx)
 	if err != nil {
 		return nil, internalServerError(server.logger, fmt.Sprintf("error fetching types: %s", err.Error()))

@@ -61,8 +61,8 @@ func (_c *TagService_CreateTag_Call) Return(_a0 error) *TagService_CreateTag_Cal
 	return _c
 }
 
-// DeleteTagByAssetIDAndTemplateURN provides a mock function with given fields: ctx, assetID, templateURN
-func (_m *TagService) DeleteTagByAssetIDAndTemplateURN(ctx context.Context, assetID string, templateURN string) error {
+// DeleteTag provides a mock function with given fields: ctx, assetID, templateURN
+func (_m *TagService) DeleteTag(ctx context.Context, assetID string, templateURN string) error {
 	ret := _m.Called(ctx, assetID, templateURN)
 
 	var r0 error
@@ -75,27 +75,27 @@ func (_m *TagService) DeleteTagByAssetIDAndTemplateURN(ctx context.Context, asse
 	return r0
 }
 
-// TagService_DeleteTagByAssetIDAndTemplateURN_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteTagByAssetIDAndTemplateURN'
-type TagService_DeleteTagByAssetIDAndTemplateURN_Call struct {
+// TagService_DeleteTag_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteTag'
+type TagService_DeleteTag_Call struct {
 	*mock.Call
 }
 
-// DeleteTagByAssetIDAndTemplateURN is a helper method to define mock.On call
+// DeleteTag is a helper method to define mock.On call
 //  - ctx context.Context
 //  - assetID string
 //  - templateURN string
-func (_e *TagService_Expecter) DeleteTagByAssetIDAndTemplateURN(ctx interface{}, assetID interface{}, templateURN interface{}) *TagService_DeleteTagByAssetIDAndTemplateURN_Call {
-	return &TagService_DeleteTagByAssetIDAndTemplateURN_Call{Call: _e.mock.On("DeleteTagByAssetIDAndTemplateURN", ctx, assetID, templateURN)}
+func (_e *TagService_Expecter) DeleteTag(ctx interface{}, assetID interface{}, templateURN interface{}) *TagService_DeleteTag_Call {
+	return &TagService_DeleteTag_Call{Call: _e.mock.On("DeleteTag", ctx, assetID, templateURN)}
 }
 
-func (_c *TagService_DeleteTagByAssetIDAndTemplateURN_Call) Run(run func(ctx context.Context, assetID string, templateURN string)) *TagService_DeleteTagByAssetIDAndTemplateURN_Call {
+func (_c *TagService_DeleteTag_Call) Run(run func(ctx context.Context, assetID string, templateURN string)) *TagService_DeleteTag_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
 
-func (_c *TagService_DeleteTagByAssetIDAndTemplateURN_Call) Return(_a0 error) *TagService_DeleteTagByAssetIDAndTemplateURN_Call {
+func (_c *TagService_DeleteTag_Call) Return(_a0 error) *TagService_DeleteTag_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
@@ -146,8 +146,8 @@ func (_c *TagService_FindTagByAssetIDAndTemplateURN_Call) Return(_a0 tag.Tag, _a
 	return _c
 }
 
-// GetTagByAssetID provides a mock function with given fields: ctx, assetID
-func (_m *TagService) GetTagByAssetID(ctx context.Context, assetID string) ([]tag.Tag, error) {
+// GetTagsByAssetID provides a mock function with given fields: ctx, assetID
+func (_m *TagService) GetTagsByAssetID(ctx context.Context, assetID string) ([]tag.Tag, error) {
 	ret := _m.Called(ctx, assetID)
 
 	var r0 []tag.Tag
@@ -169,26 +169,26 @@ func (_m *TagService) GetTagByAssetID(ctx context.Context, assetID string) ([]ta
 	return r0, r1
 }
 
-// TagService_GetTagByAssetID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetTagByAssetID'
-type TagService_GetTagByAssetID_Call struct {
+// TagService_GetTagsByAssetID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetTagsByAssetID'
+type TagService_GetTagsByAssetID_Call struct {
 	*mock.Call
 }
 
-// GetTagByAssetID is a helper method to define mock.On call
+// GetTagsByAssetID is a helper method to define mock.On call
 //  - ctx context.Context
 //  - assetID string
-func (_e *TagService_Expecter) GetTagByAssetID(ctx interface{}, assetID interface{}) *TagService_GetTagByAssetID_Call {
-	return &TagService_GetTagByAssetID_Call{Call: _e.mock.On("GetTagByAssetID", ctx, assetID)}
+func (_e *TagService_Expecter) GetTagsByAssetID(ctx interface{}, assetID interface{}) *TagService_GetTagsByAssetID_Call {
+	return &TagService_GetTagsByAssetID_Call{Call: _e.mock.On("GetTagsByAssetID", ctx, assetID)}
 }
 
-func (_c *TagService_GetTagByAssetID_Call) Run(run func(ctx context.Context, assetID string)) *TagService_GetTagByAssetID_Call {
+func (_c *TagService_GetTagsByAssetID_Call) Run(run func(ctx context.Context, assetID string)) *TagService_GetTagsByAssetID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
 
-func (_c *TagService_GetTagByAssetID_Call) Return(_a0 []tag.Tag, _a1 error) *TagService_GetTagByAssetID_Call {
+func (_c *TagService_GetTagsByAssetID_Call) Return(_a0 []tag.Tag, _a1 error) *TagService_GetTagsByAssetID_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }

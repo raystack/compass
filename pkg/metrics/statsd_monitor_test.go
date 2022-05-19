@@ -7,7 +7,7 @@ import (
 	"github.com/odpf/compass/pkg/metrics/mocks"
 )
 
-func TestNewStatsdMonitor(t *testing.T) {
+func TestNewStatsDMonitor(t *testing.T) {
 	var (
 		statsdPrefix     = "compassApi"
 		metricsSeparator = "."
@@ -16,10 +16,10 @@ func TestNewStatsdMonitor(t *testing.T) {
 	t.Run("MonitorLineage", func(t *testing.T) {
 		operationName := "build"
 		duration := 100
-		statsdClient := new(mocks.StatsdClient)
+		statsdClient := new(mocks.StatsDClient)
 		statsdClient.EXPECT().Timing("compassApi.duration,operation=build", int64(duration)).Once()
 
-		monitor := metrics.NewStatsdMonitor(statsdClient, statsdPrefix, metricsSeparator)
+		monitor := metrics.NewStatsDMonitor(statsdClient, statsdPrefix, metricsSeparator)
 		monitor.Duration(operationName, duration)
 
 		statsdClient.AssertExpectations(t)

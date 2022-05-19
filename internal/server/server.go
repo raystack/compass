@@ -34,16 +34,21 @@ import (
 )
 
 type Config struct {
-	Host string `mapstructure:"SERVER_HOST" default:"0.0.0.0"`
-	Port int    `mapstructure:"SERVER_PORT" default:"8080"`
+	Host string `mapstructure:"host" default:"0.0.0.0"`
+	Port int    `mapstructure:"port" default:"8080"`
 
 	// User Identity
-	IdentityHeaderUUIDKey       string `mapstructure:"IDENTITY_HEADER_UUID" default:"Compass-User-UUID"`
-	IdentityHeaderEmailKey      string `mapstructure:"IDENTITY_HEADER_EMAIL" default:"Compass-User-Email"`
-	IdentityProviderDefaultName string `mapstructure:"IDENTITY_PROVIDER_DEFAULT_NAME" default:""`
+	Identity IdentityConfig `mapstructure:"identity"`
 }
 
 func (cfg Config) addr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.Port) }
+
+type IdentityConfig struct {
+	// User Identity
+	HeaderKeyUUID       string `mapstructure:"headerkey_uuid" default:"Compass-User-UUID"`
+	HeaderKeyEmail      string `mapstructure:"headerkey_email" default:"Compass-User-Email"`
+	ProviderDefaultName string `mapstructure:"provider_default_name" default:""`
+}
 
 func Serve(
 	ctx context.Context,
@@ -51,7 +56,7 @@ func Serve(
 	logger log.Logger,
 	pgClient *postgres.Client,
 	nr *newrelic.Application,
-	statsd *metrics.StatsdMonitor,
+	statsd *metrics.StatsDMonitor,
 	assetService handlersv1beta1.AssetService,
 	starService handlersv1beta1.StarService,
 	discussionService handlersv1beta1.DiscussionService,
@@ -80,7 +85,7 @@ func Serve(
 			grpc_logrus.UnaryServerInterceptor(logrus.NewEntry(logrus.New())), //TODO: expose *logrus.Logger in salt
 			nrgrpc.UnaryServerInterceptor(nr),
 			grpc_interceptor.StatsD(statsd),
-			grpc_interceptor.ValidateUser(config.IdentityHeaderUUIDKey, config.IdentityHeaderEmailKey, userService),
+			grpc_interceptor.UserHeaderCtx(config.Identity.HeaderKeyUUID, config.Identity.HeaderKeyEmail),
 		)),
 	)
 
@@ -179,9 +184,9 @@ func Serve(
 func makeHeaderMatcher(c Config) func(key string) (string, bool) {
 	return func(key string) (string, bool) {
 		switch strings.ToLower(key) {
-		case strings.ToLower(c.IdentityHeaderUUIDKey):
+		case strings.ToLower(c.Identity.HeaderKeyUUID):
 			return key, true
-		case strings.ToLower(c.IdentityHeaderEmailKey):
+		case strings.ToLower(c.Identity.HeaderKeyEmail):
 			return key, true
 		default:
 			return runtime.DefaultHeaderMatcher(key)

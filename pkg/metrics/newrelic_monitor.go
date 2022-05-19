@@ -10,8 +10,8 @@ import (
 
 type NewRelicConfig struct {
 	Enabled    bool   `mapstructure:"enabled" default:"false"`
-	AppName    string `mapstructure:"app_name" default:"compass"`
-	LicenseKey string `mapstructure:"license_key" default:""`
+	AppName    string `mapstructure:"appname" default:"compass"`
+	LicenseKey string `mapstructure:"licensekey" default:""`
 }
 
 type NewRelicMonitor struct {
