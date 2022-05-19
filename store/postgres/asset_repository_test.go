@@ -132,7 +132,7 @@ func (r *AssetRepositoryTestSuite) insertRecord() (assets []asset.Asset) {
 }
 
 func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
-	r.builder = sq.Select(`a.test as test`)
+	r.builder = sq.Select(`data, type, name, service`)
 
 	testCases := []struct {
 		description   string
@@ -199,8 +199,9 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 			query, err = sq.Dollar.ReplacePlaceholders(query)
 			r.Require().NoError(err)
 
-			actualQuery := strings.Split(query, "WHERE ")
-			r.Equal(testCase.expectedQuery, actualQuery[1])
+			tempQuery := strings.Split(query, "WHERE ")
+			actualQuery := strings.Split(tempQuery[1], " ORDER")
+			r.Equal(testCase.expectedQuery, actualQuery[0])
 		})
 	}
 }
