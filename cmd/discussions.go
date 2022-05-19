@@ -160,7 +160,9 @@ func postdiscussionCommand() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&filePath, "body", "b", "", "filepath to body that has to be upserted")
-	cmd.MarkFlagRequired("body")
+	if err := cmd.MarkFlagRequired("body"); err != nil {
+		panic(err)
+	}
 
 	return cmd
 }
