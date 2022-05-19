@@ -22,6 +22,7 @@ vendor/
 
 # Project specific ignore
 .env
+asset-body.yaml
 compass
 config.yaml
-asset-body.yaml
+discussion-body.yaml

@@ -33,6 +33,6 @@ func New() *cobra.Command {
 	command.AddCommand(serveCmd())
 	command.AddCommand(migrateCmd())
 	command.AddCommand(assetsCommand())
-
+	command.AddCommand(discussionsCommand())
 	return command
 }
