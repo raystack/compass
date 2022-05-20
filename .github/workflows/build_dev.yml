@@ -1,6 +1,6 @@
 name: Build Dev
 
-on: push
+on: workflow_dispatch
 
 jobs:
   build:
