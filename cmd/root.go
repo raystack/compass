@@ -45,6 +45,7 @@ func New() *cobra.Command {
 	command.AddCommand(assetsCommand())
 	command.AddCommand(discussionsCommand())
 	command.AddCommand(searchCommand())
+	command.AddCommand(lineageCommand())
 
 	return command
 }
