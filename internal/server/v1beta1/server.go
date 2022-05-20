@@ -14,17 +14,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// type Dependencies struct {
-// 	AssetRepository      asset.Repository
-// 	TagService           *tag.Service
-// 	TagTemplateService   *tag.TemplateService
-// 	UserService          *user.Service
-// 	StarRepository       star.Repository
-// 	LineageRepository    lineage.Repository
-// 	DiscussionRepository discussion.Repository
-// 	DiscoveryRepository  discovery.Repository
-// }
-
 type APIServer struct {
 	compassv1beta1.UnimplementedCompassServiceServer
 	assetService       AssetService
