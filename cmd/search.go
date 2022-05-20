@@ -10,12 +10,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	filter, query, rankby string
-	size                  uint32
-)
-
 func searchCommand() *cobra.Command {
+	var filter, query, rankby string
+	var size uint32
 	cmd := &cobra.Command{
 		Use:     "search <text>",
 		Aliases: []string{},
@@ -39,7 +36,7 @@ func searchCommand() *cobra.Command {
 			defer cancel()
 
 			ctx := setCtxHeader(cmd.Context())
-			res, err := client.SearchAssets(ctx, makeSearchAssetRequest(args[0]))
+			res, err := client.SearchAssets(ctx, makeSearchAssetRequest(args[0], filter, query, rankby, size))
 			if err != nil {
 				return err
 			}
@@ -57,7 +54,7 @@ func searchCommand() *cobra.Command {
 	return cmd
 }
 
-func makeSearchAssetRequest(text string) *compassv1beta1.SearchAssetsRequest {
+func makeSearchAssetRequest(text, filter, query, rankby string, size uint32) *compassv1beta1.SearchAssetsRequest {
 	newReq := &compassv1beta1.SearchAssetsRequest{
 		Text: text,
 	}
