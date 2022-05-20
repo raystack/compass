@@ -36,6 +36,7 @@ func assetsCommand() *cobra.Command {
 }
 
 func listAllAssetsCommand() *cobra.Command {
+	var types, services, data, q, sort, sort_dir string
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "lists all assets",
@@ -56,7 +57,7 @@ func listAllAssetsCommand() *cobra.Command {
 			defer cancel()
 
 			ctx := setCtxHeader(cmd.Context())
-			res, err := client.GetAllAssets(ctx, &compassv1beta1.GetAllAssetsRequest{})
+			res, err := client.GetAllAssets(ctx, makeGetAllAssetRequest(types, services, data, q, sort, sort_dir))
 			if err != nil {
 				return err
 			}
@@ -67,7 +68,38 @@ func listAllAssetsCommand() *cobra.Command {
 		},
 	}
 
+	cmd.Flags().StringVarP(&types, "types", "t", "", "filter by types")
+	cmd.Flags().StringVarP(&services, "services", "s", "", "filter by services")
+	cmd.Flags().StringVarP(&data, "data", "d", "", "filter by field in asset.data")
+	cmd.Flags().StringVar(&q, "query", "", "querying by field")
+	cmd.Flags().StringVar(&sort, "sort", "", "sort by certain fields")
+	cmd.Flags().StringVar(&sort_dir, "sort_dir", "", "sorting direction (asc / desc)")
+
 	return cmd
+}
+
+func makeGetAllAssetRequest(types, services, data, q, sort, sort_dir string) *compassv1beta1.GetAllAssetsRequest {
+	newReq := &compassv1beta1.GetAllAssetsRequest{}
+	if types != "" {
+		newReq.Types = types
+	}
+	if services != "" {
+		newReq.Services = services
+	}
+	if q != "" {
+		newReq.Q = q
+	}
+	if sort != "" {
+		newReq.Sort = sort
+	}
+	if sort_dir != "" {
+		newReq.Direction = sort_dir
+	}
+	if data != "" {
+		newReq.Data = makeMapFromString(data)
+	}
+
+	return newReq
 }
 
 func viewAssetByIDCommand() *cobra.Command {
