@@ -13,22 +13,22 @@ import (
 
 func assetsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "assets",
+		Use:     "asset",
 		Aliases: []string{"assets"},
 		Short:   "Manage assets",
 		Annotations: map[string]string{
 			"group:core": "true",
 		},
 		Example: heredoc.Doc(`
-			$ compass assets list
-			$ compass assets get
-			$ compass assets delete
-			$ compass assets post
+			$ compass asset list
+			$ compass asset view
+			$ compass asset delete
+			$ compass asset post
 		`),
 	}
 
 	cmd.AddCommand(listAllAssetsCommand())
-	cmd.AddCommand(getAssetByIDCommand())
+	cmd.AddCommand(viewAssetByIDCommand())
 	cmd.AddCommand(postAssetCommand())
 	cmd.AddCommand(deleteAssetByIDCommand())
 
@@ -40,7 +40,7 @@ func listAllAssetsCommand() *cobra.Command {
 		Use:   "list",
 		Short: "lists all assets",
 		Example: heredoc.Doc(`
-			$ compass assets list --host=<hostaddress> --header=<key>:<value>
+			$ compass asset list --host=<hostaddress> --header=<key>:<value>
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
@@ -71,12 +71,12 @@ func listAllAssetsCommand() *cobra.Command {
 	return cmd
 }
 
-func getAssetByIDCommand() *cobra.Command {
+func viewAssetByIDCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get <id>",
-		Short: "get assets for the given ID",
+		Use:   "view <id>",
+		Short: "view asset for the given ID",
 		Example: heredoc.Doc(`
-			$ compass assets get <id> --host=<hostaddress> --header=<key>:<value>
+			$ compass asset view <id> --host=<hostaddress> --header=<key>:<value>
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
@@ -115,9 +115,9 @@ func postAssetCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "post",
-		Short: "post assets, add ",
+		Short: "post asset, add ",
 		Example: heredoc.Doc(`
-			$ compass assets post --host=<hostaddress> --header=<key>:<value> --body=filePath
+			$ compass asset post --host=<hostaddress> --header=<key>:<value> --body=filePath
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
@@ -169,9 +169,9 @@ func postAssetCommand() *cobra.Command {
 func deleteAssetByIDCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete <id>",
-		Short: "delete assets with the given ID",
+		Short: "delete asset with the given ID",
 		Example: heredoc.Doc(`
-			$ compass assets delete <id> --host=<hostaddress> --header=<key>:<value>
+			$ compass asset delete <id> --host=<hostaddress> --header=<key>:<value>
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
