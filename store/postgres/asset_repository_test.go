@@ -169,9 +169,9 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 			},
 			expectedQuery: `(data->'landscape'->'properties'->>'project-id' ILIKE $1 OR description ILIKE $2)`,
 		},
-		// NOTE: The data entries contain in the map does not produce any specific order for query, generated query
-		// will be of random order.
 		{
+			// NOTE: Cannot have more than one key in map because golang's map does not guarantee order thus producing
+			// inconsistent test.
 			description: "should return sql query with asset's data fields filter",
 			config: asset.Filter{
 				Data: map[string]string{
