@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 
 	"google.golang.org/grpc/metadata"
 	"gopkg.in/yaml.v3"
@@ -44,4 +45,14 @@ func setCtxHeader(ctx context.Context) context.Context {
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	return ctx
+}
+
+func makeMapFromString(commaSepStr string) map[string]string {
+	m := make(map[string]string)
+	keyValArray := strings.Split(commaSepStr, ",")
+	for _, s := range keyValArray {
+		arr := strings.Split(s, ":")
+		m[arr[0]] = arr[1]
+	}
+	return m
 }

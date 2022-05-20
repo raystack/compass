@@ -44,5 +44,7 @@ func New() *cobra.Command {
 	command.AddCommand(migrateCmd())
 	command.AddCommand(assetsCommand())
 	command.AddCommand(discussionsCommand())
+	command.AddCommand(searchCommand())
+
 	return command
 }
