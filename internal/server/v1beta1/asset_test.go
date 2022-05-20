@@ -407,7 +407,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
 				expectedErr := errors.New("unknown error")
 				as.EXPECT().GetAssetByURN(ctx, "test dagger", asset.TypeTable, "kafka").Return(currentAsset, nil)
-				as.EXPECT().UpsertPatchAsset(ctx, mock.AnythingOfType("*asset.Asset"), mock.AnythingOfType("[]asset.Node"), mock.AnythingOfType("[]asset.Node")).Return("1234-5678", expectedErr)
+				as.EXPECT().UpsertPatchAsset(ctx, mock.AnythingOfType("*asset.Asset"), mock.AnythingOfType("[]asset.LineageNode"), mock.AnythingOfType("[]asset.LineageNode")).Return("1234-5678", expectedErr)
 			},
 			Request:      validPayload,
 			ExpectStatus: codes.Internal,
@@ -423,10 +423,10 @@ func TestUpsertPatchAsset(t *testing.T) {
 					UpdatedBy: user.User{ID: userID},
 					Data:      map[string]interface{}{},
 				}
-				upstreams := []asset.Node{
+				upstreams := []asset.LineageNode{
 					{URN: "upstream-1", Type: asset.TypeJob, Service: "optimus"},
 				}
-				downstreams := []asset.Node{
+				downstreams := []asset.LineageNode{
 					{URN: "downstream-1", Type: asset.TypeDashboard, Service: "metabase"},
 					{URN: "downstream-2", Type: asset.TypeDashboard, Service: "tableau"},
 				}
@@ -435,7 +435,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 				assetWithID.ID = assetID
 
 				as.EXPECT().GetAssetByURN(ctx, "test dagger", asset.TypeTable, "kafka").Return(currentAsset, nil)
-				as.EXPECT().UpsertPatchAsset(ctx, &patchedAsset, upstreams, downstreams).Return(assetWithID.ID, nil).Run(func(ctx context.Context, ast *asset.Asset, upstreams, downstreams []asset.Node) {
+				as.EXPECT().UpsertPatchAsset(ctx, &patchedAsset, upstreams, downstreams).Return(assetWithID.ID, nil).Run(func(ctx context.Context, ast *asset.Asset, upstreams, downstreams []asset.LineageNode) {
 					patchedAsset.ID = assetWithID.ID
 				})
 			},

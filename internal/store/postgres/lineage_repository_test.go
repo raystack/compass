@@ -55,28 +55,28 @@ func (r *LineageRepositoryTestSuite) TestGetGraph() {
 	// populate root node
 	err := r.repository.Upsert(r.ctx,
 		rootNode,
-		[]asset.Node{
+		[]asset.LineageNode{
 			r.optimus("optimus-tgg-1"),
 		},
-		[]asset.Node{
+		[]asset.LineageNode{
 			r.metabase("metabase-tgg-99"),
 		})
 	r.Require().NoError(err)
 	// populate upstream's node
 	err = r.repository.Upsert(r.ctx,
 		r.optimus("optimus-tgg-1"),
-		[]asset.Node{
+		[]asset.LineageNode{
 			r.bigquery("table-50"),
 			r.bigquery("table-51"),
 		},
-		[]asset.Node{},
+		[]asset.LineageNode{},
 	)
 	r.Require().NoError(err)
 	// populate downstream's node
 	err = r.repository.Upsert(r.ctx,
 		r.metabase("metabase-tgg-99"),
-		[]asset.Node{},
-		[]asset.Node{
+		[]asset.LineageNode{},
+		[]asset.LineageNode{
 			r.metabase("metabase-tgg-51"),
 			r.metabase("metabase-tgg-52"),
 		},
@@ -84,7 +84,7 @@ func (r *LineageRepositoryTestSuite) TestGetGraph() {
 	r.Require().NoError(err)
 
 	r.Run("should recursively fetch all graph", func() {
-		expected := asset.Graph{
+		expected := asset.LineageGraph{
 			{Source: "optimus-tgg-1", Target: rootNode.URN},
 			{Source: "table-50", Target: "optimus-tgg-1"},
 			{Source: "table-51", Target: "optimus-tgg-1"},
@@ -102,15 +102,15 @@ func (r *LineageRepositoryTestSuite) TestGetGraph() {
 func (r *LineageRepositoryTestSuite) TestUpsert() {
 	r.Run("should insert all as graph if upstreams and downstreams are new", func() {
 		nodeURN := "table-1"
-		node := asset.Node{
+		node := asset.LineageNode{
 			URN:     nodeURN,
 			Type:    "table",
 			Service: "bigquery",
 		}
-		upstreams := []asset.Node{
+		upstreams := []asset.LineageNode{
 			{URN: "job-1", Type: asset.TypeJob, Service: "optimus"},
 		}
-		downstreams := []asset.Node{
+		downstreams := []asset.LineageNode{
 			{URN: "dashboard-1", Type: asset.TypeDashboard, Service: "metabase"},
 			{URN: "dashboard-2", Type: asset.TypeDashboard, Service: "optimus"},
 		}
@@ -119,7 +119,7 @@ func (r *LineageRepositoryTestSuite) TestUpsert() {
 
 		graph, err := r.repository.GetGraph(r.ctx, node)
 		r.Require().NoError(err)
-		r.compareGraphs(asset.Graph{
+		r.compareGraphs(asset.LineageGraph{
 			{Source: "job-1", Target: nodeURN},
 			{Source: nodeURN, Target: "dashboard-1"},
 			{Source: nodeURN, Target: "dashboard-2"},
@@ -128,7 +128,7 @@ func (r *LineageRepositoryTestSuite) TestUpsert() {
 
 	r.Run("should insert or delete graph when updating existing graph", func() {
 		nodeURN := "update-table"
-		node := asset.Node{
+		node := asset.LineageNode{
 			URN:     nodeURN,
 			Type:    "table",
 			Service: "bigquery",
@@ -136,28 +136,28 @@ func (r *LineageRepositoryTestSuite) TestUpsert() {
 
 		// create initial
 		err := r.repository.Upsert(r.ctx, node,
-			[]asset.Node{
+			[]asset.LineageNode{
 				{URN: "job-99", Type: asset.TypeJob, Service: "optimus"},
 			},
-			[]asset.Node{
+			[]asset.LineageNode{
 				{URN: "dashboard-99", Type: asset.TypeDashboard, Service: "metabase"},
 			})
 		r.NoError(err)
 
 		// update
 		err = r.repository.Upsert(r.ctx, node,
-			[]asset.Node{
+			[]asset.LineageNode{
 				{URN: "job-99", Type: asset.TypeJob, Service: "optimus"},
 				{URN: "job-100", Type: asset.TypeJob, Service: "optimus"},
 			},
-			[]asset.Node{
+			[]asset.LineageNode{
 				{URN: "dashboard-93", Type: asset.TypeDashboard, Service: "metabase"},
 			})
 		r.NoError(err)
 
 		graph, err := r.repository.GetGraph(r.ctx, node)
 		r.Require().NoError(err)
-		r.compareGraphs(asset.Graph{
+		r.compareGraphs(asset.LineageGraph{
 			{Source: "job-99", Target: nodeURN},
 			{Source: "job-100", Target: nodeURN},
 			{Source: nodeURN, Target: "dashboard-93"},
@@ -165,7 +165,7 @@ func (r *LineageRepositoryTestSuite) TestUpsert() {
 	})
 }
 
-func (r *LineageRepositoryTestSuite) compareGraphs(expected, actual asset.Graph) {
+func (r *LineageRepositoryTestSuite) compareGraphs(expected, actual asset.LineageGraph) {
 	expLen := len(expected)
 	r.Require().Len(actual, expLen)
 
@@ -175,24 +175,24 @@ func (r *LineageRepositoryTestSuite) compareGraphs(expected, actual asset.Graph)
 	}
 }
 
-func (r *LineageRepositoryTestSuite) bigquery(urn string) asset.Node {
-	return asset.Node{
+func (r *LineageRepositoryTestSuite) bigquery(urn string) asset.LineageNode {
+	return asset.LineageNode{
 		URN:     urn,
 		Type:    asset.TypeTable,
 		Service: "bigquery",
 	}
 }
 
-func (r *LineageRepositoryTestSuite) optimus(urn string) asset.Node {
-	return asset.Node{
+func (r *LineageRepositoryTestSuite) optimus(urn string) asset.LineageNode {
+	return asset.LineageNode{
 		URN:     urn,
 		Type:    asset.TypeJob,
 		Service: "optimus",
 	}
 }
 
-func (r *LineageRepositoryTestSuite) metabase(urn string) asset.Node {
-	return asset.Node{
+func (r *LineageRepositoryTestSuite) metabase(urn string) asset.LineageNode {
+	return asset.LineageNode{
 		URN:     urn,
 		Type:    asset.TypeDashboard,
 		Service: "metabase",

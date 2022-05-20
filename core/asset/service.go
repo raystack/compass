@@ -4,18 +4,18 @@ import (
 	"context"
 )
 
+type Service struct {
+	assetRepository     Repository
+	discoveryRepository DiscoveryRepository
+	lineageRepository   LineageRepository
+}
+
 func NewService(assetRepository Repository, discoveryRepository DiscoveryRepository, lineageRepository LineageRepository) *Service {
 	return &Service{
 		assetRepository:     assetRepository,
 		discoveryRepository: discoveryRepository,
 		lineageRepository:   lineageRepository,
 	}
-}
-
-type Service struct {
-	assetRepository     Repository
-	discoveryRepository DiscoveryRepository
-	lineageRepository   LineageRepository
 }
 
 func (s *Service) GetAllAssets(ctx context.Context, flt Filter, withTotal bool) ([]Asset, uint32, error) {
@@ -35,7 +35,7 @@ func (s *Service) GetAllAssets(ctx context.Context, flt Filter, withTotal bool) 
 	return assets, totalCount, nil
 }
 
-func (s *Service) UpsertPatchAsset(ctx context.Context, ast *Asset, upstreams, downstreams []Node) (string, error) {
+func (s *Service) UpsertPatchAsset(ctx context.Context, ast *Asset, upstreams, downstreams []LineageNode) (string, error) {
 	var assetID string
 	var err error
 
@@ -49,7 +49,7 @@ func (s *Service) UpsertPatchAsset(ctx context.Context, ast *Asset, upstreams, d
 		return assetID, err
 	}
 
-	node := Node{
+	node := LineageNode{
 		URN:     ast.URN,
 		Type:    ast.Type,
 		Service: ast.Service,
@@ -90,7 +90,7 @@ func (s *Service) GetAssetVersionHistory(ctx context.Context, flt Filter, id str
 	return s.assetRepository.GetVersionHistory(ctx, flt, id)
 }
 
-func (s *Service) GetLineage(ctx context.Context, node Node) (Graph, error) {
+func (s *Service) GetLineage(ctx context.Context, node LineageNode) (LineageGraph, error) {
 	return s.lineageRepository.GetGraph(ctx, node)
 }
 

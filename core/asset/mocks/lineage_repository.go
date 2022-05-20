@@ -24,20 +24,20 @@ func (_m *LineageRepository) EXPECT() *LineageRepository_Expecter {
 }
 
 // GetGraph provides a mock function with given fields: ctx, node
-func (_m *LineageRepository) GetGraph(ctx context.Context, node asset.Node) (asset.Graph, error) {
+func (_m *LineageRepository) GetGraph(ctx context.Context, node asset.LineageNode) (asset.LineageGraph, error) {
 	ret := _m.Called(ctx, node)
 
-	var r0 asset.Graph
-	if rf, ok := ret.Get(0).(func(context.Context, asset.Node) asset.Graph); ok {
+	var r0 asset.LineageGraph
+	if rf, ok := ret.Get(0).(func(context.Context, asset.LineageNode) asset.LineageGraph); ok {
 		r0 = rf(ctx, node)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(asset.Graph)
+			r0 = ret.Get(0).(asset.LineageGraph)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, asset.Node) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, asset.LineageNode) error); ok {
 		r1 = rf(ctx, node)
 	} else {
 		r1 = ret.Error(1)
@@ -53,29 +53,29 @@ type LineageRepository_GetGraph_Call struct {
 
 // GetGraph is a helper method to define mock.On call
 //  - ctx context.Context
-//  - node asset.Node
+//  - node asset.LineageNode
 func (_e *LineageRepository_Expecter) GetGraph(ctx interface{}, node interface{}) *LineageRepository_GetGraph_Call {
 	return &LineageRepository_GetGraph_Call{Call: _e.mock.On("GetGraph", ctx, node)}
 }
 
-func (_c *LineageRepository_GetGraph_Call) Run(run func(ctx context.Context, node asset.Node)) *LineageRepository_GetGraph_Call {
+func (_c *LineageRepository_GetGraph_Call) Run(run func(ctx context.Context, node asset.LineageNode)) *LineageRepository_GetGraph_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(asset.Node))
+		run(args[0].(context.Context), args[1].(asset.LineageNode))
 	})
 	return _c
 }
 
-func (_c *LineageRepository_GetGraph_Call) Return(_a0 asset.Graph, _a1 error) *LineageRepository_GetGraph_Call {
+func (_c *LineageRepository_GetGraph_Call) Return(_a0 asset.LineageGraph, _a1 error) *LineageRepository_GetGraph_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
 // Upsert provides a mock function with given fields: ctx, node, upstreams, downstreams
-func (_m *LineageRepository) Upsert(ctx context.Context, node asset.Node, upstreams []asset.Node, downstreams []asset.Node) error {
+func (_m *LineageRepository) Upsert(ctx context.Context, node asset.LineageNode, upstreams []asset.LineageNode, downstreams []asset.LineageNode) error {
 	ret := _m.Called(ctx, node, upstreams, downstreams)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, asset.Node, []asset.Node, []asset.Node) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, asset.LineageNode, []asset.LineageNode, []asset.LineageNode) error); ok {
 		r0 = rf(ctx, node, upstreams, downstreams)
 	} else {
 		r0 = ret.Error(0)
@@ -91,16 +91,16 @@ type LineageRepository_Upsert_Call struct {
 
 // Upsert is a helper method to define mock.On call
 //  - ctx context.Context
-//  - node asset.Node
-//  - upstreams []asset.Node
-//  - downstreams []asset.Node
+//  - node asset.LineageNode
+//  - upstreams []asset.LineageNode
+//  - downstreams []asset.LineageNode
 func (_e *LineageRepository_Expecter) Upsert(ctx interface{}, node interface{}, upstreams interface{}, downstreams interface{}) *LineageRepository_Upsert_Call {
 	return &LineageRepository_Upsert_Call{Call: _e.mock.On("Upsert", ctx, node, upstreams, downstreams)}
 }
 
-func (_c *LineageRepository_Upsert_Call) Run(run func(ctx context.Context, node asset.Node, upstreams []asset.Node, downstreams []asset.Node)) *LineageRepository_Upsert_Call {
+func (_c *LineageRepository_Upsert_Call) Run(run func(ctx context.Context, node asset.LineageNode, upstreams []asset.LineageNode, downstreams []asset.LineageNode)) *LineageRepository_Upsert_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(asset.Node), args[2].([]asset.Node), args[3].([]asset.Node))
+		run(args[0].(context.Context), args[1].(asset.LineageNode), args[2].([]asset.LineageNode), args[3].([]asset.LineageNode))
 	})
 	return _c
 }

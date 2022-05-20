@@ -19,7 +19,6 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.0
 	github.com/google/go-cmp v0.5.7
 	github.com/google/uuid v1.3.0
-	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.9.0
 	github.com/jackc/pgconn v1.8.0
@@ -31,7 +30,6 @@ require (
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
 	github.com/newrelic/go-agent/v3 v3.15.2
 	github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7 v1.0.1
-	github.com/newrelic/go-agent/v3/integrations/nrgorilla v1.1.1
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.1
 	github.com/odpf/salt v0.0.0-20220224163336-9b41552dde37
 	github.com/olivere/elastic/v7 v7.0.31

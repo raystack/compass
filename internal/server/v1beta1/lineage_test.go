@@ -26,10 +26,10 @@ func TestGetLineageGraph(t *testing.T) {
 		t.Run("should return a graph containing the requested resource, along with it's related resources", func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			logger := log.NewNoop()
-			node := asset.Node{
+			node := asset.LineageNode{
 				URN: "job-1",
 			}
-			var graph = asset.Graph{
+			var graph = asset.LineageGraph{
 				{Source: "job-1", Target: "table-2"},
 				{Source: "table-2", Target: "table-31"},
 				{Source: "table-31", Target: "dashboard-30"},
@@ -49,7 +49,7 @@ func TestGetLineageGraph(t *testing.T) {
 			})
 			code := status.Code(err)
 			if code != codes.OK {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", codes.OK, code.String())
+				t.Errorf("expected handler to return Code %s, returned Code %s instead", codes.OK, code.String())
 				return
 			}
 

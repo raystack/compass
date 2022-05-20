@@ -4,10 +4,10 @@ import (
 	"github.com/odpf/compass/core/asset"
 )
 
-type GraphModel []EdgeModel
+type LineageGraphModel []LineageEdgeModel
 
-func (gm GraphModel) toGraph() asset.Graph {
-	graph := asset.Graph{}
+func (gm LineageGraphModel) toGraph() asset.LineageGraph {
+	graph := asset.LineageGraph{}
 	for _, em := range gm {
 		graph = append(graph, em.toEdge())
 	}
@@ -15,14 +15,14 @@ func (gm GraphModel) toGraph() asset.Graph {
 	return graph
 }
 
-type EdgeModel struct {
+type LineageEdgeModel struct {
 	Source string  `db:"source"`
 	Target string  `db:"target"`
 	Prop   JSONMap `db:"prop"`
 }
 
-func (m EdgeModel) toEdge() asset.Edge {
-	edge := asset.Edge{
+func (m LineageEdgeModel) toEdge() asset.LineageEdge {
+	edge := asset.LineageEdge{
 		Source: m.Source,
 		Target: m.Target,
 		Prop:   m.Prop,

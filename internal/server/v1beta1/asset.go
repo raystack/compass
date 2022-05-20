@@ -25,10 +25,10 @@ type AssetService interface {
 	GetAssetByURN(ctx context.Context, urn string, typ asset.Type, service string) (asset.Asset, error)
 	GetAssetByVersion(ctx context.Context, id string, version string) (asset.Asset, error)
 	GetAssetVersionHistory(ctx context.Context, flt asset.Filter, id string) ([]asset.Asset, error)
-	UpsertPatchAsset(context.Context, *asset.Asset, []asset.Node, []asset.Node) (string, error)
+	UpsertPatchAsset(context.Context, *asset.Asset, []asset.LineageNode, []asset.LineageNode) (string, error)
 	DeleteAsset(context.Context, string) error
 
-	GetLineage(ctx context.Context, node asset.Node) (asset.Graph, error)
+	GetLineage(ctx context.Context, node asset.LineageNode) (asset.LineageGraph, error)
 	GetTypes(ctx context.Context) (map[asset.Type]int, error)
 
 	SearchAssets(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error)
@@ -258,13 +258,13 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1bet
 	}
 
 	ast.UpdatedBy.ID = userID
-	upstreams := []asset.Node{}
+	upstreams := []asset.LineageNode{}
 	for _, pb := range req.GetUpstreams() {
-		upstreams = append(upstreams, asset.NewNodeFromProto(pb))
+		upstreams = append(upstreams, lineageNodeFromProto(pb))
 	}
-	downstreams := []asset.Node{}
+	downstreams := []asset.LineageNode{}
 	for _, pb := range req.GetDownstreams() {
-		downstreams = append(downstreams, asset.NewNodeFromProto(pb))
+		downstreams = append(downstreams, lineageNodeFromProto(pb))
 	}
 
 	assetID, err := server.assetService.UpsertPatchAsset(ctx, &ast, upstreams, downstreams)

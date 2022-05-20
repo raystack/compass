@@ -105,7 +105,7 @@ func TestService_GetAllAssets(t *testing.T) {
 
 func TestService_UpsertAsset(t *testing.T) {
 	sampleAsset := &asset.Asset{ID: "some-id", URN: "some-urn", Type: asset.TypeDashboard, Service: "some-service"}
-	sampleNodes1 := []asset.Node{
+	sampleNodes1 := []asset.LineageNode{
 		{
 			URN:     "1-urn-1",
 			Type:    asset.TypeJob,
@@ -117,7 +117,7 @@ func TestService_UpsertAsset(t *testing.T) {
 			Service: "service-1",
 		},
 	}
-	sampleNodes2 := []asset.Node{
+	sampleNodes2 := []asset.LineageNode{
 		{
 			URN:     "2-urn-1",
 			Type:    asset.TypeTopic,
@@ -132,8 +132,8 @@ func TestService_UpsertAsset(t *testing.T) {
 	type testCase struct {
 		Description string
 		Asset       *asset.Asset
-		Upstreams   []asset.Node
-		Downstreams []asset.Node
+		Upstreams   []asset.LineageNode
+		Downstreams []asset.LineageNode
 		Err         error
 		ReturnedID  string
 		Setup       func(context.Context, *mocks.AssetRepository, *mocks.DiscoveryRepository, *mocks.LineageRepository)
@@ -167,7 +167,7 @@ func TestService_UpsertAsset(t *testing.T) {
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
 				ar.EXPECT().Upsert(ctx, sampleAsset).Return(sampleAsset.ID, nil)
 				dr.EXPECT().Upsert(ctx, *sampleAsset).Return(nil)
-				lr.EXPECT().Upsert(ctx, asset.Node{
+				lr.EXPECT().Upsert(ctx, asset.LineageNode{
 					URN:     sampleAsset.URN,
 					Type:    sampleAsset.Type,
 					Service: sampleAsset.Service,
@@ -184,7 +184,7 @@ func TestService_UpsertAsset(t *testing.T) {
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
 				ar.EXPECT().Upsert(ctx, sampleAsset).Return(sampleAsset.ID, nil)
 				dr.EXPECT().Upsert(ctx, *sampleAsset).Return(nil)
-				lr.EXPECT().Upsert(ctx, asset.Node{
+				lr.EXPECT().Upsert(ctx, asset.LineageNode{
 					URN:     sampleAsset.URN,
 					Type:    sampleAsset.Type,
 					Service: sampleAsset.Service,

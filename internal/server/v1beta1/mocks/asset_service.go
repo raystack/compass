@@ -303,20 +303,20 @@ func (_c *AssetService_GetAssetVersionHistory_Call) Return(_a0 []asset.Asset, _a
 }
 
 // GetLineage provides a mock function with given fields: ctx, node
-func (_m *AssetService) GetLineage(ctx context.Context, node asset.Node) (asset.Graph, error) {
+func (_m *AssetService) GetLineage(ctx context.Context, node asset.LineageNode) (asset.LineageGraph, error) {
 	ret := _m.Called(ctx, node)
 
-	var r0 asset.Graph
-	if rf, ok := ret.Get(0).(func(context.Context, asset.Node) asset.Graph); ok {
+	var r0 asset.LineageGraph
+	if rf, ok := ret.Get(0).(func(context.Context, asset.LineageNode) asset.LineageGraph); ok {
 		r0 = rf(ctx, node)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(asset.Graph)
+			r0 = ret.Get(0).(asset.LineageGraph)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, asset.Node) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, asset.LineageNode) error); ok {
 		r1 = rf(ctx, node)
 	} else {
 		r1 = ret.Error(1)
@@ -332,19 +332,19 @@ type AssetService_GetLineage_Call struct {
 
 // GetLineage is a helper method to define mock.On call
 //  - ctx context.Context
-//  - node asset.Node
+//  - node asset.LineageNode
 func (_e *AssetService_Expecter) GetLineage(ctx interface{}, node interface{}) *AssetService_GetLineage_Call {
 	return &AssetService_GetLineage_Call{Call: _e.mock.On("GetLineage", ctx, node)}
 }
 
-func (_c *AssetService_GetLineage_Call) Run(run func(ctx context.Context, node asset.Node)) *AssetService_GetLineage_Call {
+func (_c *AssetService_GetLineage_Call) Run(run func(ctx context.Context, node asset.LineageNode)) *AssetService_GetLineage_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(asset.Node))
+		run(args[0].(context.Context), args[1].(asset.LineageNode))
 	})
 	return _c
 }
 
-func (_c *AssetService_GetLineage_Call) Return(_a0 asset.Graph, _a1 error) *AssetService_GetLineage_Call {
+func (_c *AssetService_GetLineage_Call) Return(_a0 asset.LineageGraph, _a1 error) *AssetService_GetLineage_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
@@ -490,18 +490,18 @@ func (_c *AssetService_SuggestAssets_Call) Return(suggestions []string, err erro
 }
 
 // UpsertPatchAsset provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *AssetService) UpsertPatchAsset(_a0 context.Context, _a1 *asset.Asset, _a2 []asset.Node, _a3 []asset.Node) (string, error) {
+func (_m *AssetService) UpsertPatchAsset(_a0 context.Context, _a1 *asset.Asset, _a2 []asset.LineageNode, _a3 []asset.LineageNode) (string, error) {
 	ret := _m.Called(_a0, _a1, _a2, _a3)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func(context.Context, *asset.Asset, []asset.Node, []asset.Node) string); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *asset.Asset, []asset.LineageNode, []asset.LineageNode) string); ok {
 		r0 = rf(_a0, _a1, _a2, _a3)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *asset.Asset, []asset.Node, []asset.Node) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *asset.Asset, []asset.LineageNode, []asset.LineageNode) error); ok {
 		r1 = rf(_a0, _a1, _a2, _a3)
 	} else {
 		r1 = ret.Error(1)
@@ -518,15 +518,15 @@ type AssetService_UpsertPatchAsset_Call struct {
 // UpsertPatchAsset is a helper method to define mock.On call
 //  - _a0 context.Context
 //  - _a1 *asset.Asset
-//  - _a2 []asset.Node
-//  - _a3 []asset.Node
+//  - _a2 []asset.LineageNode
+//  - _a3 []asset.LineageNode
 func (_e *AssetService_Expecter) UpsertPatchAsset(_a0 interface{}, _a1 interface{}, _a2 interface{}, _a3 interface{}) *AssetService_UpsertPatchAsset_Call {
 	return &AssetService_UpsertPatchAsset_Call{Call: _e.mock.On("UpsertPatchAsset", _a0, _a1, _a2, _a3)}
 }
 
-func (_c *AssetService_UpsertPatchAsset_Call) Run(run func(_a0 context.Context, _a1 *asset.Asset, _a2 []asset.Node, _a3 []asset.Node)) *AssetService_UpsertPatchAsset_Call {
+func (_c *AssetService_UpsertPatchAsset_Call) Run(run func(_a0 context.Context, _a1 *asset.Asset, _a2 []asset.LineageNode, _a3 []asset.LineageNode)) *AssetService_UpsertPatchAsset_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*asset.Asset), args[2].([]asset.Node), args[3].([]asset.Node))
+		run(args[0].(context.Context), args[1].(*asset.Asset), args[2].([]asset.LineageNode), args[3].([]asset.LineageNode))
 	})
 	return _c
 }

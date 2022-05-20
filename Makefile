@@ -48,3 +48,6 @@ install: ## install required dependencies
 	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.9.0
 	go install github.com/bufbuild/buf/cmd/buf@v1.4.0
 	go install github.com/envoyproxy/protoc-gen-validate@v0.6.7
+
+update-swagger-md:
+	npx swagger-markdown -i third_party/OpenAPI/compass.swagger.yaml -o docs/reference/api.md
