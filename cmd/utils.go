@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
-	"strings"
 
 	"google.golang.org/grpc/metadata"
 	"gopkg.in/yaml.v3"
@@ -40,12 +39,8 @@ func prettyPrint(i interface{}) string {
 	return string(s)
 }
 
-func setCtxHeader(ctx context.Context, header string) context.Context {
-	s := strings.Split(header, ":")
-	key := s[0]
-	val := s[1]
-
-	md := metadata.New(map[string]string{key: val})
+func setCtxHeader(ctx context.Context) context.Context {
+	md := metadata.New(map[string]string{headerKey: headerValue})
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	return ctx

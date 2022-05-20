@@ -40,7 +40,7 @@ func listAllAssetsCommand() *cobra.Command {
 		Use:   "list",
 		Short: "lists all assets",
 		Example: heredoc.Doc(`
-			$ compass asset list --host=<hostaddress> --header=<key>:<value>
+			$ compass asset list
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
@@ -49,14 +49,13 @@ func listAllAssetsCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 			cs := term.NewColorScheme()
-			fmt.Println("header:", header)
-			client, cancel, err := createClient(cmd, host)
+			client, cancel, err := createClient(cmd.Context(), host)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := setCtxHeader(cmd.Context(), header)
+			ctx := setCtxHeader(cmd.Context())
 			res, err := client.GetAllAssets(ctx, &compassv1beta1.GetAllAssetsRequest{})
 			if err != nil {
 				return err
@@ -76,7 +75,7 @@ func viewAssetByIDCommand() *cobra.Command {
 		Use:   "view <id>",
 		Short: "view asset for the given ID",
 		Example: heredoc.Doc(`
-			$ compass asset view <id> --host=<hostaddress> --header=<key>:<value>
+			$ compass asset view <id>
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
@@ -86,14 +85,14 @@ func viewAssetByIDCommand() *cobra.Command {
 			defer spinner.Stop()
 			cs := term.NewColorScheme()
 
-			client, cancel, err := createClient(cmd, host)
+			client, cancel, err := createClient(cmd.Context(), host)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
 			assetID := args[0]
-			ctx := setCtxHeader(cmd.Context(), header)
+			ctx := setCtxHeader(cmd.Context())
 			res, err := client.GetAssetByID(ctx, &compassv1beta1.GetAssetByIDRequest{
 				Id: assetID,
 			})
@@ -117,7 +116,7 @@ func postAssetCommand() *cobra.Command {
 		Use:   "post",
 		Short: "post asset, add ",
 		Example: heredoc.Doc(`
-			$ compass asset post --host=<hostaddress> --header=<key>:<value> --body=filePath
+			$ compass asset post --body=filePath
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
@@ -137,13 +136,13 @@ func postAssetCommand() *cobra.Command {
 				return err
 			}
 
-			client, cancel, err := createClient(cmd, host)
+			client, cancel, err := createClient(cmd.Context(), host)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := setCtxHeader(cmd.Context(), header)
+			ctx := setCtxHeader(cmd.Context())
 			res, err := client.UpsertAsset(ctx, &compassv1beta1.UpsertAssetRequest{
 				Asset:     reqBody.Asset,
 				Upstreams: reqBody.Upstreams,
@@ -171,7 +170,7 @@ func deleteAssetByIDCommand() *cobra.Command {
 		Use:   "delete <id>",
 		Short: "delete asset with the given ID",
 		Example: heredoc.Doc(`
-			$ compass asset delete <id> --host=<hostaddress> --header=<key>:<value>
+			$ compass asset delete <id> 
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
@@ -181,14 +180,14 @@ func deleteAssetByIDCommand() *cobra.Command {
 			defer spinner.Stop()
 			cs := term.NewColorScheme()
 
-			client, cancel, err := createClient(cmd, host)
+			client, cancel, err := createClient(cmd.Context(), host)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
 			assetID := args[0]
-			ctx := setCtxHeader(cmd.Context(), header)
+			ctx := setCtxHeader(cmd.Context())
 			_, err = client.DeleteAsset(ctx, &compassv1beta1.DeleteAssetRequest{
 				Id: assetID,
 			})

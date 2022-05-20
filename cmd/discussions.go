@@ -38,7 +38,7 @@ func listAllDiscussionsCommand() *cobra.Command {
 		Use:   "list",
 		Short: "lists all discussions",
 		Example: heredoc.Doc(`
-			$ compass discussion list --host=<hostaddress> --header=<key>:<value>
+			$ compass discussion list
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
@@ -48,13 +48,13 @@ func listAllDiscussionsCommand() *cobra.Command {
 			defer spinner.Stop()
 			cs := term.NewColorScheme()
 
-			client, cancel, err := createClient(cmd, host)
+			client, cancel, err := createClient(cmd.Context(), host)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := setCtxHeader(cmd.Context(), header)
+			ctx := setCtxHeader(cmd.Context())
 			res, err := client.GetAllDiscussions(ctx, &compassv1beta1.GetAllDiscussionsRequest{})
 			if err != nil {
 				return err
@@ -74,7 +74,7 @@ func viewdiscussionByIDCommand() *cobra.Command {
 		Use:   "view <id>",
 		Short: "view discussion for the given ID",
 		Example: heredoc.Doc(`
-			$ compass discussion view <id> --host=<hostaddress> --header=<key>:<value>
+			$ compass discussion view <id>
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
@@ -84,14 +84,14 @@ func viewdiscussionByIDCommand() *cobra.Command {
 			defer spinner.Stop()
 			cs := term.NewColorScheme()
 
-			client, cancel, err := createClient(cmd, host)
+			client, cancel, err := createClient(cmd.Context(), host)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
 			discussionID := args[0]
-			ctx := setCtxHeader(cmd.Context(), header)
+			ctx := setCtxHeader(cmd.Context())
 			res, err := client.GetDiscussion(ctx, &compassv1beta1.GetDiscussionRequest{
 				Id: discussionID,
 			})
@@ -115,7 +115,7 @@ func postdiscussionCommand() *cobra.Command {
 		Use:   "post",
 		Short: "post discussions, add ",
 		Example: heredoc.Doc(`
-			$ compass discussion post --host=<hostaddress> --header=<key>:<value> --body=filePath
+			$ compass discussion post
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
@@ -134,13 +134,13 @@ func postdiscussionCommand() *cobra.Command {
 				return err
 			}
 
-			client, cancel, err := createClient(cmd, host)
+			client, cancel, err := createClient(cmd.Context(), host)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := setCtxHeader(cmd.Context(), header)
+			ctx := setCtxHeader(cmd.Context())
 			res, err := client.CreateDiscussion(ctx, &compassv1beta1.CreateDiscussionRequest{
 				Title:  reqBody.Title,
 				Body:   reqBody.Body,

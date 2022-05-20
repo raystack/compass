@@ -14,7 +14,6 @@ type Config struct {
 	ServerHost    string `mapstructure:"SERVER_HOST" default:"0.0.0.0"`
 	ServerPort    string `mapstructure:"SERVER_PORT" default:"8080"`
 	ServerBaseUrl string `mapstructure:"SERVER_BASE_URL" default:"localhost:8080"`
-	AuthHeader    string `mapstructure:"AUTH_HEADER" default:"Compass-User-UUID:odpf@email.com"`
 
 	// Elasticsearch
 	ElasticSearchBrokers string `mapstructure:"ELASTICSEARCH_BROKERS" default:"http://localhost:9200"`
@@ -48,6 +47,7 @@ type Config struct {
 
 	// User Identity
 	IdentityUUIDHeaderKey       string `mapstructure:"IDENTITY_UUID_HEADER" default:"Compass-User-UUID"`
+	IdentityUUIDHeaderValue     string `mapstructure:"IDENTITY_UUID_HEADER_VALUE" default:"odpf@email.com"`
 	IdentityEmailHeaderKey      string `mapstructure:"IDENTITY_EMAIL_HEADER" default:"Compass-User-Email"`
 	IdentityProviderDefaultName string `mapstructure:"IDENTITY_PROVIDER_DEFAULT_NAME" default:""`
 }

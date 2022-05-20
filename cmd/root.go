@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var host, header string
+var host, headerKey, headerValue string
 
 func New() *cobra.Command {
 	var command = &cobra.Command{
@@ -36,7 +36,8 @@ func New() *cobra.Command {
 	}
 
 	host = config.ServerBaseUrl
-	header = config.AuthHeader
+	headerKey = config.IdentityUUIDHeaderKey
+	headerValue = config.IdentityUUIDHeaderValue
 
 	cmdx.SetHelp(command)
 	command.AddCommand(serveCmd())
