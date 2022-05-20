@@ -170,24 +170,24 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 			expectedQuery: `(data->'landscape'->'properties'->>'project-id' ILIKE $1 OR description ILIKE $2)`,
 		},
 		{
+			// NOTE: Cannot have more than one key in map because golang's map does not guarantee order thus producing
+			// inconsistent test.
 			description: "should return sql query with asset's data fields filter",
 			config: asset.Filter{
 				Data: map[string]string{
-					"entity":  "odpf",
-					"country": "th",
+					"entity": "odpf",
 				},
 			},
-			expectedQuery: `data->>'entity' = 'odpf' AND data->>'country' = 'th'`,
+			expectedQuery: `data->>'entity' = 'odpf'`,
 		},
 		{
 			description: "should return sql query with asset's nested data fields filter",
 			config: asset.Filter{
 				Data: map[string]string{
 					"landscape.properties.project-id": "compass_001",
-					"country":                         "vn",
 				},
 			},
-			expectedQuery: `data->'landscape'->'properties'->>'project-id' = 'compass_001' AND data->>'country' = 'vn'`,
+			expectedQuery: `data->'landscape'->'properties'->>'project-id' = 'compass_001'`,
 		},
 	}
 
