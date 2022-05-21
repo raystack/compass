@@ -109,54 +109,6 @@ func (h *Handler) GetAssetByID(ctx context.Context, req *compassv1beta1.GetAsset
 	}, nil
 }
 
-func (h *Handler) UpsertAsset(ctx context.Context, req *compassv1beta1.UpsertAssetRequest) (*compassv1beta1.UpsertAssetResponse, error) {
-	userID := user.FromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
-	}
-
-	baseAsset := req.GetAsset()
-	if baseAsset == nil {
-		return nil, status.Error(codes.InvalidArgument, "asset cannot be empty")
-	}
-
-	ast := asset.Asset{
-		URN:         baseAsset.GetUrn(),
-		Type:        asset.Type(baseAsset.GetType()),
-		Name:        baseAsset.GetName(),
-		Service:     baseAsset.GetService(),
-		Description: baseAsset.GetDescription(),
-	}
-	ast.AssignDataFromProto(baseAsset.GetData())
-	ast.AssignLabelsFromProto(baseAsset.GetLabels())
-
-	if err := h.validateAsset(ast); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	ast.UpdatedBy.ID = userID
-	assetID, err := h.AssetRepository.Upsert(ctx, &ast)
-	if errors.As(err, new(asset.InvalidError)) {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-	if err != nil {
-		return nil, internalServerError(h.Logger, err.Error())
-	}
-
-	ast.ID = assetID
-	if err := h.DiscoveryRepository.Upsert(ctx, ast); err != nil {
-		return nil, internalServerError(h.Logger, err.Error())
-	}
-
-	if err := h.saveLineage(ctx, ast, req.GetUpstreams(), req.GetDownstreams()); err != nil {
-		return nil, internalServerError(h.Logger, err.Error())
-	}
-
-	return &compassv1beta1.UpsertAssetResponse{
-		Id: assetID,
-	}, nil
-}
-
 func (h *Handler) UpsertPatchAsset(ctx context.Context, req *compassv1beta1.UpsertPatchAssetRequest) (*compassv1beta1.UpsertPatchAssetResponse, error) {
 	userID := user.FromContext(ctx)
 	if userID == "" {
