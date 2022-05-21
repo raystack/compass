@@ -23,13 +23,13 @@ func assetsCommand() *cobra.Command {
 			$ compass asset list
 			$ compass asset view
 			$ compass asset delete
-			$ compass asset post
+			$ compass asset edit
 		`),
 	}
 
 	cmd.AddCommand(listAllAssetsCommand())
 	cmd.AddCommand(viewAssetByIDCommand())
-	cmd.AddCommand(postAssetCommand())
+	cmd.AddCommand(editAssetCommand())
 	cmd.AddCommand(deleteAssetByIDCommand())
 
 	return cmd
@@ -141,14 +141,14 @@ func viewAssetByIDCommand() *cobra.Command {
 	return cmd
 }
 
-func postAssetCommand() *cobra.Command {
+func editAssetCommand() *cobra.Command {
 	var filePath string
 
 	cmd := &cobra.Command{
-		Use:   "post",
-		Short: "post asset, add ",
+		Use:   "edit",
+		Short: "upsert a new asset or patch",
 		Example: heredoc.Doc(`
-			$ compass asset post --body=filePath
+			$ compass asset edit --body=filePath
 		`),
 		Annotations: map[string]string{
 			"action:core": "true",
@@ -158,7 +158,7 @@ func postAssetCommand() *cobra.Command {
 			defer spinner.Stop()
 			cs := term.NewColorScheme()
 
-			var reqBody compassv1beta1.UpsertAssetRequest
+			var reqBody compassv1beta1.UpsertPatchAssetRequest
 			if err := parseFile(filePath, &reqBody); err != nil {
 				return err
 			}
@@ -175,7 +175,8 @@ func postAssetCommand() *cobra.Command {
 			defer cancel()
 
 			ctx := setCtxHeader(cmd.Context())
-			res, err := client.UpsertAsset(ctx, &compassv1beta1.UpsertAssetRequest{
+
+			res, err := client.UpsertPatchAsset(ctx, &compassv1beta1.UpsertPatchAssetRequest{
 				Asset:     reqBody.Asset,
 				Upstreams: reqBody.Upstreams,
 			})
