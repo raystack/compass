@@ -1,0 +1,30 @@
+log_level: info
+
+statsd:
+    enabled: false
+    address: 127.0.0.1:8125
+    prefix: compass
+
+newrelic:
+    enabled: false
+    appname: compass
+    licensekey: ____LICENSE_STRING_OF_40_CHARACTERS_____
+
+elasticsearch:
+    brokers: http://localhost:9200
+
+db:
+    host: localhost
+    port: 5432
+    name: compass
+    user: postgres
+    password: ~
+    sslmode: disable
+
+service:
+    host: localhost
+    port: 8080
+    identity:
+        headerkey_uuid: Compass-User-UUID
+        headerkey_email: Compass-User-Email
+        provider_default_name: shield
