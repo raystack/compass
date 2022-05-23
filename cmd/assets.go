@@ -64,10 +64,10 @@ func listAllAssetsCommand() *cobra.Command {
 			}
 			if json != "json" {
 				report := [][]string{}
-				report = append(report, []string{"Sr.No", "Type", "Service", "ID", "Name", "URN", "Version"})
+				report = append(report, []string{"ID", "TYPE", "SERVICE", "URN", "NAME", "VERSION"})
 				index := 1
 				for _, i := range res.GetData() {
-					report = append(report, []string{cs.Greenf("#%02d", index), i.Type, i.Service, i.Id, cs.Bluef(i.Name), i.Urn, i.Version})
+					report = append(report, []string{i.Id, i.Type, i.Service, i.Urn, cs.Bluef(i.Name), i.Version})
 					index++
 				}
 				printer.Table(os.Stdout, report)

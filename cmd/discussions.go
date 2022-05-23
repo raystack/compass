@@ -64,10 +64,10 @@ func listAllDiscussionsCommand() *cobra.Command {
 
 			if json != "json" {
 				report := [][]string{}
-				report = append(report, []string{"Sr.no", "ID", "Title", "Type", "State", "Body"})
+				report = append(report, []string{"ID", "TITLE", "TYPE", "STATE"})
 				index := 1
 				for _, i := range res.GetData() {
-					report = append(report, []string{cs.Greenf("#%02d", index), i.Id, i.Title, i.Type, i.State, i.Body})
+					report = append(report, []string{i.Id, i.Title, i.Type, i.State})
 					index++
 				}
 				printer.Table(os.Stdout, report)

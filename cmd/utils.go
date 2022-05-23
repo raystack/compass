@@ -10,10 +10,11 @@ import (
 	"strings"
 
 	"google.golang.org/grpc/metadata"
-	"gopkg.in/yaml.v3"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-func parseFile(filePath string, v interface{}) error {
+func parseFile(filePath string, v protoreflect.ProtoMessage) error {
 	b, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return err
@@ -21,11 +22,11 @@ func parseFile(filePath string, v interface{}) error {
 
 	switch filepath.Ext(filePath) {
 	case ".json":
-		if err := json.Unmarshal(b, v); err != nil {
+		if err := protojson.Unmarshal(b, v); err != nil {
 			return fmt.Errorf("invalid json: %w", err)
 		}
 	case ".yaml", ".yml":
-		if err := yaml.Unmarshal(b, v); err != nil {
+		if err := protojson.Unmarshal(b, v); err != nil {
 			return fmt.Errorf("invalid yaml: %w", err)
 		}
 	default:
