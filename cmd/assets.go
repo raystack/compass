@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
-	"github.com/odpf/salt/printer"
 	"github.com/odpf/salt/term"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/odpf/salt/printer"
 	"github.com/spf13/cobra"
 )
 
@@ -36,7 +37,7 @@ func assetsCommand() *cobra.Command {
 }
 
 func listAllAssetsCommand() *cobra.Command {
-	var types, services, data, q, sort, sort_dir string
+	var types, services, data, q, sort, sort_dir, json string
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "lists all assets",
@@ -61,8 +62,20 @@ func listAllAssetsCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if json != "json" {
+				report := [][]string{}
+				report = append(report, []string{"Sr.No", "Type", "Service", "ID", "Name", "URN", "Version"})
+				index := 1
+				for _, i := range res.GetData() {
+					report = append(report, []string{cs.Greenf("#%02d", index), i.Type, i.Service, i.Id, cs.Bluef(i.Name), i.Urn, i.Version})
+					index++
+				}
+				printer.Table(os.Stdout, report)
 
-			fmt.Println(cs.Bluef(prettyPrint(res.GetData())))
+				fmt.Println(cs.Cyanf("To view all the data in JSON format, use flag `-o json`"))
+			} else {
+				fmt.Println(cs.Bluef(prettyPrint(res.GetData())))
+			}
 
 			return nil
 		},
@@ -74,6 +87,7 @@ func listAllAssetsCommand() *cobra.Command {
 	cmd.Flags().StringVar(&q, "query", "", "querying by field")
 	cmd.Flags().StringVar(&sort, "sort", "", "sort by certain fields")
 	cmd.Flags().StringVar(&sort_dir, "sort_dir", "", "sorting direction (asc / desc)")
+	cmd.Flags().StringVarP(&json, "out", "o", "table", "flag to control output viewing, for json `-o json`")
 
 	return cmd
 }
