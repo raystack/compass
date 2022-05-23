@@ -5,6 +5,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/internal/client"
 	"github.com/odpf/salt/printer"
 	"github.com/odpf/salt/term"
 	"github.com/spf13/cobra"
@@ -29,14 +30,14 @@ func searchCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 			cs := term.NewColorScheme()
-			client, cancel, err := createClient(cmd.Context(), host)
+			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := setCtxHeader(cmd.Context())
-			res, err := client.SearchAssets(ctx, makeSearchAssetRequest(args[0], filter, query, rankby, size))
+			ctx := client.SetMetadata(cmd.Context())
+			res, err := clnt.SearchAssets(ctx, makeSearchAssetRequest(args[0], filter, query, rankby, size))
 			if err != nil {
 				return err
 			}

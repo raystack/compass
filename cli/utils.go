@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
@@ -39,13 +37,6 @@ func parseFile(filePath string, v protoreflect.ProtoMessage) error {
 func prettyPrint(i interface{}) string {
 	s, _ := json.MarshalIndent(i, "", "\t")
 	return string(s)
-}
-
-func setCtxHeader(ctx context.Context) context.Context {
-	md := metadata.New(map[string]string{headerKey: headerValue})
-	ctx = metadata.NewOutgoingContext(ctx, md)
-
-	return ctx
 }
 
 func makeMapFromString(commaSepStr string) map[string]string {

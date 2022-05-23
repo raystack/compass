@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	client "github.com/odpf/compass/internal/client"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/odpf/salt/cmdx"
 	"github.com/spf13/cobra"
@@ -37,17 +39,17 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-var host, headerKey, headerValue string
-
 func Execute() {
 	config, err := loadConfig(rootCmd)
 	if err != nil {
 		panic(err)
 	}
 
-	host = config.Service.BaseUrl
-	headerKey = config.Service.Identity.HeaderKeyUUID
-	headerValue = config.Service.Identity.HeaderValueUUID
+	// if Client.ServerHeaderKeyUUID is not set, use the value from server config
+	if config.Client.ServerHeaderKeyUUID == "" {
+		config.Client.ServerHeaderKeyUUID = config.Service.Identity.HeaderKeyUUID
+	}
+	client.SetConfig(config.Client)
 
 	rootCmd.PersistentFlags().StringP(configFlag, "c", "", "Override config file")
 	rootCmd.AddCommand(

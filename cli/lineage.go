@@ -5,6 +5,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/internal/client"
 	"github.com/odpf/salt/printer"
 	"github.com/odpf/salt/term"
 	"github.com/spf13/cobra"
@@ -27,15 +28,15 @@ func lineageCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 			cs := term.NewColorScheme()
-			client, cancel, err := createClient(cmd.Context(), host)
+			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := setCtxHeader(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context())
 
-			res, err := client.GetGraph(ctx, &compassv1beta1.GetGraphRequest{
+			res, err := clnt.GetGraph(ctx, &compassv1beta1.GetGraphRequest{
 				Urn: args[0],
 			})
 			if err != nil {

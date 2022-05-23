@@ -5,6 +5,7 @@ import (
 	"os"
 
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/internal/client"
 	"github.com/odpf/salt/printer"
 	"github.com/odpf/salt/term"
 
@@ -50,14 +51,14 @@ func listAllDiscussionsCommand() *cobra.Command {
 			defer spinner.Stop()
 			cs := term.NewColorScheme()
 
-			client, cancel, err := createClient(cmd.Context(), host)
+			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := setCtxHeader(cmd.Context())
-			res, err := client.GetAllDiscussions(ctx, &compassv1beta1.GetAllDiscussionsRequest{})
+			ctx := client.SetMetadata(cmd.Context())
+			res, err := clnt.GetAllDiscussions(ctx, &compassv1beta1.GetAllDiscussionsRequest{})
 			if err != nil {
 				return err
 			}
@@ -101,15 +102,15 @@ func viewdiscussionByIDCommand() *cobra.Command {
 			defer spinner.Stop()
 			cs := term.NewColorScheme()
 
-			client, cancel, err := createClient(cmd.Context(), host)
+			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
 			discussionID := args[0]
-			ctx := setCtxHeader(cmd.Context())
-			res, err := client.GetDiscussion(ctx, &compassv1beta1.GetDiscussionRequest{
+			ctx := client.SetMetadata(cmd.Context())
+			res, err := clnt.GetDiscussion(ctx, &compassv1beta1.GetDiscussionRequest{
 				Id: discussionID,
 			})
 			if err != nil {
@@ -151,14 +152,14 @@ func postdiscussionCommand() *cobra.Command {
 				return err
 			}
 
-			client, cancel, err := createClient(cmd.Context(), host)
+			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := setCtxHeader(cmd.Context())
-			res, err := client.CreateDiscussion(ctx, &compassv1beta1.CreateDiscussionRequest{
+			ctx := client.SetMetadata(cmd.Context())
+			res, err := clnt.CreateDiscussion(ctx, &compassv1beta1.CreateDiscussionRequest{
 				Title:  reqBody.Title,
 				Body:   reqBody.Body,
 				Type:   reqBody.Type,

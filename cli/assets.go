@@ -5,6 +5,7 @@ import (
 	"os"
 
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	"github.com/odpf/compass/internal/client"
 	"github.com/odpf/salt/term"
 
 	"github.com/MakeNowJust/heredoc"
@@ -51,14 +52,14 @@ func listAllAssetsCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 			cs := term.NewColorScheme()
-			client, cancel, err := createClient(cmd.Context(), host)
+			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := setCtxHeader(cmd.Context())
-			res, err := client.GetAllAssets(ctx, makeGetAllAssetRequest(types, services, data, q, sort, sort_dir))
+			ctx := client.SetMetadata(cmd.Context())
+			res, err := clnt.GetAllAssets(ctx, makeGetAllAssetRequest(types, services, data, q, sort, sort_dir))
 			if err != nil {
 				return err
 			}
@@ -93,7 +94,9 @@ func listAllAssetsCommand() *cobra.Command {
 }
 
 func makeGetAllAssetRequest(types, services, data, q, sort, sort_dir string) *compassv1beta1.GetAllAssetsRequest {
-	newReq := &compassv1beta1.GetAllAssetsRequest{}
+	newReq := &compassv1beta1.GetAllAssetsRequest{
+		Size: 20,
+	}
 	if types != "" {
 		newReq.Types = types
 	}
@@ -131,15 +134,15 @@ func viewAssetByIDCommand() *cobra.Command {
 			defer spinner.Stop()
 			cs := term.NewColorScheme()
 
-			client, cancel, err := createClient(cmd.Context(), host)
+			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
 			assetID := args[0]
-			ctx := setCtxHeader(cmd.Context())
-			res, err := client.GetAssetByID(ctx, &compassv1beta1.GetAssetByIDRequest{
+			ctx := client.SetMetadata(cmd.Context())
+			res, err := clnt.GetAssetByID(ctx, &compassv1beta1.GetAssetByIDRequest{
 				Id: assetID,
 			})
 			if err != nil {
@@ -182,15 +185,14 @@ func editAssetCommand() *cobra.Command {
 				return err
 			}
 
-			client, cancel, err := createClient(cmd.Context(), host)
+			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := setCtxHeader(cmd.Context())
-
-			res, err := client.UpsertPatchAsset(ctx, &compassv1beta1.UpsertPatchAssetRequest{
+			ctx := client.SetMetadata(cmd.Context())
+			res, err := clnt.UpsertPatchAsset(ctx, &compassv1beta1.UpsertPatchAssetRequest{
 				Asset:     reqBody.Asset,
 				Upstreams: reqBody.Upstreams,
 			})
@@ -227,15 +229,15 @@ func deleteAssetByIDCommand() *cobra.Command {
 			defer spinner.Stop()
 			cs := term.NewColorScheme()
 
-			client, cancel, err := createClient(cmd.Context(), host)
+			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
 			assetID := args[0]
-			ctx := setCtxHeader(cmd.Context())
-			_, err = client.DeleteAsset(ctx, &compassv1beta1.DeleteAssetRequest{
+			ctx := client.SetMetadata(cmd.Context())
+			_, err = clnt.DeleteAsset(ctx, &compassv1beta1.DeleteAssetRequest{
 				Id: assetID,
 			})
 			if err != nil {

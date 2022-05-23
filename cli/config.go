@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/odpf/compass/internal/client"
 	"github.com/odpf/compass/internal/server"
 	esStore "github.com/odpf/compass/internal/store/elasticsearch"
 	"github.com/odpf/compass/internal/store/postgres"
@@ -49,6 +50,9 @@ type Config struct {
 
 	// Service
 	Service server.Config `mapstructure:"service"`
+
+	// Client
+	Client client.Config `mapstructure:"client"`
 }
 
 func loadConfig(cmd *cobra.Command) (Config, error) {

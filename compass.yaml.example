@@ -24,9 +24,12 @@ db:
 service:
     host: localhost
     port: 8080
-    baseurl: localhost:8080
     identity:
         headerkey_uuid: Compass-User-UUID
-        headervalue_uuid: odpf@email.com
         headerkey_email: Compass-User-Email
         provider_default_name: shield
+
+client:
+    host: localhost:8080
+    serverheaderkey_uuid: Compass-User-UUID // if ommited, will use value on service.identity.headerkey_uuid
+    serverheadervalue_uuid: odpf@email.com
