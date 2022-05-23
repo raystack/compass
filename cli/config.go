@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -60,12 +61,16 @@ func loadConfig(cmd *cobra.Command) (Config, error) {
 		opts = append(opts,
 			config.WithPath("./"),
 			config.WithName("compass"),
+			config.WithEnvKeyReplacer(".", "_"),
+			config.WithEnvPrefix("COMPASS"),
 		)
 	}
 
 	var cfg Config
-	err := config.NewLoader(opts...).Load(&cfg)
-	if err != nil {
+	if err := config.NewLoader(opts...).Load(&cfg); err != nil {
+		if errors.As(err, &config.ConfigFileNotFoundError{}) {
+			return cfg, nil
+		}
 		return cfg, err
 	}
 	return cfg, nil
