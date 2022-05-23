@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/salt/printer"
@@ -34,6 +35,7 @@ func discussionsCommand() *cobra.Command {
 }
 
 func listAllDiscussionsCommand() *cobra.Command {
+	var json string
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "lists all discussions",
@@ -60,11 +62,26 @@ func listAllDiscussionsCommand() *cobra.Command {
 				return err
 			}
 
-			fmt.Println(cs.Bluef(prettyPrint(res.GetData())))
+			if json != "json" {
+				report := [][]string{}
+				report = append(report, []string{"Sr.no", "ID", "Title", "Type", "State", "Body"})
+				index := 1
+				for _, i := range res.GetData() {
+					report = append(report, []string{cs.Greenf("#%02d", index), i.Id, i.Title, i.Type, i.State, i.Body})
+					index++
+				}
+				printer.Table(os.Stdout, report)
+
+				fmt.Println(cs.Cyanf("To view all the data in JSON format, use flag `-o json`"))
+			} else {
+				fmt.Println(cs.Bluef(prettyPrint(res.GetData())))
+			}
 
 			return nil
 		},
 	}
+
+	cmd.Flags().StringVarP(&json, "out", "o", "table", "flag to control output viewing, for json `-o json`")
 
 	return cmd
 }
