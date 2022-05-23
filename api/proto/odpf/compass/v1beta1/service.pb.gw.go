@@ -1451,8 +1451,8 @@ func local_request_CompassService_CreateTagAsset_0(ctx context.Context, marshale
 
 }
 
-func request_CompassService_GetTagsByAssetAndTemplate_0(ctx context.Context, marshaler runtime.Marshaler, client CompassServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetTagsByAssetAndTemplateRequest
+func request_CompassService_GetTagByAssetAndTemplate_0(ctx context.Context, marshaler runtime.Marshaler, client CompassServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetTagByAssetAndTemplateRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -1482,13 +1482,13 @@ func request_CompassService_GetTagsByAssetAndTemplate_0(ctx context.Context, mar
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "template_urn", err)
 	}
 
-	msg, err := client.GetTagsByAssetAndTemplate(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetTagByAssetAndTemplate(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_CompassService_GetTagsByAssetAndTemplate_0(ctx context.Context, marshaler runtime.Marshaler, server CompassServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetTagsByAssetAndTemplateRequest
+func local_request_CompassService_GetTagByAssetAndTemplate_0(ctx context.Context, marshaler runtime.Marshaler, server CompassServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetTagByAssetAndTemplateRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -1518,7 +1518,7 @@ func local_request_CompassService_GetTagsByAssetAndTemplate_0(ctx context.Contex
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "template_urn", err)
 	}
 
-	msg, err := server.GetTagsByAssetAndTemplate(ctx, &protoReq)
+	msg, err := server.GetTagByAssetAndTemplate(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -2631,19 +2631,19 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 
 	})
 
-	mux.Handle("GET", pattern_CompassService_GetTagsByAssetAndTemplate_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_CompassService_GetTagByAssetAndTemplate_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetTagsByAssetAndTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetTagByAssetAndTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_CompassService_GetTagsByAssetAndTemplate_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CompassService_GetTagByAssetAndTemplate_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -2651,7 +2651,7 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 			return
 		}
 
-		forward_CompassService_GetTagsByAssetAndTemplate_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_CompassService_GetTagByAssetAndTemplate_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -3455,24 +3455,24 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 
 	})
 
-	mux.Handle("GET", pattern_CompassService_GetTagsByAssetAndTemplate_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_CompassService_GetTagByAssetAndTemplate_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetTagsByAssetAndTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetTagByAssetAndTemplate", runtime.WithHTTPPathPattern("/v1beta1/tags/assets/{asset_id}/templates/{template_urn}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_CompassService_GetTagsByAssetAndTemplate_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CompassService_GetTagByAssetAndTemplate_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_CompassService_GetTagsByAssetAndTemplate_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_CompassService_GetTagByAssetAndTemplate_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -3702,7 +3702,7 @@ var (
 
 	pattern_CompassService_CreateTagAsset_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1beta1", "tags", "assets"}, ""))
 
-	pattern_CompassService_GetTagsByAssetAndTemplate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1beta1", "tags", "assets", "asset_id", "templates", "template_urn"}, ""))
+	pattern_CompassService_GetTagByAssetAndTemplate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1beta1", "tags", "assets", "asset_id", "templates", "template_urn"}, ""))
 
 	pattern_CompassService_UpdateTagAsset_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1beta1", "tags", "assets", "asset_id", "templates", "template_urn"}, ""))
 
@@ -3776,7 +3776,7 @@ var (
 
 	forward_CompassService_CreateTagAsset_0 = runtime.ForwardResponseMessage
 
-	forward_CompassService_GetTagsByAssetAndTemplate_0 = runtime.ForwardResponseMessage
+	forward_CompassService_GetTagByAssetAndTemplate_0 = runtime.ForwardResponseMessage
 
 	forward_CompassService_UpdateTagAsset_0 = runtime.ForwardResponseMessage
 

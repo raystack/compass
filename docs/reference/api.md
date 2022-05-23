@@ -745,7 +745,7 @@ Find a single tag using asset id and template urn
 
 | Code | Description | Schema |
 | ---- | ----------- | ------ |
-| 200 | A successful response. | [GetTagsByAssetAndTemplateResponse](#gettagsbyassetandtemplateresponse) |
+| 200 | A successful response. | [GetTagByAssetAndTemplateResponse](#gettagbyassetandtemplateresponse) |
 | 400 | Returned when the data that user input is wrong. | [Status](#status) |
 | 404 | Returned when the resource does not exist. | [Status](#status) |
 | 409 | Returned when the resource already exist. | [Status](#status) |
@@ -1253,17 +1253,17 @@ Request to be sent to create a tag's template
 | ---- | ---- | ----------- | -------- |
 | data | [ [Asset](#asset) ] |  | No |
 
+#### GetTagByAssetAndTemplateResponse
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| data | [v1beta1.Tag](#v1beta1tag) |  | No |
+
 #### GetTagTemplateResponse
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
 | data | [TagTemplate](#tagtemplate) |  | No |
-
-#### GetTagsByAssetAndTemplateResponse
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| data | [v1beta1.Tag](#v1beta1tag) |  | No |
 
 #### GetUserStarredAssetsResponse
 

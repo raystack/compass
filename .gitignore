@@ -11,6 +11,7 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 coverage.txt
+cover.html
 
 # Dependency directories (remove the comment below to include it)
 vendor/
@@ -23,6 +24,9 @@ vendor/
 # Project specific ignore
 .env
 asset-body.yaml
+asset-body.json
 compass
 config.yaml
 discussion-body.yaml
+discussion-body.json
+compass.yaml
