@@ -603,11 +603,9 @@ github.com/gorilla/css v1.0.0/go.mod h1:Dn721qIggHpt4+EFCcTLTU/vk5ySda2ReITrtgBl
 github.com/gorilla/handlers v0.0.0-20150720190736-60c7bfde3e33/go.mod h1:Qkdc/uu4tH4g6mTK6auzZ766c4CA0Ng8+o/OAirnOIQ=
 github.com/gorilla/handlers v1.4.2/go.mod h1:Qkdc/uu4tH4g6mTK6auzZ766c4CA0Ng8+o/OAirnOIQ=
 github.com/gorilla/mux v1.6.2/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
-github.com/gorilla/mux v1.7.0/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
 github.com/gorilla/mux v1.7.2/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
 github.com/gorilla/mux v1.7.3/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
 github.com/gorilla/mux v1.7.4/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
-github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
 github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
 github.com/gorilla/websocket v0.0.0-20170926233335-4201258b820c/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
 github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
@@ -921,8 +919,6 @@ github.com/newrelic/go-agent/v3 v3.15.2 h1:NEpksu2AhuZncbwkDqUg2IvUJst3JQ/TemYfK
 github.com/newrelic/go-agent/v3 v3.15.2/go.mod h1:1A1dssWBwzB7UemzRU6ZVaGDsI+cEn5/bNxI0wiYlIc=
 github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7 v1.0.1 h1:Nl7vZKfBq5GmS0SOGcwUnL9eHI3CQAC/TYcr5u2zWW4=
 github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7 v1.0.1/go.mod h1:MqWii42Cz9ouZ3OGXaqoNrflnkF8e73aG/v7jLIzH2w=
-github.com/newrelic/go-agent/v3/integrations/nrgorilla v1.1.1 h1:9SyybWTkOSffuwCAp8oUcMZghFkGLWZUkPC/38AvjxU=
-github.com/newrelic/go-agent/v3/integrations/nrgorilla v1.1.1/go.mod h1:1XnCVdRSKjS5ikMycFh7VKXBkk0oYPaKQb+sd6aSCoA=
 github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.1 h1:/ar1Omo9luapTJYWXt86oQGBpWwpWF92x+UuYU9v/7o=
 github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.1/go.mod h1:2q0u6qkNJ4ClDt920A4r+NpcO370lFze1NF4OPJjAks=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=

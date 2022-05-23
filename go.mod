@@ -19,22 +19,17 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.0
 	github.com/google/go-cmp v0.5.7
 	github.com/google/uuid v1.3.0
-	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.9.0
 	github.com/jackc/pgconn v1.8.0
 	github.com/jackc/pgerrcode v0.0.0-20201024163028-a0d42d470451
 	github.com/jackc/pgx/v4 v4.10.1
-	github.com/jeremywohl/flatten v1.0.1
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/lib/pq v1.10.2
 	github.com/mattn/go-sqlite3 v1.14.9 // indirect
-	github.com/mcuadros/go-defaults v1.2.0
-	github.com/mitchellh/mapstructure v1.4.3
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
 	github.com/newrelic/go-agent/v3 v3.15.2
 	github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7 v1.0.1
-	github.com/newrelic/go-agent/v3/integrations/nrgorilla v1.1.1
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.1
 	github.com/odpf/salt v0.0.0-20220224163336-9b41552dde37
 	github.com/olivere/elastic/v7 v7.0.31
@@ -44,7 +39,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/afero v1.8.0 // indirect
 	github.com/spf13/cobra v1.4.0
-	github.com/spf13/viper v1.10.1
+	github.com/spf13/viper v1.10.1 // indirect
 	github.com/stretchr/testify v1.7.1
 	github.com/yuin/goldmark v1.4.1 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
@@ -59,6 +54,6 @@ require (
 	google.golang.org/grpc v1.46.0
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/ini.v1 v1.66.3 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools v2.2.0+incompatible
 )
