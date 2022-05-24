@@ -28,9 +28,11 @@ func discussionsCommand() *cobra.Command {
 		`),
 	}
 
-	cmd.AddCommand(listAllDiscussionsCommand())
-	cmd.AddCommand(viewdiscussionByIDCommand())
-	cmd.AddCommand(postdiscussionCommand())
+	cmd.AddCommand(
+		listAllDiscussionsCommand(),
+		viewDiscussionByIDCommand(),
+		postDiscussionCommand(),
+	)
 
 	return cmd
 }
@@ -87,7 +89,7 @@ func listAllDiscussionsCommand() *cobra.Command {
 	return cmd
 }
 
-func viewdiscussionByIDCommand() *cobra.Command {
+func viewDiscussionByIDCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "view <id>",
 		Short: "view discussion for the given ID",
@@ -126,7 +128,7 @@ func viewdiscussionByIDCommand() *cobra.Command {
 	return cmd
 }
 
-func postdiscussionCommand() *cobra.Command {
+func postDiscussionCommand() *cobra.Command {
 	var filePath string
 
 	cmd := &cobra.Command{

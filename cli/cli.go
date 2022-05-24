@@ -56,13 +56,14 @@ func Execute() {
 		cmdServe(),
 		cmdMigrate(),
 		cmdShowConfigs(),
+		assetsCommand(),
+		discussionsCommand(),
+		searchCommand(),
+		lineageCommand(),
 	)
 
 	cmdx.SetHelp(rootCmd)
-	rootCmd.AddCommand(assetsCommand())
-	rootCmd.AddCommand(discussionsCommand())
-	rootCmd.AddCommand(searchCommand())
-	rootCmd.AddCommand(lineageCommand())
+
 	if err := rootCmd.Execute(); err != nil {
 		if strings.HasPrefix(err.Error(), "unknown command") {
 			if !strings.HasSuffix(err.Error(), "\n") {

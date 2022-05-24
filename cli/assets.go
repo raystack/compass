@@ -29,10 +29,12 @@ func assetsCommand() *cobra.Command {
 		`),
 	}
 
-	cmd.AddCommand(listAllAssetsCommand())
-	cmd.AddCommand(viewAssetByIDCommand())
-	cmd.AddCommand(editAssetCommand())
-	cmd.AddCommand(deleteAssetByIDCommand())
+	cmd.AddCommand(
+		listAllAssetsCommand(),
+		viewAssetByIDCommand(),
+		editAssetCommand(),
+		deleteAssetByIDCommand(),
+	)
 
 	return cmd
 }
