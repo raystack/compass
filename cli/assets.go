@@ -93,7 +93,7 @@ func listAllAssetsCommand() *cobra.Command {
 	cmd.Flags().StringVar(&sort_dir, "sort_dir", "", "sorting direction (asc / desc)")
 	cmd.Flags().StringVarP(&json, "out", "o", "table", "flag to control output viewing, for json `-o json`")
 	cmd.Flags().Uint32Var(&size, "size", 20, "Size of each page")
-	cmd.Flags().Uint32Var(&page, "page", 1, "Number of pages")
+	cmd.Flags().Uint32Var(&page, "page", 0, "Number of pages")
 
 	return cmd
 }
@@ -120,8 +120,8 @@ func makeGetAllAssetRequest(types, services, data, q, sort, sort_dir string, siz
 	if data != "" {
 		newReq.Data = makeMapFromString(data)
 	}
-	if page > 1 {
-		newReq.Offset = page
+	if page >= 1 {
+		newReq.Offset = size * (page - 1)
 	}
 
 	return newReq
