@@ -41,6 +41,7 @@ func assetsCommand() *cobra.Command {
 
 func listAllAssetsCommand() *cobra.Command {
 	var types, services, data, q, sort, sort_dir, json string
+	var size, page uint32
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "lists all assets",
@@ -61,7 +62,7 @@ func listAllAssetsCommand() *cobra.Command {
 			defer cancel()
 
 			ctx := client.SetMetadata(cmd.Context())
-			res, err := clnt.GetAllAssets(ctx, makeGetAllAssetRequest(types, services, data, q, sort, sort_dir))
+			res, err := clnt.GetAllAssets(ctx, makeGetAllAssetRequest(types, services, data, q, sort, sort_dir, size, page))
 			if err != nil {
 				return err
 			}
@@ -91,13 +92,15 @@ func listAllAssetsCommand() *cobra.Command {
 	cmd.Flags().StringVar(&sort, "sort", "", "sort by certain fields")
 	cmd.Flags().StringVar(&sort_dir, "sort_dir", "", "sorting direction (asc / desc)")
 	cmd.Flags().StringVarP(&json, "out", "o", "table", "flag to control output viewing, for json `-o json`")
+	cmd.Flags().Uint32Var(&size, "size", 20, "Size of each page")
+	cmd.Flags().Uint32Var(&page, "page", 1, "Number of pages")
 
 	return cmd
 }
 
-func makeGetAllAssetRequest(types, services, data, q, sort, sort_dir string) *compassv1beta1.GetAllAssetsRequest {
+func makeGetAllAssetRequest(types, services, data, q, sort, sort_dir string, size, page uint32) *compassv1beta1.GetAllAssetsRequest {
 	newReq := &compassv1beta1.GetAllAssetsRequest{
-		Size: 20,
+		Size: size,
 	}
 	if types != "" {
 		newReq.Types = types
@@ -116,6 +119,9 @@ func makeGetAllAssetRequest(types, services, data, q, sort, sort_dir string) *co
 	}
 	if data != "" {
 		newReq.Data = makeMapFromString(data)
+	}
+	if page > 1 {
+		newReq.Offset = page
 	}
 
 	return newReq
