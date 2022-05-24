@@ -17,8 +17,8 @@ db:
     host: localhost
     port: 5432
     name: compass
-    user: postgres
-    password: ~
+    user: compass
+    password: compass_password
     sslmode: disable
 
 service:
@@ -28,3 +28,8 @@ service:
         headerkey_uuid: Compass-User-UUID
         headerkey_email: Compass-User-Email
         provider_default_name: shield
+
+client:
+    host: localhost:8080
+    serverheaderkey_uuid: Compass-User-UUID // if ommited, will use value on service.identity.headerkey_uuid
+    serverheadervalue_uuid: odpf@email.com

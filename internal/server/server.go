@@ -34,8 +34,9 @@ import (
 )
 
 type Config struct {
-	Host string `mapstructure:"host" default:"0.0.0.0"`
-	Port int    `mapstructure:"port" default:"8080"`
+	Host    string `mapstructure:"host" default:"0.0.0.0"`
+	Port    int    `mapstructure:"port" default:"8080"`
+	BaseUrl string `mapstructure:"baseurl" default:"localhost:8080"`
 
 	// User Identity
 	Identity IdentityConfig `mapstructure:"identity"`
@@ -46,6 +47,7 @@ func (cfg Config) addr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.Port
 type IdentityConfig struct {
 	// User Identity
 	HeaderKeyUUID       string `mapstructure:"headerkey_uuid" default:"Compass-User-UUID"`
+	HeaderValueUUID     string `mapstructure:"headervalue_uuid" default:"odpf@email.com"`
 	HeaderKeyEmail      string `mapstructure:"headerkey_email" default:"Compass-User-Email"`
 	ProviderDefaultName string `mapstructure:"provider_default_name" default:""`
 }

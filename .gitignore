@@ -24,4 +24,5 @@ vendor/
 # Project specific ignore
 .env
 compass
+config.yaml
 compass.yaml
