@@ -39,6 +39,11 @@ type searchHit struct {
 	Source asset.Asset `json:"_source"`
 }
 
+type aggregationBucket struct {
+	Key      string `json:"key"`
+	DocCount int    `json:"doc_count"`
+}
+
 type searchResponse struct {
 	ScrollID string `json:"_scroll_id"`
 	Hits     struct {
@@ -51,19 +56,13 @@ type searchResponse struct {
 		Length  float32                          `json:"length"`
 		Options []elastic.SearchSuggestionOption `json:"options"`
 	} `json:"suggest"`
-}
-
-type esIndex struct {
-	Health       string `json:"health"`
-	Status       string `json:"status"`
-	Index        string `json:"index"`
-	UUID         string `json:"uuid"`
-	Pri          string `json:"pri"`
-	Rep          string `json:"rep"`
-	DocsCount    string `json:"docs.count"`
-	DocsDeleted  string `json:"docs.deleted"`
-	StoreSize    string `json:"store.size"`
-	PriStoreSize string `json:"pri.store.size"`
+	Aggregations struct {
+		AggregationName struct {
+			DocCountErrorUpperBound int `json:"doc_count_error_upper_bound"`
+			SumOtherDocCount        int `json:"sum_other_doc_count"`
+			Buckets                 []aggregationBucket
+		} `json:"aggregation_name"`
+	} `json:"aggregations"`
 }
 
 // extract error reason from an elasticsearch response
@@ -152,32 +151,10 @@ func (c *Client) Init() (string, error) {
 	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
 }
 
-func (c *Client) Migrate(ctx context.Context, assetType asset.Type) error {
-	// checking for the existence of index before adding the metadata entry
-	idxExists, err := c.indexExists(ctx, assetType.String())
-	if err != nil {
-		return fmt.Errorf("error checking index existence: %w", err)
-	}
-
-	// update/create the index
-	if idxExists {
-		c.logger.Info("index already exist, updating it instead")
-		if err = c.updateIdx(ctx, assetType); err != nil {
-			return fmt.Errorf("error updating index: %w", err)
-		}
-		return nil
-	}
-
-	if err = c.createIdx(ctx, assetType); err != nil {
-		return fmt.Errorf("error creating index: %w", err)
-	}
-	return nil
-}
-
-func (c *Client) createIdx(ctx context.Context, assetType asset.Type) error {
+func (c *Client) CreateIdx(ctx context.Context, indexName string) error {
 	indexSettings := buildTypeIndexSettings()
 	res, err := c.client.Indices.Create(
-		assetType.String(),
+		indexName,
 		c.client.Indices.Create.WithBody(strings.NewReader(indexSettings)),
 		c.client.Indices.Create.WithContext(ctx),
 	)
@@ -186,29 +163,13 @@ func (c *Client) createIdx(ctx context.Context, assetType asset.Type) error {
 	}
 	defer res.Body.Close()
 	if res.IsError() {
-		return fmt.Errorf("error creating index %q: %s", assetType, errorReasonFromResponse(res))
-	}
-	return nil
-}
-
-func (c *Client) updateIdx(ctx context.Context, assetType asset.Type) error {
-	res, err := c.client.Indices.PutMapping(
-		strings.NewReader(typeIndexMapping),
-		c.client.Indices.PutMapping.WithIndex(assetType.String()),
-		c.client.Indices.PutMapping.WithContext(ctx),
-	)
-	if err != nil {
-		return elasticSearchError(err)
-	}
-	defer res.Body.Close()
-	if res.IsError() {
-		return fmt.Errorf("error updating index %q: %s", assetType, errorReasonFromResponse(res))
+		return fmt.Errorf("error creating index %q: %s", indexName, errorReasonFromResponse(res))
 	}
 	return nil
 }
 
 func buildTypeIndexSettings() string {
-	return fmt.Sprintf(indexSettingsTemplate, typeIndexMapping, defaultSearchIndex)
+	return fmt.Sprintf(indexSettingsTemplate, serviceIndexMapping, defaultSearchIndex)
 }
 
 // checks for the existence of an index

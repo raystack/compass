@@ -11,7 +11,6 @@ import (
 
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/odpf/compass/core/asset"
 	store "github.com/odpf/compass/internal/store/elasticsearch"
 	"github.com/odpf/salt/log"
 	"github.com/stretchr/testify/assert"
@@ -20,48 +19,48 @@ import (
 
 func TestElasticsearch(t *testing.T) {
 	ctx := context.Background()
-	t.Run("Migrate", func(t *testing.T) {
+	t.Run("Create", func(t *testing.T) {
 		var testCases = []struct {
 			Title      string
-			Type       asset.Type
+			Service    string
 			ShouldFail bool
-			Validate   func(esClient *store.Client, cli *elasticsearch.Client, assetType asset.Type) error
+			Validate   func(esClient *store.Client, cli *elasticsearch.Client, indexName string) error
 		}{
 			{
 				Title:      "should successfully write the document to elasticsearch",
-				Type:       daggerType,
+				Service:    daggerService,
 				ShouldFail: false,
 			},
 			{
-				Title:      "should create the index ${assetType} in elasticsearch",
-				Type:       daggerType,
+				Title:      "should create the index ${service} in elasticsearch",
+				Service:    daggerService,
 				ShouldFail: false,
-				Validate: func(esClient *store.Client, cli *elasticsearch.Client, assetType asset.Type) error {
+				Validate: func(esClient *store.Client, cli *elasticsearch.Client, indexName string) error {
 					idxRequest := &esapi.IndicesExistsRequest{
 						Index: []string{
-							assetType.String(),
+							indexName,
 						},
 					}
 					res, err := idxRequest.Do(context.Background(), cli)
 					if err != nil {
-						return fmt.Errorf("failed to query elasticsearch for index %q: %w", assetType, err)
+						return fmt.Errorf("failed to query elasticsearch for index %q: %w", indexName, err)
 					}
 					defer res.Body.Close()
 					if res.IsError() {
-						return fmt.Errorf("elasticsearch: error querying existence of %q index: %s", assetType, res.Status())
+						return fmt.Errorf("elasticsearch: error querying existence of %q index: %s", indexName, res.Status())
 					}
 					return nil
 				},
 			},
 			{
-				Title:      "should not accept any type that has the same name as the search index",
-				Type:       asset.Type("universe"), // defaultSearchIndex
+				Title:      "should not accept any service that has the same name as the search index",
+				Service:    "universe", // defaultSearchIndex
 				ShouldFail: true,
 			},
 			{
-				Title: "should alias the type to the search index",
-				Type:  daggerType,
-				Validate: func(esClient *store.Client, cli *elasticsearch.Client, assetType asset.Type) error {
+				Title:   "should alias the type to the search index",
+				Service: daggerService,
+				Validate: func(esClient *store.Client, cli *elasticsearch.Client, indexName string) error {
 					searchIndex := "universe"
 					req, err := http.NewRequest("GET", "/_alias/"+searchIndex, nil)
 					if err != nil {
@@ -78,31 +77,18 @@ func TestElasticsearch(t *testing.T) {
 					if err != nil {
 						return fmt.Errorf("error decoding elasticsearch response: %w", err)
 					}
-					if _, created := aliases[assetType.String()]; !created {
-						return fmt.Errorf("expected %q index to be aliased to %q, but it was not", assetType, searchIndex)
+					if _, created := aliases[indexName]; !created {
+						return fmt.Errorf("expected %q index to be aliased to %q, but it was not", indexName, searchIndex)
 					}
 					return nil
 				},
 			},
 			{
-				Title: "type creation should be idempotent",
-				Type:  daggerType,
-				Validate: func(esClient *store.Client, cli *elasticsearch.Client, assetType asset.Type) error {
-					// we'll try to save the type again, with the expectation
-					// that it should succeed as normal
-					err := esClient.Migrate(ctx, daggerType)
-					if err != nil {
-						return fmt.Errorf("repository returned unexpected error: %w", err)
-					}
-					return nil
-				},
-			},
-			{
-				Title: "created index should be able to correctly tokenize CamelCase text",
-				Type:  daggerType,
-				Validate: func(esClient *store.Client, cli *elasticsearch.Client, assetType asset.Type) error {
+				Title:   "created index should be able to correctly tokenize CamelCase text",
+				Service: daggerService,
+				Validate: func(esClient *store.Client, cli *elasticsearch.Client, indexName string) error {
 					textToAnalyze := "HelloWorld"
-					analyzerPath := fmt.Sprintf("/%s/_analyze", assetType)
+					analyzerPath := fmt.Sprintf("/%s/_analyze", indexName)
 					analyzerPayload := fmt.Sprintf(`{"analyzer": "my_analyzer", "text": %q}`, textToAnalyze)
 
 					req, err := http.NewRequest("POST", analyzerPath, strings.NewReader(analyzerPayload))
@@ -153,7 +139,7 @@ func TestElasticsearch(t *testing.T) {
 				)
 				require.NoError(t, err)
 
-				err = esClient.Migrate(ctx, testCase.Type)
+				err = esClient.CreateIdx(ctx, testCase.Service)
 				if testCase.ShouldFail {
 					assert.Error(t, err)
 					return
@@ -163,7 +149,7 @@ func TestElasticsearch(t *testing.T) {
 				}
 
 				if testCase.Validate != nil {
-					if err := testCase.Validate(esClient, cli, testCase.Type); err != nil {
+					if err := testCase.Validate(esClient, cli, testCase.Service); err != nil {
 						t.Error(err)
 						return
 					}

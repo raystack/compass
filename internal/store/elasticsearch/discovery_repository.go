@@ -6,25 +6,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 
 	"github.com/odpf/compass/core/asset"
 )
 
-var indexTypeMap = map[asset.Type]string{
-	asset.TypeTable:     "table",
-	asset.TypeTopic:     "topic",
-	asset.TypeJob:       "job",
-	asset.TypeDashboard: "dashboard",
-}
-
 // DiscoveryRepository implements discovery.Repository
 // with elasticsearch as the backing store.
 type DiscoveryRepository struct {
-	cli              *Client
-	typeWhiteList    []string
-	typeWhiteListSet map[string]bool
+	cli *Client
 }
 
 func NewDiscoveryRepository(cli *Client) *DiscoveryRepository {
@@ -39,6 +29,17 @@ func (repo *DiscoveryRepository) Upsert(ctx context.Context, ast asset.Asset) er
 	}
 	if !ast.Type.IsValid() {
 		return asset.ErrUnknownType
+	}
+
+	idxExists, err := repo.cli.indexExists(ctx, ast.Service)
+	if err != nil {
+		return elasticSearchError(err)
+	}
+
+	if !idxExists {
+		if err := repo.cli.CreateIdx(ctx, ast.Service); err != nil {
+			return err
+		}
 	}
 
 	body, err := repo.createUpsertBody(ast)
@@ -82,9 +83,9 @@ func (repo *DiscoveryRepository) Delete(ctx context.Context, assetID string) err
 }
 
 func (repo *DiscoveryRepository) GetTypes(ctx context.Context) (map[asset.Type]int, error) {
-	resp, err := repo.cli.client.Cat.Indices(
-		repo.cli.client.Cat.Indices.WithFormat("json"),
-		repo.cli.client.Cat.Indices.WithContext(ctx),
+	resp, err := repo.cli.client.Search(
+		repo.cli.client.Search.WithContext(ctx),
+		repo.cli.client.Search.WithBody(strings.NewReader(`{"size": 0,"aggs":{"aggregation_name":{"terms":{"field":"type.keyword"}}}}`)),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error from es client %w", err)
@@ -93,23 +94,20 @@ func (repo *DiscoveryRepository) GetTypes(ctx context.Context) (map[asset.Type]i
 	if resp.IsError() {
 		return nil, fmt.Errorf("error from es server: %s", errorReasonFromResponse(resp))
 	}
-	var indices []esIndex
-	err = json.NewDecoder(resp.Body).Decode(&indices)
+
+	var response searchResponse
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding es response %w", err)
+		return nil, fmt.Errorf("error decoding aggregate search response %w", err)
 	}
 
 	results := map[asset.Type]int{}
-	for _, index := range indices {
-		count, err := strconv.Atoi(index.DocsCount)
-		if err != nil {
-			return results, fmt.Errorf("error converting docs count to a number: %w", err)
-		}
-		typName := asset.Type(index.Index)
+	for _, bucket := range response.Aggregations.AggregationName.Buckets {
+		typName := asset.Type(bucket.Key)
 		if !typName.IsValid() {
 			continue
 		}
-		results[typName] = count
+		results[typName] = bucket.DocCount
 	}
 
 	return results, nil
@@ -132,7 +130,7 @@ func (repo *DiscoveryRepository) createUpsertBody(ast asset.Asset) (io.Reader, e
 func (repo *DiscoveryRepository) writeInsertAction(w io.Writer, ast asset.Asset) error {
 	action := map[string]interface{}{
 		"index": map[string]interface{}{
-			"_index": indexTypeMap[ast.Type],
+			"_index": ast.Service,
 			"_id":    ast.ID,
 		},
 	}

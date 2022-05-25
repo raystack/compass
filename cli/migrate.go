@@ -5,17 +5,11 @@ import (
 	"fmt"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/odpf/compass/core/asset"
 	"github.com/odpf/compass/internal/store/postgres"
 	"github.com/odpf/salt/log"
 	"github.com/spf13/cobra"
-)
-
-const (
-	esMigrationTimeout = 5 * time.Second
 )
 
 func cmdMigrate() *cobra.Command {
@@ -55,11 +49,6 @@ func runMigrations(ctx context.Context, config Config) error {
 	}
 	logger.Info("Migration Postgres done.")
 
-	logger.Info("Migrating ES...")
-	if err := migrateElasticsearch(logger, config); err != nil {
-		return err
-	}
-	logger.Info("Migration ES done.")
 	return nil
 }
 
@@ -77,25 +66,5 @@ func migratePostgres(logger log.Logger, config Config) (err error) {
 		return fmt.Errorf("problem with migration %w", err)
 	}
 
-	return nil
-}
-
-func migrateElasticsearch(logger log.Logger, config Config) error {
-	logger.Info("Initiating ES client...")
-	esClient, err := initElasticsearch(logger, config.Elasticsearch)
-	if err != nil {
-		return err
-	}
-
-	for _, supportedType := range asset.AllSupportedTypes {
-		logger.Info("Migrating type\n", "type", supportedType)
-		ctx, cancel := context.WithTimeout(context.Background(), esMigrationTimeout)
-		defer cancel()
-		err := esClient.Migrate(ctx, supportedType)
-		if err != nil {
-			return fmt.Errorf("error creating/replacing type %q: %w", supportedType, err)
-		}
-		logger.Info("created/updated type\n", "type", supportedType)
-	}
 	return nil
 }

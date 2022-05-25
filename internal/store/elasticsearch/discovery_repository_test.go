@@ -14,7 +14,10 @@ import (
 )
 
 func TestDiscoveryRepositoryUpsert(t *testing.T) {
-	ctx := context.Background()
+	var (
+		ctx             = context.Background()
+		bigqueryService = "bigquery-test"
+	)
 
 	t.Run("should return error if id empty", func(t *testing.T) {
 		cli, err := esTestServer.NewClient()
@@ -28,8 +31,9 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 
 		repo := store.NewDiscoveryRepository(esClient)
 		err = repo.Upsert(ctx, asset.Asset{
-			ID:   "",
-			Type: asset.TypeTable,
+			ID:      "",
+			Type:    asset.TypeTable,
+			Service: bigqueryService,
 		})
 		assert.ErrorIs(t, err, asset.ErrEmptyID)
 	})
@@ -46,18 +50,19 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 
 		repo := store.NewDiscoveryRepository(esClient)
 		err = repo.Upsert(ctx, asset.Asset{
-			ID:   "sample-id",
-			Type: asset.Type("unknown-type"),
+			ID:      "sample-id",
+			Type:    asset.Type("unknown-type"),
+			Service: bigqueryService,
 		})
 		assert.ErrorIs(t, err, asset.ErrUnknownType)
 	})
 
-	t.Run("should insert asset to the correct index by its type", func(t *testing.T) {
+	t.Run("should insert asset to the correct index by its service", func(t *testing.T) {
 		ast := asset.Asset{
 			ID:          "sample-id",
 			URN:         "sample-urn",
 			Type:        asset.TypeTable,
-			Service:     "bigquery",
+			Service:     bigqueryService,
 			Name:        "sample-name",
 			Description: "sample-description",
 			Data: map[string]interface{}{
@@ -85,7 +90,7 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		err = repo.Upsert(ctx, ast)
 		assert.NoError(t, err)
 
-		res, err := cli.API.Get("table", ast.ID)
+		res, err := cli.API.Get(bigqueryService, ast.ID)
 		require.NoError(t, err)
 		require.False(t, res.IsError())
 
@@ -112,7 +117,7 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 			ID:          "existing-id",
 			URN:         "existing-urn",
 			Type:        asset.TypeTable,
-			Service:     "bigquery",
+			Service:     bigqueryService,
 			Name:        "existing-name",
 			Description: "existing-description",
 		}
@@ -137,7 +142,7 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		err = repo.Upsert(ctx, newAsset)
 		assert.NoError(t, err)
 
-		res, err := cli.API.Get("table", existingAsset.ID)
+		res, err := cli.API.Get(bigqueryService, existingAsset.ID)
 		require.NoError(t, err)
 		require.False(t, res.IsError())
 
@@ -155,7 +160,10 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 }
 
 func TestDiscoveryRepositoryDelete(t *testing.T) {
-	ctx := context.Background()
+	var (
+		ctx             = context.Background()
+		bigqueryService = "bigquery-test"
+	)
 
 	t.Run("should return error if id empty", func(t *testing.T) {
 		cli, err := esTestServer.NewClient()
@@ -174,9 +182,10 @@ func TestDiscoveryRepositoryDelete(t *testing.T) {
 
 	t.Run("should not return error on success", func(t *testing.T) {
 		ast := asset.Asset{
-			ID:   "delete-id",
-			Type: asset.TypeTable,
-			URN:  "some-urn",
+			ID:      "delete-id",
+			Type:    asset.TypeTable,
+			Service: bigqueryService,
+			URN:     "some-urn",
 		}
 
 		cli, err := esTestServer.NewClient()
@@ -199,7 +208,10 @@ func TestDiscoveryRepositoryDelete(t *testing.T) {
 }
 
 func TestDiscoveryRepositoryGetTypes(t *testing.T) {
-	ctx := context.Background()
+	var (
+		ctx             = context.Background()
+		bigqueryService = "bigquery-test"
+	)
 
 	t.Run("should return empty map if no type is available", func(t *testing.T) {
 		cli, err := esTestServer.NewClient()
@@ -218,8 +230,7 @@ func TestDiscoveryRepositoryGetTypes(t *testing.T) {
 		assert.Equal(t, map[asset.Type]int{}, counts)
 	})
 
-	t.Run("should return map with 0 count if type has not been populated yet", func(t *testing.T) {
-		typ := asset.TypeTable
+	t.Run("should return empty map if type has not been populated yet", func(t *testing.T) {
 		cli, err := esTestServer.NewClient()
 		require.NoError(t, err)
 		esClient, err := store.NewClient(
@@ -229,25 +240,27 @@ func TestDiscoveryRepositoryGetTypes(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		err = esClient.Migrate(ctx, typ)
+		err = esClient.CreateIdx(ctx, bigqueryService)
 		require.NoError(t, err)
 
 		repo := store.NewDiscoveryRepository(esClient)
 		counts, err := repo.GetTypes(ctx)
 		require.NoError(t, err)
 
-		expected := map[asset.Type]int{
-			asset.TypeTable: 0,
-		}
+		expected := map[asset.Type]int{}
 		assert.Equal(t, expected, counts)
 	})
 
 	t.Run("should return maps of asset count with valid type as its key", func(t *testing.T) {
-		typ := asset.TypeDashboard
+		var (
+			typ            = asset.TypeDashboard
+			tableauService = "tableau-test"
+		)
+
 		assets := []asset.Asset{
-			{ID: "id-asset-1", URN: "asset-1", Name: "asset-1", Type: typ},
-			{ID: "id-asset-2", URN: "asset-2", Name: "asset-2", Type: typ},
-			{ID: "id-asset-3", URN: "asset-3", Name: "asset-3", Type: typ},
+			{ID: "id-asset-1", URN: "asset-1", Name: "asset-1", Type: typ, Service: tableauService},
+			{ID: "id-asset-2", URN: "asset-2", Name: "asset-2", Type: typ, Service: tableauService},
+			{ID: "id-asset-3", URN: "asset-3", Name: "asset-3", Type: typ, Service: tableauService},
 		}
 
 		cli, err := esTestServer.NewClient()
@@ -257,13 +270,6 @@ func TestDiscoveryRepositoryGetTypes(t *testing.T) {
 			store.Config{},
 			store.WithClient(cli),
 		)
-		require.NoError(t, err)
-
-		err = esClient.Migrate(ctx, asset.TypeDashboard)
-		require.NoError(t, err)
-
-		invalidType := "invalid-type"
-		err = esClient.Migrate(ctx, asset.Type(invalidType))
 		require.NoError(t, err)
 
 		repo := store.NewDiscoveryRepository(esClient)
