@@ -27,7 +27,7 @@ var indexSettingsTemplate = `{
 	}
 }`
 
-var typeIndexMapping = `{
+var serviceIndexMapping = `{
 	"properties": {
 		"urn": {
 			"type": "text",
@@ -53,6 +53,15 @@ var typeIndexMapping = `{
 			}
 		},
 		"service": {
+			"type": "text",
+			"fields": {
+				"keyword": {
+					"type": "keyword",
+					"ignore_above": 256.0
+				}
+			}
+		},
+		"type": {
 			"type": "text",
 			"fields": {
 				"keyword": {

@@ -1,24 +1,22 @@
 [
     {
-        "type": "topic",
         "assets": [
-            {"id": "wallet/event","name": "wallet/event", "urn": "wallet/event","type": "topic"},
-            {"id": "wallet-usage","name": "wallet-usage", "urn": "wallet-usage","type": "topic"},
-            {"id": "wallet_usage","name": "wallet_usage", "urn": "wallet_usage","type": "topic"},
-            {"id": "pay_wall", "name": "pay_wall", "urn": "pay_wall","type": "topic"},
-            {"id": "failed_purchae","name": "failed_purchase", "urn": "failed_purchase","type": "topic"},
-            {"id": "successful_purchase","name": "successful_purchase", "urn": "successful_purchase","type": "topic"},
-            {"id": "test_table","name": "test_table", "urn": "test_table","type": "topic"}
+            {"id": "wallet/event","name": "wallet/event", "urn": "wallet/event","service": "kafka","type": "topic"},
+            {"id": "wallet-usage","name": "wallet-usage", "urn": "wallet-usage","service": "kafka","type": "topic"},
+            {"id": "wallet_usage","name": "wallet_usage", "urn": "wallet_usage","service": "kafka","type": "topic"},
+            {"id": "pay_wall", "name": "pay_wall", "urn": "pay_wall","service": "kafka","type": "topic"},
+            {"id": "failed_purchae","name": "failed_purchase", "urn": "failed_purchase","service": "kafka","type": "topic"},
+            {"id": "successful_purchase","name": "successful_purchase", "urn": "successful_purchase","service": "kafka","type": "topic"},
+            {"id": "test_table","name": "test_table", "urn": "test_table","service": "kafka","type": "topic"}
         ]
     },
     {
-        "type": "table",
         "assets": [
-            {"id": "invoice" ,"name": "invoice", "urn": "invoice","type": "table"},
-            {"id": "user.address","name": "user.address", "urn": "user.address","type": "table"},
-            {"id": "user_wallet", "name": "user_wallet", "urn": "user_wallet","type": "table"},
-            {"id": "product","name": "product", "urn": "product","type": "table"},
-            {"id": "product_category","name": "product_category", "urn": "product_category","type": "table"}
+            {"id": "invoice" ,"name": "invoice", "urn": "invoice", "service": "bigquery","type": "table"},
+            {"id": "user.address","name": "user.address", "urn": "user.address", "service": "bigquery","type": "table"},
+            {"id": "user_wallet", "name": "user_wallet", "urn": "user_wallet", "service": "bigquery","type": "table"},
+            {"id": "product","name": "product", "urn": "product", "service": "bigquery","type": "table"},
+            {"id": "product_category","name": "product_category", "urn": "product_category", "service": "bigquery","type": "table"}
         ]
     }
 ]

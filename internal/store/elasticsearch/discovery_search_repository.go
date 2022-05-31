@@ -17,6 +17,7 @@ const (
 	defaultMaxResults                  = 200
 	defaultMinScore                    = 0.01
 	defaultFunctionScoreQueryScoreMode = "sum"
+	allIndices                         = "_all"
 	suggesterName                      = "name-phrase-suggest"
 )
 
@@ -39,13 +40,11 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 		err = errors.New("search text cannot be empty")
 		return
 	}
-	indices := repo.buildIndices(cfg)
-
 	maxResults := cfg.MaxResults
 	if maxResults <= 0 {
 		maxResults = defaultMaxResults
 	}
-	query, err := repo.buildQuery(ctx, cfg, indices)
+	query, err := repo.buildQuery(ctx, cfg)
 	if err != nil {
 		err = fmt.Errorf("error building query %w", err)
 		return
@@ -53,7 +52,7 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 
 	res, err := repo.cli.client.Search(
 		repo.cli.client.Search.WithBody(query),
-		repo.cli.client.Search.WithIndex(indices...),
+		repo.cli.client.Search.WithIndex(allIndices),
 		repo.cli.client.Search.WithSize(maxResults),
 		repo.cli.client.Search.WithIgnoreUnavailable(true),
 		repo.cli.client.Search.WithSourceIncludes(returnedAssetFieldsResult...),
@@ -81,15 +80,14 @@ func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.Searc
 		maxResults = defaultMaxResults
 	}
 
-	indices := repo.buildIndices(config)
-	query, err := repo.buildSuggestQuery(ctx, config, indices)
+	query, err := repo.buildSuggestQuery(ctx, config)
 	if err != nil {
 		err = fmt.Errorf("error building query: %s", err)
 		return
 	}
 	res, err := repo.cli.client.Search(
 		repo.cli.client.Search.WithBody(query),
-		repo.cli.client.Search.WithIndex(indices...),
+		repo.cli.client.Search.WithIndex(allIndices),
 		repo.cli.client.Search.WithSize(maxResults),
 		repo.cli.client.Search.WithIgnoreUnavailable(true),
 		repo.cli.client.Search.WithContext(ctx),
@@ -117,35 +115,7 @@ func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.Searc
 	return
 }
 
-func (repo *DiscoveryRepository) buildIndices(cfg asset.SearchConfig) []string {
-	hasGL := len(repo.typeWhiteList) > 0
-	hasLL := len(cfg.TypeWhiteList) > 0
-	switch {
-	case hasGL && hasLL:
-		var indices []string
-		for _, idx := range cfg.TypeWhiteList {
-			if repo.typeWhiteListSet[idx] {
-				indices = append(indices, idx)
-			}
-		}
-		return indices
-	case hasGL || hasLL:
-		return anyValidStringSlice(cfg.TypeWhiteList, repo.typeWhiteList)
-	default:
-		return []string{}
-	}
-}
-
-func anyValidStringSlice(slices ...[]string) []string {
-	for _, slice := range slices {
-		if len(slice) > 0 {
-			return slice
-		}
-	}
-	return nil
-}
-
-func (repo *DiscoveryRepository) buildQuery(ctx context.Context, cfg asset.SearchConfig, indices []string) (io.Reader, error) {
+func (repo *DiscoveryRepository) buildQuery(ctx context.Context, cfg asset.SearchConfig) (io.Reader, error) {
 	var query elastic.Query
 
 	query = repo.buildTextQuery(ctx, cfg.Text)
@@ -166,7 +136,7 @@ func (repo *DiscoveryRepository) buildQuery(ctx context.Context, cfg asset.Searc
 	return payload, json.NewEncoder(payload).Encode(q)
 }
 
-func (repo *DiscoveryRepository) buildSuggestQuery(ctx context.Context, cfg asset.SearchConfig, indices []string) (io.Reader, error) {
+func (repo *DiscoveryRepository) buildSuggestQuery(ctx context.Context, cfg asset.SearchConfig) (io.Reader, error) {
 	suggester := elastic.NewCompletionSuggester(suggesterName).
 		Field("name.suggest").
 		SkipDuplicates(true).
@@ -291,7 +261,7 @@ func (repo *DiscoveryRepository) toSearchResults(hits []searchHit) []asset.Searc
 			id = r.URN
 		}
 		results = append(results, asset.SearchResult{
-			Type:        hit.Index,
+			Type:        r.Type.String(),
 			ID:          id,
 			URN:         r.URN,
 			Description: r.Description,

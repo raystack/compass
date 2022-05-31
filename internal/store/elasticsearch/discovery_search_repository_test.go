@@ -14,7 +14,6 @@ import (
 )
 
 type searchTestData struct {
-	Type   asset.Type    `json:"type"`
 	Assets []asset.Asset `json:"assets"`
 }
 
@@ -70,9 +69,9 @@ func TestSearcherSearch(t *testing.T) {
 					Text: "topic",
 				},
 				Expected: []expectedRow{
+					{Type: "topic", AssetID: "consumer-topic"},
 					{Type: "topic", AssetID: "order-topic"},
 					{Type: "topic", AssetID: "purchase-topic"},
-					{Type: "topic", AssetID: "consumer-topic"},
 					{Type: "topic", AssetID: "consumer-mq-2"},
 					{Type: "topic", AssetID: "transaction"},
 				},
@@ -83,9 +82,9 @@ func TestSearcherSearch(t *testing.T) {
 					Text: "tpic",
 				},
 				Expected: []expectedRow{
+					{Type: "topic", AssetID: "consumer-topic"},
 					{Type: "topic", AssetID: "order-topic"},
 					{Type: "topic", AssetID: "purchase-topic"},
-					{Type: "topic", AssetID: "consumer-topic"},
 					{Type: "topic", AssetID: "consumer-mq-2"},
 					{Type: "topic", AssetID: "transaction"},
 				},
@@ -96,8 +95,8 @@ func TestSearcherSearch(t *testing.T) {
 					Text: "invoice",
 				},
 				Expected: []expectedRow{
-					{Type: "table", AssetID: "au2-microsoft-invoice"},
 					{Type: "table", AssetID: "us1-apple-invoice"},
+					{Type: "table", AssetID: "au2-microsoft-invoice"},
 					{Type: "topic", AssetID: "transaction"},
 				},
 			},
@@ -123,8 +122,8 @@ func TestSearcherSearch(t *testing.T) {
 					},
 				},
 				Expected: []expectedRow{
-					{Type: "topic", AssetID: "order-topic"},
 					{Type: "topic", AssetID: "consumer-topic"},
+					{Type: "topic", AssetID: "order-topic"},
 					{Type: "topic", AssetID: "consumer-mq-2"},
 					{Type: "topic", AssetID: "transaction"},
 				},
@@ -260,9 +259,6 @@ func loadTestFixture(esClient *store.Client, filePath string) (err error) {
 
 	ctx := context.TODO()
 	for _, testdata := range data {
-		if err := esClient.Migrate(ctx, testdata.Type); err != nil {
-			return err
-		}
 		repo := store.NewDiscoveryRepository(esClient)
 		for _, ast := range testdata.Assets {
 			if err := repo.Upsert(ctx, ast); err != nil {
