@@ -27,8 +27,7 @@ func (r *UserRepository) UpsertByEmail(ctx context.Context, ud *user.User) (stri
 	um := newUserModel(ud)
 
 	if err := r.client.db.QueryRowxContext(ctx, `
-				INSERT INTO users (uuid, email, provider) VALUES ($1, $2, $3) ON CONFLICT (email)
-				DO UPDATE SET uuid = $1, email = $2 WHERE users.uuid IS NULL
+				INSERT INTO users (uuid, email, provider) VALUES ($1, $2, $3)
 				RETURNING id
 		`, um.UUID, um.Email, um.Provider).Scan(&userID); err != nil {
 		err := checkPostgresError(err)

@@ -228,7 +228,7 @@ func (r *UserRepositoryTestSuite) TestUpsertByEmail() {
 		r.Equal(gotUser.Email, usr.Email)
 	})
 
-	r.Run("upserting existing row with empty uuid is upserted with uuid and email", func() {
+	r.Run("upserting existing row with empty uuid is upserted would return error", func() {
 		usr := &user.User{Email: "user-upsert-2@odpf.io"}
 
 		err := r.insertEmail(usr.Email)
@@ -236,13 +236,12 @@ func (r *UserRepositoryTestSuite) TestUpsertByEmail() {
 
 		usr.UUID = uuid.NewString()
 		id, err := r.repository.UpsertByEmail(r.ctx, usr)
-		r.NoError(err)
-		r.NotEmpty(id)
+		r.Error(err)
+		r.Empty(id)
 
 		gotUser, err := r.repository.GetByUUID(r.ctx, usr.UUID)
-		r.NoError(err)
-		r.Equal(gotUser.UUID, usr.UUID)
-		r.Equal(gotUser.Email, usr.Email)
+		r.Error(err)
+		r.Empty(gotUser)
 	})
 
 	r.Run("upserting existing row with non empty uuid would return error", func() {
