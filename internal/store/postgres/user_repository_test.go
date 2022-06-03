@@ -204,6 +204,22 @@ func (r *UserRepositoryTestSuite) TestUpsertByEmail() {
 		r.Empty(id)
 	})
 
+	r.Run("return ErrDuplicateRecord if record already exist", func() {
+		usr := &user.User{UUID: uuid.NewString(), Email: "dummy@odpf.io"}
+
+		err := r.insertEmail(usr.Email)
+		r.NoError(err)
+
+		usr.UUID = uuid.NewString()
+		id, err := r.repository.UpsertByEmail(r.ctx, usr)
+		r.NoError(err)
+		r.NotEmpty(id)
+
+		id, err = r.repository.UpsertByEmail(r.ctx, usr)
+		r.ErrorIs(err, user.DuplicateRecordError{UUID: usr.UUID, Email: usr.Email})
+		r.Empty(id)
+	})
+
 	r.Run("new row is inserted with uuid and email if user not exist", func() {
 		usr := &user.User{UUID: uuid.NewString(), Email: "user-upsert-1@odpf.io"}
 		id, err := r.repository.UpsertByEmail(r.ctx, usr)
@@ -228,7 +244,7 @@ func (r *UserRepositoryTestSuite) TestUpsertByEmail() {
 		r.Equal(gotUser.Email, usr.Email)
 	})
 
-	r.Run("upserting existing row with empty uuid is upserted would return error", func() {
+	r.Run("upserting existing row with empty uuid is upserted with uuid and email", func() {
 		usr := &user.User{Email: "user-upsert-2@odpf.io"}
 
 		err := r.insertEmail(usr.Email)
@@ -236,12 +252,13 @@ func (r *UserRepositoryTestSuite) TestUpsertByEmail() {
 
 		usr.UUID = uuid.NewString()
 		id, err := r.repository.UpsertByEmail(r.ctx, usr)
-		r.Error(err)
-		r.Empty(id)
+		r.NoError(err)
+		r.NotEmpty(id)
 
 		gotUser, err := r.repository.GetByUUID(r.ctx, usr.UUID)
-		r.Error(err)
-		r.Empty(gotUser)
+		r.NoError(err)
+		r.Equal(gotUser.UUID, usr.UUID)
+		r.Equal(gotUser.Email, usr.Email)
 	})
 
 	r.Run("upserting existing row with non empty uuid would return error", func() {

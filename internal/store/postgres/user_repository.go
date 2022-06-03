@@ -27,11 +27,12 @@ func (r *UserRepository) UpsertByEmail(ctx context.Context, ud *user.User) (stri
 	um := newUserModel(ud)
 
 	if err := r.client.db.QueryRowxContext(ctx, `
-				INSERT INTO users (uuid, email, provider) VALUES ($1, $2, $3)
+				INSERT INTO users (uuid, email, provider) VALUES ($1, $2, $3) ON CONFLICT (email)
+				DO UPDATE SET uuid = $1, email = $2 WHERE users.uuid IS NULL
 				RETURNING id
 		`, um.UUID, um.Email, um.Provider).Scan(&userID); err != nil {
 		err := checkPostgresError(err)
-		if errors.Is(err, errDuplicateKey) {
+		if errors.Is(err, sql.ErrNoRows) {
 			return "", user.DuplicateRecordError{UUID: ud.UUID, Email: ud.Email}
 		}
 		return "", err
