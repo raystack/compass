@@ -32,7 +32,7 @@ func (r *UserRepository) UpsertByEmail(ctx context.Context, ud *user.User) (stri
 				RETURNING id
 		`, um.UUID, um.Email, um.Provider).Scan(&userID); err != nil {
 		err := checkPostgresError(err)
-		if errors.Is(err, errDuplicateKey) {
+		if errors.Is(err, sql.ErrNoRows) {
 			return "", user.DuplicateRecordError{UUID: ud.UUID, Email: ud.Email}
 		}
 		return "", err

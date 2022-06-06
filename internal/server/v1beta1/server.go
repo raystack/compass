@@ -56,6 +56,9 @@ func (server *APIServer) validateUserInCtx(ctx context.Context) (string, error) 
 		if errors.Is(err, user.ErrNoUserInformation) {
 			return "", status.Errorf(codes.InvalidArgument, err.Error())
 		}
+		if errors.As(err, &user.DuplicateRecordError{UUID: usr.UUID, Email: usr.Email}) {
+			return "", status.Errorf(codes.AlreadyExists, err.Error())
+		}
 		return "", status.Errorf(codes.Internal, codes.Internal.String())
 	}
 	if userID == "" {
