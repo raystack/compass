@@ -130,6 +130,7 @@ func setup(ctx context.Context, client *postgres.Client) (err error) {
 		"DROP SCHEMA public CASCADE",
 		"CREATE SCHEMA public",
 	}
+
 	err = client.ExecQueries(ctx, queries)
 	if err != nil {
 		return

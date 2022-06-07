@@ -8,11 +8,6 @@ import (
 type DiscoveryRepository interface {
 	Upsert(context.Context, Asset) error
 	Delete(ctx context.Context, assetID string) error
-
-	// GetTypes fetches types with assets count for all available types
-	// and returns them as a map[typeName]count
-	GetTypes(context.Context) (map[Type]int, error)
-
 	Search(ctx context.Context, cfg SearchConfig) (results []SearchResult, err error)
 	Suggest(ctx context.Context, cfg SearchConfig) (suggestions []string, err error)
 }

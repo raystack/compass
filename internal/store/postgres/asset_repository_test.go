@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"sort"
 	"strings"
 	"testing"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/odpf/compass/core/asset"
 	"github.com/odpf/compass/core/user"
@@ -32,6 +34,7 @@ type AssetRepositoryTestSuite struct {
 	repository *postgres.AssetRepository
 	userRepo   *postgres.UserRepository
 	users      []user.User
+	assets     []asset.Asset
 	builder    sq.SelectBuilder
 }
 
@@ -54,8 +57,6 @@ func (r *AssetRepositoryTestSuite) SetupSuite() {
 	if err != nil {
 		r.T().Fatal(err)
 	}
-
-	r.users = r.createUsers(r.userRepo)
 }
 
 func (r *AssetRepositoryTestSuite) createUsers(userRepo user.Repository) []user.User {
@@ -95,6 +96,14 @@ func (r *AssetRepositoryTestSuite) TearDownSuite() {
 	if err != nil {
 		r.T().Fatal(err)
 	}
+}
+
+func (r *AssetRepositoryTestSuite) BeforeTest(suiteName, testName string) {
+	err := setup(r.ctx, r.client)
+	r.NoError(err)
+
+	r.users = r.createUsers(r.userRepo)
+	r.assets = r.insertRecord()
 }
 
 func (r *AssetRepositoryTestSuite) insertRecord() (assets []asset.Asset) {
@@ -382,6 +391,151 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 			r.Equal(expectedURNs[i], results[i].URN)
 		}
 	})
+}
+
+func (r *AssetRepositoryTestSuite) TestGetTypes() {
+	_ = r.insertRecord()
+
+	type testCase struct {
+		Description string
+		Filter      asset.Filter
+		Expected    map[asset.Type]int
+	}
+
+	testCases := []testCase{
+		{
+			Description: "should return maps of asset count without filter",
+			Filter:      asset.Filter{},
+			Expected: map[asset.Type]int{
+				asset.TypeDashboard: 5,
+				asset.TypeJob:       1,
+				asset.TypeTable:     3,
+				asset.TypeTopic:     3,
+			},
+		},
+		{
+			Description: "should filter using service",
+			Filter: asset.Filter{
+				Services: []string{"mysql", "kafka"},
+				SortBy:   "urn",
+			},
+			Expected: map[asset.Type]int{
+				asset.TypeTable: 1,
+				asset.TypeTopic: 3,
+			},
+		},
+		{
+			Description: "should filter using query fields",
+			Filter: asset.Filter{
+				QueryFields: []string{"name", "description"},
+				Query:       "demo",
+				SortBy:      "urn",
+			},
+			Expected: map[asset.Type]int{
+				asset.TypeTable: 1,
+				asset.TypeTopic: 1,
+			},
+		},
+		{
+			Description: "should filter only using nested query data fields",
+			Filter: asset.Filter{
+				QueryFields: []string{"data.landscape.properties.project-id", "data.title"},
+				Query:       "compass_001",
+				SortBy:      "urn",
+			},
+			Expected: map[asset.Type]int{
+				asset.TypeDashboard: 1,
+				asset.TypeTopic:     1,
+			},
+		},
+
+		{
+			Description: "should filter using query field with nested query data fields",
+			Filter: asset.Filter{
+				QueryFields: []string{"data.landscape.properties.project-id", "description"},
+				Query:       "compass_002",
+				SortBy:      "urn",
+			},
+			Expected: map[asset.Type]int{
+				asset.TypeDashboard: 1,
+				asset.TypeJob:       1,
+			},
+		},
+		{
+			Description: "should filter using asset's data fields",
+			Filter: asset.Filter{
+				Data: map[string]string{
+					"entity":  "odpf",
+					"country": "th",
+				},
+			},
+			Expected: map[asset.Type]int{
+				asset.TypeJob:   1,
+				asset.TypeTable: 1,
+				asset.TypeTopic: 1,
+			},
+		},
+		{
+			Description: "should filter using asset's nested data fields",
+			Filter: asset.Filter{
+				Data: map[string]string{
+					"landscape.properties.project-id": "compass_001",
+					"country":                         "vn",
+				},
+			},
+			Expected: map[asset.Type]int{
+				asset.TypeDashboard: 1,
+			},
+		},
+		{
+			Description: "should filter using asset's nonempty data fields",
+			Filter: asset.Filter{
+				Data: map[string]string{
+					"properties.dependencies": "_nonempty",
+				},
+			},
+			Expected: map[asset.Type]int{
+				asset.TypeDashboard: 2,
+			},
+		},
+		{
+			Description: "should filter using asset's different nonempty data fields",
+			Filter: asset.Filter{
+				Data: map[string]string{
+					"properties.dependencies": "_nonempty",
+					"entity":                  "odpf",
+					"urn":                     "j-xcvcx",
+					"country":                 "vn",
+				},
+			},
+			Expected: map[asset.Type]int{
+				asset.TypeDashboard: 1,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		r.Run(tc.Description, func() {
+			typeMap, err := r.repository.GetTypes(context.Background(), tc.Filter)
+			r.NoError(err)
+
+			keys := make([]string, 0, len(typeMap))
+
+			for k := range typeMap {
+				keys = append(keys, k.String())
+			}
+			sort.Strings(keys)
+
+			sortedMap := make(map[asset.Type]int)
+			for _, k := range keys {
+				sortedMap[asset.Type(k)] = typeMap[asset.Type(k)]
+			}
+
+			if !cmp.Equal(tc.Expected, sortedMap) {
+				r.T().Fatalf("expected is %+v but got %+v", tc.Expected, sortedMap)
+			}
+		})
+	}
 }
 
 func (r *AssetRepositoryTestSuite) TestGetCount() {

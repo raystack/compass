@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/odpf/compass/core/asset"
 	"github.com/odpf/compass/core/asset/mocks"
 )
@@ -98,6 +99,63 @@ func TestService_GetAllAssets(t *testing.T) {
 			}
 			if tc.TotalCnt != cnt {
 				t.Fatalf("got total count %v, expected total count was %v", cnt, tc.TotalCnt)
+			}
+		})
+	}
+}
+
+func TestService_GetTypes(t *testing.T) {
+	type testCase struct {
+		Description string
+		Filter      asset.Filter
+		Err         error
+		Result      map[asset.Type]int
+		Setup       func(context.Context, *mocks.AssetRepository)
+	}
+
+	var testCases = []testCase{
+		{
+			Description: `should return error if asset repository get types return error`,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetTypes(ctx, asset.Filter{}).Return(nil, errors.New("unknown error"))
+			},
+			Result: nil,
+			Err:    errors.New("unknown error"),
+		},
+		{
+			Description: `should return map types if asset repository get types return no error`,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetTypes(ctx, asset.Filter{}).Return(map[asset.Type]int{
+					asset.TypeJob:   1,
+					asset.TypeTable: 1,
+					asset.TypeTopic: 1,
+				}, nil)
+			},
+			Result: map[asset.Type]int{
+				asset.TypeJob:   1,
+				asset.TypeTable: 1,
+				asset.TypeTopic: 1,
+			},
+			Err: nil,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockAssetRepo := new(mocks.AssetRepository)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockAssetRepo)
+			}
+			defer mockAssetRepo.AssertExpectations(t)
+
+			svc := asset.NewService(mockAssetRepo, nil, nil)
+			got, err := svc.GetTypes(ctx, tc.Filter)
+			if err != nil && errors.Is(tc.Err, err) {
+				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
+			}
+			if !cmp.Equal(tc.Result, got) {
+				t.Fatalf("got result %+v, expected result was %+v", got, tc.Result)
 			}
 		})
 	}

@@ -29,7 +29,7 @@ type AssetService interface {
 	DeleteAsset(context.Context, string) error
 
 	GetLineage(ctx context.Context, node asset.LineageNode) (asset.LineageGraph, error)
-	GetTypes(ctx context.Context) (map[asset.Type]int, error)
+	GetTypes(ctx context.Context, flt asset.Filter) (map[asset.Type]int, error)
 
 	SearchAssets(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error)
 	SuggestAssets(ctx context.Context, cfg asset.SearchConfig) (suggestions []string, err error)
@@ -45,7 +45,16 @@ func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.G
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
 
-	flt, err := server.buildGetAllAssetsFilter(req)
+	flt, err := server.buildAssetsFilter(
+		req.GetTypes(),
+		req.GetServices(),
+		req.GetQ(),
+		req.GetQFields(),
+		int(req.GetSize()),
+		int(req.GetOffset()),
+		req.GetSort(),
+		req.GetDirection(),
+		req.GetData())
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
@@ -75,29 +84,39 @@ func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.G
 	return response, nil
 }
 
-func (server *APIServer) buildGetAllAssetsFilter(req *compassv1beta1.GetAllAssetsRequest) (asset.Filter, error) {
+func (server *APIServer) buildAssetsFilter(
+	types string,
+	services string,
+	q string,
+	qFields string,
+	size int,
+	offset int,
+	sortBy string,
+	sortDirection string,
+	data map[string]string,
+) (asset.Filter, error) {
 
 	flt := asset.Filter{
-		Size:          int(req.GetSize()),
-		Offset:        int(req.GetOffset()),
-		SortBy:        req.GetSort(),
-		SortDirection: req.GetDirection(),
-		Query:         req.GetQ(),
-		Data:          req.GetData(),
+		Size:          size,
+		Offset:        offset,
+		SortBy:        sortBy,
+		SortDirection: sortDirection,
+		Query:         q,
+		Data:          data,
 	}
 
-	if req.GetTypes() != "" {
-		typs := strings.Split(req.GetTypes(), ",")
+	if types != "" {
+		typs := strings.Split(types, ",")
 		for _, typeVal := range typs {
 			flt.Types = append(flt.Types, asset.Type(typeVal))
 		}
 	}
-	if req.GetServices() != "" {
-		flt.Services = strings.Split(req.GetServices(), ",")
+	if services != "" {
+		flt.Services = strings.Split(services, ",")
 	}
 
-	if req.GetQFields() != "" {
-		flt.QueryFields = strings.Split(req.GetQFields(), ",")
+	if qFields != "" {
+		flt.QueryFields = strings.Split(qFields, ",")
 	}
 
 	if err := flt.Validate(); err != nil {
@@ -106,6 +125,38 @@ func (server *APIServer) buildGetAllAssetsFilter(req *compassv1beta1.GetAllAsset
 
 	return flt, nil
 }
+
+// func (server *APIServer) buildGetAllAssetsFilter(req *compassv1beta1.GetAllAssetsRequest) (asset.Filter, error) {
+
+// 	flt := asset.Filter{
+// 		Size:          int(req.GetSize()),
+// 		Offset:        int(req.GetOffset()),
+// 		SortBy:        req.GetSort(),
+// 		SortDirection: req.GetDirection(),
+// 		Query:         req.GetQ(),
+// 		Data:          req.GetData(),
+// 	}
+
+// 	if req.GetTypes() != "" {
+// 		typs := strings.Split(req.GetTypes(), ",")
+// 		for _, typeVal := range typs {
+// 			flt.Types = append(flt.Types, asset.Type(typeVal))
+// 		}
+// 	}
+// 	if req.GetServices() != "" {
+// 		flt.Services = strings.Split(req.GetServices(), ",")
+// 	}
+
+// 	if req.GetQFields() != "" {
+// 		flt.QueryFields = strings.Split(req.GetQFields(), ",")
+// 	}
+
+// 	if err := flt.Validate(); err != nil {
+// 		return asset.Filter{}, err
+// 	}
+
+// 	return flt, nil
+// }
 
 func (server *APIServer) GetAssetByID(ctx context.Context, req *compassv1beta1.GetAssetByIDRequest) (*compassv1beta1.GetAssetByIDResponse, error) {
 	_, err := server.validateUserInCtx(ctx)
