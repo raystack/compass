@@ -20,16 +20,13 @@ func (server *APIServer) GetAllTypes(ctx context.Context, req *compassv1beta1.Ge
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
 
-	flt, err := server.buildAssetsFilter(
-		req.GetTypes(),
-		req.GetServices(),
-		req.GetQ(),
-		req.GetQFields(),
-		0,
-		0,
-		"",
-		"",
-		req.GetData())
+	flt, err := asset.NewFilterBuilder().
+		Types(req.GetTypes()).
+		Services(req.GetServices()).
+		Q(req.GetQ()).
+		QFields(req.GetQFields()).
+		Data(req.GetData()).
+		Build()
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}

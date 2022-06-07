@@ -45,16 +45,17 @@ func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.G
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
 
-	flt, err := server.buildAssetsFilter(
-		req.GetTypes(),
-		req.GetServices(),
-		req.GetQ(),
-		req.GetQFields(),
-		int(req.GetSize()),
-		int(req.GetOffset()),
-		req.GetSort(),
-		req.GetDirection(),
-		req.GetData())
+	flt, err := asset.NewFilterBuilder().
+		Types(req.GetTypes()).
+		Services(req.GetServices()).
+		Q(req.GetQ()).
+		QFields(req.GetQFields()).
+		Size(int(req.GetSize())).
+		Offset(int(req.GetOffset())).
+		SortBy(req.GetSort()).
+		SortDirection(req.GetDirection()).
+		Data(req.GetData()).
+		Build()
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
