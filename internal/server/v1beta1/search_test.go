@@ -63,9 +63,9 @@ func TestSearch(t *testing.T) {
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
 
 				cfg := asset.SearchConfig{
-					Text:          "resource",
-					TypeWhiteList: []string{"topic"},
+					Text: "resource",
 					Filters: map[string][]string{
+						"type":           {"topic"},
 						"service":        {"kafka", "rabbitmq"},
 						"data.landscape": {"th"},
 					},
@@ -91,9 +91,9 @@ func TestSearch(t *testing.T) {
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
 
 				cfg := asset.SearchConfig{
-					Text:          "resource",
-					TypeWhiteList: []string{"topic"},
+					Text: "resource",
 					Filters: map[string][]string{
+						"type":           {"topic"},
 						"service":        {"kafka", "rabbitmq"},
 						"data.landscape": {"th"},
 					},

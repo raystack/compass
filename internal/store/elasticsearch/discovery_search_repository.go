@@ -24,17 +24,6 @@ const (
 var returnedAssetFieldsResult = []string{"id", "urn", "type", "service", "name", "description", "data", "labels", "created_at", "updated_at"}
 
 // Search the asset store
-// Note that Searcher accepts 2 different forms of type white list,
-// depending on how it is passed
-// (1) when passed to NewSearcher, this is called the "Global White List" or GL for short
-// (2) when passed to Search() as models.SearchConfig.TypeWhiteList, it's called "Local White List" or LL
-// GL dictates the superset of all type types that should searched, while LL can only be a subset.
-// To demonstrate:
-// GL : {A, B, C}
-// LL : {C, D}
-// Entities searched : {C}
-// GL specified that search can only be done for {A, B, C} types, while LL requested
-// the search for {C, D} types. Since {D} doesn't belong to GL's set, it won't be searched
 func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error) {
 	if strings.TrimSpace(cfg.Text) == "" {
 		err = errors.New("search text cannot be empty")
