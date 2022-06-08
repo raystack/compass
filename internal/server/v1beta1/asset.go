@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
@@ -84,80 +83,6 @@ func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.G
 
 	return response, nil
 }
-
-func (server *APIServer) buildAssetsFilter(
-	types string,
-	services string,
-	q string,
-	qFields string,
-	size int,
-	offset int,
-	sortBy string,
-	sortDirection string,
-	data map[string]string,
-) (asset.Filter, error) {
-
-	flt := asset.Filter{
-		Size:          size,
-		Offset:        offset,
-		SortBy:        sortBy,
-		SortDirection: sortDirection,
-		Query:         q,
-		Data:          data,
-	}
-
-	if types != "" {
-		typs := strings.Split(types, ",")
-		for _, typeVal := range typs {
-			flt.Types = append(flt.Types, asset.Type(typeVal))
-		}
-	}
-	if services != "" {
-		flt.Services = strings.Split(services, ",")
-	}
-
-	if qFields != "" {
-		flt.QueryFields = strings.Split(qFields, ",")
-	}
-
-	if err := flt.Validate(); err != nil {
-		return asset.Filter{}, err
-	}
-
-	return flt, nil
-}
-
-// func (server *APIServer) buildGetAllAssetsFilter(req *compassv1beta1.GetAllAssetsRequest) (asset.Filter, error) {
-
-// 	flt := asset.Filter{
-// 		Size:          int(req.GetSize()),
-// 		Offset:        int(req.GetOffset()),
-// 		SortBy:        req.GetSort(),
-// 		SortDirection: req.GetDirection(),
-// 		Query:         req.GetQ(),
-// 		Data:          req.GetData(),
-// 	}
-
-// 	if req.GetTypes() != "" {
-// 		typs := strings.Split(req.GetTypes(), ",")
-// 		for _, typeVal := range typs {
-// 			flt.Types = append(flt.Types, asset.Type(typeVal))
-// 		}
-// 	}
-// 	if req.GetServices() != "" {
-// 		flt.Services = strings.Split(req.GetServices(), ",")
-// 	}
-
-// 	if req.GetQFields() != "" {
-// 		flt.QueryFields = strings.Split(req.GetQFields(), ",")
-// 	}
-
-// 	if err := flt.Validate(); err != nil {
-// 		return asset.Filter{}, err
-// 	}
-
-// 	return flt, nil
-// }
 
 func (server *APIServer) GetAssetByID(ctx context.Context, req *compassv1beta1.GetAssetByIDRequest) (*compassv1beta1.GetAssetByIDResponse, error) {
 	_, err := server.validateUserInCtx(ctx)
