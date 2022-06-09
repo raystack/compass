@@ -17,7 +17,7 @@ import (
 	compassserver "github.com/odpf/compass/internal/server"
 	esStore "github.com/odpf/compass/internal/store/elasticsearch"
 	"github.com/odpf/compass/internal/store/postgres"
-	"github.com/odpf/compass/pkg/metrics"
+	"github.com/odpf/compass/pkg/statsd"
 	"github.com/odpf/salt/log"
 	"github.com/spf13/cobra"
 )
@@ -62,12 +62,16 @@ func runServer(config Config) error {
 	if err != nil {
 		return err
 	}
-	statsdMonitor := initStatsDMonitor(config, logger)
+	statsdReporter, err := statsd.Init(logger, config.StatsD)
+	if err != nil {
+		return err
+	}
 
 	esClient, err := initElasticsearch(logger, config.Elasticsearch)
 	if err != nil {
 		return err
 	}
+
 	pgClient, err := initPostgres(logger, config)
 	if err != nil {
 		return err
@@ -90,7 +94,7 @@ func runServer(config Config) error {
 	if err != nil {
 		return fmt.Errorf("failed to create new user repository: %w", err)
 	}
-	userService := user.NewService(logger, userRepository)
+	userService := user.NewService(logger, userRepository, user.ServiceWithStatsDReporter(statsdReporter))
 
 	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0, config.Service.Identity.ProviderDefaultName)
 	if err != nil {
@@ -123,7 +127,7 @@ func runServer(config Config) error {
 		logger,
 		pgClient,
 		nrApp,
-		statsdMonitor,
+		statsdReporter,
 		assetService,
 		starService,
 		discussionService,
@@ -179,18 +183,4 @@ func initNewRelicMonitor(config Config, logger log.Logger) (*newrelic.Applicatio
 	logger.Info("New Relic monitoring is enabled for", "config", config.NewRelic.AppName)
 
 	return app, nil
-}
-
-func initStatsDMonitor(config Config, logger log.Logger) *metrics.StatsDMonitor {
-	var metricsMonitor *metrics.StatsDMonitor
-	if !config.StatsD.Enabled {
-		logger.Info("statsd metrics monitoring is disabled.")
-		return nil
-	}
-	metricsSeparator := "."
-	statsdClient := metrics.NewStatsDClient(config.StatsD.Address)
-	metricsMonitor = metrics.NewStatsDMonitor(statsdClient, config.StatsD.Prefix, metricsSeparator)
-	logger.Info("statsd metrics monitoring is enabled", "statsd address", config.StatsD.Address)
-
-	return metricsMonitor
 }

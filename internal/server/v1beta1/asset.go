@@ -11,12 +11,18 @@ import (
 	"github.com/odpf/compass/core/asset"
 	"github.com/odpf/compass/core/star"
 	"github.com/odpf/compass/core/user"
+	"github.com/odpf/compass/pkg/statsd"
 	"github.com/r3labs/diff/v2"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+//go:generate mockery --name=StatsDClient -r --case underscore --with-expecter --structname StatsDClient --filename statsd_monitor.go --output=./mocks
+type StatsDClient interface {
+	Incr(name string) *statsd.Metric
+}
 
 type AssetService interface {
 	GetAllAssets(context.Context, asset.Filter, bool) ([]asset.Asset, uint32, error)
@@ -249,8 +255,20 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1bet
 		if errors.As(err, new(asset.InvalidError)) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 		}
+		if errors.As(err, new(asset.DiscoveryError)) {
+			server.sendStatsDCounterMetric("discovery_error",
+				map[string]string{
+					"method": "upsert",
+				})
+		}
 		return nil, internalServerError(server.logger, err.Error())
 	}
+
+	server.sendStatsDCounterMetric("asset_upsert",
+		map[string]string{
+			"type":    ast.Type.String(),
+			"service": ast.Service,
+		})
 
 	return &compassv1beta1.UpsertPatchAssetResponse{
 		Id: assetID,
@@ -269,6 +287,12 @@ func (server *APIServer) DeleteAsset(ctx context.Context, req *compassv1beta1.De
 		}
 		if errors.As(err, new(asset.NotFoundError)) {
 			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		if errors.As(err, new(asset.DiscoveryError)) {
+			server.sendStatsDCounterMetric("discovery_error",
+				map[string]string{
+					"method": "delete",
+				})
 		}
 		return nil, internalServerError(server.logger, err.Error())
 	}

@@ -10,6 +10,7 @@ import (
 	esStore "github.com/odpf/compass/internal/store/elasticsearch"
 	"github.com/odpf/compass/internal/store/postgres"
 	"github.com/odpf/compass/pkg/metrics"
+	"github.com/odpf/compass/pkg/statsd"
 	"github.com/odpf/salt/config"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -37,7 +38,7 @@ type Config struct {
 	LogLevel string `mapstructure:"log_level" default:"info"`
 
 	// StatsD
-	StatsD metrics.StatsDConfig `mapstructure:"statsd"`
+	StatsD statsd.Config `mapstructure:"statsd"`
 
 	// NewRelic
 	NewRelic metrics.NewRelicConfig `mapstructure:"newrelic"`

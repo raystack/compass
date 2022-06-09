@@ -4,21 +4,28 @@ import (
 	"context"
 	"time"
 
-	"github.com/odpf/compass/pkg/metrics"
+	"github.com/odpf/compass/pkg/statsd"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 )
 
-func StatsD(mm *metrics.StatsDMonitor) grpc.UnaryServerInterceptor {
+//go:generate mockery --name=StatsDClient -r --case underscore --with-expecter --structname StatsDClient --filename statsd_monitor.go --output=./mocks
+type StatsDClient interface {
+	Histogram(name string, value float64) *statsd.Metric
+}
+
+func StatsD(statsdReporter StatsDClient) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		if mm == nil {
+		if statsdReporter == nil {
 			return handler(ctx, req)
 		}
 		start := time.Now()
 		resp, err := handler(ctx, req)
 		code := status.Code(err)
-		mm.ResponseTimeGRPC(info.FullMethod, int64(time.Since(start)/time.Millisecond))
-		mm.ResponseStatusGRPC(info.FullMethod, code.String())
+		statsdReporter.Histogram("responseTime", float64(time.Since(start)/time.Millisecond)).
+			Tag("method", info.FullMethod).
+			Tag("status", code.String()).
+			Publish()
 		return resp, err
 	}
 }

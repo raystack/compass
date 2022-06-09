@@ -84,12 +84,6 @@ func errorReasonFromResponse(res *esapi.Response) string {
 	return response.Error.Reason
 }
 
-// helper for decorating unsuccesful invocations of the es REST API
-// (transport errors)
-func elasticSearchError(err error) error {
-	return fmt.Errorf("elasticsearch error: %w", err)
-}
-
 type Client struct {
 	client *elasticsearch.Client
 	logger log.Logger
@@ -159,7 +153,7 @@ func (c *Client) CreateIdx(ctx context.Context, indexName string) error {
 		c.client.Indices.Create.WithContext(ctx),
 	)
 	if err != nil {
-		return elasticSearchError(err)
+		return asset.DiscoveryError{Err: err}
 	}
 	defer res.Body.Close()
 	if res.IsError() {
@@ -179,7 +173,7 @@ func (c *Client) indexExists(ctx context.Context, name string) (bool, error) {
 		c.client.Indices.Exists.WithContext(ctx),
 	)
 	if err != nil {
-		return false, fmt.Errorf("indexExists: %w", elasticSearchError(err))
+		return false, fmt.Errorf("indexExists: %w", err)
 	}
 	defer res.Body.Close()
 	return res.StatusCode == 200, nil
