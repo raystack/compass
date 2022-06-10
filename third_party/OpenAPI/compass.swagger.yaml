@@ -1591,6 +1591,27 @@ paths:
           description: An unexpected error response.
           schema:
             $ref: '#/definitions/Status'
+      parameters:
+      - name: q
+        description: filter by specific query
+        in: query
+        required: false
+        type: string
+      - name: q_fields
+        description: filter by multiple query fields
+        in: query
+        required: false
+        type: string
+      - name: types
+        description: filter by multiple types
+        in: query
+        required: false
+        type: string
+      - name: services
+        description: filter by multiple services
+        in: query
+        required: false
+        type: string
       tags:
       - Type
   /v1beta1/users/{user_id}/starred:

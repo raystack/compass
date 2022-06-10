@@ -94,8 +94,12 @@ func (s *Service) GetLineage(ctx context.Context, node LineageNode) (LineageGrap
 	return s.lineageRepository.GetGraph(ctx, node)
 }
 
-func (s *Service) GetTypes(ctx context.Context) (map[Type]int, error) {
-	return s.discoveryRepository.GetTypes(ctx)
+func (s *Service) GetTypes(ctx context.Context, flt Filter) (map[Type]int, error) {
+	result, err := s.assetRepository.GetTypes(ctx, flt)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func (s *Service) SearchAssets(ctx context.Context, cfg SearchConfig) (results []SearchResult, err error) {

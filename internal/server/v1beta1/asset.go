@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
@@ -29,7 +28,7 @@ type AssetService interface {
 	DeleteAsset(context.Context, string) error
 
 	GetLineage(ctx context.Context, node asset.LineageNode) (asset.LineageGraph, error)
-	GetTypes(ctx context.Context) (map[asset.Type]int, error)
+	GetTypes(ctx context.Context, flt asset.Filter) (map[asset.Type]int, error)
 
 	SearchAssets(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error)
 	SuggestAssets(ctx context.Context, cfg asset.SearchConfig) (suggestions []string, err error)
@@ -45,7 +44,17 @@ func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.G
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
 
-	flt, err := server.buildGetAllAssetsFilter(req)
+	flt, err := asset.NewFilterBuilder().
+		Types(req.GetTypes()).
+		Services(req.GetServices()).
+		Q(req.GetQ()).
+		QFields(req.GetQFields()).
+		Size(int(req.GetSize())).
+		Offset(int(req.GetOffset())).
+		SortBy(req.GetSort()).
+		SortDirection(req.GetDirection()).
+		Data(req.GetData()).
+		Build()
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
@@ -73,38 +82,6 @@ func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.G
 	}
 
 	return response, nil
-}
-
-func (server *APIServer) buildGetAllAssetsFilter(req *compassv1beta1.GetAllAssetsRequest) (asset.Filter, error) {
-
-	flt := asset.Filter{
-		Size:          int(req.GetSize()),
-		Offset:        int(req.GetOffset()),
-		SortBy:        req.GetSort(),
-		SortDirection: req.GetDirection(),
-		Query:         req.GetQ(),
-		Data:          req.GetData(),
-	}
-
-	if req.GetTypes() != "" {
-		typs := strings.Split(req.GetTypes(), ",")
-		for _, typeVal := range typs {
-			flt.Types = append(flt.Types, asset.Type(typeVal))
-		}
-	}
-	if req.GetServices() != "" {
-		flt.Services = strings.Split(req.GetServices(), ",")
-	}
-
-	if req.GetQFields() != "" {
-		flt.QueryFields = strings.Split(req.GetQFields(), ",")
-	}
-
-	if err := flt.Validate(); err != nil {
-		return asset.Filter{}, err
-	}
-
-	return flt, nil
 }
 
 func (server *APIServer) GetAssetByID(ctx context.Context, req *compassv1beta1.GetAssetByIDRequest) (*compassv1beta1.GetAssetByIDResponse, error) {

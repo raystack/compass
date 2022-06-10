@@ -16,6 +16,7 @@ type Repository interface {
 	Find(ctx context.Context, urn string, typ Type, service string) (Asset, error)
 	GetVersionHistory(ctx context.Context, flt Filter, id string) ([]Asset, error)
 	GetByVersion(ctx context.Context, id string, version string) (Asset, error)
+	GetTypes(ctx context.Context, flt Filter) (map[Type]int, error)
 	Upsert(ctx context.Context, ast *Asset) (string, error)
 	Delete(ctx context.Context, id string) error
 }

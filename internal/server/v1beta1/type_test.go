@@ -35,21 +35,21 @@ func TestGetTypes(t *testing.T) {
 			Description:  "should return internal server error if failing to fetch types",
 			ExpectStatus: codes.Internal,
 			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
-				as.EXPECT().GetTypes(ctx).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
+				as.EXPECT().GetTypes(ctx, asset.Filter{}).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
 			},
 		},
 		{
 			Description:  "should return internal server error if failing to fetch counts",
 			ExpectStatus: codes.Internal,
 			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
-				as.EXPECT().GetTypes(ctx).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
+				as.EXPECT().GetTypes(ctx, asset.Filter{}).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
 			},
 		},
 		{
 			Description:  "should return all valid types with its asset count",
 			ExpectStatus: codes.OK,
 			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
-				as.EXPECT().GetTypes(ctx).Return(map[asset.Type]int{
+				as.EXPECT().GetTypes(ctx, asset.Filter{}).Return(map[asset.Type]int{
 					asset.Type("table"): 10,
 					asset.Type("topic"): 30,
 					asset.Type("job"):   15,

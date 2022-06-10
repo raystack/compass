@@ -3068,6 +3068,24 @@ func (m *GetAllTypesRequest) validate(all bool) error {
 
 	var errors []error
 
+	if m.GetQ() != "" {
+
+	}
+
+	if m.GetQFields() != "" {
+
+	}
+
+	if m.GetTypes() != "" {
+
+	}
+
+	if m.GetServices() != "" {
+
+	}
+
+	// no validation rules for Data
+
 	if len(errors) > 0 {
 		return GetAllTypesRequestMultiError(errors)
 	}

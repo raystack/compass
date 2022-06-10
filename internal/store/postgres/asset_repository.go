@@ -53,6 +53,45 @@ func (r *AssetRepository) GetAll(ctx context.Context, flt asset.Filter) ([]asset
 	return assets, nil
 }
 
+// GetTypes fetches types with assets count for all available types
+// and returns them as a map[typeName]count
+func (r *AssetRepository) GetTypes(ctx context.Context, flt asset.Filter) (map[asset.Type]int, error) {
+
+	builder := r.getAssetsGroupByCountSQL("type")
+	builder = r.BuildFilterQuery(builder, flt)
+	query, args, err := r.buildSQL(builder)
+	if err != nil {
+		return nil, fmt.Errorf("error building get type query: %w", err)
+	}
+
+	results := make(map[asset.Type]int)
+	rows, err := r.client.db.QueryxContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("error getting type of assets: %w", err)
+	}
+	for rows.Next() {
+		row := make(map[string]interface{})
+		err = rows.MapScan(row)
+		if err != nil {
+			return nil, err
+		}
+		typeStr, ok := row["type"].(string)
+		if !ok {
+			return nil, err
+		}
+		typeCount, ok := row["count"].(int64)
+		if !ok {
+			return nil, err
+		}
+		typeName := asset.Type(typeStr)
+		if typeName.IsValid() {
+			results[typeName] = int(typeCount)
+		}
+	}
+
+	return results, nil
+}
+
 // GetCount retrieves number of assets for every type
 func (r *AssetRepository) GetCount(ctx context.Context, flt asset.Filter) (total int, err error) {
 	builder := sq.Select("count(1)").From("assets")
@@ -600,6 +639,12 @@ func (r *AssetRepository) buildSQL(builder sq.SelectBuilder) (query string, args
 	}
 
 	return
+}
+
+func (r *AssetRepository) getAssetsGroupByCountSQL(columnName string) sq.SelectBuilder {
+	return sq.Select(columnName, "count(1)").
+		From("assets").
+		GroupBy(columnName)
 }
 
 func (r *AssetRepository) getAssetSQL() sq.SelectBuilder {

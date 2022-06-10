@@ -82,37 +82,6 @@ func (repo *DiscoveryRepository) Delete(ctx context.Context, assetID string) err
 	return nil
 }
 
-func (repo *DiscoveryRepository) GetTypes(ctx context.Context) (map[asset.Type]int, error) {
-	resp, err := repo.cli.client.Search(
-		repo.cli.client.Search.WithContext(ctx),
-		repo.cli.client.Search.WithBody(strings.NewReader(`{"size": 0,"aggs":{"aggregation_name":{"terms":{"field":"type.keyword"}}}}`)),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("error from es client %w", err)
-	}
-	defer resp.Body.Close()
-	if resp.IsError() {
-		return nil, fmt.Errorf("error from es server: %s", errorReasonFromResponse(resp))
-	}
-
-	var response searchResponse
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		return nil, fmt.Errorf("error decoding aggregate search response %w", err)
-	}
-
-	results := map[asset.Type]int{}
-	for _, bucket := range response.Aggregations.AggregationName.Buckets {
-		typName := asset.Type(bucket.Key)
-		if !typName.IsValid() {
-			continue
-		}
-		results[typName] = bucket.DocCount
-	}
-
-	return results, nil
-}
-
 func (repo *DiscoveryRepository) createUpsertBody(ast asset.Asset) (io.Reader, error) {
 	payload := bytes.NewBuffer(nil)
 	err := repo.writeInsertAction(payload, ast)

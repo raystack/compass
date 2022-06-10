@@ -953,6 +953,15 @@ fetch all types
 
 Fetch all types supported in Compass
 
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| q | query | filter by specific query | No | string |
+| q_fields | query | filter by multiple query fields | No | string |
+| types | query | filter by multiple types | No | string |
+| services | query | filter by multiple services | No | string |
+
 ##### Responses
 
 | Code | Description | Schema |
