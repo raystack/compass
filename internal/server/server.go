@@ -114,7 +114,8 @@ func Serve(
 		runtime.WithIncomingHeaderMatcher(headerMatcher),
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 			MarshalOptions: protojson.MarshalOptions{
-				UseProtoNames: true,
+				UseProtoNames:   true,
+				EmitUnpopulated: true,
 			},
 			UnmarshalOptions: protojson.UnmarshalOptions{
 				DiscardUnknown: true,
