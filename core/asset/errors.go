@@ -33,3 +33,11 @@ type InvalidError struct {
 func (err InvalidError) Error() string {
 	return fmt.Sprintf("invalid asset id: %q", err.AssetID)
 }
+
+type DiscoveryError struct {
+	Err error
+}
+
+func (err DiscoveryError) Error() string {
+	return fmt.Sprintf("discovery error: %s", err.Err)
+}

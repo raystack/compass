@@ -26,7 +26,7 @@ var returnedAssetFieldsResult = []string{"id", "urn", "type", "service", "name",
 // Search the asset store
 func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error) {
 	if strings.TrimSpace(cfg.Text) == "" {
-		err = errors.New("search text cannot be empty")
+		err = asset.DiscoveryError{Err: errors.New("search text cannot be empty")}
 		return
 	}
 	maxResults := cfg.MaxResults
@@ -35,7 +35,7 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 	}
 	query, err := repo.buildQuery(ctx, cfg)
 	if err != nil {
-		err = fmt.Errorf("error building query %w", err)
+		err = asset.DiscoveryError{Err: fmt.Errorf("error building query %w", err)}
 		return
 	}
 
@@ -48,14 +48,14 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 		repo.cli.client.Search.WithContext(ctx),
 	)
 	if err != nil {
-		err = fmt.Errorf("error executing search %w", err)
+		err = asset.DiscoveryError{Err: fmt.Errorf("error executing search %w", err)}
 		return
 	}
 
 	var response searchResponse
 	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
-		err = fmt.Errorf("error decoding search response %w", err)
+		err = asset.DiscoveryError{Err: fmt.Errorf("error decoding search response %w", err)}
 		return
 	}
 
@@ -71,7 +71,7 @@ func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.Searc
 
 	query, err := repo.buildSuggestQuery(ctx, config)
 	if err != nil {
-		err = fmt.Errorf("error building query: %s", err)
+		err = asset.DiscoveryError{Err: fmt.Errorf("error building query: %s", err)}
 		return
 	}
 	res, err := repo.cli.client.Search(
@@ -82,23 +82,23 @@ func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.Searc
 		repo.cli.client.Search.WithContext(ctx),
 	)
 	if err != nil {
-		err = fmt.Errorf("error executing search %w", err)
+		err = asset.DiscoveryError{Err: fmt.Errorf("error executing search %w", err)}
 		return
 	}
 	if res.IsError() {
-		err = fmt.Errorf("error when searching %s", errorReasonFromResponse(res))
+		err = asset.DiscoveryError{Err: fmt.Errorf("error when searching %s", errorReasonFromResponse(res))}
 		return
 	}
 
 	var response searchResponse
 	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
-		err = fmt.Errorf("error decoding search response %w", err)
+		err = asset.DiscoveryError{Err: fmt.Errorf("error decoding search response %w", err)}
 		return
 	}
 	results, err = repo.toSuggestions(response)
 	if err != nil {
-		err = fmt.Errorf("error mapping response to suggestion %w", err)
+		err = asset.DiscoveryError{Err: fmt.Errorf("error mapping response to suggestion %w", err)}
 	}
 
 	return

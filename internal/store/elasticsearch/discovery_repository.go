@@ -33,18 +33,18 @@ func (repo *DiscoveryRepository) Upsert(ctx context.Context, ast asset.Asset) er
 
 	idxExists, err := repo.cli.indexExists(ctx, ast.Service)
 	if err != nil {
-		return elasticSearchError(err)
+		return asset.DiscoveryError{Err: err}
 	}
 
 	if !idxExists {
 		if err := repo.cli.CreateIdx(ctx, ast.Service); err != nil {
-			return err
+			return asset.DiscoveryError{Err: err}
 		}
 	}
 
 	body, err := repo.createUpsertBody(ast)
 	if err != nil {
-		return fmt.Errorf("error serialising payload: %w", err)
+		return asset.DiscoveryError{Err: fmt.Errorf("error serialising payload: %w", err)}
 	}
 	res, err := repo.cli.client.Bulk(
 		body,
@@ -52,11 +52,11 @@ func (repo *DiscoveryRepository) Upsert(ctx context.Context, ast asset.Asset) er
 		repo.cli.client.Bulk.WithContext(ctx),
 	)
 	if err != nil {
-		return elasticSearchError(err)
+		return asset.DiscoveryError{Err: err}
 	}
 	defer res.Body.Close()
 	if res.IsError() {
-		return fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
+		return asset.DiscoveryError{Err: fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))}
 	}
 	return nil
 }
@@ -72,11 +72,11 @@ func (repo *DiscoveryRepository) Delete(ctx context.Context, assetID string) err
 		repo.cli.client.DeleteByQuery.WithContext(ctx),
 	)
 	if err != nil {
-		return fmt.Errorf("error deleting asset: %w", err)
+		return asset.DiscoveryError{Err: fmt.Errorf("error deleting asset: %w", err)}
 	}
 	defer res.Body.Close()
 	if res.IsError() {
-		return fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))
+		return asset.DiscoveryError{Err: fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))}
 	}
 
 	return nil
