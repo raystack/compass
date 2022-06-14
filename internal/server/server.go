@@ -24,7 +24,6 @@ import (
 	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"github.com/odpf/compass/pkg/statsd"
 	"github.com/odpf/salt/log"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
@@ -55,7 +54,7 @@ type IdentityConfig struct {
 func Serve(
 	ctx context.Context,
 	config Config,
-	logger log.Logger,
+	logger *log.Logrus,
 	pgClient *postgres.Client,
 	nrApp *newrelic.Application,
 	statsdReporter *statsd.Reporter,
@@ -84,7 +83,7 @@ func Serve(
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 			grpc_recovery.UnaryServerInterceptor(),
 			grpc_ctxtags.UnaryServerInterceptor(),
-			grpc_logrus.UnaryServerInterceptor(logrus.NewEntry(logrus.New())), //TODO: expose *logrus.Logger in salt
+			grpc_logrus.UnaryServerInterceptor(logger.Entry()),
 			nrgrpc.UnaryServerInterceptor(nrApp),
 			grpc_interceptor.StatsD(statsdReporter),
 			grpc_interceptor.UserHeaderCtx(config.Identity.HeaderKeyUUID, config.Identity.HeaderKeyEmail),

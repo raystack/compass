@@ -31,12 +31,11 @@ require (
 	github.com/newrelic/go-agent/v3 v3.15.2
 	github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7 v1.0.1
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.1
-	github.com/odpf/salt v0.0.0-20220224163336-9b41552dde37
+	github.com/odpf/salt v0.0.0-20220614042821-c5613a78b4d6
 	github.com/olivere/elastic/v7 v7.0.31
 	github.com/ory/dockertest/v3 v3.8.1
 	github.com/peterbourgon/mergemap v0.0.1
 	github.com/r3labs/diff/v2 v2.15.0
-	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/afero v1.8.0 // indirect
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.10.1 // indirect
