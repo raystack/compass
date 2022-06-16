@@ -1,26 +1,33 @@
-# Introduction
+# Website
 
-Compass is a search and discovery engine built for querying application deployments, datasets and meta resources. It can also optionally track data flow relationships between these resources and allow the user to view a representation of the data flow graph.
+This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
 
-![](.gitbook/assets/overview.svg)
+### Installation
 
-## Key Features
+```
+$ yarn
+```
 
-Discover why users choose Compass as their main data discovery and lineage service
+### Local Development
 
-* **Full text search** Faster and better search results powered by ElasticSearch full text search capability.
-* **Search Tuning** Narrow down your search results by adding filters, getting your crisp results.
-* **Data Lineage** Understand the relationship between metadata with data lineage interface.
-* **Scale:** Compass scales in an instant, both vertically and horizontally for high performance.
-* **Extensibility:** Add your own metadata types and resources to support wide variety of metadata.
-* **Runtime:** Compass can run inside VMs or containers in a fully managed runtime environment like kubernetes.
+```
+$ yarn start
+```
 
-## Usage
+This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
 
-Explore the following resources to get started with Compass:
+### Build
 
-* [Guides](https://github.com/odpf/compass/tree/main/docs/guides) provides guidance on ingesting and queying metadata from Compass.
-* [Concepts](https://github.com/odpf/compass/tree/main/docs/concepts) describes all important Compass concepts.
-* [Reference](https://github.com/odpf/compass/tree/main/docs/reference) contains details about configurations, metrics and other aspects of Compass.
-* [Contribute](https://github.com/odpf/compass/tree/main/docs/contribute) contains resources for anyone who wants to contribute to Compass.
+```
+$ yarn build
+```
 
+This command generates static content into the `build` directory and can be served using any static contents hosting service.
+
+### Deployment
+
+```
+$ GIT_USER=<Your GitHub username> USE_SSH=true yarn deploy
+```
+
+If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
