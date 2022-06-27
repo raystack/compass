@@ -1,0 +1,24 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Overview
+
+Compass has three major concept when it comes to data ingestion: Asset, Type, and Service.
+
+Asset is essentially an arbitrary JSON object that represent a metadata of a specific service with a specific type.
+
+Type defines a ‘type’ of an asset and it is pre-defined. There are currently 4 supported types in Compass: `table`, `job`, `dashboard`, and `topic`.
+ 
+Service defines the application name that the asset was coming from. For example: `biquery`, `postgres`, etc. If you wanted to push data for `bigquery` dataset\(s\) to Compass, you would need to first define the ‘`bigquery`’ service in compass.
+
+Some features that compass has:
+* [Asset Tagging](./asset#tagging-an-asset)
+* [User](./user.md)
+* [Discussion](../guides/discussion.md)
+* [Starring](../guides/starring.md)
+
+## Discussion
+Compass supports discussion feature. User could drop comments in each discussion. Currently, there are three types of discussions `issues`, `open ended`, and `question and answer`. Depending on the type, the discussion could have multiple possible states. In the current version, all types only have two states: `open` and `closed`. A newly created discussion will always be assign an `open` state. More detail about [Discussion](../guides/discussion.md).
+
+## Starring
+Compass allows a user to stars an asset. This bookmarking functionality is introduced to increase the speed of a user to get information. There is also an API to see which users star an asset (stargazers). More detail about [Starring](../guides/starring.md).

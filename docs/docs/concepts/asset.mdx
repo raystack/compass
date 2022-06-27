@@ -1,22 +1,13 @@
-# Overview
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
-Compass has three major concept when it comes to data ingestion: Asset, Type, and Service.
+# Asset
 
-Asset is essentially an arbitrary JSON object that represent a metadata of a specific service with a specific type.
+In Compass, we call every metadata that you input as an Asset. All your tables, dashboards, topics, jobs are an example of assets.
 
-Type defines a ‘type’ of an asset and it is pre-defined. There are currently 4 supported types in Compass: `table`, `job`, `dashboard`, and `topic`.
- 
-Service defines the application name that the asset was coming from. For example: `biquery`, `postgres`, etc. If you wanted to push data for `bigquery` dataset\(s\) to Compass, you would need to first define the ‘`bigquery`’ service in compass.
+<Tabs>
+<TabItem value="table" label="Table View">
 
-Some features that compass has:
-* Asset Tagging
-* User
-* Discussion
-* Starring
-
-## Asset
-
-An Asset is a JSON document that describes a metadata. Asset has a schema:
 |  Field | Required | Type   | Description |
 |---|---|---|---|
 |  id | false |  string |  compass' auto-generated uuid |
@@ -29,7 +20,10 @@ An Asset is a JSON document that describes a metadata. Asset has a schema:
 |  labels | false |json  |  labels of metadata, written in key-value string  |
 |  owners | false | []json | array of json, where each json contains `email` field  |
 
-```text
+</TabItem>
+<TabItem value="json" label="JSON">
+
+```json
 {
 
     "urn": "topic/order-log",
@@ -57,9 +51,13 @@ An Asset is a JSON document that describes a metadata. Asset has a schema:
 }
 ```
 
+</TabItem>
+</Tabs>
+
+
 Every asset that is pushed SHOULD have the required fields: `urn`, `type`, `service`, `name`. The value of these fields MUST be string, if present. 
 
-Asset ingestion API \(/v1beta1/assets\) is using HTTP PATCH method. The behavioud would be similar with how PATCH works. It is possible to patch one field only in an asset by sending the updated field to the ingestion API. This also works for the data in dynamic `data` field. The combination of `urn`, `type`, `service` will be the identifier to patch an asset.
+Asset ingestion API (`/v1beta1/assets`) is using HTTP PATCH method. The behavioud would be similar with how PATCH works. It is possible to patch one field only in an asset by sending the updated field to the ingestion API. This also works for the data in dynamic `data` field. The combination of `urn`, `type`, `service` will be the identifier to patch an asset.
 In case the `urn` does not exist, the asset ingestion PATCH API \(/v1beta1/assets\) will create a new asset.
 
 ## Lineage
@@ -146,13 +144,3 @@ If there is an update to the `environment` in the asset labels, here is the asse
 ## Tagging an Asset
 Compass allows user to tag a specific asset. To tag a new asset, one needs to create a template of the tag. Tag's template defines a set of fields' tag that are applicable to tag each field in an asset.
 Once a template is created, each field in an asset is possible to be tagged by calling `/v1beta1/tags` API. More detail about [Tagging](../guides/tagging.md).
-
-## User
-The current version of Compass does not have user management. Compass expect there is an external instance that manages user. Compass consumes user information from the configurable identity uuid header in every API call. The default name of the header is `Compass-User-UUID`. 
-Compass does not make any assumption of what kind of identity format that is being used. The `uuid` indicates that it could be in any form (e.g. email, UUIDv4, etc) as long as it is universally unique.
-The current behaviour is, Compass will add a new user if the user information consumed from the header does not exist in Compass' database. More detail about [User](./user.md).
-## Discussion
-Compass supports discussion feature. User could drop comments in each discussion. Currently, there are three types of discussions `issues`, `open ended`, and `question and answer`. Depending on the type, the discussion could have multiple possible states. In the current version, all types only have two states: `open` and `closed`. A newly created discussion will always be assign an `open` state. More detail about [Discussion](../guides/discussion.md).
-
-## Starring
-Compass allows a user to stars an asset. This bookmarking functionality is introduced to increase the speed of a user to get information. There is also an API to see which users star an asset (stargazers). More detail about [Starring](../guides/starring.md).

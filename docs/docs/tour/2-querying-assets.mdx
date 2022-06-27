@@ -1,0 +1,182 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# 2. Querying your Assets
+
+In this section, we will learn how we can find and search our assets using the following approaches:
+- [Using ID](#21-using-id)
+- [Using Search API](#23-using-search-api)
+
+## 2.1 Using ID
+
+Using the ID returned from when [you are uploading your asset](./1-my-first-asset.md#13-sending-your-first-asset-to-compass), you can easily find your asset like below
+
+```bash
+curl --location --request GET 'http://localhost:8080/v1beta1/assets/cebeb793-8933-434c-b38f-beb6dbad91a5' \
+--header 'Content-Type: application/json' \
+--header 'Compass-User-UUID: john.doe@example.com'
+```
+
+It will return
+```json
+{
+  "data": {
+    "id": "cebeb793-8933-434c-b38f-beb6dbad91a5",
+    "urn": "main-postgres:my-database.orders",
+    "type": "table",
+    "service": "postgres",
+    "name": "orders",
+    "description": "",
+    "data": {
+      "database": "my-database",
+      "namespace": "main-postgres"
+    },
+    "labels": null,
+    "owners": [],
+    "version": "0.2",
+    "updated_by": {
+      "uuid": "john.doe@example.com"
+    },
+    "changelog": [],
+    "created_at": "2021-03-22T22:45:11.160593Z",
+    "updated_at": "2021-03-22T22:45:11.160593Z"
+  }
+}
+```
+
+## 2.2 Adding more assets
+
+Before we try other APIs let's first add **5 additional assets** to Compass.
+
+<Tabs>
+<TabItem value="product" label="Product Table">
+
+```bash
+curl --location --request PATCH 'http://localhost:8080/v1beta1/assets' \
+--header 'Content-Type: application/json' \
+--header 'Compass-User-UUID: john.doe@example.com' \
+--data-raw '{
+    "asset": {
+        "urn": "main-postgres:my-database.products",
+        "type": "table",
+        "service": "postgres",
+        "name": "products",
+        "data": {
+            "database": "my-database",
+            "namespace": "main-postgres"
+        }
+    }
+}
+'
+```
+
+</TabItem>
+<TabItem value="different-database" label="Different Database">
+
+```bash
+curl --location --request PATCH 'http://localhost:8080/v1beta1/assets' \
+--header 'Content-Type: application/json' \
+--header 'Compass-User-UUID: john.doe@example.com' \
+--data-raw '{
+    "asset": {
+        "urn": "main-postgres:temp-database.invoices",
+        "type": "table",
+        "service": "postgres",
+        "name": "invoices",
+        "data": {
+            "database": "temp-database",
+            "namespace": "main-postgres"
+        }
+    }
+}
+'
+```
+
+</TabItem>
+<TabItem value="mysql" label="MySQL">
+
+```bash
+curl --location --request PATCH 'http://localhost:8080/v1beta1/assets' \
+--header 'Content-Type: application/json' \
+--header 'Compass-User-UUID: john.doe@example.com' \
+--data-raw '{
+    "asset": {
+        "urn": "userdb:identity.users",
+        "type": "table",
+        "service": "mysql",
+        "name": "users",
+        "data": {
+            "database": "identity",
+            "namespace": "userdb"
+        }
+    }
+}
+'
+```
+
+</TabItem>
+<TabItem value="dashboard-type" label="Dashboard Type">
+
+```bash
+curl --location --request PATCH 'http://localhost:8080/v1beta1/assets' \
+--header 'Content-Type: application/json' \
+--header 'Compass-User-UUID: john.doe@example.com' \
+--data-raw '{
+    "asset": {
+        "urn": "mymetabase:collections/123",
+        "type": "dashboard",
+        "service": "metabase",
+        "name": "My Profit Dashboard",
+        "data": {
+            "collection_id": 123,
+            "charts": [
+              "Income Chart",
+              "Outcome Chart"
+            ]
+        }
+    }
+}
+'
+```
+
+</TabItem>
+</Tabs>
+
+## 2.3 Using Search API
+
+Search API is the preferred way when browsing through your assets in Compass. Let's see how powerful Compass is for discovering your assets.
+
+Now that we have added more assets to Compass [here](#22-adding-more-assets), let's try to search for our newly added `products` table. To use Search API, we just need to provide a query/text/term.
+
+Let's search for our `products` table using a typo query `"podcts"`.
+
+```bash
+curl --location --request GET 'http://localhost:8080/v1beta1/search?text=podcts' \
+--header 'Compass-User-UUID: john.doe@example.com'
+```
+
+Search results:
+```json
+{
+    "data": [
+        {
+            "id": "7c0759f4-feec-4b5e-bf26-bf0d0b1236b1",
+            "urn": "main-postgres:my-database.products",
+            "type": "table",
+            "service": "postgres",
+            "name": "products",
+            "description": ""
+        }
+    ]
+}
+```
+
+Compass Search API supports fuzzy search, so even when you give `"podcts"`, it will still be able to fetch your `products` table.
+
+## Summary
+
+Search API is a really powerful discovery tool that you can leverage when storing your assets. It has lots of feature like `fuzzy search` which we just see, you can also easily filter through asset's type, service and much more.
+
+Up to this point, you have learnt how to create assets, inserting assets and querying them. Using those features only you can start leveraging Compass to be your Metadata Discovery Service.
+
+Next we will see how you can use Compass to build a Lineage between your assets.
