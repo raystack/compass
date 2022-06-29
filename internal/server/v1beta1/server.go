@@ -57,7 +57,13 @@ func (server *APIServer) validateUserInCtx(ctx context.Context) (string, error) 
 	if err != nil {
 		if errors.Is(err, user.ErrNoUserInformation) {
 			if md, ok := metadata.FromIncomingContext(ctx); ok {
-				server.logger.Debug("printing header for \"x-shield-user-id\"", "header", md.Get("x-shield-user-id")[0])
+				values := md.Get("x-shield-user-id")
+				if len(values) > 0 {
+					server.logger.Debug("printing header for \"x-shield-user-id\"", "header", values[0])
+				} else {
+					server.logger.Debug("header \"x-shield-user-id\" cannot be found")
+				}
+
 			} else {
 				server.logger.Debug("could not get metadata")
 			}
