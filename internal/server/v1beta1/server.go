@@ -11,6 +11,7 @@ import (
 	"github.com/odpf/compass/core/user"
 	"github.com/odpf/salt/log"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -55,6 +56,12 @@ func (server *APIServer) validateUserInCtx(ctx context.Context) (string, error) 
 	userID, err := server.userService.ValidateUser(ctx, usr.UUID, usr.Email)
 	if err != nil {
 		if errors.Is(err, user.ErrNoUserInformation) {
+			if md, ok := metadata.FromIncomingContext(ctx); ok {
+				server.logger.Debug("printing header for \"x-shield-user-id\"", "header", md.Get("x-shield-user-id")[0])
+			} else {
+				server.logger.Debug("could not get metadata")
+			}
+
 			return "", status.Errorf(codes.InvalidArgument, err.Error())
 		}
 		if errors.As(err, &user.DuplicateRecordError{UUID: usr.UUID, Email: usr.Email}) {
