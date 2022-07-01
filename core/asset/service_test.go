@@ -586,7 +586,7 @@ func TestService_SearchSuggestAssets(t *testing.T) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.ErrSearch)
 			}
 			_, err = svc.SuggestAssets(ctx, asset.SearchConfig{})
-			if err != nil && !assert.Equal(t, tc.ErrSuggest, err) {
+			if err != nil && !assert.Equal(t, tc.ErrSuggest.Error(), err.Error()) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.ErrSuggest)
 			}
 		})
