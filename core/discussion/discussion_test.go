@@ -42,6 +42,26 @@ func TestIsEmpty(t *testing.T) {
 			Discussion:  discussion.Discussion{Body: "body"},
 			IsEmpty:     false,
 		},
+		{
+			Description: "type exist won't be considered empty",
+			Discussion:  discussion.Discussion{Type: "type"},
+			IsEmpty:     false,
+		},
+		{
+			Description: "state exist won't be considered empty",
+			Discussion:  discussion.Discussion{State: "state"},
+			IsEmpty:     false,
+		},
+		{
+			Description: "assets exist won't be considered empty",
+			Discussion:  discussion.Discussion{Assets: []string{"asset-1", "asset-2"}},
+			IsEmpty:     false,
+		},
+		{
+			Description: "assignees exist won't be considered empty",
+			Discussion:  discussion.Discussion{Assignees: []string{"user-1", "user-2"}},
+			IsEmpty:     false,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
@@ -83,6 +103,10 @@ func TestValidateConstraint(t *testing.T) {
 			Discussion:  discussion.Discussion{Assignees: []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"}},
 			Err:         errors.New("assignees cannot be more than 10"),
 		},
+		{
+			Description: "empty fields return nil",
+			Discussion:  discussion.Discussion{},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
@@ -113,6 +137,11 @@ func TestValidateDiscussion(t *testing.T) {
 			Description: "empty type will return error",
 			Discussion:  discussion.Discussion{Title: "title", Body: "body"},
 			Err:         errors.New("type must be specified"),
+		},
+		{
+			Description: "invalid value of type will return error",
+			Discussion:  discussion.Discussion{Title: "title", Body: "body", Type: "type"},
+			Err:         errors.New("discussion type is invalid, supported types are: openended,issues,qanda"),
 		},
 	}
 	for _, tc := range testCases {
