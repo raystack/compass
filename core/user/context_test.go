@@ -24,4 +24,10 @@ func TestContext(t *testing.T) {
 			t.Fatalf("actual is \"%+v\" but expected was \"%+v\"", actual, "")
 		}
 	})
+	t.Run("should return empty user if not exist in context", func(t *testing.T) {
+		actual := user.FromContext(nil)
+		if actual != (user.User{}) {
+			t.Fatalf("actual is \"%+v\" but expected was \"%+v\"", actual, "")
+		}
+	})
 }
