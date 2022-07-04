@@ -138,7 +138,8 @@ func TestElasticsearch(t *testing.T) {
 					store.WithClient(cli),
 				)
 				require.NoError(t, err)
-
+				_, err = esClient.Init()
+				assert.NoError(t, err)
 				err = esClient.CreateIdx(ctx, testCase.Service)
 				if testCase.ShouldFail {
 					assert.Error(t, err)
@@ -158,3 +159,7 @@ func TestElasticsearch(t *testing.T) {
 		}
 	})
 }
+
+// func TestInit(t *testing.T){
+// 	s, err := elasticsearch.NewClient()
+// }
