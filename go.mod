@@ -17,6 +17,7 @@ require (
 	github.com/go-playground/validator/v10 v10.10.0
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/golang-migrate/migrate/v4 v4.15.0
+	github.com/golang-module/carbon/v2 v2.1.8
 	github.com/google/go-cmp v0.5.7
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
