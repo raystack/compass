@@ -25,13 +25,13 @@ func (_m *LineageRepository) EXPECT() *LineageRepository_Expecter {
 	return &LineageRepository_Expecter{mock: &_m.Mock}
 }
 
-// GetGraph provides a mock function with given fields: ctx, node
-func (_m *LineageRepository) GetGraph(ctx context.Context, node asset.LineageNode) (asset.LineageGraph, error) {
-	ret := _m.Called(ctx, node)
+// GetGraph provides a mock function with given fields: ctx, node, query
+func (_m *LineageRepository) GetGraph(ctx context.Context, node asset.LineageNode, query asset.LineageQuery) (asset.LineageGraph, error) {
+	ret := _m.Called(ctx, node, query)
 
 	var r0 asset.LineageGraph
-	if rf, ok := ret.Get(0).(func(context.Context, asset.LineageNode) asset.LineageGraph); ok {
-		r0 = rf(ctx, node)
+	if rf, ok := ret.Get(0).(func(context.Context, asset.LineageNode, asset.LineageQuery) asset.LineageGraph); ok {
+		r0 = rf(ctx, node, query)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(asset.LineageGraph)
@@ -39,8 +39,8 @@ func (_m *LineageRepository) GetGraph(ctx context.Context, node asset.LineageNod
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, asset.LineageNode) error); ok {
-		r1 = rf(ctx, node)
+	if rf, ok := ret.Get(1).(func(context.Context, asset.LineageNode, asset.LineageQuery) error); ok {
+		r1 = rf(ctx, node, query)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -56,13 +56,14 @@ type LineageRepository_GetGraph_Call struct {
 // GetGraph is a helper method to define mock.On call
 //  - ctx context.Context
 //  - node asset.LineageNode
-func (_e *LineageRepository_Expecter) GetGraph(ctx interface{}, node interface{}) *LineageRepository_GetGraph_Call {
-	return &LineageRepository_GetGraph_Call{Call: _e.mock.On("GetGraph", ctx, node)}
+//  - query asset.LineageQuery
+func (_e *LineageRepository_Expecter) GetGraph(ctx interface{}, node interface{}, query interface{}) *LineageRepository_GetGraph_Call {
+	return &LineageRepository_GetGraph_Call{Call: _e.mock.On("GetGraph", ctx, node, query)}
 }
 
-func (_c *LineageRepository_GetGraph_Call) Run(run func(ctx context.Context, node asset.LineageNode)) *LineageRepository_GetGraph_Call {
+func (_c *LineageRepository_GetGraph_Call) Run(run func(ctx context.Context, node asset.LineageNode, query asset.LineageQuery)) *LineageRepository_GetGraph_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(asset.LineageNode))
+		run(args[0].(context.Context), args[1].(asset.LineageNode), args[2].(asset.LineageQuery))
 	})
 	return _c
 }

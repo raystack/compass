@@ -4,9 +4,30 @@ import (
 	"context"
 )
 
-//go:generate mockery --name=LineageRepository -r --case underscore --with-expecter --structname LineageRepository --filename lineage_repository.go --output=./mocks
+type LineageDirection string
+
+func (dir LineageDirection) IsValid() bool {
+	switch dir {
+	case LineageDirectionUpstream, LineageDirectionDownstream, "":
+		return true
+	default:
+		return false
+	}
+}
+
+const (
+	LineageDirectionUpstream   LineageDirection = "upstream"
+	LineageDirectionDownstream LineageDirection = "downstream"
+)
+
+type LineageQuery struct {
+	Level     int
+	Direction LineageDirection
+}
+
+//go:generate mockery --name=LineageRepository -r --case underscore --with-expecter --structname=LineageRepository --filename=lineage_repository.go --output=./mocks
 type LineageRepository interface {
-	GetGraph(ctx context.Context, node LineageNode) (LineageGraph, error)
+	GetGraph(ctx context.Context, node LineageNode, query LineageQuery) (LineageGraph, error)
 	Upsert(ctx context.Context, node LineageNode, upstreams, downstreams []LineageNode) error
 }
 

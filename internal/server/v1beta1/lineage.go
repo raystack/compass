@@ -5,6 +5,8 @@ import (
 
 	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/asset"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -14,7 +16,15 @@ func (server *APIServer) GetGraph(ctx context.Context, req *compassv1beta1.GetGr
 		return nil, err
 	}
 
-	graph, err := server.assetService.GetLineage(ctx, asset.LineageNode{URN: req.GetUrn()})
+	direction := asset.LineageDirection(req.GetDirection())
+	if !direction.IsValid() {
+		return nil, status.Error(codes.InvalidArgument, "invalid direction value")
+	}
+
+	graph, err := server.assetService.GetLineage(ctx, asset.LineageNode{URN: req.GetUrn()}, asset.LineageQuery{
+		Level:     int(req.GetLevel()),
+		Direction: direction,
+	})
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())
 	}

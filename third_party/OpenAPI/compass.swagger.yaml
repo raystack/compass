@@ -815,6 +815,15 @@ paths:
         required: true
         type: string
         pattern: .+
+      - name: level
+        in: query
+        required: false
+        type: integer
+        format: int64
+      - name: direction
+        in: query
+        required: false
+        type: string
       tags:
       - Lineage
       - Asset

@@ -52,7 +52,14 @@ func (r *LineageRepositoryTestSuite) TearDownSuite() {
 
 func (r *LineageRepositoryTestSuite) TestGetGraph() {
 	rootNode := r.bigquery("test-get-graph-root-node")
+
 	// populate root node
+	// Graph:
+	//
+	// table-50																							  metabase-tgg-51
+	//  				> optimus-tgg-1 >	rootNode > metabase-tgg-99 >
+	// table-51 																							metabase-tgg-52
+	//
 	err := r.repository.Upsert(r.ctx,
 		rootNode,
 		[]asset.LineageNode{
@@ -69,13 +76,13 @@ func (r *LineageRepositoryTestSuite) TestGetGraph() {
 			r.bigquery("table-50"),
 			r.bigquery("table-51"),
 		},
-		[]asset.LineageNode{},
+		nil,
 	)
 	r.Require().NoError(err)
 	// populate downstream's node
 	err = r.repository.Upsert(r.ctx,
 		r.metabase("metabase-tgg-99"),
-		[]asset.LineageNode{},
+		nil,
 		[]asset.LineageNode{
 			r.metabase("metabase-tgg-51"),
 			r.metabase("metabase-tgg-52"),
@@ -93,13 +100,40 @@ func (r *LineageRepositoryTestSuite) TestGetGraph() {
 			{Source: "metabase-tgg-99", Target: "metabase-tgg-52"},
 		}
 
-		graph, err := r.repository.GetGraph(r.ctx, rootNode)
+		graph, err := r.repository.GetGraph(r.ctx, rootNode, asset.LineageQuery{})
+		r.Require().NoError(err)
+		r.compareGraphs(expected, graph)
+	})
+
+	r.Run("should fetch based on the level given in config if any", func() {
+		expected := asset.LineageGraph{
+			{Source: "optimus-tgg-1", Target: rootNode.URN},
+			{Source: rootNode.URN, Target: "metabase-tgg-99"},
+		}
+
+		graph, err := r.repository.GetGraph(r.ctx, rootNode, asset.LineageQuery{
+			Level: 1,
+		})
+		r.Require().NoError(err)
+		r.compareGraphs(expected, graph)
+	})
+
+	r.Run("should fetch based on the direction given in config if any", func() {
+		expected := asset.LineageGraph{
+			{Source: rootNode.URN, Target: "metabase-tgg-99"},
+			{Source: "metabase-tgg-99", Target: "metabase-tgg-51"},
+			{Source: "metabase-tgg-99", Target: "metabase-tgg-52"},
+		}
+
+		graph, err := r.repository.GetGraph(r.ctx, rootNode, asset.LineageQuery{
+			Direction: asset.LineageDirectionDownstream,
+		})
 		r.Require().NoError(err)
 		r.compareGraphs(expected, graph)
 	})
 }
 
-func (r *LineageRepositoryTestSuite) TestUpsert() {
+func (r *LineageRepositoryTestSuite) testUpsert() {
 	r.Run("should insert all as graph if upstreams and downstreams are new", func() {
 		nodeURN := "table-1"
 		node := asset.LineageNode{
@@ -117,7 +151,7 @@ func (r *LineageRepositoryTestSuite) TestUpsert() {
 		err := r.repository.Upsert(r.ctx, node, upstreams, downstreams)
 		r.NoError(err)
 
-		graph, err := r.repository.GetGraph(r.ctx, node)
+		graph, err := r.repository.GetGraph(r.ctx, node, asset.LineageQuery{})
 		r.Require().NoError(err)
 		r.compareGraphs(asset.LineageGraph{
 			{Source: "job-1", Target: nodeURN},
@@ -155,7 +189,7 @@ func (r *LineageRepositoryTestSuite) TestUpsert() {
 			})
 		r.NoError(err)
 
-		graph, err := r.repository.GetGraph(r.ctx, node)
+		graph, err := r.repository.GetGraph(r.ctx, node, asset.LineageQuery{})
 		r.Require().NoError(err)
 		r.compareGraphs(asset.LineageGraph{
 			{Source: "job-99", Target: nodeURN},

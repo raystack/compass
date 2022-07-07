@@ -33,7 +33,7 @@ type AssetService interface {
 	UpsertPatchAsset(context.Context, *asset.Asset, []asset.LineageNode, []asset.LineageNode) (string, error)
 	DeleteAsset(context.Context, string) error
 
-	GetLineage(ctx context.Context, node asset.LineageNode) (asset.LineageGraph, error)
+	GetLineage(ctx context.Context, node asset.LineageNode, query asset.LineageQuery) (asset.LineageGraph, error)
 	GetTypes(ctx context.Context, flt asset.Filter) (map[asset.Type]int, error)
 
 	SearchAssets(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error)
