@@ -133,7 +133,7 @@ func (r *LineageRepositoryTestSuite) TestGetGraph() {
 	})
 }
 
-func (r *LineageRepositoryTestSuite) testUpsert() {
+func (r *LineageRepositoryTestSuite) TestUpsert() {
 	r.Run("should insert all as graph if upstreams and downstreams are new", func() {
 		nodeURN := "table-1"
 		node := asset.LineageNode{
