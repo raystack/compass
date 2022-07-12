@@ -29,6 +29,9 @@ func TestGetLineageGraph(t *testing.T) {
 			node := asset.LineageNode{
 				URN: "job-1",
 			}
+			level := 8
+			direction := asset.LineageDirectionUpstream
+
 			var graph = asset.LineageGraph{
 				{Source: "job-1", Target: "table-2"},
 				{Source: "table-2", Target: "table-31"},
@@ -39,13 +42,15 @@ func TestGetLineageGraph(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			mockSvc.EXPECT().GetLineage(ctx, node).Return(graph, nil)
+			mockSvc.EXPECT().GetLineage(ctx, node, asset.LineageQuery{Level: level, Direction: direction}).Return(graph, nil)
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetGraph(ctx, &compassv1beta1.GetGraphRequest{
-				Urn: node.URN,
+				Urn:       node.URN,
+				Level:     uint32(level),
+				Direction: string(direction),
 			})
 			code := status.Code(err)
 			if code != codes.OK {

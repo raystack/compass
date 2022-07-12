@@ -1,7 +1,7 @@
 NAME="github.com/odpf/compass"
 VERSION=$(shell git describe --always --tags 2>/dev/null)
 COVERFILE="/tmp/compass.coverprofile"
-PROTON_COMMIT := "a5cae3d372dc9741659b19f20a203b9278431356"
+PROTON_COMMIT := "9eaca223dfd5ca0297abdb593fa73e8522d8ef62"
 .PHONY: all build test clean install proto
 
 all: build
@@ -50,4 +50,4 @@ install: ## install required dependencies
 	go install github.com/envoyproxy/protoc-gen-validate@v0.6.7
 
 update-swagger-md:
-	npx swagger-markdown -i third_party/OpenAPI/compass.swagger.yaml -o docs/reference/api.md
+	npx swagger-markdown -i third_party/OpenAPI/compass.swagger.yaml -o docs/docs/reference/api.md
