@@ -90,8 +90,8 @@ func (s *Service) GetAssetVersionHistory(ctx context.Context, flt Filter, id str
 	return s.assetRepository.GetVersionHistory(ctx, flt, id)
 }
 
-func (s *Service) GetLineage(ctx context.Context, node LineageNode) (LineageGraph, error) {
-	return s.lineageRepository.GetGraph(ctx, node)
+func (s *Service) GetLineage(ctx context.Context, node LineageNode, query LineageQuery) (LineageGraph, error) {
+	return s.lineageRepository.GetGraph(ctx, node, query)
 }
 
 func (s *Service) GetTypes(ctx context.Context, flt Filter) (map[Type]int, error) {

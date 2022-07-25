@@ -304,13 +304,13 @@ func (_c *AssetService_GetAssetVersionHistory_Call) Return(_a0 []asset.Asset, _a
 	return _c
 }
 
-// GetLineage provides a mock function with given fields: ctx, node
-func (_m *AssetService) GetLineage(ctx context.Context, node asset.LineageNode) (asset.LineageGraph, error) {
-	ret := _m.Called(ctx, node)
+// GetLineage provides a mock function with given fields: ctx, node, query
+func (_m *AssetService) GetLineage(ctx context.Context, node asset.LineageNode, query asset.LineageQuery) (asset.LineageGraph, error) {
+	ret := _m.Called(ctx, node, query)
 
 	var r0 asset.LineageGraph
-	if rf, ok := ret.Get(0).(func(context.Context, asset.LineageNode) asset.LineageGraph); ok {
-		r0 = rf(ctx, node)
+	if rf, ok := ret.Get(0).(func(context.Context, asset.LineageNode, asset.LineageQuery) asset.LineageGraph); ok {
+		r0 = rf(ctx, node, query)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(asset.LineageGraph)
@@ -318,8 +318,8 @@ func (_m *AssetService) GetLineage(ctx context.Context, node asset.LineageNode) 
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, asset.LineageNode) error); ok {
-		r1 = rf(ctx, node)
+	if rf, ok := ret.Get(1).(func(context.Context, asset.LineageNode, asset.LineageQuery) error); ok {
+		r1 = rf(ctx, node, query)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -335,13 +335,14 @@ type AssetService_GetLineage_Call struct {
 // GetLineage is a helper method to define mock.On call
 //  - ctx context.Context
 //  - node asset.LineageNode
-func (_e *AssetService_Expecter) GetLineage(ctx interface{}, node interface{}) *AssetService_GetLineage_Call {
-	return &AssetService_GetLineage_Call{Call: _e.mock.On("GetLineage", ctx, node)}
+//  - query asset.LineageQuery
+func (_e *AssetService_Expecter) GetLineage(ctx interface{}, node interface{}, query interface{}) *AssetService_GetLineage_Call {
+	return &AssetService_GetLineage_Call{Call: _e.mock.On("GetLineage", ctx, node, query)}
 }
 
-func (_c *AssetService_GetLineage_Call) Run(run func(ctx context.Context, node asset.LineageNode)) *AssetService_GetLineage_Call {
+func (_c *AssetService_GetLineage_Call) Run(run func(ctx context.Context, node asset.LineageNode, query asset.LineageQuery)) *AssetService_GetLineage_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(asset.LineageNode))
+		run(args[0].(context.Context), args[1].(asset.LineageNode), args[2].(asset.LineageQuery))
 	})
 	return _c
 }

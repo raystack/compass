@@ -2834,6 +2834,19 @@ func (m *GetGraphRequest) validate(all bool) error {
 
 	// no validation rules for Urn
 
+	// no validation rules for Level
+
+	if _, ok := _GetGraphRequest_Direction_InLookup[m.GetDirection()]; !ok {
+		err := GetGraphRequestValidationError{
+			field:  "Direction",
+			reason: "value must be in list [upstream downstream ]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if len(errors) > 0 {
 		return GetGraphRequestMultiError(errors)
 	}
@@ -2911,6 +2924,12 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetGraphRequestValidationError{}
+
+var _GetGraphRequest_Direction_InLookup = map[string]struct{}{
+	"upstream":   {},
+	"downstream": {},
+	"":           {},
+}
 
 // Validate checks the field values on GetGraphResponse with the rules defined
 // in the proto definition for this message. If any rules are violated, the
