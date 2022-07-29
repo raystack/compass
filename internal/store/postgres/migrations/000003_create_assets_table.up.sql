@@ -1,10 +1,12 @@
 CREATE TABLE assets (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     urn text NOT NULL,
+    url text NOT NULL,
     type text NOT NULL,
     service text NOT NULL,
     name text NOT NULL,
     description text,
+    attributes jsonb,
     data jsonb,
     labels jsonb,
     version text NOT NULL,

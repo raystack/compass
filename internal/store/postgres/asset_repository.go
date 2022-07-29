@@ -338,8 +338,8 @@ func (r *AssetRepository) Delete(ctx context.Context, id string) error {
 func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id string, err error) {
 	err = r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		query, args, err := sq.Insert("assets").
-			Columns("urn", "type", "service", "name", "description", "data", "labels", "updated_by", "version").
-			Values(ast.URN, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion).
+			Columns("urn", "url", "type", "service", "name", "description", "attributes", "data", "labels", "updated_by", "version").
+			Values(ast.URN, ast.URL, ast.Type, ast.Service, ast.Name, ast.Description, ast.Attributes, ast.Data, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion).
 			Suffix("RETURNING \"id\"").
 			PlaceholderFormat(sq.Dollar).
 			ToSql()
@@ -396,18 +396,20 @@ func (r *AssetRepository) update(ctx context.Context, assetID string, newAsset *
 		err = r.execContext(ctx, tx,
 			`UPDATE assets
 			SET urn = $1,
-				type = $2,
-				service = $3,
-				name = $4,
-				description = $5,
-				data = $6,
-				labels = $7,
-				updated_at = $8,
-				updated_by = $9,
-				version = $10
-			WHERE id = $11;
+				url = $2,
+				type = $3,
+				service = $4,
+				name = $5,
+				description = $6,
+				attributes = $7,
+				data = $8,
+				labels = $9,
+				updated_at = $10,
+				updated_by = $11,
+				version = $12
+			WHERE id = $13;
 			`,
-			newAsset.URN, newAsset.Type, newAsset.Service, newAsset.Name, newAsset.Description, newAsset.Data, newAsset.Labels, time.Now(), newAsset.UpdatedBy.ID, newAsset.Version, assetID)
+			newAsset.URN, newAsset.URL, newAsset.Type, newAsset.Service, newAsset.Name, newAsset.Description, newAsset.Attributes, newAsset.Data, newAsset.Labels, time.Now(), newAsset.UpdatedBy.ID, newAsset.Version, assetID)
 		if err != nil {
 			return fmt.Errorf("error running update asset query: %w", err)
 		}
@@ -450,8 +452,8 @@ func (r *AssetRepository) insertAssetVersion(ctx context.Context, execer sqlx.Ex
 		return err
 	}
 	query, args, err := sq.Insert("assets_versions").
-		Columns("asset_id", "urn", "type", "service", "name", "description", "data", "labels", "created_at", "updated_at", "updated_by", "version", "owners", "changelog").
-		Values(oldAsset.ID, oldAsset.URN, oldAsset.Type, oldAsset.Service, oldAsset.Name, oldAsset.Description, oldAsset.Data, oldAsset.Labels,
+		Columns("asset_id", "urn", "url", "type", "service", "name", "description", "attributes", "data", "labels", "created_at", "updated_at", "updated_by", "version", "owners", "changelog").
+		Values(oldAsset.ID, oldAsset.URN, oldAsset.URL, oldAsset.Type, oldAsset.Service, oldAsset.Name, oldAsset.Description, oldAsset.Attributes, oldAsset.Data, oldAsset.Labels,
 			oldAsset.CreatedAt, oldAsset.UpdatedAt, oldAsset.UpdatedBy.ID, oldAsset.Version, oldAsset.Owners, jsonChangelog).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -651,10 +653,12 @@ func (r *AssetRepository) getAssetSQL() sq.SelectBuilder {
 	return sq.Select(`
 		a.id as id,
 		a.urn as urn,
+		a.url as url,
 		a.type as type,
 		a.name as name,
 		a.service as service,
 		a.description as description,
+		a.attributes as attributes,
 		a.data as data,
 		a.labels as labels,
 		a.version as version,
@@ -675,10 +679,12 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 	return sq.Select(`
 		a.asset_id as id,
 		a.urn as urn,
+		a.url as url,
 		a.type as type,
 		a.name as name,
 		a.service as service,
 		a.description as description,
+		a.attributes as attributes,
 		a.data as data,
 		a.labels as labels,
 		a.version as version,

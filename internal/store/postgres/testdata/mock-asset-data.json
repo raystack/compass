@@ -1,10 +1,18 @@
 [
   {
     "urn": "c-demo-kafka",
+    "url": "a-test-url",
     "name": "demo-kafka",
     "type": "topic",
     "service": "kafka",
     "description": "the data contains tables",
+    "attributes": {
+      "urn": "c-demo-kafka",
+      "title": "demo-kafka",
+      "description": "first data description",
+      "entity": "odpf",
+      "country": "id"
+    },
     "data": {
       "urn": "c-demo-kafka",
       "title": "demo-kafka",
@@ -15,10 +23,18 @@
   },
   {
     "urn": "e-test-grant2",
+    "url": "b-test-url",
     "name": "test_grant2",
     "type": "table",
     "service": "postgres",
     "description": "postgres information demo",
+    "attributes": {
+      "urn": "e-test-grant2",
+      "title": "test_grant2",
+      "description": "second data description",
+      "entity": "odpf",
+      "country": "th"
+    },
     "data": {
       "urn": "e-test-grant2",
       "title": "test_grant2",
@@ -29,10 +45,18 @@
   },
   {
     "urn": "i-undefined-dfgdgd-avi",
+    "url": "c-test-url",
     "name": "dfgdgd-avi",
     "type": "table",
     "service": "mysql",
     "description": "mysql information",
+    "attributes": {
+      "urn": "i-undefined-dfgdgd-avi",
+      "title": "dfgdgd-avi",
+      "description": "third data description",
+      "entity": "gojek",
+      "country": "id"
+    },
     "data": {
       "urn": "i-undefined-dfgdgd-avi",
       "title": "dfgdgd-avi",
@@ -43,10 +67,23 @@
   },
   {
     "urn": "g-jane-kafka-1a",
+    "url": "d-test-url",
     "name": "jane-kafka-1a",
     "type": "dashboard",
     "service": "metabase",
     "description": "metabase information",
+    "attributes": {
+      "landscape": {
+        "properties": {
+          "project-id": "compass_002"
+        }
+      },
+      "urn": "g-jane-kafka-1a",
+      "title": "jane-kafka-1a",
+      "description": "fourth data description",
+      "entity": "odpf",
+      "country": "vn"
+    },
     "data": {
       "landscape": {
         "properties": {
@@ -62,10 +99,21 @@
   },
   {
     "urn": "f-john-test-001",
+    "url": "e-test-url",
     "name": "john_test_001",
     "type": "topic",
     "service": "kafka",
     "description": "the data contains topic",
+    "attributes": {
+      "properties": {
+        "dependencies": ""
+      },
+      "urn": "f-john-test-001",
+      "title": "john_test_001",
+      "description": "fifth data description",
+      "entity": "odpf",
+      "country": "id"
+    },
     "data": {
       "properties": {
         "dependencies": ""
@@ -79,10 +127,21 @@
   },
   {
     "urn": "h-test-new-kafka",
+    "url": "f-test-url",
     "name": "test-new-kafka-1-a-b",
     "type": "job",
     "service": "optimus",
     "description": "compass_002",
+    "attributes": {
+      "properties": {
+        "dependencies": {}
+      },
+      "urn": "h-test-new-kafka-1-a-b-kafka",
+      "title": "test-new-kafka-1-a-b",
+      "description": "sixth data description",
+      "entity": "odpf",
+      "country": "th"
+    },
     "data": {
       "properties": {
         "dependencies": {}
@@ -96,10 +155,21 @@
   },
   {
     "urn": "i-test-grant",
+    "url": "g-test-url",
     "name": "test_grant",
     "type": "topic",
     "service": "kafka",
     "description": "topic information",
+    "attributes": {
+      "properties": {
+        "dependencies": null
+      },
+      "urn": "i-test-grant",
+      "title": "compass_001",
+      "description": "seventh data description",
+      "entity": "odpf",
+      "country": "th"
+    },
     "data": {
       "properties": {
         "dependencies": null
@@ -113,10 +183,23 @@
   },
   {
     "urn": "j-xcvcx",
+    "url": "h-test-url",
     "name": "xcvcx",
     "type": "dashboard",
     "service": "tableau ",
     "description": "tableau information",
+    "attributes": {
+      "landscape": {
+        "properties": {
+          "project-id": "compass_001"
+        }
+      },
+      "urn": "j-xcvcx",
+      "title": "xcvcx",
+      "description": "eighth data description",
+      "entity": "odpf",
+      "country": "vn"
+    },
     "data": {
       "landscape": {
         "properties": {
@@ -132,10 +215,23 @@
   },
   {
     "urn": "nine-mock",
+    "url": "i-test-url",
     "name": "nine-xcvcx",
     "type": "dashboard",
     "service": "tableau ",
     "description": "tableau information",
+    "attributes": {
+      "properties": {
+        "dependencies": [
+          "test"
+        ]
+      },
+      "urn": "j-xcvcx",
+      "title": "xcvcx",
+      "description": "ninth data description",
+      "entity": "odpf",
+      "country": "vn"
+    },
     "data": {
       "properties": {
         "dependencies": [
@@ -151,10 +247,22 @@
   },
   {
     "urn": "ten-mock",
+    "url": "j-test-url",
     "name": "ten-xcvcx",
     "type": "dashboard",
     "service": "tableau ",
     "description": "tableau information",
+    "attributes": {
+      "properties": {
+        "dependencies": [],
+        "check": "sdf"
+      },
+      "urn": "j-xcvcx",
+      "title": "xcvcx",
+      "description": "tenth data description",
+      "entity": "odpf",
+      "country": "vn"
+    },
     "data": {
       "properties": {
         "dependencies": [],
@@ -169,10 +277,23 @@
   },
   {
     "urn": "eleven-mock",
+    "url": "k-test-url",
     "name": "eleven-xcvcx",
     "type": "dashboard",
     "service": "tableau ",
     "description": "tableau information",
+    "attributes": {
+      "properties": {
+        "dependencies": [
+          "sgrg"
+        ]
+      },
+      "urn": "j-xcvcx",
+      "title": "xcvcx",
+      "description": "eleventh data description",
+      "entity": "odpf",
+      "country": "xn"
+    },
     "data": {
       "properties": {
         "dependencies": [
@@ -188,10 +309,21 @@
   },
   {
     "urn": "twelfth-mock",
+    "url": "l-test-url",
     "name": "twelfth-xcvcx",
     "type": "table",
     "service": "mysql ",
     "description": "mysql information",
+    "attributes": {
+      "properties": {
+        "check": "sdf"
+      },
+      "urn": "j-xcvcx",
+      "title": "xcvcx",
+      "description": "twelfth data description",
+      "entity": "odpf",
+      "country": "vn"
+    },
     "data": {
       "properties": {
         "check": "sdf"

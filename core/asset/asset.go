@@ -25,10 +25,12 @@ type Repository interface {
 type Asset struct {
 	ID          string                 `json:"id" diff:"-"`
 	URN         string                 `json:"urn" diff:"-"`
+	URL         string                 `json:"url" diff:"-"`
 	Type        Type                   `json:"type" diff:"-"`
 	Service     string                 `json:"service" diff:"-"`
 	Name        string                 `json:"name" diff:"name"`
 	Description string                 `json:"description" diff:"description"`
+	Attributes  map[string]interface{} `json:"attributes" diff:"attributes"`
 	Data        map[string]interface{} `json:"data" diff:"data"`
 	Labels      map[string]string      `json:"labels" diff:"labels"`
 	Owners      []user.User            `json:"owners,omitempty" diff:"owners"`

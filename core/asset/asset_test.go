@@ -275,6 +275,7 @@ func TestAssetPatch(t *testing.T) {
 			description: "should patch all allowed fields",
 			asset: asset.Asset{
 				URN:         "some-urn",
+				URL:         "some-url",
 				Type:        asset.TypeJob,
 				Service:     "optimus",
 				Description: "sample-description",
@@ -288,6 +289,7 @@ func TestAssetPatch(t *testing.T) {
 			},
 			patchDataJSON: []byte(`{
 				"urn":         "new-urn",
+				"url": 		   "new-url",	
 				"type":        "table",
 				"service":     "firehose",
 				"description": "new-description",
@@ -303,6 +305,7 @@ func TestAssetPatch(t *testing.T) {
 			}`),
 			expected: asset.Asset{
 				URN:         "new-urn",
+				URL:         "new-url",
 				Type:        asset.TypeTable,
 				Service:     "firehose",
 				Description: "new-description",
@@ -314,6 +317,62 @@ func TestAssetPatch(t *testing.T) {
 				Owners: []user.User{
 					{Email: "new@example.com"},
 					{Email: "new2@example.com"},
+				},
+			},
+		},
+		{
+			description: "should patch attributes field",
+			asset: asset.Asset{
+				Attributes: map[string]interface{}{
+					"user": map[string]interface{}{
+						"name":  "new-name",
+						"email": "new@test.com",
+					},
+					"properties": map[string]interface{}{
+						"attributes": map[string]interface{}{
+							"entity":      "odpf",
+							"environment": "production",
+						},
+					},
+				},
+			},
+			patchDataJSON: []byte(`{
+				"attributes": {
+					"user": {
+						"name":  "some-name",
+						"email": "some-email@check.com",
+						"description": "user description"
+					},
+					"schemas": [
+						"schema1",
+						"schema2"
+					],
+					"properties": {
+						"attributes": {
+							"environment": "staging",
+							"type": "some-type"
+						}
+					}
+				}
+			}`),
+			expected: asset.Asset{
+				Attributes: map[string]interface{}{
+					"user": map[string]interface{}{
+						"name":        "some-name",
+						"email":       "some-email@check.com",
+						"description": "user description",
+					},
+					"properties": map[string]interface{}{
+						"attributes": map[string]interface{}{
+							"entity":      "odpf",
+							"environment": "staging",
+							"type":        "some-type",
+						},
+					},
+					"schemas": []interface{}{
+						"schema1",
+						"schema2",
+					},
 				},
 			},
 		},

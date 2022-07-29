@@ -1685,6 +1685,8 @@ definitions:
         type: string
       urn:
         type: string
+      url:
+        type: string
       type:
         type: string
       service:
@@ -1694,6 +1696,8 @@ definitions:
       description:
         type: string
       data:
+        type: object
+      attributes:
         type: object
       labels:
         type: object
@@ -1721,6 +1725,8 @@ definitions:
     properties:
       urn:
         type: string
+      url:
+        type: string
       type:
         type: string
       name:
@@ -1731,6 +1737,9 @@ definitions:
       description:
         type: string
         description: description of an asset
+      attributes:
+        type: object
+        description: attributes of an asset
       data:
         type: object
         description: dynamic data of an asset

@@ -16,10 +16,12 @@ import (
 type AssetModel struct {
 	ID          string    `db:"id"`
 	URN         string    `db:"urn"`
+	URL         string    `db:"url"`
 	Type        string    `db:"type"`
 	Name        string    `db:"name"`
 	Service     string    `db:"service"`
 	Description string    `db:"description"`
+	Attributes  JSONMap   `db:"attributes"`
 	Data        JSONMap   `db:"data"`
 	Labels      JSONMap   `db:"labels"`
 	Version     string    `db:"version"`
@@ -36,10 +38,12 @@ func (a *AssetModel) toAsset(owners []user.User) asset.Asset {
 	return asset.Asset{
 		ID:          a.ID,
 		URN:         a.URN,
+		URL:         a.URL,
 		Type:        asset.Type(a.Type),
 		Name:        a.Name,
 		Service:     a.Service,
 		Description: a.Description,
+		Attributes:  a.Attributes,
 		Data:        a.Data,
 		Labels:      a.buildLabels(),
 		Owners:      owners,
@@ -86,10 +90,12 @@ func (a *AssetModel) toVersionedAsset(latestAssetVersion asset.Asset) (asset.Ass
 	return asset.Asset{
 		ID:          latestAssetVersion.ID,
 		URN:         latestAssetVersion.URN,
+		URL:         a.URL,
 		Type:        latestAssetVersion.Type,
 		Name:        a.Name,
 		Service:     latestAssetVersion.Service,
 		Description: a.Description,
+		Attributes:  a.Attributes,
 		Data:        a.Data,
 		Labels:      a.buildLabels(),
 		Owners:      owners,

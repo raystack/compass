@@ -8,6 +8,7 @@ import (
 // patch appends asset with data from map. It mutates the asset itself.
 func patchAsset(a *Asset, patchData map[string]interface{}) {
 	a.URN = patchString("urn", patchData, a.URN)
+	a.URL = patchString("url", patchData, a.URL)
 	a.Type = Type(patchString("type", patchData, a.Type.String()))
 	a.Service = patchString("service", patchData, a.Service)
 	a.Name = patchString("name", patchData, a.Name)
@@ -24,6 +25,10 @@ func patchAsset(a *Asset, patchData map[string]interface{}) {
 	data, exists := patchData["data"]
 	if exists {
 		patchAssetData(a, data)
+	}
+	attributes, exists := patchData["attributes"]
+	if exists {
+		patchAssetAttributes(a, attributes)
 	}
 }
 
@@ -98,6 +103,24 @@ func patchAssetData(a *Asset, data interface{}) {
 	}
 
 	a.Data = mergemap.Merge(a.Data, dataMap)
+}
+
+// patchAssetAttributes patches asset's attributes using map
+func patchAssetAttributes(a *Asset, attributes interface{}) {
+	if attributes == nil {
+		return
+	}
+	attributesMap, ok := attributes.(map[string]interface{})
+	if !ok {
+		return
+	}
+
+	if a.Attributes == nil {
+		a.Attributes = attributesMap
+		return
+	}
+
+	a.Attributes = mergemap.Merge(a.Attributes, attributesMap)
 }
 
 func patchString(key string, data map[string]interface{}, defaultVal string) string {

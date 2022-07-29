@@ -287,11 +287,13 @@ func TestUpsertPatchAsset(t *testing.T) {
 		assetID      = uuid.NewString()
 		validPayload = &compassv1beta1.UpsertPatchAssetRequest{
 			Asset: &compassv1beta1.UpsertPatchAssetRequest_BaseAsset{
-				Urn:     "test dagger",
-				Type:    "table",
-				Name:    wrapperspb.String("new-name"),
-				Service: "kafka",
-				Data:    &structpb.Struct{},
+				Urn:        "test dagger",
+				Url:        "test url",
+				Type:       "table",
+				Name:       wrapperspb.String("new-name"),
+				Service:    "kafka",
+				Data:       &structpb.Struct{},
+				Attributes: &structpb.Struct{},
 			},
 			Upstreams: []*compassv1beta1.LineageNode{
 				{
@@ -314,12 +316,14 @@ func TestUpsertPatchAsset(t *testing.T) {
 			},
 		}
 		currentAsset = asset.Asset{
-			URN:       "test dagger",
-			Type:      asset.TypeTable,
-			Name:      "old-name", // this value will be updated
-			Service:   "kafka",
-			UpdatedBy: user.User{ID: userID},
-			Data:      map[string]interface{}{},
+			URN:        "test dagger",
+			URL:        "test url",
+			Type:       asset.TypeTable,
+			Name:       "old-name", // this value will be updated
+			Service:    "kafka",
+			UpdatedBy:  user.User{ID: userID},
+			Data:       map[string]interface{}{},
+			Attributes: map[string]interface{}{},
 		}
 	)
 	type testCase struct {
@@ -416,12 +420,14 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Description: "should return OK and asset's ID if the asset is successfully created/patched",
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
 				patchedAsset := asset.Asset{
-					URN:       "test dagger",
-					Type:      asset.TypeTable,
-					Name:      "new-name",
-					Service:   "kafka",
-					UpdatedBy: user.User{ID: userID},
-					Data:      map[string]interface{}{},
+					URN:        "test dagger",
+					URL:        "test url",
+					Type:       asset.TypeTable,
+					Name:       "new-name",
+					Service:    "kafka",
+					UpdatedBy:  user.User{ID: userID},
+					Data:       map[string]interface{}{},
+					Attributes: map[string]interface{}{},
 				}
 				upstreams := []asset.LineageNode{
 					{URN: "upstream-1", Type: asset.TypeJob, Service: "optimus"},

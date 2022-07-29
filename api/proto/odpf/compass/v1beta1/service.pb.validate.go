@@ -9438,6 +9438,8 @@ func (m *Asset) validate(all bool) error {
 
 	// no validation rules for Urn
 
+	// no validation rules for Url
+
 	// no validation rules for Type
 
 	// no validation rules for Service
@@ -9469,6 +9471,35 @@ func (m *Asset) validate(all bool) error {
 		if err := v.Validate(); err != nil {
 			return AssetValidationError{
 				field:  "Data",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetAttributes()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AssetValidationError{
+					field:  "Attributes",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AssetValidationError{
+					field:  "Attributes",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetAttributes()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AssetValidationError{
+				field:  "Attributes",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
@@ -11223,6 +11254,8 @@ func (m *UpsertPatchAssetRequest_BaseAsset) validate(all bool) error {
 
 	// no validation rules for Urn
 
+	// no validation rules for Url
+
 	// no validation rules for Type
 
 	if wrapper := m.GetName(); wrapper != nil {
@@ -11241,6 +11274,35 @@ func (m *UpsertPatchAssetRequest_BaseAsset) validate(all bool) error {
 
 		}
 
+	}
+
+	if all {
+		switch v := interface{}(m.GetAttributes()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpsertPatchAssetRequest_BaseAssetValidationError{
+					field:  "Attributes",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpsertPatchAssetRequest_BaseAssetValidationError{
+					field:  "Attributes",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetAttributes()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpsertPatchAssetRequest_BaseAssetValidationError{
+				field:  "Attributes",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
 	}
 
 	if all {
