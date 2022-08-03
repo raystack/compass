@@ -495,7 +495,7 @@ func TestService_GetLineage(t *testing.T) {
 			Description: `should return error if the GetGraph function return error`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				lr.EXPECT().GetGraph(ctx, asset.LineageNode{}).Return(asset.LineageGraph{}, errors.New("error fetching graph"))
+				lr.EXPECT().GetGraph(ctx, asset.LineageNode{}, asset.LineageQuery{}).Return(asset.LineageGraph{}, errors.New("error fetching graph"))
 			},
 			Err: errors.New("error fetching graph"),
 		},
@@ -503,7 +503,7 @@ func TestService_GetLineage(t *testing.T) {
 			Description: `should return no error if graph nodes are returned`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				lr.EXPECT().GetGraph(ctx, asset.LineageNode{}).Return(asset.LineageGraph{}, nil)
+				lr.EXPECT().GetGraph(ctx, asset.LineageNode{}, asset.LineageQuery{}).Return(asset.LineageGraph{}, nil)
 			},
 			Err: nil,
 		},
@@ -523,7 +523,7 @@ func TestService_GetLineage(t *testing.T) {
 			defer mockLineageRepo.AssertExpectations(t)
 
 			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
-			_, err := svc.GetLineage(ctx, asset.LineageNode{})
+			_, err := svc.GetLineage(ctx, asset.LineageNode{}, asset.LineageQuery{})
 			if err != nil && errors.Is(tc.Err, err) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
 			}
