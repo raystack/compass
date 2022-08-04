@@ -43,7 +43,7 @@ func TestValidateStruct(t *testing.T) {
 	}
 }
 
-func TestValidateOneOfTestValidateOneOf(t *testing.T) {
+func TestValidateOneOf(t *testing.T) {
 	type TestCase struct {
 		Description string
 		Value       string

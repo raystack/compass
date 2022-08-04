@@ -11,6 +11,7 @@ import (
 	"github.com/odpf/compass/core/tag/mocks"
 	"github.com/odpf/compass/core/tag/validator"
 
+	"github.com/golang-module/carbon/v2"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -181,7 +182,7 @@ func (s *ServiceTestSuite) TestCreate() {
 	s.Run("should return error if specified field is not part of the template", func() {
 		s.Setup()
 		t := s.buildTag()
-		t.TagValues[0].FieldID = 5
+		t.TagValues[0].FieldID = 50
 
 		template := s.buildTemplate()
 		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
@@ -311,10 +312,10 @@ func (s *ServiceTestSuite) TestFindByAssetAndTemplate() {
 		}).Return([]tag.Tag{}, nil)
 
 		_, err := s.tagService.FindTagByAssetIDAndTemplateURN(ctx, assetID, template.URN)
-		s.ErrorIs(err, tag.NotFoundError{
+		s.Equal(err.Error(), tag.NotFoundError{
 			AssetID:  assetID,
 			Template: template.URN,
-		})
+		}.Error())
 	})
 
 	s.Run("should return tag and nil if tag is found", func() {
@@ -388,7 +389,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 	s.Run("should return error if specified field is not part of the template", func() {
 		s.Setup()
 		t := s.buildTag()
-		t.TagValues[0].FieldID = 5
+		t.TagValues[0].FieldID = 50
 
 		template := s.buildTemplate()
 		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
@@ -520,6 +521,30 @@ func (s *ServiceTestSuite) buildTemplate() tag.Template {
 				DataType:    "boolean",
 				Required:    true,
 			},
+			{
+				ID:          3,
+				URN:         "owner",
+				DisplayName: "name of owner",
+				Description: "name of owner of this asset",
+				DataType:    "string",
+				Required:    false,
+			},
+			{
+				ID:          4,
+				URN:         "date_created",
+				DisplayName: "date of creation?",
+				Description: "date when asset was created",
+				DataType:    "datetime",
+				Required:    false,
+			},
+			{
+				ID:          5,
+				URN:         "no_of_records",
+				DisplayName: "no of records",
+				Description: "record count for the asset",
+				DataType:    "double",
+				Required:    false,
+			},
 		},
 	}
 }
@@ -549,6 +574,33 @@ func (s *ServiceTestSuite) buildTag() tag.Tag {
 				FieldDescription: "Specify whether this asset is encrypted or not.",
 				FieldDataType:    "boolean",
 				FieldRequired:    true,
+			},
+			{
+				FieldID:          3,
+				FieldValue:       "john doe",
+				FieldURN:         "owner",
+				FieldDisplayName: "name of owner",
+				FieldDescription: "name of owner of this asset",
+				FieldDataType:    "string",
+				FieldRequired:    false,
+			},
+			{
+				FieldID:          4,
+				FieldValue:       carbon.Parse("2020-12-31").ToRfc3339String(),
+				FieldURN:         "date_created",
+				FieldDisplayName: "date of creation?",
+				FieldDescription: "date when asset was created",
+				FieldDataType:    "datetime",
+				FieldRequired:    false,
+			},
+			{
+				FieldID:          5,
+				FieldValue:       "91.0",
+				FieldURN:         "no_of_records",
+				FieldDisplayName: "no of records",
+				FieldDescription: "record count for the asset",
+				FieldDataType:    "double",
+				FieldRequired:    false,
 			},
 		},
 	}

@@ -349,6 +349,14 @@ func (s *TemplateServiceTestSuite) TestIndex() {
 		s.Error(err)
 	})
 
+	s.Run("should return nil and error for error in readall with empty urn", func() {
+		s.Setup()
+		s.repository.EXPECT().ReadAll(ctx).Return(nil, errors.New("unexpected error"))
+
+		_, err := s.service.GetTemplates(ctx, "")
+		s.Error(err)
+	})
+
 	s.Run("should return domain templates and nil if no error found", func() {
 		s.Setup()
 		template := s.buildTemplate()
@@ -357,6 +365,19 @@ func (s *TemplateServiceTestSuite) TestIndex() {
 		expectedTemplate := []tag.Template{template}
 
 		actualTemplate, actualError := s.service.GetTemplates(ctx, template.URN)
+
+		s.EqualValues(expectedTemplate, actualTemplate)
+		s.NoError(actualError)
+	})
+
+	s.Run("should return domain templates and nil if no error found with empty urn", func() {
+		s.Setup()
+		template := s.buildTemplate()
+		s.repository.EXPECT().ReadAll(ctx).Return([]tag.Template{template}, nil)
+
+		expectedTemplate := []tag.Template{template}
+
+		actualTemplate, actualError := s.service.GetTemplates(ctx, "")
 
 		s.EqualValues(expectedTemplate, actualTemplate)
 		s.NoError(actualError)
@@ -494,7 +515,7 @@ func (s *TemplateServiceTestSuite) TestFind() {
 
 		_, err := s.service.GetTemplate(ctx, urn)
 		s.Error(err)
-		s.ErrorIs(err, tag.TemplateNotFoundError{URN: urn})
+		s.Equal(err.Error(), tag.TemplateNotFoundError{URN: urn}.Error())
 	})
 
 	s.Run("should return domain template and nil if record is found", func() {

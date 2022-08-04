@@ -266,10 +266,10 @@ func TestDiffData(t *testing.T) {
 
 func TestAssetPatch(t *testing.T) {
 	testcases := []struct {
-		description   string
-		asset         asset.Asset
-		patchDataJSON json.RawMessage
-		expected      asset.Asset
+		description string
+		asset       asset.Asset
+		patchData   map[string]interface{}
+		expected    asset.Asset
 	}{
 		{
 			description: "should patch all allowed fields",
@@ -286,21 +286,21 @@ func TestAssetPatch(t *testing.T) {
 					{Email: "old@example.com"},
 				},
 			},
-			patchDataJSON: []byte(`{
+			patchData: map[string]interface{}{
 				"urn":         "new-urn",
 				"type":        "table",
 				"service":     "firehose",
 				"description": "new-description",
 				"name":        "new-name",
-				"labels": {
+				"labels": map[string]string{
 					"bar":  "foo",
-					"bar2": "foo2"
+					"bar2": "foo2",
 				},
-				"owners": [
-					{"email": "new@example.com"},
-					{"email": "new2@example.com"}
-				]
-			}`),
+				"owners": []user.User{
+					{Email: "new@example.com"},
+					{Email: "new2@example.com"},
+				},
+			},
 			expected: asset.Asset{
 				URN:         "new-urn",
 				Type:        asset.TypeTable,
@@ -315,6 +315,83 @@ func TestAssetPatch(t *testing.T) {
 					{Email: "new@example.com"},
 					{Email: "new2@example.com"},
 				},
+			},
+		},
+		{
+			description: "should patch all allowed fields without JSON",
+			asset: asset.Asset{
+				URN:         "some-urn",
+				Type:        asset.TypeJob,
+				Service:     "optimus",
+				Description: "sample-description",
+				Name:        "old-name",
+				Labels: map[string]string{
+					"foo": "bar",
+				},
+				Owners: []user.User{
+					{Email: "old@example.com"},
+				},
+			},
+			patchData: map[string]interface{}{
+				"urn":         "new-urn",
+				"type":        "table",
+				"service":     "firehose",
+				"description": "new-description",
+				"name":        "new-name",
+				"labels": map[string]string{
+					"bar":  "foo",
+					"bar2": "foo2",
+				},
+				"owners": []map[string]interface{}{
+					{"email": "new@example.com"},
+					{"email": "new2@example.com"},
+				},
+			},
+			expected: asset.Asset{
+				URN:         "new-urn",
+				Type:        asset.TypeTable,
+				Service:     "firehose",
+				Description: "new-description",
+				Name:        "new-name",
+				Labels: map[string]string{
+					"bar":  "foo",
+					"bar2": "foo2",
+				},
+				Owners: []user.User{
+					{Email: "new@example.com"},
+					{Email: "new2@example.com"},
+				},
+			},
+		}, {
+			description: "should patch all allowed fields without labels and owners",
+			asset: asset.Asset{
+				URN:         "some-urn",
+				Type:        asset.TypeJob,
+				Service:     "optimus",
+				Description: "sample-description",
+				Name:        "old-name",
+				Labels: map[string]string{
+					"foo": "bar",
+				},
+				Owners: []user.User{
+					{Email: "old@example.com"},
+				},
+			},
+			patchData: map[string]interface{}{
+				"urn":         "new-urn",
+				"type":        "table",
+				"service":     "firehose",
+				"description": "new-description",
+				"name":        "new-name",
+				"labels":      "",
+				"owners":      "",
+			},
+			expected: asset.Asset{
+				URN:         "new-urn",
+				Type:        asset.TypeTable,
+				Service:     "firehose",
+				Description: "new-description",
+				Name:        "new-name",
 			},
 		},
 		{
@@ -333,24 +410,24 @@ func TestAssetPatch(t *testing.T) {
 					},
 				},
 			},
-			patchDataJSON: []byte(`{
-				"data": {
-					"user": {
-						"email": "new-email@test.com",
-						"description": "user description"
+			patchData: map[string]interface{}{
+				"data": map[string]interface{}{
+					"user": map[string]interface{}{
+						"email":       "new-email@test.com",
+						"description": "user description",
 					},
-					"schemas": [
+					"schemas": []interface{}{
 						"schema1",
-						"schema2"
-					],
-					"properties": {
-						"attributes": {
+						"schema2",
+					},
+					"properties": map[string]interface{}{
+						"attributes": map[string]interface{}{
 							"environment": "production",
-							"type": "some-type"
-						}
-					}
-				}
-			}`),
+							"type":        "some-type",
+						},
+					},
+				},
+			},
 			expected: asset.Asset{
 				Data: map[string]interface{}{
 					"user": map[string]interface{}{
@@ -377,11 +454,11 @@ func TestAssetPatch(t *testing.T) {
 			asset: asset.Asset{
 				Data: nil,
 			},
-			patchDataJSON: []byte(`{
-				"data": {
-					"foo": "bar"
-				}
-			}`),
+			patchData: map[string]interface{}{
+				"data": map[string]interface{}{
+					"foo": "bar",
+				},
+			},
 			expected: asset.Asset{
 				Data: map[string]interface{}{
 					"foo": "bar",
@@ -391,11 +468,7 @@ func TestAssetPatch(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.description, func(t *testing.T) {
-			var patchData map[string]interface{}
-			err := json.Unmarshal(tc.patchDataJSON, &patchData)
-			require.NoError(t, err)
-
-			tc.asset.Patch(patchData)
+			tc.asset.Patch(tc.patchData)
 			assert.Equal(t, tc.expected, tc.asset)
 		})
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/odpf/compass/core/asset"
 	"github.com/odpf/compass/core/asset/mocks"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestService_GetAllAssets(t *testing.T) {
@@ -333,6 +334,260 @@ func TestService_DeleteAsset(t *testing.T) {
 			err := svc.DeleteAsset(ctx, tc.ID)
 			if err != nil && errors.Is(tc.Err, err) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
+			}
+		})
+	}
+}
+
+func TestService_GetAsset(t *testing.T) {
+	assetID := "some-id"
+	type testCase struct {
+		Description string
+		ID          string
+		Err         error
+		ErrID       error
+		Setup       func(context.Context, *mocks.AssetRepository, *mocks.DiscoveryRepository, *mocks.LineageRepository)
+	}
+
+	ast := asset.Asset{
+		ID: assetID,
+	}
+
+	var testCases = []testCase{
+		{
+			Description: `should return error if the GetAsset functions return error without id`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, asset.NotFoundError{})
+				ar.EXPECT().GetByVersion(ctx, assetID, "v0.0.2").Return(asset.Asset{}, errors.New("error fetching asset"))
+				ar.EXPECT().Find(ctx, "some-urn", ast.Type, assetID).Return(ast, errors.New("error fetching asset"))
+			},
+			ErrID: asset.NotFoundError{},
+			Err:   errors.New("error fetching asset"),
+		},
+		{
+			Description: `should return error if the GetAsset functions return error, with id`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, asset.NotFoundError{AssetID: ast.ID})
+				ar.EXPECT().GetByVersion(ctx, assetID, "v0.0.2").Return(asset.Asset{}, errors.New("error fetching asset"))
+				ar.EXPECT().Find(ctx, "some-urn", ast.Type, assetID).Return(ast, errors.New("error fetching asset"))
+			},
+			ErrID: asset.NotFoundError{AssetID: ast.ID},
+			Err:   errors.New("error fetching asset"),
+		},
+		{
+			Description: `should return error if the GetAsset functions return error, with invalid id`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, asset.InvalidError{AssetID: ast.ID})
+				ar.EXPECT().GetByVersion(ctx, assetID, "v0.0.2").Return(asset.Asset{}, errors.New("error fetching asset"))
+				ar.EXPECT().Find(ctx, "some-urn", ast.Type, assetID).Return(ast, errors.New("error fetching asset"))
+			},
+			ErrID: asset.InvalidError{AssetID: ast.ID},
+			Err:   errors.New("error fetching asset"),
+		},
+		{
+			Description: `should return no error if asset is found`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, nil)
+				ar.EXPECT().Find(ctx, "some-urn", ast.Type, assetID).Return(ast, nil)
+				ar.EXPECT().GetByVersion(ctx, assetID, "v0.0.2").Return(asset.Asset{}, nil)
+			},
+			ErrID: nil,
+			Err:   nil,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockAssetRepo := new(mocks.AssetRepository)
+			mockDiscoveryRepo := new(mocks.DiscoveryRepository)
+			mockLineageRepo := new(mocks.LineageRepository)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+			}
+			defer mockAssetRepo.AssertExpectations(t)
+			defer mockDiscoveryRepo.AssertExpectations(t)
+			defer mockLineageRepo.AssertExpectations(t)
+
+			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+			_, err := svc.GetAssetByID(ctx, tc.ID)
+			if err != nil && !assert.Equal(t, tc.ErrID.Error(), err.Error()) {
+				t.Fatalf("got error %v, expected error was %v", err, tc.ErrID)
+			}
+			_, err = svc.GetAssetByURN(ctx, "some-urn", ast.Type, tc.ID)
+			if err != nil && errors.Is(tc.Err, err) {
+				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
+			}
+			_, err = svc.GetAssetByVersion(ctx, tc.ID, "v0.0.2")
+			if err != nil && errors.Is(tc.Err, err) {
+				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
+			}
+		})
+	}
+}
+
+func TestService_GetAssetVersionHistory(t *testing.T) {
+	assetID := "some-id"
+	type testCase struct {
+		Description string
+		ID          string
+		Err         error
+		Setup       func(context.Context, *mocks.AssetRepository)
+	}
+
+	ast := []asset.Asset{}
+	var testCases = []testCase{
+		{
+			Description: `should return error if the GetVersionHistory function return error`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetVersionHistory(ctx, asset.Filter{}, assetID).Return(ast, errors.New("error fetching asset"))
+			},
+			Err: errors.New("error fetching asset"),
+		},
+		{
+			Description: `should return no error if asset is found by the version`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetVersionHistory(ctx, asset.Filter{}, assetID).Return(ast, nil)
+			},
+			Err: nil,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockAssetRepo := new(mocks.AssetRepository)
+			mockDiscoveryRepo := new(mocks.DiscoveryRepository)
+			mockLineageRepo := new(mocks.LineageRepository)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockAssetRepo)
+			}
+			defer mockAssetRepo.AssertExpectations(t)
+			defer mockDiscoveryRepo.AssertExpectations(t)
+			defer mockLineageRepo.AssertExpectations(t)
+
+			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+			_, err := svc.GetAssetVersionHistory(ctx, asset.Filter{}, tc.ID)
+			if err != nil && errors.Is(tc.Err, err) {
+				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
+			}
+		})
+	}
+}
+
+func TestService_GetLineage(t *testing.T) {
+	assetID := "some-id"
+	type testCase struct {
+		Description string
+		ID          string
+		Err         error
+		Setup       func(context.Context, *mocks.AssetRepository, *mocks.DiscoveryRepository, *mocks.LineageRepository)
+	}
+
+	var testCases = []testCase{
+		{
+			Description: `should return error if the GetGraph function return error`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+				lr.EXPECT().GetGraph(ctx, asset.LineageNode{}, asset.LineageQuery{}).Return(asset.LineageGraph{}, errors.New("error fetching graph"))
+			},
+			Err: errors.New("error fetching graph"),
+		},
+		{
+			Description: `should return no error if graph nodes are returned`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+				lr.EXPECT().GetGraph(ctx, asset.LineageNode{}, asset.LineageQuery{}).Return(asset.LineageGraph{}, nil)
+			},
+			Err: nil,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockAssetRepo := new(mocks.AssetRepository)
+			mockDiscoveryRepo := new(mocks.DiscoveryRepository)
+			mockLineageRepo := new(mocks.LineageRepository)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+			}
+			defer mockAssetRepo.AssertExpectations(t)
+			defer mockDiscoveryRepo.AssertExpectations(t)
+			defer mockLineageRepo.AssertExpectations(t)
+
+			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+			_, err := svc.GetLineage(ctx, asset.LineageNode{}, asset.LineageQuery{})
+			if err != nil && errors.Is(tc.Err, err) {
+				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
+			}
+		})
+	}
+}
+
+func TestService_SearchSuggestAssets(t *testing.T) {
+	assetID := "some-id"
+	type testCase struct {
+		Description string
+		ID          string
+		ErrSearch   error
+		ErrSuggest  error
+		Setup       func(context.Context, *mocks.DiscoveryRepository)
+	}
+
+	DisErr := asset.DiscoveryError{Err: errors.New("could not find")}
+
+	searchResults := []asset.SearchResult{}
+	var testCases = []testCase{
+		{
+			Description: `should return error if the GetGraph function return error`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, dr *mocks.DiscoveryRepository) {
+				dr.EXPECT().Search(ctx, asset.SearchConfig{}).Return(searchResults, DisErr)
+				dr.EXPECT().Suggest(ctx, asset.SearchConfig{}).Return([]string{}, DisErr)
+			},
+			ErrSearch:  DisErr,
+			ErrSuggest: DisErr,
+		},
+		{
+			Description: `should return no error if search and suggest function work`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, dr *mocks.DiscoveryRepository) {
+				dr.EXPECT().Search(ctx, asset.SearchConfig{}).Return(searchResults, nil)
+				dr.EXPECT().Suggest(ctx, asset.SearchConfig{}).Return([]string{}, nil)
+			},
+			ErrSearch:  nil,
+			ErrSuggest: nil,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockAssetRepo := new(mocks.AssetRepository)
+			mockDiscoveryRepo := new(mocks.DiscoveryRepository)
+			mockLineageRepo := new(mocks.LineageRepository)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockDiscoveryRepo)
+			}
+			defer mockAssetRepo.AssertExpectations(t)
+			defer mockDiscoveryRepo.AssertExpectations(t)
+			defer mockLineageRepo.AssertExpectations(t)
+
+			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+			_, err := svc.SearchAssets(ctx, asset.SearchConfig{})
+			if err != nil && !assert.Equal(t, tc.ErrSearch, err) {
+				t.Fatalf("got error %v, expected error was %v", err, tc.ErrSearch)
+			}
+			_, err = svc.SuggestAssets(ctx, asset.SearchConfig{})
+			if err != nil && !assert.Equal(t, tc.ErrSuggest.Error(), err.Error()) {
+				t.Fatalf("got error %v, expected error was %v", err, tc.ErrSuggest)
 			}
 		})
 	}

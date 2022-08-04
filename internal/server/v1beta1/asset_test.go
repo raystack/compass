@@ -292,6 +292,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 				Name:    wrapperspb.String("new-name"),
 				Service: "kafka",
 				Data:    &structpb.Struct{},
+				Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "", Email: "email@email.com", Provider: "provider"}},
 			},
 			Upstreams: []*compassv1beta1.LineageNode{
 				{
@@ -320,6 +321,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Service:   "kafka",
 			UpdatedBy: user.User{ID: userID},
 			Data:      map[string]interface{}{},
+			Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
 		}
 	)
 	type testCase struct {
@@ -422,6 +424,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 					Service:   "kafka",
 					UpdatedBy: user.User{ID: userID},
 					Data:      map[string]interface{}{},
+					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
 				}
 				upstreams := []asset.LineageNode{
 					{URN: "upstream-1", Type: asset.TypeJob, Service: "optimus"},
