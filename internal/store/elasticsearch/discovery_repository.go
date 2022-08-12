@@ -61,15 +61,28 @@ func (repo *DiscoveryRepository) Upsert(ctx context.Context, ast asset.Asset) er
 	return nil
 }
 
-func (repo *DiscoveryRepository) Delete(ctx context.Context, assetID string) error {
+func (repo *DiscoveryRepository) DeleteByID(ctx context.Context, assetID string) error {
 	if assetID == "" {
 		return asset.ErrEmptyID
 	}
 
+	return repo.deleteWithQuery(ctx, strings.NewReader(fmt.Sprintf(`{"query":{"term":{"_id": "%s"}}}`, assetID)))
+}
+
+func (repo *DiscoveryRepository) DeleteByURN(ctx context.Context, assetURN string) error {
+	if assetURN == "" {
+		return asset.ErrEmptyURN
+	}
+
+	return repo.deleteWithQuery(ctx, strings.NewReader(fmt.Sprintf(`{"query":{"term":{"urn.keyword": "%s"}}}`, assetURN)))
+}
+
+func (repo *DiscoveryRepository) deleteWithQuery(ctx context.Context, qry io.Reader) error {
 	res, err := repo.cli.client.DeleteByQuery(
 		[]string{"_all"},
-		strings.NewReader(fmt.Sprintf(`{"query":{"terms":{"_id": ["%s"]}}}`, assetID)),
+		qry,
 		repo.cli.client.DeleteByQuery.WithContext(ctx),
+		repo.cli.client.DeleteByQuery.WithRefresh(true),
 	)
 	if err != nil {
 		return asset.DiscoveryError{Err: fmt.Errorf("error deleting asset: %w", err)}

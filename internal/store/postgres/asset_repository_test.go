@@ -639,57 +639,47 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 	})
 }
 
-func (r *AssetRepositoryTestSuite) TestFind() {
+func (r *AssetRepositoryTestSuite) TestGetByURN() {
 	r.Run("return NotFoundError if asset does not exist", func() {
-		urn := "some-urn"
-		typ := asset.TypeDashboard
-		service := "bigquery"
-		_, err := r.repository.Find(r.ctx, urn, typ, service)
-		r.ErrorAs(err, &asset.NotFoundError{URN: urn, Type: typ, Service: service})
+		urn := "urn-gbi-1"
+		_, err := r.repository.GetByURN(r.ctx, urn)
+		r.ErrorAs(err, &asset.NotFoundError{URN: urn})
 	})
 
 	r.Run("return correct asset from db", func() {
 		asset1 := asset.Asset{
-			URN:       "urn-find-1",
+			URN:       "urn-gbi-1",
 			Type:      "table",
 			Service:   "bigquery",
 			Version:   asset.BaseVersion,
 			UpdatedBy: r.users[1],
 		}
 		asset2 := asset.Asset{
-			URN:       "urn-find-2",
+			URN:       "urn-gbi-2",
 			Type:      "topic",
 			Service:   "kafka",
 			Version:   asset.BaseVersion,
 			UpdatedBy: r.users[1],
 		}
 
-		var err error
 		id, err := r.repository.Upsert(r.ctx, &asset1)
 		r.Require().NoError(err)
-		r.Require().NotEmpty(id)
+		r.NotEmpty(id)
 		asset1.ID = id
 
 		id, err = r.repository.Upsert(r.ctx, &asset2)
 		r.Require().NoError(err)
-		r.Require().NotEmpty(id)
+		r.NotEmpty(id)
 		asset2.ID = id
 
-		result, err := r.repository.Find(r.ctx, asset2.URN, asset2.Type, asset2.Service)
+		result, err := r.repository.GetByURN(r.ctx, "urn-gbi-2")
 		r.NoError(err)
-		asset2.UpdatedBy = r.users[1]
 		r.assertAsset(&asset2, &result)
-
-		// clean up
-		err = r.repository.Delete(r.ctx, asset1.ID)
-		r.Require().NoError(err)
-		err = r.repository.Delete(r.ctx, asset2.ID)
-		r.Require().NoError(err)
 	})
 
 	r.Run("return owners if any", func() {
 		ast := asset.Asset{
-			URN:     "urn-find-3",
+			URN:     "urn-gbi-3",
 			Type:    "table",
 			Service: "bigquery",
 			Owners: []user.User{
@@ -699,21 +689,15 @@ func (r *AssetRepositoryTestSuite) TestFind() {
 			UpdatedBy: r.users[1],
 		}
 
-		id, err := r.repository.Upsert(r.ctx, &ast)
+		_, err := r.repository.Upsert(r.ctx, &ast)
 		r.Require().NoError(err)
-		r.Require().NotEmpty(id)
-		ast.ID = id
 
-		result, err := r.repository.Find(r.ctx, ast.URN, ast.Type, ast.Service)
+		result, err := r.repository.GetByURN(r.ctx, ast.URN)
 		r.NoError(err)
 		r.Len(result.Owners, len(ast.Owners))
 		for i, owner := range result.Owners {
 			r.Equal(ast.Owners[i].ID, owner.ID)
 		}
-
-		// clean up
-		err = r.repository.Delete(r.ctx, ast.ID)
-		r.Require().NoError(err)
 	})
 }
 
@@ -1121,16 +1105,16 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 	})
 }
 
-func (r *AssetRepositoryTestSuite) TestDelete() {
+func (r *AssetRepositoryTestSuite) TestDeleteByID() {
 	r.Run("return error from client if any", func() {
-		err := r.repository.Delete(r.ctx, "invalid-uuid")
+		err := r.repository.DeleteByID(r.ctx, "invalid-uuid")
 		r.Error(err)
 		r.Contains(err.Error(), "invalid asset id: \"invalid-uuid\"")
 	})
 
 	r.Run("return NotFoundError if asset does not exist", func() {
 		uuid := "2aabb450-f986-44e2-a6db-7996861d5004"
-		err := r.repository.Delete(r.ctx, uuid)
+		err := r.repository.DeleteByID(r.ctx, uuid)
 		r.ErrorAs(err, &asset.NotFoundError{AssetID: uuid})
 	})
 
@@ -1160,7 +1144,7 @@ func (r *AssetRepositoryTestSuite) TestDelete() {
 		r.Require().NotEmpty(id)
 		asset2.ID = id
 
-		err = r.repository.Delete(r.ctx, asset1.ID)
+		err = r.repository.DeleteByID(r.ctx, asset1.ID)
 		r.NoError(err)
 
 		_, err = r.repository.GetByID(r.ctx, asset1.ID)
@@ -1171,7 +1155,51 @@ func (r *AssetRepositoryTestSuite) TestDelete() {
 		r.Equal(asset2.ID, asset2FromDB.ID)
 
 		// cleanup
-		err = r.repository.Delete(r.ctx, asset2.ID)
+		err = r.repository.DeleteByID(r.ctx, asset2.ID)
+		r.NoError(err)
+	})
+}
+
+func (r *AssetRepositoryTestSuite) TestDeleteByURN() {
+	r.Run("return NotFoundError if asset does not exist", func() {
+		urn := "urn-test-1"
+		err := r.repository.DeleteByURN(r.ctx, urn)
+		r.ErrorAs(err, &asset.NotFoundError{URN: urn})
+	})
+
+	r.Run("should delete correct asset", func() {
+		asset1 := asset.Asset{
+			URN:       "urn-del-1",
+			Type:      "table",
+			Service:   "bigquery",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+		asset2 := asset.Asset{
+			URN:       "urn-del-2",
+			Type:      "topic",
+			Service:   "kafka",
+			Version:   asset.BaseVersion,
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+
+		_, err := r.repository.Upsert(r.ctx, &asset1)
+		r.Require().NoError(err)
+
+		id, err := r.repository.Upsert(r.ctx, &asset2)
+		r.Require().NoError(err)
+
+		err = r.repository.DeleteByURN(r.ctx, asset1.URN)
+		r.NoError(err)
+
+		_, err = r.repository.GetByURN(r.ctx, asset1.URN)
+		r.ErrorAs(err, &asset.NotFoundError{URN: asset1.URN})
+
+		asset2FromDB, err := r.repository.GetByURN(r.ctx, asset2.URN)
+		r.NoError(err)
+		r.Equal(id, asset2FromDB.ID)
+
+		// cleanup
+		err = r.repository.DeleteByURN(r.ctx, asset2.URN)
 		r.NoError(err)
 	})
 }

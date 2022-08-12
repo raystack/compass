@@ -2,6 +2,8 @@ package asset
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Service struct {
@@ -63,23 +65,27 @@ func (s *Service) UpsertPatchAsset(ctx context.Context, ast *Asset, upstreams, d
 }
 
 func (s *Service) DeleteAsset(ctx context.Context, id string) error {
-	if err := s.assetRepository.Delete(ctx, id); err != nil {
+	if isValidUUID(id) {
+		if err := s.assetRepository.DeleteByID(ctx, id); err != nil {
+			return err
+		}
+
+		return s.discoveryRepository.DeleteByID(ctx, id)
+	}
+
+	if err := s.assetRepository.DeleteByURN(ctx, id); err != nil {
 		return err
 	}
 
-	if err := s.discoveryRepository.Delete(ctx, id); err != nil {
-		return err
-	}
-
-	return nil
+	return s.discoveryRepository.DeleteByURN(ctx, id)
 }
 
 func (s *Service) GetAssetByID(ctx context.Context, id string) (Asset, error) {
-	return s.assetRepository.GetByID(ctx, id)
-}
+	if isValidUUID(id) {
+		return s.assetRepository.GetByID(ctx, id)
+	}
 
-func (s *Service) GetAssetByURN(ctx context.Context, urn string, typ Type, service string) (Asset, error) {
-	return s.assetRepository.Find(ctx, urn, typ, service)
+	return s.assetRepository.GetByURN(ctx, id)
 }
 
 func (s *Service) GetAssetByVersion(ctx context.Context, id string, version string) (Asset, error) {
@@ -107,4 +113,9 @@ func (s *Service) SearchAssets(ctx context.Context, cfg SearchConfig) (results [
 }
 func (s *Service) SuggestAssets(ctx context.Context, cfg SearchConfig) (suggestions []string, err error) {
 	return s.discoveryRepository.Suggest(ctx, cfg)
+}
+
+func isValidUUID(u string) bool {
+	_, err := uuid.Parse(u)
+	return err == nil
 }

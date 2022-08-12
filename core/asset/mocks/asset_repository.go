@@ -25,8 +25,8 @@ func (_m *AssetRepository) EXPECT() *AssetRepository_Expecter {
 	return &AssetRepository_Expecter{mock: &_m.Mock}
 }
 
-// Delete provides a mock function with given fields: ctx, id
-func (_m *AssetRepository) Delete(ctx context.Context, id string) error {
+// DeleteByID provides a mock function with given fields: ctx, id
+func (_m *AssetRepository) DeleteByID(ctx context.Context, id string) error {
 	ret := _m.Called(ctx, id)
 
 	var r0 error
@@ -39,74 +39,65 @@ func (_m *AssetRepository) Delete(ctx context.Context, id string) error {
 	return r0
 }
 
-// AssetRepository_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
-type AssetRepository_Delete_Call struct {
+// AssetRepository_DeleteByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteByID'
+type AssetRepository_DeleteByID_Call struct {
 	*mock.Call
 }
 
-// Delete is a helper method to define mock.On call
-//  - ctx context.Context
-//  - id string
-func (_e *AssetRepository_Expecter) Delete(ctx interface{}, id interface{}) *AssetRepository_Delete_Call {
-	return &AssetRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+// DeleteByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *AssetRepository_Expecter) DeleteByID(ctx interface{}, id interface{}) *AssetRepository_DeleteByID_Call {
+	return &AssetRepository_DeleteByID_Call{Call: _e.mock.On("DeleteByID", ctx, id)}
 }
 
-func (_c *AssetRepository_Delete_Call) Run(run func(ctx context.Context, id string)) *AssetRepository_Delete_Call {
+func (_c *AssetRepository_DeleteByID_Call) Run(run func(ctx context.Context, id string)) *AssetRepository_DeleteByID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
 
-func (_c *AssetRepository_Delete_Call) Return(_a0 error) *AssetRepository_Delete_Call {
+func (_c *AssetRepository_DeleteByID_Call) Return(_a0 error) *AssetRepository_DeleteByID_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-// Find provides a mock function with given fields: ctx, urn, typ, service
-func (_m *AssetRepository) Find(ctx context.Context, urn string, typ asset.Type, service string) (asset.Asset, error) {
-	ret := _m.Called(ctx, urn, typ, service)
+// DeleteByURN provides a mock function with given fields: ctx, urn
+func (_m *AssetRepository) DeleteByURN(ctx context.Context, urn string) error {
+	ret := _m.Called(ctx, urn)
 
-	var r0 asset.Asset
-	if rf, ok := ret.Get(0).(func(context.Context, string, asset.Type, string) asset.Asset); ok {
-		r0 = rf(ctx, urn, typ, service)
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, urn)
 	} else {
-		r0 = ret.Get(0).(asset.Asset)
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, asset.Type, string) error); ok {
-		r1 = rf(ctx, urn, typ, service)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
-// AssetRepository_Find_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Find'
-type AssetRepository_Find_Call struct {
+// AssetRepository_DeleteByURN_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteByURN'
+type AssetRepository_DeleteByURN_Call struct {
 	*mock.Call
 }
 
-// Find is a helper method to define mock.On call
-//  - ctx context.Context
-//  - urn string
-//  - typ asset.Type
-//  - service string
-func (_e *AssetRepository_Expecter) Find(ctx interface{}, urn interface{}, typ interface{}, service interface{}) *AssetRepository_Find_Call {
-	return &AssetRepository_Find_Call{Call: _e.mock.On("Find", ctx, urn, typ, service)}
+// DeleteByURN is a helper method to define mock.On call
+//   - ctx context.Context
+//   - urn string
+func (_e *AssetRepository_Expecter) DeleteByURN(ctx interface{}, urn interface{}) *AssetRepository_DeleteByURN_Call {
+	return &AssetRepository_DeleteByURN_Call{Call: _e.mock.On("DeleteByURN", ctx, urn)}
 }
 
-func (_c *AssetRepository_Find_Call) Run(run func(ctx context.Context, urn string, typ asset.Type, service string)) *AssetRepository_Find_Call {
+func (_c *AssetRepository_DeleteByURN_Call) Run(run func(ctx context.Context, urn string)) *AssetRepository_DeleteByURN_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(asset.Type), args[3].(string))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
 
-func (_c *AssetRepository_Find_Call) Return(_a0 asset.Asset, _a1 error) *AssetRepository_Find_Call {
-	_c.Call.Return(_a0, _a1)
+func (_c *AssetRepository_DeleteByURN_Call) Return(_a0 error) *AssetRepository_DeleteByURN_Call {
+	_c.Call.Return(_a0)
 	return _c
 }
 
@@ -139,8 +130,8 @@ type AssetRepository_GetAll_Call struct {
 }
 
 // GetAll is a helper method to define mock.On call
-//  - _a0 context.Context
-//  - _a1 asset.Filter
+//   - _a0 context.Context
+//   - _a1 asset.Filter
 func (_e *AssetRepository_Expecter) GetAll(_a0 interface{}, _a1 interface{}) *AssetRepository_GetAll_Call {
 	return &AssetRepository_GetAll_Call{Call: _e.mock.On("GetAll", _a0, _a1)}
 }
@@ -184,8 +175,8 @@ type AssetRepository_GetByID_Call struct {
 }
 
 // GetByID is a helper method to define mock.On call
-//  - ctx context.Context
-//  - id string
+//   - ctx context.Context
+//   - id string
 func (_e *AssetRepository_Expecter) GetByID(ctx interface{}, id interface{}) *AssetRepository_GetByID_Call {
 	return &AssetRepository_GetByID_Call{Call: _e.mock.On("GetByID", ctx, id)}
 }
@@ -198,6 +189,51 @@ func (_c *AssetRepository_GetByID_Call) Run(run func(ctx context.Context, id str
 }
 
 func (_c *AssetRepository_GetByID_Call) Return(_a0 asset.Asset, _a1 error) *AssetRepository_GetByID_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+// GetByURN provides a mock function with given fields: ctx, urn
+func (_m *AssetRepository) GetByURN(ctx context.Context, urn string) (asset.Asset, error) {
+	ret := _m.Called(ctx, urn)
+
+	var r0 asset.Asset
+	if rf, ok := ret.Get(0).(func(context.Context, string) asset.Asset); ok {
+		r0 = rf(ctx, urn)
+	} else {
+		r0 = ret.Get(0).(asset.Asset)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, urn)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// AssetRepository_GetByURN_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByURN'
+type AssetRepository_GetByURN_Call struct {
+	*mock.Call
+}
+
+// GetByURN is a helper method to define mock.On call
+//   - ctx context.Context
+//   - urn string
+func (_e *AssetRepository_Expecter) GetByURN(ctx interface{}, urn interface{}) *AssetRepository_GetByURN_Call {
+	return &AssetRepository_GetByURN_Call{Call: _e.mock.On("GetByURN", ctx, urn)}
+}
+
+func (_c *AssetRepository_GetByURN_Call) Run(run func(ctx context.Context, urn string)) *AssetRepository_GetByURN_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *AssetRepository_GetByURN_Call) Return(_a0 asset.Asset, _a1 error) *AssetRepository_GetByURN_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
@@ -229,9 +265,9 @@ type AssetRepository_GetByVersion_Call struct {
 }
 
 // GetByVersion is a helper method to define mock.On call
-//  - ctx context.Context
-//  - id string
-//  - version string
+//   - ctx context.Context
+//   - id string
+//   - version string
 func (_e *AssetRepository_Expecter) GetByVersion(ctx interface{}, id interface{}, version interface{}) *AssetRepository_GetByVersion_Call {
 	return &AssetRepository_GetByVersion_Call{Call: _e.mock.On("GetByVersion", ctx, id, version)}
 }
@@ -275,8 +311,8 @@ type AssetRepository_GetCount_Call struct {
 }
 
 // GetCount is a helper method to define mock.On call
-//  - _a0 context.Context
-//  - _a1 asset.Filter
+//   - _a0 context.Context
+//   - _a1 asset.Filter
 func (_e *AssetRepository_Expecter) GetCount(_a0 interface{}, _a1 interface{}) *AssetRepository_GetCount_Call {
 	return &AssetRepository_GetCount_Call{Call: _e.mock.On("GetCount", _a0, _a1)}
 }
@@ -322,8 +358,8 @@ type AssetRepository_GetTypes_Call struct {
 }
 
 // GetTypes is a helper method to define mock.On call
-//  - ctx context.Context
-//  - flt asset.Filter
+//   - ctx context.Context
+//   - flt asset.Filter
 func (_e *AssetRepository_Expecter) GetTypes(ctx interface{}, flt interface{}) *AssetRepository_GetTypes_Call {
 	return &AssetRepository_GetTypes_Call{Call: _e.mock.On("GetTypes", ctx, flt)}
 }
@@ -369,9 +405,9 @@ type AssetRepository_GetVersionHistory_Call struct {
 }
 
 // GetVersionHistory is a helper method to define mock.On call
-//  - ctx context.Context
-//  - flt asset.Filter
-//  - id string
+//   - ctx context.Context
+//   - flt asset.Filter
+//   - id string
 func (_e *AssetRepository_Expecter) GetVersionHistory(ctx interface{}, flt interface{}, id interface{}) *AssetRepository_GetVersionHistory_Call {
 	return &AssetRepository_GetVersionHistory_Call{Call: _e.mock.On("GetVersionHistory", ctx, flt, id)}
 }
@@ -415,8 +451,8 @@ type AssetRepository_Upsert_Call struct {
 }
 
 // Upsert is a helper method to define mock.On call
-//  - ctx context.Context
-//  - ast *asset.Asset
+//   - ctx context.Context
+//   - ast *asset.Asset
 func (_e *AssetRepository_Expecter) Upsert(ctx interface{}, ast interface{}) *AssetRepository_Upsert_Call {
 	return &AssetRepository_Upsert_Call{Call: _e.mock.On("Upsert", ctx, ast)}
 }

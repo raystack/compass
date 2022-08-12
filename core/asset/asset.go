@@ -13,12 +13,13 @@ type Repository interface {
 	GetAll(context.Context, Filter) ([]Asset, error)
 	GetCount(context.Context, Filter) (int, error)
 	GetByID(ctx context.Context, id string) (Asset, error)
-	Find(ctx context.Context, urn string, typ Type, service string) (Asset, error)
+	GetByURN(ctx context.Context, urn string) (Asset, error)
 	GetVersionHistory(ctx context.Context, flt Filter, id string) ([]Asset, error)
 	GetByVersion(ctx context.Context, id string, version string) (Asset, error)
 	GetTypes(ctx context.Context, flt Filter) (map[Type]int, error)
 	Upsert(ctx context.Context, ast *Asset) (string, error)
-	Delete(ctx context.Context, id string) error
+	DeleteByID(ctx context.Context, id string) error
+	DeleteByURN(ctx context.Context, urn string) error
 }
 
 // Asset is a model that wraps arbitrary data with Compass' context
