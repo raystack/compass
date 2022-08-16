@@ -80,15 +80,12 @@ func TestService_GetAllAssets(t *testing.T) {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockAssetRepo := new(mocks.AssetRepository)
-			mockDiscoveryRepo := new(mocks.DiscoveryRepository)
-			mockLineageRepo := new(mocks.LineageRepository)
+			mockAssetRepo := mocks.NewAssetRepository(t)
+			mockDiscoveryRepo := mocks.NewDiscoveryRepository(t)
+			mockLineageRepo := mocks.NewLineageRepository(t)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
 			}
-			defer mockAssetRepo.AssertExpectations(t)
-			defer mockDiscoveryRepo.AssertExpectations(t)
-			defer mockLineageRepo.AssertExpectations(t)
 
 			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
 			got, cnt, err := svc.GetAllAssets(ctx, tc.Filter, tc.WithTotal)
@@ -144,11 +141,10 @@ func TestService_GetTypes(t *testing.T) {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockAssetRepo := new(mocks.AssetRepository)
+			mockAssetRepo := mocks.NewAssetRepository(t)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetRepo)
 			}
-			defer mockAssetRepo.AssertExpectations(t)
 
 			svc := asset.NewService(mockAssetRepo, nil, nil)
 			got, err := svc.GetTypes(ctx, tc.Filter)
@@ -257,15 +253,12 @@ func TestService_UpsertAsset(t *testing.T) {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockAssetRepo := new(mocks.AssetRepository)
-			mockDiscoveryRepo := new(mocks.DiscoveryRepository)
-			mockLineageRepo := new(mocks.LineageRepository)
+			mockAssetRepo := mocks.NewAssetRepository(t)
+			mockDiscoveryRepo := mocks.NewDiscoveryRepository(t)
+			mockLineageRepo := mocks.NewLineageRepository(t)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
 			}
-			defer mockAssetRepo.AssertExpectations(t)
-			defer mockDiscoveryRepo.AssertExpectations(t)
-			defer mockLineageRepo.AssertExpectations(t)
 
 			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
 			rid, err := svc.UpsertPatchAsset(ctx, tc.Asset, tc.Upstreams, tc.Downstreams)
@@ -280,7 +273,8 @@ func TestService_UpsertAsset(t *testing.T) {
 }
 
 func TestService_DeleteAsset(t *testing.T) {
-	assetID := "some-id"
+	assetID := "d9351e2e-a6b2-4c5d-af68-b95432e30203"
+	urn := "my-test-urn"
 	type testCase struct {
 		Description string
 		ID          string
@@ -290,28 +284,54 @@ func TestService_DeleteAsset(t *testing.T) {
 
 	var testCases = []testCase{
 		{
-			Description: `should return error if asset repository delete return error`,
+			Description: `with ID, should return error if asset repository delete return error`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				ar.EXPECT().Delete(ctx, assetID).Return(errors.New("unknown error"))
+				ar.EXPECT().DeleteByID(ctx, assetID).Return(errors.New("unknown error"))
 			},
 			Err: errors.New("unknown error"),
 		},
 		{
-			Description: `should return error if discovery repository delete return error`,
+			Description: `with ID, should return error if discovery repository delete return error`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				ar.EXPECT().Delete(ctx, assetID).Return(nil)
-				dr.EXPECT().Delete(ctx, assetID).Return(errors.New("unknown error"))
+				ar.EXPECT().DeleteByID(ctx, assetID).Return(nil)
+				dr.EXPECT().DeleteByID(ctx, assetID).Return(errors.New("unknown error"))
 			},
 			Err: errors.New("unknown error"),
 		},
 		{
-			Description: `should return no error if all repositories return no error`,
+			Description: `with URN, should return error if asset repository delete return error`,
+			ID:          urn,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+				ar.EXPECT().DeleteByURN(ctx, urn).Return(errors.New("unknown error"))
+			},
+			Err: errors.New("unknown error"),
+		},
+		{
+			Description: `with URN, should return error if discovery repository delete return error`,
+			ID:          urn,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+				ar.EXPECT().DeleteByURN(ctx, urn).Return(nil)
+				dr.EXPECT().DeleteByURN(ctx, urn).Return(errors.New("unknown error"))
+			},
+			Err: errors.New("unknown error"),
+		},
+		{
+			Description: `should call DeleteByID on repositories when given a UUID`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				ar.EXPECT().Delete(ctx, assetID).Return(nil)
-				dr.EXPECT().Delete(ctx, assetID).Return(nil)
+				ar.EXPECT().DeleteByID(ctx, assetID).Return(nil)
+				dr.EXPECT().DeleteByID(ctx, assetID).Return(nil)
+			},
+			Err: nil,
+		},
+		{
+			Description: `should call DeleteByURN on repositories when not given a UUID`,
+			ID:          urn,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+				ar.EXPECT().DeleteByURN(ctx, urn).Return(nil)
+				dr.EXPECT().DeleteByURN(ctx, urn).Return(nil)
 			},
 			Err: nil,
 		},
@@ -320,15 +340,12 @@ func TestService_DeleteAsset(t *testing.T) {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockAssetRepo := new(mocks.AssetRepository)
-			mockDiscoveryRepo := new(mocks.DiscoveryRepository)
-			mockLineageRepo := new(mocks.LineageRepository)
+			mockAssetRepo := mocks.NewAssetRepository(t)
+			mockDiscoveryRepo := mocks.NewDiscoveryRepository(t)
+			mockLineageRepo := mocks.NewLineageRepository(t)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
 			}
-			defer mockAssetRepo.AssertExpectations(t)
-			defer mockDiscoveryRepo.AssertExpectations(t)
-			defer mockLineageRepo.AssertExpectations(t)
 
 			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
 			err := svc.DeleteAsset(ctx, tc.ID)
@@ -339,14 +356,14 @@ func TestService_DeleteAsset(t *testing.T) {
 	}
 }
 
-func TestService_GetAsset(t *testing.T) {
-	assetID := "some-id"
+func TestService_GetAssetByID(t *testing.T) {
+	assetID := "f742aa61-1100-445c-8d72-355a42e2fb59"
+	urn := "my-test-urn"
 	type testCase struct {
 		Description string
 		ID          string
-		Err         error
-		ErrID       error
-		Setup       func(context.Context, *mocks.AssetRepository, *mocks.DiscoveryRepository, *mocks.LineageRepository)
+		ExpectedErr error
+		Setup       func(context.Context, *mocks.AssetRepository)
 	}
 
 	ast := asset.Asset{
@@ -355,76 +372,112 @@ func TestService_GetAsset(t *testing.T) {
 
 	var testCases = []testCase{
 		{
-			Description: `should return error if the GetAsset functions return error without id`,
+			Description: `should return error if the repository return error without id`,
 			ID:          assetID,
-			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, asset.NotFoundError{})
-				ar.EXPECT().GetByVersion(ctx, assetID, "v0.0.2").Return(asset.Asset{}, errors.New("error fetching asset"))
-				ar.EXPECT().Find(ctx, "some-urn", ast.Type, assetID).Return(ast, errors.New("error fetching asset"))
 			},
-			ErrID: asset.NotFoundError{},
-			Err:   errors.New("error fetching asset"),
+			ExpectedErr: asset.NotFoundError{},
 		},
 		{
-			Description: `should return error if the GetAsset functions return error, with id`,
+			Description: `should return error if the repository return error, with id`,
 			ID:          assetID,
-			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, asset.NotFoundError{AssetID: ast.ID})
-				ar.EXPECT().GetByVersion(ctx, assetID, "v0.0.2").Return(asset.Asset{}, errors.New("error fetching asset"))
-				ar.EXPECT().Find(ctx, "some-urn", ast.Type, assetID).Return(ast, errors.New("error fetching asset"))
 			},
-			ErrID: asset.NotFoundError{AssetID: ast.ID},
-			Err:   errors.New("error fetching asset"),
+			ExpectedErr: asset.NotFoundError{AssetID: ast.ID},
 		},
 		{
-			Description: `should return error if the GetAsset functions return error, with invalid id`,
+			Description: `should return error if the repository return error, with invalid id`,
 			ID:          assetID,
-			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
 				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, asset.InvalidError{AssetID: ast.ID})
-				ar.EXPECT().GetByVersion(ctx, assetID, "v0.0.2").Return(asset.Asset{}, errors.New("error fetching asset"))
-				ar.EXPECT().Find(ctx, "some-urn", ast.Type, assetID).Return(ast, errors.New("error fetching asset"))
 			},
-			ErrID: asset.InvalidError{AssetID: ast.ID},
-			Err:   errors.New("error fetching asset"),
+			ExpectedErr: asset.InvalidError{AssetID: ast.ID},
 		},
 		{
-			Description: `should return no error if asset is found`,
-			ID:          assetID,
-			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, nil)
-				ar.EXPECT().Find(ctx, "some-urn", ast.Type, assetID).Return(ast, nil)
-				ar.EXPECT().GetByVersion(ctx, assetID, "v0.0.2").Return(asset.Asset{}, nil)
+			Description: `with URN, should return error from repository`,
+			ID:          urn,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetByURN(ctx, urn).Return(asset.Asset{}, errors.New("the world exploded"))
 			},
-			ErrID: nil,
-			Err:   nil,
+			ExpectedErr: errors.New("the world exploded"),
+		},
+		{
+			Description: `with ID, should return no error if asset is found`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, nil)
+			},
+			ExpectedErr: nil,
+		},
+		{
+			Description: `with URN, should return no error if asset is found`,
+			ID:          urn,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetByURN(ctx, urn).Return(asset.Asset{}, nil)
+			},
+			ExpectedErr: nil,
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockAssetRepo := new(mocks.AssetRepository)
-			mockDiscoveryRepo := new(mocks.DiscoveryRepository)
-			mockLineageRepo := new(mocks.LineageRepository)
+			mockAssetRepo := mocks.NewAssetRepository(t)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+				tc.Setup(ctx, mockAssetRepo)
 			}
-			defer mockAssetRepo.AssertExpectations(t)
-			defer mockDiscoveryRepo.AssertExpectations(t)
-			defer mockLineageRepo.AssertExpectations(t)
 
-			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+			svc := asset.NewService(mockAssetRepo, mocks.NewDiscoveryRepository(t), mocks.NewLineageRepository(t))
 			_, err := svc.GetAssetByID(ctx, tc.ID)
-			if err != nil && !assert.Equal(t, tc.ErrID.Error(), err.Error()) {
-				t.Fatalf("got error %v, expected error was %v", err, tc.ErrID)
+			if tc.ExpectedErr != nil {
+				assert.EqualError(t, err, tc.ExpectedErr.Error())
 			}
-			_, err = svc.GetAssetByURN(ctx, "some-urn", ast.Type, tc.ID)
-			if err != nil && errors.Is(tc.Err, err) {
-				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
+		})
+	}
+}
+
+func TestService_GetAssetByVersion(t *testing.T) {
+	assetID := "f742aa61-1100-445c-8d72-355a42e2fb59"
+	type testCase struct {
+		Description string
+		ID          string
+		ExpectedErr error
+		Setup       func(context.Context, *mocks.AssetRepository)
+	}
+
+	var testCases = []testCase{
+		{
+			Description: `should return error if the GetByVersion function return error`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetByVersion(ctx, assetID, "v0.0.2").Return(asset.Asset{}, errors.New("error fetching asset"))
+			},
+			ExpectedErr: errors.New("error fetching asset"),
+		},
+		{
+			Description: `should return no error if asset is found`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetByVersion(ctx, assetID, "v0.0.2").Return(asset.Asset{}, nil)
+			},
+			ExpectedErr: nil,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockAssetRepo := mocks.NewAssetRepository(t)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockAssetRepo)
 			}
-			_, err = svc.GetAssetByVersion(ctx, tc.ID, "v0.0.2")
-			if err != nil && errors.Is(tc.Err, err) {
-				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
+
+			svc := asset.NewService(mockAssetRepo, mocks.NewDiscoveryRepository(t), mocks.NewLineageRepository(t))
+			_, err := svc.GetAssetByVersion(ctx, tc.ID, "v0.0.2")
+			if tc.ExpectedErr != nil {
+				assert.EqualError(t, err, tc.ExpectedErr.Error())
 			}
 		})
 	}
@@ -462,15 +515,12 @@ func TestService_GetAssetVersionHistory(t *testing.T) {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockAssetRepo := new(mocks.AssetRepository)
-			mockDiscoveryRepo := new(mocks.DiscoveryRepository)
-			mockLineageRepo := new(mocks.LineageRepository)
+			mockAssetRepo := mocks.NewAssetRepository(t)
+			mockDiscoveryRepo := mocks.NewDiscoveryRepository(t)
+			mockLineageRepo := mocks.NewLineageRepository(t)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetRepo)
 			}
-			defer mockAssetRepo.AssertExpectations(t)
-			defer mockDiscoveryRepo.AssertExpectations(t)
-			defer mockLineageRepo.AssertExpectations(t)
 
 			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
 			_, err := svc.GetAssetVersionHistory(ctx, asset.Filter{}, tc.ID)
@@ -512,15 +562,12 @@ func TestService_GetLineage(t *testing.T) {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockAssetRepo := new(mocks.AssetRepository)
-			mockDiscoveryRepo := new(mocks.DiscoveryRepository)
-			mockLineageRepo := new(mocks.LineageRepository)
+			mockAssetRepo := mocks.NewAssetRepository(t)
+			mockDiscoveryRepo := mocks.NewDiscoveryRepository(t)
+			mockLineageRepo := mocks.NewLineageRepository(t)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
 			}
-			defer mockAssetRepo.AssertExpectations(t)
-			defer mockDiscoveryRepo.AssertExpectations(t)
-			defer mockLineageRepo.AssertExpectations(t)
 
 			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
 			_, err := svc.GetLineage(ctx, asset.LineageNode{}, asset.LineageQuery{})
@@ -570,15 +617,12 @@ func TestService_SearchSuggestAssets(t *testing.T) {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockAssetRepo := new(mocks.AssetRepository)
-			mockDiscoveryRepo := new(mocks.DiscoveryRepository)
-			mockLineageRepo := new(mocks.LineageRepository)
+			mockAssetRepo := mocks.NewAssetRepository(t)
+			mockDiscoveryRepo := mocks.NewDiscoveryRepository(t)
+			mockLineageRepo := mocks.NewLineageRepository(t)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockDiscoveryRepo)
 			}
-			defer mockAssetRepo.AssertExpectations(t)
-			defer mockDiscoveryRepo.AssertExpectations(t)
-			defer mockLineageRepo.AssertExpectations(t)
 
 			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
 			_, err := svc.SearchAssets(ctx, asset.SearchConfig{})

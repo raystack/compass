@@ -3,12 +3,14 @@ package elasticsearch_test
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/odpf/compass/core/asset"
 	store "github.com/odpf/compass/internal/store/elasticsearch"
 	"github.com/odpf/salt/log"
+	"github.com/olivere/elastic/v7"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -159,7 +161,7 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 	})
 }
 
-func TestDiscoveryRepositoryDelete(t *testing.T) {
+func TestDiscoveryRepositoryDeleteByID(t *testing.T) {
 	var (
 		ctx             = context.Background()
 		bigqueryService = "bigquery-test"
@@ -176,7 +178,7 @@ func TestDiscoveryRepositoryDelete(t *testing.T) {
 		require.NoError(t, err)
 
 		repo := store.NewDiscoveryRepository(esClient)
-		err = repo.Delete(ctx, "")
+		err = repo.DeleteByID(ctx, "")
 		assert.ErrorIs(t, err, asset.ErrEmptyID)
 	})
 
@@ -202,7 +204,76 @@ func TestDiscoveryRepositoryDelete(t *testing.T) {
 		err = repo.Upsert(ctx, ast)
 		require.NoError(t, err)
 
-		err = repo.Delete(ctx, ast.ID)
+		err = repo.DeleteByID(ctx, ast.ID)
 		assert.NoError(t, err)
+
+		res, err := cli.Search(
+			cli.Search.WithBody(strings.NewReader(`{"query":{"term":{"_id": "delete-id"}}}`)),
+			cli.Search.WithIndex("_all"),
+		)
+		require.NoError(t, err)
+		assert.False(t, res.IsError())
+
+		var body struct {
+			Hits struct {
+				Total elastic.TotalHits `json:"total"`
+			} `json:"hits"`
+		}
+		require.NoError(t, json.NewDecoder(res.Body).Decode(&body))
+
+		assert.Equal(t, int64(0), body.Hits.Total.Value)
+	})
+}
+
+func TestDiscoveryRepositoryDeleteByURN(t *testing.T) {
+	var (
+		ctx             = context.Background()
+		bigqueryService = "bigquery-test"
+	)
+
+	cli, err := esTestServer.NewClient()
+	require.NoError(t, err)
+
+	esClient, err := store.NewClient(
+		log.NewNoop(), store.Config{}, store.WithClient(cli),
+	)
+	require.NoError(t, err)
+
+	repo := store.NewDiscoveryRepository(esClient)
+
+	t.Run("should return error if the given urn is empty", func(t *testing.T) {
+		err = repo.DeleteByURN(ctx, "")
+		assert.ErrorIs(t, err, asset.ErrEmptyURN)
+	})
+
+	t.Run("should not return error on success", func(t *testing.T) {
+		ast := asset.Asset{
+			ID:      "delete-id",
+			Type:    asset.TypeTable,
+			Service: bigqueryService,
+			URN:     "some-urn",
+		}
+
+		err = repo.Upsert(ctx, ast)
+		require.NoError(t, err)
+
+		err = repo.DeleteByURN(ctx, ast.URN)
+		assert.NoError(t, err)
+
+		res, err := cli.Search(
+			cli.Search.WithBody(strings.NewReader(`{"query":{"term":{"urn.keyword": "some-urn"}}}`)),
+			cli.Search.WithIndex("_all"),
+		)
+		require.NoError(t, err)
+		assert.False(t, res.IsError())
+
+		var body struct {
+			Hits struct {
+				Total elastic.TotalHits `json:"total"`
+			} `json:"hits"`
+		}
+		require.NoError(t, json.NewDecoder(res.Body).Decode(&body))
+
+		assert.Equal(t, int64(0), body.Hits.Total.Value)
 	})
 }

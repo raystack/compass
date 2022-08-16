@@ -27,7 +27,6 @@ type StatsDClient interface {
 type AssetService interface {
 	GetAllAssets(context.Context, asset.Filter, bool) ([]asset.Asset, uint32, error)
 	GetAssetByID(ctx context.Context, id string) (asset.Asset, error)
-	GetAssetByURN(ctx context.Context, urn string, typ asset.Type, service string) (asset.Asset, error)
 	GetAssetByVersion(ctx context.Context, id string, version string) (asset.Asset, error)
 	GetAssetVersionHistory(ctx context.Context, flt asset.Filter, id string) ([]asset.Asset, error)
 	UpsertPatchAsset(context.Context, *asset.Asset, []asset.LineageNode, []asset.LineageNode) (string, error)
@@ -223,12 +222,12 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1bet
 		return nil, status.Error(codes.InvalidArgument, "asset cannot be empty")
 	}
 
-	urn, typ, service, err := server.validatePatchAsset(baseAsset)
+	urn, err := server.validatePatchAsset(baseAsset)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	ast, err := server.assetService.GetAssetByURN(ctx, urn, asset.Type(typ), service)
+	ast, err := server.assetService.GetAssetByID(ctx, urn)
 	if err != nil && !errors.As(err, &asset.NotFoundError{}) {
 		return nil, internalServerError(server.logger, err.Error())
 	}
@@ -323,28 +322,25 @@ func (server *APIServer) validateAsset(ast asset.Asset) error {
 	return nil
 }
 
-func (server *APIServer) validatePatchAsset(ast *compassv1beta1.UpsertPatchAssetRequest_BaseAsset) (urn, typ, service string, err error) {
+func (server *APIServer) validatePatchAsset(ast *compassv1beta1.UpsertPatchAssetRequest_BaseAsset) (urn string, err error) {
 	if urn = ast.GetUrn(); urn == "" {
-		err = fmt.Errorf("urn is required and can't be empty")
-		return
+		return "", fmt.Errorf("urn is required and can't be empty")
 	}
 
-	if typ = ast.GetType(); typ == "" {
-		err = fmt.Errorf("type is required and can't be empty")
-		return
+	typ := ast.GetType()
+	if typ == "" {
+		return "", fmt.Errorf("type is required and can't be empty")
 	}
 
 	if !asset.Type(typ).IsValid() {
-		err = fmt.Errorf("type is invalid")
-		return
+		return "", fmt.Errorf("type is invalid")
 	}
 
-	if service = ast.GetService(); service == "" {
-		err = fmt.Errorf("service is required and can't be empty")
-		return
+	if service := ast.GetService(); service == "" {
+		return "", fmt.Errorf("service is required and can't be empty")
 	}
 
-	return
+	return urn, nil
 }
 
 func decodePatchAssetToMap(pb *compassv1beta1.UpsertPatchAssetRequest_BaseAsset) map[string]interface{} {

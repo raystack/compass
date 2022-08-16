@@ -25,8 +25,8 @@ func (_m *DiscoveryRepository) EXPECT() *DiscoveryRepository_Expecter {
 	return &DiscoveryRepository_Expecter{mock: &_m.Mock}
 }
 
-// Delete provides a mock function with given fields: ctx, assetID
-func (_m *DiscoveryRepository) Delete(ctx context.Context, assetID string) error {
+// DeleteByID provides a mock function with given fields: ctx, assetID
+func (_m *DiscoveryRepository) DeleteByID(ctx context.Context, assetID string) error {
 	ret := _m.Called(ctx, assetID)
 
 	var r0 error
@@ -39,26 +39,64 @@ func (_m *DiscoveryRepository) Delete(ctx context.Context, assetID string) error
 	return r0
 }
 
-// DiscoveryRepository_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
-type DiscoveryRepository_Delete_Call struct {
+// DiscoveryRepository_DeleteByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteByID'
+type DiscoveryRepository_DeleteByID_Call struct {
 	*mock.Call
 }
 
-// Delete is a helper method to define mock.On call
-//  - ctx context.Context
-//  - assetID string
-func (_e *DiscoveryRepository_Expecter) Delete(ctx interface{}, assetID interface{}) *DiscoveryRepository_Delete_Call {
-	return &DiscoveryRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, assetID)}
+// DeleteByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - assetID string
+func (_e *DiscoveryRepository_Expecter) DeleteByID(ctx interface{}, assetID interface{}) *DiscoveryRepository_DeleteByID_Call {
+	return &DiscoveryRepository_DeleteByID_Call{Call: _e.mock.On("DeleteByID", ctx, assetID)}
 }
 
-func (_c *DiscoveryRepository_Delete_Call) Run(run func(ctx context.Context, assetID string)) *DiscoveryRepository_Delete_Call {
+func (_c *DiscoveryRepository_DeleteByID_Call) Run(run func(ctx context.Context, assetID string)) *DiscoveryRepository_DeleteByID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
 
-func (_c *DiscoveryRepository_Delete_Call) Return(_a0 error) *DiscoveryRepository_Delete_Call {
+func (_c *DiscoveryRepository_DeleteByID_Call) Return(_a0 error) *DiscoveryRepository_DeleteByID_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+// DeleteByURN provides a mock function with given fields: ctx, assetURN
+func (_m *DiscoveryRepository) DeleteByURN(ctx context.Context, assetURN string) error {
+	ret := _m.Called(ctx, assetURN)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, assetURN)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DiscoveryRepository_DeleteByURN_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteByURN'
+type DiscoveryRepository_DeleteByURN_Call struct {
+	*mock.Call
+}
+
+// DeleteByURN is a helper method to define mock.On call
+//   - ctx context.Context
+//   - assetURN string
+func (_e *DiscoveryRepository_Expecter) DeleteByURN(ctx interface{}, assetURN interface{}) *DiscoveryRepository_DeleteByURN_Call {
+	return &DiscoveryRepository_DeleteByURN_Call{Call: _e.mock.On("DeleteByURN", ctx, assetURN)}
+}
+
+func (_c *DiscoveryRepository_DeleteByURN_Call) Run(run func(ctx context.Context, assetURN string)) *DiscoveryRepository_DeleteByURN_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *DiscoveryRepository_DeleteByURN_Call) Return(_a0 error) *DiscoveryRepository_DeleteByURN_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
@@ -92,8 +130,8 @@ type DiscoveryRepository_Search_Call struct {
 }
 
 // Search is a helper method to define mock.On call
-//  - ctx context.Context
-//  - cfg asset.SearchConfig
+//   - ctx context.Context
+//   - cfg asset.SearchConfig
 func (_e *DiscoveryRepository_Expecter) Search(ctx interface{}, cfg interface{}) *DiscoveryRepository_Search_Call {
 	return &DiscoveryRepository_Search_Call{Call: _e.mock.On("Search", ctx, cfg)}
 }
@@ -139,8 +177,8 @@ type DiscoveryRepository_Suggest_Call struct {
 }
 
 // Suggest is a helper method to define mock.On call
-//  - ctx context.Context
-//  - cfg asset.SearchConfig
+//   - ctx context.Context
+//   - cfg asset.SearchConfig
 func (_e *DiscoveryRepository_Expecter) Suggest(ctx interface{}, cfg interface{}) *DiscoveryRepository_Suggest_Call {
 	return &DiscoveryRepository_Suggest_Call{Call: _e.mock.On("Suggest", ctx, cfg)}
 }
@@ -177,8 +215,8 @@ type DiscoveryRepository_Upsert_Call struct {
 }
 
 // Upsert is a helper method to define mock.On call
-//  - _a0 context.Context
-//  - _a1 asset.Asset
+//   - _a0 context.Context
+//   - _a1 asset.Asset
 func (_e *DiscoveryRepository_Expecter) Upsert(_a0 interface{}, _a1 interface{}) *DiscoveryRepository_Upsert_Call {
 	return &DiscoveryRepository_Upsert_Call{Call: _e.mock.On("Upsert", _a0, _a1)}
 }

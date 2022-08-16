@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrEmptyID     = errors.New("asset does not have ID")
+	ErrEmptyURN    = errors.New("asset does not have URN")
 	ErrUnknownType = errors.New("unknown type")
 	ErrNilAsset    = errors.New("nil asset")
 )
