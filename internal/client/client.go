@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
+	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
