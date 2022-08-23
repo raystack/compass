@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"time"
 
-	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/asset"
 	"github.com/odpf/compass/core/star"
 	"github.com/odpf/compass/core/user"
 	"github.com/odpf/compass/pkg/statsd"
+	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
 	"github.com/r3labs/diff/v2"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

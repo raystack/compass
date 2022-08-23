@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
-	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/tag"
+	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
