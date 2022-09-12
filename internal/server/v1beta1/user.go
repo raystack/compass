@@ -248,10 +248,6 @@ func (server *APIServer) buildGetDiscussionsFilter(req *compassv1beta1.GetMyDisc
 
 // userToProto transforms struct with some fields only to proto
 func userToProto(u user.User) *compassv1beta1.User {
-	if u.UUID == "" {
-		return nil
-	}
-
 	return &compassv1beta1.User{
 		Uuid:  u.UUID,
 		Email: u.Email,

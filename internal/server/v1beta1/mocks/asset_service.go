@@ -45,8 +45,8 @@ type AssetService_DeleteAsset_Call struct {
 }
 
 // DeleteAsset is a helper method to define mock.On call
-//   - _a0 context.Context
-//   - _a1 string
+//  - _a0 context.Context
+//  - _a1 string
 func (_e *AssetService_Expecter) DeleteAsset(_a0 interface{}, _a1 interface{}) *AssetService_DeleteAsset_Call {
 	return &AssetService_DeleteAsset_Call{Call: _e.mock.On("DeleteAsset", _a0, _a1)}
 }
@@ -99,9 +99,9 @@ type AssetService_GetAllAssets_Call struct {
 }
 
 // GetAllAssets is a helper method to define mock.On call
-//   - _a0 context.Context
-//   - _a1 asset.Filter
-//   - _a2 bool
+//  - _a0 context.Context
+//  - _a1 asset.Filter
+//  - _a2 bool
 func (_e *AssetService_Expecter) GetAllAssets(_a0 interface{}, _a1 interface{}, _a2 interface{}) *AssetService_GetAllAssets_Call {
 	return &AssetService_GetAllAssets_Call{Call: _e.mock.On("GetAllAssets", _a0, _a1, _a2)}
 }
@@ -145,8 +145,8 @@ type AssetService_GetAssetByID_Call struct {
 }
 
 // GetAssetByID is a helper method to define mock.On call
-//   - ctx context.Context
-//   - id string
+//  - ctx context.Context
+//  - id string
 func (_e *AssetService_Expecter) GetAssetByID(ctx interface{}, id interface{}) *AssetService_GetAssetByID_Call {
 	return &AssetService_GetAssetByID_Call{Call: _e.mock.On("GetAssetByID", ctx, id)}
 }
@@ -190,9 +190,9 @@ type AssetService_GetAssetByVersion_Call struct {
 }
 
 // GetAssetByVersion is a helper method to define mock.On call
-//   - ctx context.Context
-//   - id string
-//   - version string
+//  - ctx context.Context
+//  - id string
+//  - version string
 func (_e *AssetService_Expecter) GetAssetByVersion(ctx interface{}, id interface{}, version interface{}) *AssetService_GetAssetByVersion_Call {
 	return &AssetService_GetAssetByVersion_Call{Call: _e.mock.On("GetAssetByVersion", ctx, id, version)}
 }
@@ -238,9 +238,9 @@ type AssetService_GetAssetVersionHistory_Call struct {
 }
 
 // GetAssetVersionHistory is a helper method to define mock.On call
-//   - ctx context.Context
-//   - flt asset.Filter
-//   - id string
+//  - ctx context.Context
+//  - flt asset.Filter
+//  - id string
 func (_e *AssetService_Expecter) GetAssetVersionHistory(ctx interface{}, flt interface{}, id interface{}) *AssetService_GetAssetVersionHistory_Call {
 	return &AssetService_GetAssetVersionHistory_Call{Call: _e.mock.On("GetAssetVersionHistory", ctx, flt, id)}
 }
@@ -286,9 +286,9 @@ type AssetService_GetLineage_Call struct {
 }
 
 // GetLineage is a helper method to define mock.On call
-//   - ctx context.Context
-//   - node asset.LineageNode
-//   - query asset.LineageQuery
+//  - ctx context.Context
+//  - node asset.LineageNode
+//  - query asset.LineageQuery
 func (_e *AssetService_Expecter) GetLineage(ctx interface{}, node interface{}, query interface{}) *AssetService_GetLineage_Call {
 	return &AssetService_GetLineage_Call{Call: _e.mock.On("GetLineage", ctx, node, query)}
 }
@@ -334,8 +334,8 @@ type AssetService_GetTypes_Call struct {
 }
 
 // GetTypes is a helper method to define mock.On call
-//   - ctx context.Context
-//   - flt asset.Filter
+//  - ctx context.Context
+//  - flt asset.Filter
 func (_e *AssetService_Expecter) GetTypes(ctx interface{}, flt interface{}) *AssetService_GetTypes_Call {
 	return &AssetService_GetTypes_Call{Call: _e.mock.On("GetTypes", ctx, flt)}
 }
@@ -381,8 +381,8 @@ type AssetService_SearchAssets_Call struct {
 }
 
 // SearchAssets is a helper method to define mock.On call
-//   - ctx context.Context
-//   - cfg asset.SearchConfig
+//  - ctx context.Context
+//  - cfg asset.SearchConfig
 func (_e *AssetService_Expecter) SearchAssets(ctx interface{}, cfg interface{}) *AssetService_SearchAssets_Call {
 	return &AssetService_SearchAssets_Call{Call: _e.mock.On("SearchAssets", ctx, cfg)}
 }
@@ -428,8 +428,8 @@ type AssetService_SuggestAssets_Call struct {
 }
 
 // SuggestAssets is a helper method to define mock.On call
-//   - ctx context.Context
-//   - cfg asset.SearchConfig
+//  - ctx context.Context
+//  - cfg asset.SearchConfig
 func (_e *AssetService_Expecter) SuggestAssets(ctx interface{}, cfg interface{}) *AssetService_SuggestAssets_Call {
 	return &AssetService_SuggestAssets_Call{Call: _e.mock.On("SuggestAssets", ctx, cfg)}
 }
@@ -446,8 +446,8 @@ func (_c *AssetService_SuggestAssets_Call) Return(suggestions []string, err erro
 	return _c
 }
 
-// UpsertPatchAsset provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *AssetService) UpsertPatchAsset(_a0 context.Context, _a1 *asset.Asset, _a2 []asset.LineageNode, _a3 []asset.LineageNode) (string, error) {
+// UpsertAsset provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *AssetService) UpsertAsset(_a0 context.Context, _a1 *asset.Asset, _a2 []asset.LineageNode, _a3 []asset.LineageNode) (string, error) {
 	ret := _m.Called(_a0, _a1, _a2, _a3)
 
 	var r0 string
@@ -467,28 +467,28 @@ func (_m *AssetService) UpsertPatchAsset(_a0 context.Context, _a1 *asset.Asset, 
 	return r0, r1
 }
 
-// AssetService_UpsertPatchAsset_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpsertPatchAsset'
-type AssetService_UpsertPatchAsset_Call struct {
+// AssetService_UpsertAsset_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpsertAsset'
+type AssetService_UpsertAsset_Call struct {
 	*mock.Call
 }
 
-// UpsertPatchAsset is a helper method to define mock.On call
-//   - _a0 context.Context
-//   - _a1 *asset.Asset
-//   - _a2 []asset.LineageNode
-//   - _a3 []asset.LineageNode
-func (_e *AssetService_Expecter) UpsertPatchAsset(_a0 interface{}, _a1 interface{}, _a2 interface{}, _a3 interface{}) *AssetService_UpsertPatchAsset_Call {
-	return &AssetService_UpsertPatchAsset_Call{Call: _e.mock.On("UpsertPatchAsset", _a0, _a1, _a2, _a3)}
+// UpsertAsset is a helper method to define mock.On call
+//  - _a0 context.Context
+//  - _a1 *asset.Asset
+//  - _a2 []asset.LineageNode
+//  - _a3 []asset.LineageNode
+func (_e *AssetService_Expecter) UpsertAsset(_a0 interface{}, _a1 interface{}, _a2 interface{}, _a3 interface{}) *AssetService_UpsertAsset_Call {
+	return &AssetService_UpsertAsset_Call{Call: _e.mock.On("UpsertAsset", _a0, _a1, _a2, _a3)}
 }
 
-func (_c *AssetService_UpsertPatchAsset_Call) Run(run func(_a0 context.Context, _a1 *asset.Asset, _a2 []asset.LineageNode, _a3 []asset.LineageNode)) *AssetService_UpsertPatchAsset_Call {
+func (_c *AssetService_UpsertAsset_Call) Run(run func(_a0 context.Context, _a1 *asset.Asset, _a2 []asset.LineageNode, _a3 []asset.LineageNode)) *AssetService_UpsertAsset_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(*asset.Asset), args[2].([]asset.LineageNode), args[3].([]asset.LineageNode))
 	})
 	return _c
 }
 
-func (_c *AssetService_UpsertPatchAsset_Call) Return(_a0 string, _a1 error) *AssetService_UpsertPatchAsset_Call {
+func (_c *AssetService_UpsertAsset_Call) Return(_a0 string, _a1 error) *AssetService_UpsertAsset_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }

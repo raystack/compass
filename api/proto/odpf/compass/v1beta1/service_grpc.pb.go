@@ -39,6 +39,7 @@ type CompassServiceClient interface {
 	GetAllTypes(ctx context.Context, in *GetAllTypesRequest, opts ...grpc.CallOption) (*GetAllTypesResponse, error)
 	GetAllAssets(ctx context.Context, in *GetAllAssetsRequest, opts ...grpc.CallOption) (*GetAllAssetsResponse, error)
 	GetAssetByID(ctx context.Context, in *GetAssetByIDRequest, opts ...grpc.CallOption) (*GetAssetByIDResponse, error)
+	UpsertAsset(ctx context.Context, in *UpsertAssetRequest, opts ...grpc.CallOption) (*UpsertAssetResponse, error)
 	UpsertPatchAsset(ctx context.Context, in *UpsertPatchAssetRequest, opts ...grpc.CallOption) (*UpsertPatchAssetResponse, error)
 	DeleteAsset(ctx context.Context, in *DeleteAssetRequest, opts ...grpc.CallOption) (*DeleteAssetResponse, error)
 	GetAssetStargazers(ctx context.Context, in *GetAssetStargazersRequest, opts ...grpc.CallOption) (*GetAssetStargazersResponse, error)
@@ -201,6 +202,15 @@ func (c *compassServiceClient) GetAllAssets(ctx context.Context, in *GetAllAsset
 func (c *compassServiceClient) GetAssetByID(ctx context.Context, in *GetAssetByIDRequest, opts ...grpc.CallOption) (*GetAssetByIDResponse, error) {
 	out := new(GetAssetByIDResponse)
 	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAssetByID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) UpsertAsset(ctx context.Context, in *UpsertAssetRequest, opts ...grpc.CallOption) (*UpsertAssetResponse, error) {
+	out := new(UpsertAssetResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UpsertAsset", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -417,6 +427,7 @@ type CompassServiceServer interface {
 	GetAllTypes(context.Context, *GetAllTypesRequest) (*GetAllTypesResponse, error)
 	GetAllAssets(context.Context, *GetAllAssetsRequest) (*GetAllAssetsResponse, error)
 	GetAssetByID(context.Context, *GetAssetByIDRequest) (*GetAssetByIDResponse, error)
+	UpsertAsset(context.Context, *UpsertAssetRequest) (*UpsertAssetResponse, error)
 	UpsertPatchAsset(context.Context, *UpsertPatchAssetRequest) (*UpsertPatchAssetResponse, error)
 	DeleteAsset(context.Context, *DeleteAssetRequest) (*DeleteAssetResponse, error)
 	GetAssetStargazers(context.Context, *GetAssetStargazersRequest) (*GetAssetStargazersResponse, error)
@@ -491,6 +502,9 @@ func (UnimplementedCompassServiceServer) GetAllAssets(context.Context, *GetAllAs
 }
 func (UnimplementedCompassServiceServer) GetAssetByID(context.Context, *GetAssetByIDRequest) (*GetAssetByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAssetByID not implemented")
+}
+func (UnimplementedCompassServiceServer) UpsertAsset(context.Context, *UpsertAssetRequest) (*UpsertAssetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpsertAsset not implemented")
 }
 func (UnimplementedCompassServiceServer) UpsertPatchAsset(context.Context, *UpsertPatchAssetRequest) (*UpsertPatchAssetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpsertPatchAsset not implemented")
@@ -834,6 +848,24 @@ func _CompassService_GetAssetByID_Handler(srv interface{}, ctx context.Context, 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetAssetByID(ctx, req.(*GetAssetByIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_UpsertAsset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpsertAssetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).UpsertAsset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/UpsertAsset",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).UpsertAsset(ctx, req.(*UpsertAssetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1282,6 +1314,10 @@ var CompassService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAssetByID",
 			Handler:    _CompassService_GetAssetByID_Handler,
+		},
+		{
+			MethodName: "UpsertAsset",
+			Handler:    _CompassService_UpsertAsset_Handler,
 		},
 		{
 			MethodName: "UpsertPatchAsset",

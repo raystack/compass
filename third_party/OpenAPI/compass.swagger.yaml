@@ -97,6 +97,44 @@ paths:
         type: boolean
       tags:
       - Asset
+    put:
+      summary: Update/Create an asset
+      description: Upsert will update an asset or create a new one if it does not
+        exist yet
+      operationId: CompassService_UpsertAsset
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/UpsertAssetResponse'
+        "400":
+          description: Returned when the data that user input is wrong.
+          schema:
+            $ref: '#/definitions/Status'
+        "404":
+          description: Returned when the resource does not exist.
+          schema:
+            $ref: '#/definitions/Status'
+        "409":
+          description: Returned when the resource already exist.
+          schema:
+            $ref: '#/definitions/Status'
+        "500":
+          description: Returned when theres is something wrong on the server side.
+          schema:
+            $ref: '#/definitions/Status'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/Status'
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/UpsertAssetRequest'
+      tags:
+      - Asset
     patch:
       summary: Patch/Create an asset
       description: Similar to Upsert but with patch strategy and different body format
@@ -1697,6 +1735,8 @@ definitions:
         type: object
       labels:
         type: object
+        additionalProperties:
+          type: string
       owners:
         type: array
         items:
@@ -1715,33 +1755,9 @@ definitions:
       updated_at:
         type: string
         format: date-time
+      url:
+        type: string
     title: Asset
-  BaseAsset:
-    type: object
-    properties:
-      urn:
-        type: string
-      type:
-        type: string
-      name:
-        type: string
-        description: name of an asset
-      service:
-        type: string
-      description:
-        type: string
-        description: description of an asset
-      data:
-        type: object
-        description: dynamic data of an asset
-      labels:
-        type: object
-        description: labels of an asset
-      owners:
-        type: array
-        items:
-          $ref: '#/definitions/User'
-        description: list of owners of the asset
   Change:
     type: object
     properties:
@@ -2183,11 +2199,11 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/TagTemplate'
-  UpsertPatchAssetRequest:
+  UpsertAssetRequest:
     type: object
     properties:
       asset:
-        $ref: '#/definitions/BaseAsset'
+        $ref: '#/definitions/UpsertAssetRequest.BaseAsset'
       upstreams:
         type: array
         items:
@@ -2196,6 +2212,82 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/LineageNode'
+  UpsertAssetRequest.BaseAsset:
+    type: object
+    properties:
+      urn:
+        type: string
+      type:
+        type: string
+      name:
+        type: string
+      service:
+        type: string
+      description:
+        type: string
+      data:
+        type: object
+        description: dynamic data of an asset
+      labels:
+        type: object
+        additionalProperties:
+          type: string
+        description: labels of an asset
+      owners:
+        type: array
+        items:
+          $ref: '#/definitions/User'
+        description: list of owners of the asset
+      url:
+        type: string
+  UpsertAssetResponse:
+    type: object
+    properties:
+      id:
+        type: string
+  UpsertPatchAssetRequest:
+    type: object
+    properties:
+      asset:
+        $ref: '#/definitions/UpsertPatchAssetRequest.BaseAsset'
+      upstreams:
+        type: array
+        items:
+          $ref: '#/definitions/LineageNode'
+      downstreams:
+        type: array
+        items:
+          $ref: '#/definitions/LineageNode'
+  UpsertPatchAssetRequest.BaseAsset:
+    type: object
+    properties:
+      urn:
+        type: string
+      type:
+        type: string
+      name:
+        type: string
+        description: name of an asset
+      service:
+        type: string
+      description:
+        type: string
+        description: description of an asset
+      data:
+        type: object
+        description: dynamic data of an asset
+      labels:
+        type: object
+        additionalProperties:
+          type: string
+        description: labels of an asset
+      owners:
+        type: array
+        items:
+          $ref: '#/definitions/User'
+        description: list of owners of the asset
+      url:
+        type: string
   UpsertPatchAssetResponse:
     type: object
     properties:

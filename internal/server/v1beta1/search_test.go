@@ -16,7 +16,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/testing/protocmp"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestSearch(t *testing.T) {
@@ -133,15 +132,6 @@ func TestSearch(t *testing.T) {
 				as.EXPECT().SearchAssets(ctx, cfg).Return(response, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.SearchAssetsResponse) error {
-				expectedLabels, err := structpb.NewStruct(
-					map[string]interface{}{
-						"entity":    "odpf",
-						"landscape": "id",
-					},
-				)
-				if err != nil {
-					return err
-				}
 				expected := &compassv1beta1.SearchAssetsResponse{
 					Data: []*compassv1beta1.Asset{
 						{
@@ -149,7 +139,10 @@ func TestSearch(t *testing.T) {
 							Description: "some description",
 							Service:     "test-service",
 							Type:        "test",
-							Labels:      expectedLabels,
+							Labels: map[string]string{
+								"entity":    "odpf",
+								"landscape": "id",
+							},
 						},
 					},
 				}
