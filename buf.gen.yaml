@@ -1,23 +1,23 @@
 version: v1
 plugins:
   - name: go
-    out: api/proto
+    out: proto
     opt: paths=source_relative
   - name: go-grpc
-    out: api/proto
+    out: proto
     opt: paths=source_relative,require_unimplemented_servers=true
   - name: grpc-gateway
-    out: api/proto
+    out: proto
     opt:
       - paths=source_relative
       - allow_repeated_fields_in_body=true
   - name: validate
-    out: api/proto
+    out: proto
     opt:
       - paths=source_relative
       - lang=go
   - name: openapiv2
-    out: third_party/OpenAPI
+    out: proto
     opt:
       - allow_repeated_fields_in_body=true
       - output_format=yaml
@@ -25,4 +25,3 @@ plugins:
       - merge_file_name=compass
       - openapi_naming_strategy=simple
       - json_names_for_fields=false
-

@@ -50,4 +50,4 @@ install: ## install required dependencies
 	go install github.com/envoyproxy/protoc-gen-validate@v0.6.7
 
 update-swagger-md:
-	npx swagger-markdown -i third_party/OpenAPI/compass.swagger.yaml -o docs/docs/reference/api.md
+	npx swagger-markdown -i proto/compass.swagger.yaml -o docs/docs/reference/api.md
