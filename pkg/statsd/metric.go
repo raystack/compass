@@ -81,7 +81,7 @@ func (m *Metric) processTagsDatadog() []string {
 }
 
 func (m *Metric) processTagsInflux(name string, tags map[string]string) string {
-	var finalName string = name
+	var finalName = name
 	for k, v := range m.tags {
 		finalName = fmt.Sprintf("%s,%s=%s", finalName, k, v)
 	}

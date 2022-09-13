@@ -303,7 +303,7 @@ func (s *ServiceTestSuite) TestFindByAssetAndTemplate() {
 
 	s.Run("should return nil and error if tag is not found", func() {
 		s.Setup()
-		var assetID string = uuid.NewString()
+		var assetID = uuid.NewString()
 		template := s.buildTemplate()
 		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.repository.EXPECT().Read(mock.Anything, tag.Tag{
