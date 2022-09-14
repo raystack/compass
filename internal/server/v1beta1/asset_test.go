@@ -390,7 +390,12 @@ func TestUpsertAsset(t *testing.T) {
 			Description: "should return internal server error when upserting asset service failed",
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
 				expectedErr := errors.New("unknown error")
-				as.EXPECT().UpsertAsset(ctx, mock.AnythingOfType("*asset.Asset"), mock.AnythingOfType("[]asset.LineageNode"), mock.AnythingOfType("[]asset.LineageNode")).Return("1234-5678", expectedErr)
+				as.EXPECT().UpsertAsset(
+					ctx,
+					mock.AnythingOfType("*asset.Asset"),
+					mock.AnythingOfType("[]asset.LineageNode"),
+					mock.AnythingOfType("[]asset.LineageNode"),
+				).Return("", expectedErr)
 			},
 			Request:      validPayload,
 			ExpectStatus: codes.Internal,
@@ -398,7 +403,7 @@ func TestUpsertAsset(t *testing.T) {
 		{
 			Description: "should return OK and asset's ID if the asset is successfully created/updated",
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
-				patchedAsset := asset.Asset{
+				ast := asset.Asset{
 					URN:       "test dagger",
 					Type:      asset.TypeTable,
 					Name:      "new-name",
@@ -415,11 +420,11 @@ func TestUpsertAsset(t *testing.T) {
 					{URN: "downstream-2", Type: asset.TypeDashboard, Service: "tableau"},
 				}
 
-				assetWithID := patchedAsset
+				assetWithID := ast
 				assetWithID.ID = assetID
 
-				as.EXPECT().UpsertAsset(ctx, &patchedAsset, upstreams, downstreams).Return(assetWithID.ID, nil).Run(func(ctx context.Context, ast *asset.Asset, upstreams, downstreams []asset.LineageNode) {
-					patchedAsset.ID = assetWithID.ID
+				as.EXPECT().UpsertAsset(ctx, &ast, upstreams, downstreams).Return(assetWithID.ID, nil).Run(func(ctx context.Context, ast *asset.Asset, upstreams, downstreams []asset.LineageNode) {
+					ast.ID = assetWithID.ID
 				})
 			},
 			Request:      validPayload,
