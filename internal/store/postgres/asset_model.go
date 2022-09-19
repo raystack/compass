@@ -123,6 +123,7 @@ type AssetProbeModel struct {
 	Status       string    `db:"status"`
 	StatusReason string    `db:"status_reason"`
 	Metadata     JSONMap   `db:"metadata"`
+	Timestamp    time.Time `db:"timestamp"`
 	CreatedAt    time.Time `db:"created_at"`
 }
 
@@ -133,6 +134,7 @@ func (m *AssetProbeModel) toAssetProbe() asset.Probe {
 		Status:       m.Status,
 		StatusReason: m.StatusReason,
 		Metadata:     m.Metadata,
+		Timestamp:    m.Timestamp,
 		CreatedAt:    m.CreatedAt,
 	}
 }

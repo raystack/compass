@@ -4,5 +4,6 @@ CREATE TABLE asset_probes (
   status text NOT NULL,
   status_reason text,
   metadata jsonb,
+  timestamp timestamp DEFAULT NOW(),
   created_at timestamp DEFAULT NOW()
 );

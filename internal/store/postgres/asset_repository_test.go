@@ -1222,6 +1222,7 @@ func (r *AssetRepositoryTestSuite) TestAddProbe() {
 		probe := asset.Probe{
 			Status:       "COMPLETED",
 			StatusReason: "Sample Reason",
+			Timestamp:    time.Now().Add(2 * time.Minute),
 			Metadata: map[string]interface{}{
 				"foo": "bar",
 			},
@@ -1249,7 +1250,45 @@ func (r *AssetRepositoryTestSuite) TestAddProbe() {
 		r.Equal(probe.Status, probeFromDB.Status)
 		r.Equal(probe.StatusReason, probeFromDB.StatusReason)
 		r.Equal(probe.Metadata, probeFromDB.Metadata)
+		r.WithinDuration(probe.Timestamp, probeFromDB.Timestamp, 0)
 		r.WithinDuration(probe.CreatedAt, probeFromDB.CreatedAt, 0)
+
+		// cleanup
+		err = r.repository.DeleteByURN(r.ctx, ast.URN)
+		r.Require().NoError(err)
+	})
+
+	r.Run("should populate Timestamp if empty", func() {
+		ast := asset.Asset{
+			URN:       "urn-add-probe-2",
+			Type:      asset.TypeJob,
+			Service:   "optimus",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+		probe := asset.Probe{
+			Status: "RUNNING",
+		}
+
+		_, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+
+		err = r.repository.AddProbe(r.ctx, ast.URN, &probe)
+		r.NoError(err)
+
+		// assert populated fields
+		r.False(probe.CreatedAt.IsZero())
+		r.Equal(probe.CreatedAt, probe.Timestamp)
+
+		// assert probe is persisted
+		probesFromDB, err := r.repository.GetProbes(r.ctx, ast.URN)
+		r.Require().NoError(err)
+		r.Require().Len(probesFromDB, 1)
+
+		probeFromDB := probesFromDB[0]
+		r.Equal(probe.ID, probeFromDB.ID)
+		r.WithinDuration(probe.Timestamp, probeFromDB.Timestamp, 0)
+		r.WithinDuration(probe.CreatedAt, probeFromDB.CreatedAt, 0)
+		r.WithinDuration(probeFromDB.CreatedAt, probeFromDB.Timestamp, 0)
 
 		// cleanup
 		err = r.repository.DeleteByURN(r.ctx, ast.URN)

@@ -11,5 +11,6 @@ type Probe struct {
 	Status       string                 `json:"status"`
 	StatusReason string                 `json:"status_reason"`
 	Metadata     map[string]interface{} `json:"metadata"`
+	Timestamp    time.Time              `json:"timestamp"`
 	CreatedAt    time.Time              `json:"created_at"`
 }

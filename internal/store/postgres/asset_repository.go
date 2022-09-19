@@ -321,10 +321,15 @@ func (r *AssetRepository) DeleteByURN(ctx context.Context, urn string) error {
 func (r *AssetRepository) AddProbe(ctx context.Context, assetURN string, probe *asset.Probe) error {
 	probe.AssetURN = assetURN
 	probe.CreatedAt = time.Now().UTC()
+	if probe.Timestamp.IsZero() {
+		probe.Timestamp = probe.CreatedAt
+	} else {
+		probe.Timestamp = probe.Timestamp.UTC()
+	}
 
 	query, args, err := sq.Insert("asset_probes").
-		Columns("asset_urn", "status", "status_reason", "metadata", "created_at").
-		Values(assetURN, probe.Status, probe.StatusReason, probe.Metadata, probe.CreatedAt).
+		Columns("asset_urn", "status", "status_reason", "metadata", "timestamp", "created_at").
+		Values(assetURN, probe.Status, probe.StatusReason, probe.Metadata, probe.Timestamp, probe.CreatedAt).
 		Suffix("RETURNING \"id\"").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
