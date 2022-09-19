@@ -1204,6 +1204,108 @@ func (r *AssetRepositoryTestSuite) TestDeleteByURN() {
 	})
 }
 
+func (r *AssetRepositoryTestSuite) TestAddProbe() {
+	r.Run("return NotFoundError if asset does not exist", func() {
+		urn := "invalid-urn"
+		probe := asset.Probe{}
+		err := r.repository.AddProbe(r.ctx, urn, &probe)
+		r.ErrorAs(err, &asset.NotFoundError{URN: urn})
+	})
+
+	r.Run("should populate CreatedAt and persist probe", func() {
+		ast := asset.Asset{
+			URN:       "urn-add-probe-1",
+			Type:      asset.TypeJob,
+			Service:   "airflow",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+		probe := asset.Probe{
+			Status:       "COMPLETED",
+			StatusReason: "Sample Reason",
+			Metadata: map[string]interface{}{
+				"foo": "bar",
+			},
+		}
+
+		_, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+
+		err = r.repository.AddProbe(r.ctx, ast.URN, &probe)
+		r.NoError(err)
+
+		// assert populated fields
+		r.NotEmpty(probe.ID)
+		r.Equal(ast.URN, probe.AssetURN)
+		r.False(probe.CreatedAt.IsZero())
+
+		// assert probe is persisted
+		probesFromDB, err := r.repository.GetProbes(r.ctx, ast.URN)
+		r.Require().NoError(err)
+		r.Require().Len(probesFromDB, 1)
+
+		probeFromDB := probesFromDB[0]
+		r.Equal(probe.ID, probeFromDB.ID)
+		r.Equal(probe.AssetURN, probeFromDB.AssetURN)
+		r.Equal(probe.Status, probeFromDB.Status)
+		r.Equal(probe.StatusReason, probeFromDB.StatusReason)
+		r.Equal(probe.Metadata, probeFromDB.Metadata)
+		r.WithinDuration(probe.CreatedAt, probeFromDB.CreatedAt, 0)
+
+		// cleanup
+		err = r.repository.DeleteByURN(r.ctx, ast.URN)
+		r.Require().NoError(err)
+	})
+}
+
+func (r *AssetRepositoryTestSuite) TestGetProbes() {
+	r.Run("should return list of probes by asset urn", func() {
+		ast := asset.Asset{
+			URN:       "urn-add-probe-1",
+			Type:      asset.TypeJob,
+			Service:   "airflow",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+		p1 := asset.Probe{
+			Status: "COMPLETED",
+			Metadata: map[string]interface{}{
+				"foo": "bar",
+			},
+		}
+		p2 := asset.Probe{
+			Status:       "FAILED",
+			StatusReason: "sample error",
+			Metadata: map[string]interface{}{
+				"bar": "foo",
+			},
+		}
+		p3 := asset.Probe{
+			Status: "RUNNING",
+		}
+
+		_, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+
+		err = r.repository.AddProbe(r.ctx, ast.URN, &p1)
+		r.NoError(err)
+		err = r.repository.AddProbe(r.ctx, ast.URN, &p2)
+		r.NoError(err)
+		err = r.repository.AddProbe(r.ctx, ast.URN, &p3)
+		r.NoError(err)
+
+		// assert probe is persisted
+		actual, err := r.repository.GetProbes(r.ctx, ast.URN)
+		r.Require().NoError(err)
+		r.Require().Len(actual, 3)
+
+		expected := []asset.Probe{p1, p2, p3}
+		r.Equal(expected, actual)
+
+		// cleanup
+		err = r.repository.DeleteByURN(r.ctx, ast.URN)
+		r.Require().NoError(err)
+	})
+}
+
 func (r *AssetRepositoryTestSuite) assertAsset(expectedAsset *asset.Asset, actualAsset *asset.Asset) bool {
 	// sanitize time to make the assets comparable
 	expectedAsset.CreatedAt = time.Time{}
