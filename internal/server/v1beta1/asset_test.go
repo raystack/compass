@@ -18,6 +18,7 @@ import (
 	"github.com/odpf/salt/log"
 	"github.com/r3labs/diff/v2"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -878,17 +879,139 @@ func TestGetAssetByVersion(t *testing.T) {
 	}
 }
 
+func TestCreateAssetProbe(t *testing.T) {
+	var (
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+		assetURN = "test-urn"
+		now      = time.Now().UTC()
+		probeID  = uuid.NewString()
+	)
+
+	type testCase struct {
+		Description  string
+		Request      *compassv1beta1.CreateAssetProbeRequest
+		ExpectStatus codes.Code
+		Setup        func(context.Context, *mocks.AssetService)
+		PostCheck    func(resp *compassv1beta1.CreateAssetProbeResponse) error
+	}
+
+	var testCases = []testCase{
+		{
+			Description:  `should return error if payload is invalid`,
+			ExpectStatus: codes.InvalidArgument,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe:    &compassv1beta1.CreateAssetProbeRequest_BaseProbe{},
+			},
+		},
+		{
+			Description:  `should return not found if asset doesn't exist`,
+			ExpectStatus: codes.NotFound,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe: &compassv1beta1.CreateAssetProbeRequest_BaseProbe{
+					Status: "RUNNING",
+				},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				as.EXPECT().
+					AddProbe(ctx, assetURN, mock.AnythingOfType("*asset.Probe")).
+					Return(asset.NotFoundError{URN: assetURN})
+			},
+		},
+		{
+			Description:  `should return internal server error if adding probe fails`,
+			ExpectStatus: codes.Internal,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe: &compassv1beta1.CreateAssetProbeRequest_BaseProbe{
+					Status: "RUNNING",
+				},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				as.EXPECT().
+					AddProbe(ctx, assetURN, mock.AnythingOfType("*asset.Probe")).
+					Return(errors.New("unknown error"))
+			},
+		},
+		{
+			Description:  "should return probe on success",
+			ExpectStatus: codes.OK,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe: &compassv1beta1.CreateAssetProbeRequest_BaseProbe{
+					Status:       "FINISHED",
+					StatusReason: "test reason",
+					Timestamp:    timestamppb.New(now),
+					Metadata: newStructpb(t, map[string]interface{}{
+						"foo1": "bar1",
+						"foo2": "bar2",
+					}),
+				},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				expectedProbe := &asset.Probe{
+					Status:       "FINISHED",
+					StatusReason: "test reason",
+					Timestamp:    now,
+					Metadata: map[string]interface{}{
+						"foo1": "bar1",
+						"foo2": "bar2",
+					},
+				}
+				as.EXPECT().AddProbe(ctx, assetURN, expectedProbe).Run(func(ctx context.Context, assetURN string, probe *asset.Probe) {
+					probe.ID = probeID
+				}).Return(nil)
+			},
+			PostCheck: func(resp *compassv1beta1.CreateAssetProbeResponse) error {
+				expected := &compassv1beta1.CreateAssetProbeResponse{
+					Id: probeID,
+				}
+				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
+					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
+				}
+				return nil
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+
+			logger := log.NewNoop()
+			mockUserSvc := new(mocks.UserService)
+			mockAssetSvc := new(mocks.AssetService)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockAssetSvc)
+			}
+			defer mockUserSvc.AssertExpectations(t)
+			defer mockAssetSvc.AssertExpectations(t)
+
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+
+			got, err := handler.CreateAssetProbe(ctx, tc.Request)
+			code := status.Code(err)
+			if code != tc.ExpectStatus {
+				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
+				return
+			}
+			if tc.PostCheck != nil {
+				if err := tc.PostCheck(got); err != nil {
+					t.Error(err)
+					return
+				}
+			}
+		})
+	}
+}
+
 func TestAssetToProto(t *testing.T) {
 	timeDummy := time.Date(2000, time.January, 7, 0, 0, 0, 0, time.UTC)
 	dataPB, err := structpb.NewStruct(map[string]interface{}{
 		"data1": "datavalue1",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	labelPB, err := structpb.NewStruct(map[string]interface{}{
-		"label1": "labelvalue1",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -928,10 +1051,12 @@ func TestAssetToProto(t *testing.T) {
 				UpdatedAt: timeDummy,
 			},
 			ExpectProto: &compassv1beta1.Asset{
-				Id:     "id1",
-				Urn:    "urn1",
-				Data:   dataPB,
-				Labels: labelPB,
+				Id:   "id1",
+				Urn:  "urn1",
+				Data: dataPB,
+				Labels: map[string]string{
+					"label1": "labelvalue1",
+				},
 				Changelog: []*compassv1beta1.Change{
 					{
 
@@ -968,13 +1093,6 @@ func TestAssetFromProto(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	labelPB, err := structpb.NewStruct(map[string]interface{}{
-		"label1": "labelvalue1",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	type testCase struct {
 		Title       string
 		AssetPB     *compassv1beta1.Asset
@@ -990,11 +1108,13 @@ func TestAssetFromProto(t *testing.T) {
 		{
 			Title: "should return non empty labels, data, and owners if all pb is not empty",
 			AssetPB: &compassv1beta1.Asset{
-				Id:     "id1",
-				Urn:    "urn1",
-				Name:   "name1",
-				Data:   dataPB,
-				Labels: labelPB,
+				Id:   "id1",
+				Urn:  "urn1",
+				Name: "name1",
+				Data: dataPB,
+				Labels: map[string]string{
+					"label1": "labelvalue1",
+				},
 				Owners: []*compassv1beta1.User{
 					{
 						Id: "uid1",
@@ -1053,4 +1173,11 @@ func TestAssetFromProto(t *testing.T) {
 			}
 		})
 	}
+}
+
+func newStructpb(t *testing.T, v map[string]interface{}) *structpb.Struct {
+	res, err := structpb.NewStruct(v)
+	require.NoError(t, err)
+
+	return res
 }

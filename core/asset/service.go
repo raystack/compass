@@ -96,6 +96,10 @@ func (s *Service) GetAssetVersionHistory(ctx context.Context, flt Filter, id str
 	return s.assetRepository.GetVersionHistory(ctx, flt, id)
 }
 
+func (s *Service) AddProbe(ctx context.Context, assetURN string, probe *Probe) error {
+	return s.assetRepository.AddProbe(ctx, assetURN, probe)
+}
+
 func (s *Service) GetLineage(ctx context.Context, node LineageNode, query LineageQuery) (LineageGraph, error) {
 	return s.lineageRepository.GetGraph(ctx, node, query)
 }

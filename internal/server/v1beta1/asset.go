@@ -37,6 +37,8 @@ type AssetService interface {
 
 	SearchAssets(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error)
 	SuggestAssets(ctx context.Context, cfg asset.SearchConfig) (suggestions []string, err error)
+
+	AddProbe(ctx context.Context, assetURN string, probe *asset.Probe) error
 }
 
 func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.GetAllAssetsRequest) (*compassv1beta1.GetAllAssetsResponse, error) {
@@ -299,6 +301,34 @@ func (server *APIServer) DeleteAsset(ctx context.Context, req *compassv1beta1.De
 	return &compassv1beta1.DeleteAssetResponse{}, nil
 }
 
+func (server *APIServer) CreateAssetProbe(ctx context.Context, req *compassv1beta1.CreateAssetProbeRequest) (*compassv1beta1.CreateAssetProbeResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.Probe.Status == "" {
+		return nil, status.Error(codes.InvalidArgument, "Status is required")
+	}
+
+	probe := asset.Probe{
+		Status:       req.Probe.Status,
+		StatusReason: req.Probe.StatusReason,
+		Metadata:     req.Probe.Metadata.AsMap(),
+		Timestamp:    req.Probe.Timestamp.AsTime(),
+	}
+	if err := server.assetService.AddProbe(ctx, req.AssetUrn, &probe); err != nil {
+		if errors.As(err, &asset.NotFoundError{}) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &compassv1beta1.CreateAssetProbeResponse{
+		Id: probe.ID,
+	}, nil
+}
+
 func (server *APIServer) validateAsset(ast asset.Asset) error {
 	if ast.URN == "" {
 		return fmt.Errorf("urn is required")
@@ -361,7 +391,7 @@ func decodePatchAssetToMap(pb *compassv1beta1.UpsertPatchAssetRequest_BaseAsset)
 		m["data"] = pb.GetData().AsMap()
 	}
 	if pb.GetLabels() != nil {
-		m["labels"] = pb.GetLabels().AsMap()
+		m["labels"] = pb.GetLabels()
 	}
 	if len(pb.GetOwners()) > 0 {
 		ownersMap := []map[string]interface{}{}
@@ -398,18 +428,6 @@ func assetToProto(a asset.Asset, withChangelog bool) (assetPB *compassv1beta1.As
 		}
 	}
 
-	var labels *structpb.Struct
-	if len(a.Labels) > 0 {
-		labelsMapInterface := make(map[string]interface{}, len(a.Labels))
-		for k, v := range a.Labels {
-			labelsMapInterface[k] = v
-		}
-		labels, err = structpb.NewStruct(labelsMapInterface)
-		if err != nil {
-			return
-		}
-	}
-
 	owners := []*compassv1beta1.User{}
 	for _, o := range a.Owners {
 		owners = append(owners, userToProto(o))
@@ -441,7 +459,7 @@ func assetToProto(a asset.Asset, withChangelog bool) (assetPB *compassv1beta1.As
 		Name:        a.Name,
 		Description: a.Description,
 		Data:        data,
-		Labels:      labels,
+		Labels:      a.Labels,
 		Owners:      owners,
 		Version:     a.Version,
 		UpdatedBy:   userToProto(a.UpdatedBy),
@@ -498,16 +516,6 @@ func assetFromProto(pb *compassv1beta1.Asset) asset.Asset {
 		assetOwners = append(assetOwners, userFromProto(op))
 	}
 
-	var labels map[string]string
-	if pb.GetLabels() != nil {
-		labels = make(map[string]string)
-		for key, value := range pb.GetLabels().AsMap() {
-			strKey := fmt.Sprintf("%v", key)
-			strValue := fmt.Sprintf("%v", value)
-			labels[strKey] = strValue
-		}
-	}
-
 	var dataValue map[string]interface{}
 	if pb.GetData() != nil {
 		dataValue = pb.GetData().AsMap()
@@ -546,7 +554,7 @@ func assetFromProto(pb *compassv1beta1.Asset) asset.Asset {
 		Name:        pb.GetName(),
 		Description: pb.GetDescription(),
 		Data:        dataValue,
-		Labels:      labels,
+		Labels:      pb.GetLabels(),
 		Owners:      assetOwners,
 		CreatedAt:   createdAt,
 		UpdatedAt:   updatedAt,
