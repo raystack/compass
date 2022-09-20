@@ -1250,8 +1250,9 @@ func (r *AssetRepositoryTestSuite) TestAddProbe() {
 		r.Equal(probe.Status, probeFromDB.Status)
 		r.Equal(probe.StatusReason, probeFromDB.StatusReason)
 		r.Equal(probe.Metadata, probeFromDB.Metadata)
-		r.WithinDuration(probe.Timestamp, probeFromDB.Timestamp, 0)
-		r.WithinDuration(probe.CreatedAt, probeFromDB.CreatedAt, 0)
+		// we use `1µs` instead of `0` for the delta due to postgres might round precision before storing
+		r.WithinDuration(probe.Timestamp, probeFromDB.Timestamp, 1*time.Microsecond)
+		r.WithinDuration(probe.CreatedAt, probeFromDB.CreatedAt, 1*time.Microsecond)
 
 		// cleanup
 		err = r.repository.DeleteByURN(r.ctx, ast.URN)
@@ -1286,9 +1287,9 @@ func (r *AssetRepositoryTestSuite) TestAddProbe() {
 
 		probeFromDB := probesFromDB[0]
 		r.Equal(probe.ID, probeFromDB.ID)
-		r.WithinDuration(probe.Timestamp, probeFromDB.Timestamp, 0)
-		r.WithinDuration(probe.CreatedAt, probeFromDB.CreatedAt, 0)
-		r.WithinDuration(probeFromDB.CreatedAt, probeFromDB.Timestamp, 0)
+		r.WithinDuration(probe.Timestamp, probeFromDB.Timestamp, 1*time.Microsecond)
+		r.WithinDuration(probe.CreatedAt, probeFromDB.CreatedAt, 1*time.Microsecond)
+		r.WithinDuration(probeFromDB.CreatedAt, probeFromDB.Timestamp, 1*time.Microsecond)
 
 		// cleanup
 		err = r.repository.DeleteByURN(r.ctx, ast.URN)
@@ -1305,7 +1306,8 @@ func (r *AssetRepositoryTestSuite) TestGetProbes() {
 			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
 		}
 		p1 := asset.Probe{
-			Status: "COMPLETED",
+			Status:    "COMPLETED",
+			Timestamp: time.Now().UTC().Add(3 * time.Minute),
 			Metadata: map[string]interface{}{
 				"foo": "bar",
 			},
@@ -1337,7 +1339,17 @@ func (r *AssetRepositoryTestSuite) TestGetProbes() {
 		r.Require().Len(actual, 3)
 
 		expected := []asset.Probe{p1, p2, p3}
-		r.Equal(expected, actual)
+		r.Equal(expected[0].ID, actual[0].ID)
+		r.Equal(expected[1].ID, actual[1].ID)
+		r.Equal(expected[2].ID, actual[2].ID)
+
+		r.Equal(expected[0].ID, actual[0].ID)
+		r.Equal(expected[0].AssetURN, actual[0].AssetURN)
+		r.Equal(expected[0].Status, actual[0].Status)
+		r.Equal(expected[0].StatusReason, actual[0].StatusReason)
+		r.Equal(expected[0].Metadata, actual[0].Metadata)
+		r.WithinDuration(expected[0].Timestamp, actual[0].Timestamp, 1*time.Microsecond)
+		r.WithinDuration(expected[0].CreatedAt, actual[0].CreatedAt, 1*time.Microsecond)
 
 		// cleanup
 		err = r.repository.DeleteByURN(r.ctx, ast.URN)
