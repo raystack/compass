@@ -211,7 +211,7 @@ paths:
         in: body
         required: true
         schema:
-          $ref: '#/definitions/BaseProbe'
+          $ref: '#/definitions/Probe'
       tags:
       - Asset
   /v1beta1/assets/{id}:
@@ -1800,22 +1800,6 @@ definitions:
       url:
         type: string
     title: Asset
-  BaseProbe:
-    type: object
-    properties:
-      status:
-        type: string
-        required:
-        - status
-      status_reason:
-        type: string
-      metadata:
-        type: object
-      timestamp:
-        type: string
-        format: date-time
-    required:
-    - status
   Change:
     type: object
     properties:
@@ -2141,6 +2125,22 @@ definitions:
        - NULL_VALUE: Null value.
   PatchDiscussionResponse:
     type: object
+  Probe:
+    type: object
+    properties:
+      status:
+        type: string
+        required:
+        - status
+      status_reason:
+        type: string
+      metadata:
+        type: object
+      timestamp:
+        type: string
+        format: date-time
+    required:
+    - status
   SearchAssetsResponse:
     type: object
     properties:

@@ -12096,23 +12096,22 @@ var _ interface {
 	ErrorName() string
 } = UpsertPatchAssetRequest_BaseAssetValidationError{}
 
-// Validate checks the field values on CreateAssetProbeRequest_BaseProbe with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the first error encountered is returned, or nil if there are
-// no violations.
-func (m *CreateAssetProbeRequest_BaseProbe) Validate() error {
+// Validate checks the field values on CreateAssetProbeRequest_Probe with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreateAssetProbeRequest_Probe) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on CreateAssetProbeRequest_BaseProbe
-// with the rules defined in the proto definition for this message. If any
-// rules are violated, the result is a list of violation errors wrapped in
-// CreateAssetProbeRequest_BaseProbeMultiError, or nil if none found.
-func (m *CreateAssetProbeRequest_BaseProbe) ValidateAll() error {
+// ValidateAll checks the field values on CreateAssetProbeRequest_Probe with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// CreateAssetProbeRequest_ProbeMultiError, or nil if none found.
+func (m *CreateAssetProbeRequest_Probe) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *CreateAssetProbeRequest_BaseProbe) validate(all bool) error {
+func (m *CreateAssetProbeRequest_Probe) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -12120,7 +12119,7 @@ func (m *CreateAssetProbeRequest_BaseProbe) validate(all bool) error {
 	var errors []error
 
 	if utf8.RuneCountInString(m.GetStatus()) < 1 {
-		err := CreateAssetProbeRequest_BaseProbeValidationError{
+		err := CreateAssetProbeRequest_ProbeValidationError{
 			field:  "Status",
 			reason: "value length must be at least 1 runes",
 		}
@@ -12136,7 +12135,7 @@ func (m *CreateAssetProbeRequest_BaseProbe) validate(all bool) error {
 		switch v := interface{}(m.GetMetadata()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, CreateAssetProbeRequest_BaseProbeValidationError{
+				errors = append(errors, CreateAssetProbeRequest_ProbeValidationError{
 					field:  "Metadata",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -12144,7 +12143,7 @@ func (m *CreateAssetProbeRequest_BaseProbe) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, CreateAssetProbeRequest_BaseProbeValidationError{
+				errors = append(errors, CreateAssetProbeRequest_ProbeValidationError{
 					field:  "Metadata",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -12153,7 +12152,7 @@ func (m *CreateAssetProbeRequest_BaseProbe) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetMetadata()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return CreateAssetProbeRequest_BaseProbeValidationError{
+			return CreateAssetProbeRequest_ProbeValidationError{
 				field:  "Metadata",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -12165,7 +12164,7 @@ func (m *CreateAssetProbeRequest_BaseProbe) validate(all bool) error {
 		switch v := interface{}(m.GetTimestamp()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, CreateAssetProbeRequest_BaseProbeValidationError{
+				errors = append(errors, CreateAssetProbeRequest_ProbeValidationError{
 					field:  "Timestamp",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -12173,7 +12172,7 @@ func (m *CreateAssetProbeRequest_BaseProbe) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, CreateAssetProbeRequest_BaseProbeValidationError{
+				errors = append(errors, CreateAssetProbeRequest_ProbeValidationError{
 					field:  "Timestamp",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -12182,7 +12181,7 @@ func (m *CreateAssetProbeRequest_BaseProbe) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetTimestamp()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return CreateAssetProbeRequest_BaseProbeValidationError{
+			return CreateAssetProbeRequest_ProbeValidationError{
 				field:  "Timestamp",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -12191,20 +12190,19 @@ func (m *CreateAssetProbeRequest_BaseProbe) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return CreateAssetProbeRequest_BaseProbeMultiError(errors)
+		return CreateAssetProbeRequest_ProbeMultiError(errors)
 	}
 
 	return nil
 }
 
-// CreateAssetProbeRequest_BaseProbeMultiError is an error wrapping multiple
-// validation errors returned by
-// CreateAssetProbeRequest_BaseProbe.ValidateAll() if the designated
-// constraints aren't met.
-type CreateAssetProbeRequest_BaseProbeMultiError []error
+// CreateAssetProbeRequest_ProbeMultiError is an error wrapping multiple
+// validation errors returned by CreateAssetProbeRequest_Probe.ValidateAll()
+// if the designated constraints aren't met.
+type CreateAssetProbeRequest_ProbeMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m CreateAssetProbeRequest_BaseProbeMultiError) Error() string {
+func (m CreateAssetProbeRequest_ProbeMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -12213,12 +12211,12 @@ func (m CreateAssetProbeRequest_BaseProbeMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m CreateAssetProbeRequest_BaseProbeMultiError) AllErrors() []error { return m }
+func (m CreateAssetProbeRequest_ProbeMultiError) AllErrors() []error { return m }
 
-// CreateAssetProbeRequest_BaseProbeValidationError is the validation error
-// returned by CreateAssetProbeRequest_BaseProbe.Validate if the designated
+// CreateAssetProbeRequest_ProbeValidationError is the validation error
+// returned by CreateAssetProbeRequest_Probe.Validate if the designated
 // constraints aren't met.
-type CreateAssetProbeRequest_BaseProbeValidationError struct {
+type CreateAssetProbeRequest_ProbeValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -12226,24 +12224,24 @@ type CreateAssetProbeRequest_BaseProbeValidationError struct {
 }
 
 // Field function returns field value.
-func (e CreateAssetProbeRequest_BaseProbeValidationError) Field() string { return e.field }
+func (e CreateAssetProbeRequest_ProbeValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e CreateAssetProbeRequest_BaseProbeValidationError) Reason() string { return e.reason }
+func (e CreateAssetProbeRequest_ProbeValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e CreateAssetProbeRequest_BaseProbeValidationError) Cause() error { return e.cause }
+func (e CreateAssetProbeRequest_ProbeValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e CreateAssetProbeRequest_BaseProbeValidationError) Key() bool { return e.key }
+func (e CreateAssetProbeRequest_ProbeValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e CreateAssetProbeRequest_BaseProbeValidationError) ErrorName() string {
-	return "CreateAssetProbeRequest_BaseProbeValidationError"
+func (e CreateAssetProbeRequest_ProbeValidationError) ErrorName() string {
+	return "CreateAssetProbeRequest_ProbeValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e CreateAssetProbeRequest_BaseProbeValidationError) Error() string {
+func (e CreateAssetProbeRequest_ProbeValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -12255,14 +12253,14 @@ func (e CreateAssetProbeRequest_BaseProbeValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sCreateAssetProbeRequest_BaseProbe.%s: %s%s",
+		"invalid %sCreateAssetProbeRequest_Probe.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = CreateAssetProbeRequest_BaseProbeValidationError{}
+var _ error = CreateAssetProbeRequest_ProbeValidationError{}
 
 var _ interface {
 	Field() string
@@ -12270,4 +12268,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = CreateAssetProbeRequest_BaseProbeValidationError{}
+} = CreateAssetProbeRequest_ProbeValidationError{}

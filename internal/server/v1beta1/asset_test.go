@@ -902,7 +902,7 @@ func TestCreateAssetProbe(t *testing.T) {
 			ExpectStatus: codes.InvalidArgument,
 			Request: &compassv1beta1.CreateAssetProbeRequest{
 				AssetUrn: assetURN,
-				Probe:    &compassv1beta1.CreateAssetProbeRequest_BaseProbe{},
+				Probe:    &compassv1beta1.CreateAssetProbeRequest_Probe{},
 			},
 		},
 		{
@@ -910,7 +910,7 @@ func TestCreateAssetProbe(t *testing.T) {
 			ExpectStatus: codes.NotFound,
 			Request: &compassv1beta1.CreateAssetProbeRequest{
 				AssetUrn: assetURN,
-				Probe: &compassv1beta1.CreateAssetProbeRequest_BaseProbe{
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
 					Status: "RUNNING",
 				},
 			},
@@ -925,7 +925,7 @@ func TestCreateAssetProbe(t *testing.T) {
 			ExpectStatus: codes.Internal,
 			Request: &compassv1beta1.CreateAssetProbeRequest{
 				AssetUrn: assetURN,
-				Probe: &compassv1beta1.CreateAssetProbeRequest_BaseProbe{
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
 					Status: "RUNNING",
 				},
 			},
@@ -940,7 +940,7 @@ func TestCreateAssetProbe(t *testing.T) {
 			ExpectStatus: codes.OK,
 			Request: &compassv1beta1.CreateAssetProbeRequest{
 				AssetUrn: assetURN,
-				Probe: &compassv1beta1.CreateAssetProbeRequest_BaseProbe{
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
 					Status:       "FINISHED",
 					StatusReason: "test reason",
 					Timestamp:    timestamppb.New(now),
