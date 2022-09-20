@@ -232,10 +232,13 @@ func (server *APIServer) UpsertAsset(ctx context.Context, req *compassv1beta1.Up
 		req.GetUpstreams(),
 		req.GetDownstreams(),
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	return &compassv1beta1.UpsertAssetResponse{
 		Id: assetID,
-	}, err
+	}, nil
 }
 
 func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1beta1.UpsertPatchAssetRequest) (*compassv1beta1.UpsertPatchAssetResponse, error) {
@@ -270,10 +273,13 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1bet
 		req.GetUpstreams(),
 		req.GetDownstreams(),
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	return &compassv1beta1.UpsertPatchAssetResponse{
 		Id: assetID,
-	}, err
+	}, nil
 }
 
 func (server *APIServer) DeleteAsset(ctx context.Context, req *compassv1beta1.DeleteAssetRequest) (*compassv1beta1.DeleteAssetResponse, error) {
