@@ -5445,6 +5445,252 @@ var _ interface {
 	ErrorName() string
 } = GetAssetByVersionResponseValidationError{}
 
+// Validate checks the field values on CreateAssetProbeRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreateAssetProbeRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateAssetProbeRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CreateAssetProbeRequestMultiError, or nil if none found.
+func (m *CreateAssetProbeRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateAssetProbeRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetAssetUrn()) < 1 {
+		err := CreateAssetProbeRequestValidationError{
+			field:  "AssetUrn",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetProbe()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateAssetProbeRequestValidationError{
+					field:  "Probe",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateAssetProbeRequestValidationError{
+					field:  "Probe",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetProbe()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateAssetProbeRequestValidationError{
+				field:  "Probe",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CreateAssetProbeRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateAssetProbeRequestMultiError is an error wrapping multiple validation
+// errors returned by CreateAssetProbeRequest.ValidateAll() if the designated
+// constraints aren't met.
+type CreateAssetProbeRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateAssetProbeRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateAssetProbeRequestMultiError) AllErrors() []error { return m }
+
+// CreateAssetProbeRequestValidationError is the validation error returned by
+// CreateAssetProbeRequest.Validate if the designated constraints aren't met.
+type CreateAssetProbeRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateAssetProbeRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateAssetProbeRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateAssetProbeRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateAssetProbeRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateAssetProbeRequestValidationError) ErrorName() string {
+	return "CreateAssetProbeRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateAssetProbeRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateAssetProbeRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateAssetProbeRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateAssetProbeRequestValidationError{}
+
+// Validate checks the field values on CreateAssetProbeResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreateAssetProbeResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateAssetProbeResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CreateAssetProbeResponseMultiError, or nil if none found.
+func (m *CreateAssetProbeResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateAssetProbeResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	if len(errors) > 0 {
+		return CreateAssetProbeResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateAssetProbeResponseMultiError is an error wrapping multiple validation
+// errors returned by CreateAssetProbeResponse.ValidateAll() if the designated
+// constraints aren't met.
+type CreateAssetProbeResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateAssetProbeResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateAssetProbeResponseMultiError) AllErrors() []error { return m }
+
+// CreateAssetProbeResponseValidationError is the validation error returned by
+// CreateAssetProbeResponse.Validate if the designated constraints aren't met.
+type CreateAssetProbeResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateAssetProbeResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateAssetProbeResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateAssetProbeResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateAssetProbeResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateAssetProbeResponseValidationError) ErrorName() string {
+	return "CreateAssetProbeResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateAssetProbeResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateAssetProbeResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateAssetProbeResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateAssetProbeResponseValidationError{}
+
 // Validate checks the field values on GetUserStarredAssetsRequest with the
 // rules defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -11476,22 +11722,22 @@ var _ interface {
 	ErrorName() string
 } = TypeValidationError{}
 
-// Validate checks the field values on UpsertAssetRequest_BaseAsset with the
-// rules defined in the proto definition for this message. If any rules are
+// Validate checks the field values on UpsertAssetRequest_Asset with the rules
+// defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UpsertAssetRequest_BaseAsset) Validate() error {
+func (m *UpsertAssetRequest_Asset) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on UpsertAssetRequest_BaseAsset with the
+// ValidateAll checks the field values on UpsertAssetRequest_Asset with the
 // rules defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// UpsertAssetRequest_BaseAssetMultiError, or nil if none found.
-func (m *UpsertAssetRequest_BaseAsset) ValidateAll() error {
+// UpsertAssetRequest_AssetMultiError, or nil if none found.
+func (m *UpsertAssetRequest_Asset) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *UpsertAssetRequest_BaseAsset) validate(all bool) error {
+func (m *UpsertAssetRequest_Asset) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -11512,7 +11758,7 @@ func (m *UpsertAssetRequest_BaseAsset) validate(all bool) error {
 		switch v := interface{}(m.GetData()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, UpsertAssetRequest_BaseAssetValidationError{
+				errors = append(errors, UpsertAssetRequest_AssetValidationError{
 					field:  "Data",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -11520,7 +11766,7 @@ func (m *UpsertAssetRequest_BaseAsset) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, UpsertAssetRequest_BaseAssetValidationError{
+				errors = append(errors, UpsertAssetRequest_AssetValidationError{
 					field:  "Data",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -11529,7 +11775,7 @@ func (m *UpsertAssetRequest_BaseAsset) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetData()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return UpsertAssetRequest_BaseAssetValidationError{
+			return UpsertAssetRequest_AssetValidationError{
 				field:  "Data",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -11546,7 +11792,7 @@ func (m *UpsertAssetRequest_BaseAsset) validate(all bool) error {
 			switch v := interface{}(item).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, UpsertAssetRequest_BaseAssetValidationError{
+					errors = append(errors, UpsertAssetRequest_AssetValidationError{
 						field:  fmt.Sprintf("Owners[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -11554,7 +11800,7 @@ func (m *UpsertAssetRequest_BaseAsset) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, UpsertAssetRequest_BaseAssetValidationError{
+					errors = append(errors, UpsertAssetRequest_AssetValidationError{
 						field:  fmt.Sprintf("Owners[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -11563,7 +11809,7 @@ func (m *UpsertAssetRequest_BaseAsset) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return UpsertAssetRequest_BaseAssetValidationError{
+				return UpsertAssetRequest_AssetValidationError{
 					field:  fmt.Sprintf("Owners[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -11576,19 +11822,19 @@ func (m *UpsertAssetRequest_BaseAsset) validate(all bool) error {
 	// no validation rules for Url
 
 	if len(errors) > 0 {
-		return UpsertAssetRequest_BaseAssetMultiError(errors)
+		return UpsertAssetRequest_AssetMultiError(errors)
 	}
 
 	return nil
 }
 
-// UpsertAssetRequest_BaseAssetMultiError is an error wrapping multiple
-// validation errors returned by UpsertAssetRequest_BaseAsset.ValidateAll() if
-// the designated constraints aren't met.
-type UpsertAssetRequest_BaseAssetMultiError []error
+// UpsertAssetRequest_AssetMultiError is an error wrapping multiple validation
+// errors returned by UpsertAssetRequest_Asset.ValidateAll() if the designated
+// constraints aren't met.
+type UpsertAssetRequest_AssetMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m UpsertAssetRequest_BaseAssetMultiError) Error() string {
+func (m UpsertAssetRequest_AssetMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -11597,12 +11843,11 @@ func (m UpsertAssetRequest_BaseAssetMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m UpsertAssetRequest_BaseAssetMultiError) AllErrors() []error { return m }
+func (m UpsertAssetRequest_AssetMultiError) AllErrors() []error { return m }
 
-// UpsertAssetRequest_BaseAssetValidationError is the validation error returned
-// by UpsertAssetRequest_BaseAsset.Validate if the designated constraints
-// aren't met.
-type UpsertAssetRequest_BaseAssetValidationError struct {
+// UpsertAssetRequest_AssetValidationError is the validation error returned by
+// UpsertAssetRequest_Asset.Validate if the designated constraints aren't met.
+type UpsertAssetRequest_AssetValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -11610,24 +11855,24 @@ type UpsertAssetRequest_BaseAssetValidationError struct {
 }
 
 // Field function returns field value.
-func (e UpsertAssetRequest_BaseAssetValidationError) Field() string { return e.field }
+func (e UpsertAssetRequest_AssetValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e UpsertAssetRequest_BaseAssetValidationError) Reason() string { return e.reason }
+func (e UpsertAssetRequest_AssetValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e UpsertAssetRequest_BaseAssetValidationError) Cause() error { return e.cause }
+func (e UpsertAssetRequest_AssetValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e UpsertAssetRequest_BaseAssetValidationError) Key() bool { return e.key }
+func (e UpsertAssetRequest_AssetValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e UpsertAssetRequest_BaseAssetValidationError) ErrorName() string {
-	return "UpsertAssetRequest_BaseAssetValidationError"
+func (e UpsertAssetRequest_AssetValidationError) ErrorName() string {
+	return "UpsertAssetRequest_AssetValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e UpsertAssetRequest_BaseAssetValidationError) Error() string {
+func (e UpsertAssetRequest_AssetValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -11639,14 +11884,14 @@ func (e UpsertAssetRequest_BaseAssetValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sUpsertAssetRequest_BaseAsset.%s: %s%s",
+		"invalid %sUpsertAssetRequest_Asset.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = UpsertAssetRequest_BaseAssetValidationError{}
+var _ error = UpsertAssetRequest_AssetValidationError{}
 
 var _ interface {
 	Field() string
@@ -11654,25 +11899,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = UpsertAssetRequest_BaseAssetValidationError{}
+} = UpsertAssetRequest_AssetValidationError{}
 
-// Validate checks the field values on UpsertPatchAssetRequest_BaseAsset with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the first error encountered is returned, or nil if there are
-// no violations.
-func (m *UpsertPatchAssetRequest_BaseAsset) Validate() error {
+// Validate checks the field values on UpsertPatchAssetRequest_Asset with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpsertPatchAssetRequest_Asset) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on UpsertPatchAssetRequest_BaseAsset
-// with the rules defined in the proto definition for this message. If any
-// rules are violated, the result is a list of violation errors wrapped in
-// UpsertPatchAssetRequest_BaseAssetMultiError, or nil if none found.
-func (m *UpsertPatchAssetRequest_BaseAsset) ValidateAll() error {
+// ValidateAll checks the field values on UpsertPatchAssetRequest_Asset with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// UpsertPatchAssetRequest_AssetMultiError, or nil if none found.
+func (m *UpsertPatchAssetRequest_Asset) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *UpsertPatchAssetRequest_BaseAsset) validate(all bool) error {
+func (m *UpsertPatchAssetRequest_Asset) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -11705,7 +11949,7 @@ func (m *UpsertPatchAssetRequest_BaseAsset) validate(all bool) error {
 		switch v := interface{}(m.GetData()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, UpsertPatchAssetRequest_BaseAssetValidationError{
+				errors = append(errors, UpsertPatchAssetRequest_AssetValidationError{
 					field:  "Data",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -11713,7 +11957,7 @@ func (m *UpsertPatchAssetRequest_BaseAsset) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, UpsertPatchAssetRequest_BaseAssetValidationError{
+				errors = append(errors, UpsertPatchAssetRequest_AssetValidationError{
 					field:  "Data",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -11722,7 +11966,7 @@ func (m *UpsertPatchAssetRequest_BaseAsset) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetData()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return UpsertPatchAssetRequest_BaseAssetValidationError{
+			return UpsertPatchAssetRequest_AssetValidationError{
 				field:  "Data",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -11739,7 +11983,7 @@ func (m *UpsertPatchAssetRequest_BaseAsset) validate(all bool) error {
 			switch v := interface{}(item).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, UpsertPatchAssetRequest_BaseAssetValidationError{
+					errors = append(errors, UpsertPatchAssetRequest_AssetValidationError{
 						field:  fmt.Sprintf("Owners[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -11747,7 +11991,7 @@ func (m *UpsertPatchAssetRequest_BaseAsset) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, UpsertPatchAssetRequest_BaseAssetValidationError{
+					errors = append(errors, UpsertPatchAssetRequest_AssetValidationError{
 						field:  fmt.Sprintf("Owners[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -11756,7 +12000,7 @@ func (m *UpsertPatchAssetRequest_BaseAsset) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return UpsertPatchAssetRequest_BaseAssetValidationError{
+				return UpsertPatchAssetRequest_AssetValidationError{
 					field:  fmt.Sprintf("Owners[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -11769,20 +12013,19 @@ func (m *UpsertPatchAssetRequest_BaseAsset) validate(all bool) error {
 	// no validation rules for Url
 
 	if len(errors) > 0 {
-		return UpsertPatchAssetRequest_BaseAssetMultiError(errors)
+		return UpsertPatchAssetRequest_AssetMultiError(errors)
 	}
 
 	return nil
 }
 
-// UpsertPatchAssetRequest_BaseAssetMultiError is an error wrapping multiple
-// validation errors returned by
-// UpsertPatchAssetRequest_BaseAsset.ValidateAll() if the designated
-// constraints aren't met.
-type UpsertPatchAssetRequest_BaseAssetMultiError []error
+// UpsertPatchAssetRequest_AssetMultiError is an error wrapping multiple
+// validation errors returned by UpsertPatchAssetRequest_Asset.ValidateAll()
+// if the designated constraints aren't met.
+type UpsertPatchAssetRequest_AssetMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m UpsertPatchAssetRequest_BaseAssetMultiError) Error() string {
+func (m UpsertPatchAssetRequest_AssetMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -11791,12 +12034,12 @@ func (m UpsertPatchAssetRequest_BaseAssetMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m UpsertPatchAssetRequest_BaseAssetMultiError) AllErrors() []error { return m }
+func (m UpsertPatchAssetRequest_AssetMultiError) AllErrors() []error { return m }
 
-// UpsertPatchAssetRequest_BaseAssetValidationError is the validation error
-// returned by UpsertPatchAssetRequest_BaseAsset.Validate if the designated
+// UpsertPatchAssetRequest_AssetValidationError is the validation error
+// returned by UpsertPatchAssetRequest_Asset.Validate if the designated
 // constraints aren't met.
-type UpsertPatchAssetRequest_BaseAssetValidationError struct {
+type UpsertPatchAssetRequest_AssetValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -11804,24 +12047,24 @@ type UpsertPatchAssetRequest_BaseAssetValidationError struct {
 }
 
 // Field function returns field value.
-func (e UpsertPatchAssetRequest_BaseAssetValidationError) Field() string { return e.field }
+func (e UpsertPatchAssetRequest_AssetValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e UpsertPatchAssetRequest_BaseAssetValidationError) Reason() string { return e.reason }
+func (e UpsertPatchAssetRequest_AssetValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e UpsertPatchAssetRequest_BaseAssetValidationError) Cause() error { return e.cause }
+func (e UpsertPatchAssetRequest_AssetValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e UpsertPatchAssetRequest_BaseAssetValidationError) Key() bool { return e.key }
+func (e UpsertPatchAssetRequest_AssetValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e UpsertPatchAssetRequest_BaseAssetValidationError) ErrorName() string {
-	return "UpsertPatchAssetRequest_BaseAssetValidationError"
+func (e UpsertPatchAssetRequest_AssetValidationError) ErrorName() string {
+	return "UpsertPatchAssetRequest_AssetValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e UpsertPatchAssetRequest_BaseAssetValidationError) Error() string {
+func (e UpsertPatchAssetRequest_AssetValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -11833,14 +12076,14 @@ func (e UpsertPatchAssetRequest_BaseAssetValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sUpsertPatchAssetRequest_BaseAsset.%s: %s%s",
+		"invalid %sUpsertPatchAssetRequest_Asset.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = UpsertPatchAssetRequest_BaseAssetValidationError{}
+var _ error = UpsertPatchAssetRequest_AssetValidationError{}
 
 var _ interface {
 	Field() string
@@ -11848,4 +12091,178 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = UpsertPatchAssetRequest_BaseAssetValidationError{}
+} = UpsertPatchAssetRequest_AssetValidationError{}
+
+// Validate checks the field values on CreateAssetProbeRequest_Probe with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreateAssetProbeRequest_Probe) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateAssetProbeRequest_Probe with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// CreateAssetProbeRequest_ProbeMultiError, or nil if none found.
+func (m *CreateAssetProbeRequest_Probe) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateAssetProbeRequest_Probe) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetStatus()) < 1 {
+		err := CreateAssetProbeRequest_ProbeValidationError{
+			field:  "Status",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for StatusReason
+
+	if all {
+		switch v := interface{}(m.GetMetadata()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateAssetProbeRequest_ProbeValidationError{
+					field:  "Metadata",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateAssetProbeRequest_ProbeValidationError{
+					field:  "Metadata",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetMetadata()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateAssetProbeRequest_ProbeValidationError{
+				field:  "Metadata",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetTimestamp()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateAssetProbeRequest_ProbeValidationError{
+					field:  "Timestamp",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateAssetProbeRequest_ProbeValidationError{
+					field:  "Timestamp",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTimestamp()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateAssetProbeRequest_ProbeValidationError{
+				field:  "Timestamp",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CreateAssetProbeRequest_ProbeMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateAssetProbeRequest_ProbeMultiError is an error wrapping multiple
+// validation errors returned by CreateAssetProbeRequest_Probe.ValidateAll()
+// if the designated constraints aren't met.
+type CreateAssetProbeRequest_ProbeMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateAssetProbeRequest_ProbeMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateAssetProbeRequest_ProbeMultiError) AllErrors() []error { return m }
+
+// CreateAssetProbeRequest_ProbeValidationError is the validation error
+// returned by CreateAssetProbeRequest_Probe.Validate if the designated
+// constraints aren't met.
+type CreateAssetProbeRequest_ProbeValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateAssetProbeRequest_ProbeValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateAssetProbeRequest_ProbeValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateAssetProbeRequest_ProbeValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateAssetProbeRequest_ProbeValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateAssetProbeRequest_ProbeValidationError) ErrorName() string {
+	return "CreateAssetProbeRequest_ProbeValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateAssetProbeRequest_ProbeValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateAssetProbeRequest_Probe.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateAssetProbeRequest_ProbeValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateAssetProbeRequest_ProbeValidationError{}

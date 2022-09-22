@@ -286,7 +286,7 @@ func TestUpsertAsset(t *testing.T) {
 		userUUID     = uuid.NewString()
 		assetID      = uuid.NewString()
 		validPayload = &compassv1beta1.UpsertAssetRequest{
-			Asset: &compassv1beta1.UpsertAssetRequest_BaseAsset{
+			Asset: &compassv1beta1.UpsertAssetRequest_Asset{
 				Urn:     "test dagger",
 				Type:    "table",
 				Name:    "new-name",
@@ -331,13 +331,13 @@ func TestUpsertAsset(t *testing.T) {
 		},
 		{
 			Description:  "empty asset will return invalid argument",
-			Request:      &compassv1beta1.UpsertAssetRequest{Asset: &compassv1beta1.UpsertAssetRequest_BaseAsset{}},
+			Request:      &compassv1beta1.UpsertAssetRequest{Asset: &compassv1beta1.UpsertAssetRequest_Asset{}},
 			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "empty urn will return invalid argument",
 			Request: &compassv1beta1.UpsertAssetRequest{
-				Asset: &compassv1beta1.UpsertAssetRequest_BaseAsset{
+				Asset: &compassv1beta1.UpsertAssetRequest_Asset{
 					Urn:     "",
 					Name:    "some-name",
 					Data:    &structpb.Struct{},
@@ -350,7 +350,7 @@ func TestUpsertAsset(t *testing.T) {
 		{
 			Description: "empty service will return invalid argument",
 			Request: &compassv1beta1.UpsertAssetRequest{
-				Asset: &compassv1beta1.UpsertAssetRequest_BaseAsset{
+				Asset: &compassv1beta1.UpsertAssetRequest_Asset{
 					Urn:     "some-urn",
 					Name:    "some-name",
 					Data:    &structpb.Struct{},
@@ -363,7 +363,7 @@ func TestUpsertAsset(t *testing.T) {
 		{
 			Description: "empty type will return invalid argument",
 			Request: &compassv1beta1.UpsertAssetRequest{
-				Asset: &compassv1beta1.UpsertAssetRequest_BaseAsset{
+				Asset: &compassv1beta1.UpsertAssetRequest_Asset{
 					Urn:     "some-urn",
 					Name:    "some-name",
 					Data:    &structpb.Struct{},
@@ -376,7 +376,7 @@ func TestUpsertAsset(t *testing.T) {
 		{
 			Description: "invalid type will return invalid argument",
 			Request: &compassv1beta1.UpsertAssetRequest{
-				Asset: &compassv1beta1.UpsertAssetRequest_BaseAsset{
+				Asset: &compassv1beta1.UpsertAssetRequest_Asset{
 					Urn:     "some-urn",
 					Name:    "some-name",
 					Data:    &structpb.Struct{},
@@ -479,7 +479,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 		userUUID     = uuid.NewString()
 		assetID      = uuid.NewString()
 		validPayload = &compassv1beta1.UpsertPatchAssetRequest{
-			Asset: &compassv1beta1.UpsertPatchAssetRequest_BaseAsset{
+			Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
 				Urn:     "test dagger",
 				Type:    "table",
 				Name:    wrapperspb.String("new-name"),
@@ -533,13 +533,13 @@ func TestUpsertPatchAsset(t *testing.T) {
 		},
 		{
 			Description:  "empty asset will return invalid argument",
-			Request:      &compassv1beta1.UpsertPatchAssetRequest{Asset: &compassv1beta1.UpsertPatchAssetRequest_BaseAsset{}},
+			Request:      &compassv1beta1.UpsertPatchAssetRequest{Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{}},
 			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "empty urn will return invalid argument",
 			Request: &compassv1beta1.UpsertPatchAssetRequest{
-				Asset: &compassv1beta1.UpsertPatchAssetRequest_BaseAsset{
+				Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
 					Urn:     "",
 					Name:    wrapperspb.String("some-name"),
 					Data:    &structpb.Struct{},
@@ -552,7 +552,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 		{
 			Description: "empty service will return invalid argument",
 			Request: &compassv1beta1.UpsertPatchAssetRequest{
-				Asset: &compassv1beta1.UpsertPatchAssetRequest_BaseAsset{
+				Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
 					Urn:     "some-urn",
 					Name:    wrapperspb.String("some-name"),
 					Data:    &structpb.Struct{},
@@ -565,7 +565,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 		{
 			Description: "empty type will return invalid argument",
 			Request: &compassv1beta1.UpsertPatchAssetRequest{
-				Asset: &compassv1beta1.UpsertPatchAssetRequest_BaseAsset{
+				Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
 					Urn:     "some-urn",
 					Name:    wrapperspb.String("some-name"),
 					Data:    &structpb.Struct{},
@@ -578,7 +578,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 		{
 			Description: "invalid type will return invalid argument",
 			Request: &compassv1beta1.UpsertPatchAssetRequest{
-				Asset: &compassv1beta1.UpsertPatchAssetRequest_BaseAsset{
+				Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
 					Urn:     "some-urn",
 					Name:    wrapperspb.String("some-name"),
 					Data:    &structpb.Struct{},

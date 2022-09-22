@@ -45,6 +45,7 @@ type CompassServiceClient interface {
 	GetAssetStargazers(ctx context.Context, in *GetAssetStargazersRequest, opts ...grpc.CallOption) (*GetAssetStargazersResponse, error)
 	GetAssetVersionHistory(ctx context.Context, in *GetAssetVersionHistoryRequest, opts ...grpc.CallOption) (*GetAssetVersionHistoryResponse, error)
 	GetAssetByVersion(ctx context.Context, in *GetAssetByVersionRequest, opts ...grpc.CallOption) (*GetAssetByVersionResponse, error)
+	CreateAssetProbe(ctx context.Context, in *CreateAssetProbeRequest, opts ...grpc.CallOption) (*CreateAssetProbeResponse, error)
 	// Domain: User * Star
 	GetUserStarredAssets(ctx context.Context, in *GetUserStarredAssetsRequest, opts ...grpc.CallOption) (*GetUserStarredAssetsResponse, error)
 	GetMyStarredAssets(ctx context.Context, in *GetMyStarredAssetsRequest, opts ...grpc.CallOption) (*GetMyStarredAssetsResponse, error)
@@ -262,6 +263,15 @@ func (c *compassServiceClient) GetAssetByVersion(ctx context.Context, in *GetAss
 	return out, nil
 }
 
+func (c *compassServiceClient) CreateAssetProbe(ctx context.Context, in *CreateAssetProbeRequest, opts ...grpc.CallOption) (*CreateAssetProbeResponse, error) {
+	out := new(CreateAssetProbeResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/CreateAssetProbe", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *compassServiceClient) GetUserStarredAssets(ctx context.Context, in *GetUserStarredAssetsRequest, opts ...grpc.CallOption) (*GetUserStarredAssetsResponse, error) {
 	out := new(GetUserStarredAssetsResponse)
 	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetUserStarredAssets", in, out, opts...)
@@ -433,6 +443,7 @@ type CompassServiceServer interface {
 	GetAssetStargazers(context.Context, *GetAssetStargazersRequest) (*GetAssetStargazersResponse, error)
 	GetAssetVersionHistory(context.Context, *GetAssetVersionHistoryRequest) (*GetAssetVersionHistoryResponse, error)
 	GetAssetByVersion(context.Context, *GetAssetByVersionRequest) (*GetAssetByVersionResponse, error)
+	CreateAssetProbe(context.Context, *CreateAssetProbeRequest) (*CreateAssetProbeResponse, error)
 	// Domain: User * Star
 	GetUserStarredAssets(context.Context, *GetUserStarredAssetsRequest) (*GetUserStarredAssetsResponse, error)
 	GetMyStarredAssets(context.Context, *GetMyStarredAssetsRequest) (*GetMyStarredAssetsResponse, error)
@@ -520,6 +531,9 @@ func (UnimplementedCompassServiceServer) GetAssetVersionHistory(context.Context,
 }
 func (UnimplementedCompassServiceServer) GetAssetByVersion(context.Context, *GetAssetByVersionRequest) (*GetAssetByVersionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAssetByVersion not implemented")
+}
+func (UnimplementedCompassServiceServer) CreateAssetProbe(context.Context, *CreateAssetProbeRequest) (*CreateAssetProbeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateAssetProbe not implemented")
 }
 func (UnimplementedCompassServiceServer) GetUserStarredAssets(context.Context, *GetUserStarredAssetsRequest) (*GetUserStarredAssetsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserStarredAssets not implemented")
@@ -960,6 +974,24 @@ func _CompassService_GetAssetByVersion_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CompassService_CreateAssetProbe_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateAssetProbeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).CreateAssetProbe(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/CreateAssetProbe",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).CreateAssetProbe(ctx, req.(*CreateAssetProbeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CompassService_GetUserStarredAssets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetUserStarredAssetsRequest)
 	if err := dec(in); err != nil {
@@ -1338,6 +1370,10 @@ var CompassService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAssetByVersion",
 			Handler:    _CompassService_GetAssetByVersion_Handler,
+		},
+		{
+			MethodName: "CreateAssetProbe",
+			Handler:    _CompassService_CreateAssetProbe_Handler,
 		},
 		{
 			MethodName: "GetUserStarredAssets",
