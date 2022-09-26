@@ -97,6 +97,44 @@ paths:
         type: boolean
       tags:
       - Asset
+    put:
+      summary: Update/Create an asset
+      description: Upsert will update an asset or create a new one if it does not
+        exist yet
+      operationId: CompassService_UpsertAsset
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/UpsertAssetResponse'
+        "400":
+          description: Returned when the data that user input is wrong.
+          schema:
+            $ref: '#/definitions/Status'
+        "404":
+          description: Returned when the resource does not exist.
+          schema:
+            $ref: '#/definitions/Status'
+        "409":
+          description: Returned when the resource already exist.
+          schema:
+            $ref: '#/definitions/Status'
+        "500":
+          description: Returned when theres is something wrong on the server side.
+          schema:
+            $ref: '#/definitions/Status'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/Status'
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/UpsertAssetRequest'
+      tags:
+      - Asset
     patch:
       summary: Patch/Create an asset
       description: Similar to Upsert but with patch strategy and different body format
@@ -132,6 +170,48 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/UpsertPatchAssetRequest'
+      tags:
+      - Asset
+  /v1beta1/assets/{asset_urn}/probes:
+    post:
+      summary: Create asset's probe
+      description: Add a new probe to an asset
+      operationId: CompassService_CreateAssetProbe
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/CreateAssetProbeResponse'
+        "400":
+          description: Returned when the data that user input is wrong.
+          schema:
+            $ref: '#/definitions/Status'
+        "404":
+          description: Returned when the resource does not exist.
+          schema:
+            $ref: '#/definitions/Status'
+        "409":
+          description: Returned when the resource already exist.
+          schema:
+            $ref: '#/definitions/Status'
+        "500":
+          description: Returned when theres is something wrong on the server side.
+          schema:
+            $ref: '#/definitions/Status'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/Status'
+      parameters:
+      - name: asset_urn
+        in: path
+        required: true
+        type: string
+      - name: probe
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Probe'
       tags:
       - Asset
   /v1beta1/assets/{id}:
@@ -1678,70 +1758,6 @@ definitions:
       '@type':
         type: string
     additionalProperties: {}
-  Asset:
-    type: object
-    properties:
-      id:
-        type: string
-      urn:
-        type: string
-      type:
-        type: string
-      service:
-        type: string
-      name:
-        type: string
-      description:
-        type: string
-      data:
-        type: object
-      labels:
-        type: object
-      owners:
-        type: array
-        items:
-          $ref: '#/definitions/User'
-      version:
-        type: string
-      updated_by:
-        $ref: '#/definitions/User'
-      changelog:
-        type: array
-        items:
-          $ref: '#/definitions/Change'
-      created_at:
-        type: string
-        format: date-time
-      updated_at:
-        type: string
-        format: date-time
-    title: Asset
-  BaseAsset:
-    type: object
-    properties:
-      urn:
-        type: string
-      type:
-        type: string
-      name:
-        type: string
-        description: name of an asset
-      service:
-        type: string
-      description:
-        type: string
-        description: description of an asset
-      data:
-        type: object
-        description: dynamic data of an asset
-      labels:
-        type: object
-        description: labels of an asset
-      owners:
-        type: array
-        items:
-          $ref: '#/definitions/User'
-        description: list of owners of the asset
   Change:
     type: object
     properties:
@@ -1776,6 +1792,11 @@ definitions:
         type: string
         format: date-time
     title: Comment
+  CreateAssetProbeResponse:
+    type: object
+    properties:
+      id:
+        type: string
   CreateCommentResponse:
     type: object
     properties:
@@ -1912,7 +1933,7 @@ definitions:
       data:
         type: array
         items:
-          $ref: '#/definitions/Asset'
+          $ref: '#/definitions/v1beta1.Asset'
       total:
         type: integer
         format: int64
@@ -1955,12 +1976,12 @@ definitions:
     type: object
     properties:
       data:
-        $ref: '#/definitions/Asset'
+        $ref: '#/definitions/v1beta1.Asset'
   GetAssetByVersionResponse:
     type: object
     properties:
       data:
-        $ref: '#/definitions/Asset'
+        $ref: '#/definitions/v1beta1.Asset'
   GetAssetStargazersResponse:
     type: object
     properties:
@@ -1974,7 +1995,7 @@ definitions:
       data:
         type: array
         items:
-          $ref: '#/definitions/Asset'
+          $ref: '#/definitions/v1beta1.Asset'
   GetCommentResponse:
     type: object
     properties:
@@ -2003,14 +2024,14 @@ definitions:
     type: object
     properties:
       data:
-        $ref: '#/definitions/Asset'
+        $ref: '#/definitions/v1beta1.Asset'
   GetMyStarredAssetsResponse:
     type: object
     properties:
       data:
         type: array
         items:
-          $ref: '#/definitions/Asset'
+          $ref: '#/definitions/v1beta1.Asset'
   GetTagByAssetAndTemplateResponse:
     type: object
     properties:
@@ -2027,7 +2048,7 @@ definitions:
       data:
         type: array
         items:
-          $ref: '#/definitions/Asset'
+          $ref: '#/definitions/v1beta1.Asset'
   LineageEdge:
     type: object
     properties:
@@ -2062,13 +2083,29 @@ definitions:
        - NULL_VALUE: Null value.
   PatchDiscussionResponse:
     type: object
+  Probe:
+    type: object
+    properties:
+      status:
+        type: string
+        required:
+        - status
+      status_reason:
+        type: string
+      metadata:
+        type: object
+      timestamp:
+        type: string
+        format: date-time
+    required:
+    - status
   SearchAssetsResponse:
     type: object
     properties:
       data:
         type: array
         items:
-          $ref: '#/definitions/Asset'
+          $ref: '#/definitions/v1beta1.Asset'
   StarAssetResponse:
     type: object
     properties:
@@ -2183,11 +2220,11 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/TagTemplate'
-  UpsertPatchAssetRequest:
+  UpsertAssetRequest:
     type: object
     properties:
       asset:
-        $ref: '#/definitions/BaseAsset'
+        $ref: '#/definitions/UpsertAssetRequest.Asset'
       upstreams:
         type: array
         items:
@@ -2196,6 +2233,82 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/LineageNode'
+  UpsertAssetRequest.Asset:
+    type: object
+    properties:
+      urn:
+        type: string
+      type:
+        type: string
+      name:
+        type: string
+      service:
+        type: string
+      description:
+        type: string
+      data:
+        type: object
+        description: dynamic data of an asset
+      labels:
+        type: object
+        additionalProperties:
+          type: string
+        description: labels of an asset
+      owners:
+        type: array
+        items:
+          $ref: '#/definitions/User'
+        description: list of owners of the asset
+      url:
+        type: string
+  UpsertAssetResponse:
+    type: object
+    properties:
+      id:
+        type: string
+  UpsertPatchAssetRequest:
+    type: object
+    properties:
+      asset:
+        $ref: '#/definitions/UpsertPatchAssetRequest.Asset'
+      upstreams:
+        type: array
+        items:
+          $ref: '#/definitions/LineageNode'
+      downstreams:
+        type: array
+        items:
+          $ref: '#/definitions/LineageNode'
+  UpsertPatchAssetRequest.Asset:
+    type: object
+    properties:
+      urn:
+        type: string
+      type:
+        type: string
+      name:
+        type: string
+        description: name of an asset
+      service:
+        type: string
+      description:
+        type: string
+        description: description of an asset
+      data:
+        type: object
+        description: dynamic data of an asset
+      labels:
+        type: object
+        additionalProperties:
+          type: string
+        description: labels of an asset
+      owners:
+        type: array
+        items:
+          $ref: '#/definitions/User'
+        description: list of owners of the asset
+      url:
+        type: string
   UpsertPatchAssetResponse:
     type: object
     properties:
@@ -2219,6 +2332,48 @@ definitions:
         type: string
         format: date-time
     title: User
+  v1beta1.Asset:
+    type: object
+    properties:
+      id:
+        type: string
+      urn:
+        type: string
+      type:
+        type: string
+      service:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      data:
+        type: object
+      labels:
+        type: object
+        additionalProperties:
+          type: string
+      owners:
+        type: array
+        items:
+          $ref: '#/definitions/User'
+      version:
+        type: string
+      updated_by:
+        $ref: '#/definitions/User'
+      changelog:
+        type: array
+        items:
+          $ref: '#/definitions/Change'
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      url:
+        type: string
+    title: Asset
   v1beta1.Tag:
     type: object
     properties:

@@ -37,7 +37,7 @@ func (s *Service) GetAllAssets(ctx context.Context, flt Filter, withTotal bool) 
 	return assets, totalCount, nil
 }
 
-func (s *Service) UpsertPatchAsset(ctx context.Context, ast *Asset, upstreams, downstreams []LineageNode) (string, error) {
+func (s *Service) UpsertAsset(ctx context.Context, ast *Asset, upstreams, downstreams []LineageNode) (string, error) {
 	var assetID string
 	var err error
 

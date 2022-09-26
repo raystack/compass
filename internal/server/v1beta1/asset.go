@@ -29,7 +29,7 @@ type AssetService interface {
 	GetAssetByID(ctx context.Context, id string) (asset.Asset, error)
 	GetAssetByVersion(ctx context.Context, id string, version string) (asset.Asset, error)
 	GetAssetVersionHistory(ctx context.Context, flt asset.Filter, id string) ([]asset.Asset, error)
-	UpsertPatchAsset(context.Context, *asset.Asset, []asset.LineageNode, []asset.LineageNode) (string, error)
+	UpsertAsset(context.Context, *asset.Asset, []asset.LineageNode, []asset.LineageNode) (string, error)
 	DeleteAsset(context.Context, string) error
 
 	GetLineage(ctx context.Context, node asset.LineageNode, query asset.LineageQuery) (asset.LineageGraph, error)
@@ -211,6 +211,36 @@ func (server *APIServer) GetAssetByVersion(ctx context.Context, req *compassv1be
 	}, nil
 }
 
+func (server *APIServer) UpsertAsset(ctx context.Context, req *compassv1beta1.UpsertAssetRequest) (*compassv1beta1.UpsertAssetResponse, error) {
+	userID, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	baseAsset := req.GetAsset()
+	if baseAsset == nil {
+		return nil, status.Error(codes.InvalidArgument, "asset cannot be empty")
+	}
+
+	ast := server.buildAsset(baseAsset)
+	ast.UpdatedBy.ID = userID
+
+	assetID, err := server.upsertAsset(
+		ctx,
+		ast,
+		"asset_upsert",
+		req.GetUpstreams(),
+		req.GetDownstreams(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &compassv1beta1.UpsertAssetResponse{
+		Id: assetID,
+	}, nil
+}
+
 func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1beta1.UpsertPatchAssetRequest) (*compassv1beta1.UpsertPatchAssetResponse, error) {
 	userID, err := server.validateUserInCtx(ctx)
 	if err != nil {
@@ -234,40 +264,18 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1bet
 
 	patchAssetMap := decodePatchAssetToMap(baseAsset)
 	ast.Patch(patchAssetMap)
-
-	if err := server.validateAsset(ast); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
 	ast.UpdatedBy.ID = userID
-	upstreams := []asset.LineageNode{}
-	for _, pb := range req.GetUpstreams() {
-		upstreams = append(upstreams, lineageNodeFromProto(pb))
-	}
-	downstreams := []asset.LineageNode{}
-	for _, pb := range req.GetDownstreams() {
-		downstreams = append(downstreams, lineageNodeFromProto(pb))
-	}
 
-	assetID, err := server.assetService.UpsertPatchAsset(ctx, &ast, upstreams, downstreams)
+	assetID, err := server.upsertAsset(
+		ctx,
+		ast,
+		"asset_upsert_patch",
+		req.GetUpstreams(),
+		req.GetDownstreams(),
+	)
 	if err != nil {
-		if errors.As(err, new(asset.InvalidError)) {
-			return nil, status.Error(codes.InvalidArgument, err.Error())
-		}
-		if errors.As(err, new(asset.DiscoveryError)) {
-			server.sendStatsDCounterMetric("discovery_error",
-				map[string]string{
-					"method": "upsert",
-				})
-		}
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, err
 	}
-
-	server.sendStatsDCounterMetric("asset_upsert",
-		map[string]string{
-			"type":    ast.Type.String(),
-			"service": ast.Service,
-		})
 
 	return &compassv1beta1.UpsertPatchAssetResponse{
 		Id: assetID,
@@ -299,6 +307,73 @@ func (server *APIServer) DeleteAsset(ctx context.Context, req *compassv1beta1.De
 	return &compassv1beta1.DeleteAssetResponse{}, nil
 }
 
+func (server *APIServer) upsertAsset(
+	ctx context.Context,
+	ast asset.Asset,
+	mode string,
+	reqUpstreams,
+	reqDownstreams []*compassv1beta1.LineageNode,
+) (assetID string, err error) {
+	if err := server.validateAsset(ast); err != nil {
+		return "", status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	upstreams := []asset.LineageNode{}
+	for _, pb := range reqUpstreams {
+		upstreams = append(upstreams, lineageNodeFromProto(pb))
+	}
+	downstreams := []asset.LineageNode{}
+	for _, pb := range reqDownstreams {
+		downstreams = append(downstreams, lineageNodeFromProto(pb))
+	}
+
+	assetID, err = server.assetService.UpsertAsset(ctx, &ast, upstreams, downstreams)
+	if errors.As(err, new(asset.InvalidError)) {
+		return "", status.Error(codes.InvalidArgument, err.Error())
+	} else if err != nil {
+		if errors.As(err, new(asset.DiscoveryError)) {
+			server.sendStatsDCounterMetric("discovery_error",
+				map[string]string{
+					"method": mode,
+				})
+		}
+		return "", internalServerError(server.logger, err.Error())
+	}
+
+	server.sendStatsDCounterMetric(mode,
+		map[string]string{
+			"type":    ast.Type.String(),
+			"service": ast.Service,
+		})
+
+	return
+}
+
+func (server *APIServer) buildAsset(baseAsset *compassv1beta1.UpsertAssetRequest_Asset) asset.Asset {
+	ast := asset.Asset{
+		URN:         baseAsset.GetUrn(),
+		Service:     baseAsset.GetService(),
+		Type:        asset.Type(baseAsset.GetType()),
+		Name:        baseAsset.GetName(),
+		Description: baseAsset.GetDescription(),
+		Data:        baseAsset.GetData().AsMap(),
+		Labels:      baseAsset.GetLabels(),
+	}
+
+	var owners []user.User
+	for _, owner := range baseAsset.GetOwners() {
+		owners = append(owners, user.User{
+			ID:       owner.Id,
+			UUID:     owner.Uuid,
+			Email:    owner.Email,
+			Provider: owner.Provider,
+		})
+	}
+	ast.Owners = owners
+
+	return ast
+}
+
 func (server *APIServer) validateAsset(ast asset.Asset) error {
 	if ast.URN == "" {
 		return fmt.Errorf("urn is required")
@@ -322,7 +397,7 @@ func (server *APIServer) validateAsset(ast asset.Asset) error {
 	return nil
 }
 
-func (server *APIServer) validatePatchAsset(ast *compassv1beta1.UpsertPatchAssetRequest_BaseAsset) (urn string, err error) {
+func (server *APIServer) validatePatchAsset(ast *compassv1beta1.UpsertPatchAssetRequest_Asset) (urn string, err error) {
 	if urn = ast.GetUrn(); urn == "" {
 		return "", fmt.Errorf("urn is required and can't be empty")
 	}
@@ -343,7 +418,7 @@ func (server *APIServer) validatePatchAsset(ast *compassv1beta1.UpsertPatchAsset
 	return urn, nil
 }
 
-func decodePatchAssetToMap(pb *compassv1beta1.UpsertPatchAssetRequest_BaseAsset) map[string]interface{} {
+func decodePatchAssetToMap(pb *compassv1beta1.UpsertPatchAssetRequest_Asset) map[string]interface{} {
 	if pb == nil {
 		return nil
 	}
@@ -361,7 +436,7 @@ func decodePatchAssetToMap(pb *compassv1beta1.UpsertPatchAssetRequest_BaseAsset)
 		m["data"] = pb.GetData().AsMap()
 	}
 	if pb.GetLabels() != nil {
-		m["labels"] = pb.GetLabels().AsMap()
+		m["labels"] = pb.GetLabels()
 	}
 	if len(pb.GetOwners()) > 0 {
 		ownersMap := []map[string]interface{}{}
@@ -398,18 +473,6 @@ func assetToProto(a asset.Asset, withChangelog bool) (assetPB *compassv1beta1.As
 		}
 	}
 
-	var labels *structpb.Struct
-	if len(a.Labels) > 0 {
-		labelsMapInterface := make(map[string]interface{}, len(a.Labels))
-		for k, v := range a.Labels {
-			labelsMapInterface[k] = v
-		}
-		labels, err = structpb.NewStruct(labelsMapInterface)
-		if err != nil {
-			return
-		}
-	}
-
 	owners := []*compassv1beta1.User{}
 	for _, o := range a.Owners {
 		owners = append(owners, userToProto(o))
@@ -441,7 +504,7 @@ func assetToProto(a asset.Asset, withChangelog bool) (assetPB *compassv1beta1.As
 		Name:        a.Name,
 		Description: a.Description,
 		Data:        data,
-		Labels:      labels,
+		Labels:      a.Labels,
 		Owners:      owners,
 		Version:     a.Version,
 		UpdatedBy:   userToProto(a.UpdatedBy),
@@ -498,16 +561,6 @@ func assetFromProto(pb *compassv1beta1.Asset) asset.Asset {
 		assetOwners = append(assetOwners, userFromProto(op))
 	}
 
-	var labels map[string]string
-	if pb.GetLabels() != nil {
-		labels = make(map[string]string)
-		for key, value := range pb.GetLabels().AsMap() {
-			strKey := fmt.Sprintf("%v", key)
-			strValue := fmt.Sprintf("%v", value)
-			labels[strKey] = strValue
-		}
-	}
-
 	var dataValue map[string]interface{}
 	if pb.GetData() != nil {
 		dataValue = pb.GetData().AsMap()
@@ -546,7 +599,7 @@ func assetFromProto(pb *compassv1beta1.Asset) asset.Asset {
 		Name:        pb.GetName(),
 		Description: pb.GetDescription(),
 		Data:        dataValue,
-		Labels:      labels,
+		Labels:      pb.GetLabels(),
 		Owners:      assetOwners,
 		CreatedAt:   createdAt,
 		UpdatedAt:   updatedAt,
