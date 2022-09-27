@@ -578,6 +578,65 @@ func TestService_GetLineage(t *testing.T) {
 	}
 }
 
+func TestService_SearchSuggestAssets(t *testing.T) {
+	assetID := "some-id"
+	type testCase struct {
+		Description string
+		ID          string
+		ErrSearch   error
+		ErrSuggest  error
+		Setup       func(context.Context, *mocks.DiscoveryRepository)
+	}
+
+	DisErr := asset.DiscoveryError{Err: errors.New("could not find")}
+
+	searchResults := []asset.SearchResult{}
+	var testCases = []testCase{
+		{
+			Description: `should return error if the GetGraph function return error`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, dr *mocks.DiscoveryRepository) {
+				dr.EXPECT().Search(ctx, asset.SearchConfig{}).Return(searchResults, DisErr)
+				dr.EXPECT().Suggest(ctx, asset.SearchConfig{}).Return([]string{}, DisErr)
+			},
+			ErrSearch:  DisErr,
+			ErrSuggest: DisErr,
+		},
+		{
+			Description: `should return no error if search and suggest function work`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, dr *mocks.DiscoveryRepository) {
+				dr.EXPECT().Search(ctx, asset.SearchConfig{}).Return(searchResults, nil)
+				dr.EXPECT().Suggest(ctx, asset.SearchConfig{}).Return([]string{}, nil)
+			},
+			ErrSearch:  nil,
+			ErrSuggest: nil,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockAssetRepo := mocks.NewAssetRepository(t)
+			mockDiscoveryRepo := mocks.NewDiscoveryRepository(t)
+			mockLineageRepo := mocks.NewLineageRepository(t)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockDiscoveryRepo)
+			}
+
+			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+			_, err := svc.SearchAssets(ctx, asset.SearchConfig{})
+			if err != nil && !assert.Equal(t, tc.ErrSearch, err) {
+				t.Fatalf("got error %v, expected error was %v", err, tc.ErrSearch)
+			}
+			_, err = svc.SuggestAssets(ctx, asset.SearchConfig{})
+			if err != nil && !assert.Equal(t, tc.ErrSuggest.Error(), err.Error()) {
+				t.Fatalf("got error %v, expected error was %v", err, tc.ErrSuggest)
+			}
+		})
+	}
+}
+
 func TestService_CreateAssetProbe(t *testing.T) {
 	var (
 		ctx      = context.Background()
@@ -590,7 +649,6 @@ func TestService_CreateAssetProbe(t *testing.T) {
 	t.Run("should return no error on success", func(t *testing.T) {
 		mockAssetRepo := mocks.NewAssetRepository(t)
 		mockAssetRepo.EXPECT().AddProbe(ctx, assetURN, &probe).Return(nil)
-		defer mockAssetRepo.AssertExpectations(t)
 
 		svc := asset.NewService(mockAssetRepo, nil, nil)
 		err := svc.AddProbe(ctx, assetURN, &probe)
@@ -602,7 +660,6 @@ func TestService_CreateAssetProbe(t *testing.T) {
 
 		mockAssetRepo := mocks.NewAssetRepository(t)
 		mockAssetRepo.EXPECT().AddProbe(ctx, assetURN, &probe).Return(expectedErr)
-		defer mockAssetRepo.AssertExpectations(t)
 
 		svc := asset.NewService(mockAssetRepo, nil, nil)
 		err := svc.AddProbe(ctx, assetURN, &probe)

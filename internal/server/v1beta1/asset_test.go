@@ -980,13 +980,11 @@ func TestCreateAssetProbe(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
-			mockUserSvc := new(mocks.UserService)
-			mockAssetSvc := new(mocks.AssetService)
+			mockUserSvc := mocks.NewUserService(t)
+			mockAssetSvc := mocks.NewAssetService(t)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetSvc)
 			}
-			defer mockUserSvc.AssertExpectations(t)
-			defer mockAssetSvc.AssertExpectations(t)
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
