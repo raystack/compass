@@ -195,8 +195,30 @@ func TestGetAssetByID(t *testing.T) {
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
 		assetID  = uuid.NewString()
+		now      = time.Now()
 		ast      = asset.Asset{
 			ID: assetID,
+			Probes: []asset.Probe{
+				{
+					ID:           uuid.NewString(),
+					AssetURN:     assetID,
+					Status:       "RUNNING",
+					StatusReason: "reason-1",
+					Metadata: map[string]interface{}{
+						"foo": "bar",
+					},
+					Timestamp: now,
+					CreatedAt: now.Add(-24 * time.Hour),
+				},
+				{
+					ID:           uuid.NewString(),
+					AssetURN:     assetID,
+					Status:       "FAILED",
+					StatusReason: "reason-2",
+					Timestamp:    now.Add(2 * time.Hour),
+					CreatedAt:    now.Add(-26 * time.Hour),
+				},
+			},
 		}
 	)
 
@@ -239,10 +261,29 @@ func TestGetAssetByID(t *testing.T) {
 				expected := &compassv1beta1.GetAssetByIDResponse{
 					Data: &compassv1beta1.Asset{
 						Id: assetID,
+						Probes: []*compassv1beta1.Probe{
+							{
+								Id:           ast.Probes[0].ID,
+								AssetUrn:     ast.Probes[0].AssetURN,
+								Status:       ast.Probes[0].Status,
+								StatusReason: ast.Probes[0].StatusReason,
+								Metadata:     newStructpb(t, ast.Probes[0].Metadata),
+								Timestamp:    timestamppb.New(ast.Probes[0].Timestamp),
+								CreatedAt:    timestamppb.New(ast.Probes[0].CreatedAt),
+							},
+							{
+								Id:           ast.Probes[1].ID,
+								AssetUrn:     ast.Probes[1].AssetURN,
+								Status:       ast.Probes[1].Status,
+								StatusReason: ast.Probes[1].StatusReason,
+								Timestamp:    timestamppb.New(ast.Probes[1].Timestamp),
+								CreatedAt:    timestamppb.New(ast.Probes[1].CreatedAt),
+							},
+						},
 					},
 				}
 				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
-					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
+					return fmt.Errorf("mismatch (-want +got):\n%s", diff)
 				}
 				return nil
 			},
@@ -253,13 +294,11 @@ func TestGetAssetByID(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
-			mockUserSvc := new(mocks.UserService)
-			mockAssetSvc := new(mocks.AssetService)
+			mockUserSvc := mocks.NewUserService(t)
+			mockAssetSvc := mocks.NewAssetService(t)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetSvc)
 			}
-			defer mockUserSvc.AssertExpectations(t)
-			defer mockAssetSvc.AssertExpectations(t)
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 

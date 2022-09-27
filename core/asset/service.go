@@ -2,6 +2,7 @@ package asset
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -80,12 +81,25 @@ func (s *Service) DeleteAsset(ctx context.Context, id string) error {
 	return s.discoveryRepository.DeleteByURN(ctx, id)
 }
 
-func (s *Service) GetAssetByID(ctx context.Context, id string) (Asset, error) {
+func (s *Service) GetAssetByID(ctx context.Context, id string) (ast Asset, err error) {
 	if isValidUUID(id) {
-		return s.assetRepository.GetByID(ctx, id)
+		if ast, err = s.assetRepository.GetByID(ctx, id); err != nil {
+			return ast, fmt.Errorf("error when getting asset by id: %w", err)
+		}
+	} else {
+		if ast, err = s.assetRepository.GetByURN(ctx, id); err != nil {
+			return ast, fmt.Errorf("error when getting asset by urn: %w", err)
+		}
 	}
 
-	return s.assetRepository.GetByURN(ctx, id)
+	probes, err := s.assetRepository.GetProbes(ctx, ast.URN)
+	if err != nil {
+		return ast, fmt.Errorf("error when getting probes: %w", err)
+	}
+
+	ast.Probes = probes
+
+	return
 }
 
 func (s *Service) GetAssetByVersion(ctx context.Context, id string, version string) (Asset, error) {

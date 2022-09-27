@@ -451,6 +451,15 @@ func assetToProto(a asset.Asset, withChangelog bool) (assetPB *compassv1beta1.As
 		updatedAtPB = timestamppb.New(a.UpdatedAt)
 	}
 
+	var probes []*compassv1beta1.Probe
+	for _, probe := range a.Probes {
+		probeProto, err := probeToProto(probe)
+		if err != nil {
+			return assetPB, fmt.Errorf("error converting probe to proto: %w", err)
+		}
+		probes = append(probes, probeProto)
+	}
+
 	assetPB = &compassv1beta1.Asset{
 		Id:          a.ID,
 		Urn:         a.URN,
@@ -466,8 +475,32 @@ func assetToProto(a asset.Asset, withChangelog bool) (assetPB *compassv1beta1.As
 		Changelog:   changelogProto,
 		CreatedAt:   createdAtPB,
 		UpdatedAt:   updatedAtPB,
+		Probes:      probes,
 	}
 	return
+}
+
+// probeToProto transforms asset.Probe struct to proto
+func probeToProto(probe asset.Probe) (*compassv1beta1.Probe, error) {
+	res := &compassv1beta1.Probe{
+		Id:           probe.ID,
+		AssetUrn:     probe.AssetURN,
+		Status:       probe.Status,
+		StatusReason: probe.StatusReason,
+		Timestamp:    timestamppb.New(probe.Timestamp),
+		CreatedAt:    timestamppb.New(probe.CreatedAt),
+	}
+
+	if probe.Metadata != nil {
+		m, err := structpb.NewStruct(probe.Metadata)
+		if err != nil {
+			return nil, fmt.Errorf("error creating probe metadata: %w", err)
+		}
+
+		res.Metadata = m
+	}
+
+	return res, nil
 }
 
 // changelogToProto transforms changelog struct to proto

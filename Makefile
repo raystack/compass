@@ -39,7 +39,7 @@ proto: ## Generate the protobuf files
 install: ## install required dependencies
 	@echo "> installing dependencies"
 	go mod tidy
-	go install github.com/vektra/mockery/v2@v2.12.2
+	go install github.com/vektra/mockery/v2@v2.14.0
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.0
 	go get google.golang.org/protobuf/proto@v1.28.0
 	go get google.golang.org/grpc@v1.46.0
