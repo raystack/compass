@@ -271,7 +271,7 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1bet
 	assetID, err := server.upsertAsset(
 		ctx,
 		ast,
-		"asset_patch_upsert",
+		"asset_upsert_patch",
 		req.GetUpstreams(),
 		req.GetDownstreams(),
 	)
