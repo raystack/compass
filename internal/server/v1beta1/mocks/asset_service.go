@@ -485,8 +485,8 @@ func (_c *AssetService_SuggestAssets_Call) Return(suggestions []string, err erro
 	return _c
 }
 
-// UpsertPatchAsset provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *AssetService) UpsertPatchAsset(_a0 context.Context, _a1 *asset.Asset, _a2 []asset.LineageNode, _a3 []asset.LineageNode) (string, error) {
+// UpsertAsset provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *AssetService) UpsertAsset(_a0 context.Context, _a1 *asset.Asset, _a2 []asset.LineageNode, _a3 []asset.LineageNode) (string, error) {
 	ret := _m.Called(_a0, _a1, _a2, _a3)
 
 	var r0 string
@@ -506,28 +506,28 @@ func (_m *AssetService) UpsertPatchAsset(_a0 context.Context, _a1 *asset.Asset, 
 	return r0, r1
 }
 
-// AssetService_UpsertPatchAsset_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpsertPatchAsset'
-type AssetService_UpsertPatchAsset_Call struct {
+// AssetService_UpsertAsset_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpsertAsset'
+type AssetService_UpsertAsset_Call struct {
 	*mock.Call
 }
 
-// UpsertPatchAsset is a helper method to define mock.On call
+// UpsertAsset is a helper method to define mock.On call
 //  - _a0 context.Context
 //  - _a1 *asset.Asset
 //  - _a2 []asset.LineageNode
 //  - _a3 []asset.LineageNode
-func (_e *AssetService_Expecter) UpsertPatchAsset(_a0 interface{}, _a1 interface{}, _a2 interface{}, _a3 interface{}) *AssetService_UpsertPatchAsset_Call {
-	return &AssetService_UpsertPatchAsset_Call{Call: _e.mock.On("UpsertPatchAsset", _a0, _a1, _a2, _a3)}
+func (_e *AssetService_Expecter) UpsertAsset(_a0 interface{}, _a1 interface{}, _a2 interface{}, _a3 interface{}) *AssetService_UpsertAsset_Call {
+	return &AssetService_UpsertAsset_Call{Call: _e.mock.On("UpsertAsset", _a0, _a1, _a2, _a3)}
 }
 
-func (_c *AssetService_UpsertPatchAsset_Call) Run(run func(_a0 context.Context, _a1 *asset.Asset, _a2 []asset.LineageNode, _a3 []asset.LineageNode)) *AssetService_UpsertPatchAsset_Call {
+func (_c *AssetService_UpsertAsset_Call) Run(run func(_a0 context.Context, _a1 *asset.Asset, _a2 []asset.LineageNode, _a3 []asset.LineageNode)) *AssetService_UpsertAsset_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(*asset.Asset), args[2].([]asset.LineageNode), args[3].([]asset.LineageNode))
 	})
 	return _c
 }
 
-func (_c *AssetService_UpsertPatchAsset_Call) Return(_a0 string, _a1 error) *AssetService_UpsertPatchAsset_Call {
+func (_c *AssetService_UpsertAsset_Call) Return(_a0 string, _a1 error) *AssetService_UpsertAsset_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
