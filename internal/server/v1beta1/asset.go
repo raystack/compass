@@ -352,7 +352,7 @@ func (server *APIServer) validateAsset(ast asset.Asset) error {
 	return nil
 }
 
-func (server *APIServer) validatePatchAsset(ast *compassv1beta1.UpsertPatchAssetRequest_BaseAsset) (urn string, err error) {
+func (server *APIServer) validatePatchAsset(ast *compassv1beta1.UpsertPatchAssetRequest_Asset) (urn string, err error) {
 	if urn = ast.GetUrn(); urn == "" {
 		return "", fmt.Errorf("urn is required and can't be empty")
 	}
@@ -373,7 +373,7 @@ func (server *APIServer) validatePatchAsset(ast *compassv1beta1.UpsertPatchAsset
 	return urn, nil
 }
 
-func decodePatchAssetToMap(pb *compassv1beta1.UpsertPatchAssetRequest_BaseAsset) map[string]interface{} {
+func decodePatchAssetToMap(pb *compassv1beta1.UpsertPatchAssetRequest_Asset) map[string]interface{} {
 	if pb == nil {
 		return nil
 	}

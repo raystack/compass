@@ -211,7 +211,7 @@ paths:
         in: body
         required: true
         schema:
-          $ref: '#/definitions/Probe'
+          $ref: '#/definitions/CreateAssetProbeRequest.Probe'
       tags:
       - Asset
   /v1beta1/assets/{id}:
@@ -1758,48 +1758,6 @@ definitions:
       '@type':
         type: string
     additionalProperties: {}
-  Asset:
-    type: object
-    properties:
-      id:
-        type: string
-      urn:
-        type: string
-      type:
-        type: string
-      service:
-        type: string
-      name:
-        type: string
-      description:
-        type: string
-      data:
-        type: object
-      labels:
-        type: object
-        additionalProperties:
-          type: string
-      owners:
-        type: array
-        items:
-          $ref: '#/definitions/User'
-      version:
-        type: string
-      updated_by:
-        $ref: '#/definitions/User'
-      changelog:
-        type: array
-        items:
-          $ref: '#/definitions/Change'
-      created_at:
-        type: string
-        format: date-time
-      updated_at:
-        type: string
-        format: date-time
-      url:
-        type: string
-    title: Asset
   Change:
     type: object
     properties:
@@ -1834,6 +1792,22 @@ definitions:
         type: string
         format: date-time
     title: Comment
+  CreateAssetProbeRequest.Probe:
+    type: object
+    properties:
+      status:
+        type: string
+        required:
+        - status
+      status_reason:
+        type: string
+      metadata:
+        type: object
+      timestamp:
+        type: string
+        format: date-time
+    required:
+    - status
   CreateAssetProbeResponse:
     type: object
     properties:
@@ -1975,7 +1949,7 @@ definitions:
       data:
         type: array
         items:
-          $ref: '#/definitions/Asset'
+          $ref: '#/definitions/v1beta1.Asset'
       total:
         type: integer
         format: int64
@@ -2018,12 +1992,12 @@ definitions:
     type: object
     properties:
       data:
-        $ref: '#/definitions/Asset'
+        $ref: '#/definitions/v1beta1.Asset'
   GetAssetByVersionResponse:
     type: object
     properties:
       data:
-        $ref: '#/definitions/Asset'
+        $ref: '#/definitions/v1beta1.Asset'
   GetAssetStargazersResponse:
     type: object
     properties:
@@ -2037,7 +2011,7 @@ definitions:
       data:
         type: array
         items:
-          $ref: '#/definitions/Asset'
+          $ref: '#/definitions/v1beta1.Asset'
   GetCommentResponse:
     type: object
     properties:
@@ -2066,14 +2040,14 @@ definitions:
     type: object
     properties:
       data:
-        $ref: '#/definitions/Asset'
+        $ref: '#/definitions/v1beta1.Asset'
   GetMyStarredAssetsResponse:
     type: object
     properties:
       data:
         type: array
         items:
-          $ref: '#/definitions/Asset'
+          $ref: '#/definitions/v1beta1.Asset'
   GetTagByAssetAndTemplateResponse:
     type: object
     properties:
@@ -2090,7 +2064,7 @@ definitions:
       data:
         type: array
         items:
-          $ref: '#/definitions/Asset'
+          $ref: '#/definitions/v1beta1.Asset'
   LineageEdge:
     type: object
     properties:
@@ -2125,29 +2099,13 @@ definitions:
        - NULL_VALUE: Null value.
   PatchDiscussionResponse:
     type: object
-  Probe:
-    type: object
-    properties:
-      status:
-        type: string
-        required:
-        - status
-      status_reason:
-        type: string
-      metadata:
-        type: object
-      timestamp:
-        type: string
-        format: date-time
-    required:
-    - status
   SearchAssetsResponse:
     type: object
     properties:
       data:
         type: array
         items:
-          $ref: '#/definitions/Asset'
+          $ref: '#/definitions/v1beta1.Asset'
   StarAssetResponse:
     type: object
     properties:
@@ -2266,7 +2224,7 @@ definitions:
     type: object
     properties:
       asset:
-        $ref: '#/definitions/UpsertAssetRequest.BaseAsset'
+        $ref: '#/definitions/UpsertAssetRequest.Asset'
       upstreams:
         type: array
         items:
@@ -2275,7 +2233,7 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/LineageNode'
-  UpsertAssetRequest.BaseAsset:
+  UpsertAssetRequest.Asset:
     type: object
     properties:
       urn:
@@ -2312,7 +2270,7 @@ definitions:
     type: object
     properties:
       asset:
-        $ref: '#/definitions/UpsertPatchAssetRequest.BaseAsset'
+        $ref: '#/definitions/UpsertPatchAssetRequest.Asset'
       upstreams:
         type: array
         items:
@@ -2321,7 +2279,7 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/LineageNode'
-  UpsertPatchAssetRequest.BaseAsset:
+  UpsertPatchAssetRequest.Asset:
     type: object
     properties:
       urn:
@@ -2374,6 +2332,72 @@ definitions:
         type: string
         format: date-time
     title: User
+  v1beta1.Asset:
+    type: object
+    properties:
+      id:
+        type: string
+      urn:
+        type: string
+      type:
+        type: string
+      service:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      data:
+        type: object
+      labels:
+        type: object
+        additionalProperties:
+          type: string
+      owners:
+        type: array
+        items:
+          $ref: '#/definitions/User'
+      version:
+        type: string
+      updated_by:
+        $ref: '#/definitions/User'
+      changelog:
+        type: array
+        items:
+          $ref: '#/definitions/Change'
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      url:
+        type: string
+      probes:
+        type: array
+        items:
+          $ref: '#/definitions/v1beta1.Probe'
+    title: Asset
+  v1beta1.Probe:
+    type: object
+    properties:
+      id:
+        type: string
+      asset_urn:
+        type: string
+      status:
+        type: string
+      status_reason:
+        type: string
+      metadata:
+        type: object
+      timestamp:
+        type: string
+        format: date-time
+      created_at:
+        type: string
+        format: date-time
+    title: Probe
   v1beta1.Tag:
     type: object
     properties:
