@@ -472,6 +472,7 @@ func TestService_GetAssetByID(t *testing.T) {
 				assert.Equal(t, *tc.Expected, actual)
 			}
 			if tc.ExpectedErr != nil {
+				assert.ErrorContains(t, err, tc.ExpectedErr.Error())
 				assert.ErrorAs(t, err, &tc.ExpectedErr)
 			}
 		})
