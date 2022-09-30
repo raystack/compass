@@ -37,6 +37,8 @@ type AssetService interface {
 
 	SearchAssets(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error)
 	SuggestAssets(ctx context.Context, cfg asset.SearchConfig) (suggestions []string, err error)
+
+	AddProbe(ctx context.Context, assetURN string, probe *asset.Probe) error
 }
 
 func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.GetAllAssetsRequest) (*compassv1beta1.GetAllAssetsResponse, error) {
@@ -307,6 +309,34 @@ func (server *APIServer) DeleteAsset(ctx context.Context, req *compassv1beta1.De
 	return &compassv1beta1.DeleteAssetResponse{}, nil
 }
 
+func (server *APIServer) CreateAssetProbe(ctx context.Context, req *compassv1beta1.CreateAssetProbeRequest) (*compassv1beta1.CreateAssetProbeResponse, error) {
+	_, err := server.validateUserInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.Probe.Status == "" {
+		return nil, status.Error(codes.InvalidArgument, "Status is required")
+	}
+
+	probe := asset.Probe{
+		Status:       req.Probe.Status,
+		StatusReason: req.Probe.StatusReason,
+		Metadata:     req.Probe.Metadata.AsMap(),
+		Timestamp:    req.Probe.Timestamp.AsTime(),
+	}
+	if err := server.assetService.AddProbe(ctx, req.AssetUrn, &probe); err != nil {
+		if errors.As(err, &asset.NotFoundError{}) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &compassv1beta1.CreateAssetProbeResponse{
+		Id: probe.ID,
+	}, nil
+}
+
 func (server *APIServer) upsertAsset(
 	ctx context.Context,
 	ast asset.Asset,
@@ -496,6 +526,15 @@ func assetToProto(a asset.Asset, withChangelog bool) (assetPB *compassv1beta1.As
 		updatedAtPB = timestamppb.New(a.UpdatedAt)
 	}
 
+	var probes []*compassv1beta1.Probe
+	for _, probe := range a.Probes {
+		probeProto, err := probeToProto(probe)
+		if err != nil {
+			return assetPB, fmt.Errorf("error converting probe to proto: %w", err)
+		}
+		probes = append(probes, probeProto)
+	}
+
 	assetPB = &compassv1beta1.Asset{
 		Id:          a.ID,
 		Urn:         a.URN,
@@ -511,8 +550,32 @@ func assetToProto(a asset.Asset, withChangelog bool) (assetPB *compassv1beta1.As
 		Changelog:   changelogProto,
 		CreatedAt:   createdAtPB,
 		UpdatedAt:   updatedAtPB,
+		Probes:      probes,
 	}
 	return
+}
+
+// probeToProto transforms asset.Probe struct to proto
+func probeToProto(probe asset.Probe) (*compassv1beta1.Probe, error) {
+	res := &compassv1beta1.Probe{
+		Id:           probe.ID,
+		AssetUrn:     probe.AssetURN,
+		Status:       probe.Status,
+		StatusReason: probe.StatusReason,
+		Timestamp:    timestamppb.New(probe.Timestamp),
+		CreatedAt:    timestamppb.New(probe.CreatedAt),
+	}
+
+	if probe.Metadata != nil {
+		m, err := structpb.NewStruct(probe.Metadata)
+		if err != nil {
+			return nil, fmt.Errorf("error creating probe metadata: %w", err)
+		}
+
+		res.Metadata = m
+	}
+
+	return res, nil
 }
 
 // changelogToProto transforms changelog struct to proto

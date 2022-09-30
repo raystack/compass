@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/odpf/compass/core/asset"
@@ -359,9 +360,11 @@ func TestService_DeleteAsset(t *testing.T) {
 func TestService_GetAssetByID(t *testing.T) {
 	assetID := "f742aa61-1100-445c-8d72-355a42e2fb59"
 	urn := "my-test-urn"
+	now := time.Now().UTC()
 	type testCase struct {
 		Description string
 		ID          string
+		Expected    *asset.Asset
 		ExpectedErr error
 		Setup       func(context.Context, *mocks.AssetRepository)
 	}
@@ -406,16 +409,50 @@ func TestService_GetAssetByID(t *testing.T) {
 		{
 			Description: `with ID, should return no error if asset is found`,
 			ID:          assetID,
+			Expected: &asset.Asset{
+				ID:        assetID,
+				URN:       urn,
+				CreatedAt: now,
+				Probes: []asset.Probe{
+					{ID: "probe-1", AssetURN: urn, Status: "RUNNING", Timestamp: now},
+					{ID: "probe-2", AssetURN: urn, Status: "FAILED", Timestamp: now.Add(2 * time.Hour)},
+				},
+			},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, nil)
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{
+					ID:        assetID,
+					URN:       urn,
+					CreatedAt: now,
+				}, nil)
+				ar.EXPECT().GetProbes(ctx, urn).Return([]asset.Probe{
+					{ID: "probe-1", AssetURN: urn, Status: "RUNNING", Timestamp: now},
+					{ID: "probe-2", AssetURN: urn, Status: "FAILED", Timestamp: now.Add(2 * time.Hour)},
+				}, nil)
 			},
 			ExpectedErr: nil,
 		},
 		{
 			Description: `with URN, should return no error if asset is found`,
 			ID:          urn,
+			Expected: &asset.Asset{
+				ID:        assetID,
+				URN:       urn,
+				CreatedAt: now,
+				Probes: []asset.Probe{
+					{ID: "probe-1", AssetURN: urn, Status: "RUNNING", Timestamp: now},
+					{ID: "probe-2", AssetURN: urn, Status: "FAILED", Timestamp: now.Add(2 * time.Hour)},
+				},
+			},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetByURN(ctx, urn).Return(asset.Asset{}, nil)
+				ar.EXPECT().GetByURN(ctx, urn).Return(asset.Asset{
+					ID:        assetID,
+					URN:       urn,
+					CreatedAt: now,
+				}, nil)
+				ar.EXPECT().GetProbes(ctx, urn).Return([]asset.Probe{
+					{ID: "probe-1", AssetURN: urn, Status: "RUNNING", Timestamp: now},
+					{ID: "probe-2", AssetURN: urn, Status: "FAILED", Timestamp: now.Add(2 * time.Hour)},
+				}, nil)
 			},
 			ExpectedErr: nil,
 		},
@@ -430,9 +467,13 @@ func TestService_GetAssetByID(t *testing.T) {
 			}
 
 			svc := asset.NewService(mockAssetRepo, mocks.NewDiscoveryRepository(t), mocks.NewLineageRepository(t))
-			_, err := svc.GetAssetByID(ctx, tc.ID)
+			actual, err := svc.GetAssetByID(ctx, tc.ID)
+			if tc.Expected != nil {
+				assert.Equal(t, *tc.Expected, actual)
+			}
 			if tc.ExpectedErr != nil {
-				assert.EqualError(t, err, tc.ExpectedErr.Error())
+				assert.ErrorContains(t, err, tc.ExpectedErr.Error())
+				assert.ErrorAs(t, err, &tc.ExpectedErr)
 			}
 		})
 	}
@@ -635,4 +676,34 @@ func TestService_SearchSuggestAssets(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestService_CreateAssetProbe(t *testing.T) {
+	var (
+		ctx      = context.Background()
+		assetURN = "sample-urn"
+		probe    = asset.Probe{
+			Status: "RUNNING",
+		}
+	)
+
+	t.Run("should return no error on success", func(t *testing.T) {
+		mockAssetRepo := mocks.NewAssetRepository(t)
+		mockAssetRepo.EXPECT().AddProbe(ctx, assetURN, &probe).Return(nil)
+
+		svc := asset.NewService(mockAssetRepo, nil, nil)
+		err := svc.AddProbe(ctx, assetURN, &probe)
+		assert.NoError(t, err)
+	})
+
+	t.Run("should return error on failed", func(t *testing.T) {
+		expectedErr := errors.New("test error")
+
+		mockAssetRepo := mocks.NewAssetRepository(t)
+		mockAssetRepo.EXPECT().AddProbe(ctx, assetURN, &probe).Return(expectedErr)
+
+		svc := asset.NewService(mockAssetRepo, nil, nil)
+		err := svc.AddProbe(ctx, assetURN, &probe)
+		assert.Equal(t, expectedErr, err)
+	})
 }

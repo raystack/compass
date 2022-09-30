@@ -1204,6 +1204,159 @@ func (r *AssetRepositoryTestSuite) TestDeleteByURN() {
 	})
 }
 
+func (r *AssetRepositoryTestSuite) TestAddProbe() {
+	r.Run("return NotFoundError if asset does not exist", func() {
+		urn := "invalid-urn"
+		probe := asset.Probe{}
+		err := r.repository.AddProbe(r.ctx, urn, &probe)
+		r.ErrorAs(err, &asset.NotFoundError{URN: urn})
+	})
+
+	r.Run("should populate CreatedAt and persist probe", func() {
+		ast := asset.Asset{
+			URN:       "urn-add-probe-1",
+			Type:      asset.TypeJob,
+			Service:   "airflow",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+		probe := asset.Probe{
+			Status:       "COMPLETED",
+			StatusReason: "Sample Reason",
+			Timestamp:    time.Now().Add(2 * time.Minute),
+			Metadata: map[string]interface{}{
+				"foo": "bar",
+			},
+		}
+
+		_, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+
+		err = r.repository.AddProbe(r.ctx, ast.URN, &probe)
+		r.NoError(err)
+
+		// assert populated fields
+		r.NotEmpty(probe.ID)
+		r.Equal(ast.URN, probe.AssetURN)
+		r.False(probe.CreatedAt.IsZero())
+
+		// assert probe is persisted
+		probesFromDB, err := r.repository.GetProbes(r.ctx, ast.URN)
+		r.Require().NoError(err)
+		r.Require().Len(probesFromDB, 1)
+
+		probeFromDB := probesFromDB[0]
+		r.Equal(probe.ID, probeFromDB.ID)
+		r.Equal(probe.AssetURN, probeFromDB.AssetURN)
+		r.Equal(probe.Status, probeFromDB.Status)
+		r.Equal(probe.StatusReason, probeFromDB.StatusReason)
+		r.Equal(probe.Metadata, probeFromDB.Metadata)
+		// we use `1µs` instead of `0` for the delta due to postgres might round precision before storing
+		r.WithinDuration(probe.Timestamp, probeFromDB.Timestamp, 1*time.Microsecond)
+		r.WithinDuration(probe.CreatedAt, probeFromDB.CreatedAt, 1*time.Microsecond)
+
+		// cleanup
+		err = r.repository.DeleteByURN(r.ctx, ast.URN)
+		r.Require().NoError(err)
+	})
+
+	r.Run("should populate Timestamp if empty", func() {
+		ast := asset.Asset{
+			URN:       "urn-add-probe-2",
+			Type:      asset.TypeJob,
+			Service:   "optimus",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+		probe := asset.Probe{
+			Status: "RUNNING",
+		}
+
+		_, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+
+		err = r.repository.AddProbe(r.ctx, ast.URN, &probe)
+		r.NoError(err)
+
+		// assert populated fields
+		r.False(probe.CreatedAt.IsZero())
+		r.Equal(probe.CreatedAt, probe.Timestamp)
+
+		// assert probe is persisted
+		probesFromDB, err := r.repository.GetProbes(r.ctx, ast.URN)
+		r.Require().NoError(err)
+		r.Require().Len(probesFromDB, 1)
+
+		probeFromDB := probesFromDB[0]
+		r.Equal(probe.ID, probeFromDB.ID)
+		r.WithinDuration(probe.Timestamp, probeFromDB.Timestamp, 1*time.Microsecond)
+		r.WithinDuration(probe.CreatedAt, probeFromDB.CreatedAt, 1*time.Microsecond)
+		r.WithinDuration(probeFromDB.CreatedAt, probeFromDB.Timestamp, 1*time.Microsecond)
+
+		// cleanup
+		err = r.repository.DeleteByURN(r.ctx, ast.URN)
+		r.Require().NoError(err)
+	})
+}
+
+func (r *AssetRepositoryTestSuite) TestGetProbes() {
+	r.Run("should return list of probes by asset urn", func() {
+		ast := asset.Asset{
+			URN:       "urn-add-probe-1",
+			Type:      asset.TypeJob,
+			Service:   "airflow",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+		p1 := asset.Probe{
+			Status:    "COMPLETED",
+			Timestamp: time.Now().UTC().Add(3 * time.Minute),
+			Metadata: map[string]interface{}{
+				"foo": "bar",
+			},
+		}
+		p2 := asset.Probe{
+			Status:       "FAILED",
+			StatusReason: "sample error",
+			Metadata: map[string]interface{}{
+				"bar": "foo",
+			},
+		}
+		p3 := asset.Probe{
+			Status: "RUNNING",
+		}
+
+		_, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+
+		err = r.repository.AddProbe(r.ctx, ast.URN, &p1)
+		r.NoError(err)
+		err = r.repository.AddProbe(r.ctx, ast.URN, &p2)
+		r.NoError(err)
+		err = r.repository.AddProbe(r.ctx, ast.URN, &p3)
+		r.NoError(err)
+
+		// assert probe is persisted
+		actual, err := r.repository.GetProbes(r.ctx, ast.URN)
+		r.Require().NoError(err)
+		r.Require().Len(actual, 3)
+
+		expected := []asset.Probe{p1, p2, p3}
+		r.Equal(expected[0].ID, actual[0].ID)
+		r.Equal(expected[1].ID, actual[1].ID)
+		r.Equal(expected[2].ID, actual[2].ID)
+
+		r.Equal(expected[0].ID, actual[0].ID)
+		r.Equal(expected[0].AssetURN, actual[0].AssetURN)
+		r.Equal(expected[0].Status, actual[0].Status)
+		r.Equal(expected[0].StatusReason, actual[0].StatusReason)
+		r.Equal(expected[0].Metadata, actual[0].Metadata)
+		r.WithinDuration(expected[0].Timestamp, actual[0].Timestamp, 1*time.Microsecond)
+		r.WithinDuration(expected[0].CreatedAt, actual[0].CreatedAt, 1*time.Microsecond)
+
+		// cleanup
+		err = r.repository.DeleteByURN(r.ctx, ast.URN)
+		r.Require().NoError(err)
+	})
+}
+
 func (r *AssetRepositoryTestSuite) assertAsset(expectedAsset *asset.Asset, actualAsset *asset.Asset) bool {
 	// sanitize time to make the assets comparable
 	expectedAsset.CreatedAt = time.Time{}

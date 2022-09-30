@@ -117,6 +117,28 @@ func (a *AssetModel) buildLabels() map[string]string {
 	return result
 }
 
+type AssetProbeModel struct {
+	ID           string    `db:"id"`
+	AssetURN     string    `db:"asset_urn"`
+	Status       string    `db:"status"`
+	StatusReason string    `db:"status_reason"`
+	Metadata     JSONMap   `db:"metadata"`
+	Timestamp    time.Time `db:"timestamp"`
+	CreatedAt    time.Time `db:"created_at"`
+}
+
+func (m *AssetProbeModel) toAssetProbe() asset.Probe {
+	return asset.Probe{
+		ID:           m.ID,
+		AssetURN:     m.AssetURN,
+		Status:       m.Status,
+		StatusReason: m.StatusReason,
+		Metadata:     m.Metadata,
+		Timestamp:    m.Timestamp,
+		CreatedAt:    m.CreatedAt,
+	}
+}
+
 type JSONMap map[string]interface{}
 
 func (m JSONMap) Value() (driver.Value, error) {

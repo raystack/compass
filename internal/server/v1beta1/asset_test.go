@@ -18,6 +18,7 @@ import (
 	"github.com/odpf/salt/log"
 	"github.com/r3labs/diff/v2"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -194,8 +195,30 @@ func TestGetAssetByID(t *testing.T) {
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
 		assetID  = uuid.NewString()
+		now      = time.Now()
 		ast      = asset.Asset{
 			ID: assetID,
+			Probes: []asset.Probe{
+				{
+					ID:           uuid.NewString(),
+					AssetURN:     assetID,
+					Status:       "RUNNING",
+					StatusReason: "reason-1",
+					Metadata: map[string]interface{}{
+						"foo": "bar",
+					},
+					Timestamp: now,
+					CreatedAt: now.Add(-24 * time.Hour),
+				},
+				{
+					ID:           uuid.NewString(),
+					AssetURN:     assetID,
+					Status:       "FAILED",
+					StatusReason: "reason-2",
+					Timestamp:    now.Add(2 * time.Hour),
+					CreatedAt:    now.Add(-26 * time.Hour),
+				},
+			},
 		}
 	)
 
@@ -238,10 +261,29 @@ func TestGetAssetByID(t *testing.T) {
 				expected := &compassv1beta1.GetAssetByIDResponse{
 					Data: &compassv1beta1.Asset{
 						Id: assetID,
+						Probes: []*compassv1beta1.Probe{
+							{
+								Id:           ast.Probes[0].ID,
+								AssetUrn:     ast.Probes[0].AssetURN,
+								Status:       ast.Probes[0].Status,
+								StatusReason: ast.Probes[0].StatusReason,
+								Metadata:     newStructpb(t, ast.Probes[0].Metadata),
+								Timestamp:    timestamppb.New(ast.Probes[0].Timestamp),
+								CreatedAt:    timestamppb.New(ast.Probes[0].CreatedAt),
+							},
+							{
+								Id:           ast.Probes[1].ID,
+								AssetUrn:     ast.Probes[1].AssetURN,
+								Status:       ast.Probes[1].Status,
+								StatusReason: ast.Probes[1].StatusReason,
+								Timestamp:    timestamppb.New(ast.Probes[1].Timestamp),
+								CreatedAt:    timestamppb.New(ast.Probes[1].CreatedAt),
+							},
+						},
 					},
 				}
 				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
-					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
+					return fmt.Errorf("mismatch (-want +got):\n%s", diff)
 				}
 				return nil
 			},
@@ -252,13 +294,11 @@ func TestGetAssetByID(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
-			mockUserSvc := new(mocks.UserService)
-			mockAssetSvc := new(mocks.AssetService)
+			mockUserSvc := mocks.NewUserService(t)
+			mockAssetSvc := mocks.NewAssetService(t)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetSvc)
 			}
-			defer mockUserSvc.AssertExpectations(t)
-			defer mockAssetSvc.AssertExpectations(t)
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
@@ -1071,6 +1111,133 @@ func TestGetAssetByVersion(t *testing.T) {
 	}
 }
 
+func TestCreateAssetProbe(t *testing.T) {
+	var (
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+		assetURN = "test-urn"
+		now      = time.Now().UTC()
+		probeID  = uuid.NewString()
+	)
+
+	type testCase struct {
+		Description  string
+		Request      *compassv1beta1.CreateAssetProbeRequest
+		ExpectStatus codes.Code
+		Setup        func(context.Context, *mocks.AssetService)
+		PostCheck    func(resp *compassv1beta1.CreateAssetProbeResponse) error
+	}
+
+	var testCases = []testCase{
+		{
+			Description:  `should return error if payload is invalid`,
+			ExpectStatus: codes.InvalidArgument,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe:    &compassv1beta1.CreateAssetProbeRequest_Probe{},
+			},
+		},
+		{
+			Description:  `should return not found if asset doesn't exist`,
+			ExpectStatus: codes.NotFound,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
+					Status: "RUNNING",
+				},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				as.EXPECT().
+					AddProbe(ctx, assetURN, mock.AnythingOfType("*asset.Probe")).
+					Return(asset.NotFoundError{URN: assetURN})
+			},
+		},
+		{
+			Description:  `should return internal server error if adding probe fails`,
+			ExpectStatus: codes.Internal,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
+					Status: "RUNNING",
+				},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				as.EXPECT().
+					AddProbe(ctx, assetURN, mock.AnythingOfType("*asset.Probe")).
+					Return(errors.New("unknown error"))
+			},
+		},
+		{
+			Description:  "should return probe on success",
+			ExpectStatus: codes.OK,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
+					Status:       "FINISHED",
+					StatusReason: "test reason",
+					Timestamp:    timestamppb.New(now),
+					Metadata: newStructpb(t, map[string]interface{}{
+						"foo1": "bar1",
+						"foo2": "bar2",
+					}),
+				},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				expectedProbe := &asset.Probe{
+					Status:       "FINISHED",
+					StatusReason: "test reason",
+					Timestamp:    now,
+					Metadata: map[string]interface{}{
+						"foo1": "bar1",
+						"foo2": "bar2",
+					},
+				}
+				as.EXPECT().AddProbe(ctx, assetURN, expectedProbe).Run(func(ctx context.Context, assetURN string, probe *asset.Probe) {
+					probe.ID = probeID
+				}).Return(nil)
+			},
+			PostCheck: func(resp *compassv1beta1.CreateAssetProbeResponse) error {
+				expected := &compassv1beta1.CreateAssetProbeResponse{
+					Id: probeID,
+				}
+				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
+					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
+				}
+				return nil
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+
+			logger := log.NewNoop()
+			mockUserSvc := mocks.NewUserService(t)
+			mockAssetSvc := mocks.NewAssetService(t)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockAssetSvc)
+			}
+
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+
+			got, err := handler.CreateAssetProbe(ctx, tc.Request)
+			code := status.Code(err)
+			if code != tc.ExpectStatus {
+				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
+				return
+			}
+			if tc.PostCheck != nil {
+				if err := tc.PostCheck(got); err != nil {
+					t.Error(err)
+					return
+				}
+			}
+		})
+	}
+}
+
 func TestAssetToProto(t *testing.T) {
 	timeDummy := time.Date(2000, time.January, 7, 0, 0, 0, 0, time.UTC)
 	dataPB, err := structpb.NewStruct(map[string]interface{}{
@@ -1236,4 +1403,11 @@ func TestAssetFromProto(t *testing.T) {
 			}
 		})
 	}
+}
+
+func newStructpb(t *testing.T, v map[string]interface{}) *structpb.Struct {
+	res, err := structpb.NewStruct(v)
+	require.NoError(t, err)
+
+	return res
 }

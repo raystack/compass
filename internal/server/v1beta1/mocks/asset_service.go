@@ -25,6 +25,45 @@ func (_m *AssetService) EXPECT() *AssetService_Expecter {
 	return &AssetService_Expecter{mock: &_m.Mock}
 }
 
+// AddProbe provides a mock function with given fields: ctx, assetURN, probe
+func (_m *AssetService) AddProbe(ctx context.Context, assetURN string, probe *asset.Probe) error {
+	ret := _m.Called(ctx, assetURN, probe)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, *asset.Probe) error); ok {
+		r0 = rf(ctx, assetURN, probe)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// AssetService_AddProbe_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddProbe'
+type AssetService_AddProbe_Call struct {
+	*mock.Call
+}
+
+// AddProbe is a helper method to define mock.On call
+//  - ctx context.Context
+//  - assetURN string
+//  - probe *asset.Probe
+func (_e *AssetService_Expecter) AddProbe(ctx interface{}, assetURN interface{}, probe interface{}) *AssetService_AddProbe_Call {
+	return &AssetService_AddProbe_Call{Call: _e.mock.On("AddProbe", ctx, assetURN, probe)}
+}
+
+func (_c *AssetService_AddProbe_Call) Run(run func(ctx context.Context, assetURN string, probe *asset.Probe)) *AssetService_AddProbe_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(*asset.Probe))
+	})
+	return _c
+}
+
+func (_c *AssetService_AddProbe_Call) Return(_a0 error) *AssetService_AddProbe_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
 // DeleteAsset provides a mock function with given fields: _a0, _a1
 func (_m *AssetService) DeleteAsset(_a0 context.Context, _a1 string) error {
 	ret := _m.Called(_a0, _a1)

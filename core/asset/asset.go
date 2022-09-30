@@ -20,6 +20,8 @@ type Repository interface {
 	Upsert(ctx context.Context, ast *Asset) (string, error)
 	DeleteByID(ctx context.Context, id string) error
 	DeleteByURN(ctx context.Context, urn string) error
+	AddProbe(ctx context.Context, assetURN string, probe *Probe) error
+	GetProbes(ctx context.Context, assetURN string) ([]Probe, error)
 }
 
 // Asset is a model that wraps arbitrary data with Compass' context
@@ -38,6 +40,7 @@ type Asset struct {
 	Version     string                 `json:"version" diff:"-"`
 	UpdatedBy   user.User              `json:"updated_by" diff:"-"`
 	Changelog   diff.Changelog         `json:"changelog,omitempty" diff:"-"`
+	Probes      []Probe                `json:"probes,omitempty"`
 }
 
 // Diff returns nil changelog with nil error if equal

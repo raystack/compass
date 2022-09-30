@@ -211,7 +211,7 @@ paths:
         in: body
         required: true
         schema:
-          $ref: '#/definitions/Probe'
+          $ref: '#/definitions/CreateAssetProbeRequest.Probe'
       tags:
       - Asset
   /v1beta1/assets/{id}:
@@ -1792,6 +1792,22 @@ definitions:
         type: string
         format: date-time
     title: Comment
+  CreateAssetProbeRequest.Probe:
+    type: object
+    properties:
+      status:
+        type: string
+        required:
+        - status
+      status_reason:
+        type: string
+      metadata:
+        type: object
+      timestamp:
+        type: string
+        format: date-time
+    required:
+    - status
   CreateAssetProbeResponse:
     type: object
     properties:
@@ -2083,22 +2099,6 @@ definitions:
        - NULL_VALUE: Null value.
   PatchDiscussionResponse:
     type: object
-  Probe:
-    type: object
-    properties:
-      status:
-        type: string
-        required:
-        - status
-      status_reason:
-        type: string
-      metadata:
-        type: object
-      timestamp:
-        type: string
-        format: date-time
-    required:
-    - status
   SearchAssetsResponse:
     type: object
     properties:
@@ -2373,7 +2373,31 @@ definitions:
         format: date-time
       url:
         type: string
+      probes:
+        type: array
+        items:
+          $ref: '#/definitions/v1beta1.Probe'
     title: Asset
+  v1beta1.Probe:
+    type: object
+    properties:
+      id:
+        type: string
+      asset_urn:
+        type: string
+      status:
+        type: string
+      status_reason:
+        type: string
+      metadata:
+        type: object
+      timestamp:
+        type: string
+        format: date-time
+      created_at:
+        type: string
+        format: date-time
+    title: Probe
   v1beta1.Tag:
     type: object
     properties:

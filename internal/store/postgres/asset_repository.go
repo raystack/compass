@@ -318,6 +318,59 @@ func (r *AssetRepository) DeleteByURN(ctx context.Context, urn string) error {
 	return nil
 }
 
+func (r *AssetRepository) AddProbe(ctx context.Context, assetURN string, probe *asset.Probe) error {
+	probe.AssetURN = assetURN
+	probe.CreatedAt = time.Now().UTC()
+	if probe.Timestamp.IsZero() {
+		probe.Timestamp = probe.CreatedAt
+	} else {
+		probe.Timestamp = probe.Timestamp.UTC()
+	}
+
+	query, args, err := sq.Insert("asset_probes").
+		Columns("asset_urn", "status", "status_reason", "metadata", "timestamp", "created_at").
+		Values(assetURN, probe.Status, probe.StatusReason, probe.Metadata, probe.Timestamp, probe.CreatedAt).
+		Suffix("RETURNING \"id\"").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("error building insert asset probe query: %w", err)
+	}
+
+	err = r.client.db.QueryRowContext(ctx, query, args...).Scan(&probe.ID)
+	if errors.Is(checkPostgresError(err), errForeignKeyViolation) {
+		return asset.NotFoundError{URN: assetURN}
+	} else if err != nil {
+		return fmt.Errorf("error running insert asset probe query: %w", err)
+	}
+
+	return nil
+}
+
+func (r *AssetRepository) GetProbes(ctx context.Context, assetURN string) ([]asset.Probe, error) {
+	query, args, err := sq.Select(
+		"id", "asset_urn", "status", "status_reason", "metadata", "timestamp", "created_at",
+	).From("asset_probes").
+		OrderBy("created_at").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("error building get asset probes query: %w", err)
+	}
+
+	var models []AssetProbeModel
+	if err := r.client.db.SelectContext(ctx, &models, query, args...); err != nil {
+		return nil, fmt.Errorf("error running get asset probes query: %w", err)
+	}
+
+	results := []asset.Probe{}
+	for _, m := range models {
+		results = append(results, m.toAssetProbe())
+	}
+
+	return results, nil
+}
+
 func (r *AssetRepository) deleteWithPredicate(ctx context.Context, pred sq.Eq) (int64, error) {
 	query, args, err := r.buildSQL(sq.Delete("assets").Where(pred))
 	if err != nil {
