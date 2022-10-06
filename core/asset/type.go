@@ -1,10 +1,11 @@
 package asset
 
 const (
-	TypeTable     Type = "table"
-	TypeJob       Type = "job"
-	TypeDashboard Type = "dashboard"
-	TypeTopic     Type = "topic"
+	TypeTable        Type = "table"
+	TypeJob          Type = "job"
+	TypeDashboard    Type = "dashboard"
+	TypeTopic        Type = "topic"
+	TypeFeatureTable Type = "feature_table"
 )
 
 // AllSupportedTypes holds a list of all supported types struct
@@ -13,6 +14,7 @@ var AllSupportedTypes = []Type{
 	TypeJob,
 	TypeDashboard,
 	TypeTopic,
+	TypeFeatureTable,
 }
 
 // Type specifies a supported type name
@@ -26,7 +28,7 @@ func (t Type) String() string {
 // IsValid will validate whether the typename is valid or not
 func (t Type) IsValid() bool {
 	switch t {
-	case TypeTable, TypeJob, TypeDashboard, TypeTopic:
+	case TypeTable, TypeJob, TypeDashboard, TypeTopic, TypeFeatureTable:
 		return true
 	}
 	return false
