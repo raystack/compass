@@ -2015,6 +2015,14 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/LineageEdge'
+        description: Edges in the graph.
+      node_attrs:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/NodeAttributes'
+        description: |-
+          Key is the asset URN. Node attributes, if present, will be returned for
+          source and target nodes in the LineageEdge.
   GetMyDiscussionsResponse:
     type: object
     properties:
@@ -2071,6 +2079,11 @@ definitions:
       urn:
         type: string
     title: LineageNode
+  NodeAttributes:
+    type: object
+    properties:
+      probes:
+        $ref: '#/definitions/ProbesInfo'
   NullValue:
     type: string
     enum:
@@ -2085,6 +2098,11 @@ definitions:
        - NULL_VALUE: Null value.
   PatchDiscussionResponse:
     type: object
+  ProbesInfo:
+    type: object
+    properties:
+      latest:
+        $ref: '#/definitions/v1beta1.Probe'
   SearchAssetsResponse:
     type: object
     properties:

@@ -21,7 +21,7 @@ func (server *APIServer) GetGraph(ctx context.Context, req *compassv1beta1.GetGr
 		return nil, status.Error(codes.InvalidArgument, "invalid direction value")
 	}
 
-	graph, err := server.assetService.GetLineage(ctx, asset.LineageNode{URN: req.GetUrn()}, asset.LineageQuery{
+	graph, err := server.assetService.GetLineage(ctx, req.GetUrn(), asset.LineageQuery{
 		Level:     int(req.GetLevel()),
 		Direction: direction,
 	})
@@ -41,14 +41,6 @@ func (server *APIServer) GetGraph(ctx context.Context, req *compassv1beta1.GetGr
 	return &compassv1beta1.GetGraphResponse{
 		Data: graphPB,
 	}, nil
-}
-
-func lineageNodeFromProto(proto *compassv1beta1.LineageNode) asset.LineageNode {
-	return asset.LineageNode{
-		URN:     proto.GetUrn(),
-		Type:    asset.Type(proto.GetType()),
-		Service: proto.GetService(),
-	}
 }
 
 func lineageEdgeToProto(e asset.LineageEdge) (*compassv1beta1.LineageEdge, error) {

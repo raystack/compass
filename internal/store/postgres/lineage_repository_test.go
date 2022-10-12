@@ -51,7 +51,7 @@ func (r *LineageRepositoryTestSuite) TearDownSuite() {
 }
 
 func (r *LineageRepositoryTestSuite) TestGetGraph() {
-	rootNode := r.bigquery("test-get-graph-root-node")
+	rootNode := "test-get-graph-root-node"
 
 	// populate root node
 	// Graph:
@@ -60,42 +60,21 @@ func (r *LineageRepositoryTestSuite) TestGetGraph() {
 	//  				> optimus-tgg-1 >	rootNode > metabase-tgg-99 >
 	// table-51 																							metabase-tgg-52
 	//
-	err := r.repository.Upsert(r.ctx,
-		rootNode,
-		[]asset.LineageNode{
-			r.optimus("optimus-tgg-1"),
-		},
-		[]asset.LineageNode{
-			r.metabase("metabase-tgg-99"),
-		})
+	err := r.repository.Upsert(r.ctx, rootNode, []string{"optimus-tgg-1"}, []string{"metabase-tgg-99"})
 	r.Require().NoError(err)
 	// populate upstream's node
-	err = r.repository.Upsert(r.ctx,
-		r.optimus("optimus-tgg-1"),
-		[]asset.LineageNode{
-			r.bigquery("table-50"),
-			r.bigquery("table-51"),
-		},
-		nil,
-	)
+	err = r.repository.Upsert(r.ctx, "optimus-tgg-1", []string{"table-50", "table-51"}, nil)
 	r.Require().NoError(err)
 	// populate downstream's node
-	err = r.repository.Upsert(r.ctx,
-		r.metabase("metabase-tgg-99"),
-		nil,
-		[]asset.LineageNode{
-			r.metabase("metabase-tgg-51"),
-			r.metabase("metabase-tgg-52"),
-		},
-	)
+	err = r.repository.Upsert(r.ctx, "metabase-tgg-99", nil, []string{"metabase-tgg-51", "metabase-tgg-52"})
 	r.Require().NoError(err)
 
 	r.Run("should recursively fetch all graph", func() {
 		expected := asset.LineageGraph{
-			{Source: "optimus-tgg-1", Target: rootNode.URN},
+			{Source: "optimus-tgg-1", Target: rootNode},
 			{Source: "table-50", Target: "optimus-tgg-1"},
 			{Source: "table-51", Target: "optimus-tgg-1"},
-			{Source: rootNode.URN, Target: "metabase-tgg-99"},
+			{Source: rootNode, Target: "metabase-tgg-99"},
 			{Source: "metabase-tgg-99", Target: "metabase-tgg-51"},
 			{Source: "metabase-tgg-99", Target: "metabase-tgg-52"},
 		}
@@ -107,8 +86,8 @@ func (r *LineageRepositoryTestSuite) TestGetGraph() {
 
 	r.Run("should fetch based on the level given in config if any", func() {
 		expected := asset.LineageGraph{
-			{Source: "optimus-tgg-1", Target: rootNode.URN},
-			{Source: rootNode.URN, Target: "metabase-tgg-99"},
+			{Source: "optimus-tgg-1", Target: rootNode},
+			{Source: rootNode, Target: "metabase-tgg-99"},
 		}
 
 		graph, err := r.repository.GetGraph(r.ctx, rootNode, asset.LineageQuery{
@@ -120,7 +99,7 @@ func (r *LineageRepositoryTestSuite) TestGetGraph() {
 
 	r.Run("should fetch based on the direction given in config if any", func() {
 		expected := asset.LineageGraph{
-			{Source: rootNode.URN, Target: "metabase-tgg-99"},
+			{Source: rootNode, Target: "metabase-tgg-99"},
 			{Source: "metabase-tgg-99", Target: "metabase-tgg-51"},
 			{Source: "metabase-tgg-99", Target: "metabase-tgg-52"},
 		}
@@ -136,22 +115,12 @@ func (r *LineageRepositoryTestSuite) TestGetGraph() {
 func (r *LineageRepositoryTestSuite) TestUpsert() {
 	r.Run("should insert all as graph if upstreams and downstreams are new", func() {
 		nodeURN := "table-1"
-		node := asset.LineageNode{
-			URN:     nodeURN,
-			Type:    "table",
-			Service: "bigquery",
-		}
-		upstreams := []asset.LineageNode{
-			{URN: "job-1", Type: asset.TypeJob, Service: "optimus"},
-		}
-		downstreams := []asset.LineageNode{
-			{URN: "dashboard-1", Type: asset.TypeDashboard, Service: "metabase"},
-			{URN: "dashboard-2", Type: asset.TypeDashboard, Service: "optimus"},
-		}
-		err := r.repository.Upsert(r.ctx, node, upstreams, downstreams)
+		upstreams := []string{"job-1"}
+		downstreams := []string{"dashboard-1", "dashboard-2"}
+		err := r.repository.Upsert(r.ctx, nodeURN, upstreams, downstreams)
 		r.NoError(err)
 
-		graph, err := r.repository.GetGraph(r.ctx, node, asset.LineageQuery{})
+		graph, err := r.repository.GetGraph(r.ctx, nodeURN, asset.LineageQuery{})
 		r.Require().NoError(err)
 		r.compareGraphs(asset.LineageGraph{
 			{Source: "job-1", Target: nodeURN},
@@ -162,34 +131,16 @@ func (r *LineageRepositoryTestSuite) TestUpsert() {
 
 	r.Run("should insert or delete graph when updating existing graph", func() {
 		nodeURN := "update-table"
-		node := asset.LineageNode{
-			URN:     nodeURN,
-			Type:    "table",
-			Service: "bigquery",
-		}
 
 		// create initial
-		err := r.repository.Upsert(r.ctx, node,
-			[]asset.LineageNode{
-				{URN: "job-99", Type: asset.TypeJob, Service: "optimus"},
-			},
-			[]asset.LineageNode{
-				{URN: "dashboard-99", Type: asset.TypeDashboard, Service: "metabase"},
-			})
+		err := r.repository.Upsert(r.ctx, nodeURN, []string{"job-99"}, []string{"dashboard-99"})
 		r.NoError(err)
 
 		// update
-		err = r.repository.Upsert(r.ctx, node,
-			[]asset.LineageNode{
-				{URN: "job-99", Type: asset.TypeJob, Service: "optimus"},
-				{URN: "job-100", Type: asset.TypeJob, Service: "optimus"},
-			},
-			[]asset.LineageNode{
-				{URN: "dashboard-93", Type: asset.TypeDashboard, Service: "metabase"},
-			})
+		err = r.repository.Upsert(r.ctx, nodeURN, []string{"job-99", "job-100"}, []string{"dashboard-93"})
 		r.NoError(err)
 
-		graph, err := r.repository.GetGraph(r.ctx, node, asset.LineageQuery{})
+		graph, err := r.repository.GetGraph(r.ctx, nodeURN, asset.LineageQuery{})
 		r.Require().NoError(err)
 		r.compareGraphs(asset.LineageGraph{
 			{Source: "job-99", Target: nodeURN},
@@ -206,30 +157,6 @@ func (r *LineageRepositoryTestSuite) compareGraphs(expected, actual asset.Lineag
 	for i := 0; i < expLen; i++ {
 		r.Equal(expected[i].Source, actual[i].Source, fmt.Sprintf("different source on index %d", i))
 		r.Equal(expected[i].Target, actual[i].Target, fmt.Sprintf("different target on index %d", i))
-	}
-}
-
-func (r *LineageRepositoryTestSuite) bigquery(urn string) asset.LineageNode {
-	return asset.LineageNode{
-		URN:     urn,
-		Type:    asset.TypeTable,
-		Service: "bigquery",
-	}
-}
-
-func (r *LineageRepositoryTestSuite) optimus(urn string) asset.LineageNode {
-	return asset.LineageNode{
-		URN:     urn,
-		Type:    asset.TypeJob,
-		Service: "optimus",
-	}
-}
-
-func (r *LineageRepositoryTestSuite) metabase(urn string) asset.LineageNode {
-	return asset.LineageNode{
-		URN:     urn,
-		Type:    asset.TypeDashboard,
-		Service: "metabase",
 	}
 }
 

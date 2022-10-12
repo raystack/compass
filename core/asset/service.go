@@ -38,7 +38,7 @@ func (s *Service) GetAllAssets(ctx context.Context, flt Filter, withTotal bool) 
 	return assets, totalCount, nil
 }
 
-func (s *Service) UpsertAsset(ctx context.Context, ast *Asset, upstreams, downstreams []LineageNode) (string, error) {
+func (s *Service) UpsertAsset(ctx context.Context, ast *Asset, upstreams, downstreams []string) (string, error) {
 	var assetID string
 	var err error
 
@@ -52,13 +52,7 @@ func (s *Service) UpsertAsset(ctx context.Context, ast *Asset, upstreams, downst
 		return assetID, err
 	}
 
-	node := LineageNode{
-		URN:     ast.URN,
-		Type:    ast.Type,
-		Service: ast.Service,
-	}
-
-	if err := s.lineageRepository.Upsert(ctx, node, upstreams, downstreams); err != nil {
+	if err := s.lineageRepository.Upsert(ctx, ast.URN, upstreams, downstreams); err != nil {
 		return assetID, err
 	}
 
@@ -114,8 +108,8 @@ func (s *Service) AddProbe(ctx context.Context, assetURN string, probe *Probe) e
 	return s.assetRepository.AddProbe(ctx, assetURN, probe)
 }
 
-func (s *Service) GetLineage(ctx context.Context, node LineageNode, query LineageQuery) (LineageGraph, error) {
-	return s.lineageRepository.GetGraph(ctx, node, query)
+func (s *Service) GetLineage(ctx context.Context, urn string, query LineageQuery) (LineageGraph, error) {
+	return s.lineageRepository.GetGraph(ctx, urn, query)
 }
 
 func (s *Service) GetTypes(ctx context.Context, flt Filter) (map[Type]int, error) {
