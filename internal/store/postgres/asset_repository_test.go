@@ -1266,11 +1266,22 @@ func (r *AssetRepositoryTestSuite) TestAddProbe() {
 			Service:   "optimus",
 			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
 		}
+		otherAst := asset.Asset{
+			URN:       "urn-add-probe-3",
+			Type:      asset.TypeJob,
+			Service:   "airflow",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
 		probe := asset.Probe{
+			Status: "RUNNING",
+		}
+		otherProbe := asset.Probe{
 			Status: "RUNNING",
 		}
 
 		_, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+		_, err = r.repository.Upsert(r.ctx, &otherAst)
 		r.Require().NoError(err)
 
 		err = r.repository.AddProbe(r.ctx, ast.URN, &probe)
@@ -1279,6 +1290,9 @@ func (r *AssetRepositoryTestSuite) TestAddProbe() {
 		// assert populated fields
 		r.False(probe.CreatedAt.IsZero())
 		r.Equal(probe.CreatedAt, probe.Timestamp)
+
+		err = r.repository.AddProbe(r.ctx, otherAst.URN, &otherProbe)
+		r.NoError(err)
 
 		// assert probe is persisted
 		probesFromDB, err := r.repository.GetProbes(r.ctx, ast.URN)
