@@ -372,6 +372,47 @@ func (r *AssetRepository) GetProbes(ctx context.Context, assetURN string) ([]ass
 	return results, nil
 }
 
+func (r *AssetRepository) GetProbesWithFilter(ctx context.Context, flt asset.ProbesFilter) (map[string][]asset.Probe, error) {
+	stmt := sq.Select(
+		"id", "asset_urn", "status", "status_reason", "metadata", "timestamp", "created_at",
+	).From("asset_probes").
+		OrderBy("asset_urn", "timestamp DESC")
+
+	if len(flt.AssetURNs) > 0 {
+		stmt = stmt.Where(sq.Eq{"asset_urn": flt.AssetURNs})
+	}
+	if !flt.NewerThan.IsZero() {
+		stmt = stmt.Where(sq.GtOrEq{"timestamp": flt.NewerThan})
+	}
+	if !flt.OlderThan.IsZero() {
+		stmt = stmt.Where(sq.LtOrEq{"timestamp": flt.OlderThan})
+	}
+	if flt.MaxRows > 0 {
+		stmt = stmt.Column("RANK() OVER (PARTITION BY asset_urn ORDER BY timestamp desc) rank_number")
+		stmt = sq.Select(
+			"id", "asset_urn", "status", "status_reason", "metadata", "timestamp", "created_at",
+		).FromSelect(stmt, "ap").
+			Where(sq.LtOrEq{"rank_number": flt.MaxRows})
+	}
+
+	query, args, err := stmt.PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("get probes with filter: build query: %w", err)
+	}
+
+	var probes []AssetProbeModel
+	if err := r.client.db.SelectContext(ctx, &probes, query, args...); err != nil {
+		return nil, fmt.Errorf("error running get asset probes query: %w", err)
+	}
+
+	results := make(map[string][]asset.Probe, len(probes))
+	for _, p := range probes {
+		results[p.AssetURN] = append(results[p.AssetURN], p.toAssetProbe())
+	}
+
+	return results, nil
+}
+
 func (r *AssetRepository) deleteWithPredicate(ctx context.Context, pred sq.Eq) (int64, error) {
 	query, args, err := r.buildSQL(sq.Delete("assets").Where(pred))
 	if err != nil {

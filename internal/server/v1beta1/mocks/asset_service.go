@@ -295,16 +295,14 @@ func (_c *AssetService_GetAssetVersionHistory_Call) Return(_a0 []asset.Asset, _a
 }
 
 // GetLineage provides a mock function with given fields: ctx, urn, query
-func (_m *AssetService) GetLineage(ctx context.Context, urn string, query asset.LineageQuery) (asset.LineageGraph, error) {
+func (_m *AssetService) GetLineage(ctx context.Context, urn string, query asset.LineageQuery) (asset.Lineage, error) {
 	ret := _m.Called(ctx, urn, query)
 
-	var r0 asset.LineageGraph
-	if rf, ok := ret.Get(0).(func(context.Context, string, asset.LineageQuery) asset.LineageGraph); ok {
+	var r0 asset.Lineage
+	if rf, ok := ret.Get(0).(func(context.Context, string, asset.LineageQuery) asset.Lineage); ok {
 		r0 = rf(ctx, urn, query)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(asset.LineageGraph)
-		}
+		r0 = ret.Get(0).(asset.Lineage)
 	}
 
 	var r1 error
@@ -337,7 +335,7 @@ func (_c *AssetService_GetLineage_Call) Run(run func(ctx context.Context, urn st
 	return _c
 }
 
-func (_c *AssetService_GetLineage_Call) Return(_a0 asset.LineageGraph, _a1 error) *AssetService_GetLineage_Call {
+func (_c *AssetService_GetLineage_Call) Return(_a0 asset.Lineage, _a1 error) *AssetService_GetLineage_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }

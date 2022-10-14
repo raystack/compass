@@ -2,6 +2,7 @@ package handlersv1beta1
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/odpf/compass/core/asset"
 	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
@@ -21,7 +22,7 @@ func (server *APIServer) GetGraph(ctx context.Context, req *compassv1beta1.GetGr
 		return nil, status.Error(codes.InvalidArgument, "invalid direction value")
 	}
 
-	graph, err := server.assetService.GetLineage(ctx, req.GetUrn(), asset.LineageQuery{
+	lineage, err := server.assetService.GetLineage(ctx, req.GetUrn(), asset.LineageQuery{
 		Level:     int(req.GetLevel()),
 		Direction: direction,
 	})
@@ -29,17 +30,30 @@ func (server *APIServer) GetGraph(ctx context.Context, req *compassv1beta1.GetGr
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	graphPB := []*compassv1beta1.LineageEdge{}
-	for _, edge := range graph {
+	edges := make([]*compassv1beta1.LineageEdge, 0, len(lineage.Edges))
+	for _, edge := range lineage.Edges {
 		edgePB, err := lineageEdgeToProto(edge)
 		if err != nil {
 			return nil, internalServerError(server.logger, err.Error())
 		}
-		graphPB = append(graphPB, edgePB)
+		edges = append(edges, edgePB)
+	}
+
+	nodeAttrs := make(map[string]*compassv1beta1.GetGraphResponse_NodeAttributes, len(lineage.NodeAttrs))
+	for urn, attrs := range lineage.NodeAttrs {
+		probesInfo, err := probesInfoToProto(attrs.Probes)
+		if err != nil {
+			return nil, internalServerError(server.logger, err.Error())
+		}
+
+		nodeAttrs[urn] = &compassv1beta1.GetGraphResponse_NodeAttributes{
+			Probes: probesInfo,
+		}
 	}
 
 	return &compassv1beta1.GetGraphResponse{
-		Data: graphPB,
+		Data:      edges,
+		NodeAttrs: nodeAttrs,
 	}, nil
 }
 
@@ -59,5 +73,16 @@ func lineageEdgeToProto(e asset.LineageEdge) (*compassv1beta1.LineageEdge, error
 		Source: e.Source,
 		Target: e.Target,
 		Prop:   propPB,
+	}, nil
+}
+
+func probesInfoToProto(probes asset.ProbesInfo) (*compassv1beta1.GetGraphResponse_ProbesInfo, error) {
+	latest, err := probeToProto(probes.Latest)
+	if err != nil {
+		return nil, fmt.Errorf("convert probe to proto representation: %w", err)
+	}
+
+	return &compassv1beta1.GetGraphResponse_ProbesInfo{
+		Latest: latest,
 	}, nil
 }

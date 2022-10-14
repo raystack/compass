@@ -94,7 +94,7 @@ func Serve(
 	grpc_health_v1.RegisterHealthServer(grpcServer, healthHandler)
 
 	// init http proxy
-	grpcDialCtx, grpcDialCancel := context.WithTimeout(context.Background(), time.Second*5)
+	grpcDialCtx, grpcDialCancel := context.WithTimeout(ctx, time.Second*5)
 	defer grpcDialCancel()
 
 	headerMatcher := makeHeaderMatcher(config)
@@ -105,7 +105,7 @@ func Serve(
 		return err
 	}
 
-	runtimeCtx, runtimeCancel := context.WithCancel(context.Background())
+	runtimeCtx, runtimeCancel := context.WithCancel(ctx)
 	defer runtimeCancel()
 
 	gwmux := runtime.NewServeMux(

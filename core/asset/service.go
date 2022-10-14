@@ -108,8 +108,30 @@ func (s *Service) AddProbe(ctx context.Context, assetURN string, probe *Probe) e
 	return s.assetRepository.AddProbe(ctx, assetURN, probe)
 }
 
-func (s *Service) GetLineage(ctx context.Context, urn string, query LineageQuery) (LineageGraph, error) {
-	return s.lineageRepository.GetGraph(ctx, urn, query)
+func (s *Service) GetLineage(ctx context.Context, urn string, query LineageQuery) (Lineage, error) {
+	edges, err := s.lineageRepository.GetGraph(ctx, urn, query)
+	if err != nil {
+		return Lineage{}, fmt.Errorf("get lineage: get graph edges: %w", err)
+	}
+
+	urns := newUniqueStrings(len(edges))
+	urns.add(urn)
+	for _, edge := range edges {
+		urns.add(edge.Source, edge.Target)
+	}
+
+	assetProbes, err := s.assetRepository.GetProbesWithFilter(ctx, ProbesFilter{
+		AssetURNs: urns.list(),
+		MaxRows:   1,
+	})
+	if err != nil {
+		return Lineage{}, fmt.Errorf("get lineage: get latest probes: %w", err)
+	}
+
+	return Lineage{
+		Edges:     edges,
+		NodeAttrs: buildNodeAttrs(assetProbes),
+	}, nil
 }
 
 func (s *Service) GetTypes(ctx context.Context, flt Filter) (map[Type]int, error) {
@@ -130,4 +152,19 @@ func (s *Service) SuggestAssets(ctx context.Context, cfg SearchConfig) (suggesti
 func isValidUUID(u string) bool {
 	_, err := uuid.Parse(u)
 	return err == nil
+}
+
+func buildNodeAttrs(assetProbes map[string][]Probe) map[string]NodeAttributes {
+	nodeAttrs := make(map[string]NodeAttributes, len(assetProbes))
+	for urn, probes := range assetProbes {
+		if len(probes) == 0 {
+			continue
+		}
+
+		nodeAttrs[urn] = NodeAttributes{
+			Probes: ProbesInfo{Latest: probes[0]},
+		}
+	}
+
+	return nodeAttrs
 }
