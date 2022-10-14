@@ -14,7 +14,23 @@ import (
 
 var (
 	elasticSearchCmdLine = []string{
-		"docker", "run", "-d", "-P", "--rm", "-e", "discovery.type=single-node", "docker.elastic.co/elasticsearch/elasticsearch:7.6.1",
+		"docker", "run",
+		"-d", "-P", "--rm",
+		"-e", "discovery.type=single-node",
+		"-e", "path.data=/opt/elasticsearch/volatile/data",
+		"-e", "path.logs=/opt/elasticsearch/volatile/logs",
+		"-e", "bootstrap.memory_lock=true",
+		"-e", "ES_JAVA_OPTS=-Xms128m -Xmx128m -server",
+		"-e", "ES_HEAP_SIZE=128m",
+		"-e", "MAX_LOCKED_MEMORY=100000",
+		"-e", "xpack.security.enabled=false",
+		"--memory-swappiness=0",
+		"--memory-swap=0",
+		"--tmpfs", "/opt/elasticsearch/volatile/data:rw",
+		"--tmpfs", "/opt/elasticsearch/volatile/logs:rw",
+		"--tmpfs", "/tmp:rw",
+		"--ulimit", "memlock=-1:-1",
+		"docker.elastic.co/elasticsearch/elasticsearch:7.17.6",
 	}
 	// "9200/tcp" refers to the default container port where elasticsearch server runs
 	esHostQuery = `{{index .NetworkSettings.Ports "9200/tcp" 0 "HostIp"}}:{{index .NetworkSettings.Ports "9200/tcp" 0 "HostPort"}}`
