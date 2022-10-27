@@ -161,35 +161,13 @@ func TestService_GetTypes(t *testing.T) {
 
 func TestService_UpsertAsset(t *testing.T) {
 	sampleAsset := &asset.Asset{ID: "some-id", URN: "some-urn", Type: asset.TypeDashboard, Service: "some-service"}
-	sampleNodes1 := []asset.LineageNode{
-		{
-			URN:     "1-urn-1",
-			Type:    asset.TypeJob,
-			Service: "service-1",
-		},
-		{
-			URN:     "1-urn-2",
-			Type:    asset.TypeJob,
-			Service: "service-1",
-		},
-	}
-	sampleNodes2 := []asset.LineageNode{
-		{
-			URN:     "2-urn-1",
-			Type:    asset.TypeTopic,
-			Service: "service-2",
-		},
-		{
-			URN:     "2-urn-2",
-			Type:    asset.TypeJob,
-			Service: "service-2",
-		},
-	}
+	sampleNodes1 := []string{"1-urn-1", "1-urn-2"}
+	sampleNodes2 := []string{"2-urn-1", "2-urn-2"}
 	type testCase struct {
 		Description string
 		Asset       *asset.Asset
-		Upstreams   []asset.LineageNode
-		Downstreams []asset.LineageNode
+		Upstreams   []string
+		Downstreams []string
 		Err         error
 		ReturnedID  string
 		Setup       func(context.Context, *mocks.AssetRepository, *mocks.DiscoveryRepository, *mocks.LineageRepository)
@@ -223,11 +201,7 @@ func TestService_UpsertAsset(t *testing.T) {
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
 				ar.EXPECT().Upsert(ctx, sampleAsset).Return(sampleAsset.ID, nil)
 				dr.EXPECT().Upsert(ctx, *sampleAsset).Return(nil)
-				lr.EXPECT().Upsert(ctx, asset.LineageNode{
-					URN:     sampleAsset.URN,
-					Type:    sampleAsset.Type,
-					Service: sampleAsset.Service,
-				}, sampleNodes1, sampleNodes2).Return(errors.New("unknown error"))
+				lr.EXPECT().Upsert(ctx, sampleAsset.URN, sampleNodes1, sampleNodes2).Return(errors.New("unknown error"))
 			},
 			Err:        errors.New("unknown error"),
 			ReturnedID: sampleAsset.ID,
@@ -240,11 +214,7 @@ func TestService_UpsertAsset(t *testing.T) {
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
 				ar.EXPECT().Upsert(ctx, sampleAsset).Return(sampleAsset.ID, nil)
 				dr.EXPECT().Upsert(ctx, *sampleAsset).Return(nil)
-				lr.EXPECT().Upsert(ctx, asset.LineageNode{
-					URN:     sampleAsset.URN,
-					Type:    sampleAsset.Type,
-					Service: sampleAsset.Service,
-				}, sampleNodes1, sampleNodes2).Return(nil)
+				lr.EXPECT().Upsert(ctx, sampleAsset.URN, sampleNodes1, sampleNodes2).Return(nil)
 			},
 			Err:        nil,
 			ReturnedID: sampleAsset.ID,
@@ -586,7 +556,7 @@ func TestService_GetLineage(t *testing.T) {
 			Description: `should return error if the GetGraph function return error`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				lr.EXPECT().GetGraph(ctx, asset.LineageNode{}, asset.LineageQuery{}).Return(asset.LineageGraph{}, errors.New("error fetching graph"))
+				lr.EXPECT().GetGraph(ctx, "", asset.LineageQuery{}).Return(asset.LineageGraph{}, errors.New("error fetching graph"))
 			},
 			Err: errors.New("error fetching graph"),
 		},
@@ -594,7 +564,7 @@ func TestService_GetLineage(t *testing.T) {
 			Description: `should return no error if graph nodes are returned`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				lr.EXPECT().GetGraph(ctx, asset.LineageNode{}, asset.LineageQuery{}).Return(asset.LineageGraph{}, nil)
+				lr.EXPECT().GetGraph(ctx, "", asset.LineageQuery{}).Return(asset.LineageGraph{}, nil)
 			},
 			Err: nil,
 		},
@@ -611,7 +581,7 @@ func TestService_GetLineage(t *testing.T) {
 			}
 
 			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
-			_, err := svc.GetLineage(ctx, asset.LineageNode{}, asset.LineageQuery{})
+			_, err := svc.GetLineage(ctx, "", asset.LineageQuery{})
 			if err != nil && errors.Is(tc.Err, err) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
 			}

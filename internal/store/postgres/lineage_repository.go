@@ -26,11 +26,11 @@ func NewLineageRepository(client *Client) (*LineageRepository, error) {
 }
 
 // GetGraph returns a graph that contains list of relations of a given node
-func (repo *LineageRepository) GetGraph(ctx context.Context, node asset.LineageNode, query asset.LineageQuery) (asset.LineageGraph, error) {
+func (repo *LineageRepository) GetGraph(ctx context.Context, urn string, query asset.LineageQuery) (asset.LineageGraph, error) {
 	var graph asset.LineageGraph
 
 	if query.Direction == "" || query.Direction == asset.LineageDirectionUpstream {
-		upstreams, err := repo.getUpstreamsGraph(ctx, node, query.Level)
+		upstreams, err := repo.getUpstreamsGraph(ctx, urn, query.Level)
 		if err != nil {
 			return graph, fmt.Errorf("error fetching upstreams graph: %w", err)
 		}
@@ -38,7 +38,7 @@ func (repo *LineageRepository) GetGraph(ctx context.Context, node asset.LineageN
 	}
 
 	if query.Direction == "" || query.Direction == asset.LineageDirectionDownstream {
-		downstreams, err := repo.getDownstreamsGraph(ctx, node, query.Level)
+		downstreams, err := repo.getDownstreamsGraph(ctx, urn, query.Level)
 		if err != nil {
 			return graph, fmt.Errorf("error fetching upstreams graph: %w", err)
 		}
@@ -49,14 +49,14 @@ func (repo *LineageRepository) GetGraph(ctx context.Context, node asset.LineageN
 }
 
 // Upsert insert or delete connections of a given node by comparing them with current state
-func (repo *LineageRepository) Upsert(ctx context.Context, node asset.LineageNode, upstreams, downstreams []asset.LineageNode) error {
-	currentGraph, err := repo.getDirectLineage(ctx, node)
+func (repo *LineageRepository) Upsert(ctx context.Context, urn string, upstreams, downstreams []string) error {
+	currentGraph, err := repo.getDirectLineage(ctx, urn)
 	if err != nil {
 		return fmt.Errorf("error getting node's direct lineage: %w", err)
 	}
-	newGraph := repo.buildGraph(node, upstreams, downstreams)
+	newGraph := repo.buildGraph(urn, upstreams, downstreams)
 	toInserts, toRemoves := repo.compareGraph(currentGraph, newGraph)
-	toRemoves = repo.filterSelfDeleteOnly(node, toRemoves)
+	toRemoves = repo.filterSelfDeleteOnly(urn, toRemoves)
 
 	return repo.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		err := repo.insertGraph(ctx, tx, toInserts)
@@ -73,22 +73,22 @@ func (repo *LineageRepository) Upsert(ctx context.Context, node asset.LineageNod
 	})
 }
 
-func (repo *LineageRepository) buildGraph(node asset.LineageNode, upstreams, downstreams []asset.LineageNode) (graph asset.LineageGraph) {
+func (repo *LineageRepository) buildGraph(urn string, upstreams, downstreams []string) (graph asset.LineageGraph) {
 	for _, us := range upstreams {
 		graph = append(graph, asset.LineageEdge{
-			Source: us.URN,
-			Target: node.URN,
+			Source: us,
+			Target: urn,
 			Prop: map[string]interface{}{
-				"root": node.URN, // this is to note which node is updating the relation
+				"root": urn, // this is to note which node is updating the relation
 			},
 		})
 	}
 	for _, ds := range downstreams {
 		graph = append(graph, asset.LineageEdge{
-			Source: node.URN,
-			Target: ds.URN,
+			Source: urn,
+			Target: ds,
 			Prop: map[string]interface{}{
-				"root": node.URN, // this is to note which node is updating the relation
+				"root": urn, // this is to note which node is updating the relation
 			},
 		})
 	}
@@ -99,10 +99,10 @@ func (repo *LineageRepository) buildGraph(node asset.LineageNode, upstreams, dow
 // filterSelfDeleteOnly filters edges that are not created by the given node
 // it uses prop["root"] field to figure out which node (source or target) is latest updater of the edge,
 // and only allow that node to delete the relation
-func (repo *LineageRepository) filterSelfDeleteOnly(node asset.LineageNode, toRemoves asset.LineageGraph) (res asset.LineageGraph) {
+func (repo *LineageRepository) filterSelfDeleteOnly(urn string, toRemoves asset.LineageGraph) (res asset.LineageGraph) {
 	for _, edge := range toRemoves {
 		rootURN, ok := edge.Prop["root"]
-		if ok && rootURN != node.URN {
+		if ok && rootURN != urn {
 			continue
 		}
 		res = append(res, edge)
@@ -193,10 +193,10 @@ func (repo *LineageRepository) compareGraph(current, new asset.LineageGraph) (to
 	return
 }
 
-func (repo *LineageRepository) getUpstreamsGraph(ctx context.Context, node asset.LineageNode, level int) (asset.LineageGraph, error) {
+func (repo *LineageRepository) getUpstreamsGraph(ctx context.Context, urn string, level int) (asset.LineageGraph, error) {
 	var graph asset.LineageGraph
 
-	query, args, err := repo.buildUpstreamQuery(node, level)
+	query, args, err := repo.buildUpstreamQuery(urn, level)
 	if err != nil {
 		return graph, fmt.Errorf("error building upstream query: %w", err)
 	}
@@ -212,10 +212,10 @@ func (repo *LineageRepository) getUpstreamsGraph(ctx context.Context, node asset
 	return graph, nil
 }
 
-func (repo *LineageRepository) getDownstreamsGraph(ctx context.Context, node asset.LineageNode, level int) (asset.LineageGraph, error) {
+func (repo *LineageRepository) getDownstreamsGraph(ctx context.Context, urn string, level int) (asset.LineageGraph, error) {
 	var graph asset.LineageGraph
 
-	query, args, err := repo.buildDownstreamQuery(node, level)
+	query, args, err := repo.buildDownstreamQuery(urn, level)
 	if err != nil {
 		return graph, fmt.Errorf("error building downstream query: %w", err)
 	}
@@ -231,12 +231,12 @@ func (repo *LineageRepository) getDownstreamsGraph(ctx context.Context, node ass
 	return graph, nil
 }
 
-func (repo *LineageRepository) buildUpstreamQuery(node asset.LineageNode, level int) (query string, args []interface{}, err error) {
+func (repo *LineageRepository) buildUpstreamQuery(urn string, level int) (query string, args []interface{}, err error) {
 	alias := "search_graph"
 	nonRecursiveBuilder := sq.
 		Select("source", "target", "prop", "1 as depth", "ARRAY[target] as path").
 		From("lineage_graph").
-		Where("target = ?", node.URN)
+		Where("target = ?", urn)
 	recursiveBuilder := sq.
 		Select("lg.source", "lg.target", "lg.prop", "sg.depth + 1", "sg.path || lg.target").
 		From(fmt.Sprintf("lineage_graph lg, %s sg", alias)).
@@ -249,12 +249,12 @@ func (repo *LineageRepository) buildUpstreamQuery(node asset.LineageNode, level 
 	return repo.buildRecursiveQuery(alias, nonRecursiveBuilder, recursiveBuilder)
 }
 
-func (repo *LineageRepository) buildDownstreamQuery(node asset.LineageNode, level int) (query string, args []interface{}, err error) {
+func (repo *LineageRepository) buildDownstreamQuery(urn string, level int) (query string, args []interface{}, err error) {
 	alias := "search_graph"
 	nonRecursiveBuilder := sq.
 		Select("source", "target", "prop", "1 as depth", "ARRAY[source] as path").
 		From("lineage_graph").
-		Where("source = ?", node.URN)
+		Where("source = ?", urn)
 	recursiveBuilder := sq.
 		Select("lg.source", "lg.target", "lg.prop", "sg.depth + 1", "sg.path || lg.source").
 		From(fmt.Sprintf("lineage_graph lg, %s sg", alias)).
@@ -296,10 +296,10 @@ func (repo *LineageRepository) buildRecursiveQuery(alias string, nonRecursiveBui
 	return
 }
 
-func (repo *LineageRepository) getDirectLineage(ctx context.Context, node asset.LineageNode) (graph asset.LineageGraph, err error) {
+func (repo *LineageRepository) getDirectLineage(ctx context.Context, urn string) (graph asset.LineageGraph, err error) {
 	query := `SELECT * FROM lineage_graph WHERE (source = $1 OR target = $1)`
 	var gm LineageGraphModel
-	if err = repo.client.db.SelectContext(ctx, &gm, query, node.URN); err != nil {
+	if err = repo.client.db.SelectContext(ctx, &gm, query, urn); err != nil {
 		err = fmt.Errorf("error running fetch direct nodes query: %w", err)
 		return
 	}

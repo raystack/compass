@@ -25,14 +25,14 @@ type StatsDClient interface {
 }
 
 type AssetService interface {
-	GetAllAssets(context.Context, asset.Filter, bool) ([]asset.Asset, uint32, error)
+	GetAllAssets(ctx context.Context, flt asset.Filter, withTotal bool) ([]asset.Asset, uint32, error)
 	GetAssetByID(ctx context.Context, id string) (asset.Asset, error)
 	GetAssetByVersion(ctx context.Context, id string, version string) (asset.Asset, error)
 	GetAssetVersionHistory(ctx context.Context, flt asset.Filter, id string) ([]asset.Asset, error)
-	UpsertAsset(context.Context, *asset.Asset, []asset.LineageNode, []asset.LineageNode) (string, error)
-	DeleteAsset(context.Context, string) error
+	UpsertAsset(ctx context.Context, ast *asset.Asset, upstreams, downstreams []string) (string, error)
+	DeleteAsset(ctx context.Context, id string) error
 
-	GetLineage(ctx context.Context, node asset.LineageNode, query asset.LineageQuery) (asset.LineageGraph, error)
+	GetLineage(ctx context.Context, urn string, query asset.LineageQuery) (asset.LineageGraph, error)
 	GetTypes(ctx context.Context, flt asset.Filter) (map[asset.Type]int, error)
 
 	SearchAssets(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error)
@@ -348,13 +348,13 @@ func (server *APIServer) upsertAsset(
 		return "", status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	upstreams := []asset.LineageNode{}
+	upstreams := make([]string, 0, len(reqUpstreams))
 	for _, pb := range reqUpstreams {
-		upstreams = append(upstreams, lineageNodeFromProto(pb))
+		upstreams = append(upstreams, pb.Urn)
 	}
-	downstreams := []asset.LineageNode{}
+	downstreams := make([]string, 0, len(reqDownstreams))
 	for _, pb := range reqDownstreams {
-		downstreams = append(downstreams, lineageNodeFromProto(pb))
+		downstreams = append(downstreams, pb.Urn)
 	}
 
 	assetID, err = server.assetService.UpsertAsset(ctx, &ast, upstreams, downstreams)

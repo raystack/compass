@@ -2987,6 +2987,52 @@ func (m *GetGraphResponse) validate(all bool) error {
 
 	}
 
+	{
+		sorted_keys := make([]string, len(m.GetNodeAttrs()))
+		i := 0
+		for key := range m.GetNodeAttrs() {
+			sorted_keys[i] = key
+			i++
+		}
+		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
+		for _, key := range sorted_keys {
+			val := m.GetNodeAttrs()[key]
+			_ = val
+
+			// no validation rules for NodeAttrs[key]
+
+			if all {
+				switch v := interface{}(val).(type) {
+				case interface{ ValidateAll() error }:
+					if err := v.ValidateAll(); err != nil {
+						errors = append(errors, GetGraphResponseValidationError{
+							field:  fmt.Sprintf("NodeAttrs[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				case interface{ Validate() error }:
+					if err := v.Validate(); err != nil {
+						errors = append(errors, GetGraphResponseValidationError{
+							field:  fmt.Sprintf("NodeAttrs[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				}
+			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
+				if err := v.Validate(); err != nil {
+					return GetGraphResponseValidationError{
+						field:  fmt.Sprintf("NodeAttrs[%v]", key),
+						reason: "embedded message failed validation",
+						cause:  err,
+					}
+				}
+			}
+
+		}
+	}
+
 	if len(errors) > 0 {
 		return GetGraphResponseMultiError(errors)
 	}
@@ -11948,6 +11994,270 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = TypeValidationError{}
+
+// Validate checks the field values on GetGraphResponse_ProbesInfo with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetGraphResponse_ProbesInfo) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetGraphResponse_ProbesInfo with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetGraphResponse_ProbesInfoMultiError, or nil if none found.
+func (m *GetGraphResponse_ProbesInfo) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetGraphResponse_ProbesInfo) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetLatest()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetGraphResponse_ProbesInfoValidationError{
+					field:  "Latest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetGraphResponse_ProbesInfoValidationError{
+					field:  "Latest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetLatest()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetGraphResponse_ProbesInfoValidationError{
+				field:  "Latest",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return GetGraphResponse_ProbesInfoMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetGraphResponse_ProbesInfoMultiError is an error wrapping multiple
+// validation errors returned by GetGraphResponse_ProbesInfo.ValidateAll() if
+// the designated constraints aren't met.
+type GetGraphResponse_ProbesInfoMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetGraphResponse_ProbesInfoMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetGraphResponse_ProbesInfoMultiError) AllErrors() []error { return m }
+
+// GetGraphResponse_ProbesInfoValidationError is the validation error returned
+// by GetGraphResponse_ProbesInfo.Validate if the designated constraints
+// aren't met.
+type GetGraphResponse_ProbesInfoValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetGraphResponse_ProbesInfoValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetGraphResponse_ProbesInfoValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetGraphResponse_ProbesInfoValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetGraphResponse_ProbesInfoValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetGraphResponse_ProbesInfoValidationError) ErrorName() string {
+	return "GetGraphResponse_ProbesInfoValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetGraphResponse_ProbesInfoValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetGraphResponse_ProbesInfo.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetGraphResponse_ProbesInfoValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetGraphResponse_ProbesInfoValidationError{}
+
+// Validate checks the field values on GetGraphResponse_NodeAttributes with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetGraphResponse_NodeAttributes) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetGraphResponse_NodeAttributes with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetGraphResponse_NodeAttributesMultiError, or nil if none found.
+func (m *GetGraphResponse_NodeAttributes) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetGraphResponse_NodeAttributes) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetProbes()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetGraphResponse_NodeAttributesValidationError{
+					field:  "Probes",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetGraphResponse_NodeAttributesValidationError{
+					field:  "Probes",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetProbes()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetGraphResponse_NodeAttributesValidationError{
+				field:  "Probes",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return GetGraphResponse_NodeAttributesMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetGraphResponse_NodeAttributesMultiError is an error wrapping multiple
+// validation errors returned by GetGraphResponse_NodeAttributes.ValidateAll()
+// if the designated constraints aren't met.
+type GetGraphResponse_NodeAttributesMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetGraphResponse_NodeAttributesMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetGraphResponse_NodeAttributesMultiError) AllErrors() []error { return m }
+
+// GetGraphResponse_NodeAttributesValidationError is the validation error
+// returned by GetGraphResponse_NodeAttributes.Validate if the designated
+// constraints aren't met.
+type GetGraphResponse_NodeAttributesValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetGraphResponse_NodeAttributesValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetGraphResponse_NodeAttributesValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetGraphResponse_NodeAttributesValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetGraphResponse_NodeAttributesValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetGraphResponse_NodeAttributesValidationError) ErrorName() string {
+	return "GetGraphResponse_NodeAttributesValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetGraphResponse_NodeAttributesValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetGraphResponse_NodeAttributes.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetGraphResponse_NodeAttributesValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetGraphResponse_NodeAttributesValidationError{}
 
 // Validate checks the field values on UpsertAssetRequest_Asset with the rules
 // defined in the proto definition for this message. If any rules are

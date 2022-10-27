@@ -27,8 +27,8 @@ type LineageQuery struct {
 
 //go:generate mockery --name=LineageRepository -r --case underscore --with-expecter --structname=LineageRepository --filename=lineage_repository.go --output=./mocks
 type LineageRepository interface {
-	GetGraph(ctx context.Context, node LineageNode, query LineageQuery) (LineageGraph, error)
-	Upsert(ctx context.Context, node LineageNode, upstreams, downstreams []LineageNode) error
+	GetGraph(ctx context.Context, urn string, query LineageQuery) (LineageGraph, error)
+	Upsert(ctx context.Context, urn string, upstreams, downstreams []string) error
 }
 
 type LineageGraph []LineageEdge
@@ -42,10 +42,4 @@ type LineageEdge struct {
 
 	// Prop is a map containing extra information about the edge
 	Prop map[string]interface{} `json:"prop"`
-}
-
-type LineageNode struct {
-	URN     string `json:"urn"`
-	Type    Type   `json:"type"`
-	Service string `json:"service"`
 }

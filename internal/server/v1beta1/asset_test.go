@@ -433,8 +433,8 @@ func TestUpsertAsset(t *testing.T) {
 				as.EXPECT().UpsertAsset(
 					ctx,
 					mock.AnythingOfType("*asset.Asset"),
-					mock.AnythingOfType("[]asset.LineageNode"),
-					mock.AnythingOfType("[]asset.LineageNode"),
+					mock.AnythingOfType("[]string"),
+					mock.AnythingOfType("[]string"),
 				).Return("", expectedErr)
 			},
 			Request:      validPayload,
@@ -452,18 +452,13 @@ func TestUpsertAsset(t *testing.T) {
 					Data:      map[string]interface{}{},
 					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
 				}
-				upstreams := []asset.LineageNode{
-					{URN: "upstream-1", Type: asset.TypeJob, Service: "optimus"},
-				}
-				downstreams := []asset.LineageNode{
-					{URN: "downstream-1", Type: asset.TypeDashboard, Service: "metabase"},
-					{URN: "downstream-2", Type: asset.TypeDashboard, Service: "tableau"},
-				}
+				upstreams := []string{"upstream-1"}
+				downstreams := []string{"downstream-1", "downstream-2"}
 
 				assetWithID := ast
 				assetWithID.ID = assetID
 
-				as.EXPECT().UpsertAsset(ctx, &ast, upstreams, downstreams).Return(assetWithID.ID, nil).Run(func(ctx context.Context, ast *asset.Asset, upstreams, downstreams []asset.LineageNode) {
+				as.EXPECT().UpsertAsset(ctx, &ast, upstreams, downstreams).Return(assetWithID.ID, nil).Run(func(ctx context.Context, ast *asset.Asset, upstreams, downstreams []string) {
 					ast.ID = assetWithID.ID
 				})
 			},
@@ -642,7 +637,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
 				expectedErr := errors.New("unknown error")
 				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
-				as.EXPECT().UpsertAsset(ctx, mock.AnythingOfType("*asset.Asset"), mock.AnythingOfType("[]asset.LineageNode"), mock.AnythingOfType("[]asset.LineageNode")).Return("1234-5678", expectedErr)
+				as.EXPECT().UpsertAsset(ctx, mock.AnythingOfType("*asset.Asset"), mock.AnythingOfType("[]string"), mock.AnythingOfType("[]string")).Return("1234-5678", expectedErr)
 			},
 			Request:      validPayload,
 			ExpectStatus: codes.Internal,
@@ -659,19 +654,14 @@ func TestUpsertPatchAsset(t *testing.T) {
 					Data:      map[string]interface{}{},
 					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
 				}
-				upstreams := []asset.LineageNode{
-					{URN: "upstream-1", Type: asset.TypeJob, Service: "optimus"},
-				}
-				downstreams := []asset.LineageNode{
-					{URN: "downstream-1", Type: asset.TypeDashboard, Service: "metabase"},
-					{URN: "downstream-2", Type: asset.TypeDashboard, Service: "tableau"},
-				}
+				upstreams := []string{"upstream-1"}
+				downstreams := []string{"downstream-1", "downstream-2"}
 
 				assetWithID := patchedAsset
 				assetWithID.ID = assetID
 
 				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
-				as.EXPECT().UpsertAsset(ctx, &patchedAsset, upstreams, downstreams).Return(assetWithID.ID, nil).Run(func(ctx context.Context, ast *asset.Asset, upstreams, downstreams []asset.LineageNode) {
+				as.EXPECT().UpsertAsset(ctx, &patchedAsset, upstreams, downstreams).Return(assetWithID.ID, nil).Run(func(ctx context.Context, ast *asset.Asset, upstreams, downstreams []string) {
 					patchedAsset.ID = assetWithID.ID
 				})
 			},
