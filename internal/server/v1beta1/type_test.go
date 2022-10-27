@@ -74,6 +74,10 @@ func TestGetTypes(t *testing.T) {
 							Name:  "topic",
 							Count: 30,
 						},
+						{
+							Name:  "feature_table",
+							Count: 0,
+						},
 					},
 				}
 
