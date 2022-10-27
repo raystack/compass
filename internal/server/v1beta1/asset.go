@@ -318,6 +318,9 @@ func (server *APIServer) CreateAssetProbe(ctx context.Context, req *compassv1bet
 	if req.Probe.Status == "" {
 		return nil, status.Error(codes.InvalidArgument, "Status is required")
 	}
+	if !req.Probe.Timestamp.IsValid() {
+		return nil, status.Error(codes.InvalidArgument, "Timestamp is required")
+	}
 
 	probe := asset.Probe{
 		Status:       req.Probe.Status,
