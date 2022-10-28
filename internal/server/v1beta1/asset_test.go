@@ -1120,11 +1120,23 @@ func TestCreateAssetProbe(t *testing.T) {
 
 	var testCases = []testCase{
 		{
-			Description:  `should return error if payload is invalid`,
+			Description:  `should return error if status is missing`,
 			ExpectStatus: codes.InvalidArgument,
 			Request: &compassv1beta1.CreateAssetProbeRequest{
 				AssetUrn: assetURN,
-				Probe:    &compassv1beta1.CreateAssetProbeRequest_Probe{},
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
+					Timestamp: timestamppb.New(now),
+				},
+			},
+		},
+		{
+			Description:  `should return error if timestamp is missing`,
+			ExpectStatus: codes.InvalidArgument,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
+					Status: "RUNNING",
+				},
 			},
 		},
 		{
@@ -1133,7 +1145,8 @@ func TestCreateAssetProbe(t *testing.T) {
 			Request: &compassv1beta1.CreateAssetProbeRequest{
 				AssetUrn: assetURN,
 				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
-					Status: "RUNNING",
+					Status:    "RUNNING",
+					Timestamp: timestamppb.New(now),
 				},
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
@@ -1148,7 +1161,8 @@ func TestCreateAssetProbe(t *testing.T) {
 			Request: &compassv1beta1.CreateAssetProbeRequest{
 				AssetUrn: assetURN,
 				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
-					Status: "RUNNING",
+					Status:    "RUNNING",
+					Timestamp: timestamppb.New(now),
 				},
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
