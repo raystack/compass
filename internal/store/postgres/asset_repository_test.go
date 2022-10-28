@@ -4,14 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"sort"
 	"strings"
 	"testing"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/odpf/compass/core/asset"
@@ -108,7 +107,7 @@ func (r *AssetRepositoryTestSuite) BeforeTest(suiteName, testName string) {
 
 func (r *AssetRepositoryTestSuite) insertRecord() (assets []asset.Asset) {
 	filePath := "./testdata/mock-asset-data.json"
-	testFixtureJSON, err := ioutil.ReadFile(filePath)
+	testFixtureJSON, err := os.ReadFile(filePath)
 	if err != nil {
 		return []asset.Asset{}
 	}
@@ -1371,6 +1370,380 @@ func (r *AssetRepositoryTestSuite) TestGetProbes() {
 	})
 }
 
+func (r *AssetRepositoryTestSuite) TestGetProbesWithFilter() {
+	r.insertProbes(r.T())
+
+	newTS := func(s string) time.Time {
+		r.T().Helper()
+
+		ts, err := time.Parse(time.RFC3339, s)
+		r.Require().NoError(err)
+		return ts
+	}
+	keys := func(m map[string][]asset.Probe) []string {
+		kk := make([]string, 0, len(m))
+		for k := range m {
+			kk = append(kk, k)
+		}
+		return kk
+	}
+
+	cases := []struct {
+		name     string
+		flt      asset.ProbesFilter
+		expected map[string][]asset.Probe
+	}{
+		{
+			name: "AssetURNs=c-demo-kafka",
+			flt:  asset.ProbesFilter{AssetURNs: []string{"c-demo-kafka"}},
+			expected: map[string][]asset.Probe{
+				"c-demo-kafka": {
+					{
+						AssetURN:  "c-demo-kafka",
+						Status:    "SUCCESS",
+						Timestamp: newTS("2022-03-08T09:58:43Z"),
+					},
+					{
+						AssetURN:  "c-demo-kafka",
+						Status:    "FAILURE",
+						Timestamp: newTS("2021-11-25T19:28:18Z"),
+					},
+					{
+						AssetURN:     "c-demo-kafka",
+						Status:       "FAILURE",
+						StatusReason: "Expanded even-keeled data-warehouse",
+						Timestamp:    newTS("2021-11-10T09:28:21Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "NewerThan=2022-09-08",
+			flt:  asset.ProbesFilter{NewerThan: newTS("2022-09-08T00:00:00Z")},
+			expected: map[string][]asset.Probe{
+				"f-john-test-001": {
+					{
+						AssetURN:  "f-john-test-001",
+						Status:    "CANCELLED",
+						Timestamp: newTS("2022-09-23T14:39:57Z"),
+					},
+				},
+				"ten-mock": {
+					{
+						AssetURN:     "ten-mock",
+						Status:       "CANCELLED",
+						StatusReason: "Synergized bottom-line forecast",
+						Timestamp:    newTS("2022-09-11T07:40:11Z"),
+					},
+				},
+				"e-test-grant2": {
+					{
+						AssetURN:     "e-test-grant2",
+						Status:       "TERMINATED",
+						StatusReason: "Digitized asynchronous knowledge user",
+						Timestamp:    newTS("2022-09-08T12:16:42Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "OlderThan=2021-11-01",
+			flt:  asset.ProbesFilter{OlderThan: newTS("2021-11-01T00:00:00Z")},
+			expected: map[string][]asset.Probe{
+				"i-undefined-dfgdgd-avi": {
+					{
+						AssetURN:     "i-undefined-dfgdgd-avi",
+						Status:       "CANCELLED",
+						StatusReason: "Re-contextualized secondary projection",
+						Timestamp:    newTS("2021-10-17T19:14:51Z"),
+					},
+				},
+				"e-test-grant2": {
+					{
+						AssetURN:     "e-test-grant2",
+						Status:       "TERMINATED",
+						StatusReason: "Integrated attitude-oriented open system",
+						Timestamp:    newTS("2021-10-31T05:58:13Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "MaxRows=1",
+			flt:  asset.ProbesFilter{MaxRows: 1},
+			expected: map[string][]asset.Probe{
+				"c-demo-kafka": {
+					{
+						AssetURN:  "c-demo-kafka",
+						Status:    "SUCCESS",
+						Timestamp: newTS("2022-03-08T09:58:43Z"),
+					},
+				},
+				"e-test-grant2": {
+					{
+						AssetURN:     "e-test-grant2",
+						Status:       "TERMINATED",
+						StatusReason: "Digitized asynchronous knowledge user",
+						Timestamp:    newTS("2022-09-08T12:16:42Z"),
+					},
+				},
+				"eleven-mock": {
+					{
+						AssetURN:     "eleven-mock",
+						Status:       "FAILURE",
+						StatusReason: "Proactive zero administration attitude",
+						Timestamp:    newTS("2022-02-21T22:52:06Z"),
+					},
+				},
+				"f-john-test-001": {
+					{
+						AssetURN:  "f-john-test-001",
+						Status:    "CANCELLED",
+						Timestamp: newTS("2022-09-23T14:39:57Z"),
+					},
+				},
+				"g-jane-kafka-1a": {
+					{
+						AssetURN:     "g-jane-kafka-1a",
+						Status:       "SUCCESS",
+						StatusReason: "Integrated 24/7 knowledge base",
+						Timestamp:    newTS("2022-04-19T19:42:09Z"),
+					},
+				},
+				"h-test-new-kafka": {
+					{
+						AssetURN:     "h-test-new-kafka",
+						Status:       "SUCCESS",
+						StatusReason: "User-friendly systematic neural-net",
+						Timestamp:    newTS("2022-08-14T03:04:44Z"),
+					},
+				},
+				"i-test-grant": {
+					{
+						AssetURN:     "i-test-grant",
+						Status:       "FAILURE",
+						StatusReason: "Ameliorated explicit customer loyalty",
+						Timestamp:    newTS("2022-07-24T06:52:27Z"),
+					},
+				},
+				"i-undefined-dfgdgd-avi": {
+					{
+						AssetURN:     "i-undefined-dfgdgd-avi",
+						Status:       "TERMINATED",
+						StatusReason: "Networked analyzing framework",
+						Timestamp:    newTS("2022-08-13T13:54:01Z"),
+					},
+				},
+				"j-xcvcx": {
+					{
+						AssetURN:     "j-xcvcx",
+						Status:       "FAILURE",
+						StatusReason: "Compatible impactful workforce",
+						Timestamp:    newTS("2022-08-03T19:29:49Z"),
+					},
+				},
+				"nine-mock": {
+					{
+						AssetURN:     "nine-mock",
+						Status:       "CANCELLED",
+						StatusReason: "User-friendly tertiary matrix",
+						Timestamp:    newTS("2022-08-14T14:20:20Z"),
+					},
+				},
+				"ten-mock": {
+					{
+						AssetURN:     "ten-mock",
+						Status:       "CANCELLED",
+						StatusReason: "Synergized bottom-line forecast",
+						Timestamp:    newTS("2022-09-11T07:40:11Z"),
+					},
+				},
+				"twelfth-mock": {
+					{
+						AssetURN:     "twelfth-mock",
+						Status:       "TERMINATED",
+						StatusReason: "Enterprise-wide interactive Graphical User Interface",
+						Timestamp:    newTS("2022-04-15T00:02:25Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "AssetURNs=c-demo-kafka;NewerThan=2022-03-08",
+			flt:  asset.ProbesFilter{AssetURNs: []string{"c-demo-kafka"}, NewerThan: newTS("2022-03-08T00:00:00Z")},
+			expected: map[string][]asset.Probe{
+				"c-demo-kafka": {
+					{
+						AssetURN:  "c-demo-kafka",
+						Status:    "SUCCESS",
+						Timestamp: newTS("2022-03-08T09:58:43Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "AssetURNs=c-demo-kafka;MaxRows=1",
+			flt:  asset.ProbesFilter{AssetURNs: []string{"c-demo-kafka"}, MaxRows: 1},
+			expected: map[string][]asset.Probe{
+				"c-demo-kafka": {
+					{
+						AssetURN:  "c-demo-kafka",
+						Status:    "SUCCESS",
+						Timestamp: newTS("2022-03-08T09:58:43Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "AssetURNs=c-demo-kafka,e-test-grant2;MaxRows=1",
+			flt:  asset.ProbesFilter{AssetURNs: []string{"c-demo-kafka", "e-test-grant2"}, MaxRows: 1},
+			expected: map[string][]asset.Probe{
+				"c-demo-kafka": {
+					{
+						AssetURN:  "c-demo-kafka",
+						Status:    "SUCCESS",
+						Timestamp: newTS("2022-03-08T09:58:43Z"),
+					},
+				},
+				"e-test-grant2": {
+					{
+						AssetURN:     "e-test-grant2",
+						Status:       "TERMINATED",
+						StatusReason: "Digitized asynchronous knowledge user",
+						Timestamp:    newTS("2022-09-08T12:16:42Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "NewerThan=2022-08-14;MaxRows=1",
+			flt:  asset.ProbesFilter{NewerThan: newTS("2022-08-14T00:00:00Z"), MaxRows: 1},
+			expected: map[string][]asset.Probe{
+				"f-john-test-001": {
+					{
+						AssetURN:  "f-john-test-001",
+						Status:    "CANCELLED",
+						Timestamp: newTS("2022-09-23T14:39:57Z"),
+					},
+				},
+				"ten-mock": {
+					{
+						AssetURN:     "ten-mock",
+						Status:       "CANCELLED",
+						StatusReason: "Synergized bottom-line forecast",
+						Timestamp:    newTS("2022-09-11T07:40:11Z"),
+					},
+				},
+				"e-test-grant2": {
+					{
+						AssetURN:     "e-test-grant2",
+						Status:       "TERMINATED",
+						StatusReason: "Digitized asynchronous knowledge user",
+						Timestamp:    newTS("2022-09-08T12:16:42Z"),
+					},
+				},
+				"nine-mock": {
+					{
+						AssetURN:     "nine-mock",
+						Status:       "CANCELLED",
+						StatusReason: "User-friendly tertiary matrix",
+						Timestamp:    newTS("2022-08-14T14:20:20Z"),
+					},
+				},
+				"h-test-new-kafka": {
+					{
+						AssetURN:     "h-test-new-kafka",
+						Status:       "SUCCESS",
+						StatusReason: "User-friendly systematic neural-net",
+						Timestamp:    newTS("2022-08-14T03:04:44Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "OlderThan=2021-11-08;MaxRows=1",
+			flt:  asset.ProbesFilter{OlderThan: newTS("2021-11-08T00:00:00Z"), MaxRows: 1},
+			expected: map[string][]asset.Probe{
+				"i-undefined-dfgdgd-avi": {
+					{
+						AssetURN:     "i-undefined-dfgdgd-avi",
+						Status:       "SUCCESS",
+						StatusReason: "Persevering composite workforce",
+						Timestamp:    newTS("2021-11-07T12:16:41Z"),
+					},
+				},
+				"e-test-grant2": {
+					{
+						AssetURN:     "e-test-grant2",
+						Status:       "TERMINATED",
+						StatusReason: "Digitized asynchronous knowledge user",
+						Timestamp:    newTS("2022-09-08T12:16:42Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "AssetURNs=c-demo-kafka,e-test-grant2,nine-mock;MaxRows=1;NewerThan=2022-08-14;OlderThan=2022-09-11",
+			flt: asset.ProbesFilter{
+				AssetURNs: []string{"c-demo-kafka", "e-test-grant2", "nine-mock"},
+				NewerThan: newTS("2022-08-14T00:00:00Z"),
+				OlderThan: newTS("2022-09-11T00:00:00Z"),
+				MaxRows:   1,
+			},
+			expected: map[string][]asset.Probe{
+				"e-test-grant2": {
+					{
+						AssetURN:     "e-test-grant2",
+						Status:       "TERMINATED",
+						StatusReason: "Digitized asynchronous knowledge user",
+						Timestamp:    newTS("2022-09-08T12:16:42Z"),
+					},
+				},
+				"nine-mock": {
+					{
+						AssetURN:     "nine-mock",
+						Status:       "CANCELLED",
+						StatusReason: "User-friendly tertiary matrix",
+						Timestamp:    newTS("2022-08-14T14:20:20Z"),
+					},
+				},
+			},
+		},
+	}
+	for _, tc := range cases {
+		r.Run(tc.name, func() {
+			actual, err := r.repository.GetProbesWithFilter(r.ctx, tc.flt)
+			r.NoError(err)
+
+			r.ElementsMatch(keys(tc.expected), keys(actual), "Mismatch of URN keys in map")
+			for urn, expPrbs := range tc.expected {
+				actPrbs, ok := actual[urn]
+				if !ok || r.Lenf(actPrbs, len(expPrbs), "Mismatch in length of assets for URN '%s'", urn) {
+					continue
+				}
+
+				for i := range actPrbs {
+					r.assertProbe(r.T(), expPrbs[i], actPrbs[i])
+				}
+			}
+		})
+	}
+}
+
+func (r *AssetRepositoryTestSuite) insertProbes(t *testing.T) {
+	t.Helper()
+
+	probesJSON, err := os.ReadFile("./testdata/mock-probes-data.json")
+	r.Require().NoError(err)
+
+	var probes []asset.Probe
+	r.Require().NoError(json.Unmarshal(probesJSON, &probes))
+
+	for _, p := range probes {
+		r.Require().NoError(r.repository.AddProbe(r.ctx, p.AssetURN, &p))
+	}
+}
+
 func (r *AssetRepositoryTestSuite) assertAsset(expectedAsset *asset.Asset, actualAsset *asset.Asset) bool {
 	// sanitize time to make the assets comparable
 	expectedAsset.CreatedAt = time.Time{}
@@ -1384,6 +1757,16 @@ func (r *AssetRepositoryTestSuite) assertAsset(expectedAsset *asset.Asset, actua
 	actualAsset.UpdatedBy.UpdatedAt = time.Time{}
 
 	return r.Equal(expectedAsset, actualAsset)
+}
+
+func (r *AssetRepositoryTestSuite) assertProbe(t *testing.T, expected asset.Probe, actual asset.Probe) bool {
+	t.Helper()
+
+	return r.Equal(expected.AssetURN, actual.AssetURN) &&
+		r.Equal(expected.Status, actual.Status) &&
+		r.Equal(expected.StatusReason, actual.StatusReason) &&
+		r.Equal(expected.Metadata, actual.Metadata) &&
+		r.Equal(expected.Timestamp, actual.Timestamp)
 }
 
 func TestAssetRepository(t *testing.T) {

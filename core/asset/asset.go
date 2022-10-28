@@ -22,6 +22,7 @@ type Repository interface {
 	DeleteByURN(ctx context.Context, urn string) error
 	AddProbe(ctx context.Context, assetURN string, probe *Probe) error
 	GetProbes(ctx context.Context, assetURN string) ([]Probe, error)
+	GetProbesWithFilter(ctx context.Context, flt ProbesFilter) (map[string][]Probe, error)
 }
 
 // Asset is a model that wraps arbitrary data with Compass' context

@@ -33,6 +33,11 @@ type LineageRepository interface {
 
 type LineageGraph []LineageEdge
 
+type Lineage struct {
+	Edges     []LineageEdge             `json:"edges"`
+	NodeAttrs map[string]NodeAttributes `json:"node_attrs"`
+}
+
 type LineageEdge struct {
 	// Source represents source's node ID
 	Source string `json:"source"`
@@ -42,4 +47,12 @@ type LineageEdge struct {
 
 	// Prop is a map containing extra information about the edge
 	Prop map[string]interface{} `json:"prop"`
+}
+
+type NodeAttributes struct {
+	Probes ProbesInfo `json:"probes"`
+}
+
+type ProbesInfo struct {
+	Latest Probe `json:"latest"`
 }

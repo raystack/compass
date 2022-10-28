@@ -3,7 +3,7 @@ package elasticsearch_test
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/odpf/compass/core/asset"
@@ -246,7 +246,7 @@ func TestSearcherSuggest(t *testing.T) {
 }
 
 func loadTestFixture(esClient *store.Client, filePath string) (err error) {
-	testFixtureJSON, err := ioutil.ReadFile(filePath)
+	testFixtureJSON, err := os.ReadFile(filePath)
 	if err != nil {
 		return
 	}

@@ -32,7 +32,7 @@ type AssetService interface {
 	UpsertAsset(ctx context.Context, ast *asset.Asset, upstreams, downstreams []string) (string, error)
 	DeleteAsset(ctx context.Context, id string) error
 
-	GetLineage(ctx context.Context, urn string, query asset.LineageQuery) (asset.LineageGraph, error)
+	GetLineage(ctx context.Context, urn string, query asset.LineageQuery) (asset.Lineage, error)
 	GetTypes(ctx context.Context, flt asset.Filter) (map[asset.Type]int, error)
 
 	SearchAssets(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error)
