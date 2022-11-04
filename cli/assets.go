@@ -54,7 +54,6 @@ func listAllAssetsCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
-			cs := term.NewColorScheme()
 			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
 				return err
@@ -71,14 +70,14 @@ func listAllAssetsCommand() *cobra.Command {
 				report = append(report, []string{"ID", "TYPE", "SERVICE", "URN", "NAME", "VERSION"})
 				index := 1
 				for _, i := range res.GetData() {
-					report = append(report, []string{i.Id, i.Type, i.Service, i.Urn, cs.Bluef(i.Name), i.Version})
+					report = append(report, []string{i.Id, i.Type, i.Service, i.Urn, term.Bluef(i.Name), i.Version})
 					index++
 				}
 				printer.Table(os.Stdout, report)
 
-				fmt.Println(cs.Cyanf("To view all the data in JSON format, use flag `-o json`"))
+				fmt.Println(term.Cyanf("To view all the data in JSON format, use flag `-o json`"))
 			} else {
-				fmt.Println(cs.Bluef(prettyPrint(res.GetData())))
+				fmt.Println(term.Bluef(prettyPrint(res.GetData())))
 			}
 
 			return nil
@@ -140,7 +139,6 @@ func viewAssetByIDCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
-			cs := term.NewColorScheme()
 
 			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
@@ -158,7 +156,7 @@ func viewAssetByIDCommand() *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println(cs.Bluef(prettyPrint(res.GetData())))
+			fmt.Println(term.Bluef(prettyPrint(res.GetData())))
 			return nil
 		},
 	}
@@ -181,7 +179,6 @@ func editAssetCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
-			cs := term.NewColorScheme()
 
 			var reqBody compassv1beta1.UpsertPatchAssetRequest
 			if err := parseFile(filePath, &reqBody); err != nil {
@@ -210,7 +207,7 @@ func editAssetCommand() *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println("ID: \t", cs.Greenf(res.Id))
+			fmt.Println("ID: \t", term.Greenf(res.Id))
 			return nil
 		},
 	}
@@ -235,7 +232,6 @@ func deleteAssetByIDCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
-			cs := term.NewColorScheme()
 
 			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
@@ -252,7 +248,7 @@ func deleteAssetByIDCommand() *cobra.Command {
 				return err
 			}
 			spinner.Stop()
-			fmt.Println("Asset ", cs.Redf(assetID), " Deleted Successfully")
+			fmt.Println("Asset ", term.Redf(assetID), " Deleted Successfully")
 			return nil
 		},
 	}
