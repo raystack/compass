@@ -24,6 +24,7 @@ import (
 	"github.com/odpf/compass/pkg/statsd"
 	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
 	"github.com/odpf/salt/log"
+	"github.com/odpf/salt/mux"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
@@ -33,15 +34,17 @@ import (
 )
 
 type Config struct {
-	Host    string `mapstructure:"host" default:"0.0.0.0"`
-	Port    int    `mapstructure:"port" default:"8080"`
-	BaseUrl string `mapstructure:"baseurl" default:"localhost:8080"`
+	Host     string `mapstructure:"host" default:"0.0.0.0"`
+	Port     int    `mapstructure:"port" default:"8080"`
+	GRPCPort int    `mapstructure:"grpc_port" default:"8081"`
+	BaseUrl  string `mapstructure:"baseurl" default:"localhost:8080"`
 
 	// User Identity
 	Identity IdentityConfig `mapstructure:"identity"`
 }
 
-func (cfg Config) addr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.Port) }
+func (cfg Config) addr() string     { return fmt.Sprintf("%s:%d", cfg.Host, cfg.Port) }
+func (cfg Config) grpcAddr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.GRPCPort) }
 
 type IdentityConfig struct {
 	// User Identity
@@ -99,8 +102,7 @@ func Serve(
 
 	headerMatcher := makeHeaderMatcher(config)
 
-	address := config.addr()
-	grpcConn, err := grpc.DialContext(grpcDialCtx, address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	grpcConn, err := grpc.DialContext(grpcDialCtx, config.grpcAddr(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	}
@@ -127,35 +129,13 @@ func Serve(
 		return err
 	}
 
-	baseMux := http.NewServeMux()
-	baseMux.Handle("/", gwmux)
-
-	httpServer := &http.Server{
-		Handler:      grpcHandlerFunc(grpcServer, baseMux),
-		Addr:         address,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  120 * time.Second,
-	}
+	httpMux := http.NewServeMux()
+	httpMux.Handle("/", gwmux)
 
 	idleConnsClosed := make(chan struct{})
 	interrupt := make(chan os.Signal, 1)
 	go func() {
-		signal.Notify(interrupt, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 		<-interrupt
-
-		if httpServer != nil {
-			// We received an interrupt signal, shut down.
-			logger.Warn("stopping http server...")
-			if err := httpServer.Shutdown(context.Background()); err != nil {
-				logger.Error("HTTP server Shutdown", "err", err)
-			}
-		}
-
-		if grpcServer != nil {
-			logger.Warn("stopping grpc server...")
-			grpcServer.GracefulStop()
-		}
 
 		if pgClient != nil {
 			logger.Warn("closing db...")
@@ -167,10 +147,24 @@ func Serve(
 		close(idleConnsClosed)
 	}()
 
+	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
 	go func() {
 		defer func() { interrupt <- syscall.SIGTERM }()
-		if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
-			logger.Error("HTTP server ListenAndServe", "err", err)
+
+		if err := mux.Serve(
+			ctx,
+			mux.WithHTTPTarget(config.addr(), &http.Server{
+				Handler:      grpcHandlerFunc(grpcServer, httpMux),
+				ReadTimeout:  5 * time.Second,
+				WriteTimeout: 10 * time.Second,
+				IdleTimeout:  120 * time.Second,
+			}),
+			mux.WithGRPCTarget(config.grpcAddr(), grpcServer),
+			mux.WithGracePeriod(5*time.Second),
+		); err != nil {
+			logger.Error("mux serve error", "err", err)
 		}
 	}()
 
@@ -196,7 +190,7 @@ func makeHeaderMatcher(c Config) func(key string) (string, bool) {
 	}
 }
 
-// grpcHandlerFunc routes http1 calls to baseMux and http2 with grpc header to grpcServer.
+// grpcHandlerFunc routes http1 calls to httpMux and http2 with grpc header to grpcServer.
 // Using a single port for proxying both http1 & 2 protocols will degrade http performance
 // but for our usecase the convenience per performance tradeoff is better suited
 // if in future, this does become a bottleneck(which I highly doubt), we can break the service

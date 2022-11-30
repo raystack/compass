@@ -51,7 +51,6 @@ func listAllDiscussionsCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
-			cs := term.NewColorScheme()
 
 			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
@@ -75,9 +74,9 @@ func listAllDiscussionsCommand() *cobra.Command {
 				}
 				printer.Table(os.Stdout, report)
 
-				fmt.Println(cs.Cyanf("To view all the data in JSON format, use flag `-o json`"))
+				fmt.Println(term.Cyanf("To view all the data in JSON format, use flag `-o json`"))
 			} else {
-				fmt.Println(cs.Bluef(prettyPrint(res.GetData())))
+				fmt.Println(term.Bluef(prettyPrint(res.GetData())))
 			}
 
 			return nil
@@ -102,7 +101,6 @@ func viewDiscussionByIDCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
-			cs := term.NewColorScheme()
 
 			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
@@ -120,7 +118,7 @@ func viewDiscussionByIDCommand() *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println(cs.Bluef(prettyPrint(res.GetData())))
+			fmt.Println(term.Bluef(prettyPrint(res.GetData())))
 			return nil
 		},
 	}
@@ -143,7 +141,6 @@ func postDiscussionCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
-			cs := term.NewColorScheme()
 
 			var reqBody compassv1beta1.Discussion
 			if err := parseFile(filePath, &reqBody); err != nil {
@@ -175,7 +172,7 @@ func postDiscussionCommand() *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println("ID: \t", cs.Greenf(res.Id))
+			fmt.Println("ID: \t", term.Greenf(res.Id))
 			return nil
 		},
 	}
