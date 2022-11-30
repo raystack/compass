@@ -30,6 +30,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -92,6 +93,7 @@ func Serve(
 			grpc_interceptor.UserHeaderCtx(config.Identity.HeaderKeyUUID, config.Identity.HeaderKeyEmail),
 		)),
 	)
+	reflection.Register(grpcServer)
 
 	compassv1beta1.RegisterCompassServiceServer(grpcServer, v1beta1Handler)
 	grpc_health_v1.RegisterHealthServer(grpcServer, healthHandler)
@@ -135,6 +137,7 @@ func Serve(
 	idleConnsClosed := make(chan struct{})
 	interrupt := make(chan os.Signal, 1)
 	go func() {
+		signal.Notify(interrupt, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 		<-interrupt
 
 		if pgClient != nil {
@@ -142,13 +145,11 @@ func Serve(
 			if err := pgClient.Close(); err != nil {
 				logger.Error("error when closing db", "err", err)
 			}
+			logger.Warn("db closed...")
 		}
 
 		close(idleConnsClosed)
 	}()
-
-	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
 
 	go func() {
 		defer func() { interrupt <- syscall.SIGTERM }()
@@ -163,7 +164,7 @@ func Serve(
 			}),
 			mux.WithGRPCTarget(config.grpcAddr(), grpcServer),
 			mux.WithGracePeriod(5*time.Second),
-		); err != nil {
+		); err != ctx.Err() {
 			logger.Error("mux serve error", "err", err)
 		}
 	}()
