@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -22,8 +23,6 @@ import (
 	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
 	"github.com/odpf/salt/log"
 	"github.com/odpf/salt/mux"
-	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -128,30 +127,29 @@ func Serve(
 		return err
 	}
 
-	httpMux := http.NewServeMux()
-	httpMux.Handle("/", gwmux)
+	defer func() {
+		if pgClient != nil {
+			logger.Warn("closing db...")
+			if err := pgClient.Close(); err != nil {
+				logger.Error("error when closing db", "err", err)
+			}
+			logger.Warn("db closed...")
+		}
+	}()
 
-	logger.Info("server started")
+	logger.Info("Starting server", "http_port", config.addr(), "grpc_port", config.grpcAddr())
 	if err := mux.Serve(
 		ctx,
 		mux.WithHTTPTarget(config.addr(), &http.Server{
-			Handler:      grpcHandlerFunc(grpcServer, httpMux),
+			Handler:      gwmux,
 			ReadTimeout:  5 * time.Second,
 			WriteTimeout: 10 * time.Second,
 			IdleTimeout:  120 * time.Second,
 		}),
 		mux.WithGRPCTarget(config.grpcAddr(), grpcServer),
 		mux.WithGracePeriod(5*time.Second),
-	); err != ctx.Err() {
+	); !errors.Is(err, context.Canceled) {
 		logger.Error("mux serve error", "err", err)
-	}
-
-	if pgClient != nil {
-		logger.Warn("closing db...")
-		if err := pgClient.Close(); err != nil {
-			logger.Error("error when closing db", "err", err)
-		}
-		logger.Warn("db closed...")
 	}
 
 	logger.Info("server stopped")
@@ -170,21 +168,4 @@ func makeHeaderMatcher(c Config) func(key string) (string, bool) {
 			return runtime.DefaultHeaderMatcher(key)
 		}
 	}
-}
-
-// grpcHandlerFunc routes http1 calls to httpMux and http2 with grpc header to grpcServer.
-// Using a single port for proxying both http1 & 2 protocols will degrade http performance
-// but for our usecase the convenience per performance tradeoff is better suited
-// if in future, this does become a bottleneck(which I highly doubt), we can break the service
-// into two ports, default port for grpc and default+1 for grpc-gateway proxy.
-// We can also use something like a connection multiplexer
-// https://github.com/soheilhy/cmux to achieve the same.
-func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Handler {
-	return h2c.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
-			grpcServer.ServeHTTP(w, r)
-		} else {
-			otherHandler.ServeHTTP(w, r)
-		}
-	}), &http2.Server{})
 }
