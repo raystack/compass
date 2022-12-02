@@ -4,10 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -134,44 +131,28 @@ func Serve(
 	httpMux := http.NewServeMux()
 	httpMux.Handle("/", gwmux)
 
-	idleConnsClosed := make(chan struct{})
-	interrupt := make(chan os.Signal, 1)
-	go func() {
-		signal.Notify(interrupt, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-		<-interrupt
-
-		if pgClient != nil {
-			logger.Warn("closing db...")
-			if err := pgClient.Close(); err != nil {
-				logger.Error("error when closing db", "err", err)
-			}
-			logger.Warn("db closed...")
-		}
-
-		close(idleConnsClosed)
-	}()
-
-	go func() {
-		defer func() { interrupt <- syscall.SIGTERM }()
-
-		if err := mux.Serve(
-			ctx,
-			mux.WithHTTPTarget(config.addr(), &http.Server{
-				Handler:      grpcHandlerFunc(grpcServer, httpMux),
-				ReadTimeout:  5 * time.Second,
-				WriteTimeout: 10 * time.Second,
-				IdleTimeout:  120 * time.Second,
-			}),
-			mux.WithGRPCTarget(config.grpcAddr(), grpcServer),
-			mux.WithGracePeriod(5*time.Second),
-		); err != ctx.Err() {
-			logger.Error("mux serve error", "err", err)
-		}
-	}()
-
 	logger.Info("server started")
+	if err := mux.Serve(
+		ctx,
+		mux.WithHTTPTarget(config.addr(), &http.Server{
+			Handler:      grpcHandlerFunc(grpcServer, httpMux),
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 10 * time.Second,
+			IdleTimeout:  120 * time.Second,
+		}),
+		mux.WithGRPCTarget(config.grpcAddr(), grpcServer),
+		mux.WithGracePeriod(5*time.Second),
+	); err != ctx.Err() {
+		logger.Error("mux serve error", "err", err)
+	}
 
-	<-idleConnsClosed
+	if pgClient != nil {
+		logger.Warn("closing db...")
+		if err := pgClient.Close(); err != nil {
+			logger.Error("error when closing db", "err", err)
+		}
+		logger.Warn("db closed...")
+	}
 
 	logger.Info("server stopped")
 
