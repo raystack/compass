@@ -452,6 +452,8 @@ Returns the lineage graph. Each entry in the graph describes a (edge) directed r
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
 | urn | path |  | Yes | string |
+| level | query |  | No | long |
+| direction | query |  | No | string |
 
 ##### Responses
 

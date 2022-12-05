@@ -7,6 +7,9 @@ services:
       discovery.type: single-node
     networks:
       - storage
+    volumes:
+      - ./temp/esdata:/usr/share/elasticsearch/data
+
   postgres:
     ports:
       - 5432:5432
@@ -17,5 +20,8 @@ services:
       POSTGRES_DB: compass
     networks:
       - storage
-networks: 
+    volumes:
+      - ./temp/pgdata:/var/lib/postgresql/data
+
+networks:
   storage:

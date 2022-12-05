@@ -17,12 +17,12 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/internal/server/health"
 	handlersv1beta1 "github.com/odpf/compass/internal/server/v1beta1"
 	"github.com/odpf/compass/internal/store/postgres"
 	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"github.com/odpf/compass/pkg/statsd"
+	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
 	"github.com/odpf/salt/log"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -94,7 +94,7 @@ func Serve(
 	grpc_health_v1.RegisterHealthServer(grpcServer, healthHandler)
 
 	// init http proxy
-	grpcDialCtx, grpcDialCancel := context.WithTimeout(context.Background(), time.Second*5)
+	grpcDialCtx, grpcDialCancel := context.WithTimeout(ctx, time.Second*5)
 	defer grpcDialCancel()
 
 	headerMatcher := makeHeaderMatcher(config)
@@ -105,7 +105,7 @@ func Serve(
 		return err
 	}
 
-	runtimeCtx, runtimeCancel := context.WithCancel(context.Background())
+	runtimeCtx, runtimeCancel := context.WithCancel(ctx)
 	defer runtimeCancel()
 
 	gwmux := runtime.NewServeMux(

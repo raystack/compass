@@ -2,6 +2,9 @@ package asset
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/google/uuid"
 )
 
 type Service struct {
@@ -35,7 +38,7 @@ func (s *Service) GetAllAssets(ctx context.Context, flt Filter, withTotal bool) 
 	return assets, totalCount, nil
 }
 
-func (s *Service) UpsertPatchAsset(ctx context.Context, ast *Asset, upstreams, downstreams []LineageNode) (string, error) {
+func (s *Service) UpsertAsset(ctx context.Context, ast *Asset, upstreams, downstreams []string) (string, error) {
 	var assetID string
 	var err error
 
@@ -49,13 +52,7 @@ func (s *Service) UpsertPatchAsset(ctx context.Context, ast *Asset, upstreams, d
 		return assetID, err
 	}
 
-	node := LineageNode{
-		URN:     ast.URN,
-		Type:    ast.Type,
-		Service: ast.Service,
-	}
-
-	if err := s.lineageRepository.Upsert(ctx, node, upstreams, downstreams); err != nil {
+	if err := s.lineageRepository.Upsert(ctx, ast.URN, upstreams, downstreams); err != nil {
 		return assetID, err
 	}
 
@@ -63,23 +60,40 @@ func (s *Service) UpsertPatchAsset(ctx context.Context, ast *Asset, upstreams, d
 }
 
 func (s *Service) DeleteAsset(ctx context.Context, id string) error {
-	if err := s.assetRepository.Delete(ctx, id); err != nil {
+	if isValidUUID(id) {
+		if err := s.assetRepository.DeleteByID(ctx, id); err != nil {
+			return err
+		}
+
+		return s.discoveryRepository.DeleteByID(ctx, id)
+	}
+
+	if err := s.assetRepository.DeleteByURN(ctx, id); err != nil {
 		return err
 	}
 
-	if err := s.discoveryRepository.Delete(ctx, id); err != nil {
-		return err
+	return s.discoveryRepository.DeleteByURN(ctx, id)
+}
+
+func (s *Service) GetAssetByID(ctx context.Context, id string) (ast Asset, err error) {
+	if isValidUUID(id) {
+		if ast, err = s.assetRepository.GetByID(ctx, id); err != nil {
+			return Asset{}, fmt.Errorf("error when getting asset by id: %w", err)
+		}
+	} else {
+		if ast, err = s.assetRepository.GetByURN(ctx, id); err != nil {
+			return Asset{}, fmt.Errorf("error when getting asset by urn: %w", err)
+		}
 	}
 
-	return nil
-}
+	probes, err := s.assetRepository.GetProbes(ctx, ast.URN)
+	if err != nil {
+		return Asset{}, fmt.Errorf("error when getting probes: %w", err)
+	}
 
-func (s *Service) GetAssetByID(ctx context.Context, id string) (Asset, error) {
-	return s.assetRepository.GetByID(ctx, id)
-}
+	ast.Probes = probes
 
-func (s *Service) GetAssetByURN(ctx context.Context, urn string, typ Type, service string) (Asset, error) {
-	return s.assetRepository.Find(ctx, urn, typ, service)
+	return
 }
 
 func (s *Service) GetAssetByVersion(ctx context.Context, id string, version string) (Asset, error) {
@@ -90,8 +104,34 @@ func (s *Service) GetAssetVersionHistory(ctx context.Context, flt Filter, id str
 	return s.assetRepository.GetVersionHistory(ctx, flt, id)
 }
 
-func (s *Service) GetLineage(ctx context.Context, node LineageNode) (LineageGraph, error) {
-	return s.lineageRepository.GetGraph(ctx, node)
+func (s *Service) AddProbe(ctx context.Context, assetURN string, probe *Probe) error {
+	return s.assetRepository.AddProbe(ctx, assetURN, probe)
+}
+
+func (s *Service) GetLineage(ctx context.Context, urn string, query LineageQuery) (Lineage, error) {
+	edges, err := s.lineageRepository.GetGraph(ctx, urn, query)
+	if err != nil {
+		return Lineage{}, fmt.Errorf("get lineage: get graph edges: %w", err)
+	}
+
+	urns := newUniqueStrings(len(edges))
+	urns.add(urn)
+	for _, edge := range edges {
+		urns.add(edge.Source, edge.Target)
+	}
+
+	assetProbes, err := s.assetRepository.GetProbesWithFilter(ctx, ProbesFilter{
+		AssetURNs: urns.list(),
+		MaxRows:   1,
+	})
+	if err != nil {
+		return Lineage{}, fmt.Errorf("get lineage: get latest probes: %w", err)
+	}
+
+	return Lineage{
+		Edges:     edges,
+		NodeAttrs: buildNodeAttrs(assetProbes),
+	}, nil
 }
 
 func (s *Service) GetTypes(ctx context.Context, flt Filter) (map[Type]int, error) {
@@ -107,4 +147,24 @@ func (s *Service) SearchAssets(ctx context.Context, cfg SearchConfig) (results [
 }
 func (s *Service) SuggestAssets(ctx context.Context, cfg SearchConfig) (suggestions []string, err error) {
 	return s.discoveryRepository.Suggest(ctx, cfg)
+}
+
+func isValidUUID(u string) bool {
+	_, err := uuid.Parse(u)
+	return err == nil
+}
+
+func buildNodeAttrs(assetProbes map[string][]Probe) map[string]NodeAttributes {
+	nodeAttrs := make(map[string]NodeAttributes, len(assetProbes))
+	for urn, probes := range assetProbes {
+		if len(probes) == 0 {
+			continue
+		}
+
+		nodeAttrs[urn] = NodeAttributes{
+			Probes: ProbesInfo{Latest: probes[0]},
+		}
+	}
+
+	return nodeAttrs
 }

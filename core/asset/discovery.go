@@ -7,7 +7,8 @@ import (
 
 type DiscoveryRepository interface {
 	Upsert(context.Context, Asset) error
-	Delete(ctx context.Context, assetID string) error
+	DeleteByID(ctx context.Context, assetID string) error
+	DeleteByURN(ctx context.Context, assetURN string) error
 	Search(ctx context.Context, cfg SearchConfig) (results []SearchResult, err error)
 	Suggest(ctx context.Context, cfg SearchConfig) (suggestions []string, err error)
 }

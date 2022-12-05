@@ -10,14 +10,15 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
-	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/asset"
 	"github.com/odpf/compass/core/star"
 	"github.com/odpf/compass/core/user"
 	"github.com/odpf/compass/internal/server/v1beta1/mocks"
+	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
 	"github.com/odpf/salt/log"
 	"github.com/r3labs/diff/v2"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -194,8 +195,30 @@ func TestGetAssetByID(t *testing.T) {
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
 		assetID  = uuid.NewString()
+		now      = time.Now()
 		ast      = asset.Asset{
 			ID: assetID,
+			Probes: []asset.Probe{
+				{
+					ID:           uuid.NewString(),
+					AssetURN:     assetID,
+					Status:       "RUNNING",
+					StatusReason: "reason-1",
+					Metadata: map[string]interface{}{
+						"foo": "bar",
+					},
+					Timestamp: now,
+					CreatedAt: now.Add(-24 * time.Hour),
+				},
+				{
+					ID:           uuid.NewString(),
+					AssetURN:     assetID,
+					Status:       "FAILED",
+					StatusReason: "reason-2",
+					Timestamp:    now.Add(2 * time.Hour),
+					CreatedAt:    now.Add(-26 * time.Hour),
+				},
+			},
 		}
 	)
 
@@ -238,7 +261,212 @@ func TestGetAssetByID(t *testing.T) {
 				expected := &compassv1beta1.GetAssetByIDResponse{
 					Data: &compassv1beta1.Asset{
 						Id: assetID,
+						Probes: []*compassv1beta1.Probe{
+							{
+								Id:           ast.Probes[0].ID,
+								AssetUrn:     ast.Probes[0].AssetURN,
+								Status:       ast.Probes[0].Status,
+								StatusReason: ast.Probes[0].StatusReason,
+								Metadata:     newStructpb(t, ast.Probes[0].Metadata),
+								Timestamp:    timestamppb.New(ast.Probes[0].Timestamp),
+								CreatedAt:    timestamppb.New(ast.Probes[0].CreatedAt),
+							},
+							{
+								Id:           ast.Probes[1].ID,
+								AssetUrn:     ast.Probes[1].AssetURN,
+								Status:       ast.Probes[1].Status,
+								StatusReason: ast.Probes[1].StatusReason,
+								Timestamp:    timestamppb.New(ast.Probes[1].Timestamp),
+								CreatedAt:    timestamppb.New(ast.Probes[1].CreatedAt),
+							},
+						},
 					},
+				}
+				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
+					return fmt.Errorf("mismatch (-want +got):\n%s", diff)
+				}
+				return nil
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+
+			logger := log.NewNoop()
+			mockUserSvc := mocks.NewUserService(t)
+			mockAssetSvc := mocks.NewAssetService(t)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockAssetSvc)
+			}
+
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+
+			got, err := handler.GetAssetByID(ctx, &compassv1beta1.GetAssetByIDRequest{Id: assetID})
+			code := status.Code(err)
+			if code != tc.ExpectStatus {
+				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
+				return
+			}
+			if tc.PostCheck != nil {
+				if err := tc.PostCheck(got); err != nil {
+					t.Error(err)
+					return
+				}
+			}
+		})
+	}
+}
+
+func TestUpsertAsset(t *testing.T) {
+	var (
+		userID       = uuid.NewString()
+		userUUID     = uuid.NewString()
+		assetID      = uuid.NewString()
+		validPayload = &compassv1beta1.UpsertAssetRequest{
+			Asset: &compassv1beta1.UpsertAssetRequest_Asset{
+				Urn:     "test dagger",
+				Type:    "table",
+				Name:    "new-name",
+				Service: "kafka",
+				Data:    &structpb.Struct{},
+				Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "", Email: "email@email.com", Provider: "provider"}},
+			},
+			Upstreams: []*compassv1beta1.LineageNode{
+				{
+					Urn:     "upstream-1",
+					Type:    "job",
+					Service: "optimus",
+				},
+			},
+			Downstreams: []*compassv1beta1.LineageNode{
+				{
+					Urn:     "downstream-1",
+					Type:    "dashboard",
+					Service: "metabase",
+				},
+				{
+					Urn:     "downstream-2",
+					Type:    "dashboard",
+					Service: "tableau",
+				},
+			},
+		}
+	)
+	type testCase struct {
+		Description  string
+		Request      *compassv1beta1.UpsertAssetRequest
+		ExpectStatus codes.Code
+		Setup        func(context.Context, *mocks.AssetService)
+		PostCheck    func(resp *compassv1beta1.UpsertAssetResponse) error
+	}
+
+	var testCases = []testCase{
+		{
+			Description:  "empty payload will return invalid argument",
+			Request:      &compassv1beta1.UpsertAssetRequest{},
+			ExpectStatus: codes.InvalidArgument,
+		},
+		{
+			Description:  "empty asset will return invalid argument",
+			Request:      &compassv1beta1.UpsertAssetRequest{Asset: &compassv1beta1.UpsertAssetRequest_Asset{}},
+			ExpectStatus: codes.InvalidArgument,
+		},
+		{
+			Description: "empty urn will return invalid argument",
+			Request: &compassv1beta1.UpsertAssetRequest{
+				Asset: &compassv1beta1.UpsertAssetRequest_Asset{
+					Urn:     "",
+					Name:    "some-name",
+					Data:    &structpb.Struct{},
+					Service: "some-service",
+					Type:    "table",
+				},
+			},
+			ExpectStatus: codes.InvalidArgument,
+		},
+		{
+			Description: "empty service will return invalid argument",
+			Request: &compassv1beta1.UpsertAssetRequest{
+				Asset: &compassv1beta1.UpsertAssetRequest_Asset{
+					Urn:     "some-urn",
+					Name:    "some-name",
+					Data:    &structpb.Struct{},
+					Service: "",
+					Type:    "table",
+				},
+			},
+			ExpectStatus: codes.InvalidArgument,
+		},
+		{
+			Description: "empty type will return invalid argument",
+			Request: &compassv1beta1.UpsertAssetRequest{
+				Asset: &compassv1beta1.UpsertAssetRequest_Asset{
+					Urn:     "some-urn",
+					Name:    "some-name",
+					Data:    &structpb.Struct{},
+					Service: "some-service",
+					Type:    "",
+				},
+			},
+			ExpectStatus: codes.InvalidArgument,
+		},
+		{
+			Description: "invalid type will return invalid argument",
+			Request: &compassv1beta1.UpsertAssetRequest{
+				Asset: &compassv1beta1.UpsertAssetRequest_Asset{
+					Urn:     "some-urn",
+					Name:    "some-name",
+					Data:    &structpb.Struct{},
+					Service: "some-service",
+					Type:    "invalid type",
+				},
+			},
+			ExpectStatus: codes.InvalidArgument,
+		},
+		{
+			Description: "should return internal server error when upserting asset service failed",
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				expectedErr := errors.New("unknown error")
+				as.EXPECT().UpsertAsset(
+					ctx,
+					mock.AnythingOfType("*asset.Asset"),
+					mock.AnythingOfType("[]string"),
+					mock.AnythingOfType("[]string"),
+				).Return("", expectedErr)
+			},
+			Request:      validPayload,
+			ExpectStatus: codes.Internal,
+		},
+		{
+			Description: "should return OK and asset's ID if the asset is successfully created/updated",
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				ast := asset.Asset{
+					URN:       "test dagger",
+					Type:      asset.TypeTable,
+					Name:      "new-name",
+					Service:   "kafka",
+					UpdatedBy: user.User{ID: userID},
+					Data:      map[string]interface{}{},
+					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
+				}
+				upstreams := []string{"upstream-1"}
+				downstreams := []string{"downstream-1", "downstream-2"}
+
+				assetWithID := ast
+				assetWithID.ID = assetID
+
+				as.EXPECT().UpsertAsset(ctx, &ast, upstreams, downstreams).Return(assetWithID.ID, nil).Run(func(ctx context.Context, ast *asset.Asset, upstreams, downstreams []string) {
+					ast.ID = assetWithID.ID
+				})
+			},
+			Request:      validPayload,
+			ExpectStatus: codes.OK,
+			PostCheck: func(resp *compassv1beta1.UpsertAssetResponse) error {
+				expected := &compassv1beta1.UpsertAssetResponse{
+					Id: assetID,
 				}
 				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
 					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
@@ -264,7 +492,7 @@ func TestGetAssetByID(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
-			got, err := handler.GetAssetByID(ctx, &compassv1beta1.GetAssetByIDRequest{Id: assetID})
+			got, err := handler.UpsertAsset(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
 				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
@@ -286,12 +514,13 @@ func TestUpsertPatchAsset(t *testing.T) {
 		userUUID     = uuid.NewString()
 		assetID      = uuid.NewString()
 		validPayload = &compassv1beta1.UpsertPatchAssetRequest{
-			Asset: &compassv1beta1.UpsertPatchAssetRequest_BaseAsset{
+			Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
 				Urn:     "test dagger",
 				Type:    "table",
 				Name:    wrapperspb.String("new-name"),
 				Service: "kafka",
 				Data:    &structpb.Struct{},
+				Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "", Email: "email@email.com", Provider: "provider"}},
 			},
 			Upstreams: []*compassv1beta1.LineageNode{
 				{
@@ -320,6 +549,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Service:   "kafka",
 			UpdatedBy: user.User{ID: userID},
 			Data:      map[string]interface{}{},
+			Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
 		}
 	)
 	type testCase struct {
@@ -338,13 +568,13 @@ func TestUpsertPatchAsset(t *testing.T) {
 		},
 		{
 			Description:  "empty asset will return invalid argument",
-			Request:      &compassv1beta1.UpsertPatchAssetRequest{Asset: &compassv1beta1.UpsertPatchAssetRequest_BaseAsset{}},
+			Request:      &compassv1beta1.UpsertPatchAssetRequest{Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{}},
 			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description: "empty urn will return invalid argument",
 			Request: &compassv1beta1.UpsertPatchAssetRequest{
-				Asset: &compassv1beta1.UpsertPatchAssetRequest_BaseAsset{
+				Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
 					Urn:     "",
 					Name:    wrapperspb.String("some-name"),
 					Data:    &structpb.Struct{},
@@ -357,7 +587,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 		{
 			Description: "empty service will return invalid argument",
 			Request: &compassv1beta1.UpsertPatchAssetRequest{
-				Asset: &compassv1beta1.UpsertPatchAssetRequest_BaseAsset{
+				Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
 					Urn:     "some-urn",
 					Name:    wrapperspb.String("some-name"),
 					Data:    &structpb.Struct{},
@@ -370,7 +600,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 		{
 			Description: "empty type will return invalid argument",
 			Request: &compassv1beta1.UpsertPatchAssetRequest{
-				Asset: &compassv1beta1.UpsertPatchAssetRequest_BaseAsset{
+				Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
 					Urn:     "some-urn",
 					Name:    wrapperspb.String("some-name"),
 					Data:    &structpb.Struct{},
@@ -383,7 +613,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 		{
 			Description: "invalid type will return invalid argument",
 			Request: &compassv1beta1.UpsertPatchAssetRequest{
-				Asset: &compassv1beta1.UpsertPatchAssetRequest_BaseAsset{
+				Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
 					Urn:     "some-urn",
 					Name:    wrapperspb.String("some-name"),
 					Data:    &structpb.Struct{},
@@ -397,7 +627,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Description: "should return internal server error when finding asset failed",
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
 				expectedErr := errors.New("unknown error")
-				as.EXPECT().GetAssetByURN(ctx, "test dagger", asset.TypeTable, "kafka").Return(currentAsset, expectedErr)
+				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, expectedErr)
 			},
 			Request:      validPayload,
 			ExpectStatus: codes.Internal,
@@ -406,8 +636,8 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Description: "should return internal server error when upserting asset service failed",
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
 				expectedErr := errors.New("unknown error")
-				as.EXPECT().GetAssetByURN(ctx, "test dagger", asset.TypeTable, "kafka").Return(currentAsset, nil)
-				as.EXPECT().UpsertPatchAsset(ctx, mock.AnythingOfType("*asset.Asset"), mock.AnythingOfType("[]asset.LineageNode"), mock.AnythingOfType("[]asset.LineageNode")).Return("1234-5678", expectedErr)
+				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
+				as.EXPECT().UpsertAsset(ctx, mock.AnythingOfType("*asset.Asset"), mock.AnythingOfType("[]string"), mock.AnythingOfType("[]string")).Return("1234-5678", expectedErr)
 			},
 			Request:      validPayload,
 			ExpectStatus: codes.Internal,
@@ -422,20 +652,16 @@ func TestUpsertPatchAsset(t *testing.T) {
 					Service:   "kafka",
 					UpdatedBy: user.User{ID: userID},
 					Data:      map[string]interface{}{},
+					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
 				}
-				upstreams := []asset.LineageNode{
-					{URN: "upstream-1", Type: asset.TypeJob, Service: "optimus"},
-				}
-				downstreams := []asset.LineageNode{
-					{URN: "downstream-1", Type: asset.TypeDashboard, Service: "metabase"},
-					{URN: "downstream-2", Type: asset.TypeDashboard, Service: "tableau"},
-				}
+				upstreams := []string{"upstream-1"}
+				downstreams := []string{"downstream-1", "downstream-2"}
 
 				assetWithID := patchedAsset
 				assetWithID.ID = assetID
 
-				as.EXPECT().GetAssetByURN(ctx, "test dagger", asset.TypeTable, "kafka").Return(currentAsset, nil)
-				as.EXPECT().UpsertPatchAsset(ctx, &patchedAsset, upstreams, downstreams).Return(assetWithID.ID, nil).Run(func(ctx context.Context, ast *asset.Asset, upstreams, downstreams []asset.LineageNode) {
+				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
+				as.EXPECT().UpsertAsset(ctx, &patchedAsset, upstreams, downstreams).Return(assetWithID.ID, nil).Run(func(ctx context.Context, ast *asset.Asset, upstreams, downstreams []string) {
 					patchedAsset.ID = assetWithID.ID
 				})
 			},
@@ -875,17 +1101,151 @@ func TestGetAssetByVersion(t *testing.T) {
 	}
 }
 
+func TestCreateAssetProbe(t *testing.T) {
+	var (
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+		assetURN = "test-urn"
+		now      = time.Now().UTC()
+		probeID  = uuid.NewString()
+	)
+
+	type testCase struct {
+		Description  string
+		Request      *compassv1beta1.CreateAssetProbeRequest
+		ExpectStatus codes.Code
+		Setup        func(context.Context, *mocks.AssetService)
+		PostCheck    func(resp *compassv1beta1.CreateAssetProbeResponse) error
+	}
+
+	var testCases = []testCase{
+		{
+			Description:  `should return error if status is missing`,
+			ExpectStatus: codes.InvalidArgument,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
+					Timestamp: timestamppb.New(now),
+				},
+			},
+		},
+		{
+			Description:  `should return error if timestamp is missing`,
+			ExpectStatus: codes.InvalidArgument,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
+					Status: "RUNNING",
+				},
+			},
+		},
+		{
+			Description:  `should return not found if asset doesn't exist`,
+			ExpectStatus: codes.NotFound,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
+					Status:    "RUNNING",
+					Timestamp: timestamppb.New(now),
+				},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				as.EXPECT().
+					AddProbe(ctx, assetURN, mock.AnythingOfType("*asset.Probe")).
+					Return(asset.NotFoundError{URN: assetURN})
+			},
+		},
+		{
+			Description:  `should return internal server error if adding probe fails`,
+			ExpectStatus: codes.Internal,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
+					Status:    "RUNNING",
+					Timestamp: timestamppb.New(now),
+				},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				as.EXPECT().
+					AddProbe(ctx, assetURN, mock.AnythingOfType("*asset.Probe")).
+					Return(errors.New("unknown error"))
+			},
+		},
+		{
+			Description:  "should return probe on success",
+			ExpectStatus: codes.OK,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
+					Status:       "FINISHED",
+					StatusReason: "test reason",
+					Timestamp:    timestamppb.New(now),
+					Metadata: newStructpb(t, map[string]interface{}{
+						"foo1": "bar1",
+						"foo2": "bar2",
+					}),
+				},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				expectedProbe := &asset.Probe{
+					Status:       "FINISHED",
+					StatusReason: "test reason",
+					Timestamp:    now,
+					Metadata: map[string]interface{}{
+						"foo1": "bar1",
+						"foo2": "bar2",
+					},
+				}
+				as.EXPECT().AddProbe(ctx, assetURN, expectedProbe).Run(func(ctx context.Context, assetURN string, probe *asset.Probe) {
+					probe.ID = probeID
+				}).Return(nil)
+			},
+			PostCheck: func(resp *compassv1beta1.CreateAssetProbeResponse) error {
+				expected := &compassv1beta1.CreateAssetProbeResponse{
+					Id: probeID,
+				}
+				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
+					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
+				}
+				return nil
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+
+			logger := log.NewNoop()
+			mockUserSvc := mocks.NewUserService(t)
+			mockAssetSvc := mocks.NewAssetService(t)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockAssetSvc)
+			}
+
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+
+			got, err := handler.CreateAssetProbe(ctx, tc.Request)
+			code := status.Code(err)
+			if code != tc.ExpectStatus {
+				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
+				return
+			}
+			if tc.PostCheck != nil {
+				if err := tc.PostCheck(got); err != nil {
+					t.Error(err)
+					return
+				}
+			}
+		})
+	}
+}
+
 func TestAssetToProto(t *testing.T) {
 	timeDummy := time.Date(2000, time.January, 7, 0, 0, 0, 0, time.UTC)
 	dataPB, err := structpb.NewStruct(map[string]interface{}{
 		"data1": "datavalue1",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	labelPB, err := structpb.NewStruct(map[string]interface{}{
-		"label1": "labelvalue1",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -925,10 +1285,12 @@ func TestAssetToProto(t *testing.T) {
 				UpdatedAt: timeDummy,
 			},
 			ExpectProto: &compassv1beta1.Asset{
-				Id:     "id1",
-				Urn:    "urn1",
-				Data:   dataPB,
-				Labels: labelPB,
+				Id:   "id1",
+				Urn:  "urn1",
+				Data: dataPB,
+				Labels: map[string]string{
+					"label1": "labelvalue1",
+				},
 				Changelog: []*compassv1beta1.Change{
 					{
 
@@ -965,13 +1327,6 @@ func TestAssetFromProto(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	labelPB, err := structpb.NewStruct(map[string]interface{}{
-		"label1": "labelvalue1",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	type testCase struct {
 		Title       string
 		AssetPB     *compassv1beta1.Asset
@@ -987,11 +1342,13 @@ func TestAssetFromProto(t *testing.T) {
 		{
 			Title: "should return non empty labels, data, and owners if all pb is not empty",
 			AssetPB: &compassv1beta1.Asset{
-				Id:     "id1",
-				Urn:    "urn1",
-				Name:   "name1",
-				Data:   dataPB,
-				Labels: labelPB,
+				Id:   "id1",
+				Urn:  "urn1",
+				Name: "name1",
+				Data: dataPB,
+				Labels: map[string]string{
+					"label1": "labelvalue1",
+				},
 				Owners: []*compassv1beta1.User{
 					{
 						Id: "uid1",
@@ -1050,4 +1407,11 @@ func TestAssetFromProto(t *testing.T) {
 			}
 		})
 	}
+}
+
+func newStructpb(t *testing.T, v map[string]interface{}) *structpb.Struct {
+	res, err := structpb.NewStruct(v)
+	require.NoError(t, err)
+
+	return res
 }

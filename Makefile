@@ -1,7 +1,7 @@
 NAME="github.com/odpf/compass"
 VERSION=$(shell git describe --always --tags 2>/dev/null)
 COVERFILE="/tmp/compass.coverprofile"
-PROTON_COMMIT := "a5cae3d372dc9741659b19f20a203b9278431356"
+PROTON_COMMIT := "838f2a8c9ddc8fa6dfbd6f3ebe6201e76e2368f2"
 .PHONY: all build test clean install proto
 
 all: build
@@ -39,15 +39,10 @@ proto: ## Generate the protobuf files
 install: ## install required dependencies
 	@echo "> installing dependencies"
 	go mod tidy
-	go install github.com/vektra/mockery/v2@v2.12.2
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.0
+	go install github.com/vektra/mockery/v2@v2.14.0
 	go get google.golang.org/protobuf/proto@v1.28.0
 	go get google.golang.org/grpc@v1.46.0
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2.0
-	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.9.0
-	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.9.0
 	go install github.com/bufbuild/buf/cmd/buf@v1.4.0
-	go install github.com/envoyproxy/protoc-gen-validate@v0.6.7
 
 update-swagger-md:
-	npx swagger-markdown -i third_party/OpenAPI/compass.swagger.yaml -o docs/reference/api.md
+	npx swagger-markdown -i proto/compass.swagger.yaml -o docs/docs/reference/api.md

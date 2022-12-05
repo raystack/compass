@@ -110,78 +110,55 @@ func (r *AssetRepository) GetCount(ctx context.Context, flt asset.Filter) (total
 }
 
 // GetByID retrieves asset by its ID
-func (r *AssetRepository) GetByID(ctx context.Context, id string) (ast asset.Asset, err error) {
+func (r *AssetRepository) GetByID(ctx context.Context, id string) (asset.Asset, error) {
 	if !isValidUUID(id) {
-		err = asset.InvalidError{AssetID: id}
-		return
+		return asset.Asset{}, asset.InvalidError{AssetID: id}
 	}
 
+	ast, err := r.getWithPredicate(ctx, sq.Eq{"a.id": id})
+	if errors.Is(err, sql.ErrNoRows) {
+		return asset.Asset{}, asset.NotFoundError{AssetID: id}
+	}
+	if err != nil {
+		return asset.Asset{}, fmt.Errorf("error getting asset with ID = %q: %w", id, err)
+	}
+
+	return ast, nil
+}
+
+func (r *AssetRepository) GetByURN(ctx context.Context, urn string) (asset.Asset, error) {
+	ast, err := r.getWithPredicate(ctx, sq.Eq{"a.urn": urn})
+	if errors.Is(err, sql.ErrNoRows) {
+		return asset.Asset{}, asset.NotFoundError{URN: urn}
+	}
+	if err != nil {
+		return asset.Asset{}, fmt.Errorf("error getting asset with URN = %q: %w", urn, err)
+	}
+
+	return ast, nil
+}
+
+func (r *AssetRepository) getWithPredicate(ctx context.Context, pred sq.Eq) (asset.Asset, error) {
 	builder := r.getAssetSQL().
-		Where(sq.Eq{"a.id": id}).
+		Where(pred).
 		Limit(1)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
-		err = fmt.Errorf("error building query: %w", err)
-		return
+		return asset.Asset{}, fmt.Errorf("error building query: %w", err)
 	}
 
-	am := &AssetModel{}
-	err = r.client.db.GetContext(ctx, am, query, args...)
-	if errors.Is(err, sql.ErrNoRows) {
-		err = asset.NotFoundError{AssetID: id}
-		return
-	}
-
+	var am AssetModel
+	err = r.client.db.GetContext(ctx, &am, query, args...)
 	if err != nil {
-		err = fmt.Errorf("error getting asset with ID = \"%s\": %w", id, err)
-		return
+		return asset.Asset{}, err
 	}
 
-	owners, err := r.getOwners(ctx, id)
+	owners, err := r.getOwners(ctx, am.ID)
 	if err != nil {
-		err = fmt.Errorf("error getting asset with ID = \"%s\": %w", id, err)
-		return
+		return asset.Asset{}, err
 	}
 
-	ast = am.toAsset(owners)
-
-	return
-}
-
-func (r *AssetRepository) Find(ctx context.Context, assetURN string, assetType asset.Type, assetService string) (ast asset.Asset, err error) {
-	builder := r.getAssetSQL().
-		Where(sq.Eq{
-			"a.urn":     assetURN,
-			"a.type":    assetType,
-			"a.service": assetService,
-		})
-	query, args, err := r.buildSQL(builder)
-	if err != nil {
-		err = fmt.Errorf("error building query: %w", err)
-		return
-	}
-
-	var assetModel AssetModel
-	if err = r.client.db.GetContext(ctx, &assetModel, query, args...); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			err = asset.NotFoundError{}
-			return
-		}
-		err = fmt.Errorf(
-			"error getting asset with urn = \"%s\", type = \"%s\", service = \"%s\": %w",
-			assetURN, assetType, assetService, err)
-		return
-	}
-
-	owners, err := r.getOwners(ctx, assetModel.ID)
-	if err != nil {
-		err = fmt.Errorf("error getting asset's current owners: %w", err)
-		return
-	}
-
-	ast = assetModel.toAsset(owners)
-
-	return
+	return am.toAsset(owners), nil
 }
 
 // GetVersionHistory retrieves the versions of an asset
@@ -282,7 +259,7 @@ func (r *AssetRepository) GetByVersion(ctx context.Context, id string, version s
 // It updates if asset does exist.
 // Checking existence is done using "urn", "type", and "service" fields.
 func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string, error) {
-	fetchedAsset, err := r.Find(ctx, ast.URN, ast.Type, ast.Service)
+	fetchedAsset, err := r.GetByURN(ctx, ast.URN)
 	if errors.As(err, new(asset.NotFoundError)) {
 		err = nil
 	}
@@ -312,27 +289,147 @@ func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string,
 	return fetchedAsset.ID, nil
 }
 
-// Delete removes asset using its ID
-func (r *AssetRepository) Delete(ctx context.Context, id string) error {
-
+// DeleteByID removes asset using its ID
+func (r *AssetRepository) DeleteByID(ctx context.Context, id string) error {
 	if !isValidUUID(id) {
 		return asset.InvalidError{AssetID: id}
 	}
 
-	query := `DELETE FROM assets WHERE id = $1;`
-	res, err := r.client.db.ExecContext(ctx, query, id)
+	affectedRows, err := r.deleteWithPredicate(ctx, sq.Eq{"id": id})
 	if err != nil {
-		return fmt.Errorf("error deleting asset with ID = \"%s\": %w", id, err)
-	}
-	affectedRows, err := res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("error getting affected rows: %w", err)
+		return fmt.Errorf("error deleting asset with ID = %q: %w", id, err)
 	}
 	if affectedRows == 0 {
 		return asset.NotFoundError{AssetID: id}
 	}
 
 	return nil
+}
+
+func (r *AssetRepository) DeleteByURN(ctx context.Context, urn string) error {
+	affectedRows, err := r.deleteWithPredicate(ctx, sq.Eq{"urn": urn})
+	if err != nil {
+		return fmt.Errorf("error deleting asset with URN = %q: %w", urn, err)
+	}
+	if affectedRows == 0 {
+		return asset.NotFoundError{URN: urn}
+	}
+
+	return nil
+}
+
+func (r *AssetRepository) AddProbe(ctx context.Context, assetURN string, probe *asset.Probe) error {
+	probe.AssetURN = assetURN
+	probe.CreatedAt = time.Now().UTC()
+	if probe.Timestamp.IsZero() {
+		probe.Timestamp = probe.CreatedAt
+	} else {
+		probe.Timestamp = probe.Timestamp.UTC()
+	}
+
+	query, args, err := sq.Insert("asset_probes").
+		Columns("asset_urn", "status", "status_reason", "metadata", "timestamp", "created_at").
+		Values(assetURN, probe.Status, probe.StatusReason, probe.Metadata, probe.Timestamp, probe.CreatedAt).
+		Suffix("RETURNING \"id\"").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("error building insert asset probe query: %w", err)
+	}
+
+	err = r.client.db.QueryRowContext(ctx, query, args...).Scan(&probe.ID)
+	if errors.Is(checkPostgresError(err), errForeignKeyViolation) {
+		return asset.NotFoundError{URN: assetURN}
+	} else if err != nil {
+		return fmt.Errorf("error running insert asset probe query: %w", err)
+	}
+
+	return nil
+}
+
+func (r *AssetRepository) GetProbes(ctx context.Context, assetURN string) ([]asset.Probe, error) {
+	query, args, err := sq.Select(
+		"id", "asset_urn", "status", "status_reason", "metadata", "timestamp", "created_at",
+	).From("asset_probes").
+		OrderBy("created_at").
+		Where(sq.Eq{"asset_urn": assetURN}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("error building get asset probes query: %w", err)
+	}
+
+	var models []AssetProbeModel
+	if err := r.client.db.SelectContext(ctx, &models, query, args...); err != nil {
+		return nil, fmt.Errorf("error running get asset probes query: %w", err)
+	}
+
+	results := []asset.Probe{}
+	for _, m := range models {
+		results = append(results, m.toAssetProbe())
+	}
+
+	return results, nil
+}
+
+func (r *AssetRepository) GetProbesWithFilter(ctx context.Context, flt asset.ProbesFilter) (map[string][]asset.Probe, error) {
+	stmt := sq.Select(
+		"id", "asset_urn", "status", "status_reason", "metadata", "timestamp", "created_at",
+	).From("asset_probes").
+		OrderBy("asset_urn", "timestamp DESC")
+
+	if len(flt.AssetURNs) > 0 {
+		stmt = stmt.Where(sq.Eq{"asset_urn": flt.AssetURNs})
+	}
+	if !flt.NewerThan.IsZero() {
+		stmt = stmt.Where(sq.GtOrEq{"timestamp": flt.NewerThan})
+	}
+	if !flt.OlderThan.IsZero() {
+		stmt = stmt.Where(sq.LtOrEq{"timestamp": flt.OlderThan})
+	}
+	if flt.MaxRows > 0 {
+		stmt = stmt.Column("RANK() OVER (PARTITION BY asset_urn ORDER BY timestamp desc) rank_number")
+		stmt = sq.Select(
+			"id", "asset_urn", "status", "status_reason", "metadata", "timestamp", "created_at",
+		).FromSelect(stmt, "ap").
+			Where(sq.LtOrEq{"rank_number": flt.MaxRows})
+	}
+
+	query, args, err := stmt.PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("get probes with filter: build query: %w", err)
+	}
+
+	var probes []AssetProbeModel
+	if err := r.client.db.SelectContext(ctx, &probes, query, args...); err != nil {
+		return nil, fmt.Errorf("error running get asset probes query: %w", err)
+	}
+
+	results := make(map[string][]asset.Probe, len(probes))
+	for _, p := range probes {
+		results[p.AssetURN] = append(results[p.AssetURN], p.toAssetProbe())
+	}
+
+	return results, nil
+}
+
+func (r *AssetRepository) deleteWithPredicate(ctx context.Context, pred sq.Eq) (int64, error) {
+	query, args, err := r.buildSQL(sq.Delete("assets").Where(pred))
+	if err != nil {
+		return 0, fmt.Errorf("error building query: %w", err)
+	}
+
+	res, err := r.client.db.ExecContext(ctx, query, args...)
+	if err != nil {
+		return 0, err
+	}
+
+	affectedRows, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("error getting affected rows: %w", err)
+	}
+
+	return affectedRows, nil
 }
 
 func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id string, err error) {
@@ -626,7 +723,11 @@ func (r *AssetRepository) execContext(ctx context.Context, execer sqlx.ExecerCon
 	return nil
 }
 
-func (r *AssetRepository) buildSQL(builder sq.SelectBuilder) (query string, args []interface{}, err error) {
+type sqlBuilder interface {
+	ToSql() (string, []interface{}, error)
+}
+
+func (r *AssetRepository) buildSQL(builder sqlBuilder) (query string, args []interface{}, err error) {
 	query, args, err = builder.ToSql()
 	if err != nil {
 		err = fmt.Errorf("error transforming to sql")

@@ -1,0 +1,292 @@
+[
+  {
+    "asset_urn": "c-demo-kafka",
+    "status": "SUCCESS",
+    "timestamp": "2022-03-08T09:58:43Z"
+  },
+  {
+    "asset_urn": "c-demo-kafka",
+    "status": "FAILURE",
+    "timestamp": "2021-11-25T19:28:18Z"
+  },
+  {
+    "asset_urn": "c-demo-kafka",
+    "status": "FAILURE",
+    "status_reason": "Expanded even-keeled data-warehouse",
+    "timestamp": "2021-11-10T09:28:21Z"
+  },
+  {
+    "asset_urn": "e-test-grant2",
+    "status": "TERMINATED",
+    "status_reason": "Digitized asynchronous knowledge user",
+    "timestamp": "2022-09-08T12:16:42Z"
+  },
+  {
+    "asset_urn": "e-test-grant2",
+    "status": "CANCELLED",
+    "status_reason": "Upgradable interactive superstructure",
+    "timestamp": "2022-05-03T20:12:41Z"
+  },
+  {
+    "asset_urn": "e-test-grant2",
+    "status": "TERMINATED",
+    "status_reason": "Integrated attitude-oriented open system",
+    "timestamp": "2021-10-31T05:58:13Z"
+  },
+  {
+    "asset_urn": "eleven-mock",
+    "status": "FAILURE",
+    "status_reason": "Proactive zero administration attitude",
+    "timestamp": "2022-02-21T22:52:06Z"
+  },
+  {
+    "asset_urn": "eleven-mock",
+    "status": "CANCELLED",
+    "status_reason": "Reactive 6th generation orchestration",
+    "timestamp": "2022-01-26T18:54:38Z"
+  },
+  {
+    "asset_urn": "f-john-test-001",
+    "status": "CANCELLED",
+    "timestamp": "2022-09-23T14:39:57Z"
+  },
+  {
+    "asset_urn": "f-john-test-001",
+    "status": "SUCCESS",
+    "status_reason": "Ergonomic next generation superstructure",
+    "timestamp": "2022-06-27T18:59:33Z"
+  },
+  {
+    "asset_urn": "f-john-test-001",
+    "status": "TERMINATED",
+    "status_reason": "Profit-focused stable encoding",
+    "timestamp": "2022-02-07T12:54:21Z"
+  },
+  {
+    "asset_urn": "f-john-test-001",
+    "status": "CANCELLED",
+    "status_reason": "Organized 3rd generation task-force",
+    "timestamp": "2021-12-15T02:54:43Z"
+  },
+  {
+    "asset_urn": "f-john-test-001",
+    "status": "CANCELLED",
+    "status_reason": "Robust human-resource instruction set",
+    "timestamp": "2021-12-03T09:22:11Z"
+  },
+  {
+    "asset_urn": "g-jane-kafka-1a",
+    "status": "SUCCESS",
+    "status_reason": "Integrated 24/7 knowledge base",
+    "timestamp": "2022-04-19T19:42:09Z"
+  },
+  {
+    "asset_urn": "g-jane-kafka-1a",
+    "status": "TERMINATED",
+    "status_reason": "Extended composite installation",
+    "timestamp": "2021-11-10T14:56:15Z"
+  },
+  {
+    "asset_urn": "h-test-new-kafka",
+    "status": "SUCCESS",
+    "status_reason": "User-friendly systematic neural-net",
+    "timestamp": "2022-08-14T03:04:44Z"
+  },
+  {
+    "asset_urn": "h-test-new-kafka",
+    "status": "TERMINATED",
+    "status_reason": "Business-focused holistic core",
+    "timestamp": "2022-04-01T22:25:06Z"
+  },
+  {
+    "asset_urn": "h-test-new-kafka",
+    "status": "TERMINATED",
+    "timestamp": "2021-12-15T17:44:05Z"
+  },
+  {
+    "asset_urn": "h-test-new-kafka",
+    "status": "CANCELLED",
+    "status_reason": "Organic human-resource groupware",
+    "timestamp": "2021-12-14T18:36:37Z"
+  },
+  {
+    "asset_urn": "i-test-grant",
+    "status": "FAILURE",
+    "status_reason": "Ameliorated explicit customer loyalty",
+    "timestamp": "2022-07-24T06:52:27Z"
+  },
+  {
+    "asset_urn": "i-test-grant",
+    "status": "TERMINATED",
+    "status_reason": "Ergonomic zero tolerance definition",
+    "timestamp": "2022-07-20T00:09:05Z"
+  },
+  {
+    "asset_urn": "i-test-grant",
+    "status": "FAILURE",
+    "status_reason": "Cross-platform uniform moderator",
+    "timestamp": "2021-11-08T12:43:47Z"
+  },
+  {
+    "asset_urn": "i-undefined-dfgdgd-avi",
+    "status": "TERMINATED",
+    "status_reason": "Networked analyzing framework",
+    "timestamp": "2022-08-13T13:54:01Z"
+  },
+  {
+    "asset_urn": "i-undefined-dfgdgd-avi",
+    "status": "SUCCESS",
+    "status_reason": "Persevering secondary paradigm",
+    "timestamp": "2022-07-26T09:29:31Z"
+  },
+  {
+    "asset_urn": "i-undefined-dfgdgd-avi",
+    "status": "FAILURE",
+    "status_reason": "Face to face non-volatile array",
+    "timestamp": "2022-07-24T09:50:49Z"
+  },
+  {
+    "asset_urn": "i-undefined-dfgdgd-avi",
+    "status": "FAILURE",
+    "status_reason": "Inverse optimizing solution",
+    "timestamp": "2022-05-18T21:12:17Z"
+  },
+  {
+    "asset_urn": "i-undefined-dfgdgd-avi",
+    "status": "SUCCESS",
+    "timestamp": "2022-04-04T12:40:57Z"
+  },
+  {
+    "asset_urn": "i-undefined-dfgdgd-avi",
+    "status": "TERMINATED",
+    "timestamp": "2021-12-30T23:44:25Z"
+  },
+  {
+    "asset_urn": "i-undefined-dfgdgd-avi",
+    "status": "FAILURE",
+    "status_reason": "Balanced national alliance",
+    "timestamp": "2021-11-27T13:02:10Z"
+  },
+  {
+    "asset_urn": "i-undefined-dfgdgd-avi",
+    "status": "SUCCESS",
+    "status_reason": "Persevering composite workforce",
+    "timestamp": "2021-11-07T12:16:41Z"
+  },
+  {
+    "asset_urn": "i-undefined-dfgdgd-avi",
+    "status": "CANCELLED",
+    "status_reason": "Re-contextualized secondary projection",
+    "timestamp": "2021-10-17T19:14:51Z"
+  },
+  {
+    "asset_urn": "j-xcvcx",
+    "status": "FAILURE",
+    "status_reason": "Compatible impactful workforce",
+    "timestamp": "2022-08-03T19:29:49Z"
+  },
+  {
+    "asset_urn": "j-xcvcx",
+    "status": "FAILURE",
+    "status_reason": "Sharable disintermediate alliance",
+    "timestamp": "2022-07-06T20:23:32Z"
+  },
+  {
+    "asset_urn": "j-xcvcx",
+    "status": "TERMINATED",
+    "status_reason": "Automated tertiary internet solution",
+    "timestamp": "2022-06-01T17:44:37Z"
+  },
+  {
+    "asset_urn": "j-xcvcx",
+    "status": "CANCELLED",
+    "status_reason": "De-engineered high-level conglomeration",
+    "timestamp": "2022-03-28T03:03:47Z"
+  },
+  {
+    "asset_urn": "j-xcvcx",
+    "status": "TERMINATED",
+    "timestamp": "2022-02-09T21:38:42Z"
+  },
+  {
+    "asset_urn": "j-xcvcx",
+    "status": "SUCCESS",
+    "status_reason": "Monitored high-level forecast",
+    "timestamp": "2021-12-10T07:56:13Z"
+  },
+  {
+    "asset_urn": "nine-mock",
+    "status": "CANCELLED",
+    "status_reason": "User-friendly tertiary matrix",
+    "timestamp": "2022-08-14T14:20:20Z"
+  },
+  {
+    "asset_urn": "nine-mock",
+    "status": "TERMINATED",
+    "status_reason": "Organized bifurcated Graphical User Interface",
+    "timestamp": "2022-03-28T17:35:27Z"
+  },
+  {
+    "asset_urn": "nine-mock",
+    "status": "SUCCESS",
+    "status_reason": "Re-engineered didactic solution",
+    "timestamp": "2022-01-10T12:58:22Z"
+  },
+  {
+    "asset_urn": "ten-mock",
+    "status": "CANCELLED",
+    "status_reason": "Synergized bottom-line forecast",
+    "timestamp": "2022-09-11T07:40:11Z"
+  },
+  {
+    "asset_urn": "ten-mock",
+    "status": "SUCCESS",
+    "timestamp": "2022-07-16T12:06:44Z"
+  },
+  {
+    "asset_urn": "ten-mock",
+    "status": "CANCELLED",
+    "timestamp": "2022-03-16T16:40:15Z"
+  },
+  {
+    "asset_urn": "ten-mock",
+    "status": "FAILURE",
+    "status_reason": "Ergonomic analyzing alliance",
+    "timestamp": "2022-02-13T09:57:14Z"
+  },
+  {
+    "asset_urn": "ten-mock",
+    "status": "TERMINATED",
+    "status_reason": "Cross-group hybrid software",
+    "timestamp": "2022-01-25T00:59:34Z"
+  },
+  {
+    "asset_urn": "ten-mock",
+    "status": "FAILURE",
+    "status_reason": "Stand-alone homogeneous migration",
+    "timestamp": "2022-01-24T04:12:48Z"
+  },
+  {
+    "asset_urn": "ten-mock",
+    "status": "CANCELLED",
+    "timestamp": "2021-11-17T10:18:05Z"
+  },
+  {
+    "asset_urn": "twelfth-mock",
+    "status": "TERMINATED",
+    "status_reason": "Enterprise-wide interactive Graphical User Interface",
+    "timestamp": "2022-04-15T00:02:25Z"
+  },
+  {
+    "asset_urn": "twelfth-mock",
+    "status": "TERMINATED",
+    "status_reason": "Grass-roots logistical synergy",
+    "timestamp": "2022-01-02T00:11:07Z"
+  },
+  {
+    "asset_urn": "twelfth-mock",
+    "status": "SUCCESS",
+    "status_reason": "Triple-buffered multi-state capability",
+    "timestamp": "2021-12-08T02:18:45Z"
+  }
+]

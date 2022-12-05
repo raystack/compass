@@ -349,6 +349,14 @@ func (s *TemplateServiceTestSuite) TestIndex() {
 		s.Error(err)
 	})
 
+	s.Run("should return nil and error for error in readall with empty urn", func() {
+		s.Setup()
+		s.repository.EXPECT().ReadAll(ctx).Return(nil, errors.New("unexpected error"))
+
+		_, err := s.service.GetTemplates(ctx, "")
+		s.Error(err)
+	})
+
 	s.Run("should return domain templates and nil if no error found", func() {
 		s.Setup()
 		template := s.buildTemplate()
@@ -357,6 +365,19 @@ func (s *TemplateServiceTestSuite) TestIndex() {
 		expectedTemplate := []tag.Template{template}
 
 		actualTemplate, actualError := s.service.GetTemplates(ctx, template.URN)
+
+		s.EqualValues(expectedTemplate, actualTemplate)
+		s.NoError(actualError)
+	})
+
+	s.Run("should return domain templates and nil if no error found with empty urn", func() {
+		s.Setup()
+		template := s.buildTemplate()
+		s.repository.EXPECT().ReadAll(ctx).Return([]tag.Template{template}, nil)
+
+		expectedTemplate := []tag.Template{template}
+
+		actualTemplate, actualError := s.service.GetTemplates(ctx, "")
 
 		s.EqualValues(expectedTemplate, actualTemplate)
 		s.NoError(actualError)
@@ -480,7 +501,7 @@ func (s *TemplateServiceTestSuite) TestFind() {
 
 	s.Run("should return empty and error if found unexpected error", func() {
 		s.Setup()
-		var urn string = "sample-urn"
+		var urn = "sample-urn"
 		s.repository.EXPECT().Read(ctx, urn).Return(nil, errors.New("unexpected error"))
 
 		_, err := s.service.GetTemplate(ctx, urn)
@@ -489,17 +510,17 @@ func (s *TemplateServiceTestSuite) TestFind() {
 
 	s.Run("should return not found error if template is not found", func() {
 		s.Setup()
-		var urn string = "sample-urn"
+		var urn = "sample-urn"
 		s.repository.EXPECT().Read(ctx, urn).Return([]tag.Template{}, nil)
 
 		_, err := s.service.GetTemplate(ctx, urn)
 		s.Error(err)
-		s.ErrorIs(err, tag.TemplateNotFoundError{URN: urn})
+		s.Equal(err.Error(), tag.TemplateNotFoundError{URN: urn}.Error())
 	})
 
 	s.Run("should return domain template and nil if record is found", func() {
 		s.Setup()
-		var urn string = "sample-urn"
+		var urn = "sample-urn"
 		template := s.buildTemplate()
 		s.repository.EXPECT().Read(ctx, urn).Return([]tag.Template{template}, nil)
 
@@ -517,7 +538,7 @@ func (s *TemplateServiceTestSuite) TestDelete() {
 
 	s.Run("should return error if encountered unexpected error during delete", func() {
 		s.Setup()
-		var urn string = "sample-urn"
+		var urn = "sample-urn"
 		s.repository.EXPECT().Delete(ctx, mock.Anything).Return(errors.New("unexpected error"))
 
 		actualError := s.service.DeleteTemplate(ctx, urn)
@@ -528,7 +549,7 @@ func (s *TemplateServiceTestSuite) TestDelete() {
 
 	s.Run("should return delete result from repository", func() {
 		s.Setup()
-		var urn string = "sample-urn"
+		var urn = "sample-urn"
 		s.repository.EXPECT().Delete(ctx, mock.Anything).Return(nil).Once()
 		s.repository.EXPECT().Delete(ctx, mock.Anything).Return(errors.New("unexpected error")).Once()
 

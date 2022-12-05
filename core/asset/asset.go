@@ -13,12 +13,16 @@ type Repository interface {
 	GetAll(context.Context, Filter) ([]Asset, error)
 	GetCount(context.Context, Filter) (int, error)
 	GetByID(ctx context.Context, id string) (Asset, error)
-	Find(ctx context.Context, urn string, typ Type, service string) (Asset, error)
+	GetByURN(ctx context.Context, urn string) (Asset, error)
 	GetVersionHistory(ctx context.Context, flt Filter, id string) ([]Asset, error)
 	GetByVersion(ctx context.Context, id string, version string) (Asset, error)
 	GetTypes(ctx context.Context, flt Filter) (map[Type]int, error)
 	Upsert(ctx context.Context, ast *Asset) (string, error)
-	Delete(ctx context.Context, id string) error
+	DeleteByID(ctx context.Context, id string) error
+	DeleteByURN(ctx context.Context, urn string) error
+	AddProbe(ctx context.Context, assetURN string, probe *Probe) error
+	GetProbes(ctx context.Context, assetURN string) ([]Probe, error)
+	GetProbesWithFilter(ctx context.Context, flt ProbesFilter) (map[string][]Probe, error)
 }
 
 // Asset is a model that wraps arbitrary data with Compass' context
@@ -37,6 +41,7 @@ type Asset struct {
 	Version     string                 `json:"version" diff:"-"`
 	UpdatedBy   user.User              `json:"updated_by" diff:"-"`
 	Changelog   diff.Changelog         `json:"changelog,omitempty" diff:"-"`
+	Probes      []Probe                `json:"probes,omitempty"`
 }
 
 // Diff returns nil changelog with nil error if equal

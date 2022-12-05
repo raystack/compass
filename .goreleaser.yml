@@ -1,28 +1,23 @@
 project_name: compass
-
-release:  
+release:
   prerelease: auto
-  draft: true
-
 before:
   hooks:
     - go mod tidy
     - make clean
-
 builds:
-  - main: ./main.go
-    id: compass
+  - id: compass
+    main: ./main.go
     binary: compass
     flags: [-a]
     ldflags:
-      - -X github.com/odpf/compass/cmd.Version={{.Tag}} 
-      - -X github.com/odpf/compass/cmd.BuildCommit={{.FullCommit}} 
+      - -X github.com/odpf/compass/cmd.Version={{.Tag}}
+      - -X github.com/odpf/compass/cmd.BuildCommit={{.FullCommit}}
       - -X github.com/odpf/compass/cmd.BuildDate={{.Date}}
     goos: [linux, darwin, windows]
     goarch: [amd64, 386, arm, arm64] # skip goarch 386 and arm due to conflicts with "github.com/blastrain/vitess-sqlparser" library
     env:
       - CGO_ENABLED=0
-
 archives:
   - replacements:
       darwin: macos
@@ -33,40 +28,51 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-
 checksum:
-  name_template: 'checksums.txt'
-
+  name_template: "checksums.txt"
 snapshot:
   name_template: "{{ .Tag }}-next"
-
 changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
-      - '^build:'
-
+      - "^docs:"
+      - "^test:"
+      - "^build:"
 dockers:
-  -
-    goos: linux
+  - goos: linux
     goarch: amd64
     ids:
       - compass
     dockerfile: Dockerfile
     image_templates:
-      - 'docker.io/odpf/{{.ProjectName}}:latest'
-      - 'docker.io/odpf/{{.ProjectName}}:{{ .Version }}'
-      - 'docker.io/odpf/{{.ProjectName}}:{{ .Version }}-amd64'
-
+      - "docker.io/odpf/{{.ProjectName}}:latest"
+      - "docker.io/odpf/{{.ProjectName}}:{{ .Version }}"
+      - "docker.io/odpf/{{.ProjectName}}:{{ .Version }}-amd64"
+nfpms:
+  - maintainer: ODPF
+    description: Metadata Discovery and Lineage Service
+    homepage: https://github.com/odpf/compass
+    license: Apache 2.0
+    formats:
+      - deb
+      - rpm
+    replacements:
+      darwin: macOS
+scoop:
+  bucket:
+    owner: odpf
+    name: scoop-bucket
+  homepage: "https://github.com/odpf/compass"
+  description: "Metadata Discovery and Lineage Service"
+  license: Apache 2.0
 brews:
   - name: compass
     homepage: "https://github.com/odpf/compass"
     description: "Metadata Discovery and Lineage Service"
     tap:
       owner: odpf
-      name: homebrew-taps
+      name: homebrew-tap
     license: "Apache 2.0"
     folder: Formula
 
@@ -77,4 +83,3 @@ brews:
     commit_author:
       name: Ravi Suhag
       email: suhag.ravi@gmail.com
-      

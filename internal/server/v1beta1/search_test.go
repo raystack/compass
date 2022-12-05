@@ -7,16 +7,15 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
-	compassv1beta1 "github.com/odpf/compass/api/proto/odpf/compass/v1beta1"
 	"github.com/odpf/compass/core/asset"
 	"github.com/odpf/compass/core/user"
 	"github.com/odpf/compass/internal/server/v1beta1/mocks"
+	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
 	"github.com/odpf/salt/log"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/testing/protocmp"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestSearch(t *testing.T) {
@@ -133,15 +132,6 @@ func TestSearch(t *testing.T) {
 				as.EXPECT().SearchAssets(ctx, cfg).Return(response, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.SearchAssetsResponse) error {
-				expectedLabels, err := structpb.NewStruct(
-					map[string]interface{}{
-						"entity":    "odpf",
-						"landscape": "id",
-					},
-				)
-				if err != nil {
-					return err
-				}
 				expected := &compassv1beta1.SearchAssetsResponse{
 					Data: []*compassv1beta1.Asset{
 						{
@@ -149,7 +139,10 @@ func TestSearch(t *testing.T) {
 							Description: "some description",
 							Service:     "test-service",
 							Type:        "test",
-							Labels:      expectedLabels,
+							Labels: map[string]string{
+								"entity":    "odpf",
+								"landscape": "id",
+							},
 						},
 					},
 				}

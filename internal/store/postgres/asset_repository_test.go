@@ -4,14 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"sort"
 	"strings"
 	"testing"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/odpf/compass/core/asset"
@@ -108,7 +107,7 @@ func (r *AssetRepositoryTestSuite) BeforeTest(suiteName, testName string) {
 
 func (r *AssetRepositoryTestSuite) insertRecord() (assets []asset.Asset) {
 	filePath := "./testdata/mock-asset-data.json"
-	testFixtureJSON, err := ioutil.ReadFile(filePath)
+	testFixtureJSON, err := os.ReadFile(filePath)
 	if err != nil {
 		return []asset.Asset{}
 	}
@@ -639,57 +638,47 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 	})
 }
 
-func (r *AssetRepositoryTestSuite) TestFind() {
+func (r *AssetRepositoryTestSuite) TestGetByURN() {
 	r.Run("return NotFoundError if asset does not exist", func() {
-		urn := "some-urn"
-		typ := asset.TypeDashboard
-		service := "bigquery"
-		_, err := r.repository.Find(r.ctx, urn, typ, service)
-		r.ErrorAs(err, &asset.NotFoundError{URN: urn, Type: typ, Service: service})
+		urn := "urn-gbi-1"
+		_, err := r.repository.GetByURN(r.ctx, urn)
+		r.ErrorAs(err, &asset.NotFoundError{URN: urn})
 	})
 
 	r.Run("return correct asset from db", func() {
 		asset1 := asset.Asset{
-			URN:       "urn-find-1",
+			URN:       "urn-gbi-1",
 			Type:      "table",
 			Service:   "bigquery",
 			Version:   asset.BaseVersion,
 			UpdatedBy: r.users[1],
 		}
 		asset2 := asset.Asset{
-			URN:       "urn-find-2",
+			URN:       "urn-gbi-2",
 			Type:      "topic",
 			Service:   "kafka",
 			Version:   asset.BaseVersion,
 			UpdatedBy: r.users[1],
 		}
 
-		var err error
 		id, err := r.repository.Upsert(r.ctx, &asset1)
 		r.Require().NoError(err)
-		r.Require().NotEmpty(id)
+		r.NotEmpty(id)
 		asset1.ID = id
 
 		id, err = r.repository.Upsert(r.ctx, &asset2)
 		r.Require().NoError(err)
-		r.Require().NotEmpty(id)
+		r.NotEmpty(id)
 		asset2.ID = id
 
-		result, err := r.repository.Find(r.ctx, asset2.URN, asset2.Type, asset2.Service)
+		result, err := r.repository.GetByURN(r.ctx, "urn-gbi-2")
 		r.NoError(err)
-		asset2.UpdatedBy = r.users[1]
 		r.assertAsset(&asset2, &result)
-
-		// clean up
-		err = r.repository.Delete(r.ctx, asset1.ID)
-		r.Require().NoError(err)
-		err = r.repository.Delete(r.ctx, asset2.ID)
-		r.Require().NoError(err)
 	})
 
 	r.Run("return owners if any", func() {
 		ast := asset.Asset{
-			URN:     "urn-find-3",
+			URN:     "urn-gbi-3",
 			Type:    "table",
 			Service: "bigquery",
 			Owners: []user.User{
@@ -699,21 +688,15 @@ func (r *AssetRepositoryTestSuite) TestFind() {
 			UpdatedBy: r.users[1],
 		}
 
-		id, err := r.repository.Upsert(r.ctx, &ast)
+		_, err := r.repository.Upsert(r.ctx, &ast)
 		r.Require().NoError(err)
-		r.Require().NotEmpty(id)
-		ast.ID = id
 
-		result, err := r.repository.Find(r.ctx, ast.URN, ast.Type, ast.Service)
+		result, err := r.repository.GetByURN(r.ctx, ast.URN)
 		r.NoError(err)
 		r.Len(result.Owners, len(ast.Owners))
 		for i, owner := range result.Owners {
 			r.Equal(ast.Owners[i].ID, owner.ID)
 		}
-
-		// clean up
-		err = r.repository.Delete(r.ctx, ast.ID)
-		r.Require().NoError(err)
 	})
 }
 
@@ -1121,16 +1104,16 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 	})
 }
 
-func (r *AssetRepositoryTestSuite) TestDelete() {
+func (r *AssetRepositoryTestSuite) TestDeleteByID() {
 	r.Run("return error from client if any", func() {
-		err := r.repository.Delete(r.ctx, "invalid-uuid")
+		err := r.repository.DeleteByID(r.ctx, "invalid-uuid")
 		r.Error(err)
 		r.Contains(err.Error(), "invalid asset id: \"invalid-uuid\"")
 	})
 
 	r.Run("return NotFoundError if asset does not exist", func() {
 		uuid := "2aabb450-f986-44e2-a6db-7996861d5004"
-		err := r.repository.Delete(r.ctx, uuid)
+		err := r.repository.DeleteByID(r.ctx, uuid)
 		r.ErrorAs(err, &asset.NotFoundError{AssetID: uuid})
 	})
 
@@ -1160,7 +1143,7 @@ func (r *AssetRepositoryTestSuite) TestDelete() {
 		r.Require().NotEmpty(id)
 		asset2.ID = id
 
-		err = r.repository.Delete(r.ctx, asset1.ID)
+		err = r.repository.DeleteByID(r.ctx, asset1.ID)
 		r.NoError(err)
 
 		_, err = r.repository.GetByID(r.ctx, asset1.ID)
@@ -1171,9 +1154,594 @@ func (r *AssetRepositoryTestSuite) TestDelete() {
 		r.Equal(asset2.ID, asset2FromDB.ID)
 
 		// cleanup
-		err = r.repository.Delete(r.ctx, asset2.ID)
+		err = r.repository.DeleteByID(r.ctx, asset2.ID)
 		r.NoError(err)
 	})
+}
+
+func (r *AssetRepositoryTestSuite) TestDeleteByURN() {
+	r.Run("return NotFoundError if asset does not exist", func() {
+		urn := "urn-test-1"
+		err := r.repository.DeleteByURN(r.ctx, urn)
+		r.ErrorAs(err, &asset.NotFoundError{URN: urn})
+	})
+
+	r.Run("should delete correct asset", func() {
+		asset1 := asset.Asset{
+			URN:       "urn-del-1",
+			Type:      "table",
+			Service:   "bigquery",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+		asset2 := asset.Asset{
+			URN:       "urn-del-2",
+			Type:      "topic",
+			Service:   "kafka",
+			Version:   asset.BaseVersion,
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+
+		_, err := r.repository.Upsert(r.ctx, &asset1)
+		r.Require().NoError(err)
+
+		id, err := r.repository.Upsert(r.ctx, &asset2)
+		r.Require().NoError(err)
+
+		err = r.repository.DeleteByURN(r.ctx, asset1.URN)
+		r.NoError(err)
+
+		_, err = r.repository.GetByURN(r.ctx, asset1.URN)
+		r.ErrorAs(err, &asset.NotFoundError{URN: asset1.URN})
+
+		asset2FromDB, err := r.repository.GetByURN(r.ctx, asset2.URN)
+		r.NoError(err)
+		r.Equal(id, asset2FromDB.ID)
+
+		// cleanup
+		err = r.repository.DeleteByURN(r.ctx, asset2.URN)
+		r.NoError(err)
+	})
+}
+
+func (r *AssetRepositoryTestSuite) TestAddProbe() {
+	r.Run("return NotFoundError if asset does not exist", func() {
+		urn := "invalid-urn"
+		probe := asset.Probe{}
+		err := r.repository.AddProbe(r.ctx, urn, &probe)
+		r.ErrorAs(err, &asset.NotFoundError{URN: urn})
+	})
+
+	r.Run("should populate CreatedAt and persist probe", func() {
+		ast := asset.Asset{
+			URN:       "urn-add-probe-1",
+			Type:      asset.TypeJob,
+			Service:   "airflow",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+		probe := asset.Probe{
+			Status:       "COMPLETED",
+			StatusReason: "Sample Reason",
+			Timestamp:    time.Now().Add(2 * time.Minute),
+			Metadata: map[string]interface{}{
+				"foo": "bar",
+			},
+		}
+
+		_, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+
+		err = r.repository.AddProbe(r.ctx, ast.URN, &probe)
+		r.NoError(err)
+
+		// assert populated fields
+		r.NotEmpty(probe.ID)
+		r.Equal(ast.URN, probe.AssetURN)
+		r.False(probe.CreatedAt.IsZero())
+
+		// assert probe is persisted
+		probesFromDB, err := r.repository.GetProbes(r.ctx, ast.URN)
+		r.Require().NoError(err)
+		r.Require().Len(probesFromDB, 1)
+
+		probeFromDB := probesFromDB[0]
+		r.Equal(probe.ID, probeFromDB.ID)
+		r.Equal(probe.AssetURN, probeFromDB.AssetURN)
+		r.Equal(probe.Status, probeFromDB.Status)
+		r.Equal(probe.StatusReason, probeFromDB.StatusReason)
+		r.Equal(probe.Metadata, probeFromDB.Metadata)
+		// we use `1µs` instead of `0` for the delta due to postgres might round precision before storing
+		r.WithinDuration(probe.Timestamp, probeFromDB.Timestamp, 1*time.Microsecond)
+		r.WithinDuration(probe.CreatedAt, probeFromDB.CreatedAt, 1*time.Microsecond)
+
+		// cleanup
+		err = r.repository.DeleteByURN(r.ctx, ast.URN)
+		r.Require().NoError(err)
+	})
+
+	r.Run("should populate Timestamp if empty", func() {
+		ast := asset.Asset{
+			URN:       "urn-add-probe-2",
+			Type:      asset.TypeJob,
+			Service:   "optimus",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+		otherAst := asset.Asset{
+			URN:       "urn-add-probe-3",
+			Type:      asset.TypeJob,
+			Service:   "airflow",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+		probe := asset.Probe{
+			Status: "RUNNING",
+		}
+		otherProbe := asset.Probe{
+			Status: "RUNNING",
+		}
+
+		_, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+		_, err = r.repository.Upsert(r.ctx, &otherAst)
+		r.Require().NoError(err)
+
+		err = r.repository.AddProbe(r.ctx, ast.URN, &probe)
+		r.NoError(err)
+
+		// assert populated fields
+		r.False(probe.CreatedAt.IsZero())
+		r.Equal(probe.CreatedAt, probe.Timestamp)
+
+		err = r.repository.AddProbe(r.ctx, otherAst.URN, &otherProbe)
+		r.NoError(err)
+
+		// assert probe is persisted
+		probesFromDB, err := r.repository.GetProbes(r.ctx, ast.URN)
+		r.Require().NoError(err)
+		r.Require().Len(probesFromDB, 1)
+
+		probeFromDB := probesFromDB[0]
+		r.Equal(probe.ID, probeFromDB.ID)
+		r.WithinDuration(probe.Timestamp, probeFromDB.Timestamp, 1*time.Microsecond)
+		r.WithinDuration(probe.CreatedAt, probeFromDB.CreatedAt, 1*time.Microsecond)
+		r.WithinDuration(probeFromDB.CreatedAt, probeFromDB.Timestamp, 1*time.Microsecond)
+
+		// cleanup
+		err = r.repository.DeleteByURN(r.ctx, ast.URN)
+		r.Require().NoError(err)
+	})
+}
+
+func (r *AssetRepositoryTestSuite) TestGetProbes() {
+	r.Run("should return list of probes by asset urn", func() {
+		ast := asset.Asset{
+			URN:       "urn-add-probe-1",
+			Type:      asset.TypeJob,
+			Service:   "airflow",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+		p1 := asset.Probe{
+			Status:    "COMPLETED",
+			Timestamp: time.Now().UTC().Add(3 * time.Minute),
+			Metadata: map[string]interface{}{
+				"foo": "bar",
+			},
+		}
+		p2 := asset.Probe{
+			Status:       "FAILED",
+			StatusReason: "sample error",
+			Metadata: map[string]interface{}{
+				"bar": "foo",
+			},
+		}
+		p3 := asset.Probe{
+			Status: "RUNNING",
+		}
+
+		_, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+
+		err = r.repository.AddProbe(r.ctx, ast.URN, &p1)
+		r.NoError(err)
+		err = r.repository.AddProbe(r.ctx, ast.URN, &p2)
+		r.NoError(err)
+		err = r.repository.AddProbe(r.ctx, ast.URN, &p3)
+		r.NoError(err)
+
+		// assert probe is persisted
+		actual, err := r.repository.GetProbes(r.ctx, ast.URN)
+		r.Require().NoError(err)
+		r.Require().Len(actual, 3)
+
+		expected := []asset.Probe{p1, p2, p3}
+		r.Equal(expected[0].ID, actual[0].ID)
+		r.Equal(expected[1].ID, actual[1].ID)
+		r.Equal(expected[2].ID, actual[2].ID)
+
+		r.Equal(expected[0].ID, actual[0].ID)
+		r.Equal(expected[0].AssetURN, actual[0].AssetURN)
+		r.Equal(expected[0].Status, actual[0].Status)
+		r.Equal(expected[0].StatusReason, actual[0].StatusReason)
+		r.Equal(expected[0].Metadata, actual[0].Metadata)
+		r.WithinDuration(expected[0].Timestamp, actual[0].Timestamp, 1*time.Microsecond)
+		r.WithinDuration(expected[0].CreatedAt, actual[0].CreatedAt, 1*time.Microsecond)
+
+		// cleanup
+		err = r.repository.DeleteByURN(r.ctx, ast.URN)
+		r.Require().NoError(err)
+	})
+}
+
+func (r *AssetRepositoryTestSuite) TestGetProbesWithFilter() {
+	r.insertProbes(r.T())
+
+	newTS := func(s string) time.Time {
+		r.T().Helper()
+
+		ts, err := time.Parse(time.RFC3339, s)
+		r.Require().NoError(err)
+		return ts
+	}
+	keys := func(m map[string][]asset.Probe) []string {
+		kk := make([]string, 0, len(m))
+		for k := range m {
+			kk = append(kk, k)
+		}
+		return kk
+	}
+
+	cases := []struct {
+		name     string
+		flt      asset.ProbesFilter
+		expected map[string][]asset.Probe
+	}{
+		{
+			name: "AssetURNs=c-demo-kafka",
+			flt:  asset.ProbesFilter{AssetURNs: []string{"c-demo-kafka"}},
+			expected: map[string][]asset.Probe{
+				"c-demo-kafka": {
+					{
+						AssetURN:  "c-demo-kafka",
+						Status:    "SUCCESS",
+						Timestamp: newTS("2022-03-08T09:58:43Z"),
+					},
+					{
+						AssetURN:  "c-demo-kafka",
+						Status:    "FAILURE",
+						Timestamp: newTS("2021-11-25T19:28:18Z"),
+					},
+					{
+						AssetURN:     "c-demo-kafka",
+						Status:       "FAILURE",
+						StatusReason: "Expanded even-keeled data-warehouse",
+						Timestamp:    newTS("2021-11-10T09:28:21Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "NewerThan=2022-09-08",
+			flt:  asset.ProbesFilter{NewerThan: newTS("2022-09-08T00:00:00Z")},
+			expected: map[string][]asset.Probe{
+				"f-john-test-001": {
+					{
+						AssetURN:  "f-john-test-001",
+						Status:    "CANCELLED",
+						Timestamp: newTS("2022-09-23T14:39:57Z"),
+					},
+				},
+				"ten-mock": {
+					{
+						AssetURN:     "ten-mock",
+						Status:       "CANCELLED",
+						StatusReason: "Synergized bottom-line forecast",
+						Timestamp:    newTS("2022-09-11T07:40:11Z"),
+					},
+				},
+				"e-test-grant2": {
+					{
+						AssetURN:     "e-test-grant2",
+						Status:       "TERMINATED",
+						StatusReason: "Digitized asynchronous knowledge user",
+						Timestamp:    newTS("2022-09-08T12:16:42Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "OlderThan=2021-11-01",
+			flt:  asset.ProbesFilter{OlderThan: newTS("2021-11-01T00:00:00Z")},
+			expected: map[string][]asset.Probe{
+				"i-undefined-dfgdgd-avi": {
+					{
+						AssetURN:     "i-undefined-dfgdgd-avi",
+						Status:       "CANCELLED",
+						StatusReason: "Re-contextualized secondary projection",
+						Timestamp:    newTS("2021-10-17T19:14:51Z"),
+					},
+				},
+				"e-test-grant2": {
+					{
+						AssetURN:     "e-test-grant2",
+						Status:       "TERMINATED",
+						StatusReason: "Integrated attitude-oriented open system",
+						Timestamp:    newTS("2021-10-31T05:58:13Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "MaxRows=1",
+			flt:  asset.ProbesFilter{MaxRows: 1},
+			expected: map[string][]asset.Probe{
+				"c-demo-kafka": {
+					{
+						AssetURN:  "c-demo-kafka",
+						Status:    "SUCCESS",
+						Timestamp: newTS("2022-03-08T09:58:43Z"),
+					},
+				},
+				"e-test-grant2": {
+					{
+						AssetURN:     "e-test-grant2",
+						Status:       "TERMINATED",
+						StatusReason: "Digitized asynchronous knowledge user",
+						Timestamp:    newTS("2022-09-08T12:16:42Z"),
+					},
+				},
+				"eleven-mock": {
+					{
+						AssetURN:     "eleven-mock",
+						Status:       "FAILURE",
+						StatusReason: "Proactive zero administration attitude",
+						Timestamp:    newTS("2022-02-21T22:52:06Z"),
+					},
+				},
+				"f-john-test-001": {
+					{
+						AssetURN:  "f-john-test-001",
+						Status:    "CANCELLED",
+						Timestamp: newTS("2022-09-23T14:39:57Z"),
+					},
+				},
+				"g-jane-kafka-1a": {
+					{
+						AssetURN:     "g-jane-kafka-1a",
+						Status:       "SUCCESS",
+						StatusReason: "Integrated 24/7 knowledge base",
+						Timestamp:    newTS("2022-04-19T19:42:09Z"),
+					},
+				},
+				"h-test-new-kafka": {
+					{
+						AssetURN:     "h-test-new-kafka",
+						Status:       "SUCCESS",
+						StatusReason: "User-friendly systematic neural-net",
+						Timestamp:    newTS("2022-08-14T03:04:44Z"),
+					},
+				},
+				"i-test-grant": {
+					{
+						AssetURN:     "i-test-grant",
+						Status:       "FAILURE",
+						StatusReason: "Ameliorated explicit customer loyalty",
+						Timestamp:    newTS("2022-07-24T06:52:27Z"),
+					},
+				},
+				"i-undefined-dfgdgd-avi": {
+					{
+						AssetURN:     "i-undefined-dfgdgd-avi",
+						Status:       "TERMINATED",
+						StatusReason: "Networked analyzing framework",
+						Timestamp:    newTS("2022-08-13T13:54:01Z"),
+					},
+				},
+				"j-xcvcx": {
+					{
+						AssetURN:     "j-xcvcx",
+						Status:       "FAILURE",
+						StatusReason: "Compatible impactful workforce",
+						Timestamp:    newTS("2022-08-03T19:29:49Z"),
+					},
+				},
+				"nine-mock": {
+					{
+						AssetURN:     "nine-mock",
+						Status:       "CANCELLED",
+						StatusReason: "User-friendly tertiary matrix",
+						Timestamp:    newTS("2022-08-14T14:20:20Z"),
+					},
+				},
+				"ten-mock": {
+					{
+						AssetURN:     "ten-mock",
+						Status:       "CANCELLED",
+						StatusReason: "Synergized bottom-line forecast",
+						Timestamp:    newTS("2022-09-11T07:40:11Z"),
+					},
+				},
+				"twelfth-mock": {
+					{
+						AssetURN:     "twelfth-mock",
+						Status:       "TERMINATED",
+						StatusReason: "Enterprise-wide interactive Graphical User Interface",
+						Timestamp:    newTS("2022-04-15T00:02:25Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "AssetURNs=c-demo-kafka;NewerThan=2022-03-08",
+			flt:  asset.ProbesFilter{AssetURNs: []string{"c-demo-kafka"}, NewerThan: newTS("2022-03-08T00:00:00Z")},
+			expected: map[string][]asset.Probe{
+				"c-demo-kafka": {
+					{
+						AssetURN:  "c-demo-kafka",
+						Status:    "SUCCESS",
+						Timestamp: newTS("2022-03-08T09:58:43Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "AssetURNs=c-demo-kafka;MaxRows=1",
+			flt:  asset.ProbesFilter{AssetURNs: []string{"c-demo-kafka"}, MaxRows: 1},
+			expected: map[string][]asset.Probe{
+				"c-demo-kafka": {
+					{
+						AssetURN:  "c-demo-kafka",
+						Status:    "SUCCESS",
+						Timestamp: newTS("2022-03-08T09:58:43Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "AssetURNs=c-demo-kafka,e-test-grant2;MaxRows=1",
+			flt:  asset.ProbesFilter{AssetURNs: []string{"c-demo-kafka", "e-test-grant2"}, MaxRows: 1},
+			expected: map[string][]asset.Probe{
+				"c-demo-kafka": {
+					{
+						AssetURN:  "c-demo-kafka",
+						Status:    "SUCCESS",
+						Timestamp: newTS("2022-03-08T09:58:43Z"),
+					},
+				},
+				"e-test-grant2": {
+					{
+						AssetURN:     "e-test-grant2",
+						Status:       "TERMINATED",
+						StatusReason: "Digitized asynchronous knowledge user",
+						Timestamp:    newTS("2022-09-08T12:16:42Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "NewerThan=2022-08-14;MaxRows=1",
+			flt:  asset.ProbesFilter{NewerThan: newTS("2022-08-14T00:00:00Z"), MaxRows: 1},
+			expected: map[string][]asset.Probe{
+				"f-john-test-001": {
+					{
+						AssetURN:  "f-john-test-001",
+						Status:    "CANCELLED",
+						Timestamp: newTS("2022-09-23T14:39:57Z"),
+					},
+				},
+				"ten-mock": {
+					{
+						AssetURN:     "ten-mock",
+						Status:       "CANCELLED",
+						StatusReason: "Synergized bottom-line forecast",
+						Timestamp:    newTS("2022-09-11T07:40:11Z"),
+					},
+				},
+				"e-test-grant2": {
+					{
+						AssetURN:     "e-test-grant2",
+						Status:       "TERMINATED",
+						StatusReason: "Digitized asynchronous knowledge user",
+						Timestamp:    newTS("2022-09-08T12:16:42Z"),
+					},
+				},
+				"nine-mock": {
+					{
+						AssetURN:     "nine-mock",
+						Status:       "CANCELLED",
+						StatusReason: "User-friendly tertiary matrix",
+						Timestamp:    newTS("2022-08-14T14:20:20Z"),
+					},
+				},
+				"h-test-new-kafka": {
+					{
+						AssetURN:     "h-test-new-kafka",
+						Status:       "SUCCESS",
+						StatusReason: "User-friendly systematic neural-net",
+						Timestamp:    newTS("2022-08-14T03:04:44Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "OlderThan=2021-11-08;MaxRows=1",
+			flt:  asset.ProbesFilter{OlderThan: newTS("2021-11-08T00:00:00Z"), MaxRows: 1},
+			expected: map[string][]asset.Probe{
+				"i-undefined-dfgdgd-avi": {
+					{
+						AssetURN:     "i-undefined-dfgdgd-avi",
+						Status:       "SUCCESS",
+						StatusReason: "Persevering composite workforce",
+						Timestamp:    newTS("2021-11-07T12:16:41Z"),
+					},
+				},
+				"e-test-grant2": {
+					{
+						AssetURN:     "e-test-grant2",
+						Status:       "TERMINATED",
+						StatusReason: "Digitized asynchronous knowledge user",
+						Timestamp:    newTS("2022-09-08T12:16:42Z"),
+					},
+				},
+			},
+		},
+		{
+			name: "AssetURNs=c-demo-kafka,e-test-grant2,nine-mock;MaxRows=1;NewerThan=2022-08-14;OlderThan=2022-09-11",
+			flt: asset.ProbesFilter{
+				AssetURNs: []string{"c-demo-kafka", "e-test-grant2", "nine-mock"},
+				NewerThan: newTS("2022-08-14T00:00:00Z"),
+				OlderThan: newTS("2022-09-11T00:00:00Z"),
+				MaxRows:   1,
+			},
+			expected: map[string][]asset.Probe{
+				"e-test-grant2": {
+					{
+						AssetURN:     "e-test-grant2",
+						Status:       "TERMINATED",
+						StatusReason: "Digitized asynchronous knowledge user",
+						Timestamp:    newTS("2022-09-08T12:16:42Z"),
+					},
+				},
+				"nine-mock": {
+					{
+						AssetURN:     "nine-mock",
+						Status:       "CANCELLED",
+						StatusReason: "User-friendly tertiary matrix",
+						Timestamp:    newTS("2022-08-14T14:20:20Z"),
+					},
+				},
+			},
+		},
+	}
+	for _, tc := range cases {
+		r.Run(tc.name, func() {
+			actual, err := r.repository.GetProbesWithFilter(r.ctx, tc.flt)
+			r.NoError(err)
+
+			r.ElementsMatch(keys(tc.expected), keys(actual), "Mismatch of URN keys in map")
+			for urn, expPrbs := range tc.expected {
+				actPrbs, ok := actual[urn]
+				if !ok || r.Lenf(actPrbs, len(expPrbs), "Mismatch in length of assets for URN '%s'", urn) {
+					continue
+				}
+
+				for i := range actPrbs {
+					r.assertProbe(r.T(), expPrbs[i], actPrbs[i])
+				}
+			}
+		})
+	}
+}
+
+func (r *AssetRepositoryTestSuite) insertProbes(t *testing.T) {
+	t.Helper()
+
+	probesJSON, err := os.ReadFile("./testdata/mock-probes-data.json")
+	r.Require().NoError(err)
+
+	var probes []asset.Probe
+	r.Require().NoError(json.Unmarshal(probesJSON, &probes))
+
+	for _, p := range probes {
+		r.Require().NoError(r.repository.AddProbe(r.ctx, p.AssetURN, &p))
+	}
 }
 
 func (r *AssetRepositoryTestSuite) assertAsset(expectedAsset *asset.Asset, actualAsset *asset.Asset) bool {
@@ -1189,6 +1757,16 @@ func (r *AssetRepositoryTestSuite) assertAsset(expectedAsset *asset.Asset, actua
 	actualAsset.UpdatedBy.UpdatedAt = time.Time{}
 
 	return r.Equal(expectedAsset, actualAsset)
+}
+
+func (r *AssetRepositoryTestSuite) assertProbe(t *testing.T, expected asset.Probe, actual asset.Probe) bool {
+	t.Helper()
+
+	return r.Equal(expected.AssetURN, actual.AssetURN) &&
+		r.Equal(expected.Status, actual.Status) &&
+		r.Equal(expected.StatusReason, actual.StatusReason) &&
+		r.Equal(expected.Metadata, actual.Metadata) &&
+		r.Equal(expected.Timestamp, actual.Timestamp)
 }
 
 func TestAssetRepository(t *testing.T) {
