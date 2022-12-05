@@ -1,6 +1,6 @@
 # 1. My First Asset
 
-Before starting the tour, make sure you have a running Compass instance. You can refer this [guide](../guides/installation).
+Before starting the tour, make sure you have a running Compass instance. You can refer this [installation guide](../installation).
 
 ## 1.1 Introduction
 
@@ -71,8 +71,7 @@ curl --location --request PATCH 'http://localhost:8080/v1beta1/assets' \
             "namespace": "main-postgres"
         }
     }
-}
-'
+}'
 ```
 
 There are a few things to notice here:

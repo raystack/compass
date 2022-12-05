@@ -4,12 +4,12 @@ import TabItem from '@theme/TabItem';
 # 2. Querying your Assets
 
 In this section, we will learn how we can find and search our assets using the following approaches:
-- [Using ID](#21-using-id)
+- [Using URN](#21-using-urn)
 - [Using Search API](#23-using-search-api)
 
-## 2.1 Using ID
+## 2.1 Using URN
 
-Using the ID returned from when [you are uploading your asset](./1-my-first-asset.md#13-sending-your-first-asset-to-compass), you can easily find your asset like below
+Using the URN returned from when [you are uploading your asset](./1-my-first-asset.md#13-sending-your-first-asset-to-compass), you can easily find your asset like below
 
 ```bash
 curl --location --request GET 'http://localhost:8080/v1beta1/assets/cebeb793-8933-434c-b38f-beb6dbad91a5' \

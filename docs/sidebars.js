@@ -1,7 +1,7 @@
 module.exports = {
   docsSidebar: [
     'introduction',
-    'guides/installation',
+    'installation',
     {
       type: 'category',
       label: 'Tour',
