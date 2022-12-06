@@ -39,7 +39,7 @@ And just like that we just created a lineage :)
 Once lineage is defined, we can easily fetch them using a single asset URN to be the center of the lineage like below
 
 ```bash
-curl --location --request GET 'http://localhost:8080/v1beta1/lineage/tableau:my-dashboard.daily-orders' \
+curl 'http://localhost:8080/v1beta1/lineage/tableau:my-dashboard.daily-orders' \
 --header 'Compass-User-UUID: john.doe@example.com'
 ```
 
@@ -61,7 +61,7 @@ And you will get this as the response
 You can also get the lineage using `main-postgres:my-database.orders`, even when you have only defined `upstreams` on `tableau:my-dashboard.daily-orders`.
 
 ```bash
-curl --location --request GET 'http://localhost:8080/v1beta1/lineage/main-postgres:my-database.orders' \
+curl 'http://localhost:8080/v1beta1/lineage/main-postgres:my-database.orders' \
 --header 'Compass-User-UUID: john.doe@example.com'
 ```
 

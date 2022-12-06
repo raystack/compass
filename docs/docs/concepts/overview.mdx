@@ -1,17 +1,22 @@
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 # Overview
 
 Compass has three major concept when it comes to data ingestion: Asset, Type, and Service.
 
-Asset is essentially an arbitrary JSON object that represent a metadata of a specific service with a specific type.
+Asset is the main model that represents a metadata of a specific service with a specific type.
 
-Type defines a ‘type’ of an asset and it is pre-defined. There are currently 4 supported types in Compass: `table`, `job`, `dashboard`, and `topic`.
+Type defines a ‘type’ of an asset and it is pre-defined. Compass currently supports the following types:
+1. `table`
+2. `job`
+3. `dashboard`
+4. `topic`
+5. `feature_table`
+6. `model` (under development)
  
-Service defines the application name that the asset was coming from. For example: `biquery`, `postgres`, etc. If you wanted to push data for `bigquery` dataset\(s\) to Compass, you would need to first define the ‘`bigquery`’ service in compass.
+Service defines the application or source that maintains or generates the asset. Examples would be `biquery`, `postgres`, etc.
 
 Some features that compass has:
+* [Discovery](../tour/2-querying-assets.mdx)
+* [Lineage](../tour/3-asset-lineage.mdx)
 * [Asset Tagging](./asset#tagging-an-asset)
 * [User](./user.md)
 * [Discussion](../guides/discussion.md)
