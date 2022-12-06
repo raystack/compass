@@ -1,7 +1,5 @@
 # 3. Asset Lineage
 
-TBD..
-
 ## 3.1 Inserting lineage
 To have a lineage, we need at least two assets to be linked with each other.
 Compass only needs one of the assets to define the lineage.
@@ -46,6 +44,7 @@ curl 'http://localhost:8080/v1beta1/lineage/tableau:my-dashboard.daily-orders' \
 And you will get this as the response
 
 ```json
+{
     "data": [
         {
             "source": "main-postgres:my-database.orders",
@@ -65,10 +64,10 @@ curl 'http://localhost:8080/v1beta1/lineage/main-postgres:my-database.orders' \
 --header 'Compass-User-UUID: john.doe@example.com'
 ```
 
-## Summary
+## Conclusion
 
 This is merely a simple example of how Compass can help you manage and build your Data Lineage.
 You just need to dump all of your assets along with its `upstreams` and `downstreams` as shown above and Compass will take care of the rest.
 
-And that's it, we have just covered all the basics usage of Compass and how you can use it to manage and maintain your metadata.
-Aside from features introduced in this tour, Compass also has another features such as Asset starring and discussion, you can check those in the [Guides section](../guides/starring).
+And that's it, we have just covered all the basics of Compass and how you can use it to manage and maintain your metadata.
+Aside from features introduced in this tour, Compass also has additional features such as Asset starring and discussion, you can check those in the [Guides section](../guides/starring).
