@@ -2,12 +2,10 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -24,24 +22,26 @@ import (
 	"github.com/odpf/compass/pkg/statsd"
 	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
 	"github.com/odpf/salt/log"
-	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
+	"github.com/odpf/salt/mux"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type Config struct {
-	Host    string `mapstructure:"host" default:"0.0.0.0"`
-	Port    int    `mapstructure:"port" default:"8080"`
-	BaseUrl string `mapstructure:"baseurl" default:"localhost:8080"`
+	Host     string `mapstructure:"host" default:"0.0.0.0"`
+	Port     int    `mapstructure:"port" default:"8080"`
+	GRPCPort int    `mapstructure:"grpc_port" default:"8081"`
+	BaseUrl  string `mapstructure:"baseurl" default:"localhost:8080"`
 
 	// User Identity
 	Identity IdentityConfig `mapstructure:"identity"`
 }
 
-func (cfg Config) addr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.Port) }
+func (cfg Config) addr() string     { return fmt.Sprintf("%s:%d", cfg.Host, cfg.Port) }
+func (cfg Config) grpcAddr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.GRPCPort) }
 
 type IdentityConfig struct {
 	// User Identity
@@ -89,6 +89,7 @@ func Serve(
 			grpc_interceptor.UserHeaderCtx(config.Identity.HeaderKeyUUID, config.Identity.HeaderKeyEmail),
 		)),
 	)
+	reflection.Register(grpcServer)
 
 	compassv1beta1.RegisterCompassServiceServer(grpcServer, v1beta1Handler)
 	grpc_health_v1.RegisterHealthServer(grpcServer, healthHandler)
@@ -99,8 +100,7 @@ func Serve(
 
 	headerMatcher := makeHeaderMatcher(config)
 
-	address := config.addr()
-	grpcConn, err := grpc.DialContext(grpcDialCtx, address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	grpcConn, err := grpc.DialContext(grpcDialCtx, config.grpcAddr(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	}
@@ -127,56 +127,30 @@ func Serve(
 		return err
 	}
 
-	baseMux := http.NewServeMux()
-	baseMux.Handle("/", gwmux)
-
-	httpServer := &http.Server{
-		Handler:      grpcHandlerFunc(grpcServer, baseMux),
-		Addr:         address,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  120 * time.Second,
-	}
-
-	idleConnsClosed := make(chan struct{})
-	interrupt := make(chan os.Signal, 1)
-	go func() {
-		signal.Notify(interrupt, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-		<-interrupt
-
-		if httpServer != nil {
-			// We received an interrupt signal, shut down.
-			logger.Warn("stopping http server...")
-			if err := httpServer.Shutdown(context.Background()); err != nil {
-				logger.Error("HTTP server Shutdown", "err", err)
-			}
-		}
-
-		if grpcServer != nil {
-			logger.Warn("stopping grpc server...")
-			grpcServer.GracefulStop()
-		}
-
+	defer func() {
 		if pgClient != nil {
 			logger.Warn("closing db...")
 			if err := pgClient.Close(); err != nil {
 				logger.Error("error when closing db", "err", err)
 			}
-		}
-
-		close(idleConnsClosed)
-	}()
-
-	go func() {
-		defer func() { interrupt <- syscall.SIGTERM }()
-		if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
-			logger.Error("HTTP server ListenAndServe", "err", err)
+			logger.Warn("db closed...")
 		}
 	}()
 
-	logger.Info("server started")
-
-	<-idleConnsClosed
+	logger.Info("Starting server", "http_port", config.addr(), "grpc_port", config.grpcAddr())
+	if err := mux.Serve(
+		ctx,
+		mux.WithHTTPTarget(config.addr(), &http.Server{
+			Handler:      gwmux,
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 10 * time.Second,
+			IdleTimeout:  120 * time.Second,
+		}),
+		mux.WithGRPCTarget(config.grpcAddr(), grpcServer),
+		mux.WithGracePeriod(5*time.Second),
+	); !errors.Is(err, context.Canceled) {
+		logger.Error("mux serve error", "err", err)
+	}
 
 	logger.Info("server stopped")
 
@@ -194,21 +168,4 @@ func makeHeaderMatcher(c Config) func(key string) (string, bool) {
 			return runtime.DefaultHeaderMatcher(key)
 		}
 	}
-}
-
-// grpcHandlerFunc routes http1 calls to baseMux and http2 with grpc header to grpcServer.
-// Using a single port for proxying both http1 & 2 protocols will degrade http performance
-// but for our usecase the convenience per performance tradeoff is better suited
-// if in future, this does become a bottleneck(which I highly doubt), we can break the service
-// into two ports, default port for grpc and default+1 for grpc-gateway proxy.
-// We can also use something like a connection multiplexer
-// https://github.com/soheilhy/cmux to achieve the same.
-func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Handler {
-	return h2c.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
-			grpcServer.ServeHTTP(w, r)
-		} else {
-			otherHandler.ServeHTTP(w, r)
-		}
-	}), &http2.Server{})
 }

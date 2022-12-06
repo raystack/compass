@@ -27,7 +27,7 @@ func lineageCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
-			cs := term.NewColorScheme()
+
 			clnt, cancel, err := client.Create(cmd.Context())
 			if err != nil {
 				return err
@@ -43,7 +43,7 @@ func lineageCommand() *cobra.Command {
 				return err
 			}
 
-			fmt.Println(cs.Bluef(prettyPrint(res.GetData())))
+			fmt.Println(term.Bluef(prettyPrint(res.GetData())))
 
 			return nil
 		},

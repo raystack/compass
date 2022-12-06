@@ -24,6 +24,7 @@ db:
 service:
     host: localhost
     port: 8080
+    grpc_port: 8081
     identity:
         headerkey_uuid: Compass-User-UUID
         headerkey_email: Compass-User-Email
