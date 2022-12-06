@@ -1,46 +1,37 @@
 package asset
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestTypeString(t *testing.T) {
-	stringVal := TypeDashboard.String()
-	if stringVal != "dashboard" {
-		t.Fatalf("type dashboard converted to %s instead of 'dashboard'", stringVal)
-	}
-	stringVal = TypeJob.String()
-	if stringVal != "job" {
-		t.Fatalf("type job converted to %s instead of 'job'", stringVal)
-	}
-	stringVal = TypeTable.String()
-	if stringVal != "table" {
-		t.Fatalf("type table converted to %s instead of 'table'", stringVal)
-	}
-	stringVal = TypeTopic.String()
-	if stringVal != "topic" {
-		t.Fatalf("type topic converted to %s instead of 'topic'", stringVal)
+	for typ, expected := range map[Type]string{
+		TypeDashboard:    "dashboard",
+		TypeJob:          "job",
+		TypeTable:        "table",
+		TypeTopic:        "topic",
+		TypeFeatureTable: "feature_table",
+		TypeApplication:  "application",
+		TypeModel:        "model",
+	} {
+		t.Run((string)(typ), func(t *testing.T) {
+			assert.Equal(t, expected, typ.String())
+		})
 	}
 }
 
 func TestTypeIsValid(t *testing.T) {
-	aType := Type("dashboard")
-	if !aType.IsValid() {
-		t.Fatalf("type %s is not valid", aType)
-	}
-	aType = Type("job")
-	if !aType.IsValid() {
-		t.Fatalf("type %s is not valid", aType)
-	}
-	aType = Type("table")
-	if !aType.IsValid() {
-		t.Fatalf("type %s is not valid", aType)
-	}
-	aType = Type("topic")
-	if !aType.IsValid() {
-		t.Fatalf("type %s is not valid", aType)
+	for _, typ := range []Type{
+		"dashboard", "job", "table", "topic", "feature_table", "application", "model",
+	} {
+		t.Run((string)(typ), func(t *testing.T) {
+			assert.Truef(t, typ.IsValid(), "%s should be valid", typ)
+		})
 	}
 
-	aType = Type("random")
-	if aType.IsValid() {
-		t.Fatalf("type %s should not be valid", aType)
+	if typ := Type("random"); typ.IsValid() {
+		t.Fatalf("type %s should not be valid", typ)
 	}
 }

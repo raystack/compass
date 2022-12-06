@@ -78,6 +78,14 @@ func TestGetTypes(t *testing.T) {
 							Name:  "feature_table",
 							Count: 0,
 						},
+						{
+							Name:  "application",
+							Count: 0,
+						},
+						{
+							Name:  "model",
+							Count: 0,
+						},
 					},
 				}
 
