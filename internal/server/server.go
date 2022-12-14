@@ -30,6 +30,10 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+const (
+	GRPCMaxClientSendSize = 32 << 20
+)
+
 type Config struct {
 	Host     string `mapstructure:"host" default:"0.0.0.0"`
 	Port     int    `mapstructure:"port" default:"8080"`
@@ -100,7 +104,14 @@ func Serve(
 
 	headerMatcher := makeHeaderMatcher(config)
 
-	grpcConn, err := grpc.DialContext(grpcDialCtx, config.grpcAddr(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	grpcConn, err := grpc.DialContext(
+		grpcDialCtx,
+		config.grpcAddr(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(GRPCMaxClientSendSize),
+			grpc.MaxCallSendMsgSize(GRPCMaxClientSendSize),
+		))
 	if err != nil {
 		return err
 	}
