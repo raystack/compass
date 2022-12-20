@@ -75,7 +75,7 @@ curl --location --request PATCH 'http://localhost:8080/v1beta1/assets' \
 ```
 
 There are a few things to notice here:
-1. The HTTP method used is `PATCH`. This is because Compass does not have a dedicated `Create` apis, it uses a single API to `Patch / Create` an asset instead. So when updating or patching your asset, you can use the same API.
+1. The HTTP method used is `PATCH`. This is because Compass does not have a dedicated `Create` API, it uses a single API to `Patch / Create` an asset instead. So when updating or patching your asset, you can use the same API.
 
 2. Compass requires `Compass-User-UUID` header to be in the request. More information about the identity header can be found [here](../concepts/user). To simplify this tour, let's just use `john.doe@example.com`.
 

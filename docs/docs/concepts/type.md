@@ -9,6 +9,7 @@ Compass currently supports the following types:
 4. `topic`
 5. `feature_table`
 6. `model` (under development)
+7. `application` (under development)
 
 Type will be extremely useful for categorizing your assets and it will be really helpful during discovery.
 Check [this section on querying assets](../guides/querying#using-the-get-assets-api) on how to leverage `type` for your discovery.
