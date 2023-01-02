@@ -25,7 +25,7 @@ Let's imagine we have a `postgres` instance that we keep referring to as our `ma
 }
 ```
 
-- **urn** is a unique name you assign to an asset. You need to make sure you don't have a duplicate urns across all of your assets because Compass treats `urn` as an identifier of your asset. For this example, we use the following format to make sure our urn is unique, `{NAMESPACE}:{DB_NAME}.{TABLE_NAME}`. (more info about URN generation can be found [here](../guides/urn-generation))
+- **urn** is a unique name you assign to an asset. You need to make sure you don't have a duplicate urns across all of your assets because Compass treats `urn` as an identifier of your asset. For this example, we use the following format to make sure our urn is unique, `{NAMESPACE}:{DB_NAME}.{TABLE_NAME}`.
 
 - **type** is your Asset's type. The value for type has to be recognizable by Compass. More info about Asset's Type can be found [here](../concepts/type).
 
