@@ -76,6 +76,6 @@ time="2022-04-27T09:18:08Z" level=info msg="server started"
 ```
 
 ## Required Header/Metadata in API
-Compass has a concept of [User](../concepts/user.md). In the current version, all HTTP & gRPC APIs in Compass requires an identity header/metadata in the request. The header key is configurable but the default name is `Compass-User-UUID`.
+Compass has a concept of [User](./concepts/user.md). In the current version, all HTTP & gRPC APIs in Compass requires an identity header/metadata in the request. The header key is configurable but the default name is `Compass-User-UUID`.
 
-Compass APIs also expect an additional optional e-mail header. This is also configurable and the default name is `Compass-User-Email`. The purpose of having this optional e-mail header is described in the [User](../concepts/user.md) section.
+Compass APIs also expect an additional optional e-mail header. This is also configurable and the default name is `Compass-User-Email`. The purpose of having this optional e-mail header is described in the [User](./concepts/user.md) section.

@@ -1,0 +1,73 @@
+# 3. Asset Lineage
+
+## 3.1 Inserting lineage
+To have a lineage, we need at least two assets to be linked with each other.
+Compass only needs one of the assets to define the lineage.
+
+Let's create a new dashboard asset (tableau) that uses data from the `main-postgres:my-database.orders` table asset that we created earlier in [first section](./1-my-first-asset.md#13-sending-your-first-asset-to-compass).
+And while creating the asset, we can also define its lineage in the same request.
+
+```bash
+curl --location --request PATCH 'http://localhost:8080/v1beta1/assets' \
+--header 'Content-Type: application/json' \
+--header 'Compass-User-UUID: john.doe@example.com' \
+--data-raw '{
+    "asset": {
+        "urn": "tableau:my-dashboard.daily-orders",
+        "type": "dashboard",
+        "service": "tableau",
+        "name": "Daily Orders Dashboard",
+        "description": "This is a dashboard showing daily orders"
+    },
+    "upstreams": [
+        {
+            "urn": "main-postgres:my-database.orders"
+        }
+    ]
+}'
+```
+
+We use `upstreams` and `downstreams` field to define lineage.
+From the example above `main-postgres:my-database.orders` is the source of the dashboard, so we put it inside `upstreams` field.
+
+And just like that we just created a lineage :)
+
+## Querying Lineage
+
+Once lineage is defined, we can easily fetch them using a single asset URN to be the center of the lineage like below
+
+```bash
+curl 'http://localhost:8080/v1beta1/lineage/tableau:my-dashboard.daily-orders' \
+--header 'Compass-User-UUID: john.doe@example.com'
+```
+
+And you will get this as the response
+
+```json
+{
+    "data": [
+        {
+            "source": "main-postgres:my-database.orders",
+            "target": "tableau:my-dashboard.daily-orders",
+            "prop": {
+                "root": "tableau:my-dashboard.daily-orders"
+            }
+        }
+    ]
+}
+```
+
+You can also get the lineage using `main-postgres:my-database.orders`, even when you have only defined `upstreams` on `tableau:my-dashboard.daily-orders`.
+
+```bash
+curl 'http://localhost:8080/v1beta1/lineage/main-postgres:my-database.orders' \
+--header 'Compass-User-UUID: john.doe@example.com'
+```
+
+## Conclusion
+
+This is merely a simple example of how Compass can help you manage and build your Data Lineage.
+You just need to dump all of your assets along with its `upstreams` and `downstreams` as shown above and Compass will take care of the rest.
+
+And that's it, we have just covered all the basics of Compass and how you can use it to manage and maintain your metadata.
+Aside from features introduced in this tour, Compass also has additional features such as Asset starring and discussion, you can check those in the [Guides section](../guides/starring).
