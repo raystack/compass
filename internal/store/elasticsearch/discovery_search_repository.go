@@ -257,6 +257,7 @@ func (repo *DiscoveryRepository) toSearchResults(hits []searchHit) []asset.Searc
 			Title:       r.Name,
 			Service:     r.Service,
 			Labels:      r.Labels,
+			Data:        r.Data,
 		})
 	}
 	return results
