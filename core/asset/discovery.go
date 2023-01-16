@@ -39,13 +39,14 @@ type SearchConfig struct {
 
 // SearchResult represents an item/result in a list of search results
 type SearchResult struct {
-	ID          string            `json:"id"`
-	URN         string            `json:"urn"`
-	Title       string            `json:"title"`
-	Type        string            `json:"type"`
-	Service     string            `json:"service"`
-	Description string            `json:"description"`
-	Labels      map[string]string `json:"labels"`
+	ID          string                 `json:"id"`
+	URN         string                 `json:"urn"`
+	Title       string                 `json:"title"`
+	Type        string                 `json:"type"`
+	Service     string                 `json:"service"`
+	Description string                 `json:"description"`
+	Labels      map[string]string      `json:"labels"`
+	Data        map[string]interface{} `json:"data"`
 }
 
 // ToAsset returns search result as asset
@@ -58,5 +59,6 @@ func (sr SearchResult) ToAsset() Asset {
 		Service:     sr.Service,
 		Description: sr.Description,
 		Labels:      sr.Labels,
+		Data:        sr.Data,
 	}
 }
