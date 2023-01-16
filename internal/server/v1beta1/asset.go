@@ -30,6 +30,7 @@ type AssetService interface {
 	GetAssetByVersion(ctx context.Context, id string, version string) (asset.Asset, error)
 	GetAssetVersionHistory(ctx context.Context, flt asset.Filter, id string) ([]asset.Asset, error)
 	UpsertAsset(ctx context.Context, ast *asset.Asset, upstreams, downstreams []string) (string, error)
+	UpsertAssetWithoutLineage(ctx context.Context, ast *asset.Asset) (string, error)
 	DeleteAsset(ctx context.Context, id string) error
 
 	GetLineage(ctx context.Context, urn string, query asset.LineageQuery) (asset.Lineage, error)
@@ -268,13 +269,14 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1bet
 	ast.Patch(patchAssetMap)
 	ast.UpdatedBy.ID = userID
 
-	assetID, err := server.upsertAsset(
-		ctx,
-		ast,
-		"asset_upsert_patch",
-		req.GetUpstreams(),
-		req.GetDownstreams(),
-	)
+	var assetID string
+	if len(req.Upstreams) != 0 || len(req.Downstreams) != 0 || req.OverwriteLineage {
+		assetID, err = server.upsertAsset(
+			ctx, ast, "asset_upsert_patch", req.GetUpstreams(), req.GetDownstreams(),
+		)
+	} else {
+		assetID, err = server.upsertAssetWithoutLineage(ctx, ast)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -380,6 +382,36 @@ func (server *APIServer) upsertAsset(
 		})
 
 	return
+}
+
+func (server *APIServer) upsertAssetWithoutLineage(ctx context.Context, ast asset.Asset) (string, error) {
+	const mode = "asset_upsert_patch_without_lineage"
+
+	if err := server.validateAsset(ast); err != nil {
+		return "", status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	assetID, err := server.assetService.UpsertAssetWithoutLineage(ctx, &ast)
+	if err != nil {
+		switch {
+		case errors.As(err, new(asset.InvalidError)):
+			return "", status.Error(codes.InvalidArgument, err.Error())
+
+		case errors.As(err, new(asset.DiscoveryError)):
+			server.sendStatsDCounterMetric("discovery_error",
+				map[string]string{
+					"method": mode,
+				})
+		}
+
+		return "", internalServerError(server.logger, err.Error())
+	}
+
+	server.sendStatsDCounterMetric(mode, map[string]string{
+		"type":    ast.Type.String(),
+		"service": ast.Service,
+	})
+	return assetID, nil
 }
 
 func (server *APIServer) buildAsset(baseAsset *compassv1beta1.UpsertAssetRequest_Asset) asset.Asset {

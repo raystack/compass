@@ -233,12 +233,70 @@ func TestService_UpsertAsset(t *testing.T) {
 
 			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
 			rid, err := svc.UpsertAsset(ctx, tc.Asset, tc.Upstreams, tc.Downstreams)
-			if err != nil && errors.Is(tc.Err, err) {
-				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
+			if tc.Err != nil {
+				assert.EqualError(t, err, tc.Err.Error())
+				return
 			}
-			if tc.ReturnedID != rid {
-				t.Fatalf("got returned id %v, expected returned id was %v", rid, tc.ReturnedID)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.ReturnedID, rid)
+		})
+	}
+}
+
+func TestService_UpsertAssetWithoutLineage(t *testing.T) {
+	sampleAsset := &asset.Asset{ID: "some-id", URN: "some-urn", Type: asset.TypeDashboard, Service: "some-service"}
+	var testCases = []struct {
+		Description string
+		Asset       *asset.Asset
+		Err         error
+		ReturnedID  string
+		Setup       func(context.Context, *mocks.AssetRepository, *mocks.DiscoveryRepository)
+	}{
+		{
+			Description: `should return error if asset repository upsert return error`,
+			Asset:       sampleAsset,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
+				ar.EXPECT().Upsert(ctx, sampleAsset).Return("", errors.New("unknown error"))
+			},
+			Err: errors.New("unknown error"),
+		},
+		{
+			Description: `should return error if discovery repository upsert return error`,
+			Asset:       sampleAsset,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
+				ar.EXPECT().Upsert(ctx, sampleAsset).Return(sampleAsset.ID, nil)
+				dr.EXPECT().Upsert(ctx, *sampleAsset).Return(errors.New("unknown error"))
+			},
+			Err: errors.New("unknown error"),
+		},
+		{
+			Description: `should return no error if all repositories upsert return no error`,
+			Asset:       sampleAsset,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
+				ar.EXPECT().Upsert(ctx, sampleAsset).Return(sampleAsset.ID, nil)
+				dr.EXPECT().Upsert(ctx, *sampleAsset).Return(nil)
+			},
+			ReturnedID: sampleAsset.ID,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockAssetRepo := mocks.NewAssetRepository(t)
+			mockDiscoveryRepo := mocks.NewDiscoveryRepository(t)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockAssetRepo, mockDiscoveryRepo)
 			}
+
+			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mocks.NewLineageRepository(t))
+			rid, err := svc.UpsertAssetWithoutLineage(ctx, tc.Asset)
+			if tc.Err != nil {
+				assert.EqualError(t, err, tc.Err.Error())
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tc.ReturnedID, rid)
 		})
 	}
 }

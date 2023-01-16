@@ -2278,6 +2278,13 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/LineageNode'
+      overwrite_lineage:
+        type: boolean
+        description: |-
+          overwrite_lineage determines whether the asset's lineage should be
+          overwritten with the upstreams and downstreams specified in the request.
+          Currently, it is only applicable when both upstreams and downstreams are
+          empty/not specified.
       upstreams:
         type: array
         items:

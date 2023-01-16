@@ -678,6 +678,97 @@ func TestUpsertPatchAsset(t *testing.T) {
 
 			},
 		},
+		{
+			Description: "without explicit overwrite_lineage, should upsert asset without lineage",
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				patchedAsset := asset.Asset{
+					URN:       "test dagger",
+					Type:      asset.TypeTable,
+					Name:      "new-name",
+					Service:   "kafka",
+					UpdatedBy: user.User{ID: userID},
+					Data:      map[string]interface{}{},
+					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
+				}
+
+				assetWithID := patchedAsset
+				assetWithID.ID = assetID
+
+				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
+				as.EXPECT().UpsertAssetWithoutLineage(ctx, &patchedAsset).
+					Return(assetWithID.ID, nil).
+					Run(func(ctx context.Context, ast *asset.Asset) {
+						patchedAsset.ID = assetWithID.ID
+					})
+			},
+			Request: &compassv1beta1.UpsertPatchAssetRequest{
+				Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
+					Urn:     "test dagger",
+					Type:    "table",
+					Name:    wrapperspb.String("new-name"),
+					Service: "kafka",
+					Data:    &structpb.Struct{},
+					Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "", Email: "email@email.com", Provider: "provider"}},
+				},
+			},
+			ExpectStatus: codes.OK,
+			PostCheck: func(resp *compassv1beta1.UpsertPatchAssetResponse) error {
+				expected := &compassv1beta1.UpsertPatchAssetResponse{
+					Id: assetID,
+				}
+				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
+					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
+				}
+				return nil
+
+			},
+		},
+		{
+			Description: "with explicit overwrite_lineage, should upsert asset when lineage is not in the request",
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				patchedAsset := asset.Asset{
+					URN:       "test dagger",
+					Type:      asset.TypeTable,
+					Name:      "new-name",
+					Service:   "kafka",
+					UpdatedBy: user.User{ID: userID},
+					Data:      map[string]interface{}{},
+					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
+				}
+
+				assetWithID := patchedAsset
+				assetWithID.ID = assetID
+
+				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
+				as.EXPECT().UpsertAsset(ctx, &patchedAsset, []string{}, []string{}).
+					Return(assetWithID.ID, nil).
+					Run(func(ctx context.Context, ast *asset.Asset, _, _ []string) {
+						patchedAsset.ID = assetWithID.ID
+					})
+			},
+			Request: &compassv1beta1.UpsertPatchAssetRequest{
+				Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
+					Urn:     "test dagger",
+					Type:    "table",
+					Name:    wrapperspb.String("new-name"),
+					Service: "kafka",
+					Data:    &structpb.Struct{},
+					Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "", Email: "email@email.com", Provider: "provider"}},
+				},
+				OverwriteLineage: true,
+			},
+			ExpectStatus: codes.OK,
+			PostCheck: func(resp *compassv1beta1.UpsertPatchAssetResponse) error {
+				expected := &compassv1beta1.UpsertPatchAssetResponse{
+					Id: assetID,
+				}
+				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
+					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
+				}
+				return nil
+
+			},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
