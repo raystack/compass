@@ -39,21 +39,27 @@ func (s *Service) GetAllAssets(ctx context.Context, flt Filter, withTotal bool) 
 }
 
 func (s *Service) UpsertAsset(ctx context.Context, ast *Asset, upstreams, downstreams []string) (string, error) {
-	var assetID string
-	var err error
-
-	assetID, err = s.assetRepository.Upsert(ctx, ast)
+	assetID, err := s.UpsertAssetWithoutLineage(ctx, ast)
 	if err != nil {
-		return assetID, err
+		return "", err
+	}
+
+	if err := s.lineageRepository.Upsert(ctx, ast.URN, upstreams, downstreams); err != nil {
+		return "", err
+	}
+
+	return assetID, nil
+}
+
+func (s *Service) UpsertAssetWithoutLineage(ctx context.Context, ast *Asset) (string, error) {
+	assetID, err := s.assetRepository.Upsert(ctx, ast)
+	if err != nil {
+		return "", err
 	}
 
 	ast.ID = assetID
 	if err := s.discoveryRepository.Upsert(ctx, *ast); err != nil {
-		return assetID, err
-	}
-
-	if err := s.lineageRepository.Upsert(ctx, ast.URN, upstreams, downstreams); err != nil {
-		return assetID, err
+		return "", err
 	}
 
 	return assetID, nil

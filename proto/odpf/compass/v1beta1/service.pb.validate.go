@@ -4322,6 +4322,8 @@ func (m *UpsertPatchAssetRequest) validate(all bool) error {
 
 	}
 
+	// no validation rules for OverwriteLineage
+
 	if len(errors) > 0 {
 		return UpsertPatchAssetRequestMultiError(errors)
 	}
