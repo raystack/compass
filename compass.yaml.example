@@ -24,11 +24,14 @@ db:
 service:
     host: localhost
     port: 8080
-    grpc_port: 8081
     identity:
         headerkey_uuid: Compass-User-UUID
         headerkey_email: Compass-User-Email
         provider_default_name: shield
+    grpc:
+        port: 8081
+        max_send_msg_size: 33554432
+        max_recv_msg_size: 33554432
 
 client:
     host: localhost:8080

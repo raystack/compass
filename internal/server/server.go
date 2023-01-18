@@ -30,22 +30,20 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-const (
-	GRPCMaxClientSendSize = 32 << 20
-)
-
 type Config struct {
-	Host     string `mapstructure:"host" default:"0.0.0.0"`
-	Port     int    `mapstructure:"port" default:"8080"`
-	GRPCPort int    `mapstructure:"grpc_port" default:"8081"`
-	BaseUrl  string `mapstructure:"baseurl" default:"localhost:8080"`
+	Host    string `mapstructure:"host" default:"0.0.0.0"`
+	Port    int    `mapstructure:"port" default:"8080"`
+	BaseUrl string `mapstructure:"baseurl" default:"localhost:8080"`
 
 	// User Identity
 	Identity IdentityConfig `mapstructure:"identity"`
+
+	// GRPC Config
+	GRPC GRPCConfig `mapstructure:"grpc"`
 }
 
 func (cfg Config) addr() string     { return fmt.Sprintf("%s:%d", cfg.Host, cfg.Port) }
-func (cfg Config) grpcAddr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.GRPCPort) }
+func (cfg Config) grpcAddr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.GRPC.Port) }
 
 type IdentityConfig struct {
 	// User Identity
@@ -53,6 +51,12 @@ type IdentityConfig struct {
 	HeaderValueUUID     string `mapstructure:"headervalue_uuid" default:"odpf@email.com"`
 	HeaderKeyEmail      string `mapstructure:"headerkey_email" default:"Compass-User-Email"`
 	ProviderDefaultName string `mapstructure:"provider_default_name" default:""`
+}
+
+type GRPCConfig struct {
+	Port           int `mapstructure:"port" default:"8081"`
+	MaxRecvMsgSize int `mapstructure:"max_recv_msg_size" default:"33554432"`
+	MaxSendMsgSize int `mapstructure:"max_send_msg_size" default:"33554432"`
 }
 
 func Serve(
@@ -109,8 +113,8 @@ func Serve(
 		config.grpcAddr(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultCallOptions(
-			grpc.MaxCallRecvMsgSize(GRPCMaxClientSendSize),
-			grpc.MaxCallSendMsgSize(GRPCMaxClientSendSize),
+			grpc.MaxCallRecvMsgSize(config.GRPC.MaxRecvMsgSize),
+			grpc.MaxCallSendMsgSize(config.GRPC.MaxSendMsgSize),
 		))
 	if err != nil {
 		return err
