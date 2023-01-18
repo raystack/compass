@@ -182,20 +182,28 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 			// inconsistent test.
 			description: "should return sql query with asset's data fields filter",
 			config: asset.Filter{
-				Data: map[string]string{
-					"entity": "odpf",
+				Data: map[string][]string{
+					"entity": {"odpf"},
 				},
 			},
-			expectedQuery: `data->>'entity' = 'odpf'`,
+			expectedQuery: `(data->>'entity' = $1)`,
 		},
 		{
 			description: "should return sql query with asset's nested data fields filter",
 			config: asset.Filter{
-				Data: map[string]string{
-					"landscape.properties.project-id": "compass_001",
+				Data: map[string][]string{
+					"landscape.properties.project-id": {"compass_001"},
 				},
 			},
-			expectedQuery: `data->'landscape'->'properties'->>'project-id' = 'compass_001'`,
+			expectedQuery: `(data->'landscape'->'properties'->>'project-id' = $1)`,
+		},
+		{
+			description: "should return sql query with asset's nested multiple data fields filter ",
+			config: asset.Filter{
+				Data: map[string][]string{
+					"properties.attributes.entity": {"alpha", "beta"},
+				}},
+			expectedQuery: `(data->'properties'->'attributes'->>'entity' = $1 OR data->'properties'->'attributes'->>'entity' = $2)`,
 		},
 	}
 
@@ -328,9 +336,9 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 
 	r.Run("should filter using asset's data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
-			Data: map[string]string{
-				"entity":  "odpf",
-				"country": "th",
+			Data: map[string][]string{
+				"entity":  {"odpf"},
+				"country": {"th"},
 			},
 		})
 		r.Require().NoError(err)
@@ -344,9 +352,9 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 
 	r.Run("should filter using asset's nested data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
-			Data: map[string]string{
-				"landscape.properties.project-id": "compass_001",
-				"country":                         "vn",
+			Data: map[string][]string{
+				"landscape.properties.project-id": {"compass_001"},
+				"country":                         {"vn"},
 			},
 		})
 		r.Require().NoError(err)
@@ -360,8 +368,8 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 
 	r.Run("should filter using asset's nonempty data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
-			Data: map[string]string{
-				"properties.dependencies": "_nonempty",
+			Data: map[string][]string{
+				"properties.dependencies": {"_nonempty"},
 			},
 		})
 		r.Require().NoError(err)
@@ -375,11 +383,11 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 
 	r.Run("should filter using asset's different nonempty data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
-			Data: map[string]string{
-				"properties.dependencies": "_nonempty",
-				"entity":                  "odpf",
-				"urn":                     "j-xcvcx",
-				"country":                 "vn",
+			Data: map[string][]string{
+				"properties.dependencies": {"_nonempty"},
+				"entity":                  {"odpf"},
+				"urn":                     {"j-xcvcx"},
+				"country":                 {"vn"},
 			},
 		})
 		r.Require().NoError(err)
@@ -463,9 +471,9 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 		{
 			Description: "should filter using asset's data fields",
 			Filter: asset.Filter{
-				Data: map[string]string{
-					"entity":  "odpf",
-					"country": "th",
+				Data: map[string][]string{
+					"entity":  {"odpf"},
+					"country": {"th"},
 				},
 			},
 			Expected: map[asset.Type]int{
@@ -477,9 +485,9 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 		{
 			Description: "should filter using asset's nested data fields",
 			Filter: asset.Filter{
-				Data: map[string]string{
-					"landscape.properties.project-id": "compass_001",
-					"country":                         "vn",
+				Data: map[string][]string{
+					"landscape.properties.project-id": {"compass_001"},
+					"country":                         {"vn"},
 				},
 			},
 			Expected: map[asset.Type]int{
@@ -489,8 +497,8 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 		{
 			Description: "should filter using asset's nonempty data fields",
 			Filter: asset.Filter{
-				Data: map[string]string{
-					"properties.dependencies": "_nonempty",
+				Data: map[string][]string{
+					"properties.dependencies": {"_nonempty"},
 				},
 			},
 			Expected: map[asset.Type]int{
@@ -500,11 +508,11 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 		{
 			Description: "should filter using asset's different nonempty data fields",
 			Filter: asset.Filter{
-				Data: map[string]string{
-					"properties.dependencies": "_nonempty",
-					"entity":                  "odpf",
-					"urn":                     "j-xcvcx",
-					"country":                 "vn",
+				Data: map[string][]string{
+					"properties.dependencies": {"_nonempty"},
+					"entity":                  {"odpf"},
+					"urn":                     {"j-xcvcx"},
+					"country":                 {"vn"},
 				},
 			},
 			Expected: map[asset.Type]int{

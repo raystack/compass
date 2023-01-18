@@ -87,9 +87,9 @@ func TestGetAllAssets(t *testing.T) {
 					SortDirection: "asc",
 					QueryFields:   []string{"name", "urn"},
 					Query:         "internal",
-					Data: map[string]string{
-						"dataset": "booking",
-						"project": "p-godata-id",
+					Data: map[string][]string{
+						"dataset": {"booking"},
+						"project": {"p-godata-id"},
 					},
 				}
 				as.EXPECT().GetAllAssets(ctx, cfg, false).Return([]asset.Asset{}, 0, nil)

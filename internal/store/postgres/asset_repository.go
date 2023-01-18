@@ -828,8 +828,8 @@ func (r *AssetRepository) BuildFilterQuery(builder sq.SelectBuilder, flt asset.F
 	}
 
 	if len(flt.Data) > 0 {
-		for key, val := range flt.Data {
-			if val == "_nonempty" {
+		for key, vals := range flt.Data {
+			if len(vals) == 1 && vals[0] == "_nonempty" {
 				field := r.buildDataField(key, true)
 				whereClause := sq.And{
 					sq.NotEq{field: nil},    // IS NOT NULL (field exists)
@@ -840,8 +840,13 @@ func (r *AssetRepository) BuildFilterQuery(builder sq.SelectBuilder, flt asset.F
 				}
 				builder = builder.Where(whereClause)
 			} else {
-				finalQuery := r.buildDataField(key, false)
-				builder = builder.Where(fmt.Sprintf("%s = '%s'", finalQuery, val))
+				dataOrClause := sq.Or{}
+				for _, v := range vals {
+					finalQuery := r.buildDataField(key, false)
+					dataOrClause = append(dataOrClause, sq.Eq{finalQuery: v})
+				}
+
+				builder = builder.Where(dataOrClause)
 			}
 		}
 	}
