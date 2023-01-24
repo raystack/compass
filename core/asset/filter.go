@@ -15,7 +15,7 @@ type Filter struct {
 	SortDirection string `validate:"omitempty,oneof=asc desc"`
 	QueryFields   []string
 	Query         string
-	Data          map[string]string
+	Data          map[string][]string
 }
 
 func (f *Filter) Validate() error {
@@ -90,7 +90,13 @@ func (fb *filterBuilder) Build() (Filter, error) {
 		SortBy:        fb.sortBy,
 		SortDirection: fb.sortDirection,
 		Query:         fb.q,
-		Data:          fb.data,
+	}
+
+	if len(fb.data) != 0 {
+		flt.Data = make(map[string][]string)
+		for k, v := range fb.data {
+			flt.Data[k] = strings.Split(v, ",")
+		}
 	}
 
 	if fb.types != "" {
