@@ -4,20 +4,33 @@ import TabItem from '@theme/TabItem';
 # 2. Querying your Assets
 
 In this section, we will learn how we can find and search our assets using the following approaches:
-- [Using URN](#21-using-urn)
+- [Using URN or ID](#21-using-asset-urn-or-id)
 - [Using Search API](#23-using-search-api)
 
-## 2.1 Using URN
+## 2.1 Using Asset URN or ID
 
-Using the URN returned from when [you are uploading your asset](./1-my-first-asset.md#13-sending-your-first-asset-to-compass), you can easily find your asset like below
+Using the Asset URN or ID returned from when [you are uploading your asset](./1-my-first-asset.md#13-sending-your-first-asset-to-compass), you can easily find your asset like below
+
+<Tabs groupId="api">
+  <TabItem value="cli" label="CLI" default>
 
 ```bash
-curl 'http://localhost:8080/v1beta1/assets/cebeb793-8933-434c-b38f-beb6dbad91a5' \
+$ compass asset view main-postgres:my-database.orders
+```
+
+  </TabItem>
+  <TabItem value="http" label="HTTP">
+
+```bash
+curl 'http://localhost:8080/v1beta1/assets/main-postgres:my-database.orders' \
 --header 'Content-Type: application/json' \
 --header 'Compass-User-UUID: john.doe@example.com'
 ```
 
-It will return
+ </TabItem>
+</Tabs>
+
+Response from the above query
 ```json
 {
   "data": {
@@ -150,10 +163,23 @@ Now that we have added more assets to Compass [here](#22-adding-more-assets), le
 
 Let's search for our `products` table using a typo query `"podcts"`.
 
+<Tabs groupId="api">
+  <TabItem value="cli" label="CLI" default>
+
+```bash
+$ compass search "podcts"
+```
+
+  </TabItem>
+  <TabItem value="http" label="HTTP">
+
 ```bash
 curl 'http://localhost:8080/v1beta1/search?text=podcts' \
 --header 'Compass-User-UUID: john.doe@example.com'
 ```
+
+ </TabItem>
+</Tabs>
 
 Search results:
 ```json
