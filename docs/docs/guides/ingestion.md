@@ -1,3 +1,6 @@
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 # Ingesting metadata
 
 This document showcases compass usage, from producing data, to using APIs for specific use-cases. This guide is geared towards adminstrators, more than users. It is meant to give the administrators an introduction of different configuration options available, and how they affect the behaviour of the application.
@@ -13,6 +16,9 @@ Let’s say that you have a hypothetical tool called Piccolo and you have severa
 If there is an existing asset, Upsert Patch API will check each field whether there is an update in the field of the existing asset. With this behaviour, it is possible to send partial updated field to update a certain field only as long as the `urn`, `type`, and `service` match with the existing asset. If there is any field changed, a new version of the asset will be created. If the asset does not exist, upsert patch API will create a new asset. Apart from asset details, we also could send upstreams and downstreams of lineage edges of the asset in the body.
 
 Let's say `piccolo` tool is a kind of `table`, we can start pushing data for it. Let's add 3 metadata of `picollo`.
+
+<Tabs>
+<TabItem value="" label="Picollo 1">
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
@@ -33,6 +39,8 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
     }
 }'
 ```
+</TabItem>
+<TabItem value="picollo 2" label="Picollo 2">
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
@@ -53,6 +61,8 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
     }
 }'
 ```
+</TabItem>
+<TabItem value="picollo 3" label="Picollo 3">
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
@@ -73,6 +83,8 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
     }
 }'
 ```
+</TabItem>
+</Tabs>
 
 ## Searching
 
@@ -163,6 +175,9 @@ Now that we have configured the `piccolo` type and learnt how to use the search 
 To begin with, let's start over adding picolo metadata with its lineage information and add another metadata with service name `sensu` and type `topic` and add some records for it.
 
 ### Adding `picollo` Metadata
+<Tabs>
+<TabItem value="picollo 1" label="Picollo 1">
+
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 --header 'Compass-User-UUID:odpf@email.com' \
@@ -196,6 +211,8 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
     ]
 }'
 ```
+</TabItem>
+<TabItem value="picollo 2" label="Picollo 2">
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
@@ -230,6 +247,8 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
     ]
 }'
 ```
+</TabItem>
+<TabItem value="picollo 3" label="Picollo 3">
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
@@ -264,7 +283,16 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
     ]
 }'
 ```
+</TabItem>
+</Tabs>
+
 ### Adding `sensu` Metadata
+`sensu` is the data store that `piccolo` instances read from. In order to have a lineage, we need to have the metadata urn of `sensu` in Compass.
+
+For instance, if you look at the `upstreams` and `downstreams` fields when we are ingesting `piccolo` metadata, you'll see that they are urn's of `sensu` instances. This means we can define the relationship between `piccolo` and `sensu` resources by declaring this relationship in `piccolo`'s definition.
+<Tabs>
+<TabItem value="sensu 1" label="sensu 1">
+
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 --header 'Compass-User-UUID:odpf@email.com' \
@@ -279,7 +307,11 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
     "upstreams": [],
     "downstreams": []
 }'
+```
+</TabItem>
+<TabItem value="sensu 2" label="sensu 2">
 
+```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 --header 'Compass-User-UUID:odpf@email.com' \
 --data-raw '{
@@ -293,7 +325,11 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
     "upstreams": [],
     "downstreams": []
 }'
+```
+</TabItem>
+<TabItem value="sensu 3" label="sensu 3">
 
+```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 --header 'Compass-User-UUID:odpf@email.com' \
 --data-raw '{
@@ -309,9 +345,10 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 }'
 ```
 
-`sensu` is the data store that `piccolo` instances read from. In order to have a lineage, we need to have the metadata urn of `sensu` in Compass.
+</TabItem>
+</Tabs>
 
-For instance, if you look at the `upstreams` and `downstreams` fields when we are ingesting `piccolo` metadata, you'll see that they are urn's of `sensu` instances. This means we can define the relationship between `piccolo` and `sensu` resources by declaring this relationship in `piccolo`'s definition. Note that it is sufficient \(and preferred\) that one declare it's relationship to another. Both need not do this.
+**Note:** it is sufficient \(and preferred\) that one declare it's relationship to another. Both need not do this.
 
 ### Querying Lineage
 
