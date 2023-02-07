@@ -7,6 +7,7 @@ module.exports = {
       type: 'category',
       label: 'Tour',
       items: [
+        "tour/introduction",
         "tour/my-first-asset",
         "tour/querying-assets",
         "tour/asset-lineage"

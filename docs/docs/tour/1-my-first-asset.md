@@ -3,7 +3,10 @@ import TabItem from "@theme/TabItem";
 
 # 1. My First Asset
 
-Before starting the tour, make sure you have a running Compass instance. You can refer this [installation guide](../installation).
+### Pre-Requisites
+
+1. [Setting up server](../configuration.md#server-setup)
+2. [Setting up the CLI](../configuration.md#client-initialisation) (if you want to use the CLI client)
 
 ## 1.1 Introduction
 

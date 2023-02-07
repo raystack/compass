@@ -20,14 +20,11 @@ Example asset.json configuration for creating the `upstream` lineage (denoting t
 ```json
 {
     "asset": {
-        "urn": "main-postgres:my-database.orders",
-        "type": "table",
-        "service": "postgres",
-        "name": "orders",
-        "data": {
-            "database": "my-database3",
-            "namespace": "main-postgres"
-        }
+        "urn": "tableau:my-dashboard.daily-orders",
+        "type": "dashboard",
+        "service": "tableau",
+        "name": "Daily Orders Dashboard",
+        "description": "This is a dashboard showing daily orders"
     },
     "upstreams": [
         {
