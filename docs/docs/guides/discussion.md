@@ -1,3 +1,6 @@
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 # Discussion
 
 Discussion is a new feature in Compass. One could create a discussion and all users can put comment in it. Currently, there are three types of discussions `issues`, `open ended`, and `question and answer`. Depending on the type, the discussion could have multiple possible states. In the current version, all types only have two states: `open` and `closed`. A newly created discussion will always be assign an `open` state.
@@ -5,6 +8,23 @@ Discussion is a new feature in Compass. One could create a discussion and all us
 ## Create a Discussion
 
 A discussion thread can be created with the Discussion API. The API contract is available [here](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
+
+<Tabs groupId="cli" >
+<TabItem value="CLI" label="CLI">
+
+```bash
+$ compass discussion post --body=<filepath to discussion body>
+```
+
+```json
+{
+  "title": "The first discussion",
+  "body": "This is the first discussion thread in Compass",
+  "type": "openended"
+}
+```
+</TabItem>
+<TabItem value="HTTP" label="HTTP">
 
 ```bash
 $ curl --request POST 'http://localhost:8080/v1beta1/discussions' \
@@ -15,15 +35,28 @@ $ curl --request POST 'http://localhost:8080/v1beta1/discussions' \
   "type": "openended"
 }'
 ```
+</TabItem>
+</Tabs>
 
 ## Fetching All Discussions
 
 The Get Discussions will fetch all discussions in Compass.
 
+<Tabs groupId="cli" >
+<TabItem value="CLI" label="CLI">
+
+```bash
+$ compass discussion list
+```
+</TabItem>
+<TabItem value="HTTP" label="HTTP">
+
 ```bash
 $ curl 'http://localhost:8080/v1beta1/discussions' \
 --header 'Compass-User-UUID:odpf@email.com'
 ```
+</TabItem>
+</Tabs>
 
 The response will be something like
 ```javascript

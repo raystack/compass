@@ -88,12 +88,33 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 
 ## Searching
 
-Now we're ready to start searching. Let's run a search for the term 'one'
+#### We can search for required text in the following ways:
+
+1. Using **`compass search <text>`** CLI command
+2. Calling to **`GET /v1beta1/search`** API with `text` to be searched as query parameter
+
+Now we're ready to start searching. Let's run a search for the term **'one'** from the assets we ingested earlier.
+
+<Tabs groupId="cli">
+<TabItem value="CLI" label="CLI">
+
+```bash
+$ compass search one
+```
+</TabItem>
+<TabItem value="HTTP" label="HTTP">
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search?text\=one' \
 --header 'Compass-User-UUID:odpf@email.com'  | jq
+```
 
+</TabItem>
+</Tabs>
+
+The output is the following:
+
+```json
 {
     "data": [
          {
@@ -130,26 +151,32 @@ $ curl 'http://localhost:8080/v1beta1/search?text\=one' \
 
 The search is run against ALL fields of the records. It can be further restricted by specifying a filter criteria, could be exact match with `filter` and fuzzy match with `query`. For instance, if you wish to restrict the search to piccolo deployments that belong to `kami` (fuzzy), you can run:
 
+#### We can search with custom queries in the following ways:
+
+1. Using **`compass search <text> --query=field_key1:val1`** CLI command
+2. Calling to **`GET /v1beta1/search`** API with `text` and `query[field_key1]=val1` as query parameters 
+
+<Tabs groupId="cli" >
+<TabItem value="CLI" label="CLI">
+
+```bash
+$ compass search one --query=owners:kami
+```
+</TabItem>
+<TabItem value="HTTP" label="HTTP">
+
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search?text=one&query[owners]=kami' \
 --header 'Compass-User-UUID:odpf@email.com' | jq
+```
+</TabItem>
+</Tabs>
 
+The output is the following:
+
+```json
 {
     "data": [
-         {
-            "urn": "picollo:deployment-01",
-            "type": "table",
-            "name": "deployment-01",
-            "service": "picollo",
-            "description": "this is the one",
-            "data": {},
-            "owners": [
-                {
-                    "email": "john.doe@email.com"
-                }
-            ],
-            "labels": {}
-        },
         {
             "urn": "picollo:deployment-03",
             "type": "table",
@@ -197,7 +224,7 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
     },
     "upstreams": [
         {
-            "urn": sensu:deployment-01",
+            "urn": "sensu:deployment-01",
             "type": "topic",
             "service": "sensu"
         }
@@ -233,7 +260,7 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
     },
     "upstreams": [
         {
-            "urn": sensu:deployment-02",
+            "urn": "sensu:deployment-02",
             "type": "topic",
             "service": "sensu"
         }
@@ -269,7 +296,7 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
     },
     "upstreams": [
         {
-            "urn": sensu:deployment-03",
+            "urn": "sensu:deployment-03",
             "type": "topic",
             "service": "sensu"
         }
@@ -291,7 +318,7 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 
 For instance, if you look at the `upstreams` and `downstreams` fields when we are ingesting `piccolo` metadata, you'll see that they are urn's of `sensu` instances. This means we can define the relationship between `piccolo` and `sensu` resources by declaring this relationship in `piccolo`'s definition.
 <Tabs>
-<TabItem value="sensu 1" label="sensu 1">
+<TabItem value="sensu 1" label="Sensu 1">
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
@@ -302,14 +329,15 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
         "type": "topic",
         "name": "deployment-01",
         "service": "sensu",
-        "description": "primary sensu dataset"
+        "description": "primary sensu dataset",
+        "data": {}
     },
     "upstreams": [],
     "downstreams": []
 }'
 ```
 </TabItem>
-<TabItem value="sensu 2" label="sensu 2">
+<TabItem value="sensu 2" label="Sensu 2">
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
@@ -320,25 +348,27 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
         "type": "topic",
         "name": "deployment-02",
         "service": "sensu",
-        "description": "secondary sensu dataset"
+        "description": "secondary sensu dataset",
+        "data": {}
     },
     "upstreams": [],
     "downstreams": []
 }'
 ```
 </TabItem>
-<TabItem value="sensu 3" label="sensu 3">
+<TabItem value="sensu 3" label="Sensu 3">
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 --header 'Compass-User-UUID:odpf@email.com' \
 --data-raw '{
     "asset": {
-        "urn": "sensu:deployment-02",
+        "urn": "sensu:deployment-03",
         "type": "topic",
-        "name": "deployment-02",
+        "name": "deployment-03",
         "service": "sensu",
-        "description": "tertiary sensu dataset"
+        "description": "tertiary sensu dataset",
+        "data": {}
     },
     "upstreams": [],
     "downstreams": []
@@ -352,41 +382,48 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 
 ### Querying Lineage
 
-To query lineage, we make a HTTP GET call to `/v1beta1/lineage` API, specifying the metadata that we're interested in.
+#### We can search for lineage in the following ways:
+
+1. Using **`compass lineage <urn>`** CLI command
+2. Calling to **`GET /v1beta1/lineage/:urn`** API with `urn` to be searched as the path parameter
+
+<Tabs groupId="cli" >
+<TabItem value="CLI" label="CLI">
+
+```bash
+$ compass lineage picollo:deployment-01
+```
+</TabItem>
+<TabItem value="HTTP" label="HTTP">
 
 ```bash
 curl 'http://localhost:8080/v1beta1/lineage/picollo%3Adeployment-01' \
 --header 'Compass-User-UUID:odpf@email.com'
+```
+</TabItem>
+</Tabs>
 
+The output is the following:
+
+```json
 {
-    data: [
+    "data": [
         {
-            "source": {
-                "urn": "picollo:deployment-01",
-                "type": "table",
-                "service": "picollo",
-            },
-            "target": {
-                "urn": "gohan:deployment-01",
-                "type": "table",
-                "service": "gohan",
-            },
-            "props": nil
+            "source": "sensu:deployment-01",
+            "target": "picollo:deployment-01",
+            "prop": {
+                "root": "picollo:deployment-01"
+            }
         },
         {
-            "source": {
-                "urn": "sensu:deployment-01",
-                "type": "topic",
-                "service": "sensu",
-            },
-            "target": {
-                "urn": "picollo:deployment-01",
-                "type": "table",
-                "service": "picollo",
-            },
-            "props": nil
+            "source": "picollo:deployment-01",
+            "target": "gohan:deployment-01",
+            "prop": {
+                "root": "picollo:deployment-01"
+            }
         }
-    ]
+    ],
+    "node_attrs": {}
 }
 ```
 
