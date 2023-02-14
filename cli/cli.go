@@ -66,6 +66,7 @@ func Execute() {
 	// Help topics
 	rootCmd.AddCommand(cmdx.SetCompletionCmd("compass"))
 	rootCmd.AddCommand(cmdx.SetRefCmd(rootCmd))
+	rootCmd.AddCommand(cmdx.SetHelpTopicCmd("environment", envHelp))
 	cmdx.SetHelp(rootCmd)
 
 	if err := rootCmd.Execute(); err != nil {
