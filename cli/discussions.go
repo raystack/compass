@@ -19,7 +19,7 @@ func discussionsCommand() *cobra.Command {
 		Aliases: []string{"discussions"},
 		Short:   "Manage discussions",
 		Annotations: map[string]string{
-			"group:core": "true",
+			"group": "core",
 		},
 		Example: heredoc.Doc(`
 			$ compass discussion list

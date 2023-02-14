@@ -21,7 +21,7 @@ func cmdMigrate() *cobra.Command {
 		`),
 		Args: cobra.NoArgs,
 		Annotations: map[string]string{
-			"group:core": "true",
+			"group": "core",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)

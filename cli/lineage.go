@@ -17,7 +17,7 @@ func lineageCommand() *cobra.Command {
 		Aliases: []string{},
 		Short:   "observe the lineage of metadata",
 		Annotations: map[string]string{
-			"group:core": "true",
+			"group": "core",
 		},
 		Args: cobra.ExactArgs(1),
 		Example: heredoc.Doc(`

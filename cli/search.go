@@ -19,7 +19,7 @@ func searchCommand() *cobra.Command {
 		Aliases: []string{},
 		Short:   "query the metadata available",
 		Annotations: map[string]string{
-			"group:core": "true",
+			"group": "core",
 		},
 		Args: cobra.ExactArgs(1),
 		Example: heredoc.Doc(`

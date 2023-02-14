@@ -18,7 +18,7 @@ const (
 )
 
 var rootCmd = &cobra.Command{
-	Use:           "compass <command>",
+	Use:           "compass <command> <subcommand>",
 	Short:         "Discovery & Lineage Service",
 	Long:          "Metadata Discovery & Lineage Service.",
 	SilenceErrors: true,
@@ -28,7 +28,7 @@ var rootCmd = &cobra.Command{
 		$ compass migrate
 	`),
 	Annotations: map[string]string{
-		"group:core": "true",
+		"group": "core",
 		"help:learn": heredoc.Doc(`
 			Use 'compass <command> <subcommand> --help' for more information about a command.
 			Read the manual at https://odpf.github.io/compass/

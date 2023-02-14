@@ -11,9 +11,9 @@ builds:
     binary: compass
     flags: [-a]
     ldflags:
-      - -X github.com/odpf/compass/cmd.Version={{.Tag}}
-      - -X github.com/odpf/compass/cmd.BuildCommit={{.FullCommit}}
-      - -X github.com/odpf/compass/cmd.BuildDate={{.Date}}
+      - -X github.com/odpf/compass/cli.Version={{.Tag}}
+      - -X github.com/odpf/compass/cli.BuildCommit={{.FullCommit}}
+      - -X github.com/odpf/compass/cli.BuildDate={{.Date}}
     goos: [linux, darwin, windows]
     goarch: [amd64, 386, arm, arm64] # skip goarch 386 and arm due to conflicts with "github.com/blastrain/vitess-sqlparser" library
     env:

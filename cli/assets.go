@@ -19,7 +19,7 @@ func assetsCommand() *cobra.Command {
 		Aliases: []string{"assets"},
 		Short:   "Manage assets",
 		Annotations: map[string]string{
-			"group:core": "true",
+			"group": "core",
 		},
 		Example: heredoc.Doc(`
 			$ compass asset list
