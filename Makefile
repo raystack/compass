@@ -46,3 +46,15 @@ install: ## Install required dependencies
 
 update-swagger-md:
 	npx swagger-markdown -i proto/compass.swagger.yaml -o docs/docs/reference/api.md
+
+clean-doc:
+	@echo "> cleaning up auto-generated docs"
+	@rm -rf ./docs/docs/reference/cli
+	@rm -f ./docs/docs/reference/api.md
+
+doc: clean-doc update-swagger-md ## Generate api and cli references
+	@echo "> generate cli docs"
+	@go run . reference --plain | sed '1 s,.*,# CLI,' > ./docs/docs/reference/cli.md
+ 
+help: ## Display this help message
+	@cat $(MAKEFILE_LIST) | grep -e "^[a-zA-Z_\-]*: *.*## *" | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

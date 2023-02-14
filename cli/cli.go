@@ -62,6 +62,8 @@ func Execute() {
 		lineageCommand(),
 	)
 
+	// Help topics
+	rootCmd.AddCommand(cmdx.SetRefCmd(rootCmd))
 	cmdx.SetHelp(rootCmd)
 
 	if err := rootCmd.Execute(); err != nil {
