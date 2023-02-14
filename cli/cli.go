@@ -64,6 +64,7 @@ func Execute() {
 	)
 
 	// Help topics
+	rootCmd.AddCommand(cmdx.SetCompletionCmd("compass"))
 	rootCmd.AddCommand(cmdx.SetRefCmd(rootCmd))
 	cmdx.SetHelp(rootCmd)
 
