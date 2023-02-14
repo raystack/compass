@@ -60,6 +60,7 @@ func Execute() {
 		discussionsCommand(),
 		searchCommand(),
 		lineageCommand(),
+		versionCmd(),
 	)
 
 	// Help topics
