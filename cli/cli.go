@@ -53,8 +53,7 @@ func Execute() {
 
 	rootCmd.PersistentFlags().StringP(configFlag, "c", "", "Override config file")
 	rootCmd.AddCommand(
-		cmdServe(),
-		cmdMigrate(),
+		serverCmd(),
 		cmdShowConfigs(),
 		assetsCommand(),
 		discussionsCommand(),
