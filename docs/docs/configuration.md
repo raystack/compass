@@ -88,23 +88,23 @@ Database migration is required during the first server initialization. In additi
 
 To initialize the database schema, Run Migrations with the following command:
 ```bash
-$ compass migrate
+$ compass server migrate
 ```
 
 To run the Compass server use command:
 
 ```bash
-$ compass serve
+$ compass server start
 ```
 
 #### Using `--config` flag
 
 ```bash
-$ compass migrate --config=<path-to-file> 
+$ compass server migrate --config=<path-to-file> 
 ```
 
 ```bash
-$ compass serve --config=<path-to-file>
+$ compass server start --config=<path-to-file>
 ```
 
 ## Using the Docker 
@@ -131,7 +131,7 @@ $ docker run -d \
     -v $(pwd)/compass.yaml:/compass.yaml \
     --name compass-server \
     odpf/compass:<version> \
-    serve -c /compass.yaml
+    server start -c /compass.yaml
 ```
 
 ### Using environment variables
@@ -147,7 +147,7 @@ $ docker run -d \
     --env-file .env \
     --name compass-server \
     odpf/compass:<version> \
-    serve
+    server start
 ```
 
 ## Using the Helm chart

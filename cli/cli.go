@@ -24,8 +24,10 @@ var rootCmd = &cobra.Command{
 	SilenceErrors: true,
 	SilenceUsage:  false,
 	Example: heredoc.Doc(`
-		$ compass serve
-		$ compass migrate
+		$ compass asset
+		$ compass discussion
+		$ compass search
+		$ compass server
 	`),
 	Annotations: map[string]string{
 		"group": "core",

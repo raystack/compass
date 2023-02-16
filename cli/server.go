@@ -72,7 +72,7 @@ func serverMigrateCommand() *cobra.Command {
 		Use:   "migrate",
 		Short: "Run storage migration",
 		Example: heredoc.Doc(`
-			$ compass migrate
+			$ compass server migrate
 		`),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

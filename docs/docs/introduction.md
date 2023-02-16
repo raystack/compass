@@ -17,12 +17,10 @@ Compass is a search and discovery engine built for querying application deployme
 
 Organizational teams face the challenge of finding the right data from various sources for their analysis and decision-making needs. A lack of transparency about the flow of data within the organization can lead to problems when it comes to updating or discarding outdated data.
 
-Manual methods for tracking the dependencies of data are time-consuming and subject to human error or oversight as it depends on mapping of the movement of data in the organisation on knowledge in people's head. Huge code volume, rate of change and complexity in manually examinig the data changes make the process unsustainable. In addition, fixing a breaking change in production is more expensive and critical than identifying it in implementation phase. 
-Additionally, organizations may struggle to locate the most relevant data from the massive amounts stored in their data stores. The longer it takes for users to find the business data they need, the less productive they are.
+Manual methods for tracking the dependencies of data are time-consuming and subject to human error or oversight as it depends on mapping of the movement of data in the organisation on knowledge in people's head. Huge code volume, rate of change and complexity in manually examning the data changes make the process unsustainable.
+In addition, organizations may struggle to locate the most relevant data from the massive amounts stored in their data stores. The longer it takes for users to find the business data they need, the less productive they are.
 
-To address these challenges, Compass was designed as a data discovery and search tool for organizations. It provides comprehensive asset-listing and search capabilities to enhance user productivity. Organizing the data assets using Compass allows the data professionals to collect, access, and enrich metadata to support data discovery and governance. The data lineage information provided by Compass also helps organizations meet compliance requirements by offering a clear record of the movement of sensitive data. Identify and star the most important data asset using Compass, and safely delete when you don’t need.
-
-## How does it work?
+To address these challenges, Compass was designed as a data discovery and search tool for organizations. It provides comprehensive asset-listing and search capabilities to enhance user productivity. Organizing the data assets using Compass allows the data professionals to collect, access, and enrich metadata to support data discovery and governance. The data lineage information provided by Compass also helps organizations meet compliance requirements by offering a clear record of the movement of sensitive data. Using Compass one can identify and star the most relevant data assets, and safely delete when you don’t need.
 
 ## Key Features
 
@@ -35,23 +33,16 @@ Discover why users choose Compass as their main data discovery and lineage servi
 - **Extensibility:** Add your own metadata types and resources to support wide variety of metadata.
 - **Runtime:** Compass can run inside VMs or containers in a fully managed runtime environment like kubernetes.
 
-## Usage
-
-Explore the following resources to get started with Compass:
-
-- [Guides](./guides/ingestion) provides guidance on ingesting and queying metadata from Compass.
-- [Concepts](./concepts/overview) describes all important Compass concepts.
-- [Reference](./reference/configuration.md) contains details about configurations, metrics and other aspects of Compass.
-- [Contribute](./contribute/contributing.md) contains resources for anyone who wants to contribute to Compass.
-
 ## Using Compass
+You can manage the data discovery for your resources via Compass in any of the following ways:
 ### Compass Command Line Interface
 
-For more information on using the Compass CLI, see the CLI Reference page.
+You can use the Compass command line interface to issue commands and to perform the entire data discovery flow. Using the command line can be faster and more convenient than the console. For more information on using the Compass CLI, see the [CLI Reference](./reference/cli.md) page.
 
 ### HTTPS API
 
-For more information, see the API reference page.
+You can get hands on asset searching, listing, tagging, starring and much more by using the Compass HTTPS API, which lets you issue HTTPS requests directly to the service. When you use the HTTPS API, you must include the user information from the configurable identity uuid in the request header.
+For more information, see the [User Management](./concepts/user.md) and [API reference](./reference/api.md) pages.
 
 ## Where to go from here
 

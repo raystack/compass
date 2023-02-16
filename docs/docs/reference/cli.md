@@ -32,9 +32,65 @@ lists all assets
 -t, --types string      filter by types
 ````
 
+### `compass asset star <id>`
+
+star an asset by id for current user
+
+### `compass asset stargazers <id> [flags]`
+
+list all stargazers for a given asset id
+
+```
+--page uint32   Number of pages
+--size uint32   Size of each page (default 20)
+````
+
+### `compass asset starred [flags]`
+
+list all the starred assets for current user
+
+```
+-o, --out -o json   flag to control output viewing, for json -o json (default "table")
+    --page uint32   Number of pages
+    --size uint32   Size of each page (default 20)
+````
+
+### `compass asset types [flags]`
+
+lists all asset types
+
+```
+-d, --data string           filter by field in asset.data
+    --query string          filter by specific query
+    --query_fields string   filter by query field
+-s, --services string       filter by services
+-t, --types string          filter by types
+````
+
+### `compass asset unstar <id>`
+
+unstar an asset by id for current user
+
+### `compass asset version <id> <version>`
+
+get asset's previous version by id and version number
+
+### `compass asset versionhistory <id> [flags]`
+
+get asset version history by id
+
+```
+--page uint32   Number of pages
+--size uint32   Size of each page (default 20)
+````
+
 ### `compass asset view <id>`
 
 view asset for the given ID
+
+## `compass completion [bash|zsh|fish|powershell]`
+
+Generate shell completion scripts
 
 ## `compass configs`
 
@@ -68,10 +124,6 @@ view discussion for the given ID
 
 observe the lineage of metadata
 
-## `compass migrate`
-
-Run storage migration
-
 ## `compass search <text> [flags]`
 
 query the metadata available
@@ -83,7 +135,19 @@ query the metadata available
 -s, --size uint32     --size=10 maximum size of response query
 ````
 
-## `compass serve`
+## `compass server <command>`
 
-Serve gRPC & HTTP service
+Run compass server
+
+### `compass server migrate`
+
+Run storage migration
+
+### `compass server start`
+
+Start server on default port 8080
+
+## `compass version`
+
+Print version information
 
