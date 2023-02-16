@@ -26,6 +26,13 @@ func assetsCommand() *cobra.Command {
 			$ compass asset view
 			$ compass asset delete
 			$ compass asset edit
+			$ compass asset types
+			$ compass asset star <id>
+			$ compass asset unstar <id>
+			$ compass asset starred
+			$ compass asset stargazers <id>
+			$ compass asset versionhistory <id>
+			$ compass asset version <id> <version>
 		`),
 	}
 
@@ -34,6 +41,13 @@ func assetsCommand() *cobra.Command {
 		viewAssetByIDCommand(),
 		editAssetCommand(),
 		deleteAssetByIDCommand(),
+		listAllTypesCommand(),
+		listAssetStargazerCommand(),
+		starAssetCommand(),
+		unstarAssetCommand(),
+		starredAssetCommand(),
+		versionHistoryAssetCommand(),
+		viewAssetByVersionCommand(),
 	)
 
 	return cmd
@@ -250,6 +264,321 @@ func deleteAssetByIDCommand() *cobra.Command {
 			}
 			spinner.Stop()
 			fmt.Println("Asset ", term.Redf(assetID), " Deleted Successfully")
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+func listAllTypesCommand() *cobra.Command {
+	var types, services, data, q, q_fields string
+	cmd := &cobra.Command{
+		Use:   "types",
+		Short: "lists all asset types",
+		Example: heredoc.Doc(`
+			$ compass asset types
+			$ compass asset types -t type1 --query query1 --query_fields q_fields1
+		`),
+		Annotations: map[string]string{
+			"action:core": "true",
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			spinner := printer.Spin("")
+			defer spinner.Stop()
+
+			clnt, cancel, err := client.Create(cmd.Context())
+			if err != nil {
+				return err
+			}
+			defer cancel()
+
+			ctx := client.SetMetadata(cmd.Context())
+			res, err := clnt.GetAllTypes(ctx, makeGetAllTypesRequest(types, services, data, q, q_fields))
+			if err != nil {
+				return err
+			}
+			spinner.Stop()
+
+			report := [][]string{}
+			report = append(report, []string{"NAME", "COUNT"})
+			index := 1
+			for _, i := range res.GetData() {
+				report = append(report, []string{term.Bluef(i.Name), fmt.Sprintf("%v", i.Count)})
+				index++
+			}
+			printer.Table(os.Stdout, report)
+
+			return nil
+		},
+	}
+	cmd.Flags().StringVarP(&types, "types", "t", "", "filter by types")
+	cmd.Flags().StringVarP(&services, "services", "s", "", "filter by services")
+	cmd.Flags().StringVarP(&data, "data", "d", "", "filter by field in asset.data")
+	cmd.Flags().StringVar(&q, "query", "", "filter by specific query")
+	cmd.Flags().StringVar(&q_fields, "query_fields", "", "filter by query field")
+
+	return cmd
+}
+
+func makeGetAllTypesRequest(types, services, data, q, q_fields string) *compassv1beta1.GetAllTypesRequest {
+	newReq := &compassv1beta1.GetAllTypesRequest{}
+	if types != "" {
+		newReq.Types = types
+	}
+	if services != "" {
+		newReq.Services = services
+	}
+	if q != "" {
+		newReq.Q = q
+	}
+	if q_fields != "" {
+		newReq.QFields = q_fields
+	}
+	if data != "" {
+		newReq.Data = makeMapFromString(data)
+	}
+	return newReq
+}
+
+func listAssetStargazerCommand() *cobra.Command {
+	var size, page uint32
+	cmd := &cobra.Command{
+		Use:   "stargazers <id>",
+		Short: "list all stargazers for a given asset id",
+		Example: heredoc.Doc(`
+			$ compass asset stargazers <id>
+		`),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			spinner := printer.Spin("")
+			defer spinner.Stop()
+
+			clnt, cancel, err := client.Create(cmd.Context())
+			if err != nil {
+				return err
+			}
+			defer cancel()
+
+			assetID := args[0]
+			ctx := client.SetMetadata(cmd.Context())
+			res, err := clnt.GetAssetStargazers(ctx, &compassv1beta1.GetAssetStargazersRequest{
+				Id:     assetID,
+				Size:   size,
+				Offset: page,
+			})
+			if err != nil {
+				return err
+			}
+			spinner.Stop()
+			fmt.Println(term.Bluef(prettyPrint(res.GetData())))
+			return nil
+		},
+	}
+	cmd.Flags().Uint32Var(&size, "size", 20, "Size of each page")
+	cmd.Flags().Uint32Var(&page, "page", 0, "Number of pages")
+
+	return cmd
+}
+
+func starAssetCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "star <id>",
+		Short: "star an asset by id for current user",
+		Example: heredoc.Doc(`
+			$ compass asset star <id>
+		`),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			spinner := printer.Spin("")
+			defer spinner.Stop()
+
+			clnt, cancel, err := client.Create(cmd.Context())
+			if err != nil {
+				return err
+			}
+			defer cancel()
+
+			assetID := args[0]
+			ctx := client.SetMetadata(cmd.Context())
+			_, err = clnt.StarAsset(ctx, &compassv1beta1.StarAssetRequest{
+				AssetId: assetID,
+			})
+			if err != nil {
+				return err
+			}
+			spinner.Stop()
+
+			fmt.Println(term.Bluef("Asset %v starred successfully", assetID))
+
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+func unstarAssetCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "unstar <id>",
+		Short: "unstar an asset by id for current user",
+		Example: heredoc.Doc(`
+			$ compass unasset star <id>
+		`),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			spinner := printer.Spin("")
+			defer spinner.Stop()
+
+			clnt, cancel, err := client.Create(cmd.Context())
+			if err != nil {
+				return err
+			}
+			defer cancel()
+
+			assetID := args[0]
+			ctx := client.SetMetadata(cmd.Context())
+			_, err = clnt.UnstarAsset(ctx, &compassv1beta1.UnstarAssetRequest{
+				AssetId: assetID,
+			})
+			if err != nil {
+				return err
+			}
+			spinner.Stop()
+
+			fmt.Println(term.Bluef("Asset %v unstarred successfully", assetID))
+
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+func starredAssetCommand() *cobra.Command {
+	var size, page uint32
+	var json string
+	cmd := &cobra.Command{
+		Use:   "starred",
+		Short: "list all the starred assets for current user",
+		Example: heredoc.Doc(`
+			$ compass asset starred
+		`),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			spinner := printer.Spin("")
+			defer spinner.Stop()
+
+			clnt, cancel, err := client.Create(cmd.Context())
+			if err != nil {
+				return err
+			}
+			defer cancel()
+
+			ctx := client.SetMetadata(cmd.Context())
+			res, err := clnt.GetMyStarredAssets(ctx, &compassv1beta1.GetMyStarredAssetsRequest{
+				Size:   size,
+				Offset: page,
+			})
+			if err != nil {
+				return err
+			}
+			spinner.Stop()
+
+			if json != "json" {
+				report := [][]string{}
+				report = append(report, []string{"ID", "TYPE", "SERVICE", "URN", "NAME", "VERSION"})
+				index := 1
+				for _, i := range res.GetData() {
+					report = append(report, []string{i.Id, i.Type, i.Service, i.Urn, term.Bluef(i.Name), i.Version})
+					index++
+				}
+				printer.Table(os.Stdout, report)
+
+				fmt.Println(term.Cyanf("To view all the data in JSON format, use flag `-o json`"))
+			} else {
+				fmt.Println(term.Bluef(prettyPrint(res.GetData())))
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVarP(&json, "out", "o", "table", "flag to control output viewing, for json `-o json`")
+	cmd.Flags().Uint32Var(&size, "size", 20, "Size of each page")
+	cmd.Flags().Uint32Var(&page, "page", 0, "Number of pages")
+	return cmd
+}
+
+func versionHistoryAssetCommand() *cobra.Command {
+	var size, page uint32
+	cmd := &cobra.Command{
+		Use:   "versionhistory <id>",
+		Short: "get asset version history by id",
+		Example: heredoc.Doc(`
+			$ compass asset versionhistory <id>
+		`),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			spinner := printer.Spin("")
+			defer spinner.Stop()
+
+			clnt, cancel, err := client.Create(cmd.Context())
+			if err != nil {
+				return err
+			}
+			defer cancel()
+
+			assetID := args[0]
+			ctx := client.SetMetadata(cmd.Context())
+			res, err := clnt.GetAssetVersionHistory(ctx, &compassv1beta1.GetAssetVersionHistoryRequest{
+				Id:     assetID,
+				Size:   size,
+				Offset: page,
+			})
+			if err != nil {
+				return err
+			}
+			spinner.Stop()
+
+			fmt.Println(term.Bluef(prettyPrint(res.GetData())))
+
+			return nil
+		},
+	}
+
+	cmd.Flags().Uint32Var(&size, "size", 20, "Size of each page")
+	cmd.Flags().Uint32Var(&page, "page", 0, "Number of pages")
+
+	return cmd
+}
+
+func viewAssetByVersionCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "version <id> <version>",
+		Short: "get asset's previous version by id and version number",
+		Example: heredoc.Doc(`
+			$ compass asset version <id> <version>
+		`),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			spinner := printer.Spin("")
+			defer spinner.Stop()
+
+			clnt, cancel, err := client.Create(cmd.Context())
+			if err != nil {
+				return err
+			}
+			defer cancel()
+
+			assetID := args[0]
+			assetVersion := args[1]
+			ctx := client.SetMetadata(cmd.Context())
+			res, err := clnt.GetAssetByVersion(ctx, &compassv1beta1.GetAssetByVersionRequest{
+				Id:      assetID,
+				Version: assetVersion,
+			})
+			if err != nil {
+				return err
+			}
+			spinner.Stop()
+
+			fmt.Println(term.Bluef(prettyPrint(res.GetData())))
+
 			return nil
 		},
 	}
