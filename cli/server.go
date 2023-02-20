@@ -57,11 +57,11 @@ func serverStartCommand() *cobra.Command {
 		Short:   "Start server on default port 8080",
 		Example: "compass server start",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := loadConfig(cmd)
+			cfg, err := LoadConfig()
 			if err != nil {
 				return err
 			}
-			return runServer(cfg)
+			return runServer(*cfg)
 		},
 	}
 	return c
@@ -79,12 +79,12 @@ func serverMigrateCommand() *cobra.Command {
 			ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 			defer cancel()
 
-			cfg, err := loadConfig(cmd)
+			cfg, err := LoadConfig()
 			if err != nil {
 				return err
 			}
 
-			return runMigrations(ctx, cfg)
+			return runMigrations(ctx, *cfg)
 		},
 	}
 	return c

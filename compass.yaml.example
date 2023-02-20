@@ -34,6 +34,6 @@ service:
         max_recv_msg_size: 33554432
 
 client:
-    host: localhost:8080
+    host: localhost:8081
     serverheaderkey_uuid: Compass-User-UUID // if ommited, will use value on service.identity.headerkey_uuid
     serverheadervalue_uuid: odpf@email.com

@@ -88,6 +88,24 @@ $ make
 
 This will create the `compass` binary in the root directory
 
+Initialise server and client config file. Customise the `compass.yml` file with your local configurations.
+
+```bash
+$ ./compass config init
+```
+
+Run database migrations
+
+```bash
+$ ./compass server migrate
+```
+
+Start compass server
+
+```bash
+$ ./compass server start
+```
+
 #### As a Docker image
 
 Building compass' Docker image is just a simple, just run docker build command and optionally name the image

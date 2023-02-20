@@ -17,7 +17,13 @@ There are several approaches to setup Compass Server
 ## Using the CLI
 ### Using config file
 
-Create a config file (`compass.yaml`) in the root folder of Compass project or [use `--config` flag](#using---config-flag) to customize to config file location.
+Create a config file with the following command 
+
+```sh
+$ compass config init
+```
+
+alternatively you can [use `--config` flag](#using---config-flag) to customize to config file location.
 
 You can also [use environment variables](#using-environment-variable) to provide the server configuration. 
 

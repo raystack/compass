@@ -11,7 +11,7 @@ import (
 )
 
 type Config struct {
-	Host                  string `mapstructure:"host" default:"localhost:8080"`
+	Host                  string `mapstructure:"host" default:"localhost:8081"`
 	ServerHeaderKeyUUID   string `mapstructure:"serverheaderkey_uuid" default:"Compass-User-UUID"`
 	ServerHeaderValueUUID string `mapstructure:"serverheadervalue_uuid" default:"compass@odpf.com"`
 }

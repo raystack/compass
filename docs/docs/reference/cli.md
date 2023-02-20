@@ -92,9 +92,17 @@ view asset for the given ID
 
 Generate shell completion scripts
 
-## `compass configs`
+## `compass config <command>`
 
-Display configurations currently loaded
+Manage server and client configurations
+
+### `compass config init`
+
+Initialize a new sevrer and client configuration
+
+### `compass config list`
+
+List server and client configuration settings
 
 ## `compass discussion`
 
