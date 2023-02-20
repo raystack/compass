@@ -103,7 +103,11 @@ func (s *Service) GetAssetByID(ctx context.Context, id string) (ast Asset, err e
 }
 
 func (s *Service) GetAssetByVersion(ctx context.Context, id string, version string) (Asset, error) {
-	return s.assetRepository.GetByVersion(ctx, id, version)
+	if isValidUUID(id) {
+		return s.assetRepository.GetByVersionWithID(ctx, id, version)
+	}
+
+	return s.assetRepository.GetByVersionWithURN(ctx, id, version)
 }
 
 func (s *Service) GetAssetVersionHistory(ctx context.Context, flt Filter, id string) ([]Asset, error) {
