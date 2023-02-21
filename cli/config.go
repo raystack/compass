@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc"
@@ -11,6 +12,7 @@ import (
 	"github.com/odpf/compass/pkg/metrics"
 	"github.com/odpf/compass/pkg/statsd"
 	"github.com/odpf/salt/cmdx"
+	"github.com/odpf/salt/config"
 	"github.com/spf13/cobra"
 )
 
@@ -111,4 +113,18 @@ func LoadConfig() (*Config, error) {
 	err := cfg.Load(&config)
 
 	return &config, err
+}
+
+func initConfigFromFlag(configFile string) error {
+	loader := config.NewLoader(config.WithFile(configFile))
+
+	if err := loader.Load(cliConfig); err != nil {
+		if errors.As(err, &config.ConfigFileNotFoundError{}) {
+			fmt.Println(err)
+			return nil
+		}
+		return err
+	}
+
+	return nil
 }

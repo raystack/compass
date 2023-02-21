@@ -51,19 +51,30 @@ func serverCmd() *cobra.Command {
 }
 
 func serverStartCommand() *cobra.Command {
+	var configFile string
 
 	c := &cobra.Command{
 		Use:     "start",
 		Short:   "Start server on default port 8080",
 		Example: "compass server start",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if configFile != "" {
+				if err := initConfigFromFlag(configFile); err != nil {
+					return err
+				}
+			}
 			return runServer()
 		},
 	}
+
+	c.Flags().StringVarP(&configFile, "config", "c", "config.yaml", "Config file path")
+
 	return c
 }
 
 func serverMigrateCommand() *cobra.Command {
+	var configFile string
+
 	c := &cobra.Command{
 		Use:   "migrate",
 		Short: "Run storage migration",
@@ -75,9 +86,17 @@ func serverMigrateCommand() *cobra.Command {
 			ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 			defer cancel()
 
+			if configFile != "" {
+				if err := initConfigFromFlag(configFile); err != nil {
+					return err
+				}
+			}
+
 			return runMigrations(ctx)
 		},
 	}
+	c.Flags().StringVarP(&configFile, "config", "c", "config.yaml", "Config file path")
+
 	return c
 }
 
