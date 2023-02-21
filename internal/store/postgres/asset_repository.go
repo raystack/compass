@@ -208,51 +208,69 @@ func (r *AssetRepository) GetVersionHistory(ctx context.Context, flt asset.Filte
 	return avs, nil
 }
 
-// GetByVersion retrieves the specific asset version
-func (r *AssetRepository) GetByVersion(ctx context.Context, id string, version string) (ast asset.Asset, err error) {
+// GetByVersionWithID retrieves the specific asset version
+func (r *AssetRepository) GetByVersionWithID(ctx context.Context, id string, version string) (asset.Asset, error) {
 	if !isValidUUID(id) {
-		err = asset.InvalidError{AssetID: id}
-		return
+		return asset.Asset{}, asset.InvalidError{AssetID: id}
 	}
 
-	latestAsset, err := r.GetByID(ctx, id)
+	ast, err := r.getByVersion(ctx, id, version, r.GetByID, sq.Eq{
+		"a.asset_id": id,
+		"a.version":  version,
+	})
 	if errors.Is(err, sql.ErrNoRows) {
-		err = asset.NotFoundError{AssetID: id}
-		return
+		return asset.Asset{}, asset.NotFoundError{AssetID: id}
 	}
-
 	if err != nil {
-		return
+		return asset.Asset{}, err
 	}
 
-	if latestAsset.Version == version {
-		ast = latestAsset
-		return
+	return ast, nil
+}
+
+func (r *AssetRepository) GetByVersionWithURN(ctx context.Context, urn string, version string) (asset.Asset, error) {
+	ast, err := r.getByVersion(ctx, urn, version, r.GetByURN, sq.Eq{
+		"a.urn":     urn,
+		"a.version": version,
+	})
+	if errors.Is(err, sql.ErrNoRows) {
+		return asset.Asset{}, asset.NotFoundError{URN: urn}
+	}
+	if err != nil {
+		return asset.Asset{}, err
 	}
 
-	var assetModel AssetModel
+	return ast, nil
+}
+
+type getAssetFunc func(context.Context, string) (asset.Asset, error)
+
+func (r *AssetRepository) getByVersion(
+	ctx context.Context, id, version string, get getAssetFunc, pred sq.Eq,
+) (asset.Asset, error) {
+	latest, err := get(ctx, id)
+	if err != nil {
+		return asset.Asset{}, err
+	}
+
+	if latest.Version == version {
+		return latest, nil
+	}
+
+	var ast AssetModel
 	builder := r.getAssetVersionSQL().
-		Where(sq.Eq{"a.asset_id": id, "a.version": version})
+		Where(pred)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
-		err = fmt.Errorf("error building query: %w", err)
-		return
+		return asset.Asset{}, fmt.Errorf("error building query: %w", err)
 	}
 
-	err = r.client.db.GetContext(ctx, &assetModel, query, args...)
-	if errors.Is(err, sql.ErrNoRows) {
-		err = asset.NotFoundError{AssetID: id}
-		return
-	}
-
+	err = r.client.db.GetContext(ctx, &ast, query, args...)
 	if err != nil {
-		err = fmt.Errorf("failed fetching asset version: %w", err)
-		return
+		return asset.Asset{}, fmt.Errorf("failed fetching asset version: %w", err)
 	}
 
-	ast, err = assetModel.toVersionedAsset(latestAsset)
-
-	return
+	return ast.toVersionedAsset(latest)
 }
 
 // Upsert creates a new asset if it does not exist yet.

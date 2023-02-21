@@ -803,16 +803,13 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 		r.NoError(err)
 		// making updatedby user time empty to make ast comparable
 		for i := 0; i < len(assetVersions); i++ {
-			assetVersions[i].UpdatedBy.CreatedAt = time.Time{}
-			assetVersions[i].UpdatedBy.UpdatedAt = time.Time{}
-			assetVersions[i].CreatedAt = time.Time{}
-			assetVersions[i].UpdatedAt = time.Time{}
+			clearTimestamps(&assetVersions[i])
 		}
 		r.Equal(expectedAssetVersions, assetVersions)
 	})
 
 	r.Run("should return current version of an assets", func() {
-		expectedLatestVersion := asset.Asset{
+		expected := asset.Asset{
 			ID:          astVersioning.ID,
 			URN:         assetURN,
 			Type:        "table",
@@ -830,17 +827,14 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 		ast.Owners = nil
 		r.NoError(err)
 		// making updatedby user time empty to make ast comparable
-		ast.UpdatedBy.CreatedAt = time.Time{}
-		ast.UpdatedBy.UpdatedAt = time.Time{}
-		ast.CreatedAt = time.Time{}
-		ast.UpdatedAt = time.Time{}
-		r.Equal(expectedLatestVersion, ast)
+		clearTimestamps(&ast)
+		r.Equal(expected, ast)
 
 		r.Len(astOwners, 2)
 	})
 
 	r.Run("should return current version of an assets with by version", func() {
-		expectedLatestVersion := asset.Asset{
+		expected := asset.Asset{
 			ID:          astVersioning.ID,
 			URN:         assetURN,
 			Type:        "table",
@@ -852,24 +846,31 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 			UpdatedBy:   r.users[1],
 		}
 
-		ast, err := r.repository.GetByVersion(r.ctx, astVersioning.ID, "0.5")
+		ast, err := r.repository.GetByVersionWithID(r.ctx, astVersioning.ID, "0.5")
 		// hard to get the internally generated user id, we exclude the owners from the assertion
 		astOwners := ast.Owners
 		ast.Owners = nil
 		r.NoError(err)
 		// making updatedby user time empty to make ast comparable
-		ast.UpdatedBy.CreatedAt = time.Time{}
-		ast.UpdatedBy.UpdatedAt = time.Time{}
-		ast.CreatedAt = time.Time{}
-		ast.UpdatedAt = time.Time{}
-		r.Equal(expectedLatestVersion, ast)
+		clearTimestamps(&ast)
+		r.Equal(expected, ast)
 
+		r.Len(astOwners, 2)
+
+		ast, err = r.repository.GetByVersionWithURN(r.ctx, astVersioning.URN, "0.5")
+		// hard to get the internally generated user id, we exclude the owners from the assertion
+		astOwners = ast.Owners
+		ast.Owners = nil
+		r.NoError(err)
+		// making updatedby user time empty to make ast comparable
+		clearTimestamps(&ast)
+		r.Equal(expected, ast)
 		r.Len(astOwners, 2)
 	})
 
 	r.Run("should return a specific version of an asset", func() {
-		selectedVersion := "0.3"
-		expectedAsset := asset.Asset{
+		version := "0.3"
+		expected := asset.Asset{
 			ID:          astVersioning.ID,
 			URN:         assetURN,
 			Type:        "table",
@@ -891,17 +892,28 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 				Provider: "meteor",
 			},
 		}
-		astVer, err := r.repository.GetByVersion(r.ctx, astVersioning.ID, selectedVersion)
+		astVer, err := r.repository.GetByVersionWithID(r.ctx, astVersioning.ID, version)
 		// hard to get the internally generated user id, we exclude the owners from the assertion
 		astOwners := astVer.Owners
 		astVer.Owners = nil
 		r.Assert().NoError(err)
 		// making updatedby user time empty to make ast comparable
-		astVer.UpdatedBy.CreatedAt = time.Time{}
-		astVer.UpdatedBy.UpdatedAt = time.Time{}
-		astVer.CreatedAt = time.Time{}
-		astVer.UpdatedAt = time.Time{}
-		r.Assert().Equal(expectedAsset, astVer)
+		clearTimestamps(&astVer)
+		r.Assert().Equal(expected, astVer)
+
+		for i := 0; i < len(astOwners); i++ {
+			astOwners[i].ID = ""
+		}
+		r.Assert().Equal(expectedOwners, astOwners)
+
+		astVer, err = r.repository.GetByVersionWithURN(r.ctx, astVersioning.URN, version)
+		// hard to get the internally generated user id, we exclude the owners from the assertion
+		astOwners = astVer.Owners
+		astVer.Owners = nil
+		r.Assert().NoError(err)
+		// making updatedby user time empty to make ast comparable
+		clearTimestamps(&astVer)
+		r.Assert().Equal(expected, astVer)
 
 		for i := 0; i < len(astOwners); i++ {
 			astOwners[i].ID = ""
@@ -1765,6 +1777,13 @@ func (r *AssetRepositoryTestSuite) assertAsset(expectedAsset *asset.Asset, actua
 	actualAsset.UpdatedBy.UpdatedAt = time.Time{}
 
 	return r.Equal(expectedAsset, actualAsset)
+}
+
+func clearTimestamps(ast *asset.Asset) {
+	ast.UpdatedBy.CreatedAt = time.Time{}
+	ast.UpdatedBy.UpdatedAt = time.Time{}
+	ast.CreatedAt = time.Time{}
+	ast.UpdatedAt = time.Time{}
 }
 
 func (r *AssetRepositoryTestSuite) assertProbe(t *testing.T, expected asset.Probe, actual asset.Probe) bool {

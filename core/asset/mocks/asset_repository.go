@@ -275,8 +275,8 @@ func (_c *AssetRepository_GetByURN_Call) Return(_a0 asset.Asset, _a1 error) *Ass
 	return _c
 }
 
-// GetByVersion provides a mock function with given fields: ctx, id, version
-func (_m *AssetRepository) GetByVersion(ctx context.Context, id string, version string) (asset.Asset, error) {
+// GetByVersionWithID provides a mock function with given fields: ctx, id, version
+func (_m *AssetRepository) GetByVersionWithID(ctx context.Context, id string, version string) (asset.Asset, error) {
 	ret := _m.Called(ctx, id, version)
 
 	var r0 asset.Asset
@@ -296,27 +296,73 @@ func (_m *AssetRepository) GetByVersion(ctx context.Context, id string, version 
 	return r0, r1
 }
 
-// AssetRepository_GetByVersion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByVersion'
-type AssetRepository_GetByVersion_Call struct {
+// AssetRepository_GetByVersionWithID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByVersionWithID'
+type AssetRepository_GetByVersionWithID_Call struct {
 	*mock.Call
 }
 
-// GetByVersion is a helper method to define mock.On call
+// GetByVersionWithID is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
 //   - version string
-func (_e *AssetRepository_Expecter) GetByVersion(ctx interface{}, id interface{}, version interface{}) *AssetRepository_GetByVersion_Call {
-	return &AssetRepository_GetByVersion_Call{Call: _e.mock.On("GetByVersion", ctx, id, version)}
+func (_e *AssetRepository_Expecter) GetByVersionWithID(ctx interface{}, id interface{}, version interface{}) *AssetRepository_GetByVersionWithID_Call {
+	return &AssetRepository_GetByVersionWithID_Call{Call: _e.mock.On("GetByVersionWithID", ctx, id, version)}
 }
 
-func (_c *AssetRepository_GetByVersion_Call) Run(run func(ctx context.Context, id string, version string)) *AssetRepository_GetByVersion_Call {
+func (_c *AssetRepository_GetByVersionWithID_Call) Run(run func(ctx context.Context, id string, version string)) *AssetRepository_GetByVersionWithID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
 
-func (_c *AssetRepository_GetByVersion_Call) Return(_a0 asset.Asset, _a1 error) *AssetRepository_GetByVersion_Call {
+func (_c *AssetRepository_GetByVersionWithID_Call) Return(_a0 asset.Asset, _a1 error) *AssetRepository_GetByVersionWithID_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+// GetByVersionWithURN provides a mock function with given fields: ctx, urn, version
+func (_m *AssetRepository) GetByVersionWithURN(ctx context.Context, urn string, version string) (asset.Asset, error) {
+	ret := _m.Called(ctx, urn, version)
+
+	var r0 asset.Asset
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) asset.Asset); ok {
+		r0 = rf(ctx, urn, version)
+	} else {
+		r0 = ret.Get(0).(asset.Asset)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, urn, version)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// AssetRepository_GetByVersionWithURN_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByVersionWithURN'
+type AssetRepository_GetByVersionWithURN_Call struct {
+	*mock.Call
+}
+
+// GetByVersionWithURN is a helper method to define mock.On call
+//   - ctx context.Context
+//   - urn string
+//   - version string
+func (_e *AssetRepository_Expecter) GetByVersionWithURN(ctx interface{}, urn interface{}, version interface{}) *AssetRepository_GetByVersionWithURN_Call {
+	return &AssetRepository_GetByVersionWithURN_Call{Call: _e.mock.On("GetByVersionWithURN", ctx, urn, version)}
+}
+
+func (_c *AssetRepository_GetByVersionWithURN_Call) Run(run func(ctx context.Context, urn string, version string)) *AssetRepository_GetByVersionWithURN_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
+	})
+	return _c
+}
+
+func (_c *AssetRepository_GetByVersionWithURN_Call) Return(_a0 asset.Asset, _a1 error) *AssetRepository_GetByVersionWithURN_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
