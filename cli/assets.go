@@ -13,6 +13,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	pageSize   = 10
+	pageOffset = 0
+)
+
 func assetsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "asset",
@@ -62,6 +67,7 @@ func listAllAssetsCommand() *cobra.Command {
 		Example: heredoc.Doc(`
 			$ compass asset list
 		`),
+		Args: cobra.NoArgs,
 		Annotations: map[string]string{
 			"action:core": "true",
 		},
@@ -106,8 +112,8 @@ func listAllAssetsCommand() *cobra.Command {
 	cmd.Flags().StringVar(&sort, "sort", "", "sort by certain fields")
 	cmd.Flags().StringVar(&sort_dir, "sort_dir", "", "sorting direction (asc / desc)")
 	cmd.Flags().StringVarP(&json, "out", "o", "table", "flag to control output viewing, for json `-o json`")
-	cmd.Flags().Uint32Var(&size, "size", 20, "Size of each page")
-	cmd.Flags().Uint32Var(&page, "page", 0, "Number of pages")
+	cmd.Flags().Uint32Var(&size, "size", pageSize, "Size of each page")
+	cmd.Flags().Uint32Var(&page, "page", pageOffset, "Page number offset (starts from 0)")
 
 	return cmd
 }
@@ -148,6 +154,7 @@ func viewAssetByIDCommand() *cobra.Command {
 		Example: heredoc.Doc(`
 			$ compass asset view <id>
 		`),
+		Args: cobra.ExactArgs(1),
 		Annotations: map[string]string{
 			"action:core": "true",
 		},
@@ -188,6 +195,7 @@ func editAssetCommand() *cobra.Command {
 		Example: heredoc.Doc(`
 			$ compass asset edit --body=filePath
 		`),
+		Args: cobra.NoArgs,
 		Annotations: map[string]string{
 			"action:core": "true",
 		},
@@ -241,6 +249,7 @@ func deleteAssetByIDCommand() *cobra.Command {
 		Example: heredoc.Doc(`
 			$ compass asset delete <id> 
 		`),
+		Args: cobra.ExactArgs(1),
 		Annotations: map[string]string{
 			"action:core": "true",
 		},
@@ -280,6 +289,7 @@ func listAllTypesCommand() *cobra.Command {
 			$ compass asset types
 			$ compass asset types -t type1 --query query1 --query_fields q_fields1
 		`),
+		Args: cobra.NoArgs,
 		Annotations: map[string]string{
 			"action:core": "true",
 		},
@@ -349,6 +359,7 @@ func listAssetStargazerCommand() *cobra.Command {
 		Example: heredoc.Doc(`
 			$ compass asset stargazers <id>
 		`),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
@@ -374,8 +385,8 @@ func listAssetStargazerCommand() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().Uint32Var(&size, "size", 20, "Size of each page")
-	cmd.Flags().Uint32Var(&page, "page", 0, "Number of pages")
+	cmd.Flags().Uint32Var(&size, "size", pageSize, "Size of each page")
+	cmd.Flags().Uint32Var(&page, "page", pageOffset, "Page number offset (starts from 0)")
 
 	return cmd
 }
@@ -387,6 +398,7 @@ func starAssetCommand() *cobra.Command {
 		Example: heredoc.Doc(`
 			$ compass asset star <id>
 		`),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
@@ -423,6 +435,7 @@ func unstarAssetCommand() *cobra.Command {
 		Example: heredoc.Doc(`
 			$ compass unasset star <id>
 		`),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
@@ -461,6 +474,7 @@ func starredAssetCommand() *cobra.Command {
 		Example: heredoc.Doc(`
 			$ compass asset starred
 		`),
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
@@ -501,8 +515,8 @@ func starredAssetCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&json, "out", "o", "table", "flag to control output viewing, for json `-o json`")
-	cmd.Flags().Uint32Var(&size, "size", 20, "Size of each page")
-	cmd.Flags().Uint32Var(&page, "page", 0, "Number of pages")
+	cmd.Flags().Uint32Var(&size, "size", pageSize, "Size of each page")
+	cmd.Flags().Uint32Var(&page, "page", pageOffset, "Page number offset (starts from 0)")
 	return cmd
 }
 
@@ -514,6 +528,7 @@ func versionHistoryAssetCommand() *cobra.Command {
 		Example: heredoc.Doc(`
 			$ compass asset versionhistory <id>
 		`),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
@@ -542,8 +557,8 @@ func versionHistoryAssetCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().Uint32Var(&size, "size", 20, "Size of each page")
-	cmd.Flags().Uint32Var(&page, "page", 0, "Number of pages")
+	cmd.Flags().Uint32Var(&size, "size", pageSize, "Size of each page")
+	cmd.Flags().Uint32Var(&page, "page", pageOffset, "Page number offset (start from 0)")
 
 	return cmd
 }
@@ -555,6 +570,7 @@ func viewAssetByVersionCommand() *cobra.Command {
 		Example: heredoc.Doc(`
 			$ compass asset version <id> <version>
 		`),
+		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
