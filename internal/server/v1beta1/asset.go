@@ -422,6 +422,7 @@ func (server *APIServer) buildAsset(baseAsset *compassv1beta1.UpsertAssetRequest
 		Name:        baseAsset.GetName(),
 		Description: baseAsset.GetDescription(),
 		Data:        baseAsset.GetData().AsMap(),
+		URL:         baseAsset.Url,
 		Labels:      baseAsset.GetLabels(),
 	}
 
@@ -499,6 +500,9 @@ func decodePatchAssetToMap(pb *compassv1beta1.UpsertPatchAssetRequest_Asset) map
 	}
 	if pb.GetData() != nil {
 		m["data"] = pb.GetData().AsMap()
+	}
+	if len(pb.Url) > 0 {
+		m["url"] = pb.Url
 	}
 	if pb.GetLabels() != nil {
 		m["labels"] = pb.GetLabels()
@@ -578,6 +582,7 @@ func assetToProto(a asset.Asset, withChangelog bool) (assetPB *compassv1beta1.As
 		Name:        a.Name,
 		Description: a.Description,
 		Data:        data,
+		Url:         a.URL,
 		Labels:      a.Labels,
 		Owners:      owners,
 		Version:     a.Version,

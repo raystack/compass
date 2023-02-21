@@ -930,6 +930,7 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				Type:      "table",
 				Service:   "bigquery",
 				Version:   "0.1",
+				URL:       "https://sample-url.com",
 				UpdatedBy: r.users[0],
 			}
 			id, err := r.repository.Upsert(r.ctx, &ast)
@@ -1017,6 +1018,36 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			identicalAsset.ID = id
 
 			r.Equal(ast.ID, identicalAsset.ID)
+		})
+
+		r.Run("should update the asset if asset is not identical", func() {
+			ast := asset.Asset{
+				URN:       "urn-u-2",
+				Type:      "table",
+				Service:   "bigquery",
+				URL:       "https://sample-url-old.com",
+				UpdatedBy: r.users[0],
+			}
+
+			id, err := r.repository.Upsert(r.ctx, &ast)
+			r.Require().NoError(err)
+			r.NotEmpty(id)
+			ast.ID = id
+
+			updated := ast
+			updated.URL = "https://sample-url.com"
+
+			id, err = r.repository.Upsert(r.ctx, &updated)
+			r.Require().NoError(err)
+			r.NotEmpty(id)
+			updated.ID = id
+
+			r.Equal(ast.ID, updated.ID)
+
+			actual, err := r.repository.GetByID(r.ctx, ast.ID)
+			r.NoError(err)
+
+			r.Equal(updated.URL, actual.URL)
 		})
 
 		r.Run("should delete old owners if it does not exist on new asset", func() {

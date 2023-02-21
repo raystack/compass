@@ -292,6 +292,7 @@ func TestAssetPatch(t *testing.T) {
 				"service":     "firehose",
 				"description": "new-description",
 				"name":        "new-name",
+				"url":         "https://sample-url.com",
 				"labels": map[string]string{
 					"bar":  "foo",
 					"bar2": "foo2",
@@ -307,6 +308,7 @@ func TestAssetPatch(t *testing.T) {
 				Service:     "firehose",
 				Description: "new-description",
 				Name:        "new-name",
+				URL:         "https://sample-url.com",
 				Labels: map[string]string{
 					"bar":  "foo",
 					"bar2": "foo2",
@@ -325,6 +327,7 @@ func TestAssetPatch(t *testing.T) {
 				Service:     "optimus",
 				Description: "sample-description",
 				Name:        "old-name",
+				URL:         "https://sample-url-old.com",
 				Labels: map[string]string{
 					"foo": "bar",
 				},
@@ -338,6 +341,7 @@ func TestAssetPatch(t *testing.T) {
 				"service":     "firehose",
 				"description": "new-description",
 				"name":        "new-name",
+				"url":         "https://sample-url.com",
 				"labels": map[string]string{
 					"bar":  "foo",
 					"bar2": "foo2",
@@ -353,6 +357,7 @@ func TestAssetPatch(t *testing.T) {
 				Service:     "firehose",
 				Description: "new-description",
 				Name:        "new-name",
+				URL:         "https://sample-url.com",
 				Labels: map[string]string{
 					"bar":  "foo",
 					"bar2": "foo2",
