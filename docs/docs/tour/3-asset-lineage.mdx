@@ -1,6 +1,3 @@
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
-
 # 3. Asset Lineage
 
 ## 3.1 Inserting lineage
@@ -9,33 +6,6 @@ Compass only needs one of the assets to define the lineage.
 
 Let's create a new dashboard asset (tableau) that uses data from the `main-postgres:my-database.orders` table asset that we created earlier in [first section](./1-my-first-asset.md#13-sending-your-first-asset-to-compass).
 And while creating the asset, we can also define its lineage in the same request.
-
-<Tabs groupId="api">
-  <TabItem value="cli" label="CLI" default>
-
-```bash
-$ compass asset edit --body=<path to the asset.json file>
-```
-Example asset.json configuration for creating the `upstream` lineage (denoting the source of the asset data)
-```json
-{
-    "asset": {
-        "urn": "tableau:my-dashboard.daily-orders",
-        "type": "dashboard",
-        "service": "tableau",
-        "name": "Daily Orders Dashboard",
-        "description": "This is a dashboard showing daily orders"
-    },
-    "upstreams": [
-        {
-            "urn": "main-postgres:my-database.orders"
-        }
-    ]
-}
-```
-
-  </TabItem>
-  <TabItem value="http" label="HTTP">
 
 ```bash
 curl --location --request PATCH 'http://localhost:8080/v1beta1/assets' \
@@ -57,35 +27,19 @@ curl --location --request PATCH 'http://localhost:8080/v1beta1/assets' \
 }'
 ```
 
- </TabItem>
-</Tabs>
-
 We use `upstreams` and `downstreams` field to define lineage.
 From the example above `main-postgres:my-database.orders` is the source of the dashboard, so we put it inside `upstreams` field.
 
-And just like that we created a lineage :)
+And just like that we just created a lineage :)
 
 ## Querying Lineage
 
 Once lineage is defined, we can easily fetch them using a single asset URN to be the center of the lineage like below
 
-<Tabs groupId="api">
-  <TabItem value="cli" label="CLI" default>
-
-```bash
-$ compass lineage tableau:my-dashboard.daily-orders
-```
-
-  </TabItem>
-  <TabItem value="http" label="HTTP">
-
 ```bash
 curl 'http://localhost:8080/v1beta1/lineage/tableau:my-dashboard.daily-orders' \
 --header 'Compass-User-UUID: john.doe@example.com'
 ```
-
- </TabItem>
-</Tabs>
 
 And you will get this as the response
 
@@ -103,25 +57,12 @@ And you will get this as the response
 }
 ```
 
-You can also get the lineage using the URN `main-postgres:my-database.orders`, even when you have only defined `upstreams` on `tableau:my-dashboard.daily-orders`.
-
-<Tabs groupId="api">
-  <TabItem value="cli" label="CLI" default>
-
-```bash
-$ compass lineage main-postgres:my-database.orders
-```
-
-  </TabItem>
-  <TabItem value="http" label="HTTP">
+You can also get the lineage using `main-postgres:my-database.orders`, even when you have only defined `upstreams` on `tableau:my-dashboard.daily-orders`.
 
 ```bash
 curl 'http://localhost:8080/v1beta1/lineage/main-postgres:my-database.orders' \
 --header 'Compass-User-UUID: john.doe@example.com'
 ```
-
- </TabItem>
-</Tabs>
 
 ## Conclusion
 
