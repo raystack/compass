@@ -191,3 +191,4 @@ $ curl 'http://localhost:8080/v1beta1/lineage/data-project%3Adatalake.events' \
 
 The lineage is fetched from the perspective of an asset. The response shows it has a list of upstreams and downstreams assets of the requested asset.
 Notice that in the URL, we are using `urn` instead of `id`. The reason is because we use `urn` as a main identifier in our lineage storage. We don't use `id` to store the lineage as a main identifier, because `id` is internally auto generated and in lineage, there might be some assets that we don't store in our Compass' storage yet.
+
