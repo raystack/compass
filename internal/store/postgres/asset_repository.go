@@ -453,8 +453,8 @@ func (r *AssetRepository) deleteWithPredicate(ctx context.Context, pred sq.Eq) (
 func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id string, err error) {
 	err = r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		query, args, err := sq.Insert("assets").
-			Columns("urn", "type", "service", "name", "description", "data", "labels", "updated_by", "version").
-			Values(ast.URN, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion).
+			Columns("urn", "type", "service", "name", "description", "data", "url", "labels", "updated_by", "version").
+			Values(ast.URN, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.URL, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion).
 			Suffix("RETURNING \"id\"").
 			PlaceholderFormat(sq.Dollar).
 			ToSql()
@@ -490,7 +490,6 @@ func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id stri
 }
 
 func (r *AssetRepository) update(ctx context.Context, assetID string, newAsset *asset.Asset, oldAsset *asset.Asset, clog diff.Changelog) error {
-
 	if !isValidUUID(assetID) {
 		return asset.InvalidError{AssetID: assetID}
 	}
@@ -508,22 +507,24 @@ func (r *AssetRepository) update(ctx context.Context, assetID string, newAsset *
 		newAsset.Version = newVersion
 		newAsset.ID = oldAsset.ID
 
-		err = r.execContext(ctx, tx,
-			`UPDATE assets
-			SET urn = $1,
-				type = $2,
-				service = $3,
-				name = $4,
-				description = $5,
-				data = $6,
-				labels = $7,
-				updated_at = $8,
-				updated_by = $9,
-				version = $10
-			WHERE id = $11;
-			`,
-			newAsset.URN, newAsset.Type, newAsset.Service, newAsset.Name, newAsset.Description, newAsset.Data, newAsset.Labels, time.Now(), newAsset.UpdatedBy.ID, newAsset.Version, assetID)
+		query, args, err := r.buildSQL(sq.Update("assets").
+			Set("urn", newAsset.URN).
+			Set("type", newAsset.Type).
+			Set("service", newAsset.Service).
+			Set("name", newAsset.Name).
+			Set("description", newAsset.Description).
+			Set("data", newAsset.Data).
+			Set("url", newAsset.URL).
+			Set("labels", newAsset.Labels).
+			Set("updated_at", time.Now()).
+			Set("updated_by", newAsset.UpdatedBy.ID).
+			Set("version", newAsset.Version).
+			Where(sq.Eq{"id": assetID}))
 		if err != nil {
+			return fmt.Errorf("build query: %w", err)
+		}
+
+		if err := r.execContext(ctx, tx, query, args...); err != nil {
 			return fmt.Errorf("error running update asset query: %w", err)
 		}
 
@@ -775,6 +776,7 @@ func (r *AssetRepository) getAssetSQL() sq.SelectBuilder {
 		a.service as service,
 		a.description as description,
 		a.data as data,
+		COALESCE(a.url, '') as url,
 		a.labels as labels,
 		a.version as version,
 		a.created_at as created_at,

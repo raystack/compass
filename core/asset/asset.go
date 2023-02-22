@@ -35,6 +35,7 @@ type Asset struct {
 	Name        string                 `json:"name" diff:"name"`
 	Description string                 `json:"description" diff:"description"`
 	Data        map[string]interface{} `json:"data" diff:"data"`
+	URL         string                 `json:"url" diff:"url"`
 	Labels      map[string]string      `json:"labels" diff:"labels"`
 	Owners      []user.User            `json:"owners,omitempty" diff:"owners"`
 	CreatedAt   time.Time              `json:"created_at" diff:"-"`
