@@ -41,6 +41,7 @@ module.exports = {
       label: "Reference",
       items: [
         "reference/api",
+        "reference/cli",
         "reference/configuration",
       ],
     },
