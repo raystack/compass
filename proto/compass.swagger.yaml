@@ -1179,6 +1179,19 @@ paths:
           required: false
           type: integer
           format: int64
+        - name: include_fields
+          in: query
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: offset
+          description: offset parameter defines the offset from the first result you want to fetch
+          in: query
+          required: false
+          type: integer
+          format: int64
       tags:
         - Search
         - Asset
@@ -2082,6 +2095,8 @@ definitions:
   NodeAttributes:
     type: object
     properties:
+      attributes:
+        type: object
       probes:
         $ref: '#/definitions/ProbesInfo'
   NullValue:
