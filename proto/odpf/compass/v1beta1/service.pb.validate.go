@@ -2386,6 +2386,46 @@ func (m *SearchAssetsRequest) validate(all bool) error {
 
 	// no validation rules for Query
 
+	if len(m.GetIncludeFields()) > 0 {
+
+		_SearchAssetsRequest_IncludeFields_Unique := make(map[string]struct{}, len(m.GetIncludeFields()))
+
+		for idx, item := range m.GetIncludeFields() {
+			_, _ = idx, item
+
+			if _, exists := _SearchAssetsRequest_IncludeFields_Unique[item]; exists {
+				err := SearchAssetsRequestValidationError{
+					field:  fmt.Sprintf("IncludeFields[%v]", idx),
+					reason: "repeated value must contain unique items",
+				}
+				if !all {
+					return err
+				}
+				errors = append(errors, err)
+			} else {
+				_SearchAssetsRequest_IncludeFields_Unique[item] = struct{}{}
+			}
+
+			// no validation rules for IncludeFields[idx]
+		}
+
+	}
+
+	if m.GetOffset() != 0 {
+
+		if m.GetOffset() < 0 {
+			err := SearchAssetsRequestValidationError{
+				field:  "Offset",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return SearchAssetsRequestMultiError(errors)
 	}
@@ -12174,6 +12214,35 @@ func (m *GetGraphResponse_NodeAttributes) validate(all bool) error {
 		if err := v.Validate(); err != nil {
 			return GetGraphResponse_NodeAttributesValidationError{
 				field:  "Probes",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetAttributes()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetGraphResponse_NodeAttributesValidationError{
+					field:  "Attributes",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetGraphResponse_NodeAttributesValidationError{
+					field:  "Attributes",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetAttributes()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetGraphResponse_NodeAttributesValidationError{
+				field:  "Attributes",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
