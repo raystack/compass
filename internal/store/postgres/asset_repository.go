@@ -431,6 +431,29 @@ func (r *AssetRepository) GetProbesWithFilter(ctx context.Context, flt asset.Pro
 	return results, nil
 }
 
+func (r *AssetRepository) GetAssetDataAttributes(ctx context.Context, urns []string) (map[string]asset.Asset, error) {
+	stmt := sq.Select(`
+			id, urn, name, type, data->'attributes' as data
+	`).From("assets").Where(sq.Eq{"urn": urns})
+
+	query, args, err := stmt.PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("get assets with urns: build query: %w", err)
+	}
+
+	var assets []asset.Asset
+	if err := r.client.db.SelectContext(ctx, &assets, query, args...); err != nil {
+		return nil, fmt.Errorf("error running get assets query: %w", err)
+	}
+
+	results := make(map[string]asset.Asset, len(assets))
+	for _, a := range assets {
+		results[a.URN] = a
+	}
+
+	return results, nil
+}
+
 func (r *AssetRepository) deleteWithPredicate(ctx context.Context, pred sq.Eq) (int64, error) {
 	query, args, err := r.buildSQL(sq.Delete("assets").Where(pred))
 	if err != nil {

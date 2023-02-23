@@ -50,7 +50,8 @@ type LineageEdge struct {
 }
 
 type NodeAttributes struct {
-	Probes ProbesInfo `json:"probes"`
+	Probes     ProbesInfo             `json:"probes"`
+	Attributes map[string]interface{} `json:"attributes"`
 }
 
 type ProbesInfo struct {

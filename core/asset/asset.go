@@ -24,6 +24,7 @@ type Repository interface {
 	AddProbe(ctx context.Context, assetURN string, probe *Probe) error
 	GetProbes(ctx context.Context, assetURN string) ([]Probe, error)
 	GetProbesWithFilter(ctx context.Context, flt ProbesFilter) (map[string][]Probe, error)
+	GetAssetDataAttributes(ctx context.Context, urns []string) (map[string]Asset, error)
 }
 
 // Asset is a model that wraps arbitrary data with Compass' context

@@ -138,9 +138,14 @@ func (s *Service) GetLineage(ctx context.Context, urn string, query LineageQuery
 		return Lineage{}, fmt.Errorf("get lineage: get latest probes: %w", err)
 	}
 
+	assetDataAttributes, err := s.assetRepository.GetAssetDataAttributes(ctx, urns.list())
+	if err != nil {
+		return Lineage{}, fmt.Errorf("get lineage: get asset data attributes: %w", err)
+	}
+
 	return Lineage{
 		Edges:     edges,
-		NodeAttrs: buildNodeAttrs(assetProbes),
+		NodeAttrs: buildNodeAttrs(assetProbes, assetDataAttributes),
 	}, nil
 }
 
@@ -164,15 +169,22 @@ func isValidUUID(u string) bool {
 	return err == nil
 }
 
-func buildNodeAttrs(assetProbes map[string][]Probe) map[string]NodeAttributes {
+func buildNodeAttrs(assetProbes map[string][]Probe, attributes map[string]Asset) map[string]NodeAttributes {
 	nodeAttrs := make(map[string]NodeAttributes, len(assetProbes))
 	for urn, probes := range assetProbes {
-		if len(probes) == 0 {
-			continue
+		var probesInfo ProbesInfo
+		if len(probes) > 0 {
+			probesInfo = ProbesInfo{Latest: probes[0]}
+		}
+
+		attrs := make(map[string]interface{})
+		if val, ok := attributes[urn]; ok {
+			attrs = val.Data
 		}
 
 		nodeAttrs[urn] = NodeAttributes{
-			Probes: ProbesInfo{Latest: probes[0]},
+			Probes:     probesInfo,
+			Attributes: attrs,
 		}
 	}
 
