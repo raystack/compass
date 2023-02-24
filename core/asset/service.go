@@ -138,9 +138,12 @@ func (s *Service) GetLineage(ctx context.Context, urn string, query LineageQuery
 		return Lineage{}, fmt.Errorf("get lineage: get latest probes: %w", err)
 	}
 
-	assetDataAttributes, err := s.assetRepository.GetAssetDataAttributes(ctx, urns.list())
-	if err != nil {
-		return Lineage{}, fmt.Errorf("get lineage: get asset data attributes: %w", err)
+	assetDataAttributes := make(map[string]Asset)
+	if query.WithNodeProps {
+		assetDataAttributes, err = s.assetRepository.GetAssetDataAttributes(ctx, urns.list())
+		if err != nil {
+			return Lineage{}, fmt.Errorf("get lineage: get asset data attributes: %w", err)
+		}
 	}
 
 	return Lineage{
@@ -185,6 +188,19 @@ func buildNodeAttrs(assetProbes map[string][]Probe, attributes map[string]Asset)
 		nodeAttrs[urn] = NodeAttributes{
 			Probes:     probesInfo,
 			Attributes: attrs,
+		}
+	}
+
+	for urn, asset := range attributes {
+		if _, ok := nodeAttrs[urn]; !ok {
+			nodeAttrs[urn] = NodeAttributes{
+				Attributes: asset.Data,
+			}
+		} else {
+			nodeAttrs[urn] = NodeAttributes{
+				Probes:     nodeAttrs[urn].Probes,
+				Attributes: asset.Data,
+			}
 		}
 	}
 

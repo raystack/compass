@@ -21,8 +21,9 @@ const (
 )
 
 type LineageQuery struct {
-	Level     int
-	Direction LineageDirection
+	Level         int
+	Direction     LineageDirection
+	WithNodeProps bool
 }
 
 //go:generate mockery --name=LineageRepository -r --case underscore --with-expecter --structname=LineageRepository --filename=lineage_repository.go --output=./mocks

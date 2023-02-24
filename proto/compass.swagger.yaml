@@ -901,6 +901,11 @@ paths:
           in: query
           required: false
           type: string
+        - name: with_node_props
+          description: if set include node properties in the response
+          in: query
+          required: false
+          type: boolean
       tags:
         - Lineage
         - Asset

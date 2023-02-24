@@ -23,8 +23,9 @@ func (server *APIServer) GetGraph(ctx context.Context, req *compassv1beta1.GetGr
 	}
 
 	lineage, err := server.assetService.GetLineage(ctx, req.GetUrn(), asset.LineageQuery{
-		Level:     int(req.GetLevel()),
-		Direction: direction,
+		Level:         int(req.GetLevel()),
+		Direction:     direction,
+		WithNodeProps: req.GetWithNodeProps(),
 	})
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())
@@ -46,8 +47,17 @@ func (server *APIServer) GetGraph(ctx context.Context, req *compassv1beta1.GetGr
 			return nil, internalServerError(server.logger, err.Error())
 		}
 
+		var data *structpb.Struct
+		if len(attrs.Attributes) > 0 {
+			data, err = structpb.NewStruct(attrs.Attributes)
+			if err != nil {
+				return nil, internalServerError(server.logger, err.Error())
+			}
+		}
+
 		nodeAttrs[urn] = &compassv1beta1.GetGraphResponse_NodeAttributes{
-			Probes: probesInfo,
+			Probes:     probesInfo,
+			Attributes: data,
 		}
 	}
 

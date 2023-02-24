@@ -441,14 +441,14 @@ func (r *AssetRepository) GetAssetDataAttributes(ctx context.Context, urns []str
 		return nil, fmt.Errorf("get assets with urns: build query: %w", err)
 	}
 
-	var assets []asset.Asset
+	var assets []AssetModel
 	if err := r.client.db.SelectContext(ctx, &assets, query, args...); err != nil {
 		return nil, fmt.Errorf("error running get assets query: %w", err)
 	}
 
 	results := make(map[string]asset.Asset, len(assets))
 	for _, a := range assets {
-		results[a.URN] = a
+		results[a.URN] = a.toAsset(nil)
 	}
 
 	return results, nil
