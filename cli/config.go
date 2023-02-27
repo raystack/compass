@@ -85,7 +85,7 @@ func configListCommand() *cobra.Command {
 
 type Config struct {
 	// Log
-	LogLevel string `mapstructure:"log_level" default:"info"`
+	LogLevel string `yaml:"log_level" mapstructure:"log_level" default:"info"`
 
 	// StatsD
 	StatsD statsd.Config `mapstructure:"statsd"`
