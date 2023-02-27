@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"strings"
 	"time"
 
@@ -26,6 +27,10 @@ type AssetRepository struct {
 
 // GetAll retrieves list of assets with filters
 func (r *AssetRepository) GetAll(ctx context.Context, flt asset.Filter) ([]asset.Asset, error) {
+	if err := flt.Validate(); err != nil {
+		return nil, err
+	}
+
 	builder := r.getAssetSQL().Offset(uint64(flt.Offset))
 	size := flt.Size
 
@@ -56,7 +61,9 @@ func (r *AssetRepository) GetAll(ctx context.Context, flt asset.Filter) ([]asset
 // GetTypes fetches types with assets count for all available types
 // and returns them as a map[typeName]count
 func (r *AssetRepository) GetTypes(ctx context.Context, flt asset.Filter) (map[asset.Type]int, error) {
-
+	if err := flt.Validate(); err != nil {
+		return nil, err
+	}
 	builder := r.getAssetsGroupByCountSQL("type")
 	builder = r.BuildFilterQuery(builder, flt)
 	query, args, err := r.buildSQL(builder)
@@ -94,6 +101,9 @@ func (r *AssetRepository) GetTypes(ctx context.Context, flt asset.Filter) (map[a
 
 // GetCount retrieves number of assets for every type
 func (r *AssetRepository) GetCount(ctx context.Context, flt asset.Filter) (total int, err error) {
+	if err := flt.Validate(); err != nil {
+		return 0, err
+	}
 	builder := sq.Select("count(1)").From("assets")
 	builder = r.BuildFilterQuery(builder, flt)
 	query, args, err := r.buildSQL(builder)
@@ -110,12 +120,12 @@ func (r *AssetRepository) GetCount(ctx context.Context, flt asset.Filter) (total
 }
 
 // GetByID retrieves asset by its ID
-func (r *AssetRepository) GetByID(ctx context.Context, id string) (asset.Asset, error) {
+func (r *AssetRepository) GetByID(ctx context.Context, ns *namespace.Namespace, id string) (asset.Asset, error) {
 	if !isValidUUID(id) {
 		return asset.Asset{}, asset.InvalidError{AssetID: id}
 	}
 
-	ast, err := r.getWithPredicate(ctx, sq.Eq{"a.id": id})
+	ast, err := r.getWithPredicate(ctx, ns, sq.Eq{"a.id": id})
 	if errors.Is(err, sql.ErrNoRows) {
 		return asset.Asset{}, asset.NotFoundError{AssetID: id}
 	}
@@ -126,8 +136,8 @@ func (r *AssetRepository) GetByID(ctx context.Context, id string) (asset.Asset, 
 	return ast, nil
 }
 
-func (r *AssetRepository) GetByURN(ctx context.Context, urn string) (asset.Asset, error) {
-	ast, err := r.getWithPredicate(ctx, sq.Eq{"a.urn": urn})
+func (r *AssetRepository) GetByURN(ctx context.Context, ns *namespace.Namespace, urn string) (asset.Asset, error) {
+	ast, err := r.getWithPredicate(ctx, ns, sq.Eq{"a.urn": urn})
 	if errors.Is(err, sql.ErrNoRows) {
 		return asset.Asset{}, asset.NotFoundError{URN: urn}
 	}
@@ -138,9 +148,10 @@ func (r *AssetRepository) GetByURN(ctx context.Context, urn string) (asset.Asset
 	return ast, nil
 }
 
-func (r *AssetRepository) getWithPredicate(ctx context.Context, pred sq.Eq) (asset.Asset, error) {
+func (r *AssetRepository) getWithPredicate(ctx context.Context, ns *namespace.Namespace, pred sq.Eq) (asset.Asset, error) {
 	builder := r.getAssetSQL().
 		Where(pred).
+		Where(sq.Eq{"a.namespace_id": ns.ID}).
 		Limit(1)
 	query, args, err := r.buildSQL(builder)
 	if err != nil {
@@ -166,6 +177,9 @@ func (r *AssetRepository) GetVersionHistory(ctx context.Context, flt asset.Filte
 	if !isValidUUID(id) {
 		err = asset.InvalidError{AssetID: id}
 		return
+	}
+	if err := flt.Validate(); err != nil {
+		return nil, err
 	}
 
 	size := flt.Size
@@ -209,12 +223,12 @@ func (r *AssetRepository) GetVersionHistory(ctx context.Context, flt asset.Filte
 }
 
 // GetByVersionWithID retrieves the specific asset version
-func (r *AssetRepository) GetByVersionWithID(ctx context.Context, id string, version string) (asset.Asset, error) {
+func (r *AssetRepository) GetByVersionWithID(ctx context.Context, ns *namespace.Namespace, id string, version string) (asset.Asset, error) {
 	if !isValidUUID(id) {
 		return asset.Asset{}, asset.InvalidError{AssetID: id}
 	}
 
-	ast, err := r.getByVersion(ctx, id, version, r.GetByID, sq.Eq{
+	ast, err := r.getByVersion(ctx, ns, id, version, r.GetByID, sq.Eq{
 		"a.asset_id": id,
 		"a.version":  version,
 	})
@@ -228,8 +242,8 @@ func (r *AssetRepository) GetByVersionWithID(ctx context.Context, id string, ver
 	return ast, nil
 }
 
-func (r *AssetRepository) GetByVersionWithURN(ctx context.Context, urn string, version string) (asset.Asset, error) {
-	ast, err := r.getByVersion(ctx, urn, version, r.GetByURN, sq.Eq{
+func (r *AssetRepository) GetByVersionWithURN(ctx context.Context, ns *namespace.Namespace, urn string, version string) (asset.Asset, error) {
+	ast, err := r.getByVersion(ctx, ns, urn, version, r.GetByURN, sq.Eq{
 		"a.urn":     urn,
 		"a.version": version,
 	})
@@ -243,12 +257,12 @@ func (r *AssetRepository) GetByVersionWithURN(ctx context.Context, urn string, v
 	return ast, nil
 }
 
-type getAssetFunc func(context.Context, string) (asset.Asset, error)
+type getAssetFunc func(context.Context, *namespace.Namespace, string) (asset.Asset, error)
 
 func (r *AssetRepository) getByVersion(
-	ctx context.Context, id, version string, get getAssetFunc, pred sq.Eq,
+	ctx context.Context, ns *namespace.Namespace, id, version string, get getAssetFunc, pred sq.Eq,
 ) (asset.Asset, error) {
-	latest, err := get(ctx, id)
+	latest, err := get(ctx, ns, id)
 	if err != nil {
 		return asset.Asset{}, err
 	}
@@ -276,8 +290,8 @@ func (r *AssetRepository) getByVersion(
 // Upsert creates a new asset if it does not exist yet.
 // It updates if asset does exist.
 // Checking existence is done using "urn", "type", and "service" fields.
-func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string, error) {
-	fetchedAsset, err := r.GetByURN(ctx, ast.URN)
+func (r *AssetRepository) Upsert(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset) (string, error) {
+	fetchedAsset, err := r.GetByURN(ctx, ns, ast.URN)
 	if errors.As(err, new(asset.NotFoundError)) {
 		err = nil
 	}
@@ -287,7 +301,7 @@ func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string,
 
 	if fetchedAsset.ID == "" {
 		// insert flow
-		fetchedAsset.ID, err = r.insert(ctx, ast)
+		fetchedAsset.ID, err = r.insert(ctx, ns, ast)
 		if err != nil {
 			return fetchedAsset.ID, fmt.Errorf("error inserting asset to DB: %w", err)
 		}
@@ -298,7 +312,7 @@ func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string,
 			return "", fmt.Errorf("error diffing two assets: %w", err)
 		}
 
-		err = r.update(ctx, fetchedAsset.ID, ast, &fetchedAsset, changelog)
+		err = r.update(ctx, ns, fetchedAsset.ID, ast, &fetchedAsset, changelog)
 		if err != nil {
 			return "", fmt.Errorf("error updating asset to DB: %w", err)
 		}
@@ -308,12 +322,12 @@ func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string,
 }
 
 // DeleteByID removes asset using its ID
-func (r *AssetRepository) DeleteByID(ctx context.Context, id string) error {
+func (r *AssetRepository) DeleteByID(ctx context.Context, ns *namespace.Namespace, id string) error {
 	if !isValidUUID(id) {
 		return asset.InvalidError{AssetID: id}
 	}
 
-	affectedRows, err := r.deleteWithPredicate(ctx, sq.Eq{"id": id})
+	affectedRows, err := r.deleteWithPredicate(ctx, ns, sq.Eq{"id": id})
 	if err != nil {
 		return fmt.Errorf("error deleting asset with ID = %q: %w", id, err)
 	}
@@ -324,8 +338,8 @@ func (r *AssetRepository) DeleteByID(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *AssetRepository) DeleteByURN(ctx context.Context, urn string) error {
-	affectedRows, err := r.deleteWithPredicate(ctx, sq.Eq{"urn": urn})
+func (r *AssetRepository) DeleteByURN(ctx context.Context, ns *namespace.Namespace, urn string) error {
+	affectedRows, err := r.deleteWithPredicate(ctx, ns, sq.Eq{"urn": urn})
 	if err != nil {
 		return fmt.Errorf("error deleting asset with URN = %q: %w", urn, err)
 	}
@@ -431,8 +445,8 @@ func (r *AssetRepository) GetProbesWithFilter(ctx context.Context, flt asset.Pro
 	return results, nil
 }
 
-func (r *AssetRepository) deleteWithPredicate(ctx context.Context, pred sq.Eq) (int64, error) {
-	query, args, err := r.buildSQL(sq.Delete("assets").Where(pred))
+func (r *AssetRepository) deleteWithPredicate(ctx context.Context, ns *namespace.Namespace, pred sq.Eq) (int64, error) {
+	query, args, err := r.buildSQL(sq.Delete("assets").Where(pred).Where(sq.Eq{"namespace_id": ns.ID}))
 	if err != nil {
 		return 0, fmt.Errorf("error building query: %w", err)
 	}
@@ -450,11 +464,11 @@ func (r *AssetRepository) deleteWithPredicate(ctx context.Context, pred sq.Eq) (
 	return affectedRows, nil
 }
 
-func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id string, err error) {
+func (r *AssetRepository) insert(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset) (id string, err error) {
 	err = r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		query, args, err := sq.Insert("assets").
-			Columns("urn", "type", "service", "name", "description", "data", "url", "labels", "updated_by", "version").
-			Values(ast.URN, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.URL, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion).
+			Columns("urn", "namespace_id", "type", "service", "name", "description", "data", "url", "labels", "updated_by", "version").
+			Values(ast.URN, ns.ID, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.URL, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion).
 			Suffix("RETURNING \"id\"").
 			PlaceholderFormat(sq.Dollar).
 			ToSql()
@@ -489,7 +503,7 @@ func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id stri
 	return
 }
 
-func (r *AssetRepository) update(ctx context.Context, assetID string, newAsset *asset.Asset, oldAsset *asset.Asset, clog diff.Changelog) error {
+func (r *AssetRepository) update(ctx context.Context, ns *namespace.Namespace, assetID string, newAsset *asset.Asset, oldAsset *asset.Asset, clog diff.Changelog) error {
 	if !isValidUUID(assetID) {
 		return asset.InvalidError{AssetID: assetID}
 	}
@@ -519,7 +533,7 @@ func (r *AssetRepository) update(ctx context.Context, assetID string, newAsset *
 			Set("updated_at", time.Now()).
 			Set("updated_by", newAsset.UpdatedBy.ID).
 			Set("version", newAsset.Version).
-			Where(sq.Eq{"id": assetID}))
+			Where(sq.Eq{"id": assetID}).Where(sq.Eq{"namespace_id": ns.ID}))
 		if err != nil {
 			return fmt.Errorf("build query: %w", err)
 		}
@@ -770,6 +784,7 @@ func (r *AssetRepository) getAssetsGroupByCountSQL(columnName string) sq.SelectB
 func (r *AssetRepository) getAssetSQL() sq.SelectBuilder {
 	return sq.Select(`
 		a.id as id,
+		a.namespace_id as namespace_id,
 		a.urn as urn,
 		a.type as type,
 		a.name as name,
@@ -820,6 +835,8 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 
 // BuildFilterQuery retrieves the sql query based on applied filter in the queryString
 func (r *AssetRepository) BuildFilterQuery(builder sq.SelectBuilder, flt asset.Filter) sq.SelectBuilder {
+	builder = builder.Where(sq.Eq{"namespace_id": flt.Namespace.ID})
+
 	if len(flt.Types) > 0 {
 		builder = builder.Where(sq.Eq{"type": flt.Types})
 	}

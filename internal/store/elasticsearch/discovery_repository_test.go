@@ -3,6 +3,8 @@ package elasticsearch_test
 import (
 	"context"
 	"encoding/json"
+	"github.com/google/uuid"
+	"github.com/odpf/compass/core/namespace"
 	"strings"
 	"testing"
 	"time"
@@ -17,8 +19,14 @@ import (
 
 func TestDiscoveryRepositoryUpsert(t *testing.T) {
 	var (
-		ctx             = context.Background()
-		bigqueryService = "bigquery-test"
+		ctx = context.Background()
+		ns  = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "umbrella",
+			State:    namespace.DedicatedState,
+			Metadata: nil,
+		}
+		indexAlias = store.BuildAliasNameFromNamespace(ns)
 	)
 
 	t.Run("should return error if id empty", func(t *testing.T) {
@@ -32,10 +40,13 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		require.NoError(t, err)
 
 		repo := store.NewDiscoveryRepository(esClient)
-		err = repo.Upsert(ctx, asset.Asset{
+		err = repo.CreateNamespace(ctx, ns)
+		assert.NoError(t, err)
+
+		err = repo.Upsert(ctx, ns, &asset.Asset{
 			ID:      "",
 			Type:    asset.TypeTable,
-			Service: bigqueryService,
+			Service: indexAlias,
 		})
 		assert.ErrorIs(t, err, asset.ErrEmptyID)
 	})
@@ -51,20 +62,23 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		require.NoError(t, err)
 
 		repo := store.NewDiscoveryRepository(esClient)
-		err = repo.Upsert(ctx, asset.Asset{
+		err = repo.CreateNamespace(ctx, ns)
+		assert.NoError(t, err)
+
+		err = repo.Upsert(ctx, ns, &asset.Asset{
 			ID:      "sample-id",
 			Type:    asset.Type("unknown-type"),
-			Service: bigqueryService,
+			Service: indexAlias,
 		})
 		assert.ErrorIs(t, err, asset.ErrUnknownType)
 	})
 
 	t.Run("should insert asset to the correct index by its service", func(t *testing.T) {
-		ast := asset.Asset{
+		ast := &asset.Asset{
 			ID:          "sample-id",
 			URN:         "sample-urn",
 			Type:        asset.TypeTable,
-			Service:     bigqueryService,
+			Service:     indexAlias,
 			Name:        "sample-name",
 			Description: "sample-description",
 			Data: map[string]interface{}{
@@ -89,10 +103,12 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		require.NoError(t, err)
 
 		repo := store.NewDiscoveryRepository(esClient)
-		err = repo.Upsert(ctx, ast)
+		err = repo.CreateNamespace(ctx, ns)
+		assert.NoError(t, err)
+		err = repo.Upsert(ctx, ns, ast)
 		assert.NoError(t, err)
 
-		res, err := cli.API.Get(bigqueryService, ast.ID)
+		res, err := cli.API.Get(indexAlias, ast.ID)
 		require.NoError(t, err)
 		require.False(t, res.IsError())
 
@@ -115,11 +131,11 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 	})
 
 	t.Run("should update existing asset if ID exists", func(t *testing.T) {
-		existingAsset := asset.Asset{
+		existingAsset := &asset.Asset{
 			ID:          "existing-id",
 			URN:         "existing-urn",
 			Type:        asset.TypeTable,
-			Service:     bigqueryService,
+			Service:     indexAlias,
 			Name:        "existing-name",
 			Description: "existing-description",
 		}
@@ -138,13 +154,15 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		require.NoError(t, err)
 
 		repo := store.NewDiscoveryRepository(esClient)
-
-		err = repo.Upsert(ctx, existingAsset)
-		assert.NoError(t, err)
-		err = repo.Upsert(ctx, newAsset)
+		err = repo.CreateNamespace(ctx, ns)
 		assert.NoError(t, err)
 
-		res, err := cli.API.Get(bigqueryService, existingAsset.ID)
+		err = repo.Upsert(ctx, ns, existingAsset)
+		assert.NoError(t, err)
+		err = repo.Upsert(ctx, ns, newAsset)
+		assert.NoError(t, err)
+
+		res, err := cli.API.Get(indexAlias, existingAsset.ID)
 		require.NoError(t, err)
 		require.False(t, res.IsError())
 
@@ -162,9 +180,16 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 }
 
 func TestDiscoveryRepositoryDeleteByID(t *testing.T) {
+	nsID, _ := uuid.NewUUID()
 	var (
 		ctx             = context.Background()
 		bigqueryService = "bigquery-test"
+		ns              = &namespace.Namespace{
+			ID:       nsID,
+			Name:     "umbrella",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
 
 	t.Run("should return error if id empty", func(t *testing.T) {
@@ -178,12 +203,15 @@ func TestDiscoveryRepositoryDeleteByID(t *testing.T) {
 		require.NoError(t, err)
 
 		repo := store.NewDiscoveryRepository(esClient)
-		err = repo.DeleteByID(ctx, "")
+		err = repo.CreateNamespace(ctx, ns)
+		assert.NoError(t, err)
+
+		err = repo.DeleteByID(ctx, ns, "")
 		assert.ErrorIs(t, err, asset.ErrEmptyID)
 	})
 
 	t.Run("should not return error on success", func(t *testing.T) {
-		ast := asset.Asset{
+		ast := &asset.Asset{
 			ID:      "delete-id",
 			Type:    asset.TypeTable,
 			Service: bigqueryService,
@@ -200,11 +228,13 @@ func TestDiscoveryRepositoryDeleteByID(t *testing.T) {
 		require.NoError(t, err)
 
 		repo := store.NewDiscoveryRepository(esClient)
+		err = repo.CreateNamespace(ctx, ns)
+		assert.NoError(t, err)
 
-		err = repo.Upsert(ctx, ast)
+		err = repo.Upsert(ctx, ns, ast)
 		require.NoError(t, err)
 
-		err = repo.DeleteByID(ctx, ast.ID)
+		err = repo.DeleteByID(ctx, ns, ast.ID)
 		assert.NoError(t, err)
 
 		res, err := cli.Search(
@@ -226,9 +256,16 @@ func TestDiscoveryRepositoryDeleteByID(t *testing.T) {
 }
 
 func TestDiscoveryRepositoryDeleteByURN(t *testing.T) {
+	nsID, _ := uuid.NewUUID()
 	var (
 		ctx             = context.Background()
 		bigqueryService = "bigquery-test"
+		ns              = &namespace.Namespace{
+			ID:       nsID,
+			Name:     "umbrella",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
 
 	cli, err := esTestServer.NewClient()
@@ -240,24 +277,26 @@ func TestDiscoveryRepositoryDeleteByURN(t *testing.T) {
 	require.NoError(t, err)
 
 	repo := store.NewDiscoveryRepository(esClient)
+	err = repo.CreateNamespace(ctx, ns)
+	assert.NoError(t, err)
 
 	t.Run("should return error if the given urn is empty", func(t *testing.T) {
-		err = repo.DeleteByURN(ctx, "")
+		err = repo.DeleteByURN(ctx, ns, "")
 		assert.ErrorIs(t, err, asset.ErrEmptyURN)
 	})
 
 	t.Run("should not return error on success", func(t *testing.T) {
-		ast := asset.Asset{
+		ast := &asset.Asset{
 			ID:      "delete-id",
 			Type:    asset.TypeTable,
 			Service: bigqueryService,
 			URN:     "some-urn",
 		}
 
-		err = repo.Upsert(ctx, ast)
+		err = repo.Upsert(ctx, ns, ast)
 		require.NoError(t, err)
 
-		err = repo.DeleteByURN(ctx, ast.URN)
+		err = repo.DeleteByURN(ctx, ns, ast.URN)
 		assert.NoError(t, err)
 
 		res, err := cli.Search(

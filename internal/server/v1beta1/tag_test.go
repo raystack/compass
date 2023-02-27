@@ -198,7 +198,7 @@ func TestGetTagByAssetAndTemplate(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.GetTagByAssetAndTemplate(ctx, tc.Request)
 			code := status.Code(err)
@@ -330,7 +330,7 @@ func TestCreateTagAsset(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.CreateTagAsset(ctx, tc.Request)
 			code := status.Code(err)
@@ -446,7 +446,7 @@ func TestUpdateTagAsset(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.UpdateTagAsset(ctx, tc.Request)
 			code := status.Code(err)
@@ -543,7 +543,7 @@ func TestDeleteTagAsset(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			_, err := handler.DeleteTagAsset(ctx, tc.Request)
 			code := status.Code(err)
@@ -622,7 +622,7 @@ func TestGetAllTagsByAsset(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.GetAllTagsByAsset(ctx, tc.Request)
 			code := status.Code(err)

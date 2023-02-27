@@ -2386,6 +2386,48 @@ func (m *SearchAssetsRequest) validate(all bool) error {
 
 	// no validation rules for Query
 
+	if len(m.GetIncludeFields()) > 0 {
+
+		_SearchAssetsRequest_IncludeFields_Unique := make(map[string]struct{}, len(m.GetIncludeFields()))
+
+		for idx, item := range m.GetIncludeFields() {
+			_, _ = idx, item
+
+			if _, exists := _SearchAssetsRequest_IncludeFields_Unique[item]; exists {
+				err := SearchAssetsRequestValidationError{
+					field:  fmt.Sprintf("IncludeFields[%v]", idx),
+					reason: "repeated value must contain unique items",
+				}
+				if !all {
+					return err
+				}
+				errors = append(errors, err)
+			} else {
+				_SearchAssetsRequest_IncludeFields_Unique[item] = struct{}{}
+			}
+
+			// no validation rules for IncludeFields[idx]
+		}
+
+	}
+
+	if m.GetOffset() != 0 {
+
+		if m.GetOffset() < 0 {
+			err := SearchAssetsRequestValidationError{
+				field:  "Offset",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	// no validation rules for NamespaceUrn
+
 	if len(errors) > 0 {
 		return SearchAssetsRequestMultiError(errors)
 	}
@@ -2627,6 +2669,8 @@ func (m *SuggestAssetsRequest) validate(all bool) error {
 	if m.GetText() != "" {
 
 	}
+
+	// no validation rules for NamespaceUrn
 
 	if len(errors) > 0 {
 		return SuggestAssetsRequestMultiError(errors)
@@ -3447,6 +3491,8 @@ func (m *GetAllAssetsRequest) validate(all bool) error {
 
 	// no validation rules for WithTotal
 
+	// no validation rules for NamespaceUrn
+
 	if len(errors) > 0 {
 		return GetAllAssetsRequestMultiError(errors)
 	}
@@ -3688,6 +3734,8 @@ func (m *GetAssetByIDRequest) validate(all bool) error {
 	var errors []error
 
 	// no validation rules for Id
+
+	// no validation rules for NamespaceUrn
 
 	if len(errors) > 0 {
 		return GetAssetByIDRequestMultiError(errors)
@@ -4019,6 +4067,8 @@ func (m *UpsertAssetRequest) validate(all bool) error {
 
 	}
 
+	// no validation rules for NamespaceUrn
+
 	if len(errors) > 0 {
 		return UpsertAssetRequestMultiError(errors)
 	}
@@ -4324,6 +4374,8 @@ func (m *UpsertPatchAssetRequest) validate(all bool) error {
 
 	// no validation rules for OverwriteLineage
 
+	// no validation rules for NamespaceUrn
+
 	if len(errors) > 0 {
 		return UpsertPatchAssetRequestMultiError(errors)
 	}
@@ -4531,6 +4583,8 @@ func (m *DeleteAssetRequest) validate(all bool) error {
 	var errors []error
 
 	// no validation rules for Id
+
+	// no validation rules for NamespaceUrn
 
 	if len(errors) > 0 {
 		return DeleteAssetRequestMultiError(errors)
@@ -4767,6 +4821,8 @@ func (m *GetAssetStargazersRequest) validate(all bool) error {
 		}
 
 	}
+
+	// no validation rules for NamespaceUrn
 
 	if len(errors) > 0 {
 		return GetAssetStargazersRequestMultiError(errors)
@@ -5038,6 +5094,8 @@ func (m *GetAssetVersionHistoryRequest) validate(all bool) error {
 
 	}
 
+	// no validation rules for NamespaceUrn
+
 	if len(errors) > 0 {
 		return GetAssetVersionHistoryRequestMultiError(errors)
 	}
@@ -5281,6 +5339,8 @@ func (m *GetAssetByVersionRequest) validate(all bool) error {
 	// no validation rules for Id
 
 	// no validation rules for Version
+
+	// no validation rules for NamespaceUrn
 
 	if len(errors) > 0 {
 		return GetAssetByVersionRequestMultiError(errors)
@@ -5554,6 +5614,8 @@ func (m *CreateAssetProbeRequest) validate(all bool) error {
 			}
 		}
 	}
+
+	// no validation rules for NamespaceUrn
 
 	if len(errors) > 0 {
 		return CreateAssetProbeRequestMultiError(errors)
@@ -9688,6 +9750,964 @@ var _ interface {
 	ErrorName() string
 } = DeleteTagTemplateResponseValidationError{}
 
+// Validate checks the field values on CreateNamespaceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreateNamespaceRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateNamespaceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CreateNamespaceRequestMultiError, or nil if none found.
+func (m *CreateNamespaceRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateNamespaceRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetName()) < 3 {
+		err := CreateNamespaceRequestValidationError{
+			field:  "Name",
+			reason: "value length must be at least 3 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for State
+
+	if all {
+		switch v := interface{}(m.GetMetadata()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateNamespaceRequestValidationError{
+					field:  "Metadata",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateNamespaceRequestValidationError{
+					field:  "Metadata",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetMetadata()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateNamespaceRequestValidationError{
+				field:  "Metadata",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CreateNamespaceRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateNamespaceRequestMultiError is an error wrapping multiple validation
+// errors returned by CreateNamespaceRequest.ValidateAll() if the designated
+// constraints aren't met.
+type CreateNamespaceRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateNamespaceRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateNamespaceRequestMultiError) AllErrors() []error { return m }
+
+// CreateNamespaceRequestValidationError is the validation error returned by
+// CreateNamespaceRequest.Validate if the designated constraints aren't met.
+type CreateNamespaceRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateNamespaceRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateNamespaceRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateNamespaceRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateNamespaceRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateNamespaceRequestValidationError) ErrorName() string {
+	return "CreateNamespaceRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateNamespaceRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateNamespaceRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateNamespaceRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateNamespaceRequestValidationError{}
+
+// Validate checks the field values on CreateNamespaceResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreateNamespaceResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateNamespaceResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CreateNamespaceResponseMultiError, or nil if none found.
+func (m *CreateNamespaceResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateNamespaceResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	if len(errors) > 0 {
+		return CreateNamespaceResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateNamespaceResponseMultiError is an error wrapping multiple validation
+// errors returned by CreateNamespaceResponse.ValidateAll() if the designated
+// constraints aren't met.
+type CreateNamespaceResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateNamespaceResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateNamespaceResponseMultiError) AllErrors() []error { return m }
+
+// CreateNamespaceResponseValidationError is the validation error returned by
+// CreateNamespaceResponse.Validate if the designated constraints aren't met.
+type CreateNamespaceResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateNamespaceResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateNamespaceResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateNamespaceResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateNamespaceResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateNamespaceResponseValidationError) ErrorName() string {
+	return "CreateNamespaceResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateNamespaceResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateNamespaceResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateNamespaceResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateNamespaceResponseValidationError{}
+
+// Validate checks the field values on GetNamespaceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetNamespaceRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetNamespaceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetNamespaceRequestMultiError, or nil if none found.
+func (m *GetNamespaceRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetNamespaceRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Urn
+
+	if len(errors) > 0 {
+		return GetNamespaceRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetNamespaceRequestMultiError is an error wrapping multiple validation
+// errors returned by GetNamespaceRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetNamespaceRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetNamespaceRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetNamespaceRequestMultiError) AllErrors() []error { return m }
+
+// GetNamespaceRequestValidationError is the validation error returned by
+// GetNamespaceRequest.Validate if the designated constraints aren't met.
+type GetNamespaceRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetNamespaceRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetNamespaceRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetNamespaceRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetNamespaceRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetNamespaceRequestValidationError) ErrorName() string {
+	return "GetNamespaceRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetNamespaceRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetNamespaceRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetNamespaceRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetNamespaceRequestValidationError{}
+
+// Validate checks the field values on GetNamespaceResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetNamespaceResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetNamespaceResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetNamespaceResponseMultiError, or nil if none found.
+func (m *GetNamespaceResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetNamespaceResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetNamespace()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetNamespaceResponseValidationError{
+					field:  "Namespace",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetNamespaceResponseValidationError{
+					field:  "Namespace",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetNamespace()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetNamespaceResponseValidationError{
+				field:  "Namespace",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return GetNamespaceResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetNamespaceResponseMultiError is an error wrapping multiple validation
+// errors returned by GetNamespaceResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GetNamespaceResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetNamespaceResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetNamespaceResponseMultiError) AllErrors() []error { return m }
+
+// GetNamespaceResponseValidationError is the validation error returned by
+// GetNamespaceResponse.Validate if the designated constraints aren't met.
+type GetNamespaceResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetNamespaceResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetNamespaceResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetNamespaceResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetNamespaceResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetNamespaceResponseValidationError) ErrorName() string {
+	return "GetNamespaceResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetNamespaceResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetNamespaceResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetNamespaceResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetNamespaceResponseValidationError{}
+
+// Validate checks the field values on UpdateNamespaceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpdateNamespaceRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateNamespaceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpdateNamespaceRequestMultiError, or nil if none found.
+func (m *UpdateNamespaceRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateNamespaceRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Urn
+
+	// no validation rules for State
+
+	if all {
+		switch v := interface{}(m.GetMetadata()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdateNamespaceRequestValidationError{
+					field:  "Metadata",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdateNamespaceRequestValidationError{
+					field:  "Metadata",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetMetadata()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateNamespaceRequestValidationError{
+				field:  "Metadata",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return UpdateNamespaceRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateNamespaceRequestMultiError is an error wrapping multiple validation
+// errors returned by UpdateNamespaceRequest.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateNamespaceRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateNamespaceRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateNamespaceRequestMultiError) AllErrors() []error { return m }
+
+// UpdateNamespaceRequestValidationError is the validation error returned by
+// UpdateNamespaceRequest.Validate if the designated constraints aren't met.
+type UpdateNamespaceRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateNamespaceRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateNamespaceRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateNamespaceRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateNamespaceRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateNamespaceRequestValidationError) ErrorName() string {
+	return "UpdateNamespaceRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateNamespaceRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateNamespaceRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateNamespaceRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateNamespaceRequestValidationError{}
+
+// Validate checks the field values on UpdateNamespaceResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpdateNamespaceResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateNamespaceResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpdateNamespaceResponseMultiError, or nil if none found.
+func (m *UpdateNamespaceResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateNamespaceResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return UpdateNamespaceResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateNamespaceResponseMultiError is an error wrapping multiple validation
+// errors returned by UpdateNamespaceResponse.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateNamespaceResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateNamespaceResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateNamespaceResponseMultiError) AllErrors() []error { return m }
+
+// UpdateNamespaceResponseValidationError is the validation error returned by
+// UpdateNamespaceResponse.Validate if the designated constraints aren't met.
+type UpdateNamespaceResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateNamespaceResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateNamespaceResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateNamespaceResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateNamespaceResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateNamespaceResponseValidationError) ErrorName() string {
+	return "UpdateNamespaceResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateNamespaceResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateNamespaceResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateNamespaceResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateNamespaceResponseValidationError{}
+
+// Validate checks the field values on ListNamespacesRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListNamespacesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListNamespacesRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListNamespacesRequestMultiError, or nil if none found.
+func (m *ListNamespacesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListNamespacesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return ListNamespacesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListNamespacesRequestMultiError is an error wrapping multiple validation
+// errors returned by ListNamespacesRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListNamespacesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListNamespacesRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListNamespacesRequestMultiError) AllErrors() []error { return m }
+
+// ListNamespacesRequestValidationError is the validation error returned by
+// ListNamespacesRequest.Validate if the designated constraints aren't met.
+type ListNamespacesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListNamespacesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListNamespacesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListNamespacesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListNamespacesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListNamespacesRequestValidationError) ErrorName() string {
+	return "ListNamespacesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListNamespacesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListNamespacesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListNamespacesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListNamespacesRequestValidationError{}
+
+// Validate checks the field values on ListNamespacesResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListNamespacesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListNamespacesResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListNamespacesResponseMultiError, or nil if none found.
+func (m *ListNamespacesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListNamespacesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetNamespaces() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListNamespacesResponseValidationError{
+						field:  fmt.Sprintf("Namespaces[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListNamespacesResponseValidationError{
+						field:  fmt.Sprintf("Namespaces[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListNamespacesResponseValidationError{
+					field:  fmt.Sprintf("Namespaces[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ListNamespacesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListNamespacesResponseMultiError is an error wrapping multiple validation
+// errors returned by ListNamespacesResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListNamespacesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListNamespacesResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListNamespacesResponseMultiError) AllErrors() []error { return m }
+
+// ListNamespacesResponseValidationError is the validation error returned by
+// ListNamespacesResponse.Validate if the designated constraints aren't met.
+type ListNamespacesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListNamespacesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListNamespacesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListNamespacesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListNamespacesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListNamespacesResponseValidationError) ErrorName() string {
+	return "ListNamespacesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListNamespacesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListNamespacesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListNamespacesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListNamespacesResponseValidationError{}
+
 // Validate checks the field values on User with the rules defined in the proto
 // definition for this message. If any rules are violated, the first error
 // encountered is returned, or nil if there are no violations.
@@ -11996,6 +13016,149 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = TypeValidationError{}
+
+// Validate checks the field values on Namespace with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Namespace) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Namespace with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in NamespaceMultiError, or nil
+// if none found.
+func (m *Namespace) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Namespace) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	if utf8.RuneCountInString(m.GetName()) < 3 {
+		err := NamespaceValidationError{
+			field:  "Name",
+			reason: "value length must be at least 3 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for State
+
+	if all {
+		switch v := interface{}(m.GetMetadata()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NamespaceValidationError{
+					field:  "Metadata",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NamespaceValidationError{
+					field:  "Metadata",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetMetadata()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NamespaceValidationError{
+				field:  "Metadata",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return NamespaceMultiError(errors)
+	}
+
+	return nil
+}
+
+// NamespaceMultiError is an error wrapping multiple validation errors returned
+// by Namespace.ValidateAll() if the designated constraints aren't met.
+type NamespaceMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m NamespaceMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m NamespaceMultiError) AllErrors() []error { return m }
+
+// NamespaceValidationError is the validation error returned by
+// Namespace.Validate if the designated constraints aren't met.
+type NamespaceValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e NamespaceValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e NamespaceValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e NamespaceValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e NamespaceValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e NamespaceValidationError) ErrorName() string { return "NamespaceValidationError" }
+
+// Error satisfies the builtin error interface
+func (e NamespaceValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sNamespace.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = NamespaceValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = NamespaceValidationError{}
 
 // Validate checks the field values on GetGraphResponse_ProbesInfo with the
 // rules defined in the proto definition for this message. If any rules are

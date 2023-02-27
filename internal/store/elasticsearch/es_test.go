@@ -54,7 +54,7 @@ func TestElasticsearch(t *testing.T) {
 			},
 			{
 				Title:      "should not accept any service that has the same name as the search index",
-				Service:    "universe", // defaultSearchIndex
+				Service:    "universe", // defaultSearchIndexAlias
 				ShouldFail: true,
 			},
 			{
@@ -140,7 +140,7 @@ func TestElasticsearch(t *testing.T) {
 				require.NoError(t, err)
 				_, err = esClient.Init()
 				assert.NoError(t, err)
-				err = esClient.CreateIdx(ctx, testCase.Service)
+				err = esClient.CreateIndex(ctx, testCase.Service, store.DefaultShardCountPerIndex)
 				if testCase.ShouldFail {
 					assert.Error(t, err)
 					return
@@ -159,7 +159,3 @@ func TestElasticsearch(t *testing.T) {
 		}
 	})
 }
-
-// func TestInit(t *testing.T){
-// 	s, err := elasticsearch.NewClient()
-// }

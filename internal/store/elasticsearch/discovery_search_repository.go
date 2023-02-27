@@ -17,17 +17,18 @@ const (
 	defaultMaxResults                  = 200
 	defaultMinScore                    = 0.01
 	defaultFunctionScoreQueryScoreMode = "sum"
-	allIndices                         = "_all"
 	suggesterName                      = "name-phrase-suggest"
 )
 
-var returnedAssetFieldsResult = []string{"id", "urn", "type", "service", "name", "description", "data", "labels", "created_at", "updated_at"}
+var returnedAssetFieldsResult = []string{"id", "namespace_id", "urn", "type", "service", "name", "description", "data", "labels", "created_at", "updated_at"}
 
 // Search the asset store
-func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error) {
+func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchConfig) ([]asset.SearchResult, error) {
 	if strings.TrimSpace(cfg.Text) == "" {
-		err = asset.DiscoveryError{Err: errors.New("search text cannot be empty")}
-		return
+		return nil, asset.DiscoveryError{Err: errors.New("search text cannot be empty")}
+	}
+	if cfg.Namespace == nil {
+		return nil, asset.DiscoveryError{Err: errors.New("namespace cannot be empty")}
 	}
 	maxResults := cfg.MaxResults
 	if maxResults <= 0 {
@@ -35,48 +36,48 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 	}
 	query, err := repo.buildQuery(ctx, cfg)
 	if err != nil {
-		err = asset.DiscoveryError{Err: fmt.Errorf("error building query %w", err)}
-		return
+		return nil, asset.DiscoveryError{Err: fmt.Errorf("error building query %w", err)}
 	}
 
 	res, err := repo.cli.client.Search(
 		repo.cli.client.Search.WithBody(query),
-		repo.cli.client.Search.WithIndex(allIndices),
+		repo.cli.client.Search.WithIndex(BuildAliasNameFromNamespace(cfg.Namespace)),
 		repo.cli.client.Search.WithSize(maxResults),
 		repo.cli.client.Search.WithIgnoreUnavailable(true),
 		repo.cli.client.Search.WithSourceIncludes(returnedAssetFieldsResult...),
 		repo.cli.client.Search.WithContext(ctx),
 	)
 	if err != nil {
-		err = asset.DiscoveryError{Err: fmt.Errorf("error executing search %w", err)}
-		return
+		return nil, asset.DiscoveryError{Err: fmt.Errorf("error executing search %w", err)}
 	}
 
+	defer res.Body.Close()
 	var response searchResponse
 	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
-		err = asset.DiscoveryError{Err: fmt.Errorf("error decoding search response %w", err)}
-		return
+		return nil, asset.DiscoveryError{Err: fmt.Errorf("error decoding search response %w", err)}
 	}
 
-	results = repo.toSearchResults(response.Hits.Hits)
-	return
+	return repo.toSearchResults(response.Hits.Hits), nil
 }
 
-func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.SearchConfig) (results []string, err error) {
-	maxResults := config.MaxResults
+func (repo *DiscoveryRepository) Suggest(ctx context.Context, cfg asset.SearchConfig) (results []string, err error) {
+	if err := cfg.Validate(); err != nil {
+		return nil, err
+	}
+	maxResults := cfg.MaxResults
 	if maxResults <= 0 {
 		maxResults = defaultMaxResults
 	}
 
-	query, err := repo.buildSuggestQuery(ctx, config)
+	query, err := repo.buildSuggestQuery(ctx, cfg)
 	if err != nil {
 		err = asset.DiscoveryError{Err: fmt.Errorf("error building query: %s", err)}
 		return
 	}
 	res, err := repo.cli.client.Search(
 		repo.cli.client.Search.WithBody(query),
-		repo.cli.client.Search.WithIndex(allIndices),
+		repo.cli.client.Search.WithIndex(BuildAliasNameFromNamespace(cfg.Namespace)),
 		repo.cli.client.Search.WithSize(maxResults),
 		repo.cli.client.Search.WithIgnoreUnavailable(true),
 		repo.cli.client.Search.WithContext(ctx),

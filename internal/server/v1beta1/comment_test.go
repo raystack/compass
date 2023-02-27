@@ -105,7 +105,7 @@ func TestCreateComment(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.CreateComment(ctx, tc.Request)
 			code := status.Code(err)
@@ -232,7 +232,7 @@ func TestGetAllComments(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAllComments(ctx, tc.Request)
 			code := status.Code(err)
@@ -359,7 +359,7 @@ func TestGetComment(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetComment(ctx, tc.Request)
 			code := status.Code(err)
@@ -504,7 +504,7 @@ func TestUpdateComment(t *testing.T) {
 			defer mockSvc.AssertExpectations(t)
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
-			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			_, err := handler.UpdateComment(ctx, tc.Request)
 			code := status.Code(err)
@@ -614,7 +614,7 @@ func TestDeleteComment(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			_, err := handler.DeleteComment(ctx, tc.Request)
 			code := status.Code(err)

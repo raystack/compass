@@ -27,7 +27,7 @@ type DiscussionService interface {
 	DeleteComment(ctx context.Context, commentID string, discussionID string) error
 }
 
-// GetAll returns all discussion based on filter in query params
+// GetAllDiscussions returns all discussion based on filter in query params
 // supported query params are type,state,owner,assignee,asset,labels (supporterd array separated by comma)
 // query params sort,direction to sort asc or desc
 // query params size,offset for pagination

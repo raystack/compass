@@ -3,6 +3,8 @@ package postgres_test
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/odpf/compass/core/namespace"
 	"testing"
 
 	"github.com/odpf/compass/core/asset"
@@ -25,10 +27,17 @@ type DiscussionRepositoryTestSuite struct {
 	userRepo   *postgres.UserRepository
 	users      []user.User
 	assets     []asset.Asset
+	ns         *namespace.Namespace
 }
 
 func (r *DiscussionRepositoryTestSuite) SetupSuite() {
 	var err error
+	r.ns = &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "umbrella",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 
 	logger := log.NewLogrus()
 	r.client, r.pool, r.resource, err = newTestClient(logger)
@@ -58,7 +67,7 @@ func (r *DiscussionRepositoryTestSuite) SetupSuite() {
 		r.T().Fatal(err)
 	}
 
-	r.assets, err = createAssets(r.assetRepo, r.users, asset.Type(asset.TypeTable.String()))
+	r.assets, err = createAssets(r.assetRepo, r.ns, r.users, asset.Type(asset.TypeTable.String()))
 	if err != nil {
 		r.T().Fatal(err)
 	}

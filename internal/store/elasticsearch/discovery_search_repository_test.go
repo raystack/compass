@@ -3,6 +3,8 @@ package elasticsearch_test
 import (
 	"context"
 	"encoding/json"
+	"github.com/google/uuid"
+	"github.com/odpf/compass/core/namespace"
 	"os"
 	"testing"
 
@@ -19,6 +21,13 @@ type searchTestData struct {
 
 func TestSearcherSearch(t *testing.T) {
 	ctx := context.TODO()
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "umbrella",
+		State:    namespace.DedicatedState,
+		Metadata: nil,
+	}
+
 	t.Run("should return an error if search string is empty", func(t *testing.T) {
 		cli, err := esTestServer.NewClient()
 		require.NoError(t, err)
@@ -30,6 +39,9 @@ func TestSearcherSearch(t *testing.T) {
 		require.NoError(t, err)
 
 		repo := store.NewDiscoveryRepository(esClient)
+		err = repo.CreateNamespace(ctx, ns)
+		assert.NoError(t, err)
+
 		_, err = repo.Search(ctx, asset.SearchConfig{
 			Text: "",
 		})
@@ -47,57 +59,56 @@ func TestSearcherSearch(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		err = loadTestFixture(esClient, "./testdata/search-test-fixture.json")
+		err = loadTestFixture(esClient, ns, "./testdata/search-test-fixture.json")
 		require.NoError(t, err)
 
 		repo := store.NewDiscoveryRepository(esClient)
 
-		type expectedRow struct {
-			Type    string
-			AssetID string
-		}
 		type searchTest struct {
 			Description    string
 			Config         asset.SearchConfig
-			Expected       []expectedRow
+			Expected       []asset.SearchResult
 			MatchTotalRows bool
 		}
 		tests := []searchTest{
 			{
 				Description: "should fetch assets which has text in any of its fields",
 				Config: asset.SearchConfig{
-					Text: "topic",
+					Text:      "topic",
+					Namespace: ns,
 				},
-				Expected: []expectedRow{
-					{Type: "topic", AssetID: "consumer-topic"},
-					{Type: "topic", AssetID: "order-topic"},
-					{Type: "topic", AssetID: "purchase-topic"},
-					{Type: "topic", AssetID: "consumer-mq-2"},
-					{Type: "topic", AssetID: "transaction"},
+				Expected: []asset.SearchResult{
+					{Type: "topic", ID: "consumer-topic"},
+					{Type: "topic", ID: "order-topic"},
+					{Type: "topic", ID: "purchase-topic"},
+					{Type: "topic", ID: "consumer-mq-2"},
+					{Type: "topic", ID: "transaction"},
 				},
 			},
 			{
 				Description: "should enable fuzzy search",
 				Config: asset.SearchConfig{
-					Text: "tpic",
+					Text:      "tpic",
+					Namespace: ns,
 				},
-				Expected: []expectedRow{
-					{Type: "topic", AssetID: "consumer-topic"},
-					{Type: "topic", AssetID: "order-topic"},
-					{Type: "topic", AssetID: "purchase-topic"},
-					{Type: "topic", AssetID: "consumer-mq-2"},
-					{Type: "topic", AssetID: "transaction"},
+				Expected: []asset.SearchResult{
+					{Type: "topic", ID: "consumer-topic"},
+					{Type: "topic", ID: "order-topic"},
+					{Type: "topic", ID: "purchase-topic"},
+					{Type: "topic", ID: "consumer-mq-2"},
+					{Type: "topic", ID: "transaction"},
 				},
 			},
 			{
 				Description: "should put more weight on id fields",
 				Config: asset.SearchConfig{
-					Text: "invoice",
+					Text:      "invoice",
+					Namespace: ns,
 				},
-				Expected: []expectedRow{
-					{Type: "table", AssetID: "us1-apple-invoice"},
-					{Type: "table", AssetID: "au2-microsoft-invoice"},
-					{Type: "topic", AssetID: "transaction"},
+				Expected: []asset.SearchResult{
+					{Type: "table", ID: "us1-apple-invoice"},
+					{Type: "table", ID: "au2-microsoft-invoice"},
+					{Type: "topic", ID: "transaction"},
 				},
 			},
 			{
@@ -107,10 +118,11 @@ func TestSearcherSearch(t *testing.T) {
 					Filters: map[string][]string{
 						"service": {"rabbitmq", "postgres"},
 					},
+					Namespace: ns,
 				},
-				Expected: []expectedRow{
-					{Type: "table", AssetID: "au2-microsoft-invoice"},
-					{Type: "topic", AssetID: "transaction"},
+				Expected: []asset.SearchResult{
+					{Type: "table", ID: "au2-microsoft-invoice"},
+					{Type: "topic", ID: "transaction"},
 				},
 			},
 			{
@@ -120,12 +132,13 @@ func TestSearcherSearch(t *testing.T) {
 					Filters: map[string][]string{
 						"data.company": {"odpf"},
 					},
+					Namespace: ns,
 				},
-				Expected: []expectedRow{
-					{Type: "topic", AssetID: "consumer-topic"},
-					{Type: "topic", AssetID: "order-topic"},
-					{Type: "topic", AssetID: "consumer-mq-2"},
-					{Type: "topic", AssetID: "transaction"},
+				Expected: []asset.SearchResult{
+					{Type: "topic", ID: "consumer-topic"},
+					{Type: "topic", ID: "order-topic"},
+					{Type: "topic", ID: "consumer-mq-2"},
+					{Type: "topic", ID: "transaction"},
 				},
 			},
 			{
@@ -137,10 +150,11 @@ func TestSearcherSearch(t *testing.T) {
 						"data.environment": {"production"},
 						"data.company":     {"odpf"},
 					},
+					Namespace: ns,
 				},
-				Expected: []expectedRow{
-					{Type: "topic", AssetID: "consumer-topic"},
-					{Type: "topic", AssetID: "consumer-mq-2"},
+				Expected: []asset.SearchResult{
+					{Type: "topic", ID: "consumer-topic"},
+					{Type: "topic", ID: "consumer-mq-2"},
 				},
 			},
 			{
@@ -150,21 +164,23 @@ func TestSearcherSearch(t *testing.T) {
 					Filters: map[string][]string{
 						"owners.email": {"john.doe@email.com"},
 					},
+					Namespace: ns,
 				},
-				Expected: []expectedRow{
-					{Type: "topic", AssetID: "consumer-topic"},
+				Expected: []asset.SearchResult{
+					{Type: "topic", ID: "consumer-topic"},
 				},
 			},
 			{
 				Description: "should return a descendingly sorted based on usage count in search results if rank by usage in the config",
 				Config: asset.SearchConfig{
-					Text:   "bigquery",
-					RankBy: "data.profile.usage_count",
+					Text:      "bigquery",
+					RankBy:    "data.profile.usage_count",
+					Namespace: ns,
 				},
-				Expected: []expectedRow{
-					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
-					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-mid"},
-					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
+				Expected: []asset.SearchResult{
+					{Type: "table", ID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", ID: "bigquery::gcpproject/dataset/tablename-mid"},
+					{Type: "table", ID: "bigquery::gcpproject/dataset/tablename-1"},
 				},
 			},
 			{
@@ -175,9 +191,10 @@ func TestSearcherSearch(t *testing.T) {
 						"description":  "rabbitmq",
 						"owners.email": "john.doe",
 					},
+					Namespace: ns,
 				},
-				Expected: []expectedRow{
-					{Type: "topic", AssetID: "consumer-topic"},
+				Expected: []asset.SearchResult{
+					{Type: "topic", ID: "consumer-topic"},
 				},
 			},
 			{
@@ -187,9 +204,10 @@ func TestSearcherSearch(t *testing.T) {
 					Queries: map[string]string{
 						"data.schema.columns.name": "common",
 					},
+					Namespace: ns,
 				},
-				Expected: []expectedRow{
-					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
+				Expected: []asset.SearchResult{
+					{Type: "table", ID: "bigquery::gcpproject/dataset/tablename-common"},
 				},
 			},
 		}
@@ -199,17 +217,31 @@ func TestSearcherSearch(t *testing.T) {
 				require.NoError(t, err)
 
 				require.Equal(t, len(test.Expected), len(results))
-				for i, res := range test.Expected {
-					assert.Equal(t, res.Type, results[i].Type)
-					assert.Equal(t, res.AssetID, results[i].ID)
+				for _, res := range test.Expected {
+					assert.True(t, isContain(results, res))
 				}
 			})
 		}
 	})
 }
 
+func isContain(bag []asset.SearchResult, item asset.SearchResult) bool {
+	for _, current := range bag {
+		if current.Type == item.Type && current.ID == item.ID {
+			return true
+		}
+	}
+	return false
+}
+
 func TestSearcherSuggest(t *testing.T) {
 	ctx := context.TODO()
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "umbrella",
+		State:    namespace.DedicatedState,
+		Metadata: nil,
+	}
 	cli, err := esTestServer.NewClient()
 	require.NoError(t, err)
 	esClient, err := store.NewClient(
@@ -219,7 +251,7 @@ func TestSearcherSuggest(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	err = loadTestFixture(esClient, "./testdata/suggest-test-fixture.json")
+	err = loadTestFixture(esClient, ns, "./testdata/suggest-test-fixture.json")
 	require.NoError(t, err)
 
 	repo := store.NewDiscoveryRepository(esClient)
@@ -236,7 +268,7 @@ func TestSearcherSuggest(t *testing.T) {
 		}
 
 		for i, tc := range testCases {
-			config := asset.SearchConfig{Text: tc.term}
+			config := asset.SearchConfig{Text: tc.term, Namespace: ns}
 			actual, err := repo.Suggest(ctx, config)
 			assert.NoError(t, err)
 
@@ -245,7 +277,7 @@ func TestSearcherSuggest(t *testing.T) {
 	})
 }
 
-func loadTestFixture(esClient *store.Client, filePath string) (err error) {
+func loadTestFixture(esClient *store.Client, ns *namespace.Namespace, filePath string) (err error) {
 	testFixtureJSON, err := os.ReadFile(filePath)
 	if err != nil {
 		return
@@ -259,9 +291,12 @@ func loadTestFixture(esClient *store.Client, filePath string) (err error) {
 
 	ctx := context.TODO()
 	for _, testdata := range data {
-		repo := store.NewDiscoveryRepository(esClient)
+		repo := store.NewDiscoveryRepository(esClient, store.WithInstantRefresh())
+		if err = repo.CreateNamespace(ctx, ns); err != nil {
+			return err
+		}
 		for _, ast := range testdata.Assets {
-			if err := repo.Upsert(ctx, ast); err != nil {
+			if err := repo.Upsert(ctx, ns, &ast); err != nil {
 				return err
 			}
 		}

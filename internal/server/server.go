@@ -66,6 +66,7 @@ func Serve(
 	pgClient *postgres.Client,
 	nrApp *newrelic.Application,
 	statsdReporter *statsd.Reporter,
+	namespaceService handlersv1beta1.NamespaceService,
 	assetService handlersv1beta1.AssetService,
 	starService handlersv1beta1.StarService,
 	discussionService handlersv1beta1.DiscussionService,
@@ -76,6 +77,7 @@ func Serve(
 
 	v1beta1Handler := handlersv1beta1.NewAPIServer(
 		logger,
+		namespaceService,
 		assetService,
 		starService,
 		discussionService,

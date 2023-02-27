@@ -6,25 +6,63 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"strings"
-
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
+	"github.com/google/uuid"
 	"github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
 	"github.com/odpf/compass/core/asset"
+	"github.com/odpf/compass/core/namespace"
 	"github.com/odpf/salt/log"
 	"github.com/olivere/elastic/v7"
+	"io"
+	"strings"
 )
 
 const (
 	// name of the search index
-	defaultSearchIndex = "universe"
+	defaultSearchIndexAlias = "universe"
+
+	// DefaultSharedIndexName use single shared index for small tenants
+	DefaultSharedIndexName = "base"
+
+	// DefaultShardCountPerIndex provides shard count in an index. For large scale, it should be at least 12
+	DefaultShardCountPerIndex = 6
+
+	// DedicatedTenantIndexPrefix is used to avoid index conflicts with system managed indices
+	DedicatedTenantIndexPrefix = "compass-idx"
+
+	// TenantIndexAliasPrefix is used to avoid index/alias conflicts, convention is same for
+	// dedicated and shared tenants
+	TenantIndexAliasPrefix = "compass-alias"
 )
 
 type Config struct {
 	Brokers string `mapstructure:"brokers" default:"http://localhost:9200"`
 }
+
+type Route struct {
+	// Index could be shared or a dedicated, if dedicated it will be identified by namespace name
+	// for most cases it will be `DefaultSharedIndexName`
+	Index string `json:"index"`
+	// ReadKey route search query to respective shards
+	// for most cases it will be namespace id
+	ReadKey string `json:"read_key"`
+	// WriteKey route index query to respective shards
+	// for most cases it will be namespace id
+	WriteKey string `json:"write_key"`
+	// FilterKey finds set of documents uniquely for a tenant
+	// for most cases it will be namespace id
+	FilterKey string `json:"filter_key"`
+}
+
+var (
+	DefaultRoute = &Route{
+		Index:     DefaultSharedIndexName,
+		ReadKey:   uuid.Nil.String(),
+		WriteKey:  uuid.Nil.String(),
+		FilterKey: uuid.Nil.String(),
+	}
+)
 
 // used as a utility for generating request payload
 // since github.com/olivere/elastic generates the
@@ -106,12 +144,15 @@ func NewClient(logger log.Logger, config Config, opts ...ClientOption) (*Client,
 	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
 		Addresses: brokers,
 		Transport: nrelasticsearch.NewRoundTripper(nil),
-		// uncomment below code to debug request and response to elasticsearch
-		// Logger: &estransport.ColorLogger{
+		//uncomment below code to debug request and response to elasticsearch
+		//Logger: &estransport.ColorLogger{
 		//	Output:             os.Stdout,
 		//	EnableRequestBody:  true,
 		//	EnableResponseBody: true,
-		// },
+		//},
+		// Retry on 429 TooManyRequests statuses as well
+		RetryOnStatus: []int{502, 503, 504, 429},
+		MaxRetries:    3,
 	})
 	if err != nil {
 		return nil, err
@@ -145,10 +186,11 @@ func (c *Client) Init() (string, error) {
 	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
 }
 
-func (c *Client) CreateIdx(ctx context.Context, indexName string) error {
-	indexSettings := buildTypeIndexSettings()
+func (c *Client) CreateIndex(ctx context.Context, name string, shardCount int) error {
+	indexSettings := buildIndexSettings(shardCount)
+
 	res, err := c.client.Indices.Create(
-		indexName,
+		name,
 		c.client.Indices.Create.WithBody(strings.NewReader(indexSettings)),
 		c.client.Indices.Create.WithContext(ctx),
 	)
@@ -157,19 +199,75 @@ func (c *Client) CreateIdx(ctx context.Context, indexName string) error {
 	}
 	defer res.Body.Close()
 	if res.IsError() {
-		return fmt.Errorf("error creating index %q: %s", indexName, errorReasonFromResponse(res))
+		return fmt.Errorf("error creating index %q: %s", name, errorReasonFromResponse(res))
 	}
 	return nil
 }
 
-func buildTypeIndexSettings() string {
-	return fmt.Sprintf(indexSettingsTemplate, serviceIndexMapping, defaultSearchIndex)
+func buildIndexSettings(shardCount int) string {
+	return fmt.Sprintf(indexSettingsTemplate, serviceIndexMapping, defaultSearchIndexAlias, shardCount)
 }
 
-// checks for the existence of an index
-func (c *Client) indexExists(ctx context.Context, name string) (bool, error) {
+func (c *Client) CreateIdxAlias(ctx context.Context, ns *namespace.Namespace) error {
+	var indexSettings string
+	if ns.State == namespace.SharedState {
+		indexSettings = buildIndexAliasSettings(indexSharedAliasSettingsTemplate, ns)
+	} else {
+		indexSettings = buildIndexAliasSettings(indexDedicatedAliasSettingsTemplate, ns)
+	}
+	res, err := esapi.IndicesUpdateAliasesRequest{
+		Body: strings.NewReader(indexSettings),
+	}.Do(ctx, c.client)
+	if err != nil {
+		return asset.DiscoveryError{Err: err}
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		return fmt.Errorf("error creating index alias %q: %s", ns.Name, errorReasonFromResponse(res))
+	}
+	return nil
+}
+
+func BuildAliasNameFromNamespace(ns *namespace.Namespace) string {
+	return fmt.Sprintf("%s-%s", TenantIndexAliasPrefix, ns.Name)
+}
+
+func BuildIndexNameFromNamespace(ns *namespace.Namespace) string {
+	index := DefaultSharedIndexName
+	if ns.State == namespace.DedicatedState {
+		index = fmt.Sprintf("%s-%s", DedicatedTenantIndexPrefix, ns.Name)
+	}
+	return index
+}
+
+func buildRouteFromNamespace(ns *namespace.Namespace) Route {
+	return Route{
+		Index: BuildIndexNameFromNamespace(ns),
+		// instead of id, we could use namespace name as well for read/write key
+		// not sure which will work better
+		ReadKey:   ns.ID.String(),
+		WriteKey:  ns.ID.String(),
+		FilterKey: ns.ID.String(),
+	}
+}
+
+func buildIndexAliasSettings(template string, ns *namespace.Namespace) string {
+	aliasName := BuildAliasNameFromNamespace(ns)
+	route := buildRouteFromNamespace(ns)
+	return strings.NewReplacer(
+		"{{alias_name}}", aliasName,
+		"{{index_name}}", route.Index,
+		"{{filter_id}}", route.FilterKey,
+		"{{write_id}}", route.WriteKey,
+		"{{read_id}}", route.ReadKey,
+	).Replace(template)
+}
+
+// IndexExists checks for the existence of an index
+func (c *Client) IndexExists(ctx context.Context, ns *namespace.Namespace) (bool, error) {
+	indexName := BuildIndexNameFromNamespace(ns)
 	res, err := c.client.Indices.Exists(
-		[]string{name},
+		[]string{indexName},
 		c.client.Indices.Exists.WithContext(ctx),
 	)
 	if err != nil {

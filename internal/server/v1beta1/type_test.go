@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -22,6 +23,7 @@ func TestGetTypes(t *testing.T) {
 	var (
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
+		ns       = namespace.DefaultNamespace
 	)
 	type testCase struct {
 		Description  string
@@ -35,21 +37,21 @@ func TestGetTypes(t *testing.T) {
 			Description:  "should return internal server error if failing to fetch types",
 			ExpectStatus: codes.Internal,
 			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
-				as.EXPECT().GetTypes(ctx, asset.Filter{}).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
+				as.EXPECT().GetTypes(ctx, asset.Filter{Namespace: ns}).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
 			},
 		},
 		{
 			Description:  "should return internal server error if failing to fetch counts",
 			ExpectStatus: codes.Internal,
 			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
-				as.EXPECT().GetTypes(ctx, asset.Filter{}).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
+				as.EXPECT().GetTypes(ctx, asset.Filter{Namespace: ns}).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
 			},
 		},
 		{
 			Description:  "should return all valid types with its asset count",
 			ExpectStatus: codes.OK,
 			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
-				as.EXPECT().GetTypes(ctx, asset.Filter{}).Return(map[asset.Type]int{
+				as.EXPECT().GetTypes(ctx, asset.Filter{Namespace: ns}).Return(map[asset.Type]int{
 					asset.Type("table"): 10,
 					asset.Type("topic"): 30,
 					asset.Type("job"):   15,
@@ -111,7 +113,7 @@ func TestGetTypes(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, nil, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAllTypes(ctx, &compassv1beta1.GetAllTypesRequest{})
 			code := status.Code(err)

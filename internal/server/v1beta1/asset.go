@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/odpf/compass/core/namespace"
 	"time"
 
 	"github.com/odpf/compass/core/asset"
@@ -26,12 +28,12 @@ type StatsDClient interface {
 
 type AssetService interface {
 	GetAllAssets(ctx context.Context, flt asset.Filter, withTotal bool) ([]asset.Asset, uint32, error)
-	GetAssetByID(ctx context.Context, id string) (asset.Asset, error)
-	GetAssetByVersion(ctx context.Context, id string, version string) (asset.Asset, error)
+	GetAssetByID(ctx context.Context, ns *namespace.Namespace, id string) (asset.Asset, error)
+	GetAssetByVersion(ctx context.Context, ns *namespace.Namespace, id string, version string) (asset.Asset, error)
 	GetAssetVersionHistory(ctx context.Context, flt asset.Filter, id string) ([]asset.Asset, error)
-	UpsertAsset(ctx context.Context, ast *asset.Asset, upstreams, downstreams []string) (string, error)
-	UpsertAssetWithoutLineage(ctx context.Context, ast *asset.Asset) (string, error)
-	DeleteAsset(ctx context.Context, id string) error
+	UpsertAsset(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset, upstreams, downstreams []string) (string, error)
+	UpsertAssetWithoutLineage(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset) (string, error)
+	DeleteAsset(ctx context.Context, ns *namespace.Namespace, id string) error
 
 	GetLineage(ctx context.Context, urn string, query asset.LineageQuery) (asset.Lineage, error)
 	GetTypes(ctx context.Context, flt asset.Filter) (map[asset.Type]int, error)
@@ -52,7 +54,12 @@ func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.G
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
 
-	flt, err := asset.NewFilterBuilder().
+	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
+	if err != nil {
+		return nil, err
+	}
+
+	flt, err := asset.NewFilterBuilder(ns).
 		Types(req.GetTypes()).
 		Services(req.GetServices()).
 		Q(req.GetQ()).
@@ -98,7 +105,12 @@ func (server *APIServer) GetAssetByID(ctx context.Context, req *compassv1beta1.G
 		return nil, err
 	}
 
-	ast, err := server.assetService.GetAssetByID(ctx, req.GetId())
+	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
+	if err != nil {
+		return nil, err
+	}
+
+	ast, err := server.assetService.GetAssetByID(ctx, ns, req.GetId())
 	if err != nil {
 		if errors.As(err, new(asset.InvalidError)) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -193,7 +205,12 @@ func (server *APIServer) GetAssetByVersion(ctx context.Context, req *compassv1be
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
-	ast, err := server.assetService.GetAssetByVersion(ctx, req.GetId(), req.GetVersion())
+	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
+	if err != nil {
+		return nil, err
+	}
+
+	ast, err := server.assetService.GetAssetByVersion(ctx, ns, req.GetId(), req.GetVersion())
 	if err != nil {
 		if errors.As(err, new(asset.InvalidError)) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -220,6 +237,11 @@ func (server *APIServer) UpsertAsset(ctx context.Context, req *compassv1beta1.Up
 		return nil, err
 	}
 
+	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
+	if err != nil {
+		return nil, err
+	}
+
 	baseAsset := req.GetAsset()
 	if baseAsset == nil {
 		return nil, status.Error(codes.InvalidArgument, "asset cannot be empty")
@@ -230,6 +252,7 @@ func (server *APIServer) UpsertAsset(ctx context.Context, req *compassv1beta1.Up
 
 	assetID, err := server.upsertAsset(
 		ctx,
+		ns,
 		ast,
 		"asset_upsert",
 		req.GetUpstreams(),
@@ -260,7 +283,12 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1bet
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	ast, err := server.assetService.GetAssetByID(ctx, urn)
+	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
+	if err != nil {
+		return nil, err
+	}
+
+	ast, err := server.assetService.GetAssetByID(ctx, ns, urn)
 	if err != nil && !errors.As(err, &asset.NotFoundError{}) {
 		return nil, internalServerError(server.logger, err.Error())
 	}
@@ -272,10 +300,10 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1bet
 	var assetID string
 	if len(req.Upstreams) != 0 || len(req.Downstreams) != 0 || req.OverwriteLineage {
 		assetID, err = server.upsertAsset(
-			ctx, ast, "asset_upsert_patch", req.GetUpstreams(), req.GetDownstreams(),
+			ctx, ns, ast, "asset_upsert_patch", req.GetUpstreams(), req.GetDownstreams(),
 		)
 	} else {
-		assetID, err = server.upsertAssetWithoutLineage(ctx, ast)
+		assetID, err = server.upsertAssetWithoutLineage(ctx, ns, ast)
 	}
 	if err != nil {
 		return nil, err
@@ -292,7 +320,12 @@ func (server *APIServer) DeleteAsset(ctx context.Context, req *compassv1beta1.De
 		return nil, err
 	}
 
-	if err := server.assetService.DeleteAsset(ctx, req.GetId()); err != nil {
+	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
+	if err != nil {
+		return nil, err
+	}
+
+	if err := server.assetService.DeleteAsset(ctx, ns, req.GetId()); err != nil {
 		if errors.As(err, new(asset.InvalidError)) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 		}
@@ -342,8 +375,30 @@ func (server *APIServer) CreateAssetProbe(ctx context.Context, req *compassv1bet
 	}, nil
 }
 
+// fetchNamespace by name or id
+func (server *APIServer) fetchNamespace(ctx context.Context, namespaceID string) (*namespace.Namespace, error) {
+	var ns *namespace.Namespace
+	if len(namespaceID) == 0 {
+		return nil, status.Error(codes.InvalidArgument, "namespace is required as uuid or name")
+	}
+
+	nsID, err := uuid.Parse(namespaceID)
+	if err != nil {
+		// if fail to parse a valid uuid, must be a name
+		if ns, err = server.namespaceService.GetByName(ctx, namespaceID); err != nil {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+	} else {
+		if ns, err = server.namespaceService.GetByID(ctx, nsID); err != nil {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+	}
+	return ns, nil
+}
+
 func (server *APIServer) upsertAsset(
 	ctx context.Context,
+	ns *namespace.Namespace,
 	ast asset.Asset,
 	mode string,
 	reqUpstreams,
@@ -362,7 +417,7 @@ func (server *APIServer) upsertAsset(
 		downstreams = append(downstreams, pb.Urn)
 	}
 
-	assetID, err = server.assetService.UpsertAsset(ctx, &ast, upstreams, downstreams)
+	assetID, err = server.assetService.UpsertAsset(ctx, ns, &ast, upstreams, downstreams)
 	if errors.As(err, new(asset.InvalidError)) {
 		return "", status.Error(codes.InvalidArgument, err.Error())
 	} else if err != nil {
@@ -384,14 +439,14 @@ func (server *APIServer) upsertAsset(
 	return
 }
 
-func (server *APIServer) upsertAssetWithoutLineage(ctx context.Context, ast asset.Asset) (string, error) {
+func (server *APIServer) upsertAssetWithoutLineage(ctx context.Context, ns *namespace.Namespace, ast asset.Asset) (string, error) {
 	const mode = "asset_upsert_patch_without_lineage"
 
 	if err := server.validateAsset(ast); err != nil {
 		return "", status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	assetID, err := server.assetService.UpsertAssetWithoutLineage(ctx, &ast)
+	assetID, err := server.assetService.UpsertAssetWithoutLineage(ctx, ns, &ast)
 	if err != nil {
 		switch {
 		case errors.As(err, new(asset.InvalidError)):

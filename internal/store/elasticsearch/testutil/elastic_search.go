@@ -51,7 +51,7 @@ type ElasticsearchTestServer struct {
 // OR if the environment variable ES_TEST_SERVER_URL is set, it acts as
 // a dumb proxy to it.
 // The idea is to be able to easily run integration tests in local environments,
-// while also being able to leverage a running ES intance for testing (for instance in CI pipelines)
+// while also being able to leverage a running ES instance for testing (for instance in CI pipelines)
 // Make sure to call server.Close() once you're done, otherwise the docker
 // container may be left running indefinitely in the background.
 func NewElasticsearchTestServer() *ElasticsearchTestServer {
@@ -110,11 +110,11 @@ func NewElasticsearchTestServer() *ElasticsearchTestServer {
 				server.url.String(),
 			},
 			// uncomment below code to debug request and response to elasticsearch
-			// Logger: &estransport.ColorLogger{
-			// 	Output:             os.Stdout,
-			// 	EnableRequestBody:  true,
-			// 	EnableResponseBody: true,
-			// },
+			//Logger: &estransport.ColorLogger{
+			//	Output:             os.Stdout,
+			//	EnableRequestBody:  true,
+			//	EnableResponseBody: true,
+			//},
 		},
 	)
 	if err != nil {

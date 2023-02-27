@@ -1,6 +1,8 @@
 package asset_test
 
 import (
+	"github.com/google/uuid"
+	"github.com/odpf/compass/core/namespace"
 	"testing"
 
 	"github.com/odpf/compass/core/asset"
@@ -8,6 +10,7 @@ import (
 )
 
 func TestValidateFilter(t *testing.T) {
+	ns := &namespace.Namespace{ID: uuid.New()}
 	type testCase struct {
 		Description string
 		Filter      *asset.Filter
@@ -15,22 +18,23 @@ func TestValidateFilter(t *testing.T) {
 	}
 	var testCases = []testCase{
 		{
-			Description: "empty filter will be valid",
+			Description: "empty filter will not be valid",
 			Filter:      &asset.Filter{},
+			errString:   "Key: 'Filter.Namespace' Error:Field validation for 'Namespace' failed on the 'required' tag",
 		},
 		{
 			Description: "invalid type will return error",
-			Filter:      &asset.Filter{Types: []asset.Type{"random"}},
+			Filter:      &asset.Filter{Types: []asset.Type{"random"}, Namespace: ns},
 			errString:   "error value \"random\" for key \"type\" not recognized, only support \"openended issues qanda all\"",
 		},
 		{
 			Description: "invalid sort and direction will return error",
-			Filter:      &asset.Filter{SortBy: "random", SortDirection: "random"},
+			Filter:      &asset.Filter{SortBy: "random", SortDirection: "random", Namespace: ns},
 			errString:   "error value \"random\" for key \"SortBy\" not recognized, only support \"name type service created_at updated_at\" and error value \"random\" for key \"SortDirection\" not recognized, only support \"asc desc\"",
 		},
 		{
 			Description: "invalid size and offset will return error",
-			Filter:      &asset.Filter{Size: -12, Offset: -1},
+			Filter:      &asset.Filter{Size: -12, Offset: -1, Namespace: ns},
 			errString:   "size cannot be less than 0 and offset cannot be less than 0",
 		},
 	}
@@ -46,6 +50,12 @@ func TestValidateFilter(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	type testCase struct {
 		Description   string
 		ErrString     string
@@ -79,7 +89,7 @@ func TestBuild(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			fb := asset.NewFilterBuilder()
+			fb := asset.NewFilterBuilder(ns)
 			fb.Data(map[string]string{
 				"name": "go-data",
 			})

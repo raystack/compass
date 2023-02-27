@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"os"
 	"os/signal"
 	"syscall"
@@ -155,6 +156,9 @@ func runServer(config *Config) error {
 	}
 	starService := star.NewService(starRepository)
 
+	// init namespace
+	namespaceService := namespace.NewService(logger, postgres.NewNamespaceRepository(pgClient), discoveryRepository)
+
 	return compassserver.Serve(
 		ctx,
 		config.Service,
@@ -162,6 +166,7 @@ func runServer(config *Config) error {
 		pgClient,
 		nrApp,
 		statsdReporter,
+		namespaceService,
 		assetService,
 		starService,
 		discussionService,
@@ -225,18 +230,13 @@ func runMigrations(ctx context.Context, config *Config) error {
 	logger := initLogger(config.LogLevel)
 	logger.Info("compass is migrating", "version", Version)
 
-	logger.Info("Migrating Postgres...")
-	if err := migratePostgres(logger, config); err != nil {
+	logger.Info("Migrating Postgres & ElasticSearch...")
+	esClient, err := initElasticsearch(logger, config.Elasticsearch)
+	if err != nil {
 		return err
 	}
-	logger.Info("Migration Postgres done.")
 
-	return nil
-}
-
-func migratePostgres(logger log.Logger, config *Config) (err error) {
 	logger.Info("Initiating Postgres client...")
-
 	pgClient, err := postgres.NewClient(config.DB)
 	if err != nil {
 		logger.Error("failed to prepare migration", "error", err)
@@ -248,5 +248,18 @@ func migratePostgres(logger log.Logger, config *Config) (err error) {
 		return fmt.Errorf("problem with migration %w", err)
 	}
 
+	// create default namespace
+	nsService := namespace.NewService(logger,
+		postgres.NewNamespaceRepository(pgClient),
+		esStore.NewDiscoveryRepository(esClient))
+	if _, err = nsService.GetByID(ctx, namespace.DefaultNamespace.ID); err == postgres.ErrNamespaceNotFound {
+		// create default
+		if _, err := nsService.MigrateDefault(ctx); err != nil {
+			return fmt.Errorf("problem with migration %w", err)
+		}
+	} else if err != nil {
+		return fmt.Errorf("problem with migration %w", err)
+	}
+	logger.Info("Migration finished.")
 	return nil
 }

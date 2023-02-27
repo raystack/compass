@@ -3,6 +3,7 @@ package asset
 //go:generate mockery --name=Repository -r --case underscore --with-expecter --structname AssetRepository --filename asset_repository.go --output=./mocks
 import (
 	"context"
+	"github.com/odpf/compass/core/namespace"
 	"time"
 
 	"github.com/odpf/compass/core/user"
@@ -12,15 +13,15 @@ import (
 type Repository interface {
 	GetAll(context.Context, Filter) ([]Asset, error)
 	GetCount(context.Context, Filter) (int, error)
-	GetByID(ctx context.Context, id string) (Asset, error)
-	GetByURN(ctx context.Context, urn string) (Asset, error)
+	GetByID(ctx context.Context, ns *namespace.Namespace, id string) (Asset, error)
+	GetByURN(ctx context.Context, ns *namespace.Namespace, urn string) (Asset, error)
 	GetVersionHistory(ctx context.Context, flt Filter, id string) ([]Asset, error)
-	GetByVersionWithID(ctx context.Context, id string, version string) (Asset, error)
-	GetByVersionWithURN(ctx context.Context, urn string, version string) (Asset, error)
+	GetByVersionWithID(ctx context.Context, ns *namespace.Namespace, id string, version string) (Asset, error)
+	GetByVersionWithURN(ctx context.Context, ns *namespace.Namespace, urn string, version string) (Asset, error)
 	GetTypes(ctx context.Context, flt Filter) (map[Type]int, error)
-	Upsert(ctx context.Context, ast *Asset) (string, error)
-	DeleteByID(ctx context.Context, id string) error
-	DeleteByURN(ctx context.Context, urn string) error
+	Upsert(ctx context.Context, ns *namespace.Namespace, ast *Asset) (string, error)
+	DeleteByID(ctx context.Context, ns *namespace.Namespace, id string) error
+	DeleteByURN(ctx context.Context, ns *namespace.Namespace, urn string) error
 	AddProbe(ctx context.Context, assetURN string, probe *Probe) error
 	GetProbes(ctx context.Context, assetURN string) ([]Probe, error)
 	GetProbesWithFilter(ctx context.Context, flt ProbesFilter) (map[string][]Probe, error)

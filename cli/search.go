@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/odpf/compass/internal/client"
@@ -12,7 +13,7 @@ import (
 )
 
 func searchCommand(cfg *Config) *cobra.Command {
-	var filter, query, rankby string
+	var namespaceID, filter, query, rankby string
 	var size uint32
 	cmd := &cobra.Command{
 		Use:     "search <text>",
@@ -37,7 +38,7 @@ func searchCommand(cfg *Config) *cobra.Command {
 			defer cancel()
 
 			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
-			res, err := clnt.SearchAssets(ctx, makeSearchAssetRequest(args[0], filter, query, rankby, size))
+			res, err := clnt.SearchAssets(ctx, makeSearchAssetRequest(namespaceID, args[0], filter, query, rankby, size))
 			if err != nil {
 				return err
 			}
@@ -48,6 +49,7 @@ func searchCommand(cfg *Config) *cobra.Command {
 		},
 	}
 
+	cmd.Flags().StringVarP(&namespaceID, "namespace", "n", namespace.DefaultNamespace.ID.String(), "namespace id or name")
 	cmd.Flags().StringVarP(&filter, "filter", "f", "", "--filter=field_key1:val1,key2:val2,key3:val3 gives exact match for values")
 	cmd.Flags().StringVarP(&query, "query", "q", "", "--query=--filter=field_key1:val1 supports fuzzy search")
 	cmd.Flags().StringVarP(&rankby, "rankby", "r", "", "--rankby=<numeric_field>")
@@ -55,9 +57,10 @@ func searchCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func makeSearchAssetRequest(text, filter, query, rankby string, size uint32) *compassv1beta1.SearchAssetsRequest {
+func makeSearchAssetRequest(namespaceID, text, filter, query, rankby string, size uint32) *compassv1beta1.SearchAssetsRequest {
 	newReq := &compassv1beta1.SearchAssetsRequest{
-		Text: text,
+		Text:         text,
+		NamespaceUrn: namespaceID,
 	}
 	if filter != "" {
 		newReq.Filter = makeMapFromString(filter)
