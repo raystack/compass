@@ -731,11 +731,19 @@ func TestService_GetLineage(t *testing.T) {
 						Probes: asset.ProbesInfo{
 							Latest: asset.Probe{Status: "SUCCESS"},
 						},
+						Attributes: map[string]interface{}{},
+					},
+					"urn-target-2": {
+						Probes: asset.ProbesInfo{
+							Latest: asset.Probe{},
+						},
+						Attributes: map[string]interface{}{},
 					},
 					"urn-target-3": {
 						Probes: asset.ProbesInfo{
 							Latest: asset.Probe{Status: "FAILED"},
 						},
+						Attributes: map[string]interface{}{},
 					},
 				},
 			},
