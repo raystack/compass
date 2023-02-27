@@ -49,7 +49,7 @@ update-swagger-md:
 
 clean-doc:
 	@echo "> cleaning up auto-generated docs"
-	@rm -rf ./docs/docs/reference/cli
+	@rm -rf ./docs/docs/reference/cli.md
 	@rm -f ./docs/docs/reference/api.md
 
 doc: clean-doc update-swagger-md ## Generate api and cli references

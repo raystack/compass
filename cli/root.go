@@ -15,7 +15,7 @@ func New(cfg *Config) *cobra.Command {
 		Short:         "Discovery & Lineage Service",
 		Long:          "Metadata Discovery & Lineage Service.",
 		SilenceErrors: true,
-		SilenceUsage:  false,
+		SilenceUsage:  true,
 		Example: heredoc.Doc(`
 		$ compass asset
 		$ compass discussion
@@ -33,8 +33,6 @@ func New(cfg *Config) *cobra.Command {
 			`),
 		},
 	}
-
-	client.SetConfig(cliConfig.Client)
 
 	rootCmd.AddCommand(
 		serverCmd(),
@@ -55,6 +53,7 @@ func New(cfg *Config) *cobra.Command {
 	if cliConfig.Client.ServerHeaderKeyUUID == "" {
 		cliConfig.Client.ServerHeaderKeyUUID = cliConfig.Service.Identity.HeaderKeyUUID
 	}
+	client.SetConfig(cliConfig.Client)
 
 	rootCmd.PersistentFlags().StringP(configFlag, "c", "", "Override config file")
 

@@ -27,17 +27,17 @@ func assetsCommand() *cobra.Command {
 			"group": "core",
 		},
 		Example: heredoc.Doc(`
-			$ compass asset list
-			$ compass asset view
-			$ compass asset delete
-			$ compass asset edit
-			$ compass asset types
-			$ compass asset star <id>
-			$ compass asset unstar <id>
-			$ compass asset starred
-			$ compass asset stargazers <id>
-			$ compass asset versionhistory <id>
-			$ compass asset version <id> <version>
+		$ compass asset list
+		$ compass asset view
+		$ compass asset delete
+		$ compass asset edit
+		$ compass asset types
+		$ compass asset star <id>
+		$ compass asset unstar <id>
+		$ compass asset starred
+		$ compass asset stargazers <id>
+		$ compass asset versionhistory <id>
+		$ compass asset version <id> <version>
 		`),
 	}
 
@@ -59,7 +59,8 @@ func assetsCommand() *cobra.Command {
 }
 
 func listAllAssetsCommand() *cobra.Command {
-	var types, services, data, q, sort, sort_dir, json string
+	var types, services, q, qFields, sort, sort_dir, output string
+	var data map[string]string
 	var size, page uint32
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -82,17 +83,28 @@ func listAllAssetsCommand() *cobra.Command {
 			defer cancel()
 
 			ctx := client.SetMetadata(cmd.Context())
-			res, err := clnt.GetAllAssets(ctx, makeGetAllAssetRequest(types, services, data, q, sort, sort_dir, size, page))
+			res, err := clnt.GetAllAssets(ctx, &compassv1beta1.GetAllAssetsRequest{
+				Q:         q,
+				QFields:   qFields,
+				Types:     types,
+				Services:  services,
+				Sort:      sort,
+				Direction: sort_dir,
+				Data:      data,
+				Size:      size,
+				Offset:    page,
+			})
+
 			if err != nil {
 				return err
 			}
-			if json != "json" {
+
+			spinner.Stop()
+			if output != "json" {
 				report := [][]string{}
 				report = append(report, []string{"ID", "TYPE", "SERVICE", "URN", "NAME", "VERSION"})
-				index := 1
 				for _, i := range res.GetData() {
 					report = append(report, []string{i.Id, i.Type, i.Service, i.Urn, term.Bluef(i.Name), i.Version})
-					index++
 				}
 				printer.Table(os.Stdout, report)
 
@@ -107,44 +119,16 @@ func listAllAssetsCommand() *cobra.Command {
 
 	cmd.Flags().StringVarP(&types, "types", "t", "", "filter by types")
 	cmd.Flags().StringVarP(&services, "services", "s", "", "filter by services")
-	cmd.Flags().StringVarP(&data, "data", "d", "", "filter by field in asset.data")
+	cmd.Flags().StringToStringVarP(&data, "data", "d", nil, "filter by field in asset.data")
 	cmd.Flags().StringVar(&q, "query", "", "querying by field")
+	cmd.Flags().StringVar(&qFields, "query_fields", "", "querying by fields")
 	cmd.Flags().StringVar(&sort, "sort", "", "sort by certain fields")
 	cmd.Flags().StringVar(&sort_dir, "sort_dir", "", "sorting direction (asc / desc)")
-	cmd.Flags().StringVarP(&json, "out", "o", "table", "flag to control output viewing, for json `-o json`")
+	cmd.Flags().StringVarP(&output, "out", "o", "table", "flag to control output viewing, for json `-o json`")
 	cmd.Flags().Uint32Var(&size, "size", pageSize, "Size of each page")
 	cmd.Flags().Uint32Var(&page, "page", pageOffset, "Page number offset (starts from 0)")
 
 	return cmd
-}
-
-func makeGetAllAssetRequest(types, services, data, q, sort, sort_dir string, size, page uint32) *compassv1beta1.GetAllAssetsRequest {
-	newReq := &compassv1beta1.GetAllAssetsRequest{
-		Size: size,
-	}
-	if types != "" {
-		newReq.Types = types
-	}
-	if services != "" {
-		newReq.Services = services
-	}
-	if q != "" {
-		newReq.Q = q
-	}
-	if sort != "" {
-		newReq.Sort = sort
-	}
-	if sort_dir != "" {
-		newReq.Direction = sort_dir
-	}
-	if data != "" {
-		newReq.Data = makeMapFromString(data)
-	}
-	if page >= 1 {
-		newReq.Offset = size * (page - 1)
-	}
-
-	return newReq
 }
 
 func viewAssetByIDCommand() *cobra.Command {
@@ -281,13 +265,15 @@ func deleteAssetByIDCommand() *cobra.Command {
 }
 
 func listAllTypesCommand() *cobra.Command {
-	var types, services, data, q, q_fields string
+	var types, services, q, qFields string
+	var data map[string]string
+
 	cmd := &cobra.Command{
 		Use:   "types",
 		Short: "lists all asset types",
 		Example: heredoc.Doc(`
 			$ compass asset types
-			$ compass asset types -t type1 --query query1 --query_fields q_fields1
+			$ compass asset types -t type1 --query query1 --query_fields qFields1
 		`),
 		Args: cobra.NoArgs,
 		Annotations: map[string]string{
@@ -304,18 +290,22 @@ func listAllTypesCommand() *cobra.Command {
 			defer cancel()
 
 			ctx := client.SetMetadata(cmd.Context())
-			res, err := clnt.GetAllTypes(ctx, makeGetAllTypesRequest(types, services, data, q, q_fields))
+			res, err := clnt.GetAllTypes(ctx, &compassv1beta1.GetAllTypesRequest{
+				Q:        q,
+				QFields:  qFields,
+				Types:    types,
+				Services: services,
+				Data:     data,
+			})
+
 			if err != nil {
 				return err
 			}
 			spinner.Stop()
 
-			report := [][]string{}
-			report = append(report, []string{"NAME", "COUNT"})
-			index := 1
+			report := [][]string{{"NAME", "COUNT"}}
 			for _, i := range res.GetData() {
 				report = append(report, []string{term.Bluef(i.Name), fmt.Sprintf("%v", i.Count)})
-				index++
 			}
 			printer.Table(os.Stdout, report)
 
@@ -324,31 +314,11 @@ func listAllTypesCommand() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&types, "types", "t", "", "filter by types")
 	cmd.Flags().StringVarP(&services, "services", "s", "", "filter by services")
-	cmd.Flags().StringVarP(&data, "data", "d", "", "filter by field in asset.data")
+	cmd.Flags().StringToStringVarP(&data, "data", "d", nil, "filter by field in asset.data")
 	cmd.Flags().StringVar(&q, "query", "", "filter by specific query")
-	cmd.Flags().StringVar(&q_fields, "query_fields", "", "filter by query field")
+	cmd.Flags().StringVar(&qFields, "query_fields", "", "filter by query field")
 
 	return cmd
-}
-
-func makeGetAllTypesRequest(types, services, data, q, q_fields string) *compassv1beta1.GetAllTypesRequest {
-	newReq := &compassv1beta1.GetAllTypesRequest{}
-	if types != "" {
-		newReq.Types = types
-	}
-	if services != "" {
-		newReq.Services = services
-	}
-	if q != "" {
-		newReq.Q = q
-	}
-	if q_fields != "" {
-		newReq.QFields = q_fields
-	}
-	if data != "" {
-		newReq.Data = makeMapFromString(data)
-	}
-	return newReq
 }
 
 func listAssetStargazerCommand() *cobra.Command {
@@ -467,7 +437,7 @@ func unstarAssetCommand() *cobra.Command {
 
 func starredAssetCommand() *cobra.Command {
 	var size, page uint32
-	var json string
+	var output string
 	cmd := &cobra.Command{
 		Use:   "starred",
 		Short: "list all the starred assets for current user",
@@ -495,13 +465,11 @@ func starredAssetCommand() *cobra.Command {
 			}
 			spinner.Stop()
 
-			if json != "json" {
+			if output != "json" {
 				report := [][]string{}
 				report = append(report, []string{"ID", "TYPE", "SERVICE", "URN", "NAME", "VERSION"})
-				index := 1
 				for _, i := range res.GetData() {
 					report = append(report, []string{i.Id, i.Type, i.Service, i.Urn, term.Bluef(i.Name), i.Version})
-					index++
 				}
 				printer.Table(os.Stdout, report)
 
@@ -514,7 +482,7 @@ func starredAssetCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&json, "out", "o", "table", "flag to control output viewing, for json `-o json`")
+	cmd.Flags().StringVarP(&output, "out", "o", "table", "flag to control output viewing, for json `-o json`")
 	cmd.Flags().Uint32Var(&size, "size", pageSize, "Size of each page")
 	cmd.Flags().Uint32Var(&page, "page", pageOffset, "Page number offset (starts from 0)")
 	return cmd

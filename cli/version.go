@@ -16,7 +16,7 @@ func versionCmd() *cobra.Command {
 		Short:   "Print version information",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if Version == "" {
-				fmt.Println(term.Yellow("Version history not available"))
+				fmt.Println(term.Yellow("Version information not available"))
 				return nil
 			}
 
