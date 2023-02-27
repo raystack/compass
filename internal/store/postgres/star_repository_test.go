@@ -3,6 +3,7 @@ package postgres_test
 import (
 	"context"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"testing"
 
 	"github.com/google/uuid"
@@ -22,10 +23,17 @@ type StarRepositoryTestSuite struct {
 	repository      *postgres.StarRepository
 	userRepository  *postgres.UserRepository
 	assetRepository *postgres.AssetRepository
+	ns              *namespace.Namespace
 }
 
 func (r *StarRepositoryTestSuite) SetupSuite() {
 	var err error
+	r.ns = &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "umbrella",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 
 	logger := log.NewLogrus()
 	r.client, r.pool, r.resource, err = newTestClient(logger)
@@ -70,7 +78,7 @@ func (r *StarRepositoryTestSuite) TestCreate() {
 		userID, err := createUser(r.userRepository, "user@odpf.io")
 		r.NoError(err)
 
-		createdAsset, err := createAsset(r.assetRepository, userID, ownerEmail, "asset-urn-1", "table")
+		createdAsset, err := createAsset(r.assetRepository, r.ns, userID, ownerEmail, "asset-urn-1", "table")
 		r.NoError(err)
 
 		id, err := r.repository.Create(r.ctx, userID, createdAsset.ID)
@@ -110,7 +118,7 @@ func (r *StarRepositoryTestSuite) TestCreate() {
 		userID, err := createUser(r.userRepository, "user@odpf.io")
 		r.NoError(err)
 
-		createdAsset, err := createAsset(r.assetRepository, userID, ownerEmail, "asset-urn-1", "table")
+		createdAsset, err := createAsset(r.assetRepository, r.ns, userID, ownerEmail, "asset-urn-1", "table")
 		r.NoError(err)
 
 		id, err := r.repository.Create(r.ctx, userID, createdAsset.ID)
@@ -127,7 +135,7 @@ func (r *StarRepositoryTestSuite) TestCreate() {
 		r.NoError(err)
 		uid := uuid.NewString()
 
-		createdAsset, err := createAsset(r.assetRepository, uid, ownerEmail, "asset-urn-1", "table")
+		createdAsset, err := createAsset(r.assetRepository, r.ns, uid, ownerEmail, "asset-urn-1", "table")
 		r.NoError(err)
 
 		id, err := r.repository.Create(r.ctx, uid, createdAsset.ID)
@@ -165,7 +173,7 @@ func (r *StarRepositoryTestSuite) TestGetStargazers() {
 		userID1, err := createUser(r.userRepository, "user@odpf.io")
 		r.NoError(err)
 
-		createdAsset1, err := createAsset(r.assetRepository, userID1, ownerEmail, "asset-urn-1", "table")
+		createdAsset1, err := createAsset(r.assetRepository, r.ns, userID1, ownerEmail, "asset-urn-1", "table")
 		r.NoError(err)
 
 		id, err := r.repository.Create(r.ctx, userID1, createdAsset1.ID)
@@ -202,7 +210,7 @@ func (r *StarRepositoryTestSuite) TestGetStargazers() {
 			userEmail := fmt.Sprintf("user%d@odpf.io", i)
 			userID, err := createUser(r.userRepository, userEmail)
 			r.NoError(err)
-			createdAsset, err := createAsset(r.assetRepository, userID, ownerEmail, "asset-urn-1", "table")
+			createdAsset, err := createAsset(r.assetRepository, r.ns, userID, ownerEmail, "asset-urn-1", "table")
 			r.NoError(err)
 
 			id, err := r.repository.Create(r.ctx, userID, createdAsset.ID)
@@ -250,19 +258,19 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
 		userID1, err := createUser(r.userRepository, "user@odpf.io")
 		r.NoError(err)
 
-		createdAsset1, err := createAsset(r.assetRepository, userID1, ownerEmail, "asset-urn-1", "table")
+		createdAsset1, err := createAsset(r.assetRepository, r.ns, userID1, ownerEmail, "asset-urn-1", "table")
 		r.NoError(err)
 		id, err := r.repository.Create(r.ctx, userID1, createdAsset1.ID)
 		r.NoError(err)
 		r.NotEmpty(id)
 
-		createdAsset2, err := createAsset(r.assetRepository, userID1, ownerEmail, "asset-urn-2", "table")
+		createdAsset2, err := createAsset(r.assetRepository, r.ns, userID1, ownerEmail, "asset-urn-2", "table")
 		r.NoError(err)
 		id, err = r.repository.Create(r.ctx, userID1, createdAsset2.ID)
 		r.NoError(err)
 		r.NotEmpty(id)
 
-		createdAsset3, err := createAsset(r.assetRepository, userID1, ownerEmail, "asset-urn-3", "table")
+		createdAsset3, err := createAsset(r.assetRepository, r.ns, userID1, ownerEmail, "asset-urn-3", "table")
 		r.NoError(err)
 		id, err = r.repository.Create(r.ctx, userID1, createdAsset3.ID)
 		r.NoError(err)
@@ -291,7 +299,7 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
 
 		for i := 1; i < 20; i++ {
 			starURN := fmt.Sprintf("asset-urn-%d", i)
-			createdAsset, err := createAsset(r.assetRepository, userID, ownerEmail, starURN, "table")
+			createdAsset, err := createAsset(r.assetRepository, r.ns, userID, ownerEmail, starURN, "table")
 			r.NoError(err)
 			id, err := r.repository.Create(r.ctx, userID, createdAsset.ID)
 			r.NoError(err)
@@ -350,19 +358,19 @@ func (r *StarRepositoryTestSuite) TestGetAssetByUserID() {
 		userID1, err := createUser(r.userRepository, "user@odpf.io")
 		r.NoError(err)
 
-		createdAsset1, err := createAsset(r.assetRepository, userID1, ownerEmail, "asset-urn-1", "table")
+		createdAsset1, err := createAsset(r.assetRepository, r.ns, userID1, ownerEmail, "asset-urn-1", "table")
 		r.NoError(err)
 		id, err := r.repository.Create(r.ctx, userID1, createdAsset1.ID)
 		r.NoError(err)
 		r.NotEmpty(id)
 
-		createdAsset2, err := createAsset(r.assetRepository, userID1, ownerEmail, "asset-urn-2", "table")
+		createdAsset2, err := createAsset(r.assetRepository, r.ns, userID1, ownerEmail, "asset-urn-2", "table")
 		r.NoError(err)
 		id, err = r.repository.Create(r.ctx, userID1, createdAsset2.ID)
 		r.NoError(err)
 		r.NotEmpty(id)
 
-		createdAsset3, err := createAsset(r.assetRepository, userID1, ownerEmail, "asset-urn-3", "table")
+		createdAsset3, err := createAsset(r.assetRepository, r.ns, userID1, ownerEmail, "asset-urn-3", "table")
 		r.NoError(err)
 		id, err = r.repository.Create(r.ctx, userID1, createdAsset3.ID)
 		r.NoError(err)
@@ -413,19 +421,19 @@ func (r *StarRepositoryTestSuite) TestDelete() {
 		userID1, err := createUser(r.userRepository, "user@odpf.io")
 		r.NoError(err)
 
-		createdAsset1, err := createAsset(r.assetRepository, userID1, ownerEmail, "asset-urn-1", "table")
+		createdAsset1, err := createAsset(r.assetRepository, r.ns, userID1, ownerEmail, "asset-urn-1", "table")
 		r.NoError(err)
 		id, err := r.repository.Create(r.ctx, userID1, createdAsset1.ID)
 		r.NoError(err)
 		r.NotEmpty(id)
 
-		createdAsset2, err := createAsset(r.assetRepository, userID1, ownerEmail, "asset-urn-2", "table")
+		createdAsset2, err := createAsset(r.assetRepository, r.ns, userID1, ownerEmail, "asset-urn-2", "table")
 		r.NoError(err)
 		id, err = r.repository.Create(r.ctx, userID1, createdAsset2.ID)
 		r.NoError(err)
 		r.NotEmpty(id)
 
-		createdAsset3, err := createAsset(r.assetRepository, userID1, ownerEmail, "asset-urn-3", "table")
+		createdAsset3, err := createAsset(r.assetRepository, r.ns, userID1, ownerEmail, "asset-urn-3", "table")
 		r.NoError(err)
 		id, err = r.repository.Create(r.ctx, userID1, createdAsset3.ID)
 		r.NoError(err)

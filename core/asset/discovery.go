@@ -3,12 +3,14 @@ package asset
 //go:generate mockery --name=DiscoveryRepository -r --case underscore --with-expecter --structname DiscoveryRepository --filename discovery_repository.go --output=./mocks
 import (
 	"context"
+	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/core/validator"
 )
 
 type DiscoveryRepository interface {
-	Upsert(context.Context, Asset) error
-	DeleteByID(ctx context.Context, assetID string) error
-	DeleteByURN(ctx context.Context, assetURN string) error
+	Upsert(ctx context.Context, ns *namespace.Namespace, ast *Asset) error
+	DeleteByID(ctx context.Context, ns *namespace.Namespace, assetID string) error
+	DeleteByURN(ctx context.Context, ns *namespace.Namespace, assetURN string) error
 	Search(ctx context.Context, cfg SearchConfig) (results []SearchResult, err error)
 	Suggest(ctx context.Context, cfg SearchConfig) (suggestions []string, err error)
 }
@@ -21,7 +23,7 @@ type SearchFilter = map[string][]string
 // with any corresponding filter(s)
 type SearchConfig struct {
 	// Text to search for
-	Text string
+	Text string `validate:"required"`
 
 	// Filters specifies document level values to look for.
 	// Multiple values can be specified for a single key
@@ -35,6 +37,13 @@ type SearchConfig struct {
 
 	// Queries is a param to search a resource based on asset's fields
 	Queries map[string]string
+
+	// Namespace under which assets are partitioned. *Required*
+	Namespace *namespace.Namespace `validate:"required"`
+}
+
+func (s SearchConfig) Validate() error {
+	return validator.ValidateStruct(s)
 }
 
 // SearchResult represents an item/result in a list of search results

@@ -3,6 +3,7 @@ package handlersv1beta1
 import (
 	"context"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -22,12 +23,18 @@ func TestSearch(t *testing.T) {
 	var (
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
+		ns       = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "base-test",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.SearchAssetsRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.AssetService)
+		Setup        func(context.Context, *mocks.AssetService, *mocks.NamespaceService)
 		PostCheck    func(resp *compassv1beta1.SearchAssetsResponse) error
 	}
 
@@ -40,12 +47,14 @@ func TestSearch(t *testing.T) {
 		{
 			Description: "should report internal server if asset searcher fails",
 			Request: &compassv1beta1.SearchAssetsRequest{
-				Text: "test",
+				Text:         "test",
+				NamespaceUrn: ns.ID.String(),
 			},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				err := fmt.Errorf("service unavailable")
 				as.EXPECT().SearchAssets(ctx, mock.AnythingOfType("asset.SearchConfig")).
 					Return([]asset.SearchResult{}, err)
+				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 			ExpectStatus: codes.Internal,
 		},
@@ -58,9 +67,9 @@ func TestSearch(t *testing.T) {
 					"type":           "topic",
 					"service":        "kafka,rabbitmq",
 				},
+				NamespaceUrn: ns.ID.String(),
 			},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
-
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				cfg := asset.SearchConfig{
 					Text: "resource",
 					Filters: map[string][]string{
@@ -68,9 +77,11 @@ func TestSearch(t *testing.T) {
 						"service":        {"kafka", "rabbitmq"},
 						"data.landscape": {"th"},
 					},
+					Namespace: ns,
 				}
 
 				as.EXPECT().SearchAssets(ctx, cfg).Return([]asset.SearchResult{}, nil)
+				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 		},
 		{
@@ -86,9 +97,9 @@ func TestSearch(t *testing.T) {
 					"data.columns.name": "timestamp",
 					"owners.email":      "john.doe@email.com",
 				},
+				NamespaceUrn: ns.ID.String(),
 			},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
-
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				cfg := asset.SearchConfig{
 					Text: "resource",
 					Filters: map[string][]string{
@@ -100,22 +111,25 @@ func TestSearch(t *testing.T) {
 						"data.columns.name": "timestamp",
 						"owners.email":      "john.doe@email.com",
 					},
+					Namespace: ns,
 				}
 
 				as.EXPECT().SearchAssets(ctx, cfg).Return([]asset.SearchResult{}, nil)
+				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 		},
 		{
 			Description: "should return the matched documents",
 			Request: &compassv1beta1.SearchAssetsRequest{
-				Text: "test",
+				Text:         "test",
+				NamespaceUrn: ns.ID.String(),
 			},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
-
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				cfg := asset.SearchConfig{
-					Text:    "test",
-					Filters: make(map[string][]string),
-					Queries: map[string]string(nil),
+					Text:      "test",
+					Filters:   make(map[string][]string),
+					Queries:   map[string]string(nil),
+					Namespace: ns,
 				}
 				response := []asset.SearchResult{
 					{
@@ -130,6 +144,7 @@ func TestSearch(t *testing.T) {
 					},
 				}
 				as.EXPECT().SearchAssets(ctx, cfg).Return(response, nil)
+				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.SearchAssetsResponse) error {
 				expected := &compassv1beta1.SearchAssetsResponse{
@@ -156,16 +171,17 @@ func TestSearch(t *testing.T) {
 		{
 			Description: "should return the requested number of assets",
 			Request: &compassv1beta1.SearchAssetsRequest{
-				Text: "resource",
-				Size: 10,
+				Text:         "resource",
+				Size:         10,
+				NamespaceUrn: ns.ID.String(),
 			},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
-
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				cfg := asset.SearchConfig{
 					Text:       "resource",
 					MaxResults: 10,
 					Filters:    make(map[string][]string),
 					Queries:    map[string]string(nil),
+					Namespace:  ns,
 				}
 
 				var results []asset.SearchResult
@@ -187,6 +203,7 @@ func TestSearch(t *testing.T) {
 				}
 
 				as.EXPECT().SearchAssets(ctx, cfg).Return(results, nil)
+				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.SearchAssetsResponse) error {
 				expectedSize := 10
@@ -205,16 +222,17 @@ func TestSearch(t *testing.T) {
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.AssetService)
+			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockSvc)
+				tc.Setup(ctx, mockSvc, mockNamespaceSvc)
 			}
-
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
+			defer mockNamespaceSvc.AssertExpectations(t)
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.SearchAssets(ctx, tc.Request)
 			code := status.Code(err)
@@ -236,12 +254,18 @@ func TestSuggest(t *testing.T) {
 	var (
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
+		ns       = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "base-test",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.SuggestAssetsRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.AssetService)
+		Setup        func(context.Context, *mocks.AssetService, *mocks.NamespaceService)
 		PostCheck    func(resp *compassv1beta1.SuggestAssetsResponse) error
 	}
 
@@ -254,25 +278,29 @@ func TestSuggest(t *testing.T) {
 		{
 			Description: "should report internal server error if searcher fails",
 			Request: &compassv1beta1.SuggestAssetsRequest{
-				Text: "test",
+				Text:         "test",
+				NamespaceUrn: ns.ID.String(),
 			},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				cfg := asset.SearchConfig{
-					Text: "test",
+					Text:      "test",
+					Namespace: ns,
 				}
 				as.EXPECT().SuggestAssets(ctx, cfg).Return([]string{}, fmt.Errorf("service unavailable"))
+				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 			ExpectStatus: codes.Internal,
 		},
 		{
 			Description: "should return suggestions",
 			Request: &compassv1beta1.SuggestAssetsRequest{
-				Text: "test",
+				Text:         "test",
+				NamespaceUrn: ns.ID.String(),
 			},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
-
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				cfg := asset.SearchConfig{
-					Text: "test",
+					Text:      "test",
+					Namespace: ns,
 				}
 				response := []string{
 					"test",
@@ -282,6 +310,7 @@ func TestSuggest(t *testing.T) {
 				}
 
 				as.EXPECT().SuggestAssets(ctx, cfg).Return(response, nil)
+				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.SuggestAssetsResponse) error {
 				expected := &compassv1beta1.SuggestAssetsResponse{
@@ -306,16 +335,17 @@ func TestSuggest(t *testing.T) {
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.AssetService)
+			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockSvc)
+				tc.Setup(ctx, mockSvc, mockNamespaceSvc)
 			}
-
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
+			defer mockNamespaceSvc.AssertExpectations(t)
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.SuggestAssets(ctx, tc.Request)
 			code := status.Code(err)

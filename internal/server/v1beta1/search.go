@@ -21,6 +21,10 @@ func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.S
 	if text == "" {
 		return nil, status.Error(codes.InvalidArgument, "'text' must be specified")
 	}
+	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
+	if err != nil {
+		return nil, err
+	}
 
 	cfg := asset.SearchConfig{
 		Text:       text,
@@ -28,6 +32,7 @@ func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.S
 		Filters:    filterConfigFromValues(req.GetFilter()),
 		RankBy:     req.GetRankby(),
 		Queries:    req.GetQuery(),
+		Namespace:  ns,
 	}
 
 	results, err := server.assetService.SearchAssets(ctx, cfg)
@@ -59,9 +64,14 @@ func (server *APIServer) SuggestAssets(ctx context.Context, req *compassv1beta1.
 	if text == "" {
 		return nil, status.Error(codes.InvalidArgument, "'text' must be specified")
 	}
+	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
+	if err != nil {
+		return nil, err
+	}
 
 	cfg := asset.SearchConfig{
-		Text: text,
+		Text:      text,
+		Namespace: ns,
 	}
 
 	suggestions, err := server.assetService.SuggestAssets(ctx, cfg)

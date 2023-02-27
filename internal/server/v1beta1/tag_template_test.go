@@ -154,7 +154,7 @@ func TestGetAllTagTemplates(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.GetAllTagTemplates(ctx, tc.Request)
 			code := status.Code(err)
@@ -244,7 +244,7 @@ func TestCreateTagTemplate(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.CreateTagTemplate(ctx, tc.Request)
 			code := status.Code(err)
@@ -323,7 +323,7 @@ func TestGetTagTemplate(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 			got, err := handler.GetTagTemplate(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
@@ -424,7 +424,7 @@ func TestUpdateTagTemplate(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 			got, err := handler.UpdateTagTemplate(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
@@ -491,7 +491,7 @@ func TestDeleteTagTemplate(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			_, err := handler.DeleteTagTemplate(ctx, tc.Request)
 			code := status.Code(err)

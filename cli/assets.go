@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"os"
 
 	"github.com/odpf/compass/internal/client"
@@ -59,7 +60,7 @@ func assetsCommand(cfg *Config) *cobra.Command {
 }
 
 func listAllAssetsCommand(cfg *Config) *cobra.Command {
-	var types, services, q, qFields, sort, sort_dir, output string
+	var namespaceID, types, services, q, qFields, sort, sort_dir, output string
 	var data map[string]string
 	var size, page uint32
 	cmd := &cobra.Command{
@@ -93,6 +94,7 @@ func listAllAssetsCommand(cfg *Config) *cobra.Command {
 				Data:      data,
 				Size:      size,
 				Offset:    page,
+				NamespaceUrn: namespaceID,
 			})
 
 			if err != nil {
@@ -117,6 +119,7 @@ func listAllAssetsCommand(cfg *Config) *cobra.Command {
 		},
 	}
 
+	cmd.Flags().StringVarP(&namespaceID, "namespace", "n", namespace.DefaultNamespace.ID.String(), "namespace id or name")
 	cmd.Flags().StringVarP(&types, "types", "t", "", "filter by types")
 	cmd.Flags().StringVarP(&services, "services", "s", "", "filter by services")
 	cmd.Flags().StringToStringVarP(&data, "data", "d", nil, "filter by field in asset.data")
@@ -132,6 +135,7 @@ func listAllAssetsCommand(cfg *Config) *cobra.Command {
 }
 
 func viewAssetByIDCommand(cfg *Config) *cobra.Command {
+	var namespaceID string
 	cmd := &cobra.Command{
 		Use:   "view <urn>",
 		Short: "view asset for the given ID or URN",
@@ -156,7 +160,8 @@ func viewAssetByIDCommand(cfg *Config) *cobra.Command {
 			assetID := args[0]
 			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			res, err := clnt.GetAssetByID(ctx, &compassv1beta1.GetAssetByIDRequest{
-				Id: assetID,
+				Id:           assetID,
+				NamespaceUrn: namespaceID,
 			})
 			if err != nil {
 				return err
@@ -167,13 +172,13 @@ func viewAssetByIDCommand(cfg *Config) *cobra.Command {
 			return nil
 		},
 	}
-
+	cmd.Flags().StringVarP(&namespaceID, "namespace", "n", namespace.DefaultNamespace.ID.String(), "namespace id or name")
 	return cmd
 }
 
 func editAssetCommand(cfg *Config) *cobra.Command {
 	var filePath string
-
+	var namespaceID string
 	cmd := &cobra.Command{
 		Use:   "edit",
 		Short: "upsert a new asset or patch",
@@ -206,8 +211,9 @@ func editAssetCommand(cfg *Config) *cobra.Command {
 
 			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			res, err := clnt.UpsertPatchAsset(ctx, &compassv1beta1.UpsertPatchAssetRequest{
-				Asset:     reqBody.Asset,
-				Upstreams: reqBody.Upstreams,
+				Asset:        reqBody.Asset,
+				Upstreams:    reqBody.Upstreams,
+				NamespaceUrn: namespaceID,
 			})
 
 			if err != nil {
@@ -219,6 +225,7 @@ func editAssetCommand(cfg *Config) *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().StringVarP(&namespaceID, "namespace", "n", namespace.DefaultNamespace.ID.String(), "namespace id or name")
 	cmd.Flags().StringVarP(&filePath, "body", "b", "", "filepath to body that has to be upserted")
 	if err := cmd.MarkFlagRequired("body"); err != nil {
 		panic(err)
@@ -228,6 +235,7 @@ func editAssetCommand(cfg *Config) *cobra.Command {
 }
 
 func deleteAssetByIDCommand(cfg *Config) *cobra.Command {
+	var namespaceID string
 	cmd := &cobra.Command{
 		Use:   "delete <id>",
 		Short: "delete asset with the given ID",
@@ -251,7 +259,8 @@ func deleteAssetByIDCommand(cfg *Config) *cobra.Command {
 			assetID := args[0]
 			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			_, err = clnt.DeleteAsset(ctx, &compassv1beta1.DeleteAssetRequest{
-				Id: assetID,
+				Id:           assetID,
+				NamespaceUrn: namespaceID,
 			})
 			if err != nil {
 				return err
@@ -261,7 +270,7 @@ func deleteAssetByIDCommand(cfg *Config) *cobra.Command {
 			return nil
 		},
 	}
-
+	cmd.Flags().StringVarP(&namespaceID, "namespace", "n", namespace.DefaultNamespace.ID.String(), "namespace id or name")
 	return cmd
 }
 

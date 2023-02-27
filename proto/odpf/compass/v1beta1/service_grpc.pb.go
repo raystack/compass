@@ -64,6 +64,11 @@ type CompassServiceClient interface {
 	GetTagTemplate(ctx context.Context, in *GetTagTemplateRequest, opts ...grpc.CallOption) (*GetTagTemplateResponse, error)
 	UpdateTagTemplate(ctx context.Context, in *UpdateTagTemplateRequest, opts ...grpc.CallOption) (*UpdateTagTemplateResponse, error)
 	DeleteTagTemplate(ctx context.Context, in *DeleteTagTemplateRequest, opts ...grpc.CallOption) (*DeleteTagTemplateResponse, error)
+	// Domain: Namespace
+	CreateNamespace(ctx context.Context, in *CreateNamespaceRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error)
+	GetNamespace(ctx context.Context, in *GetNamespaceRequest, opts ...grpc.CallOption) (*GetNamespaceResponse, error)
+	UpdateNamespace(ctx context.Context, in *UpdateNamespaceRequest, opts ...grpc.CallOption) (*UpdateNamespaceResponse, error)
+	ListNamespaces(ctx context.Context, in *ListNamespacesRequest, opts ...grpc.CallOption) (*ListNamespacesResponse, error)
 }
 
 type compassServiceClient struct {
@@ -416,6 +421,42 @@ func (c *compassServiceClient) DeleteTagTemplate(ctx context.Context, in *Delete
 	return out, nil
 }
 
+func (c *compassServiceClient) CreateNamespace(ctx context.Context, in *CreateNamespaceRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error) {
+	out := new(CreateNamespaceResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/CreateNamespace", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GetNamespace(ctx context.Context, in *GetNamespaceRequest, opts ...grpc.CallOption) (*GetNamespaceResponse, error) {
+	out := new(GetNamespaceResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetNamespace", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) UpdateNamespace(ctx context.Context, in *UpdateNamespaceRequest, opts ...grpc.CallOption) (*UpdateNamespaceResponse, error) {
+	out := new(UpdateNamespaceResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UpdateNamespace", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) ListNamespaces(ctx context.Context, in *ListNamespacesRequest, opts ...grpc.CallOption) (*ListNamespacesResponse, error) {
+	out := new(ListNamespacesResponse)
+	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/ListNamespaces", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CompassServiceServer is the server API for CompassService service.
 // All implementations must embed UnimplementedCompassServiceServer
 // for forward compatibility
@@ -462,6 +503,11 @@ type CompassServiceServer interface {
 	GetTagTemplate(context.Context, *GetTagTemplateRequest) (*GetTagTemplateResponse, error)
 	UpdateTagTemplate(context.Context, *UpdateTagTemplateRequest) (*UpdateTagTemplateResponse, error)
 	DeleteTagTemplate(context.Context, *DeleteTagTemplateRequest) (*DeleteTagTemplateResponse, error)
+	// Domain: Namespace
+	CreateNamespace(context.Context, *CreateNamespaceRequest) (*CreateNamespaceResponse, error)
+	GetNamespace(context.Context, *GetNamespaceRequest) (*GetNamespaceResponse, error)
+	UpdateNamespace(context.Context, *UpdateNamespaceRequest) (*UpdateNamespaceResponse, error)
+	ListNamespaces(context.Context, *ListNamespacesRequest) (*ListNamespacesResponse, error)
 	mustEmbedUnimplementedCompassServiceServer()
 }
 
@@ -582,6 +628,18 @@ func (UnimplementedCompassServiceServer) UpdateTagTemplate(context.Context, *Upd
 }
 func (UnimplementedCompassServiceServer) DeleteTagTemplate(context.Context, *DeleteTagTemplateRequest) (*DeleteTagTemplateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTagTemplate not implemented")
+}
+func (UnimplementedCompassServiceServer) CreateNamespace(context.Context, *CreateNamespaceRequest) (*CreateNamespaceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateNamespace not implemented")
+}
+func (UnimplementedCompassServiceServer) GetNamespace(context.Context, *GetNamespaceRequest) (*GetNamespaceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNamespace not implemented")
+}
+func (UnimplementedCompassServiceServer) UpdateNamespace(context.Context, *UpdateNamespaceRequest) (*UpdateNamespaceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateNamespace not implemented")
+}
+func (UnimplementedCompassServiceServer) ListNamespaces(context.Context, *ListNamespacesRequest) (*ListNamespacesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListNamespaces not implemented")
 }
 func (UnimplementedCompassServiceServer) mustEmbedUnimplementedCompassServiceServer() {}
 
@@ -1280,6 +1338,78 @@ func _CompassService_DeleteTagTemplate_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CompassService_CreateNamespace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateNamespaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).CreateNamespace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/CreateNamespace",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).CreateNamespace(ctx, req.(*CreateNamespaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GetNamespace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNamespaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GetNamespace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/GetNamespace",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GetNamespace(ctx, req.(*GetNamespaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_UpdateNamespace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateNamespaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).UpdateNamespace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/UpdateNamespace",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).UpdateNamespace(ctx, req.(*UpdateNamespaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_ListNamespaces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListNamespacesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).ListNamespaces(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/odpf.compass.v1beta1.CompassService/ListNamespaces",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).ListNamespaces(ctx, req.(*ListNamespacesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CompassService_ServiceDesc is the grpc.ServiceDesc for CompassService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1438,6 +1568,22 @@ var CompassService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteTagTemplate",
 			Handler:    _CompassService_DeleteTagTemplate_Handler,
+		},
+		{
+			MethodName: "CreateNamespace",
+			Handler:    _CompassService_CreateNamespace_Handler,
+		},
+		{
+			MethodName: "GetNamespace",
+			Handler:    _CompassService_GetNamespace_Handler,
+		},
+		{
+			MethodName: "UpdateNamespace",
+			Handler:    _CompassService_UpdateNamespace_Handler,
+		},
+		{
+			MethodName: "ListNamespaces",
+			Handler:    _CompassService_ListNamespaces_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -3,6 +3,8 @@ package asset_test
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
+	"github.com/odpf/compass/core/namespace"
 	"testing"
 	"time"
 
@@ -172,13 +174,19 @@ func TestService_UpsertAsset(t *testing.T) {
 		ReturnedID  string
 		Setup       func(context.Context, *mocks.AssetRepository, *mocks.DiscoveryRepository, *mocks.LineageRepository)
 	}
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 
 	var testCases = []testCase{
 		{
 			Description: `should return error if asset repository upsert return error`,
 			Asset:       sampleAsset,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				ar.EXPECT().Upsert(ctx, sampleAsset).Return("", errors.New("unknown error"))
+				ar.EXPECT().Upsert(ctx, ns, sampleAsset).Return("", errors.New("unknown error"))
 			},
 			Err:        errors.New("unknown error"),
 			ReturnedID: "",
@@ -187,8 +195,8 @@ func TestService_UpsertAsset(t *testing.T) {
 			Description: `should return error if discovery repository upsert return error`,
 			Asset:       sampleAsset,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				ar.EXPECT().Upsert(ctx, sampleAsset).Return(sampleAsset.ID, nil)
-				dr.EXPECT().Upsert(ctx, *sampleAsset).Return(errors.New("unknown error"))
+				ar.EXPECT().Upsert(ctx, ns, sampleAsset).Return(sampleAsset.ID, nil)
+				dr.EXPECT().Upsert(ctx, ns, sampleAsset).Return(errors.New("unknown error"))
 			},
 			Err:        errors.New("unknown error"),
 			ReturnedID: sampleAsset.ID,
@@ -199,8 +207,8 @@ func TestService_UpsertAsset(t *testing.T) {
 			Upstreams:   sampleNodes1,
 			Downstreams: sampleNodes2,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				ar.EXPECT().Upsert(ctx, sampleAsset).Return(sampleAsset.ID, nil)
-				dr.EXPECT().Upsert(ctx, *sampleAsset).Return(nil)
+				ar.EXPECT().Upsert(ctx, ns, sampleAsset).Return(sampleAsset.ID, nil)
+				dr.EXPECT().Upsert(ctx, ns, sampleAsset).Return(nil)
 				lr.EXPECT().Upsert(ctx, sampleAsset.URN, sampleNodes1, sampleNodes2).Return(errors.New("unknown error"))
 			},
 			Err:        errors.New("unknown error"),
@@ -212,8 +220,8 @@ func TestService_UpsertAsset(t *testing.T) {
 			Upstreams:   sampleNodes1,
 			Downstreams: sampleNodes2,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				ar.EXPECT().Upsert(ctx, sampleAsset).Return(sampleAsset.ID, nil)
-				dr.EXPECT().Upsert(ctx, *sampleAsset).Return(nil)
+				ar.EXPECT().Upsert(ctx, ns, sampleAsset).Return(sampleAsset.ID, nil)
+				dr.EXPECT().Upsert(ctx, ns, sampleAsset).Return(nil)
 				lr.EXPECT().Upsert(ctx, sampleAsset.URN, sampleNodes1, sampleNodes2).Return(nil)
 			},
 			Err:        nil,
@@ -232,7 +240,7 @@ func TestService_UpsertAsset(t *testing.T) {
 			}
 
 			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
-			rid, err := svc.UpsertAsset(ctx, tc.Asset, tc.Upstreams, tc.Downstreams)
+			rid, err := svc.UpsertAsset(ctx, ns, tc.Asset, tc.Upstreams, tc.Downstreams)
 			if tc.Err != nil {
 				assert.EqualError(t, err, tc.Err.Error())
 				return
@@ -245,6 +253,12 @@ func TestService_UpsertAsset(t *testing.T) {
 
 func TestService_UpsertAssetWithoutLineage(t *testing.T) {
 	sampleAsset := &asset.Asset{ID: "some-id", URN: "some-urn", Type: asset.TypeDashboard, Service: "some-service"}
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	var testCases = []struct {
 		Description string
 		Asset       *asset.Asset
@@ -256,7 +270,7 @@ func TestService_UpsertAssetWithoutLineage(t *testing.T) {
 			Description: `should return error if asset repository upsert return error`,
 			Asset:       sampleAsset,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
-				ar.EXPECT().Upsert(ctx, sampleAsset).Return("", errors.New("unknown error"))
+				ar.EXPECT().Upsert(ctx, ns, sampleAsset).Return("", errors.New("unknown error"))
 			},
 			Err: errors.New("unknown error"),
 		},
@@ -264,8 +278,8 @@ func TestService_UpsertAssetWithoutLineage(t *testing.T) {
 			Description: `should return error if discovery repository upsert return error`,
 			Asset:       sampleAsset,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
-				ar.EXPECT().Upsert(ctx, sampleAsset).Return(sampleAsset.ID, nil)
-				dr.EXPECT().Upsert(ctx, *sampleAsset).Return(errors.New("unknown error"))
+				ar.EXPECT().Upsert(ctx, ns, sampleAsset).Return(sampleAsset.ID, nil)
+				dr.EXPECT().Upsert(ctx, ns, sampleAsset).Return(errors.New("unknown error"))
 			},
 			Err: errors.New("unknown error"),
 		},
@@ -273,8 +287,8 @@ func TestService_UpsertAssetWithoutLineage(t *testing.T) {
 			Description: `should return no error if all repositories upsert return no error`,
 			Asset:       sampleAsset,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository) {
-				ar.EXPECT().Upsert(ctx, sampleAsset).Return(sampleAsset.ID, nil)
-				dr.EXPECT().Upsert(ctx, *sampleAsset).Return(nil)
+				ar.EXPECT().Upsert(ctx, ns, sampleAsset).Return(sampleAsset.ID, nil)
+				dr.EXPECT().Upsert(ctx, ns, sampleAsset).Return(nil)
 			},
 			ReturnedID: sampleAsset.ID,
 		},
@@ -290,7 +304,7 @@ func TestService_UpsertAssetWithoutLineage(t *testing.T) {
 			}
 
 			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mocks.NewLineageRepository(t))
-			rid, err := svc.UpsertAssetWithoutLineage(ctx, tc.Asset)
+			rid, err := svc.UpsertAssetWithoutLineage(ctx, ns, tc.Asset)
 			if tc.Err != nil {
 				assert.EqualError(t, err, tc.Err.Error())
 				return
@@ -304,6 +318,12 @@ func TestService_UpsertAssetWithoutLineage(t *testing.T) {
 func TestService_DeleteAsset(t *testing.T) {
 	assetID := "d9351e2e-a6b2-4c5d-af68-b95432e30203"
 	urn := "my-test-urn"
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	type testCase struct {
 		Description string
 		ID          string
@@ -335,7 +355,7 @@ func TestService_DeleteAsset(t *testing.T) {
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
 				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{URN: urn}, nil)
 				ar.EXPECT().DeleteByID(ctx, assetID).Return(nil)
-				dr.EXPECT().DeleteByID(ctx, assetID).Return(errors.New("unknown error"))
+				dr.EXPECT().DeleteByID(ctx, ns, assetID).Return(errors.New("unknown error"))
 			},
 			Err: errors.New("unknown error"),
 		},
@@ -354,7 +374,7 @@ func TestService_DeleteAsset(t *testing.T) {
 			Description: `with URN, should return error if asset repository delete return error`,
 			ID:          urn,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				ar.EXPECT().DeleteByURN(ctx, urn).Return(errors.New("unknown error"))
+				ar.EXPECT().DeleteByURN(ctx, ns, urn).Return(errors.New("unknown error"))
 			},
 			Err: errors.New("unknown error"),
 		},
@@ -362,9 +382,8 @@ func TestService_DeleteAsset(t *testing.T) {
 			Description: `with URN, should return error if discovery repository delete return error`,
 			ID:          urn,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-
 				ar.EXPECT().DeleteByURN(ctx, urn).Return(nil)
-				dr.EXPECT().DeleteByURN(ctx, urn).Return(errors.New("unknown error"))
+				dr.EXPECT().DeleteByURN(ctx, ns, urn).Return(errors.New("unknown error"))
 			},
 			Err: errors.New("unknown error"),
 		},
@@ -384,7 +403,7 @@ func TestService_DeleteAsset(t *testing.T) {
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
 				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{URN: urn}, nil)
 				ar.EXPECT().DeleteByID(ctx, assetID).Return(nil)
-				dr.EXPECT().DeleteByID(ctx, assetID).Return(nil)
+				dr.EXPECT().DeleteByID(ctx, ns, assetID).Return(nil)
 				lr.EXPECT().DeleteByURN(ctx, urn).Return(nil)
 			},
 			Err: nil,
@@ -394,7 +413,7 @@ func TestService_DeleteAsset(t *testing.T) {
 			ID:          urn,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
 				ar.EXPECT().DeleteByURN(ctx, urn).Return(nil)
-				dr.EXPECT().DeleteByURN(ctx, urn).Return(nil)
+				dr.EXPECT().DeleteByURN(ctx, ns, urn).Return(nil)
 				lr.EXPECT().DeleteByURN(ctx, urn).Return(nil)
 			},
 			Err: nil,
@@ -412,7 +431,7 @@ func TestService_DeleteAsset(t *testing.T) {
 			}
 
 			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
-			err := svc.DeleteAsset(ctx, tc.ID)
+			err := svc.DeleteAsset(ctx, ns, tc.ID)
 			if err != nil && errors.Is(tc.Err, err) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
 			}
@@ -424,6 +443,12 @@ func TestService_GetAssetByID(t *testing.T) {
 	assetID := "f742aa61-1100-445c-8d72-355a42e2fb59"
 	urn := "my-test-urn"
 	now := time.Now().UTC()
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	type testCase struct {
 		Description string
 		ID          string
@@ -441,7 +466,7 @@ func TestService_GetAssetByID(t *testing.T) {
 			Description: `should return error if the repository return error without id`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, asset.NotFoundError{})
+				ar.EXPECT().GetByID(ctx, ns, assetID).Return(asset.Asset{}, asset.NotFoundError{})
 			},
 			ExpectedErr: asset.NotFoundError{},
 		},
@@ -449,7 +474,7 @@ func TestService_GetAssetByID(t *testing.T) {
 			Description: `should return error if the repository return error, with id`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, asset.NotFoundError{AssetID: ast.ID})
+				ar.EXPECT().GetByID(ctx, ns, assetID).Return(asset.Asset{}, asset.NotFoundError{AssetID: ast.ID})
 			},
 			ExpectedErr: asset.NotFoundError{AssetID: ast.ID},
 		},
@@ -457,7 +482,7 @@ func TestService_GetAssetByID(t *testing.T) {
 			Description: `should return error if the repository return error, with invalid id`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, asset.InvalidError{AssetID: ast.ID})
+				ar.EXPECT().GetByID(ctx, ns, assetID).Return(asset.Asset{}, asset.InvalidError{AssetID: ast.ID})
 			},
 			ExpectedErr: asset.InvalidError{AssetID: ast.ID},
 		},
@@ -465,7 +490,7 @@ func TestService_GetAssetByID(t *testing.T) {
 			Description: `with URN, should return error from repository`,
 			ID:          urn,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetByURN(ctx, urn).Return(asset.Asset{}, errors.New("the world exploded"))
+				ar.EXPECT().GetByURN(ctx, ns, urn).Return(asset.Asset{}, errors.New("the world exploded"))
 			},
 			ExpectedErr: errors.New("the world exploded"),
 		},
@@ -482,7 +507,7 @@ func TestService_GetAssetByID(t *testing.T) {
 				},
 			},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{
+				ar.EXPECT().GetByID(ctx, ns, assetID).Return(asset.Asset{
 					ID:        assetID,
 					URN:       urn,
 					CreatedAt: now,
@@ -507,7 +532,7 @@ func TestService_GetAssetByID(t *testing.T) {
 				},
 			},
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetByURN(ctx, urn).Return(asset.Asset{
+				ar.EXPECT().GetByURN(ctx, ns, urn).Return(asset.Asset{
 					ID:        assetID,
 					URN:       urn,
 					CreatedAt: now,
@@ -530,7 +555,7 @@ func TestService_GetAssetByID(t *testing.T) {
 			}
 
 			svc := asset.NewService(mockAssetRepo, mocks.NewDiscoveryRepository(t), mocks.NewLineageRepository(t))
-			actual, err := svc.GetAssetByID(ctx, tc.ID)
+			actual, err := svc.GetAssetByID(ctx, ns, tc.ID)
 			if tc.Expected != nil {
 				assert.Equal(t, *tc.Expected, actual)
 			}
@@ -545,6 +570,12 @@ func TestService_GetAssetByID(t *testing.T) {
 func TestService_GetAssetByVersion(t *testing.T) {
 	assetID := "f742aa61-1100-445c-8d72-355a42e2fb59"
 	urn := "my-test-urn"
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	type testCase struct {
 		Description string
 		ID          string
@@ -557,7 +588,7 @@ func TestService_GetAssetByVersion(t *testing.T) {
 			Description: `should return error if the GetByVersionWithID function return error`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetByVersionWithID(ctx, assetID, "v0.0.2").
+				ar.EXPECT().GetByVersionWithID(ctx, ns, assetID, "v0.0.2").
 					Return(asset.Asset{}, errors.New("error fetching asset"))
 			},
 			ExpectedErr: errors.New("error fetching asset"),
@@ -566,7 +597,7 @@ func TestService_GetAssetByVersion(t *testing.T) {
 			Description: `should return error if the GetByVersionWithURN function return error`,
 			ID:          urn,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetByVersionWithURN(ctx, urn, "v0.0.2").
+				ar.EXPECT().GetByVersionWithURN(ctx, ns, urn, "v0.0.2").
 					Return(asset.Asset{}, errors.New("error fetching asset"))
 			},
 			ExpectedErr: errors.New("error fetching asset"),
@@ -575,7 +606,7 @@ func TestService_GetAssetByVersion(t *testing.T) {
 			Description: `should return no error if asset is found with ID`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetByVersionWithID(ctx, assetID, "v0.0.2").Return(asset.Asset{}, nil)
+				ar.EXPECT().GetByVersionWithID(ctx, ns, assetID, "v0.0.2").Return(asset.Asset{}, nil)
 			},
 			ExpectedErr: nil,
 		},
@@ -583,7 +614,7 @@ func TestService_GetAssetByVersion(t *testing.T) {
 			Description: `should return no error if asset is found with URN`,
 			ID:          urn,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetByVersionWithURN(ctx, urn, "v0.0.2").Return(asset.Asset{}, nil)
+				ar.EXPECT().GetByVersionWithURN(ctx, ns, urn, "v0.0.2").Return(asset.Asset{}, nil)
 			},
 			ExpectedErr: nil,
 		},
@@ -598,7 +629,7 @@ func TestService_GetAssetByVersion(t *testing.T) {
 			}
 
 			svc := asset.NewService(mockAssetRepo, mocks.NewDiscoveryRepository(t), mocks.NewLineageRepository(t))
-			_, err := svc.GetAssetByVersion(ctx, tc.ID, "v0.0.2")
+			_, err := svc.GetAssetByVersion(ctx, ns, tc.ID, "v0.0.2")
 			if tc.ExpectedErr != nil {
 				assert.EqualError(t, err, tc.ExpectedErr.Error())
 			}

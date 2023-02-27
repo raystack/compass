@@ -16,6 +16,7 @@ import (
 
 type APIServer struct {
 	compassv1beta1.UnimplementedCompassServiceServer
+	namespaceService   NamespaceService
 	assetService       AssetService
 	starService        StarService
 	discussionService  DiscussionService
@@ -32,6 +33,7 @@ var (
 
 func NewAPIServer(
 	logger log.Logger,
+	namespaceService NamespaceService,
 	assetService AssetService,
 	starService StarService,
 	discussionService DiscussionService,
@@ -40,6 +42,7 @@ func NewAPIServer(
 	userService UserService,
 ) *APIServer {
 	return &APIServer{
+		namespaceService:   namespaceService,
 		assetService:       assetService,
 		starService:        starService,
 		discussionService:  discussionService,

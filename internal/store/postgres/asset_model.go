@@ -15,6 +15,7 @@ import (
 
 type AssetModel struct {
 	ID          string    `db:"id"`
+	NamespaceID string    `db:"namespace_id"`
 	URN         string    `db:"urn"`
 	Type        string    `db:"type"`
 	Name        string    `db:"name"`
@@ -33,7 +34,6 @@ type AssetModel struct {
 }
 
 func (a *AssetModel) toAsset(owners []user.User) asset.Asset {
-
 	return asset.Asset{
 		ID:          a.ID,
 		URN:         a.URN,
@@ -167,7 +167,7 @@ func (m *JSONMap) Scan(value interface{}) error {
 	return err
 }
 
-// MarshalJSON to output non base64 encoded []byte
+// MarshalJSON to output encoded []byte
 func (m JSONMap) MarshalJSON() ([]byte, error) {
 	if m == nil {
 		return []byte("null"), nil

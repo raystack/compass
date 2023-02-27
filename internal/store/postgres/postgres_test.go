@@ -3,6 +3,7 @@ package postgres_test
 import (
 	"context"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"strconv"
 	"time"
 
@@ -150,10 +151,10 @@ func createUser(userRepo user.Repository, email string) (string, error) {
 	return id, nil
 }
 
-func createAsset(assetRepo asset.Repository, updaterID string, ownerEmail, assetURN, assetType string) (*asset.Asset, error) {
+func createAsset(assetRepo asset.Repository, ns *namespace.Namespace, updaterID string, ownerEmail, assetURN, assetType string) (*asset.Asset, error) {
 	ast := getAsset(ownerEmail, assetURN, assetType)
 	ast.UpdatedBy.ID = updaterID
-	id, err := assetRepo.Upsert(context.Background(), ast)
+	id, err := assetRepo.Upsert(context.Background(), ns, ast)
 	if err != nil {
 		return nil, err
 	}
@@ -201,13 +202,13 @@ func createUsers(userRepo user.Repository, num int) (users []user.User, err erro
 	return
 }
 
-func createAssets(assetRepo asset.Repository, users []user.User, astType asset.Type) (asts []asset.Asset, err error) {
+func createAssets(assetRepo asset.Repository, ns *namespace.Namespace, users []user.User, astType asset.Type) (asts []asset.Asset, err error) {
 	var count = 0
 	for _, usr := range users {
 		var ast *asset.Asset
 		count += 1
 		assetURN := fmt.Sprintf("asset-urn-%d", count)
-		ast, err = createAsset(assetRepo, usr.ID, usr.Email, assetURN, astType.String())
+		ast, err = createAsset(assetRepo, ns, usr.ID, usr.Email, assetURN, astType.String())
 		if err != nil {
 			return
 		}

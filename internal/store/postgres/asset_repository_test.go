@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"os"
 	"sort"
 	"strings"
 	"testing"
 	"time"
 
+	_ "embed"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
@@ -24,6 +26,9 @@ import (
 
 var defaultAssetUpdaterUserID = uuid.NewString()
 
+//go:embed testdata/mock-asset-data.json
+var testFixtureData []byte
+
 type AssetRepositoryTestSuite struct {
 	suite.Suite
 	ctx        context.Context
@@ -33,8 +38,9 @@ type AssetRepositoryTestSuite struct {
 	repository *postgres.AssetRepository
 	userRepo   *postgres.UserRepository
 	users      []user.User
-	assets     []asset.Asset
+	assets     []*asset.Asset
 	builder    sq.SelectBuilder
+	ns         *namespace.Namespace
 }
 
 func (r *AssetRepositoryTestSuite) SetupSuite() {
@@ -55,6 +61,13 @@ func (r *AssetRepositoryTestSuite) SetupSuite() {
 	r.repository, err = postgres.NewAssetRepository(r.client, r.userRepo, defaultGetMaxSize, defaultProviderName)
 	if err != nil {
 		r.T().Fatal(err)
+	}
+
+	r.ns = &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "umbrella",
+		State:    namespace.DedicatedState,
+		Metadata: nil,
 	}
 }
 
@@ -105,38 +118,23 @@ func (r *AssetRepositoryTestSuite) BeforeTest(suiteName, testName string) {
 	r.assets = r.insertRecord()
 }
 
-func (r *AssetRepositoryTestSuite) insertRecord() (assets []asset.Asset) {
-	filePath := "./testdata/mock-asset-data.json"
-	testFixtureJSON, err := os.ReadFile(filePath)
-	if err != nil {
-		return []asset.Asset{}
+func (r *AssetRepositoryTestSuite) insertRecord() []*asset.Asset {
+	var err error
+	var data []*asset.Asset
+	if err = json.Unmarshal(testFixtureData, &data); err != nil {
+		r.T().Error(err)
+		return nil
 	}
 
-	var data []asset.Asset
-	if err = json.Unmarshal(testFixtureJSON, &data); err != nil {
-		return []asset.Asset{}
-	}
+	for idx, d := range data {
+		d.Version = asset.BaseVersion
+		d.UpdatedBy = r.users[0]
 
-	for _, d := range data {
-		ast := asset.Asset{
-			URN:         d.URN,
-			Name:        d.Name,
-			Type:        d.Type,
-			Service:     d.Service,
-			Description: d.Description,
-			Data:        d.Data,
-			Version:     asset.BaseVersion,
-			UpdatedBy:   r.users[0],
-		}
-
-		id, err := r.repository.Upsert(r.ctx, &ast)
+		data[idx].ID, err = r.repository.Upsert(r.ctx, r.ns, d)
 		r.Require().NoError(err)
-		r.Require().NotEmpty(id)
-		ast.ID = id
-		assets = append(assets, ast)
+		r.Require().NotEmpty(data[idx].ID)
 	}
-
-	return assets
+	return data
 }
 
 func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
@@ -150,32 +148,36 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 		{
 			description: "should return sql query with types filter",
 			config: asset.Filter{
-				Types: []asset.Type{asset.TypeTable},
+				Types:     []asset.Type{asset.TypeTable},
+				Namespace: r.ns,
 			},
-			expectedQuery: `type IN ($1)`,
+			expectedQuery: `namespace_id = $1 AND type IN ($2)`,
 		},
 		{
 			description: "should return sql query with services filter",
 			config: asset.Filter{
-				Services: []string{"mysql", "kafka"},
+				Services:  []string{"mysql", "kafka"},
+				Namespace: r.ns,
 			},
-			expectedQuery: `service IN ($1,$2)`,
+			expectedQuery: `namespace_id = $1 AND service IN ($2,$3)`,
 		},
 		{
 			description: "should return sql query with query fields filter",
 			config: asset.Filter{
 				QueryFields: []string{"name", "description"},
 				Query:       "demo",
+				Namespace:   r.ns,
 			},
-			expectedQuery: `(name ILIKE $1 OR description ILIKE $2)`,
+			expectedQuery: `namespace_id = $1 AND (name ILIKE $2 OR description ILIKE $3)`,
 		},
 		{
 			description: "should return sql query with nested data query filter",
 			config: asset.Filter{
 				QueryFields: []string{"data.landscape.properties.project-id", "description"},
 				Query:       "compass_002",
+				Namespace:   r.ns,
 			},
-			expectedQuery: `(data->'landscape'->'properties'->>'project-id' ILIKE $1 OR description ILIKE $2)`,
+			expectedQuery: `namespace_id = $1 AND (data->'landscape'->'properties'->>'project-id' ILIKE $2 OR description ILIKE $3)`,
 		},
 		{
 			// NOTE: Cannot have more than one key in map because golang's map does not guarantee order thus producing
@@ -185,8 +187,9 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 				Data: map[string][]string{
 					"entity": {"odpf"},
 				},
+				Namespace: r.ns,
 			},
-			expectedQuery: `(data->>'entity' = $1)`,
+			expectedQuery: `namespace_id = $1 AND (data->>'entity' = $2)`,
 		},
 		{
 			description: "should return sql query with asset's nested data fields filter",
@@ -194,16 +197,19 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 				Data: map[string][]string{
 					"landscape.properties.project-id": {"compass_001"},
 				},
+				Namespace: r.ns,
 			},
-			expectedQuery: `(data->'landscape'->'properties'->>'project-id' = $1)`,
+			expectedQuery: `namespace_id = $1 AND (data->'landscape'->'properties'->>'project-id' = $2)`,
 		},
 		{
 			description: "should return sql query with asset's nested multiple data fields filter ",
 			config: asset.Filter{
 				Data: map[string][]string{
 					"properties.attributes.entity": {"alpha", "beta"},
-				}},
-			expectedQuery: `(data->'properties'->'attributes'->>'entity' = $1 OR data->'properties'->'attributes'->>'entity' = $2)`,
+				},
+				Namespace: r.ns,
+			},
+			expectedQuery: `namespace_id = $1 AND (data->'properties'->'attributes'->>'entity' = $2 OR data->'properties'->'attributes'->>'entity' = $3)`,
 		},
 	}
 
@@ -222,16 +228,15 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 }
 
 func (r *AssetRepositoryTestSuite) TestGetAll() {
-	assets := r.insertRecord()
 
 	r.Run("should return all assets without filtering based on size", func() {
 		expectedSize := 12
 
-		results, err := r.repository.GetAll(r.ctx, asset.Filter{})
+		results, err := r.repository.GetAll(r.ctx, asset.Filter{Namespace: r.ns})
 		r.Require().NoError(err)
 		r.Require().Len(results, expectedSize)
 		for i := 0; i < expectedSize; i++ {
-			r.assertAsset(&assets[i], &results[i])
+			r.assertAsset(r.assets[i], &results[i])
 		}
 	})
 
@@ -239,12 +244,13 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		size := 6
 
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
-			Size: size,
+			Size:      size,
+			Namespace: r.ns,
 		})
 		r.Require().NoError(err)
 		r.Require().Len(results, size)
 		for i := 0; i < size; i++ {
-			r.assertAsset(&assets[i], &results[i])
+			r.assertAsset(r.assets[i], &results[i])
 		}
 	})
 
@@ -252,23 +258,31 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		offset := 2
 
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
-			Offset: offset,
+			Offset:    offset,
+			Namespace: r.ns,
 		})
 		r.Require().NoError(err)
 		for i := offset; i > len(results)+offset; i++ {
-			r.assertAsset(&assets[i], &results[i-offset])
+			r.assertAsset(r.assets[i], &results[i-offset])
 		}
 	})
 
 	r.Run("should filter using type", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			Types:         []asset.Type{asset.TypeTable},
-			SortBy:        "urn",
+			SortBy:        "type",
 			SortDirection: "desc",
+			Namespace:     r.ns,
 		})
 		r.Require().NoError(err)
 
 		expectedURNs := []string{"twelfth-mock", "i-undefined-dfgdgd-avi", "e-test-grant2"}
+		sort.Slice(expectedURNs, func(i, j int) bool {
+			return expectedURNs[i] < expectedURNs[j]
+		})
+		sort.Slice(results, func(i, j int) bool {
+			return results[i].URN < results[j].URN
+		})
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
 			r.Equal(expectedURNs[i], results[i].URN)
@@ -277,12 +291,19 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 
 	r.Run("should filter using service", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
-			Services: []string{"mysql", "kafka"},
-			SortBy:   "urn",
+			Services:  []string{"mysql", "kafka"},
+			SortBy:    "service",
+			Namespace: r.ns,
 		})
 		r.Require().NoError(err)
 
 		expectedURNs := []string{"c-demo-kafka", "f-john-test-001", "i-test-grant", "i-undefined-dfgdgd-avi"}
+		sort.Slice(expectedURNs, func(i, j int) bool {
+			return expectedURNs[i] < expectedURNs[j]
+		})
+		sort.Slice(results, func(i, j int) bool {
+			return results[i].URN < results[j].URN
+		})
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
 			r.Equal(expectedURNs[i], results[i].URN)
@@ -293,11 +314,18 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			QueryFields: []string{"name", "description"},
 			Query:       "demo",
-			SortBy:      "urn",
+			SortBy:      "service",
+			Namespace:   r.ns,
 		})
 		r.Require().NoError(err)
 
 		expectedURNs := []string{"c-demo-kafka", "e-test-grant2"}
+		sort.Slice(expectedURNs, func(i, j int) bool {
+			return expectedURNs[i] < expectedURNs[j]
+		})
+		sort.Slice(results, func(i, j int) bool {
+			return results[i].URN < results[j].URN
+		})
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
 			r.Equal(expectedURNs[i], results[i].URN)
@@ -308,11 +336,18 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			QueryFields: []string{"data.landscape.properties.project-id", "data.title"},
 			Query:       "compass_001",
-			SortBy:      "urn",
+			SortBy:      "service",
+			Namespace:   r.ns,
 		})
 		r.Require().NoError(err)
 
 		expectedURNs := []string{"i-test-grant", "j-xcvcx"}
+		sort.Slice(expectedURNs, func(i, j int) bool {
+			return expectedURNs[i] < expectedURNs[j]
+		})
+		sort.Slice(results, func(i, j int) bool {
+			return results[i].URN < results[j].URN
+		})
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
 			r.Equal(expectedURNs[i], results[i].URN)
@@ -323,11 +358,18 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			QueryFields: []string{"data.landscape.properties.project-id", "description"},
 			Query:       "compass_002",
-			SortBy:      "urn",
+			SortBy:      "service",
+			Namespace:   r.ns,
 		})
 		r.Require().NoError(err)
 
 		expectedURNs := []string{"g-jane-kafka-1a", "h-test-new-kafka"}
+		sort.Slice(expectedURNs, func(i, j int) bool {
+			return expectedURNs[i] < expectedURNs[j]
+		})
+		sort.Slice(results, func(i, j int) bool {
+			return results[i].URN < results[j].URN
+		})
 		r.Equal(len(expectedURNs), len(results))
 		for i := range results {
 			r.Equal(expectedURNs[i], results[i].URN)
@@ -340,6 +382,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 				"entity":  {"odpf"},
 				"country": {"th"},
 			},
+			Namespace: r.ns,
 		})
 		r.Require().NoError(err)
 
@@ -356,6 +399,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 				"landscape.properties.project-id": {"compass_001"},
 				"country":                         {"vn"},
 			},
+			Namespace: r.ns,
 		})
 		r.Require().NoError(err)
 
@@ -371,6 +415,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 			Data: map[string][]string{
 				"properties.dependencies": {"_nonempty"},
 			},
+			Namespace: r.ns,
 		})
 		r.Require().NoError(err)
 
@@ -389,6 +434,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 				"urn":                     {"j-xcvcx"},
 				"country":                 {"vn"},
 			},
+			Namespace: r.ns,
 		})
 		r.Require().NoError(err)
 
@@ -401,8 +447,6 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 }
 
 func (r *AssetRepositoryTestSuite) TestGetTypes() {
-	_ = r.insertRecord()
-
 	type testCase struct {
 		Description string
 		Filter      asset.Filter
@@ -412,7 +456,7 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 	testCases := []testCase{
 		{
 			Description: "should return maps of asset count without filter",
-			Filter:      asset.Filter{},
+			Filter:      asset.Filter{Namespace: r.ns},
 			Expected: map[asset.Type]int{
 				asset.TypeDashboard: 5,
 				asset.TypeJob:       1,
@@ -423,8 +467,9 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 		{
 			Description: "should filter using service",
 			Filter: asset.Filter{
-				Services: []string{"mysql", "kafka"},
-				SortBy:   "urn",
+				Services:  []string{"mysql", "kafka"},
+				SortBy:    "service",
+				Namespace: r.ns,
 			},
 			Expected: map[asset.Type]int{
 				asset.TypeTable: 1,
@@ -436,7 +481,8 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 			Filter: asset.Filter{
 				QueryFields: []string{"name", "description"},
 				Query:       "demo",
-				SortBy:      "urn",
+				SortBy:      "service",
+				Namespace:   r.ns,
 			},
 			Expected: map[asset.Type]int{
 				asset.TypeTable: 1,
@@ -448,7 +494,8 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 			Filter: asset.Filter{
 				QueryFields: []string{"data.landscape.properties.project-id", "data.title"},
 				Query:       "compass_001",
-				SortBy:      "urn",
+				SortBy:      "service",
+				Namespace:   r.ns,
 			},
 			Expected: map[asset.Type]int{
 				asset.TypeDashboard: 1,
@@ -461,7 +508,8 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 			Filter: asset.Filter{
 				QueryFields: []string{"data.landscape.properties.project-id", "description"},
 				Query:       "compass_002",
-				SortBy:      "urn",
+				SortBy:      "service",
+				Namespace:   r.ns,
 			},
 			Expected: map[asset.Type]int{
 				asset.TypeDashboard: 1,
@@ -475,6 +523,7 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 					"entity":  {"odpf"},
 					"country": {"th"},
 				},
+				Namespace: r.ns,
 			},
 			Expected: map[asset.Type]int{
 				asset.TypeJob:   1,
@@ -489,6 +538,7 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 					"landscape.properties.project-id": {"compass_001"},
 					"country":                         {"vn"},
 				},
+				Namespace: r.ns,
 			},
 			Expected: map[asset.Type]int{
 				asset.TypeDashboard: 1,
@@ -500,6 +550,7 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 				Data: map[string][]string{
 					"properties.dependencies": {"_nonempty"},
 				},
+				Namespace: r.ns,
 			},
 			Expected: map[asset.Type]int{
 				asset.TypeDashboard: 2,
@@ -514,6 +565,7 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 					"urn":                     {"j-xcvcx"},
 					"country":                 {"vn"},
 				},
+				Namespace: r.ns,
 			},
 			Expected: map[asset.Type]int{
 				asset.TypeDashboard: 1,
@@ -551,13 +603,13 @@ func (r *AssetRepositoryTestSuite) TestGetCount() {
 	typ := asset.TypeJob
 	service := []string{"service-getcount"}
 	for i := 0; i < total; i++ {
-		ast := asset.Asset{
+		ast := &asset.Asset{
 			URN:       fmt.Sprintf("urn-getcount-%d", i),
 			Type:      typ,
 			Service:   service[0],
 			UpdatedBy: r.users[0],
 		}
-		id, err := r.repository.Upsert(r.ctx, &ast)
+		id, err := r.repository.Upsert(r.ctx, r.ns, ast)
 		r.Require().NoError(err)
 		r.Require().NotEmpty(id)
 		ast.ID = id
@@ -565,8 +617,9 @@ func (r *AssetRepositoryTestSuite) TestGetCount() {
 
 	r.Run("should return total assets with filter", func() {
 		actual, err := r.repository.GetCount(r.ctx, asset.Filter{
-			Types:    []asset.Type{typ},
-			Services: service,
+			Types:     []asset.Type{typ},
+			Services:  service,
+			Namespace: r.ns,
 		})
 		r.Require().NoError(err)
 		r.Equal(total, actual)
@@ -575,14 +628,14 @@ func (r *AssetRepositoryTestSuite) TestGetCount() {
 
 func (r *AssetRepositoryTestSuite) TestGetByID() {
 	r.Run("return error from client if asset not an uuid", func() {
-		_, err := r.repository.GetByID(r.ctx, "invalid-uuid")
+		_, err := r.repository.GetByID(r.ctx, r.ns, "invalid-uuid")
 		r.Error(err)
 		r.Contains(err.Error(), "invalid asset id: \"invalid-uuid\"")
 	})
 
 	r.Run("return NotFoundError if asset does not exist", func() {
 		uuid := "2aabb450-f986-44e2-a6db-7996861d5004"
-		_, err := r.repository.GetByID(r.ctx, uuid)
+		_, err := r.repository.GetByID(r.ctx, r.ns, uuid)
 		r.ErrorAs(err, &asset.NotFoundError{AssetID: uuid})
 	})
 
@@ -603,17 +656,17 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 		}
 
 		var err error
-		id, err := r.repository.Upsert(r.ctx, &asset1)
+		id, err := r.repository.Upsert(r.ctx, r.ns, &asset1)
 		r.Require().NoError(err)
 		r.NotEmpty(id)
 		asset1.ID = id
 
-		id, err = r.repository.Upsert(r.ctx, &asset2)
+		id, err = r.repository.Upsert(r.ctx, r.ns, &asset2)
 		r.Require().NoError(err)
 		r.NotEmpty(id)
 		asset2.ID = id
 
-		result, err := r.repository.GetByID(r.ctx, asset2.ID)
+		result, err := r.repository.GetByID(r.ctx, r.ns, asset2.ID)
 		r.NoError(err)
 		asset2.UpdatedBy = r.users[1]
 		r.assertAsset(&asset2, &result)
@@ -632,12 +685,12 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 			UpdatedBy: r.users[1],
 		}
 
-		id, err := r.repository.Upsert(r.ctx, &ast)
+		id, err := r.repository.Upsert(r.ctx, r.ns, &ast)
 		r.Require().NoError(err)
 		r.Require().NotEmpty(id)
 		ast.ID = id
 
-		result, err := r.repository.GetByID(r.ctx, ast.ID)
+		result, err := r.repository.GetByID(r.ctx, r.ns, ast.ID)
 		r.NoError(err)
 		r.Len(result.Owners, len(ast.Owners))
 		for i, owner := range result.Owners {
@@ -649,7 +702,7 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 func (r *AssetRepositoryTestSuite) TestGetByURN() {
 	r.Run("return NotFoundError if asset does not exist", func() {
 		urn := "urn-gbi-1"
-		_, err := r.repository.GetByURN(r.ctx, urn)
+		_, err := r.repository.GetByURN(r.ctx, r.ns, urn)
 		r.ErrorAs(err, &asset.NotFoundError{URN: urn})
 	})
 
@@ -669,17 +722,17 @@ func (r *AssetRepositoryTestSuite) TestGetByURN() {
 			UpdatedBy: r.users[1],
 		}
 
-		id, err := r.repository.Upsert(r.ctx, &asset1)
+		id, err := r.repository.Upsert(r.ctx, r.ns, &asset1)
 		r.Require().NoError(err)
 		r.NotEmpty(id)
 		asset1.ID = id
 
-		id, err = r.repository.Upsert(r.ctx, &asset2)
+		id, err = r.repository.Upsert(r.ctx, r.ns, &asset2)
 		r.Require().NoError(err)
 		r.NotEmpty(id)
 		asset2.ID = id
 
-		result, err := r.repository.GetByURN(r.ctx, "urn-gbi-2")
+		result, err := r.repository.GetByURN(r.ctx, r.ns, "urn-gbi-2")
 		r.NoError(err)
 		r.assertAsset(&asset2, &result)
 	})
@@ -696,10 +749,10 @@ func (r *AssetRepositoryTestSuite) TestGetByURN() {
 			UpdatedBy: r.users[1],
 		}
 
-		_, err := r.repository.Upsert(r.ctx, &ast)
+		_, err := r.repository.Upsert(r.ctx, r.ns, &ast)
 		r.Require().NoError(err)
 
-		result, err := r.repository.GetByURN(r.ctx, ast.URN)
+		result, err := r.repository.GetByURN(r.ctx, r.ns, ast.URN)
 		r.NoError(err)
 		r.Len(result.Owners, len(ast.Owners))
 		for i, owner := range result.Owners {
@@ -718,14 +771,14 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 		UpdatedBy: r.users[1],
 	}
 
-	id, err := r.repository.Upsert(r.ctx, &astVersioning)
+	id, err := r.repository.Upsert(r.ctx, r.ns, &astVersioning)
 	r.Require().NoError(err)
 	r.Require().NotEmpty(id)
 	astVersioning.ID = id
 
 	// v0.2
 	astVersioning.Description = "new description in v0.2"
-	id, err = r.repository.Upsert(r.ctx, &astVersioning)
+	id, err = r.repository.Upsert(r.ctx, r.ns, &astVersioning)
 	r.Require().NoError(err)
 	r.Require().Equal(id, astVersioning.ID)
 
@@ -739,7 +792,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 			Provider: "meteor",
 		},
 	}
-	id, err = r.repository.Upsert(r.ctx, &astVersioning)
+	id, err = r.repository.Upsert(r.ctx, r.ns, &astVersioning)
 	r.Require().NoError(err)
 	r.Require().Equal(id, astVersioning.ID)
 
@@ -747,7 +800,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 	astVersioning.Data = map[string]interface{}{
 		"data1": float64(12345),
 	}
-	id, err = r.repository.Upsert(r.ctx, &astVersioning)
+	id, err = r.repository.Upsert(r.ctx, r.ns, &astVersioning)
 	r.Require().NoError(err)
 	r.Require().Equal(id, astVersioning.ID)
 
@@ -756,7 +809,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 		"key1": "value1",
 	}
 
-	id, err = r.repository.Upsert(r.ctx, &astVersioning)
+	id, err = r.repository.Upsert(r.ctx, r.ns, &astVersioning)
 	r.Require().NoError(err)
 	r.Require().Equal(id, astVersioning.ID)
 
@@ -799,7 +852,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 			},
 		}
 
-		assetVersions, err := r.repository.GetVersionHistory(r.ctx, asset.Filter{Size: 3}, astVersioning.ID)
+		assetVersions, err := r.repository.GetVersionHistory(r.ctx, asset.Filter{Size: 3, Namespace: r.ns}, astVersioning.ID)
 		r.NoError(err)
 		// making updatedby user time empty to make ast comparable
 		for i := 0; i < len(assetVersions); i++ {
@@ -821,7 +874,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 			UpdatedBy:   r.users[1],
 		}
 
-		ast, err := r.repository.GetByID(r.ctx, astVersioning.ID)
+		ast, err := r.repository.GetByID(r.ctx, r.ns, astVersioning.ID)
 		// hard to get the internally generated user id, we exclude the owners from the assertion
 		astOwners := ast.Owners
 		ast.Owners = nil
@@ -846,7 +899,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 			UpdatedBy:   r.users[1],
 		}
 
-		ast, err := r.repository.GetByVersionWithID(r.ctx, astVersioning.ID, "0.5")
+		ast, err := r.repository.GetByVersionWithID(r.ctx, r.ns, astVersioning.ID, "0.5")
 		// hard to get the internally generated user id, we exclude the owners from the assertion
 		astOwners := ast.Owners
 		ast.Owners = nil
@@ -857,7 +910,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 
 		r.Len(astOwners, 2)
 
-		ast, err = r.repository.GetByVersionWithURN(r.ctx, astVersioning.URN, "0.5")
+		ast, err = r.repository.GetByVersionWithURN(r.ctx, r.ns, astVersioning.URN, "0.5")
 		// hard to get the internally generated user id, we exclude the owners from the assertion
 		astOwners = ast.Owners
 		ast.Owners = nil
@@ -892,7 +945,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 				Provider: "meteor",
 			},
 		}
-		astVer, err := r.repository.GetByVersionWithID(r.ctx, astVersioning.ID, version)
+		astVer, err := r.repository.GetByVersionWithID(r.ctx, r.ns, astVersioning.ID, version)
 		// hard to get the internally generated user id, we exclude the owners from the assertion
 		astOwners := astVer.Owners
 		astVer.Owners = nil
@@ -906,7 +959,7 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 		}
 		r.Assert().Equal(expectedOwners, astOwners)
 
-		astVer, err = r.repository.GetByVersionWithURN(r.ctx, astVersioning.URN, version)
+		astVer, err = r.repository.GetByVersionWithURN(r.ctx, r.ns, astVersioning.URN, version)
 		// hard to get the internally generated user id, we exclude the owners from the assertion
 		astOwners = astVer.Owners
 		astVer.Owners = nil
@@ -933,12 +986,12 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				URL:       "https://sample-url.com",
 				UpdatedBy: r.users[0],
 			}
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, r.ns, &ast)
 			r.NoError(err)
 			r.NotEmpty(id)
 			ast.ID = id
 
-			assetInDB, err := r.repository.GetByID(r.ctx, ast.ID)
+			assetInDB, err := r.repository.GetByID(r.ctx, r.ns, ast.ID)
 			r.Require().NoError(err)
 			r.NotEqual(time.Time{}, assetInDB.CreatedAt)
 			r.NotEqual(time.Time{}, assetInDB.UpdatedAt)
@@ -957,12 +1010,12 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				UpdatedBy: r.users[0],
 			}
 
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, r.ns, &ast)
 			r.Require().NoError(err)
 			r.Require().NotEmpty(id)
 			ast.ID = id
 
-			actual, err := r.repository.GetByID(r.ctx, ast.ID)
+			actual, err := r.repository.GetByID(r.ctx, r.ns, ast.ID)
 			r.NoError(err)
 
 			r.Len(actual.Owners, len(ast.Owners))
@@ -982,11 +1035,11 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				UpdatedBy: r.users[0],
 			}
 
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, r.ns, &ast)
 			r.Require().NoError(err)
 			r.NotEmpty(id)
 
-			actual, err := r.repository.GetByID(r.ctx, id)
+			actual, err := r.repository.GetByID(r.ctx, r.ns, id)
 			r.NoError(err)
 
 			r.Len(actual.Owners, len(ast.Owners))
@@ -1007,12 +1060,12 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			}
 			identicalAsset := ast
 
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, r.ns, &ast)
 			r.Require().NoError(err)
 			r.NotEmpty(id)
 			ast.ID = id
 
-			id, err = r.repository.Upsert(r.ctx, &identicalAsset)
+			id, err = r.repository.Upsert(r.ctx, r.ns, &identicalAsset)
 			r.Require().NoError(err)
 			r.NotEmpty(id)
 			identicalAsset.ID = id
@@ -1029,7 +1082,7 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				UpdatedBy: r.users[0],
 			}
 
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, r.ns, &ast)
 			r.Require().NoError(err)
 			r.NotEmpty(id)
 			ast.ID = id
@@ -1037,14 +1090,14 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			updated := ast
 			updated.URL = "https://sample-url.com"
 
-			id, err = r.repository.Upsert(r.ctx, &updated)
+			id, err = r.repository.Upsert(r.ctx, r.ns, &updated)
 			r.Require().NoError(err)
 			r.NotEmpty(id)
 			updated.ID = id
 
 			r.Equal(ast.ID, updated.ID)
 
-			actual, err := r.repository.GetByID(r.ctx, ast.ID)
+			actual, err := r.repository.GetByID(r.ctx, r.ns, ast.ID)
 			r.NoError(err)
 
 			r.Equal(updated.URL, actual.URL)
@@ -1066,17 +1119,17 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				r.users[2],
 			}
 
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, r.ns, &ast)
 			r.Require().NoError(err)
 			r.NotEmpty(id)
 			ast.ID = id
 
-			id, err = r.repository.Upsert(r.ctx, &newAsset)
+			id, err = r.repository.Upsert(r.ctx, r.ns, &newAsset)
 			r.Require().NoError(err)
 			r.NotEmpty(id)
 			newAsset.ID = id
 
-			actual, err := r.repository.GetByID(r.ctx, ast.ID)
+			actual, err := r.repository.GetByID(r.ctx, r.ns, ast.ID)
 			r.NoError(err)
 			r.Len(actual.Owners, len(newAsset.Owners))
 			for i, owner := range actual.Owners {
@@ -1100,17 +1153,17 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				r.users[2],
 			}
 
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, r.ns, &ast)
 			r.Require().NoError(err)
 			r.NotEmpty(id)
 			ast.ID = id
 
-			id, err = r.repository.Upsert(r.ctx, &newAsset)
+			id, err = r.repository.Upsert(r.ctx, r.ns, &newAsset)
 			r.Require().NoError(err)
 			r.NotEmpty(id)
 			newAsset.ID = id
 
-			actual, err := r.repository.GetByID(r.ctx, ast.ID)
+			actual, err := r.repository.GetByID(r.ctx, r.ns, ast.ID)
 			r.NoError(err)
 			r.Len(actual.Owners, len(newAsset.Owners))
 			for i, owner := range actual.Owners {
@@ -1134,17 +1187,17 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				{Email: "newuser@example.com", Provider: defaultProviderName},
 			}
 
-			id, err := r.repository.Upsert(r.ctx, &ast)
+			id, err := r.repository.Upsert(r.ctx, r.ns, &ast)
 			r.Require().NoError(err)
 			r.NotEmpty(id)
 			ast.ID = id
 
-			id, err = r.repository.Upsert(r.ctx, &newAsset)
+			id, err = r.repository.Upsert(r.ctx, r.ns, &newAsset)
 			r.Require().NoError(err)
 			r.NotEmpty(id)
 			newAsset.ID = id
 
-			actual, err := r.repository.GetByID(r.ctx, ast.ID)
+			actual, err := r.repository.GetByID(r.ctx, r.ns, ast.ID)
 			r.NoError(err)
 			r.Len(actual.Owners, len(newAsset.Owners))
 			for i, owner := range actual.Owners {
@@ -1157,14 +1210,14 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 
 func (r *AssetRepositoryTestSuite) TestDeleteByID() {
 	r.Run("return error from client if any", func() {
-		err := r.repository.DeleteByID(r.ctx, "invalid-uuid")
+		err := r.repository.DeleteByID(r.ctx, r.ns, "invalid-uuid")
 		r.Error(err)
 		r.Contains(err.Error(), "invalid asset id: \"invalid-uuid\"")
 	})
 
 	r.Run("return NotFoundError if asset does not exist", func() {
 		uuid := "2aabb450-f986-44e2-a6db-7996861d5004"
-		err := r.repository.DeleteByID(r.ctx, uuid)
+		err := r.repository.DeleteByID(r.ctx, r.ns, uuid)
 		r.ErrorAs(err, &asset.NotFoundError{AssetID: uuid})
 	})
 
@@ -1184,28 +1237,28 @@ func (r *AssetRepositoryTestSuite) TestDeleteByID() {
 		}
 
 		var err error
-		id, err := r.repository.Upsert(r.ctx, &asset1)
+		id, err := r.repository.Upsert(r.ctx, r.ns, &asset1)
 		r.Require().NoError(err)
 		r.Require().NotEmpty(id)
 		asset1.ID = id
 
-		id, err = r.repository.Upsert(r.ctx, &asset2)
+		id, err = r.repository.Upsert(r.ctx, r.ns, &asset2)
 		r.Require().NoError(err)
 		r.Require().NotEmpty(id)
 		asset2.ID = id
 
-		err = r.repository.DeleteByID(r.ctx, asset1.ID)
+		err = r.repository.DeleteByID(r.ctx, r.ns, asset1.ID)
 		r.NoError(err)
 
-		_, err = r.repository.GetByID(r.ctx, asset1.ID)
+		_, err = r.repository.GetByID(r.ctx, r.ns, asset1.ID)
 		r.ErrorAs(err, &asset.NotFoundError{AssetID: asset1.ID})
 
-		asset2FromDB, err := r.repository.GetByID(r.ctx, asset2.ID)
+		asset2FromDB, err := r.repository.GetByID(r.ctx, r.ns, asset2.ID)
 		r.NoError(err)
 		r.Equal(asset2.ID, asset2FromDB.ID)
 
 		// cleanup
-		err = r.repository.DeleteByID(r.ctx, asset2.ID)
+		err = r.repository.DeleteByID(r.ctx, r.ns, asset2.ID)
 		r.NoError(err)
 	})
 }
@@ -1213,7 +1266,7 @@ func (r *AssetRepositoryTestSuite) TestDeleteByID() {
 func (r *AssetRepositoryTestSuite) TestDeleteByURN() {
 	r.Run("return NotFoundError if asset does not exist", func() {
 		urn := "urn-test-1"
-		err := r.repository.DeleteByURN(r.ctx, urn)
+		err := r.repository.DeleteByURN(r.ctx, r.ns, urn)
 		r.ErrorAs(err, &asset.NotFoundError{URN: urn})
 	})
 
@@ -1232,24 +1285,24 @@ func (r *AssetRepositoryTestSuite) TestDeleteByURN() {
 			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
 		}
 
-		_, err := r.repository.Upsert(r.ctx, &asset1)
+		_, err := r.repository.Upsert(r.ctx, r.ns, &asset1)
 		r.Require().NoError(err)
 
-		id, err := r.repository.Upsert(r.ctx, &asset2)
+		id, err := r.repository.Upsert(r.ctx, r.ns, &asset2)
 		r.Require().NoError(err)
 
-		err = r.repository.DeleteByURN(r.ctx, asset1.URN)
+		err = r.repository.DeleteByURN(r.ctx, r.ns, asset1.URN)
 		r.NoError(err)
 
-		_, err = r.repository.GetByURN(r.ctx, asset1.URN)
+		_, err = r.repository.GetByURN(r.ctx, r.ns, asset1.URN)
 		r.ErrorAs(err, &asset.NotFoundError{URN: asset1.URN})
 
-		asset2FromDB, err := r.repository.GetByURN(r.ctx, asset2.URN)
+		asset2FromDB, err := r.repository.GetByURN(r.ctx, r.ns, asset2.URN)
 		r.NoError(err)
 		r.Equal(id, asset2FromDB.ID)
 
 		// cleanup
-		err = r.repository.DeleteByURN(r.ctx, asset2.URN)
+		err = r.repository.DeleteByURN(r.ctx, r.ns, asset2.URN)
 		r.NoError(err)
 	})
 }
@@ -1278,7 +1331,7 @@ func (r *AssetRepositoryTestSuite) TestAddProbe() {
 			},
 		}
 
-		_, err := r.repository.Upsert(r.ctx, &ast)
+		_, err := r.repository.Upsert(r.ctx, r.ns, &ast)
 		r.Require().NoError(err)
 
 		err = r.repository.AddProbe(r.ctx, ast.URN, &probe)
@@ -1305,7 +1358,7 @@ func (r *AssetRepositoryTestSuite) TestAddProbe() {
 		r.WithinDuration(probe.CreatedAt, probeFromDB.CreatedAt, 1*time.Microsecond)
 
 		// cleanup
-		err = r.repository.DeleteByURN(r.ctx, ast.URN)
+		err = r.repository.DeleteByURN(r.ctx, r.ns, ast.URN)
 		r.Require().NoError(err)
 	})
 
@@ -1329,9 +1382,9 @@ func (r *AssetRepositoryTestSuite) TestAddProbe() {
 			Status: "RUNNING",
 		}
 
-		_, err := r.repository.Upsert(r.ctx, &ast)
+		_, err := r.repository.Upsert(r.ctx, r.ns, &ast)
 		r.Require().NoError(err)
-		_, err = r.repository.Upsert(r.ctx, &otherAst)
+		_, err = r.repository.Upsert(r.ctx, r.ns, &otherAst)
 		r.Require().NoError(err)
 
 		err = r.repository.AddProbe(r.ctx, ast.URN, &probe)
@@ -1356,7 +1409,7 @@ func (r *AssetRepositoryTestSuite) TestAddProbe() {
 		r.WithinDuration(probeFromDB.CreatedAt, probeFromDB.Timestamp, 1*time.Microsecond)
 
 		// cleanup
-		err = r.repository.DeleteByURN(r.ctx, ast.URN)
+		err = r.repository.DeleteByURN(r.ctx, r.ns, ast.URN)
 		r.Require().NoError(err)
 	})
 }
@@ -1387,7 +1440,7 @@ func (r *AssetRepositoryTestSuite) TestGetProbes() {
 			Status: "RUNNING",
 		}
 
-		_, err := r.repository.Upsert(r.ctx, &ast)
+		_, err := r.repository.Upsert(r.ctx, r.ns, &ast)
 		r.Require().NoError(err)
 
 		err = r.repository.AddProbe(r.ctx, ast.URN, &p1)
@@ -1416,7 +1469,7 @@ func (r *AssetRepositoryTestSuite) TestGetProbes() {
 		r.WithinDuration(expected[0].CreatedAt, actual[0].CreatedAt, 1*time.Microsecond)
 
 		// cleanup
-		err = r.repository.DeleteByURN(r.ctx, ast.URN)
+		err = r.repository.DeleteByURN(r.ctx, r.ns, ast.URN)
 		r.Require().NoError(err)
 	})
 }
