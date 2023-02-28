@@ -51,7 +51,6 @@ func serverCmd() *cobra.Command {
 }
 
 func serverStartCommand() *cobra.Command {
-	var configFile string
 
 	c := &cobra.Command{
 		Use:     "start",
@@ -59,22 +58,20 @@ func serverStartCommand() *cobra.Command {
 		Example: "compass server start",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if configFile != "" {
-				if err := initConfigFromFlag(configFile); err != nil {
-					return err
-				}
+
+			cfg, err := LoadConfig(cmd)
+			if err != nil {
+				return err
 			}
-			return runServer()
+
+			return runServer(cfg)
 		},
 	}
-
-	c.Flags().StringVarP(&configFile, "config", "c", "config.yaml", "Config file path")
 
 	return c
 }
 
 func serverMigrateCommand() *cobra.Command {
-	var configFile string
 
 	c := &cobra.Command{
 		Use:   "migrate",
@@ -87,42 +84,40 @@ func serverMigrateCommand() *cobra.Command {
 			ctx, cancel := signal.NotifyContext(cmd.Context(), syscall.SIGINT, syscall.SIGTERM)
 			defer cancel()
 
-			if configFile != "" {
-				if err := initConfigFromFlag(configFile); err != nil {
-					return err
-				}
+			cfg, err := LoadConfig(cmd)
+			if err != nil {
+				return err
 			}
 
-			return runMigrations(ctx)
+			return runMigrations(ctx, cfg)
 		},
 	}
-	c.Flags().StringVarP(&configFile, "config", "c", "config.yaml", "Config file path")
 
 	return c
 }
 
-func runServer() error {
+func runServer(config Config) error {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	logger := initLogger(cliConfig.LogLevel)
+	logger := initLogger(config.LogLevel)
 	logger.Info("compass starting", "version", Version)
 
-	nrApp, err := initNewRelicMonitor(logger)
+	nrApp, err := initNewRelicMonitor(config, logger)
 	if err != nil {
 		return err
 	}
-	statsdReporter, err := statsd.Init(logger, cliConfig.StatsD)
-	if err != nil {
-		return err
-	}
-
-	esClient, err := initElasticsearch(logger)
+	statsdReporter, err := statsd.Init(logger, config.StatsD)
 	if err != nil {
 		return err
 	}
 
-	pgClient, err := initPostgres(logger)
+	esClient, err := initElasticsearch(logger, config.Elasticsearch)
+	if err != nil {
+		return err
+	}
+
+	pgClient, err := initPostgres(logger, config)
 	if err != nil {
 		return err
 	}
@@ -146,7 +141,7 @@ func runServer() error {
 	}
 	userService := user.NewService(logger, userRepository, user.ServiceWithStatsDReporter(statsdReporter))
 
-	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0, cliConfig.Service.Identity.ProviderDefaultName)
+	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0, config.Service.Identity.ProviderDefaultName)
 	if err != nil {
 		return fmt.Errorf("failed to create new asset repository: %w", err)
 	}
@@ -173,7 +168,7 @@ func runServer() error {
 
 	return compassserver.Serve(
 		ctx,
-		cliConfig.Service,
+		config.Service,
 		logger,
 		pgClient,
 		nrApp,
@@ -195,8 +190,8 @@ func initLogger(logLevel string) *log.Logrus {
 	return logger
 }
 
-func initElasticsearch(logger log.Logger) (*esStore.Client, error) {
-	esClient, err := esStore.NewClient(logger, cliConfig.Elasticsearch)
+func initElasticsearch(logger log.Logger, config esStore.Config) (*esStore.Client, error) {
+	esClient, err := esStore.NewClient(logger, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new elasticsearch client: %w", err)
 	}
@@ -208,41 +203,41 @@ func initElasticsearch(logger log.Logger) (*esStore.Client, error) {
 	return esClient, nil
 }
 
-func initPostgres(logger log.Logger) (*postgres.Client, error) {
-	pgClient, err := postgres.NewClient(cliConfig.DB)
+func initPostgres(logger log.Logger, config Config) (*postgres.Client, error) {
+	pgClient, err := postgres.NewClient(config.DB)
 	if err != nil {
 		return nil, fmt.Errorf("error creating postgres client: %w", err)
 	}
-	logger.Info("connected to postgres server", "host", cliConfig.DB.Host, "port", cliConfig.DB.Port)
+	logger.Info("connected to postgres server", "host", config.DB.Host, "port", config.DB.Port)
 
 	return pgClient, nil
 }
 
-func initNewRelicMonitor(logger log.Logger) (*newrelic.Application, error) {
-	if !cliConfig.NewRelic.Enabled {
+func initNewRelicMonitor(config Config, logger log.Logger) (*newrelic.Application, error) {
+	if !config.NewRelic.Enabled {
 		logger.Info("New Relic monitoring is disabled.")
 		return nil, nil
 	}
 	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName(cliConfig.NewRelic.AppName),
-		newrelic.ConfigLicense(cliConfig.NewRelic.LicenseKey),
+		newrelic.ConfigAppName(config.NewRelic.AppName),
+		newrelic.ConfigLicense(config.NewRelic.LicenseKey),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create New Relic Application: %w", err)
 	}
-	logger.Info("New Relic monitoring is enabled for", "config", cliConfig.NewRelic.AppName)
+	logger.Info("New Relic monitoring is enabled for", "config", config.NewRelic.AppName)
 
 	return app, nil
 }
 
-func runMigrations(ctx context.Context) error {
+func runMigrations(ctx context.Context, config Config) error {
 	fmt.Println("Preparing migration...")
 
-	logger := initLogger(cliConfig.LogLevel)
+	logger := initLogger(config.LogLevel)
 	logger.Info("compass is migrating", "version", Version)
 
 	logger.Info("Migrating Postgres...")
-	if err := migratePostgres(logger); err != nil {
+	if err := migratePostgres(logger, config); err != nil {
 		return err
 	}
 	logger.Info("Migration Postgres done.")
@@ -250,16 +245,16 @@ func runMigrations(ctx context.Context) error {
 	return nil
 }
 
-func migratePostgres(logger log.Logger) (err error) {
+func migratePostgres(logger log.Logger, config Config) (err error) {
 	logger.Info("Initiating Postgres client...")
 
-	pgClient, err := postgres.NewClient(cliConfig.DB)
+	pgClient, err := postgres.NewClient(config.DB)
 	if err != nil {
 		logger.Error("failed to prepare migration", "error", err)
 		return err
 	}
 
-	err = pgClient.Migrate(cliConfig.DB)
+	err = pgClient.Migrate(config.DB)
 	if err != nil {
 		return fmt.Errorf("problem with migration %w", err)
 	}

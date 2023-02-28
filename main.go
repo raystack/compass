@@ -14,12 +14,7 @@ const (
 )
 
 func main() {
-	cliConfig, err := cli.LoadConfig()
-	if err != nil {
-		cliConfig = &cli.Config{}
-	}
-
-	rootCmd := cli.New(cliConfig)
+	rootCmd := cli.New()
 
 	if cmd, err := rootCmd.ExecuteC(); err != nil {
 		printError(err)

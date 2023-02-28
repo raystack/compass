@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/odpf/compass/internal/client"
@@ -14,11 +15,12 @@ import (
 	"github.com/odpf/salt/cmdx"
 	"github.com/odpf/salt/config"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
 const configFlag = "config"
 
-var cliConfig *Config
+var ErrConfigNotFound = errors.New("config file not found")
 
 func configCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -69,14 +71,11 @@ func configListCommand() *cobra.Command {
 			"group": "core",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg := cmdx.SetConfig("compass")
-
-			data, err := cfg.Read()
+			cfg, err := LoadConfig(cmd)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to read configs: %w\n", err)
 			}
-
-			fmt.Println(data)
+			_ = yaml.NewEncoder(os.Stdout).Encode(cfg)
 			return nil
 		},
 	}
@@ -106,25 +105,39 @@ type Config struct {
 	Client client.Config `mapstructure:"client"`
 }
 
-func LoadConfig() (*Config, error) {
-	var config Config
+func LoadConfig(cmd *cobra.Command) (Config, error) {
 
-	cfg := cmdx.SetConfig("compass")
-	err := cfg.Load(&config)
+	var opts []config.LoaderOption
 
-	return &config, err
-}
-
-func initConfigFromFlag(configFile string) error {
-	loader := config.NewLoader(config.WithFile(configFile))
-
-	if err := loader.Load(cliConfig); err != nil {
-		if errors.As(err, &config.ConfigFileNotFoundError{}) {
-			fmt.Println(err)
-			return nil
-		}
-		return err
+	cfgFile, _ := cmd.Flags().GetString(configFlag)
+	if cfgFile != "" {
+		opts = append(opts, config.WithFile(cfgFile))
+	} else {
+		opts = append(opts,
+			config.WithPath("./"),
+			config.WithName("compass.yaml"),
+			config.WithEnvKeyReplacer(".", "_"),
+			config.WithEnvPrefix("COMPASS"),
+		)
 	}
 
-	return nil
+	var cfg Config
+	if err := config.NewLoader(opts...).Load(&cfg); err != nil {
+		// if config file not found at root check for file the one created from config init command
+		if errors.As(err, &config.ConfigFileNotFoundError{}) {
+			return LoadConfigFromInit(&cfg)
+		}
+		return cfg, err
+	}
+	return cfg, nil
+}
+
+func LoadConfigFromInit(cfg *Config) (Config, error) {
+	if err := cmdx.SetConfig("compass").Load(cfg); err != nil {
+		if errors.As(err, &config.ConfigFileNotFoundError{}) {
+			return *cfg, ErrConfigNotFound
+		}
+		return *cfg, err
+	}
+	return *cfg, nil
 }
