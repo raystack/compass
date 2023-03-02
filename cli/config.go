@@ -20,9 +20,7 @@ import (
 
 const configFlag = "config"
 
-var ErrConfigNotFound = errors.New("config file not found")
-
-func configCommand() *cobra.Command {
+func configCommand(cfg *Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config <command>",
 		Short: "Manage server and client configurations",
@@ -32,7 +30,7 @@ func configCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(configInitCommand())
-	cmd.AddCommand(configListCommand())
+	cmd.AddCommand(configListCommand(cfg))
 
 	return cmd
 }
@@ -44,6 +42,7 @@ func configInitCommand() *cobra.Command {
 		Example: heredoc.Doc(`
 			$ compass config init
 		`),
+		// SilencePersistentFlag: true,
 		Annotations: map[string]string{
 			"group": "core",
 		},
@@ -60,7 +59,7 @@ func configInitCommand() *cobra.Command {
 	}
 }
 
-func configListCommand() *cobra.Command {
+func configListCommand(cfg *Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "list",
 		Short: "List server and client configuration settings",
@@ -71,11 +70,7 @@ func configListCommand() *cobra.Command {
 			"group": "core",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := LoadConfig(cmd)
-			if err != nil {
-				return fmt.Errorf("failed to read configs: %w\n", err)
-			}
-			_ = yaml.NewEncoder(os.Stdout).Encode(cfg)
+			_ = yaml.NewEncoder(os.Stdout).Encode(*cfg)
 			return nil
 		},
 	}
@@ -105,39 +100,41 @@ type Config struct {
 	Client client.Config `mapstructure:"client"`
 }
 
-func LoadConfig(cmd *cobra.Command) (Config, error) {
-
-	var opts []config.LoaderOption
-
-	cfgFile, _ := cmd.Flags().GetString(configFlag)
-	if cfgFile != "" {
-		opts = append(opts, config.WithFile(cfgFile))
-	} else {
-		opts = append(opts,
-			config.WithPath("./"),
-			config.WithName("compass.yaml"),
-			config.WithEnvKeyReplacer(".", "_"),
-			config.WithEnvPrefix("COMPASS"),
-		)
-	}
-
+func LoadConfig() (*Config, error) {
 	var cfg Config
-	if err := config.NewLoader(opts...).Load(&cfg); err != nil {
-		// if config file not found at root check for file the one created from config init command
+	err := cmdx.SetConfig("compass").Load(&cfg)
+	if err != nil {
 		if errors.As(err, &config.ConfigFileNotFoundError{}) {
-			return LoadConfigFromInit(&cfg)
+			return LoadFromCurrentDir()
 		}
-		return cfg, err
+		return &cfg, err
 	}
-	return cfg, nil
+	return &cfg, nil
 }
 
-func LoadConfigFromInit(cfg *Config) (Config, error) {
-	if err := cmdx.SetConfig("compass").Load(cfg); err != nil {
+func LoadFromCurrentDir() (*Config, error) {
+	var cfg Config
+	var opts []config.LoaderOption
+
+	opts = append(opts,
+		config.WithPath("./"),
+		config.WithName("compass.yaml"),
+		config.WithEnvKeyReplacer(".", "_"),
+		config.WithEnvPrefix("COMPASS"),
+	)
+
+	if err := config.NewLoader(opts...).Load(&cfg); err != nil {
 		if errors.As(err, &config.ConfigFileNotFoundError{}) {
-			return *cfg, ErrConfigNotFound
+			return &cfg, ErrConfigNotFound
 		}
-		return *cfg, err
+		return &cfg, err
 	}
-	return *cfg, nil
+	return &cfg, nil
+}
+
+func LoadConfigFromFlag(cfgFile string, cfg *Config) error {
+	var opts []config.LoaderOption
+	opts = append(opts, config.WithFile(cfgFile))
+
+	return config.NewLoader(opts...).Load(cfg)
 }

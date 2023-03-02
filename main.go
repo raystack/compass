@@ -14,9 +14,12 @@ const (
 )
 
 func main() {
-	rootCmd := cli.New()
+	cliConfig, err := cli.LoadConfig()
+	if err != nil {
+		cliConfig = &cli.Config{}
+	}
 
-	if cmd, err := rootCmd.ExecuteC(); err != nil {
+	if cmd, err := cli.New(cliConfig).ExecuteC(); err != nil {
 		printError(err)
 
 		cmdErr := strings.HasPrefix(err.Error(), "unknown command")

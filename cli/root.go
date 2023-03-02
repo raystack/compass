@@ -2,7 +2,6 @@ package cli
 
 import (
 	"github.com/MakeNowJust/heredoc"
-	"github.com/odpf/compass/internal/client"
 	"github.com/odpf/salt/cmdx"
 	"github.com/spf13/cobra"
 )
@@ -31,26 +30,32 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-func New() *cobra.Command {
-	cliConfig, err := LoadConfig(rootCmd)
-	if err != nil {
-		cliConfig = Config{}
-	}
+func New(cliConfig *Config) *cobra.Command {
 
 	if cliConfig.Client.ServerHeaderKeyUUID == "" {
 		cliConfig.Client.ServerHeaderKeyUUID = cliConfig.Service.Identity.HeaderKeyUUID
 	}
-	client.SetConfig(cliConfig.Client)
+
+	rootCmd.PersistentPreRunE = func(subCmd *cobra.Command, args []string) error {
+		cfgFile, _ := subCmd.Flags().GetString(configFlag)
+		if cfgFile != "" {
+			err := LoadConfigFromFlag(cfgFile, cliConfig)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
 
 	rootCmd.PersistentFlags().StringP(configFlag, "c", "", "Override config file")
 
 	rootCmd.AddCommand(
-		serverCmd(),
-		configCommand(),
-		assetsCommand(),
-		discussionsCommand(),
-		searchCommand(),
-		lineageCommand(),
+		serverCmd(cliConfig),
+		configCommand(cliConfig),
+		assetsCommand(cliConfig),
+		discussionsCommand(cliConfig),
+		searchCommand(cliConfig),
+		lineageCommand(cliConfig),
 		versionCmd(),
 	)
 

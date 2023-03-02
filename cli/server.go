@@ -28,7 +28,7 @@ var (
 	Version string
 )
 
-func serverCmd() *cobra.Command {
+func serverCmd(cfg *Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "server <command>",
 		Aliases: []string{"s"},
@@ -43,14 +43,14 @@ func serverCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		serverStartCommand(),
-		serverMigrateCommand(),
+		serverStartCommand(cfg),
+		serverMigrateCommand(cfg),
 	)
 
 	return cmd
 }
 
-func serverStartCommand() *cobra.Command {
+func serverStartCommand(cfg *Config) *cobra.Command {
 
 	c := &cobra.Command{
 		Use:     "start",
@@ -58,12 +58,6 @@ func serverStartCommand() *cobra.Command {
 		Example: "compass server start",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-
-			cfg, err := LoadConfig(cmd)
-			if err != nil {
-				return err
-			}
-
 			return runServer(cfg)
 		},
 	}
@@ -71,7 +65,7 @@ func serverStartCommand() *cobra.Command {
 	return c
 }
 
-func serverMigrateCommand() *cobra.Command {
+func serverMigrateCommand(cfg *Config) *cobra.Command {
 
 	c := &cobra.Command{
 		Use:   "migrate",
@@ -84,11 +78,6 @@ func serverMigrateCommand() *cobra.Command {
 			ctx, cancel := signal.NotifyContext(cmd.Context(), syscall.SIGINT, syscall.SIGTERM)
 			defer cancel()
 
-			cfg, err := LoadConfig(cmd)
-			if err != nil {
-				return err
-			}
-
 			return runMigrations(ctx, cfg)
 		},
 	}
@@ -96,7 +85,7 @@ func serverMigrateCommand() *cobra.Command {
 	return c
 }
 
-func runServer(config Config) error {
+func runServer(config *Config) error {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
@@ -203,7 +192,7 @@ func initElasticsearch(logger log.Logger, config esStore.Config) (*esStore.Clien
 	return esClient, nil
 }
 
-func initPostgres(logger log.Logger, config Config) (*postgres.Client, error) {
+func initPostgres(logger log.Logger, config *Config) (*postgres.Client, error) {
 	pgClient, err := postgres.NewClient(config.DB)
 	if err != nil {
 		return nil, fmt.Errorf("error creating postgres client: %w", err)
@@ -213,7 +202,7 @@ func initPostgres(logger log.Logger, config Config) (*postgres.Client, error) {
 	return pgClient, nil
 }
 
-func initNewRelicMonitor(config Config, logger log.Logger) (*newrelic.Application, error) {
+func initNewRelicMonitor(config *Config, logger log.Logger) (*newrelic.Application, error) {
 	if !config.NewRelic.Enabled {
 		logger.Info("New Relic monitoring is disabled.")
 		return nil, nil
@@ -230,7 +219,7 @@ func initNewRelicMonitor(config Config, logger log.Logger) (*newrelic.Applicatio
 	return app, nil
 }
 
-func runMigrations(ctx context.Context, config Config) error {
+func runMigrations(ctx context.Context, config *Config) error {
 	fmt.Println("Preparing migration...")
 
 	logger := initLogger(config.LogLevel)
@@ -245,7 +234,7 @@ func runMigrations(ctx context.Context, config Config) error {
 	return nil
 }
 
-func migratePostgres(logger log.Logger, config Config) (err error) {
+func migratePostgres(logger log.Logger, config *Config) (err error) {
 	logger.Info("Initiating Postgres client...")
 
 	pgClient, err := postgres.NewClient(config.DB)

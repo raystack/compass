@@ -18,7 +18,7 @@ const (
 	pageOffset = 0
 )
 
-func assetsCommand() *cobra.Command {
+func assetsCommand(cfg *Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "asset",
 		Aliases: []string{"assets"},
@@ -42,23 +42,23 @@ func assetsCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		listAllAssetsCommand(),
-		viewAssetByIDCommand(),
-		editAssetCommand(),
-		deleteAssetByIDCommand(),
-		listAllTypesCommand(),
-		listAssetStargazerCommand(),
-		starAssetCommand(),
-		unstarAssetCommand(),
-		starredAssetCommand(),
-		versionHistoryAssetCommand(),
-		viewAssetByVersionCommand(),
+		listAllAssetsCommand(cfg),
+		viewAssetByIDCommand(cfg),
+		editAssetCommand(cfg),
+		deleteAssetByIDCommand(cfg),
+		listAllTypesCommand(cfg),
+		listAssetStargazerCommand(cfg),
+		starAssetCommand(cfg),
+		unstarAssetCommand(cfg),
+		starredAssetCommand(cfg),
+		versionHistoryAssetCommand(cfg),
+		viewAssetByVersionCommand(cfg),
 	)
 
 	return cmd
 }
 
-func listAllAssetsCommand() *cobra.Command {
+func listAllAssetsCommand(cfg *Config) *cobra.Command {
 	var types, services, q, qFields, sort, sort_dir, output string
 	var data map[string]string
 	var size, page uint32
@@ -76,13 +76,13 @@ func listAllAssetsCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			res, err := clnt.GetAllAssets(ctx, &compassv1beta1.GetAllAssetsRequest{
 				Q:         q,
 				QFields:   qFields,
@@ -131,7 +131,7 @@ func listAllAssetsCommand() *cobra.Command {
 	return cmd
 }
 
-func viewAssetByIDCommand() *cobra.Command {
+func viewAssetByIDCommand(cfg *Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "view <id>",
 		Short: "view asset for the given ID",
@@ -146,14 +146,14 @@ func viewAssetByIDCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
 			assetID := args[0]
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			res, err := clnt.GetAssetByID(ctx, &compassv1beta1.GetAssetByIDRequest{
 				Id: assetID,
 			})
@@ -170,7 +170,7 @@ func viewAssetByIDCommand() *cobra.Command {
 	return cmd
 }
 
-func editAssetCommand() *cobra.Command {
+func editAssetCommand(cfg *Config) *cobra.Command {
 	var filePath string
 
 	cmd := &cobra.Command{
@@ -197,13 +197,13 @@ func editAssetCommand() *cobra.Command {
 				return err
 			}
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			res, err := clnt.UpsertPatchAsset(ctx, &compassv1beta1.UpsertPatchAssetRequest{
 				Asset:     reqBody.Asset,
 				Upstreams: reqBody.Upstreams,
@@ -226,7 +226,7 @@ func editAssetCommand() *cobra.Command {
 	return cmd
 }
 
-func deleteAssetByIDCommand() *cobra.Command {
+func deleteAssetByIDCommand(cfg *Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete <id>",
 		Short: "delete asset with the given ID",
@@ -241,14 +241,14 @@ func deleteAssetByIDCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
 			assetID := args[0]
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			_, err = clnt.DeleteAsset(ctx, &compassv1beta1.DeleteAssetRequest{
 				Id: assetID,
 			})
@@ -264,7 +264,7 @@ func deleteAssetByIDCommand() *cobra.Command {
 	return cmd
 }
 
-func listAllTypesCommand() *cobra.Command {
+func listAllTypesCommand(cfg *Config) *cobra.Command {
 	var types, services, q, qFields string
 	var data map[string]string
 
@@ -283,13 +283,13 @@ func listAllTypesCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			res, err := clnt.GetAllTypes(ctx, &compassv1beta1.GetAllTypesRequest{
 				Q:        q,
 				QFields:  qFields,
@@ -321,7 +321,7 @@ func listAllTypesCommand() *cobra.Command {
 	return cmd
 }
 
-func listAssetStargazerCommand() *cobra.Command {
+func listAssetStargazerCommand(cfg *Config) *cobra.Command {
 	var size, page uint32
 	cmd := &cobra.Command{
 		Use:   "stargazers <id>",
@@ -334,14 +334,14 @@ func listAssetStargazerCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
 			assetID := args[0]
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			res, err := clnt.GetAssetStargazers(ctx, &compassv1beta1.GetAssetStargazersRequest{
 				Id:     assetID,
 				Size:   size,
@@ -361,7 +361,7 @@ func listAssetStargazerCommand() *cobra.Command {
 	return cmd
 }
 
-func starAssetCommand() *cobra.Command {
+func starAssetCommand(cfg *Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "star <id>",
 		Short: "star an asset by id for current user",
@@ -373,14 +373,14 @@ func starAssetCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
 			assetID := args[0]
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			_, err = clnt.StarAsset(ctx, &compassv1beta1.StarAssetRequest{
 				AssetId: assetID,
 			})
@@ -398,7 +398,7 @@ func starAssetCommand() *cobra.Command {
 	return cmd
 }
 
-func unstarAssetCommand() *cobra.Command {
+func unstarAssetCommand(cfg *Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "unstar <id>",
 		Short: "unstar an asset by id for current user",
@@ -410,14 +410,14 @@ func unstarAssetCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
 			assetID := args[0]
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			_, err = clnt.UnstarAsset(ctx, &compassv1beta1.UnstarAssetRequest{
 				AssetId: assetID,
 			})
@@ -435,7 +435,7 @@ func unstarAssetCommand() *cobra.Command {
 	return cmd
 }
 
-func starredAssetCommand() *cobra.Command {
+func starredAssetCommand(cfg *Config) *cobra.Command {
 	var size, page uint32
 	var output string
 	cmd := &cobra.Command{
@@ -449,13 +449,13 @@ func starredAssetCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			res, err := clnt.GetMyStarredAssets(ctx, &compassv1beta1.GetMyStarredAssetsRequest{
 				Size:   size,
 				Offset: page,
@@ -488,7 +488,7 @@ func starredAssetCommand() *cobra.Command {
 	return cmd
 }
 
-func versionHistoryAssetCommand() *cobra.Command {
+func versionHistoryAssetCommand(cfg *Config) *cobra.Command {
 	var size, page uint32
 	cmd := &cobra.Command{
 		Use:   "versionhistory <id>",
@@ -501,14 +501,14 @@ func versionHistoryAssetCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
 			assetID := args[0]
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			res, err := clnt.GetAssetVersionHistory(ctx, &compassv1beta1.GetAssetVersionHistoryRequest{
 				Id:     assetID,
 				Size:   size,
@@ -531,7 +531,7 @@ func versionHistoryAssetCommand() *cobra.Command {
 	return cmd
 }
 
-func viewAssetByVersionCommand() *cobra.Command {
+func viewAssetByVersionCommand(cfg *Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version <id> <version>",
 		Short: "get asset's previous version by id and version number",
@@ -543,7 +543,7 @@ func viewAssetByVersionCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
@@ -551,7 +551,7 @@ func viewAssetByVersionCommand() *cobra.Command {
 
 			assetID := args[0]
 			assetVersion := args[1]
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			res, err := clnt.GetAssetByVersion(ctx, &compassv1beta1.GetAssetByVersionRequest{
 				Id:      assetID,
 				Version: assetVersion,
