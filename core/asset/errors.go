@@ -17,6 +17,17 @@ type NotFoundError struct {
 	URN     string
 }
 
+type LineageNotFoundError struct {
+	URN string
+}
+
+func (err LineageNotFoundError) Error() string {
+	if err.URN != "" {
+		return fmt.Sprintf("no lineage found for record: %q", err.URN)
+	}
+	return "could not find lineage"
+}
+
 func (err NotFoundError) Error() string {
 	if err.AssetID != "" {
 		return fmt.Sprintf("no such record: %q", err.AssetID)
