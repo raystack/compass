@@ -509,6 +509,7 @@ func TestService_GetAssetByID(t *testing.T) {
 
 func TestService_GetAssetByVersion(t *testing.T) {
 	assetID := "f742aa61-1100-445c-8d72-355a42e2fb59"
+	urn := "my-test-urn"
 	type testCase struct {
 		Description string
 		ID          string
@@ -518,18 +519,36 @@ func TestService_GetAssetByVersion(t *testing.T) {
 
 	var testCases = []testCase{
 		{
-			Description: `should return error if the GetByVersion function return error`,
+			Description: `should return error if the GetByVersionWithID function return error`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetByVersion(ctx, assetID, "v0.0.2").Return(asset.Asset{}, errors.New("error fetching asset"))
+				ar.EXPECT().GetByVersionWithID(ctx, assetID, "v0.0.2").
+					Return(asset.Asset{}, errors.New("error fetching asset"))
 			},
 			ExpectedErr: errors.New("error fetching asset"),
 		},
 		{
-			Description: `should return no error if asset is found`,
+			Description: `should return error if the GetByVersionWithURN function return error`,
+			ID:          urn,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetByVersionWithURN(ctx, urn, "v0.0.2").
+					Return(asset.Asset{}, errors.New("error fetching asset"))
+			},
+			ExpectedErr: errors.New("error fetching asset"),
+		},
+		{
+			Description: `should return no error if asset is found with ID`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
-				ar.EXPECT().GetByVersion(ctx, assetID, "v0.0.2").Return(asset.Asset{}, nil)
+				ar.EXPECT().GetByVersionWithID(ctx, assetID, "v0.0.2").Return(asset.Asset{}, nil)
+			},
+			ExpectedErr: nil,
+		},
+		{
+			Description: `should return no error if asset is found with URN`,
+			ID:          urn,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetByVersionWithURN(ctx, urn, "v0.0.2").Return(asset.Asset{}, nil)
 			},
 			ExpectedErr: nil,
 		},

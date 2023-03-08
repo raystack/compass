@@ -12,6 +12,7 @@ func patchAsset(a *Asset, patchData map[string]interface{}) {
 	a.Service = patchString("service", patchData, a.Service)
 	a.Name = patchString("name", patchData, a.Name)
 	a.Description = patchString("description", patchData, a.Description)
+	a.URL = patchString("url", patchData, a.URL)
 
 	labels, exists := patchData["labels"]
 	if exists {

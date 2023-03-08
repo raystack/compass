@@ -248,10 +248,9 @@ func (server *APIServer) buildGetDiscussionsFilter(req *compassv1beta1.GetMyDisc
 
 // userToProto transforms struct with some fields only to proto
 func userToProto(u user.User) *compassv1beta1.User {
-	if u.UUID == "" {
+	if u == (user.User{}) {
 		return nil
 	}
-
 	return &compassv1beta1.User{
 		Uuid:  u.UUID,
 		Email: u.Email,
@@ -260,10 +259,9 @@ func userToProto(u user.User) *compassv1beta1.User {
 
 // userToFullProto transforms struct with all fields to proto
 func userToFullProto(u user.User) *compassv1beta1.User {
-	if u.UUID == "" {
+	if u == (user.User{}) {
 		return nil
 	}
-
 	var createdAtPB *timestamppb.Timestamp
 	if !u.CreatedAt.IsZero() {
 		createdAtPB = timestamppb.New(u.CreatedAt)

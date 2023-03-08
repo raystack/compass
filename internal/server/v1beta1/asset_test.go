@@ -101,19 +101,19 @@ func TestGetAllAssets(t *testing.T) {
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
 				as.EXPECT().GetAllAssets(ctx, asset.Filter{}, false).Return([]asset.Asset{
 					{ID: "testid-1"},
-					{ID: "testid-2"},
+					{ID: "testid-2", Owners: []user.User{{Email: "dummy@trash.com"}}},
 				}, 0, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAllAssetsResponse) error {
 				expected := &compassv1beta1.GetAllAssetsResponse{
 					Data: []*compassv1beta1.Asset{
 						{Id: "testid-1"},
-						{Id: "testid-2"},
+						{Id: "testid-2", Owners: []*compassv1beta1.User{{Email: "dummy@trash.com"}}},
 					},
 				}
 
-				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
-					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
+				if d := cmp.Diff(resp, expected, protocmp.Transform()); d != "" {
+					return fmt.Errorf("expected response to be %+v, was %+v\n\tdiff: %s", expected, resp, d)
 				}
 				return nil
 			},
@@ -197,7 +197,8 @@ func TestGetAssetByID(t *testing.T) {
 		assetID  = uuid.NewString()
 		now      = time.Now()
 		ast      = asset.Asset{
-			ID: assetID,
+			ID:     assetID,
+			Owners: []user.User{{Email: "dummy@trash.com"}},
 			Probes: []asset.Probe{
 				{
 					ID:           uuid.NewString(),
@@ -260,7 +261,8 @@ func TestGetAssetByID(t *testing.T) {
 			PostCheck: func(resp *compassv1beta1.GetAssetByIDResponse) error {
 				expected := &compassv1beta1.GetAssetByIDResponse{
 					Data: &compassv1beta1.Asset{
-						Id: assetID,
+						Id:     assetID,
+						Owners: []*compassv1beta1.User{{Email: "dummy@trash.com"}},
 						Probes: []*compassv1beta1.Probe{
 							{
 								Id:           ast.Probes[0].ID,
@@ -282,8 +284,8 @@ func TestGetAssetByID(t *testing.T) {
 						},
 					},
 				}
-				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
-					return fmt.Errorf("mismatch (-want +got):\n%s", diff)
+				if d := cmp.Diff(resp, expected, protocmp.Transform()); d != "" {
+					return fmt.Errorf("mismatch (-want +got):\n%s", d)
 				}
 				return nil
 			},
@@ -332,6 +334,7 @@ func TestUpsertAsset(t *testing.T) {
 				Name:    "new-name",
 				Service: "kafka",
 				Data:    &structpb.Struct{},
+				Url:     "https://sample-url.com",
 				Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "", Email: "email@email.com", Provider: "provider"}},
 			},
 			Upstreams: []*compassv1beta1.LineageNode{
@@ -450,6 +453,7 @@ func TestUpsertAsset(t *testing.T) {
 					Service:   "kafka",
 					UpdatedBy: user.User{ID: userID},
 					Data:      map[string]interface{}{},
+					URL:       "https://sample-url.com",
 					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
 				}
 				upstreams := []string{"upstream-1"}
@@ -520,6 +524,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 				Name:    wrapperspb.String("new-name"),
 				Service: "kafka",
 				Data:    &structpb.Struct{},
+				Url:     "https://sample-url.com",
 				Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "", Email: "email@email.com", Provider: "provider"}},
 			},
 			Upstreams: []*compassv1beta1.LineageNode{
@@ -549,6 +554,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Service:   "kafka",
 			UpdatedBy: user.User{ID: userID},
 			Data:      map[string]interface{}{},
+			URL:       "https://sample-url-old.com",
 			Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
 		}
 	)
@@ -652,6 +658,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 					Service:   "kafka",
 					UpdatedBy: user.User{ID: userID},
 					Data:      map[string]interface{}{},
+					URL:       "https://sample-url.com",
 					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
 				}
 				upstreams := []string{"upstream-1"}
@@ -688,6 +695,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 					Service:   "kafka",
 					UpdatedBy: user.User{ID: userID},
 					Data:      map[string]interface{}{},
+					URL:       "https://sample-url-old.com",
 					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
 				}
 
@@ -733,6 +741,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 					Service:   "kafka",
 					UpdatedBy: user.User{ID: userID},
 					Data:      map[string]interface{}{},
+					URL:       "https://sample-url-old.com",
 					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
 				}
 
@@ -1090,6 +1099,7 @@ func TestGetAssetByVersion(t *testing.T) {
 		ast      = asset.Asset{
 			ID:      assetID,
 			Version: version,
+			Owners:  []user.User{{Email: "dummy@trash.com"}},
 		}
 	)
 
@@ -1149,10 +1159,11 @@ func TestGetAssetByVersion(t *testing.T) {
 				expected := &compassv1beta1.GetAssetByVersionResponse{
 					Data: &compassv1beta1.Asset{
 						Id:      assetID,
+						Owners:  []*compassv1beta1.User{{Email: "dummy@trash.com"}},
 						Version: version,
 					},
 				}
-				if diff := cmp.Diff(resp, expected, protocmp.Transform()); diff != "" {
+				if d := cmp.Diff(resp, expected, protocmp.Transform()); d != "" {
 					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
 				}
 				return nil
@@ -1362,6 +1373,7 @@ func TestAssetToProto(t *testing.T) {
 				Data: map[string]interface{}{
 					"data1": "datavalue1",
 				},
+				Owners: []user.User{{Email: "dummy@trash.com"}},
 				Labels: map[string]string{
 					"label1": "labelvalue1",
 				},
@@ -1376,9 +1388,10 @@ func TestAssetToProto(t *testing.T) {
 				UpdatedAt: timeDummy,
 			},
 			ExpectProto: &compassv1beta1.Asset{
-				Id:   "id1",
-				Urn:  "urn1",
-				Data: dataPB,
+				Id:     "id1",
+				Urn:    "urn1",
+				Data:   dataPB,
+				Owners: []*compassv1beta1.User{{Email: "dummy@trash.com"}},
 				Labels: map[string]string{
 					"label1": "labelvalue1",
 				},
