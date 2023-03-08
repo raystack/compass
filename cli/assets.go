@@ -133,9 +133,10 @@ func listAllAssetsCommand(cfg *Config) *cobra.Command {
 
 func viewAssetByIDCommand(cfg *Config) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "view <id>",
-		Short: "view asset for the given ID",
+		Use:   "view <urn>",
+		Short: "view asset for the given ID or URN",
 		Example: heredoc.Doc(`
+			$ compass asset view <urn>
 			$ compass asset view <id>
 		`),
 		Args: cobra.ExactArgs(1),
@@ -533,11 +534,12 @@ func versionHistoryAssetCommand(cfg *Config) *cobra.Command {
 
 func viewAssetByVersionCommand(cfg *Config) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "version <id> <version>",
-		Short: "get asset's previous version by id and version number",
+		Use:   "version <urn> <version>",
+		Short: "get asset's previous version by urn or id and version number",
 		Example: heredoc.Doc(`
+			$ compass asset version <urn> <version>
 			$ compass asset version <id> <version>
-		`),
+			`),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spinner := printer.Spin("")

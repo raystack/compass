@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/odpf/compass/cli"
 )
@@ -18,8 +21,10 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
 
-	if cmd, err := cli.New(cliConfig).ExecuteC(); err != nil {
+	if cmd, err := cli.New(cliConfig).ExecuteContextC(ctx); err != nil {
 		printError(err)
 
 		cmdErr := strings.HasPrefix(err.Error(), "unknown command")
