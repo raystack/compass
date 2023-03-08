@@ -42,7 +42,6 @@ func configInitCommand() *cobra.Command {
 		Example: heredoc.Doc(`
 			$ compass config init
 		`),
-		// SilencePersistentFlag: true,
 		Annotations: map[string]string{
 			"group": "core",
 		},
@@ -70,8 +69,7 @@ func configListCommand(cfg *Config) *cobra.Command {
 			"group": "core",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = yaml.NewEncoder(os.Stdout).Encode(*cfg)
-			return nil
+			return yaml.NewEncoder(os.Stdout).Encode(*cfg)
 		},
 	}
 	return cmd
@@ -102,34 +100,30 @@ type Config struct {
 
 func LoadConfig() (*Config, error) {
 	var cfg Config
-	err := cmdx.SetConfig("compass").Load(&cfg)
-	if err != nil {
-		if errors.As(err, &config.ConfigFileNotFoundError{}) {
-			return LoadFromCurrentDir()
+	err := LoadFromCurrentDir(&cfg)
+
+	if errors.As(err, &config.ConfigFileNotFoundError{}) {
+		err := cmdx.SetConfig("compass").Load(&cfg)
+		if err != nil {
+			if errors.As(err, &config.ConfigFileNotFoundError{}) {
+				return &cfg, ErrConfigNotFound
+			}
+			return &cfg, err
 		}
-		return &cfg, err
 	}
 	return &cfg, nil
 }
 
-func LoadFromCurrentDir() (*Config, error) {
-	var cfg Config
+func LoadFromCurrentDir(cfg *Config) error {
 	var opts []config.LoaderOption
-
 	opts = append(opts,
 		config.WithPath("./"),
-		config.WithName("compass.yaml"),
+		config.WithFile("compass.yaml"),
 		config.WithEnvKeyReplacer(".", "_"),
 		config.WithEnvPrefix("COMPASS"),
 	)
 
-	if err := config.NewLoader(opts...).Load(&cfg); err != nil {
-		if errors.As(err, &config.ConfigFileNotFoundError{}) {
-			return &cfg, ErrConfigNotFound
-		}
-		return &cfg, err
-	}
-	return &cfg, nil
+	return config.NewLoader(opts...).Load(cfg)
 }
 
 func LoadConfigFromFlag(cfgFile string, cfg *Config) error {

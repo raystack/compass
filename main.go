@@ -16,7 +16,7 @@ const (
 func main() {
 	cliConfig, err := cli.LoadConfig()
 	if err != nil {
-		cliConfig = &cli.Config{}
+		fmt.Println(err)
 	}
 
 	if cmd, err := cli.New(cliConfig).ExecuteC(); err != nil {
