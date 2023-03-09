@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func searchCommand() *cobra.Command {
+func searchCommand(cfg *Config) *cobra.Command {
 	var filter, query, rankby string
 	var size uint32
 	cmd := &cobra.Command{
@@ -19,7 +19,7 @@ func searchCommand() *cobra.Command {
 		Aliases: []string{},
 		Short:   "query the metadata available",
 		Annotations: map[string]string{
-			"group:core": "true",
+			"group": "core",
 		},
 		Args: cobra.ExactArgs(1),
 		Example: heredoc.Doc(`
@@ -30,13 +30,13 @@ func searchCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			res, err := clnt.SearchAssets(ctx, makeSearchAssetRequest(args[0], filter, query, rankby, size))
 			if err != nil {
 				return err

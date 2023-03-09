@@ -11,13 +11,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func lineageCommand() *cobra.Command {
+func lineageCommand(cfg *Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "lineage <urn>",
 		Aliases: []string{},
 		Short:   "observe the lineage of metadata",
 		Annotations: map[string]string{
-			"group:core": "true",
+			"group": "core",
 		},
 		Args: cobra.ExactArgs(1),
 		Example: heredoc.Doc(`
@@ -28,13 +28,13 @@ func lineageCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 
 			res, err := clnt.GetGraph(ctx, &compassv1beta1.GetGraphRequest{
 				Urn: args[0],

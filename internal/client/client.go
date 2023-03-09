@@ -11,20 +11,14 @@ import (
 )
 
 type Config struct {
-	Host                  string `mapstructure:"host" default:"localhost:8080"`
-	ServerHeaderKeyUUID   string `mapstructure:"serverheaderkey_uuid" default:"Compass-User-UUID"`
-	ServerHeaderValueUUID string `mapstructure:"serverheadervalue_uuid" default:"compass@odpf.com"`
+	Host                  string `mapstructure:"host" default:"localhost:8081"`
+	ServerHeaderKeyUUID   string `yaml:"serverheaderkey_uuid" mapstructure:"serverheaderkey_uuid" default:"Compass-User-UUID"`
+	ServerHeaderValueUUID string `yaml:"serverheadervalue_uuid" mapstructure:"serverheadervalue_uuid" default:"compass@odpf.com"`
 }
 
-var config Config
-
-func SetConfig(c Config) {
-	config = c
-}
-
-func Create(ctx context.Context) (compassv1beta1.CompassServiceClient, func(), error) {
+func Create(ctx context.Context, cfg Config) (compassv1beta1.CompassServiceClient, func(), error) {
 	dialTimeoutCtx, dialCancel := context.WithTimeout(ctx, time.Second*2)
-	conn, err := createConnection(dialTimeoutCtx)
+	conn, err := createConnection(dialTimeoutCtx, cfg)
 	if err != nil {
 		dialCancel()
 		return nil, nil, err
@@ -39,18 +33,18 @@ func Create(ctx context.Context) (compassv1beta1.CompassServiceClient, func(), e
 	return client, cancel, nil
 }
 
-func SetMetadata(ctx context.Context) context.Context {
-	md := metadata.New(map[string]string{config.ServerHeaderKeyUUID: config.ServerHeaderValueUUID})
+func SetMetadata(ctx context.Context, cfg Config) context.Context {
+	md := metadata.New(map[string]string{cfg.ServerHeaderKeyUUID: cfg.ServerHeaderValueUUID})
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	return ctx
 }
 
-func createConnection(ctx context.Context) (*grpc.ClientConn, error) {
+func createConnection(ctx context.Context, cfg Config) (*grpc.ClientConn, error) {
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 	}
 
-	return grpc.DialContext(ctx, config.Host, opts...)
+	return grpc.DialContext(ctx, cfg.Host, opts...)
 }

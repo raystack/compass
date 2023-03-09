@@ -47,16 +47,16 @@ func (cfg Config) grpcAddr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.
 
 type IdentityConfig struct {
 	// User Identity
-	HeaderKeyUUID       string `mapstructure:"headerkey_uuid" default:"Compass-User-UUID"`
-	HeaderValueUUID     string `mapstructure:"headervalue_uuid" default:"odpf@email.com"`
-	HeaderKeyEmail      string `mapstructure:"headerkey_email" default:"Compass-User-Email"`
-	ProviderDefaultName string `mapstructure:"provider_default_name" default:""`
+	HeaderKeyUUID       string `yaml:"headerkey_uuid" mapstructure:"headerkey_uuid" default:"Compass-User-UUID"`
+	HeaderValueUUID     string `yaml:"headervalue_uuid" mapstructure:"headervalue_uuid" default:"odpf@email.com"`
+	HeaderKeyEmail      string `yaml:"headerkey_email" mapstructure:"headerkey_email" default:"Compass-User-Email"`
+	ProviderDefaultName string `yaml:"provider_default_name" mapstructure:"provider_default_name" default:""`
 }
 
 type GRPCConfig struct {
-	Port           int `mapstructure:"port" default:"8081"`
-	MaxRecvMsgSize int `mapstructure:"max_recv_msg_size" default:"33554432"`
-	MaxSendMsgSize int `mapstructure:"max_send_msg_size" default:"33554432"`
+	Port           int `yaml:"port" mapstructure:"port" default:"8081"`
+	MaxRecvMsgSize int `yaml:"max_recv_msg_size" mapstructure:"max_recv_msg_size" default:"33554432"`
+	MaxSendMsgSize int `yaml:"max_send_msg_size" mapstructure:"max_send_msg_size" default:"33554432"`
 }
 
 func Serve(
