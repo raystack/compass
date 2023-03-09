@@ -21,15 +21,16 @@ upsert a new asset or patch
 lists all assets
 
 ```
--d, --data string       filter by field in asset.data
--o, --out -o json       flag to control output viewing, for json -o json (default "table")
-    --page uint32       Number of pages
-    --query string      querying by field
--s, --services string   filter by services
-    --size uint32       Size of each page (default 20)
-    --sort string       sort by certain fields
-    --sort_dir string   sorting direction (asc / desc)
--t, --types string      filter by types
+-d, --data stringToString   filter by field in asset.data (default [])
+-o, --out -o json           flag to control output viewing, for json -o json (default "table")
+    --page uint32           Page number offset (starts from 0)
+    --query string          querying by field
+    --query_fields string   querying by fields
+-s, --services string       filter by services
+    --size uint32           Size of each page (default 10)
+    --sort string           sort by certain fields
+    --sort_dir string       sorting direction (asc / desc)
+-t, --types string          filter by types
 ````
 
 ### `compass asset star <id>`
@@ -41,8 +42,8 @@ star an asset by id for current user
 list all stargazers for a given asset id
 
 ```
---page uint32   Number of pages
---size uint32   Size of each page (default 20)
+--page uint32   Page number offset (starts from 0)
+--size uint32   Size of each page (default 10)
 ````
 
 ### `compass asset starred [flags]`
@@ -51,8 +52,8 @@ list all the starred assets for current user
 
 ```
 -o, --out -o json   flag to control output viewing, for json -o json (default "table")
-    --page uint32   Number of pages
-    --size uint32   Size of each page (default 20)
+    --page uint32   Page number offset (starts from 0)
+    --size uint32   Size of each page (default 10)
 ````
 
 ### `compass asset types [flags]`
@@ -60,7 +61,7 @@ list all the starred assets for current user
 lists all asset types
 
 ```
--d, --data string           filter by field in asset.data
+-d, --data stringToString   filter by field in asset.data (default [])
     --query string          filter by specific query
     --query_fields string   filter by query field
 -s, --services string       filter by services
@@ -71,22 +72,22 @@ lists all asset types
 
 unstar an asset by id for current user
 
-### `compass asset version <id> <version>`
+### `compass asset version <urn> <version>`
 
-get asset's previous version by id and version number
+get asset's previous version by urn or id and version number
 
 ### `compass asset versionhistory <id> [flags]`
 
 get asset version history by id
 
 ```
---page uint32   Number of pages
---size uint32   Size of each page (default 20)
+--page uint32   Page number offset (start from 0)
+--size uint32   Size of each page (default 10)
 ````
 
-### `compass asset view <id>`
+### `compass asset view <urn>`
 
-view asset for the given ID
+view asset for the given ID or URN
 
 ## `compass completion [bash|zsh|fish|powershell]`
 
