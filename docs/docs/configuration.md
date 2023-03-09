@@ -195,7 +195,7 @@ app:
     command:
       - compass
     args:
-      - serve
+      - server start
     livenessProbe:
       httpGet:
         path: /ping
@@ -210,7 +210,7 @@ app:
     command:
       - compass
     args:
-      - migrate
+      - server migrate
 
   service:
     annotations: {}
