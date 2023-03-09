@@ -1,6 +1,12 @@
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 # 1. My First Asset
 
-Before starting the tour, make sure you have a running Compass instance. You can refer this [installation guide](../installation).
+### Pre-Requisites
+
+1. [Setting up server](../configuration.md#server-setup)
+2. [Setting up the CLI](../configuration.md#client-initialisation) (if you want to use the CLI client)
 
 ## 1.1 Introduction
 
@@ -10,7 +16,7 @@ In this section, we will help you to build your first Asset and hopefully it wil
 
 ## 1.2 Hello, ~~World~~ Asset!
 
-Let's imagine we have a `postgres` instance that we keep referring to as our `main-postgres`. Inside it there is a database called `my-database` that has plenty of tables. One of the tables is named `orders`, and below is how you represent that `table` as an Compass' Asset.
+Let's imagine we have a `postgres` instance that we keep referring to as our `main-postgres`. Inside it there is a database called `my-database` that has plenty of tables. One of the tables is named `orders`, and below is how you represent that `table` as a Compass' Asset.
 
 ```json
 {
@@ -36,25 +42,36 @@ Let's imagine we have a `postgres` instance that we keep referring to as our `ma
 - **data** can hold your asset's extra details if there is any. In the example, we use it to store information of the **database name** and the **alias/namespace** that we use when referring the postgres instance.
 
 ## 1.3 Sending your first asset to Compass
+Assets can be created ingested in Compass using the following ways:
 
-Here is the asset that we built on previous section.
+1. Using `compass asset edit` CLI command 
+2. Calling to `PATCH /v1beta1/assets` API
+
+Let's send this into Compass so that it would be discoverable.
+
+<Tabs groupId="api">
+  <TabItem value="cli" label="CLI" default>
+
+```bash
+$ compass asset edit --body=<path to the asset.json file>
+```
 
 ```json
 {
-  "urn": "main-postgres:my-database.orders",
-  "type": "table",
-  "service": "postgres",
-  "name": "orders",
-  "data": {
-    "database": "my-database",
-    "namespace": "main-postgres"
-  }
+    "asset": {
+        "urn": "main-postgres:my-database.orders",
+        "type": "table",
+        "service": "postgres",
+        "name": "orders",
+        "data": {
+            "database": "my-database",
+            "namespace": "main-postgres"
+        }
+    }
 }
 ```
-Let's send this into Compass so that it would be discoverable.
-
-As of now, Compass supports ingesting assets via `gRPC` and `http`. In this example, we will use `http` to send your first asset to Compass.
-Compass exposes an API `[PATCH] /v1beta1/assets` to upload your asset.
+  </TabItem>
+  <TabItem value="http" label="HTTP">
 
 ```bash
 curl --location --request PATCH 'http://localhost:8080/v1beta1/assets' \
@@ -74,12 +91,17 @@ curl --location --request PATCH 'http://localhost:8080/v1beta1/assets' \
 }'
 ```
 
+ </TabItem>
+</Tabs>
+
 There are a few things to notice here:
-1. The HTTP method used is `PATCH`. This is because Compass does not have a dedicated `Create` API, it uses a single API to `Patch / Create` an asset instead. So when updating or patching your asset, you can use the same API.
+1. The HTTP method used is `PATCH`. This is because Compass does not have a dedicated `Create` API, it uses a single API to `Patch / Create` an asset instead. So when updating or patching your asset, you can use the same API. Similarly we use `compass asset edit`  for upserting via the Compass CLI tool
 
-2. Compass requires `Compass-User-UUID` header to be in the request. More information about the identity header can be found [here](../concepts/user). To simplify this tour, let's just use `john.doe@example.com`.
+2. Compass requires `Compass-User-UUID` header to be in the request. More information about the identity header can be found [here](../concepts/user). To simplify this tour, let's just use `john.doe@example.com`. For CLI, these configurations are to be done in the config file discussed [here](../configuration.md#required-headermetadata-in-api)
 
-3. When sending our asset to Compass, we need to put our asset object inside an `asset` field as shown in the sample curl above.
+3. When sending our asset to Compass, we need to put our asset object inside an `asset` field as shown in the example above
+
+4. For using the CLI tool, create a .json file using the example configurations shown above and provide the path to it here.
 
 On a success insertion, your will receive below response:
 

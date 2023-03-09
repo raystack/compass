@@ -2,10 +2,12 @@ module.exports = {
   docsSidebar: [
     'introduction',
     'installation',
+    'configuration',
     {
       type: 'category',
       label: 'Tour',
       items: [
+        "tour/introduction",
         "tour/my-first-asset",
         "tour/querying-assets",
         "tour/asset-lineage"
@@ -39,6 +41,7 @@ module.exports = {
       label: "Reference",
       items: [
         "reference/api",
+        "reference/cli",
         "reference/configuration",
       ],
     },
