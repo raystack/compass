@@ -13,13 +13,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func discussionsCommand() *cobra.Command {
+func discussionsCommand(cfg *Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "discussion",
 		Aliases: []string{"discussions"},
 		Short:   "Manage discussions",
 		Annotations: map[string]string{
-			"group:core": "true",
+			"group": "core",
 		},
 		Example: heredoc.Doc(`
 			$ compass discussion list
@@ -29,15 +29,15 @@ func discussionsCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		listAllDiscussionsCommand(),
-		viewDiscussionByIDCommand(),
-		postDiscussionCommand(),
+		listAllDiscussionsCommand(cfg),
+		viewDiscussionByIDCommand(cfg),
+		postDiscussionCommand(cfg),
 	)
 
 	return cmd
 }
 
-func listAllDiscussionsCommand() *cobra.Command {
+func listAllDiscussionsCommand(cfg *Config) *cobra.Command {
 	var json string
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -52,13 +52,13 @@ func listAllDiscussionsCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			res, err := clnt.GetAllDiscussions(ctx, &compassv1beta1.GetAllDiscussionsRequest{})
 			if err != nil {
 				return err
@@ -88,7 +88,7 @@ func listAllDiscussionsCommand() *cobra.Command {
 	return cmd
 }
 
-func viewDiscussionByIDCommand() *cobra.Command {
+func viewDiscussionByIDCommand(cfg *Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "view <id>",
 		Short: "view discussion for the given ID",
@@ -102,14 +102,14 @@ func viewDiscussionByIDCommand() *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
 			discussionID := args[0]
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			res, err := clnt.GetDiscussion(ctx, &compassv1beta1.GetDiscussionRequest{
 				Id: discussionID,
 			})
@@ -126,7 +126,7 @@ func viewDiscussionByIDCommand() *cobra.Command {
 	return cmd
 }
 
-func postDiscussionCommand() *cobra.Command {
+func postDiscussionCommand(cfg *Config) *cobra.Command {
 	var filePath string
 
 	cmd := &cobra.Command{
@@ -151,13 +151,13 @@ func postDiscussionCommand() *cobra.Command {
 				return err
 			}
 
-			clnt, cancel, err := client.Create(cmd.Context())
+			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context())
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
 			res, err := clnt.CreateDiscussion(ctx, &compassv1beta1.CreateDiscussionRequest{
 				Title:  reqBody.Title,
 				Body:   reqBody.Body,

@@ -21,6 +21,7 @@ type AssetModel struct {
 	Service     string    `db:"service"`
 	Description string    `db:"description"`
 	Data        JSONMap   `db:"data"`
+	URL         string    `db:"url"`
 	Labels      JSONMap   `db:"labels"`
 	Version     string    `db:"version"`
 	UpdatedBy   UserModel `db:"updated_by"`
@@ -41,6 +42,7 @@ func (a *AssetModel) toAsset(owners []user.User) asset.Asset {
 		Service:     a.Service,
 		Description: a.Description,
 		Data:        a.Data,
+		URL:         a.URL,
 		Labels:      a.buildLabels(),
 		Owners:      owners,
 		Version:     a.Version,

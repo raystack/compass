@@ -15,7 +15,8 @@ type Repository interface {
 	GetByID(ctx context.Context, id string) (Asset, error)
 	GetByURN(ctx context.Context, urn string) (Asset, error)
 	GetVersionHistory(ctx context.Context, flt Filter, id string) ([]Asset, error)
-	GetByVersion(ctx context.Context, id string, version string) (Asset, error)
+	GetByVersionWithID(ctx context.Context, id string, version string) (Asset, error)
+	GetByVersionWithURN(ctx context.Context, urn string, version string) (Asset, error)
 	GetTypes(ctx context.Context, flt Filter) (map[Type]int, error)
 	Upsert(ctx context.Context, ast *Asset) (string, error)
 	DeleteByID(ctx context.Context, id string) error
@@ -34,6 +35,7 @@ type Asset struct {
 	Name        string                 `json:"name" diff:"name"`
 	Description string                 `json:"description" diff:"description"`
 	Data        map[string]interface{} `json:"data" diff:"data"`
+	URL         string                 `json:"url" diff:"url"`
 	Labels      map[string]string      `json:"labels" diff:"labels"`
 	Owners      []user.User            `json:"owners,omitempty" diff:"owners"`
 	CreatedAt   time.Time              `json:"created_at" diff:"-"`
