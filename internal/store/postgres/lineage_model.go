@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"github.com/odpf/compass/core/asset"
+	"github.com/goto/compass/core/asset"
 )
 
 type LineageGraphModel []LineageEdgeModel

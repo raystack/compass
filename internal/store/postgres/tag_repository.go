@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goto/compass/core/tag"
 	"github.com/jmoiron/sqlx"
-	"github.com/odpf/compass/core/tag"
 )
 
 var (

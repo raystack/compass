@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	discussion "github.com/odpf/compass/core/discussion"
+	discussion "github.com/goto/compass/core/discussion"
 
 	mock "github.com/stretchr/testify/mock"
 

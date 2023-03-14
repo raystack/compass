@@ -11,9 +11,9 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
+	"github.com/goto/compass/core/asset"
+	"github.com/goto/salt/log"
 	"github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/salt/log"
 	"github.com/olivere/elastic/v7"
 )
 

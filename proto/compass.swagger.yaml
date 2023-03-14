@@ -2,10 +2,10 @@ swagger: "2.0"
 info:
   title: Compass
   description: Documentation of our Compass API with gRPC and gRPC-Gateway.
-  version: 0.2.1
+  version: 0.1.0
   license:
     name: Apache License 2.0
-    url: https://github.com/odpf/compass/blob/main/LICENSE
+    url: https://github.com/goto/compass/blob/main/LICENSE
 tags:
   - name: CompassService
 schemes:
@@ -1175,6 +1175,19 @@ paths:
           type: string
         - name: size
           description: number of results to return
+          in: query
+          required: false
+          type: integer
+          format: int64
+        - name: include_fields
+          in: query
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: offset
+          description: offset parameter defines the offset from the first result you want to fetch
           in: query
           required: false
           type: integer
@@ -2434,4 +2447,4 @@ definitions:
         type: string
 externalDocs:
   description: More about Compass
-  url: https://odpf.gitbook.io/compass/
+  url: https://goto.github.io/compass/

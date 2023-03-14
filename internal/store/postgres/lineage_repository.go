@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/goto/compass/core/asset"
 	"github.com/jmoiron/sqlx"
-	"github.com/odpf/compass/core/asset"
 )
 
 type LineageRepository struct {

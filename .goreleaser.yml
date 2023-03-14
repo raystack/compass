@@ -11,9 +11,9 @@ builds:
     binary: compass
     flags: [-a]
     ldflags:
-      - -X github.com/odpf/compass/cli.Version={{.Tag}}
-      - -X github.com/odpf/compass/cli.BuildCommit={{.FullCommit}}
-      - -X github.com/odpf/compass/cli.BuildDate={{.Date}}
+      - -X github.com/goto/compass/cli.Version={{.Tag}}
+      - -X github.com/goto/compass/cli.BuildCommit={{.FullCommit}}
+      - -X github.com/goto/compass/cli.BuildDate={{.Date}}
     goos: [linux, darwin, windows]
     goarch: [amd64, 386, arm, arm64] # skip goarch 386 and arm due to conflicts with "github.com/blastrain/vitess-sqlparser" library
     env:
@@ -46,13 +46,13 @@ dockers:
       - compass
     dockerfile: Dockerfile
     image_templates:
-      - "docker.io/odpf/{{.ProjectName}}:latest"
-      - "docker.io/odpf/{{.ProjectName}}:{{ .Version }}"
-      - "docker.io/odpf/{{.ProjectName}}:{{ .Version }}-amd64"
+      - "docker.io/gotocompany/{{.ProjectName}}:latest"
+      - "docker.io/gotocompany/{{.ProjectName}}:{{ .Version }}"
+      - "docker.io/gotocompany/{{.ProjectName}}:{{ .Version }}-amd64"
 nfpms:
-  - maintainer: ODPF
+  - maintainer: gotocompany
     description: Metadata Discovery and Lineage Service
-    homepage: https://github.com/odpf/compass
+    homepage: https://github.com/goto/compass
     license: Apache 2.0
     formats:
       - deb
@@ -61,17 +61,17 @@ nfpms:
       darwin: macOS
 scoop:
   bucket:
-    owner: odpf
+    owner: goto
     name: scoop-bucket
-  homepage: "https://github.com/odpf/compass"
+  homepage: "https://github.com/goto/compass"
   description: "Metadata Discovery and Lineage Service"
   license: Apache 2.0
 brews:
   - name: compass
-    homepage: "https://github.com/odpf/compass"
+    homepage: "https://github.com/goto/compass"
     description: "Metadata Discovery and Lineage Service"
     tap:
-      owner: odpf
+      owner: goto
       name: homebrew-tap
     license: "Apache 2.0"
     folder: Formula
@@ -81,5 +81,5 @@ brews:
     install: |-
       bin.install "compass"
     commit_author:
-      name: Ravi Suhag
-      email: suhag.ravi@gmail.com
+      name: github-actions[bot]
+      email: 41898282+github-actions[bot]@users.noreply.github.com

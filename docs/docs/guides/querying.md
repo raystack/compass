@@ -13,7 +13,7 @@ This guide assumes that you have a local instance of compass running and listeni
 1. Using **`compass search <text>`** CLI command
 2. Calling to **`GET /v1beta1/search`** API with `text` to be searched as query parameter
 
-The API contract is available [here](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
+The API contract is available [here](https://github.com/goto/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
 
 To demonstrate how to use compass, we’re going to query it for resources that contain the word ‘booking’.
 
@@ -28,7 +28,7 @@ $ compass search booking
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search?text=booking' \
---header 'Compass-User-UUID:odpf@email.com' 
+--header 'Compass-User-UUID:gotocompany@email.com' 
 ```
 </TabItem>
 </Tabs>
@@ -88,20 +88,20 @@ Compass search supports restricting search results via filter by passing it in q
 1. Using **`compass search <text> --filter=field_key1:val1`** CLI command
 2. Calling to **`GET /v1beta1/search`** API with **`text`** and **`filter[field_key1]=val1`** as query parameters 
 
-For instance, to restrict search results to the ‘id’ landscape for ‘odpf’ organisation, run:
+For instance, to restrict search results to the ‘id’ landscape for ‘gotocompany’ organisation, run:
 
 <Tabs groupId="cli" >
 <TabItem value="CLI" label="CLI">
 
 ```bash
-$ compass search booking --filter=labels.landscape=id,labels.entity=odpf
+$ compass search booking --filter=labels.landscape=id,labels.entity=gotocompany
 ```
 </TabItem>
 <TabItem value="HTTP" label="HTTP">
 
 ```bash
-$ curl 'http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=id&filter[labels.entity]=odpf' \
---header 'Compass-User-UUID:odpf@email.com'
+$ curl 'http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=id&filter[labels.entity]=gotocompany' \
+--header 'Compass-User-UUID:gotocompany@email.com'
 ```
 </TabItem>
 </Tabs>
@@ -119,7 +119,7 @@ $ compass search booking --filter=labels.landscape=vn,labels.landscape=th
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=vn&filter[labels.landscape]=th' \
---header 'Compass-User-UUID:odpf@email.com' 
+--header 'Compass-User-UUID:gotocompany@email.com' 
 ```
 </TabItem>
 </Tabs>
@@ -145,7 +145,7 @@ $ compass search booking --query=name:kafka,labels.team=data_eng
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search?text=booking&query[name]=kafka&query[labels.team]=data_eng' \
---header 'Compass-User-UUID:odpf@email.com' 
+--header 'Compass-User-UUID:gotocompany@email.com' 
 ```
 </TabItem>
 </Tabs>
@@ -164,7 +164,7 @@ $ compass search booking --rankby=data.usage_count
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search?text=booking&rankby=data.usage_count' \
---header 'Compass-User-UUID:odpf@email.com' 
+--header 'Compass-User-UUID:gotocompany@email.com' 
 ```
 </TabItem>
 </Tabs>
@@ -183,7 +183,7 @@ $ compass search booking --size=5
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search?text=booking&size=5' \
---header 'Compass-User-UUID:odpf@email.com' 
+--header 'Compass-User-UUID:gotocompany@email.com' 
 ```
 </TabItem>
 </Tabs>
@@ -191,13 +191,13 @@ $ curl 'http://localhost:8080/v1beta1/search?text=booking&size=5' \
 ## Using the Suggest API
 The Suggest API gives a number of suggestion based on asset's name. There are 5 suggestions by default return by this API.
 
-The API contract is available [here](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
+The API contract is available [here](https://github.com/goto/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
 
 Example of searching assets suggestion that has a name ‘booking’.
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search/suggest?text=booking' \
---header 'Compass-User-UUID:odpf@email.com' 
+--header 'Compass-User-UUID:gotocompany@email.com' 
 ```
 This will return a list of suggestions. Here’s a sample response:
 
@@ -226,13 +226,13 @@ The Get Assets API returns assets from Compass' main storage (PostgreSQL) while 
 |`direction=desc`|sorting direction (asc / desc)|
 
 
-The API contract is available [here](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
+The API contract is available [here](https://github.com/goto/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
 
 ## Using the Lineage API
 
 The Lineage API allows the clients to query the data flow relationship between different assets managed by Compass.
 
-See the swagger definition of [Lineage API](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json)) for more information.
+See the swagger definition of [Lineage API](https://github.com/goto/compass/blob/main/third_party/OpenAPI/compass.swagger.json)) for more information.
 
 Lineage API returns a list of directed edges. For each edge, there are `source` and `target` fields that represent nodes to indicate the direction of the edge. Each edge could have an optional property in the `props` field.
 
@@ -253,7 +253,7 @@ $ compass lineage data-project:datalake.events
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/lineage/data-project%3Adatalake.events' \
---header 'Compass-User-UUID:odpf@email.com' 
+--header 'Compass-User-UUID:gotocompany@email.com' 
 ```
 </TabItem>
 </Tabs>

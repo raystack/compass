@@ -5,10 +5,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/odpf/compass/core/user"
-	"github.com/odpf/compass/core/user/mocks"
-	"github.com/odpf/compass/pkg/statsd"
-	"github.com/odpf/salt/log"
+	"github.com/goto/compass/core/user"
+	"github.com/goto/compass/core/user/mocks"
+	"github.com/goto/compass/pkg/statsd"
+	"github.com/goto/salt/log"
 	"github.com/stretchr/testify/assert"
 )
 

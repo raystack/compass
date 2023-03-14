@@ -7,11 +7,11 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/user"
-	"github.com/odpf/compass/internal/server/v1beta1/mocks"
-	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
-	"github.com/odpf/salt/log"
+	"github.com/goto/compass/core/asset"
+	"github.com/goto/compass/core/user"
+	"github.com/goto/compass/internal/server/v1beta1/mocks"
+	compassv1beta1 "github.com/goto/compass/proto/gotocompany/compass/v1beta1"
+	"github.com/goto/salt/log"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -124,7 +124,7 @@ func TestSearch(t *testing.T) {
 						Description: "some description",
 						Service:     "test-service",
 						Labels: map[string]string{
-							"entity":    "odpf",
+							"entity":    "gotocompany",
 							"landscape": "id",
 						},
 					},
@@ -140,7 +140,7 @@ func TestSearch(t *testing.T) {
 							Service:     "test-service",
 							Type:        "test",
 							Labels: map[string]string{
-								"entity":    "odpf",
+								"entity":    "gotocompany",
 								"landscape": "id",
 							},
 						},
@@ -179,7 +179,7 @@ func TestSearch(t *testing.T) {
 						Service:     "kafka",
 						Labels: map[string]string{
 							"landscape": "id",
-							"entity":    "odpf",
+							"entity":    "gotocompany",
 						},
 					}
 

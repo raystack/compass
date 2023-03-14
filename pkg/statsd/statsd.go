@@ -4,7 +4,7 @@ import (
 	"time"
 
 	std "github.com/DataDog/datadog-go/v5/statsd"
-	"github.com/odpf/salt/log"
+	"github.com/goto/salt/log"
 )
 
 // StatsD provides functions for reporting metrics.

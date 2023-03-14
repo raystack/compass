@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
+	compassv1beta1 "github.com/goto/compass/proto/gotocompany/compass/v1beta1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -13,7 +13,7 @@ import (
 type Config struct {
 	Host                  string `mapstructure:"host" default:"localhost:8081"`
 	ServerHeaderKeyUUID   string `yaml:"serverheaderkey_uuid" mapstructure:"serverheaderkey_uuid" default:"Compass-User-UUID"`
-	ServerHeaderValueUUID string `yaml:"serverheadervalue_uuid" mapstructure:"serverheadervalue_uuid" default:"compass@odpf.com"`
+	ServerHeaderValueUUID string `yaml:"serverheadervalue_uuid" mapstructure:"serverheadervalue_uuid" default:"compass@gotocompany.com"`
 }
 
 func Create(ctx context.Context, cfg Config) (compassv1beta1.CompassServiceClient, func(), error) {

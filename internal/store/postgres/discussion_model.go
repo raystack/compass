@@ -3,8 +3,8 @@ package postgres
 import (
 	"time"
 
+	"github.com/goto/compass/core/discussion"
 	"github.com/lib/pq"
-	"github.com/odpf/compass/core/discussion"
 )
 
 type DiscussionModel struct {

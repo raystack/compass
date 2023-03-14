@@ -8,7 +8,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/odpf/compass/core/asset"
+	"github.com/goto/compass/core/asset"
 )
 
 // DiscoveryRepository implements discovery.Repository

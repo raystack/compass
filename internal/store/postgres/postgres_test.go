@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/goto/compass/core/asset"
+	"github.com/goto/compass/core/user"
+	"github.com/goto/compass/internal/store/postgres"
+	"github.com/goto/salt/log"
 	_ "github.com/jackc/pgx/v4/stdlib"
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/user"
-	"github.com/odpf/compass/internal/store/postgres"
-	"github.com/odpf/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 )
@@ -190,7 +190,7 @@ func getUser(email string) *user.User {
 
 func createUsers(userRepo user.Repository, num int) (users []user.User, err error) {
 	for i := 0; i < num; i++ {
-		email := fmt.Sprintf("user-test-%d@odpf.io", i+1)
+		email := fmt.Sprintf("user-test-%d@gotocompany.com", i+1)
 		user1 := user.User{UUID: uuid.NewString(), Email: email, Provider: defaultProviderName}
 		user1.ID, err = userRepo.Create(context.Background(), &user1)
 		if err != nil {

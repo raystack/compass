@@ -3,7 +3,7 @@ package postgres
 import (
 	"database/sql"
 
-	"github.com/odpf/compass/core/user"
+	"github.com/goto/compass/core/user"
 )
 
 type UserModel struct {

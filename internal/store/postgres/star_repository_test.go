@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/star"
-	"github.com/odpf/compass/internal/store/postgres"
-	"github.com/odpf/salt/log"
+	"github.com/goto/compass/core/star"
+	"github.com/goto/compass/internal/store/postgres"
+	"github.com/goto/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
@@ -61,13 +61,13 @@ func (r *StarRepositoryTestSuite) TearDownSuite() {
 }
 
 func (r *StarRepositoryTestSuite) TestCreate() {
-	ownerEmail := "test-create@odpf.io"
+	ownerEmail := "test-create@gotocompany.com"
 
 	r.Run("return no error if succesfully create star", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		userID, err := createUser(r.userRepository, "user@odpf.io")
+		userID, err := createUser(r.userRepository, "user@gotocompany.com")
 		r.NoError(err)
 
 		createdAsset, err := createAsset(r.assetRepository, userID, ownerEmail, "asset-urn-1", "table")
@@ -107,7 +107,7 @@ func (r *StarRepositoryTestSuite) TestCreate() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		userID, err := createUser(r.userRepository, "user@odpf.io")
+		userID, err := createUser(r.userRepository, "user@gotocompany.com")
 		r.NoError(err)
 
 		createdAsset, err := createAsset(r.assetRepository, userID, ownerEmail, "asset-urn-1", "table")
@@ -137,7 +137,7 @@ func (r *StarRepositoryTestSuite) TestCreate() {
 }
 
 func (r *StarRepositoryTestSuite) TestGetStargazers() {
-	ownerEmail := "test-getstargazers@odpf.io"
+	ownerEmail := "test-getstargazers@gotocompany.com"
 
 	defaultCfg := star.Filter{}
 	r.Run("return ErrEmptyAssetID if asset id is empty", func() {
@@ -162,7 +162,7 @@ func (r *StarRepositoryTestSuite) TestGetStargazers() {
 	r.Run("return list of users that star an asset if get users success", func() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
-		userID1, err := createUser(r.userRepository, "user@odpf.io")
+		userID1, err := createUser(r.userRepository, "user@gotocompany.com")
 		r.NoError(err)
 
 		createdAsset1, err := createAsset(r.assetRepository, userID1, ownerEmail, "asset-urn-1", "table")
@@ -172,7 +172,7 @@ func (r *StarRepositoryTestSuite) TestGetStargazers() {
 		r.NoError(err)
 		r.NotEmpty(id)
 
-		userID2, err := createUser(r.userRepository, "admin@odpf.io")
+		userID2, err := createUser(r.userRepository, "admin@gotocompany.com")
 		r.NoError(err)
 
 		id, err = r.repository.Create(r.ctx, userID2, createdAsset1.ID)
@@ -199,7 +199,7 @@ func (r *StarRepositoryTestSuite) TestGetStargazers() {
 		var assetID string
 
 		for i := 1; i < 20; i++ {
-			userEmail := fmt.Sprintf("user%d@odpf.io", i)
+			userEmail := fmt.Sprintf("user%d@gotocompany.com", i)
 			userID, err := createUser(r.userRepository, userEmail)
 			r.NoError(err)
 			createdAsset, err := createAsset(r.assetRepository, userID, ownerEmail, "asset-urn-1", "table")
@@ -221,7 +221,7 @@ func (r *StarRepositoryTestSuite) TestGetStargazers() {
 }
 
 func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
-	ownerEmail := "test-getallbyuserid@odpf.io"
+	ownerEmail := "test-getallbyuserid@gotocompany.com"
 
 	defaultCfg := star.Filter{}
 	r.Run("return invalid error if user id is empty", func() {
@@ -247,7 +247,7 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		userID1, err := createUser(r.userRepository, "user@odpf.io")
+		userID1, err := createUser(r.userRepository, "user@gotocompany.com")
 		r.NoError(err)
 
 		createdAsset1, err := createAsset(r.assetRepository, userID1, ownerEmail, "asset-urn-1", "table")
@@ -286,7 +286,7 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		userID, err := createUser(r.userRepository, "user@odpf.io")
+		userID, err := createUser(r.userRepository, "user@gotocompany.com")
 		r.NoError(err)
 
 		for i := 1; i < 20; i++ {
@@ -308,7 +308,7 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
 }
 
 func (r *StarRepositoryTestSuite) TestGetAssetByUserID() {
-	ownerEmail := "test-getbyuserid@odpf.io"
+	ownerEmail := "test-getbyuserid@gotocompany.com"
 
 	r.Run("return ErrEmptyUserID if user id is empty", func() {
 		ast, err := r.repository.GetAssetByUserID(r.ctx, "", "")
@@ -347,7 +347,7 @@ func (r *StarRepositoryTestSuite) TestGetAssetByUserID() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		userID1, err := createUser(r.userRepository, "user@odpf.io")
+		userID1, err := createUser(r.userRepository, "user@gotocompany.com")
 		r.NoError(err)
 
 		createdAsset1, err := createAsset(r.assetRepository, userID1, ownerEmail, "asset-urn-1", "table")
@@ -376,7 +376,7 @@ func (r *StarRepositoryTestSuite) TestGetAssetByUserID() {
 }
 
 func (r *StarRepositoryTestSuite) TestDelete() {
-	ownerEmail := "test-delete@odpf.io"
+	ownerEmail := "test-delete@gotocompany.com"
 
 	r.Run("return invalid error if user id is empty", func() {
 		err := r.repository.Delete(r.ctx, "", "")
@@ -410,7 +410,7 @@ func (r *StarRepositoryTestSuite) TestDelete() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		userID1, err := createUser(r.userRepository, "user@odpf.io")
+		userID1, err := createUser(r.userRepository, "user@gotocompany.com")
 		r.NoError(err)
 
 		createdAsset1, err := createAsset(r.assetRepository, userID1, ownerEmail, "asset-urn-1", "table")

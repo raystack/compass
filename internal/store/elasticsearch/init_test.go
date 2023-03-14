@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/odpf/compass/internal/store/elasticsearch/testutil"
+	"github.com/goto/compass/internal/store/elasticsearch/testutil"
 )
 
 var (

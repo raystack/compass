@@ -3,7 +3,7 @@ package statsd
 import (
 	"fmt"
 
-	"github.com/odpf/salt/log"
+	"github.com/goto/salt/log"
 )
 
 // Metric represents a statsd metric.

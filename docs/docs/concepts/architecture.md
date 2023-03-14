@@ -11,7 +11,7 @@ Compass' architecture is pretty simple. It has a client-server architecture back
 #### gRPC Server
 
 - gRPC server is the main interface to interact with Compass.
-- The protobuf file to define the interface is centralized in [odpf/proton](https://github.com/odpf/proton/tree/main/odpf/compass/v1beta1)
+- The protobuf file to define the interface is centralized in [goto/proton](https://github.com/goto/proton/tree/main/gotocompany/compass/v1beta1)
 
 #### gRPC-gateway Server
 

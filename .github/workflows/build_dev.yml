@@ -20,4 +20,4 @@ jobs:
         push: true
         file: "./Dockerfile.dev"
         tags: |
-            odpf/compass:dev
+            gotocompany/compass:dev

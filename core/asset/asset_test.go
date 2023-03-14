@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/user"
+	"github.com/goto/compass/core/asset"
+	"github.com/goto/compass/core/user"
 	"github.com/r3labs/diff/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -59,12 +59,12 @@ func TestDiffTopLevel(t *testing.T) {
 				"name":	"old-name",
 				"owners": [
 					{
-						"email": "email@odpf.io"
+						"email": "email@gotocompany.com"
 					}
 				]
 			}`,
 			diff.Changelog{
-				diff.Change{Type: diff.CREATE, Path: []string{"owners", "0", "email"}, To: "email@odpf.io"},
+				diff.Change{Type: diff.CREATE, Path: []string{"owners", "0", "email"}, To: "email@gotocompany.com"},
 			},
 			nil,
 		},
@@ -113,7 +113,7 @@ func TestDiffData(t *testing.T) {
 				"description": "",
 				"data": {
 				  "title": "jane-kafka-1a",
-				  "entity": "odpf",
+				  "entity": "gotocompany",
 				  "country": "vn"
 				}
 			  }`,
@@ -124,7 +124,7 @@ func TestDiffData(t *testing.T) {
 				"data": {
 				  "title": "jane-kafka-1a",
 				  "description": "a new description inside",
-				  "entity": "odpf",
+				  "entity": "gotocompany",
 				  "country": "id"
 				}
 			  }`,
@@ -144,7 +144,7 @@ func TestDiffData(t *testing.T) {
 						  "id": "element1id"
 					  }
 				  ],
-				  "entity": "odpf",
+				  "entity": "gotocompany",
 				  "country": "vn"
 				}
 			  }`,
@@ -156,7 +156,7 @@ func TestDiffData(t *testing.T) {
 							"id": "element2id"
 						}
 					],
-				  "entity": "odpf",
+				  "entity": "gotocompany",
 				  "country": "vn"
 				}
 			  }`,
@@ -175,7 +175,7 @@ func TestDiffData(t *testing.T) {
 						  "id": "element1id"
 					  }
 				  ],
-				  "entity": "odpf",
+				  "entity": "gotocompany",
 				  "country": "vn"
 				}
 			  }`,
@@ -190,7 +190,7 @@ func TestDiffData(t *testing.T) {
 							"id": "element2id"
 						}
 					],
-				  "entity": "odpf",
+				  "entity": "gotocompany",
 				  "country": "vn"
 				}
 			  }`,
@@ -212,7 +212,7 @@ func TestDiffData(t *testing.T) {
 							"id": "element2id"
 						}
 					],
-					"entity": "odpf",
+					"entity": "gotocompany",
 					"country": "vn"
 				}
 			  }`,
@@ -224,7 +224,7 @@ func TestDiffData(t *testing.T) {
 							"id": "element1id"
 						}
 					],
-					"entity": "odpf",
+					"entity": "gotocompany",
 					"country": "vn"
 				}
 			  }`,
@@ -409,7 +409,7 @@ func TestAssetPatch(t *testing.T) {
 					},
 					"properties": map[string]interface{}{
 						"attributes": map[string]interface{}{
-							"entity":      "odpf",
+							"entity":      "gotocompany",
 							"environment": "staging",
 						},
 					},
@@ -442,7 +442,7 @@ func TestAssetPatch(t *testing.T) {
 					},
 					"properties": map[string]interface{}{
 						"attributes": map[string]interface{}{
-							"entity":      "odpf",
+							"entity":      "gotocompany",
 							"environment": "production",
 							"type":        "some-type",
 						},

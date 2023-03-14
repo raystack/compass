@@ -3,7 +3,7 @@ package user_test
 import (
 	"testing"
 
-	"github.com/odpf/compass/core/user"
+	"github.com/goto/compass/core/user"
 )
 
 func TestErrors(t *testing.T) {

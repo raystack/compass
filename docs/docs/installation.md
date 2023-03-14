@@ -8,16 +8,16 @@ There are several approaches to install Compass.
 
 ### Binary (Cross-platform)
 
-Download the appropriate version for your platform from [releases](https://github.com/odpf/compass/releases) page. Once downloaded, the binary can be run from anywhere.
+Download the appropriate version for your platform from [releases](https://github.com/goto/compass/releases) page. Once downloaded, the binary can be run from anywhere.
 You don’t need to install it into a global location. This works well for shared hosts and other systems where you don’t have a privileged account.
 Ideally, you should install it somewhere in your PATH for easy use. `/usr/local/bin` is the most probable location.
 
 #### macOS
 
-`Compass` is available via a Homebrew Tap, and as downloadable binary from the [releases](https://github.com/odpf/compass/releases) page:
+`Compass` is available via a Homebrew Tap, and as downloadable binary from the [releases](https://github.com/goto/compass/releases) page:
 
 ```sh
-brew install odpf/tap/compass
+brew install goto/tap/compass
 ```
 
 To upgrade to the latest version:
@@ -28,14 +28,14 @@ brew upgrade compass
 
 #### Linux
 
-`Compass` is available as downloadable binaries from the [releases](https://github.com/odpf/compass/releases/latest) page. Download the `.deb` or `.rpm` from the releases page and install with `sudo dpkg -i` and `sudo rpm -i` respectively.
+`Compass` is available as downloadable binaries from the [releases](https://github.com/goto/compass/releases/latest) page. Download the `.deb` or `.rpm` from the releases page and install with `sudo dpkg -i` and `sudo rpm -i` respectively.
 
 #### Windows
 
-`compass` is available via [scoop](https://scoop.sh/), and as a downloadable binary from the [releases](https://github.com/odpf/compass/releases/latest) page:
+`compass` is available via [scoop](https://scoop.sh/), and as a downloadable binary from the [releases](https://github.com/goto/compass/releases/latest) page:
 
 ```
-scoop bucket add compass https://github.com/odpf/scoop-bucket.git
+scoop bucket add compass https://github.com/goto/scoop-bucket.git
 ```
 
 To upgrade to the latest version:
@@ -49,20 +49,20 @@ scoop update compass
 We provide ready to use Docker container images. To pull the latest image:
 
 ```
-docker pull odpf/compass:latest
+docker pull gotocompany/compass:latest
 ```
 
 To pull a specific version:
 
 ```
-docker pull odpf/compass:v0.3.2
+docker pull gotocompany/compass:v0.3.2
 ```
 
 If you like to have a shell alias that runs the latest version of compass from docker whenever you type `compass`:
 
 ```
-mkdir -p $HOME/.config/odpf
-alias compass="docker run -e HOME=/tmp -v $HOME/.config/odpf:/tmp/.config/odpf --user $(id -u):$(id -g) --rm -it -p 3306:3306/tcp odpf/compass:latest"
+mkdir -p $HOME/.config/gotocompany
+alias compass="docker run -e HOME=/tmp -v $HOME/.config/gotocompany:/tmp/.config/gotocompany --user $(id -u):$(id -g) --rm -it -p 3306:3306/tcp gotocompany/compass:latest"
 ```
 
 ### Building from Source
@@ -75,8 +75,8 @@ Begin by cloning this repository then you have two ways in which you can build c
 Run either of the following commands to clone and compile Compass from source
 
 ```bash
-$ git clone git@github.com:odpf/compass.git                 # (Using SSH Protocol)
-$ git clone https://github.com/odpf/compass.git             # (Using HTTPS Protocol)
+$ git clone git@github.com:goto/compass.git                 # (Using SSH Protocol)
+$ git clone https://github.com/goto/compass.git             # (Using HTTPS Protocol)
 ```
 #### As a native executable
 

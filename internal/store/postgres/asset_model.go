@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goto/compass/core/asset"
+	"github.com/goto/compass/core/user"
 	"github.com/jmoiron/sqlx/types"
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/user"
 	"github.com/r3labs/diff/v2"
 )
 

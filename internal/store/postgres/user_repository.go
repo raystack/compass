@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/goto/compass/core/user"
 	"github.com/jmoiron/sqlx"
-	"github.com/odpf/compass/core/user"
 )
 
 // UserRepository is a type that manages user operation to the primary database

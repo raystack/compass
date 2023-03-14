@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/odpf/compass/core/tag/validator"
+	"github.com/goto/compass/core/tag/validator"
 )
 
 // Service is a type of service that manages business process

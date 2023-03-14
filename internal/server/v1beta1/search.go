@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/odpf/compass/core/asset"
-	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
+	"github.com/goto/compass/core/asset"
+	compassv1beta1 "github.com/goto/compass/proto/gotocompany/compass/v1beta1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	asset "github.com/odpf/compass/core/asset"
+	asset "github.com/goto/compass/core/asset"
 
 	mock "github.com/stretchr/testify/mock"
 )

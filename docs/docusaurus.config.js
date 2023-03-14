@@ -6,12 +6,12 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 (module.exports = {
   title: 'Compass',
   tagline: 'Data Catalog',
-  url: 'https://odpf.github.io/',
+  url: 'https://goto.github.io/',
   baseUrl: '/compass/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'assets/favicon.ico',
-  organizationName: 'ODPF',
+  organizationName: 'goto',
   projectName: 'compass',
 
   presets: [
@@ -24,7 +24,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
         docs: {
           routeBasePath: '/',
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/odpf/compass/edit/master/docs/',
+          editUrl: 'https://github.com/goto/compass/edit/master/docs/',
           sidebarCollapsed: true,
         },
         blog: false,
@@ -63,7 +63,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
             className: 'header-slack-link',
           },
           {
-            href: 'https://github.com/odpf/compass',
+            href: 'https://github.com/goto/compass',
             className: 'navbar-item-github',
             position: 'right',
           },
@@ -75,10 +75,10 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
           {
             title: 'Products',
             items: [
-              { label: 'Optimus', href: 'https://github.com/odpf/optimus' },
-              { label: 'Firehose', href: 'https://github.com/odpf/firehose' },
-              { label: 'Raccoon', href: 'https://github.com/odpf/raccoon' },
-              { label: 'Dagger', href: 'https://odpf.github.io/dagger/' },
+              { label: 'Optimus', href: 'https://github.com/goto/optimus' },
+              { label: 'Firehose', href: 'https://github.com/goto/firehose' },
+              { label: 'Raccoon', href: 'https://github.com/goto/raccoon' },
+              { label: 'Dagger', href: 'https://goto.github.io/dagger/' },
             ],
           },
           {
@@ -92,7 +92,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
             title: 'Community',
             items: [
               { label: 'Slack', href: 'https://bit.ly/2RzPbtn' },
-              { label: 'GitHub', href: 'https://github.com/odpf/compass' }
+              { label: 'GitHub', href: 'https://github.com/goto/compass' }
             ],
           },
         ],
@@ -103,7 +103,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
       },
       announcementBar: {
         id: 'star-repo',
-        content: '⭐️ If you like Compass, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/odpf/compass">GitHub</a>! ⭐',
+        content: '⭐️ If you like Compass, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/goto/compass">GitHub</a>! ⭐',
         backgroundColor: '#222',
         textColor: '#eee',
         isCloseable: true,

@@ -45,7 +45,7 @@ In Compass, we call every metadata that you input as an Asset. All your tables, 
     },
     "users": [
         {
-            "email": "user@odpf.io"
+            "email": "user@gotocompany.com"
         }
     ]
 }
@@ -100,7 +100,7 @@ This is how a lineage is currently being represented
 
 ## Asset Versioning
 Compass versions each updated asset ingested via Upsert Patch API. The base version of an asset is `v0.1`. The base version will be given to the newly created asset. If there is any changes in the asset schema, a new version will be created. 
-Up until now, Compass always bump up the minor version if an asset get updated. The version history of an asset could also be fetched via [/v1beta1/assets/{id}/versions](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json) API.
+Up until now, Compass always bump up the minor version if an asset get updated. The version history of an asset could also be fetched via [/v1beta1/assets/{id}/versions](https://github.com/goto/compass/blob/main/third_party/OpenAPI/compass.swagger.json) API.
 Not only storing the versions of an asset, Compass also stores the changelog between each version. Compass use [r3labs/diff](https://github.com/r3labs/diff) to get the diff between newly ingested asset and the existing asset.
 
 For instance, there is an asset with urn `kafka:booking-log-kafka`

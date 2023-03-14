@@ -3,8 +3,8 @@ package grpc_interceptor
 import (
 	"context"
 
+	"github.com/goto/compass/core/user"
 	pb_testproto "github.com/grpc-ecosystem/go-grpc-middleware/testing/testproto"
-	"github.com/odpf/compass/core/user"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

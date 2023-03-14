@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/odpf/compass/core/tag"
-	"github.com/odpf/compass/core/tag/mocks"
-	"github.com/odpf/compass/core/tag/validator"
+	"github.com/goto/compass/core/tag"
+	"github.com/goto/compass/core/tag/mocks"
+	"github.com/goto/compass/core/tag/validator"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"

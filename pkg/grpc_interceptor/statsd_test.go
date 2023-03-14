@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/goto/compass/pkg/grpc_interceptor/mocks"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_testing "github.com/grpc-ecosystem/go-grpc-middleware/testing"
 	pb_testproto "github.com/grpc-ecosystem/go-grpc-middleware/testing/testproto"
-	"github.com/odpf/compass/pkg/grpc_interceptor/mocks"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/grpc"

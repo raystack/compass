@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/asset/mocks"
+	"github.com/goto/compass/core/asset"
+	"github.com/goto/compass/core/asset/mocks"
 	"github.com/stretchr/testify/assert"
 )
 

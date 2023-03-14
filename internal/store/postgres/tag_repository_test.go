@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/tag"
-	"github.com/odpf/compass/internal/store/postgres"
-	"github.com/odpf/salt/log"
+	"github.com/goto/compass/core/tag"
+	"github.com/goto/compass/internal/store/postgres"
+	"github.com/goto/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
@@ -449,7 +449,7 @@ func getDomainTag() tag.Tag {
 			},
 			{
 				FieldID:          2,
-				FieldValue:       "dexter@odpf.io",
+				FieldValue:       "dexter@gotocompany.com",
 				FieldURN:         "admin_email",
 				FieldDisplayName: "Admin Email",
 				FieldDescription: "Email of the admin of the asset.",

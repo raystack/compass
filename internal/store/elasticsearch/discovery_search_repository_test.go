@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/odpf/compass/core/asset"
-	store "github.com/odpf/compass/internal/store/elasticsearch"
-	"github.com/odpf/salt/log"
+	"github.com/goto/compass/core/asset"
+	store "github.com/goto/compass/internal/store/elasticsearch"
+	"github.com/goto/salt/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -118,7 +118,7 @@ func TestSearcherSearch(t *testing.T) {
 				Config: asset.SearchConfig{
 					Text: "topic",
 					Filters: map[string][]string{
-						"data.company": {"odpf"},
+						"data.company": {"gotocompany"},
 					},
 				},
 				Expected: []expectedRow{
@@ -135,7 +135,7 @@ func TestSearcherSearch(t *testing.T) {
 					Filters: map[string][]string{
 						"data.country":     {"id"},
 						"data.environment": {"production"},
-						"data.company":     {"odpf"},
+						"data.company":     {"gotocompany"},
 					},
 				},
 				Expected: []expectedRow{

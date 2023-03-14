@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/user"
+	"github.com/goto/compass/core/user"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +18,7 @@ func TestUserModel(t *testing.T) {
 		um := UserModel{
 			ID:        sql.NullString{String: "12", Valid: true},
 			UUID:      sql.NullString{String: someUUID, Valid: true},
-			Email:     sql.NullString{String: "user@odpf.io", Valid: true},
+			Email:     sql.NullString{String: "user@gotocompany.com", Valid: true},
 			Provider:  sql.NullString{String: "compass", Valid: true},
 			CreatedAt: sql.NullTime{Time: timestamp, Valid: true},
 			UpdatedAt: sql.NullTime{Time: timestamp, Valid: true},
@@ -41,7 +41,7 @@ func TestUserModel(t *testing.T) {
 		ud := &user.User{
 			ID:        "12",
 			UUID:      someUUID,
-			Email:     "user@odpf.io",
+			Email:     "user@gotocompany.com",
 			Provider:  "compass",
 			CreatedAt: timestamp,
 			UpdatedAt: timestamp,

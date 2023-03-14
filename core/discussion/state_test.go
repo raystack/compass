@@ -3,7 +3,7 @@ package discussion_test
 import (
 	"testing"
 
-	"github.com/odpf/compass/core/discussion"
+	"github.com/goto/compass/core/discussion"
 	"github.com/stretchr/testify/assert"
 )
 

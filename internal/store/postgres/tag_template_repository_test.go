@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/odpf/compass/core/tag"
-	"github.com/odpf/compass/internal/store/postgres"
-	"github.com/odpf/salt/log"
+	"github.com/goto/compass/core/tag"
+	"github.com/goto/compass/internal/store/postgres"
+	"github.com/goto/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )

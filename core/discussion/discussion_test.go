@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/odpf/compass/core/discussion"
+	"github.com/goto/compass/core/discussion"
 	"github.com/stretchr/testify/assert"
 )
 

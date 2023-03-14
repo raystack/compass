@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/tag"
+	"github.com/goto/compass/core/tag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,7 +43,7 @@ func TestTagModel(t *testing.T) {
 						FieldRequired:    true,
 					}, {
 						FieldID:          2,
-						FieldValue:       "dexter@odpf.io",
+						FieldValue:       "dexter@gotocompany.com",
 						FieldURN:         "admin_email",
 						FieldDisplayName: "Admin Email",
 						FieldDescription: "Email of the admin of the asset.",
@@ -305,7 +305,7 @@ func getTagModels() TagModels {
 		},
 		{
 			ID:      2,
-			Value:   "dexter@odpf.io",
+			Value:   "dexter@gotocompany.com",
 			AssetID: "an-asset-id",
 			FieldID: 2,
 			Field:   fields[1],

@@ -3,8 +3,8 @@ package star
 import (
 	"context"
 
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/user"
+	"github.com/goto/compass/core/asset"
+	"github.com/goto/compass/core/user"
 )
 
 func NewService(starRepository Repository) *Service {

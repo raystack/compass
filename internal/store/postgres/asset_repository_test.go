@@ -13,10 +13,10 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/user"
-	"github.com/odpf/compass/internal/store/postgres"
-	"github.com/odpf/salt/log"
+	"github.com/goto/compass/core/asset"
+	"github.com/goto/compass/core/user"
+	"github.com/goto/compass/internal/store/postgres"
+	"github.com/goto/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/r3labs/diff/v2"
 	"github.com/stretchr/testify/suite"
@@ -62,22 +62,22 @@ func (r *AssetRepositoryTestSuite) createUsers(userRepo user.Repository) []user.
 	var err error
 	users := []user.User{}
 
-	user1 := user.User{UUID: uuid.NewString(), Email: "user-test-1@odpf.io", Provider: defaultProviderName}
+	user1 := user.User{UUID: uuid.NewString(), Email: "user-test-1@gotocompany.com", Provider: defaultProviderName}
 	user1.ID, err = userRepo.Create(r.ctx, &user1)
 	r.Require().NoError(err)
 	users = append(users, user1)
 
-	user2 := user.User{UUID: uuid.NewString(), Email: "user-test-2@odpf.io", Provider: defaultProviderName}
+	user2 := user.User{UUID: uuid.NewString(), Email: "user-test-2@gotocompany.com", Provider: defaultProviderName}
 	user2.ID, err = userRepo.Create(r.ctx, &user2)
 	r.Require().NoError(err)
 	users = append(users, user2)
 
-	user3 := user.User{UUID: uuid.NewString(), Email: "user-test-3@odpf.io", Provider: defaultProviderName}
+	user3 := user.User{UUID: uuid.NewString(), Email: "user-test-3@gotocompany.com", Provider: defaultProviderName}
 	user3.ID, err = userRepo.Create(r.ctx, &user3)
 	r.Require().NoError(err)
 	users = append(users, user3)
 
-	user4 := user.User{UUID: uuid.NewString(), Email: "user-test-4@odpf.io", Provider: defaultProviderName}
+	user4 := user.User{UUID: uuid.NewString(), Email: "user-test-4@gotocompany.com", Provider: defaultProviderName}
 	user4.ID, err = userRepo.Create(r.ctx, &user4)
 	r.Require().NoError(err)
 	users = append(users, user4)
@@ -183,7 +183,7 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 			description: "should return sql query with asset's data fields filter",
 			config: asset.Filter{
 				Data: map[string][]string{
-					"entity": {"odpf"},
+					"entity": {"gotocompany"},
 				},
 			},
 			expectedQuery: `(data->>'entity' = $1)`,
@@ -337,7 +337,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 	r.Run("should filter using asset's data fields", func() {
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			Data: map[string][]string{
-				"entity":  {"odpf"},
+				"entity":  {"gotocompany"},
 				"country": {"th"},
 			},
 		})
@@ -385,7 +385,7 @@ func (r *AssetRepositoryTestSuite) TestGetAll() {
 		results, err := r.repository.GetAll(r.ctx, asset.Filter{
 			Data: map[string][]string{
 				"properties.dependencies": {"_nonempty"},
-				"entity":                  {"odpf"},
+				"entity":                  {"gotocompany"},
 				"urn":                     {"j-xcvcx"},
 				"country":                 {"vn"},
 			},
@@ -472,7 +472,7 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 			Description: "should filter using asset's data fields",
 			Filter: asset.Filter{
 				Data: map[string][]string{
-					"entity":  {"odpf"},
+					"entity":  {"gotocompany"},
 					"country": {"th"},
 				},
 			},
@@ -510,7 +510,7 @@ func (r *AssetRepositoryTestSuite) TestGetTypes() {
 			Filter: asset.Filter{
 				Data: map[string][]string{
 					"properties.dependencies": {"_nonempty"},
-					"entity":                  {"odpf"},
+					"entity":                  {"gotocompany"},
 					"urn":                     {"j-xcvcx"},
 					"country":                 {"vn"},
 				},
@@ -732,10 +732,10 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 	// v0.3
 	astVersioning.Owners = []user.User{
 		{
-			Email: "user@odpf.io",
+			Email: "user@gotocompany.com",
 		},
 		{
-			Email:    "meteor@odpf.io",
+			Email:    "meteor@gotocompany.com",
 			Provider: "meteor",
 		},
 	}
@@ -792,8 +792,8 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 				Service: "bigquery",
 				Version: "0.3",
 				Changelog: diff.Changelog{
-					diff.Change{Type: "create", Path: []string{"owners", "0", "email"}, From: interface{}(nil), To: "user@odpf.io"},
-					diff.Change{Type: "create", Path: []string{"owners", "1", "email"}, From: interface{}(nil), To: "meteor@odpf.io"},
+					diff.Change{Type: "create", Path: []string{"owners", "0", "email"}, From: interface{}(nil), To: "user@gotocompany.com"},
+					diff.Change{Type: "create", Path: []string{"owners", "1", "email"}, From: interface{}(nil), To: "meteor@gotocompany.com"},
 				},
 				UpdatedBy: r.users[1],
 			},
@@ -878,17 +878,17 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 			Description: "new description in v0.2",
 			Version:     "0.3",
 			Changelog: diff.Changelog{
-				diff.Change{Type: "create", Path: []string{"owners", "0", "email"}, From: interface{}(nil), To: "user@odpf.io"},
-				diff.Change{Type: "create", Path: []string{"owners", "1", "email"}, From: interface{}(nil), To: "meteor@odpf.io"},
+				diff.Change{Type: "create", Path: []string{"owners", "0", "email"}, From: interface{}(nil), To: "user@gotocompany.com"},
+				diff.Change{Type: "create", Path: []string{"owners", "1", "email"}, From: interface{}(nil), To: "meteor@gotocompany.com"},
 			},
 			UpdatedBy: r.users[1],
 		}
 		expectedOwners := []user.User{
 			{
-				Email: "user@odpf.io",
+				Email: "user@gotocompany.com",
 			},
 			{
-				Email:    "meteor@odpf.io",
+				Email:    "meteor@gotocompany.com",
 				Provider: "meteor",
 			},
 		}

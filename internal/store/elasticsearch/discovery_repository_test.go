@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/odpf/compass/core/asset"
-	store "github.com/odpf/compass/internal/store/elasticsearch"
-	"github.com/odpf/salt/log"
+	"github.com/goto/compass/core/asset"
+	store "github.com/goto/compass/internal/store/elasticsearch"
+	"github.com/goto/salt/log"
 	"github.com/olivere/elastic/v7"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -69,7 +69,7 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 			Description: "sample-description",
 			Data: map[string]interface{}{
 				"foo": map[string]interface{}{
-					"company": "odpf",
+					"company": "gotocompany",
 				},
 			},
 			Labels: map[string]string{

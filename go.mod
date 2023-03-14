@@ -1,4 +1,4 @@
-module github.com/odpf/compass
+module github.com/goto/compass
 
 go 1.16
 
@@ -20,6 +20,7 @@ require (
 	github.com/golang-module/carbon/v2 v2.1.8
 	github.com/google/go-cmp v0.5.8
 	github.com/google/uuid v1.3.0
+	github.com/goto/salt v0.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/jackc/pgconn v1.8.0
@@ -31,7 +32,6 @@ require (
 	github.com/newrelic/go-agent/v3 v3.15.2
 	github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7 v1.0.1
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.1
-	github.com/odpf/salt v0.2.5-0.20221130085531-51c81815f7d6
 	github.com/olivere/elastic/v7 v7.0.31
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/pelletier/go-toml v1.9.5 // indirect

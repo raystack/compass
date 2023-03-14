@@ -10,7 +10,7 @@
                 "data": {
                     "topic_name": "order-topic",
                     "description": "Topic for each submitted order",
-                    "company": "odpf",
+                    "company": "gotocompany",
                     "environment": "integration",
                     "country": "us",
                     "partition": 250
@@ -42,7 +42,7 @@
                 "data": {
                     "topic_name": "consumer-topic",
                     "description": "Update on every rabbitmq customer creation/update",
-                    "company": "odpf",
+                    "company": "gotocompany",
                     "environment": "production",
                     "country": "id",
                     "partition": 50
@@ -65,7 +65,7 @@
                 "data": {
                     "topic_name": "consumer-mq-2",
                     "description": "Another rabbitmq topic",
-                    "company": "odpf",
+                    "company": "gotocompany",
                     "environment": "production",
                     "country": "id",
                     "partition": 50
@@ -88,7 +88,7 @@
                 "data": {
                     "topic_name": "transaction",
                     "description": "This publishes all the invoices from each of invoice storage where the invoice will be filtered and checked using invoice filterer and invoice checker",
-                    "company": "odpf",
+                    "company": "gotocompany",
                     "environment": "production",
                     "partition": 1
                 },

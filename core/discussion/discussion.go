@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/odpf/compass/core/user"
+	"github.com/goto/compass/core/user"
 )
 
 const MAX_ARRAY_FIELD_NUM = 10

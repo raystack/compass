@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/odpf/compass/pkg/statsd"
+	"github.com/goto/compass/pkg/statsd"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 )

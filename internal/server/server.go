@@ -8,6 +8,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goto/compass/internal/server/health"
+	handlersv1beta1 "github.com/goto/compass/internal/server/v1beta1"
+	"github.com/goto/compass/internal/store/postgres"
+	"github.com/goto/compass/pkg/grpc_interceptor"
+	"github.com/goto/compass/pkg/statsd"
+	compassv1beta1 "github.com/goto/compass/proto/gotocompany/compass/v1beta1"
+	"github.com/goto/salt/log"
+	"github.com/goto/salt/mux"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -15,14 +23,6 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/odpf/compass/internal/server/health"
-	handlersv1beta1 "github.com/odpf/compass/internal/server/v1beta1"
-	"github.com/odpf/compass/internal/store/postgres"
-	"github.com/odpf/compass/pkg/grpc_interceptor"
-	"github.com/odpf/compass/pkg/statsd"
-	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
-	"github.com/odpf/salt/log"
-	"github.com/odpf/salt/mux"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -48,7 +48,7 @@ func (cfg Config) grpcAddr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.
 type IdentityConfig struct {
 	// User Identity
 	HeaderKeyUUID       string `yaml:"headerkey_uuid" mapstructure:"headerkey_uuid" default:"Compass-User-UUID"`
-	HeaderValueUUID     string `yaml:"headervalue_uuid" mapstructure:"headervalue_uuid" default:"odpf@email.com"`
+	HeaderValueUUID     string `yaml:"headervalue_uuid" mapstructure:"headervalue_uuid" default:"gotocompany@email.com"`
 	HeaderKeyEmail      string `yaml:"headerkey_email" mapstructure:"headerkey_email" default:"Compass-User-Email"`
 	ProviderDefaultName string `yaml:"provider_default_name" mapstructure:"provider_default_name" default:""`
 }

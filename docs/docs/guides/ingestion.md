@@ -11,7 +11,7 @@ This guide assumes that you have a local instance of compass running and listeni
 
 ## Adding Data
 
-Let’s say that you have a hypothetical tool called Piccolo and you have several deployments of this tool on your platform. Before we can push data for Piccolo deployments to Compass, you need to recognize the type of Piccolo, whether it is a kind of `table`, `topic`, `dashboard`, or `job`. One can ingest metadata to compass with the Upsert Patch API. The API contract is available [here](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
+Let’s say that you have a hypothetical tool called Piccolo and you have several deployments of this tool on your platform. Before we can push data for Piccolo deployments to Compass, you need to recognize the type of Piccolo, whether it is a kind of `table`, `topic`, `dashboard`, or `job`. One can ingest metadata to compass with the Upsert Patch API. The API contract is available [here](https://github.com/goto/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
 
 If there is an existing asset, Upsert Patch API will check each field whether there is an update in the field of the existing asset. With this behaviour, it is possible to send partial updated field to update a certain field only as long as the `urn`, `type`, and `service` match with the existing asset. If there is any field changed, a new version of the asset will be created. If the asset does not exist, upsert patch API will create a new asset. Apart from asset details, we also could send upstreams and downstreams of lineage edges of the asset in the body.
 
@@ -22,7 +22,7 @@ Let's say `piccolo` tool is a kind of `table`, we can start pushing data for it.
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
---header 'Compass-User-UUID:odpf@email.com' \
+--header 'Compass-User-UUID:gotocompany@email.com' \
 --data-raw '{
     "asset": {
         "urn": "picollo:deployment-01",
@@ -44,7 +44,7 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
---header 'Compass-User-UUID:odpf@email.com' \
+--header 'Compass-User-UUID:gotocompany@email.com' \
 --data-raw '{
     "asset": {
         "urn": "picollo:deployment-02",
@@ -66,7 +66,7 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
---header 'Compass-User-UUID:odpf@email.com' \
+--header 'Compass-User-UUID:gotocompany@email.com' \
 --data-raw '{
     "asset": {
         "urn": "picollo:deployment-03",
@@ -106,7 +106,7 @@ $ compass search one
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search?text\=one' \
---header 'Compass-User-UUID:odpf@email.com'  | jq
+--header 'Compass-User-UUID:gotocompany@email.com'  | jq
 ```
 
 </TabItem>
@@ -167,7 +167,7 @@ $ compass search one --query=owners:kami
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search?text=one&query[owners]=kami' \
---header 'Compass-User-UUID:odpf@email.com' | jq
+--header 'Compass-User-UUID:gotocompany@email.com' | jq
 ```
 </TabItem>
 </Tabs>
@@ -207,7 +207,7 @@ To begin with, let's start over adding picolo metadata with its lineage informat
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
---header 'Compass-User-UUID:odpf@email.com' \
+--header 'Compass-User-UUID:gotocompany@email.com' \
 --data-raw '{
     "asset": {
         "urn": "picollo:deployment-01",
@@ -243,7 +243,7 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
---header 'Compass-User-UUID:odpf@email.com' \
+--header 'Compass-User-UUID:gotocompany@email.com' \
 --data-raw '{
     "asset": {
         "urn": "picollo:deployment-02",
@@ -279,7 +279,7 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
---header 'Compass-User-UUID:odpf@email.com' \
+--header 'Compass-User-UUID:gotocompany@email.com' \
 --data-raw '{
     "asset": {
         "urn": "picollo:deployment-03",
@@ -322,7 +322,7 @@ For instance, if you look at the `upstreams` and `downstreams` fields when we ar
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
---header 'Compass-User-UUID:odpf@email.com' \
+--header 'Compass-User-UUID:gotocompany@email.com' \
 --data-raw '{
     "asset": {
         "urn": "sensu:deployment-01",
@@ -341,7 +341,7 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
---header 'Compass-User-UUID:odpf@email.com' \
+--header 'Compass-User-UUID:gotocompany@email.com' \
 --data-raw '{
     "asset": {
         "urn": "sensu:deployment-02",
@@ -360,7 +360,7 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/assets' \
---header 'Compass-User-UUID:odpf@email.com' \
+--header 'Compass-User-UUID:gotocompany@email.com' \
 --data-raw '{
     "asset": {
         "urn": "sensu:deployment-03",
@@ -398,7 +398,7 @@ $ compass lineage picollo:deployment-01
 
 ```bash
 curl 'http://localhost:8080/v1beta1/lineage/picollo%3Adeployment-01' \
---header 'Compass-User-UUID:odpf@email.com'
+--header 'Compass-User-UUID:gotocompany@email.com'
 ```
 </TabItem>
 </Tabs>

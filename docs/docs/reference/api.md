@@ -3,9 +3,9 @@ Documentation of our Compass API with gRPC and gRPC-Gateway.
 
 ## Version: 0.2.1
 
-**License:** [Apache License 2.0](https://github.com/odpf/compass/blob/main/LICENSE)
+**License:** [Apache License 2.0](https://github.com/goto/compass/blob/main/LICENSE)
 
-[More about Compass](https://odpf.gitbook.io/compass/)
+[More about Compass](https://goto.gitbook.io/compass/)
 
 ## default
 

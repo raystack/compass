@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/odpf/compass/core/user"
-	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
-	"github.com/odpf/salt/log"
+	"github.com/goto/compass/core/user"
+	compassv1beta1 "github.com/goto/compass/proto/gotocompany/compass/v1beta1"
+	"github.com/goto/salt/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

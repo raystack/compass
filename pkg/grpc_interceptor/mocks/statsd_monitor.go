@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	statsd "github.com/odpf/compass/pkg/statsd"
+	statsd "github.com/goto/compass/pkg/statsd"
 	mock "github.com/stretchr/testify/mock"
 
 	testing "testing"

@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/star"
-	"github.com/odpf/compass/core/user"
+	"github.com/goto/compass/core/asset"
+	"github.com/goto/compass/core/star"
+	"github.com/goto/compass/core/user"
 )
 
 type StarClauses struct {

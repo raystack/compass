@@ -1,7 +1,7 @@
 package postgres_test
 
 import (
-	"github.com/odpf/compass/core/discussion"
+	"github.com/goto/compass/core/discussion"
 )
 
 func (r *DiscussionRepositoryTestSuite) TestCreateComment() {

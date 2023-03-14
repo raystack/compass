@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/odpf/compass/core/discussion"
-	"github.com/odpf/compass/core/discussion/mocks"
+	"github.com/goto/compass/core/discussion"
+	"github.com/goto/compass/core/discussion/mocks"
 	"github.com/stretchr/testify/assert"
 )
 

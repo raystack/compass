@@ -136,7 +136,7 @@ $ docker run -d \
     -p 8080:8080 \
     -v $(pwd)/compass.yaml:/compass.yaml \
     --name compass-server \
-    odpf/compass:<version> \
+    gotocompany/compass:<version> \
     server start -c /compass.yaml
 ```
 
@@ -152,14 +152,14 @@ $ docker run -d \
     -p 8080:8080 \
     --env-file .env \
     --name compass-server \
-    odpf/compass:<version> \
+    gotocompany/compass:<version> \
     server start
 ```
 
 ## Using the Helm chart
 
 ### Pre-requisites for Helm chart
-Compass can be installed in Kubernetes using the Helm chart from https://github.com/odpf/charts.
+Compass can be installed in Kubernetes using the Helm chart from https://github.com/goto/charts.
 
 Ensure that the following requirements are met:
 - Kubernetes 1.14+
@@ -170,7 +170,7 @@ Ensure that the following requirements are met:
 Add ODPF chart repository to Helm:
 
 ```
-helm repo add odpf https://odpf.github.io/charts/
+helm repo add goto https://goto.github.io/charts/
 ```
 
 You can update the chart repository by running:
@@ -183,14 +183,14 @@ helm repo update
 
 The following table lists the configurable parameters of the Compass chart and their default values.
 
-See full helm values guide [here](https://github.com/odpf/charts/tree/main/stable/compass#values)
+See full helm values guide [here](https://github.com/goto/charts/tree/main/stable/compass#values)
 
 ```yaml title="values.yaml"
 app:
   image:
-    repository: odpf/compass
+    repository: gotocompany/compass
     pullPolicy: Always
-    tag: "0.3.0"
+    tag: "0.5.0"
   container:
     command:
       - compass
@@ -255,7 +255,7 @@ app:
 And install it with the helm command line along with the values file:
 
 ```bash
-$ helm install my-release -f values.yaml odpf/compass
+$ helm install my-release -f values.yaml goto/compass
 ```
 
 ## Client Initialisation

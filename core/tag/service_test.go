@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/tag"
-	"github.com/odpf/compass/core/tag/mocks"
-	"github.com/odpf/compass/core/tag/validator"
+	"github.com/goto/compass/core/tag"
+	"github.com/goto/compass/core/tag/mocks"
+	"github.com/goto/compass/core/tag/validator"
 
 	"github.com/golang-module/carbon/v2"
 	"github.com/stretchr/testify/mock"

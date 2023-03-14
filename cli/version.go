@@ -3,8 +3,8 @@ package cli
 import (
 	"fmt"
 
-	"github.com/odpf/salt/term"
-	"github.com/odpf/salt/version"
+	"github.com/goto/salt/term"
+	"github.com/goto/salt/version"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +21,7 @@ func versionCmd() *cobra.Command {
 			}
 
 			fmt.Printf("compass version %s", Version)
-			fmt.Println(term.Yellow(version.UpdateNotice(Version, "odpf/compass")))
+			fmt.Println(term.Yellow(version.UpdateNotice(Version, "goto/compass")))
 			return nil
 		},
 	}

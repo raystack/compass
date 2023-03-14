@@ -11,8 +11,8 @@ import (
 
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
-	store "github.com/odpf/compass/internal/store/elasticsearch"
-	"github.com/odpf/salt/log"
+	store "github.com/goto/compass/internal/store/elasticsearch"
+	"github.com/goto/salt/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

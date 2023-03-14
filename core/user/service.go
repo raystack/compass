@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/odpf/compass/pkg/statsd"
-	"github.com/odpf/salt/log"
+	"github.com/goto/compass/pkg/statsd"
+	"github.com/goto/salt/log"
 )
 
 // Service is a type of service that manages business process

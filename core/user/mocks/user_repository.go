@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	user "github.com/odpf/compass/core/user"
+	user "github.com/goto/compass/core/user"
 	mock "github.com/stretchr/testify/mock"
 )
 

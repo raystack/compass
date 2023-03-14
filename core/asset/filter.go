@@ -3,7 +3,7 @@ package asset
 import (
 	"strings"
 
-	"github.com/odpf/compass/core/validator"
+	"github.com/goto/compass/core/validator"
 )
 
 type Filter struct {

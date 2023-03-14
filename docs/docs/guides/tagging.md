@@ -9,7 +9,7 @@ Creating a tag's template could be done with Tag Template API.
 
 ```bash
 $ curl --request POST 'localhost:8080/v1beta1/tags/templates' \
---header 'Compass-User-UUID: user@odpf.io' \
+--header 'Compass-User-UUID: user@gotocompany.com' \
 --data-raw '{
     "urn": "my-first-template",
     "display_name": "My First Template",
@@ -37,7 +37,7 @@ We can verify the tag's template is created by calling GET tag's templates API
 
 ```bash
 $ curl --request GET 'localhost:8080/v1beta1/tags/templates' \
---header 'Compass-User-UUID: user@odpf.io'
+--header 'Compass-User-UUID: user@gotocompany.com'
 ```
 The response will be like this
 ```javascript
@@ -90,7 +90,7 @@ Assuming we have an asset
     "description": "sample description",
     "version": "0.1",
     "updated_by": {
-        "uuid": "user@odpf.io"
+        "uuid": "user@gotocompany.com"
     },
     "created_at": "2022-05-11T07:03:45.954387Z",
     "updated_at": "2022-05-11T07:03:45.954387Z"
@@ -100,7 +100,7 @@ Assuming we have an asset
 We can tag the asset with template `my-first-template`.
 ```bash
 $ curl --request POST 'localhost:8080/v1beta1/tags/assets' \
---header 'Compass-User-UUID: user@odpf.io'
+--header 'Compass-User-UUID: user@gotocompany.com'
 --data-raw '{
     "asset_id": "a2c74793-b584-4d20-ba2a-28bdf6b92c08",
     "template_urn": "my-first-template",
@@ -157,7 +157,7 @@ We can get all tags belong to an asset by calling GET `/v1beta1/tags/assets/{ass
 
 ```bash
 $ curl --request GET 'localhost:8080/v1beta1/tags/assets/a2c74793-b584-4d20-ba2a-28bdf6b92c08' \
---header 'Compass-User-UUID: user@odpf.io'
+--header 'Compass-User-UUID: user@gotocompany.com'
 
 {
     "data": [

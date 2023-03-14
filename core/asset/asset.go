@@ -5,7 +5,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/odpf/compass/core/user"
+	"github.com/goto/compass/core/user"
 	"github.com/r3labs/diff/v2"
 )
 

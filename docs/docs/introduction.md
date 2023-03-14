@@ -50,4 +50,4 @@ See the [installation](./installation) page to install the Compass CLI. Next, we
 
 After completing the tour, check out the remainder of the documentation in the reference and concepts sections for your specific areas of interest. We've aimed to provide as much documentation as we can for the various components of Compass to give you a full understanding of Compass's surface area.
 
-Finally, follow the project on [GitHub](https://github.com/odpf/compass), and contact us if you'd like to get involved.
+Finally, follow the project on [GitHub](https://github.com/goto/compass), and contact us if you'd like to get involved.

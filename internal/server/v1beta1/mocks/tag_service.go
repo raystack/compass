@@ -7,7 +7,7 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
-	tag "github.com/odpf/compass/core/tag"
+	tag "github.com/goto/compass/core/tag"
 
 	testing "testing"
 )
