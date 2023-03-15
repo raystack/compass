@@ -2,7 +2,7 @@ swagger: "2.0"
 info:
   title: Compass
   description: Documentation of our Compass API with gRPC and gRPC-Gateway.
-  version: 0.1.0
+  version: 0.2.1
   license:
     name: Apache License 2.0
     url: https://github.com/goto/compass/blob/main/LICENSE

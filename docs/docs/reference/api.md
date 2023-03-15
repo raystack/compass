@@ -1,11 +1,11 @@
-# API
+# Compass
 Documentation of our Compass API with gRPC and gRPC-Gateway.
 
 ## Version: 0.2.1
 
 **License:** [Apache License 2.0](https://github.com/goto/compass/blob/main/LICENSE)
 
-[More about Compass](https://goto.gitbook.io/compass/)
+[More about Compass](https://goto.github.io/compass/)
 
 ## default
 
@@ -317,6 +317,8 @@ API for querying documents. 'text' is fuzzy matched against all the available da
 | text | query | text to search for (fuzzy) | No | string |
 | rankby | query | descendingly sort based on a numeric field in the asset. the nested field is written with period separated field name. eg, "rankby[data.profile.usage_count]" | No | string |
 | size | query | number of results to return | No | long |
+| include_fields | query |  | No | [ string ] |
+| offset | query | offset parameter defines the offset from the first result you want to fetch | No | long |
 
 ##### Responses
 
@@ -1115,6 +1117,8 @@ API for querying documents. 'text' is fuzzy matched against all the available da
 | text | query | text to search for (fuzzy) | No | string |
 | rankby | query | descendingly sort based on a numeric field in the asset. the nested field is written with period separated field name. eg, "rankby[data.profile.usage_count]" | No | string |
 | size | query | number of results to return | No | long |
+| include_fields | query |  | No | [ string ] |
+| offset | query | offset parameter defines the offset from the first result you want to fetch | No | long |
 
 ##### Responses
 
