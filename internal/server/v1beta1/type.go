@@ -3,26 +3,18 @@ package handlersv1beta1
 import (
 	"context"
 	"fmt"
-	"github.com/odpf/compass/core/namespace"
-
 	"github.com/odpf/compass/core/asset"
 	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-// TODO: remove types
 func (server *APIServer) GetAllTypes(ctx context.Context, req *compassv1beta1.GetAllTypesRequest) (*compassv1beta1.GetAllTypesResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	if err := req.ValidateAll(); err != nil {
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
 
-	flt, err := asset.NewFilterBuilder(namespace.DefaultNamespace).
+	flt, err := asset.NewFilterBuilder().
 		Types(req.GetTypes()).
 		Services(req.GetServices()).
 		Q(req.GetQ()).

@@ -10,10 +10,14 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+// NamespaceHeaderKey specify what namespace request is targeted for
+// if not provided, default namespace is assumed
+const NamespaceHeaderKey = "x-namespace-id"
+
 type Config struct {
-	Host                  string `mapstructure:"host" default:"localhost:8081"`
-	ServerHeaderKeyUUID   string `yaml:"serverheaderkey_uuid" mapstructure:"serverheaderkey_uuid" default:"Compass-User-UUID"`
-	ServerHeaderValueUUID string `yaml:"serverheadervalue_uuid" mapstructure:"serverheadervalue_uuid" default:"compass@odpf.com"`
+	Host                      string `mapstructure:"host" default:"localhost:8081"`
+	ServerHeaderKeyUserUUID   string `yaml:"serverheaderkey_uuid" mapstructure:"serverheaderkey_uuid" default:"Compass-User-UUID"`
+	ServerHeaderValueUserUUID string `yaml:"serverheadervalue_uuid" mapstructure:"serverheadervalue_uuid" default:"compass@odpf.com"`
 }
 
 func Create(ctx context.Context, cfg Config) (compassv1beta1.CompassServiceClient, func(), error) {
@@ -33,11 +37,12 @@ func Create(ctx context.Context, cfg Config) (compassv1beta1.CompassServiceClien
 	return client, cancel, nil
 }
 
-func SetMetadata(ctx context.Context, cfg Config) context.Context {
-	md := metadata.New(map[string]string{cfg.ServerHeaderKeyUUID: cfg.ServerHeaderValueUUID})
-	ctx = metadata.NewOutgoingContext(ctx, md)
-
-	return ctx
+func SetMetadata(ctx context.Context, cfg Config, namespaceID string) context.Context {
+	md := metadata.New(map[string]string{
+		cfg.ServerHeaderKeyUserUUID: cfg.ServerHeaderValueUserUUID,
+		NamespaceHeaderKey:          namespaceID,
+	})
+	return metadata.NewOutgoingContext(ctx, md)
 }
 
 func createConnection(ctx context.Context, cfg Config) (*grpc.ClientConn, error) {

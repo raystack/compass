@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/odpf/compass/internal/client"
@@ -34,7 +35,7 @@ func lineageCommand(cfg *Config) *cobra.Command {
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
 
 			res, err := clnt.GetGraph(ctx, &compassv1beta1.GetGraphRequest{
 				Urn: args[0],
@@ -48,5 +49,6 @@ func lineageCommand(cfg *Config) *cobra.Command {
 			return nil
 		},
 	}
+	cmd.PersistentFlags().StringVarP(&namespaceID, "namespace", "n", namespace.DefaultNamespace.ID.String(), "namespace id or name")
 	return cmd
 }

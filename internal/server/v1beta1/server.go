@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"net/http"
 	"time"
 
@@ -53,9 +54,9 @@ func NewAPIServer(
 	}
 }
 
-func (server *APIServer) validateUserInCtx(ctx context.Context) (string, error) {
+func (server *APIServer) validateUserInCtx(ctx context.Context, ns *namespace.Namespace) (string, error) {
 	usr := user.FromContext(ctx)
-	userID, err := server.userService.ValidateUser(ctx, usr.UUID, usr.Email)
+	userID, err := server.userService.ValidateUser(ctx, ns, usr.UUID, usr.Email)
 	if err != nil {
 		if errors.Is(err, user.ErrNoUserInformation) {
 			return "", status.Errorf(codes.InvalidArgument, err.Error())
@@ -63,7 +64,7 @@ func (server *APIServer) validateUserInCtx(ctx context.Context) (string, error) 
 		if errors.As(err, &user.DuplicateRecordError{UUID: usr.UUID, Email: usr.Email}) {
 			return "", status.Errorf(codes.AlreadyExists, err.Error())
 		}
-		return "", status.Errorf(codes.Internal, codes.Internal.String())
+		return "", status.Errorf(codes.Internal, err.Error())
 	}
 	if userID == "" {
 		return "", status.Error(codes.InvalidArgument, errMissingUserInfo.Error())

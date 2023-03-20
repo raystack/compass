@@ -3,6 +3,8 @@ package user_test
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
+	"github.com/odpf/compass/core/namespace"
 	"testing"
 
 	"github.com/odpf/compass/core/user"
@@ -13,6 +15,12 @@ import (
 )
 
 func TestValidateUser(t *testing.T) {
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	type testCase struct {
 		Description string
 		UUID        string
@@ -48,7 +56,7 @@ func TestValidateUser(t *testing.T) {
 			UUID:        "an-email-success-create",
 			Setup: func(ctx context.Context, inputUUID, inputEmail string, userRepo *mocks.UserRepository) {
 				userRepo.EXPECT().GetByUUID(ctx, inputUUID).Return(user.User{}, user.NotFoundError{UUID: inputUUID})
-				userRepo.EXPECT().UpsertByEmail(ctx, &user.User{UUID: inputUUID}).Return("some-id", nil)
+				userRepo.EXPECT().UpsertByEmail(ctx, ns, &user.User{UUID: inputUUID}).Return("some-id", nil)
 			},
 			ExpectErr: nil,
 		},
@@ -58,7 +66,7 @@ func TestValidateUser(t *testing.T) {
 			Email:       "an-email-success-create",
 			Setup: func(ctx context.Context, inputUUID, inputEmail string, userRepo *mocks.UserRepository) {
 				userRepo.EXPECT().GetByUUID(ctx, inputUUID).Return(user.User{}, user.NotFoundError{UUID: inputUUID})
-				userRepo.EXPECT().UpsertByEmail(ctx, &user.User{UUID: inputUUID, Email: inputEmail}).Return("some-id", nil)
+				userRepo.EXPECT().UpsertByEmail(ctx, ns, &user.User{UUID: inputUUID, Email: inputEmail}).Return("some-id", nil)
 			},
 			ExpectErr: nil,
 		},
@@ -69,7 +77,7 @@ func TestValidateUser(t *testing.T) {
 			Setup: func(ctx context.Context, inputUUID, inputEmail string, userRepo *mocks.UserRepository) {
 				mockErr := errors.New("error upserting user")
 				userRepo.EXPECT().GetByUUID(ctx, inputUUID).Return(user.User{}, mockErr)
-				userRepo.EXPECT().UpsertByEmail(ctx, &user.User{UUID: inputUUID, Email: inputEmail}).Return("", mockErr)
+				userRepo.EXPECT().UpsertByEmail(ctx, ns, &user.User{UUID: inputUUID, Email: inputEmail}).Return("", mockErr)
 			},
 			ExpectErr: errors.New("error upserting user"),
 		},
@@ -87,7 +95,7 @@ func TestValidateUser(t *testing.T) {
 
 			userSvc := user.NewService(logger, mockUserRepo)
 
-			_, err := userSvc.ValidateUser(ctx, tc.UUID, tc.Email)
+			_, err := userSvc.ValidateUser(ctx, ns, tc.UUID, tc.Email)
 
 			assert.Equal(t, tc.ExpectErr, err)
 		})

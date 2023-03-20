@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/jmoiron/sqlx"
+	"github.com/odpf/compass/core/namespace"
 
 	"github.com/odpf/compass/core/asset"
 	"github.com/odpf/compass/core/star"
@@ -24,7 +26,7 @@ type StarRepository struct {
 }
 
 // Create insert a new record in the stars table
-func (r *StarRepository) Create(ctx context.Context, userID string, assetID string) (string, error) {
+func (r *StarRepository) Create(ctx context.Context, ns *namespace.Namespace, userID string, assetID string) (string, error) {
 	var starID string
 	if userID == "" {
 		return "", star.ErrEmptyUserID
@@ -40,16 +42,18 @@ func (r *StarRepository) Create(ctx context.Context, userID string, assetID stri
 	if !isValidUUID(assetID) {
 		return "", star.InvalidError{AssetID: assetID}
 	}
-
-	if err := r.client.db.QueryRowxContext(ctx, `
+	err := r.client.QueryFn(ctx, func(conn *sqlx.Conn) error {
+		return conn.QueryRowxContext(ctx, `
 					INSERT INTO
 					stars
-						(user_id, asset_id)
+						(user_id, asset_id, namespace_id)
 					VALUES
-						($1, $2)
+						($1, $2, $3)
 					RETURNING id
-					`, userID, assetID).Scan(&starID); err != nil {
-		err := checkPostgresError(err)
+					`, userID, assetID, ns.ID).Scan(&starID)
+	})
+	if err != nil {
+		err = checkPostgresError(err)
 		if errors.Is(err, errDuplicateKey) {
 			return "", star.DuplicateRecordError{UserID: userID, AssetID: assetID}
 		}
@@ -76,7 +80,7 @@ func (r *StarRepository) GetStargazers(ctx context.Context, flt star.Filter, ass
 
 	starClausesValue := r.buildClausesValue(flt)
 	var userModels UserModels
-	if err := r.client.db.SelectContext(ctx, &userModels, `
+	if err := r.client.SelectContext(ctx, &userModels, `
 		SELECT
 			DISTINCT ON (u.id) u.id,
       u.uuid,
@@ -116,7 +120,7 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, flt star.Filt
 	starClausesValue := r.buildClausesValue(flt)
 
 	var assetModels []AssetModel
-	if err := r.client.db.SelectContext(ctx, &assetModels, fmt.Sprintf(`
+	if err := r.client.SelectContext(ctx, &assetModels, fmt.Sprintf(`
 		SELECT
 			a.id as id,
 			a.urn as urn,
@@ -180,8 +184,8 @@ func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, as
 		return asset.Asset{}, star.InvalidError{AssetID: assetID}
 	}
 
-	var asetModel AssetModel
-	err := r.client.db.GetContext(ctx, &asetModel, `
+	var assetModel AssetModel
+	err := r.client.GetContext(ctx, &assetModel, `
 		SELECT
 			a.id,
 			a.urn,
@@ -217,7 +221,7 @@ func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, as
 		return asset.Asset{}, fmt.Errorf("failed fetching star by user: %w", err)
 	}
 
-	asset := asetModel.toAsset(nil)
+	asset := assetModel.toAsset(nil)
 	return asset, nil
 }
 
@@ -237,7 +241,7 @@ func (r *StarRepository) Delete(ctx context.Context, userID string, assetID stri
 		return star.InvalidError{AssetID: assetID}
 	}
 
-	res, err := r.client.db.ExecContext(ctx, `
+	res, err := r.client.ExecContext(ctx, `
 		DELETE FROM
 			stars
 		WHERE
@@ -261,7 +265,7 @@ func (r *StarRepository) Delete(ctx context.Context, userID string, assetID stri
 func (r *StarRepository) buildClausesValue(flt star.Filter) StarClauses {
 	sCfg := StarClauses{
 		Offset:           0,
-		Limit:            DEFAULT_MAX_RESULT_SIZE,
+		Limit:            DefaultMaxResultSize,
 		SortKey:          columnNameCreatedAt,
 		SortDirectionKey: sortDirectionDescending,
 	}

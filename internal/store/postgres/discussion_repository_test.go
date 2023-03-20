@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"testing"
 
 	"github.com/odpf/compass/core/asset"
@@ -35,9 +36,10 @@ func (r *DiscussionRepositoryTestSuite) SetupSuite() {
 	r.ns = &namespace.Namespace{
 		ID:       uuid.New(),
 		Name:     "umbrella",
-		State:    namespace.SharedState,
+		State:    namespace.DedicatedState,
 		Metadata: nil,
 	}
+	r.ctx = grpc_interceptor.BuildContextWithNamespace(context.Background(), r.ns)
 
 	logger := log.NewLogrus()
 	r.client, r.pool, r.resource, err = newTestClient(logger)
@@ -45,7 +47,6 @@ func (r *DiscussionRepositoryTestSuite) SetupSuite() {
 		r.T().Fatal(err)
 	}
 
-	r.ctx = context.TODO()
 	r.userRepo, err = postgres.NewUserRepository(r.client)
 	if err != nil {
 		r.T().Fatal(err)
@@ -62,7 +63,7 @@ func (r *DiscussionRepositoryTestSuite) SetupSuite() {
 		r.T().Fatal(err)
 	}
 
-	r.users, err = createUsers(r.userRepo, 5)
+	r.users, err = createUsers(r.userRepo, r.ns, 5)
 	if err != nil {
 		r.T().Fatal(err)
 	}
@@ -134,7 +135,7 @@ func (r *DiscussionRepositoryTestSuite) TestCreate() {
 			Assignees: usersToUserIDs(r.users)[:2],
 			Owner:     r.users[len(r.users)-1],
 		}
-		id, err := r.repository.Create(r.ctx, disc)
+		id, err := r.repository.Create(r.ctx, r.ns, disc)
 		r.NoError(err)
 		r.NotEmpty(id)
 	})
@@ -147,7 +148,7 @@ func (r *DiscussionRepositoryTestSuite) TestCreate() {
 			Labels: []string{"label1", "label2"},
 			Owner:  r.users[len(r.users)-1],
 		}
-		id, err := r.repository.Create(r.ctx, disc)
+		id, err := r.repository.Create(r.ctx, r.ns, disc)
 		r.NoError(err)
 		r.NotEmpty(id)
 	})
@@ -159,7 +160,7 @@ func (r *DiscussionRepositoryTestSuite) TestCreate() {
 			Type:   discussion.TypeOpenEnded,
 			Labels: []string{"label1", "label2"},
 		}
-		id, err := r.repository.Create(r.ctx, disc)
+		id, err := r.repository.Create(r.ctx, r.ns, disc)
 		r.Error(err)
 		r.Empty(id)
 	})

@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"github.com/google/uuid"
+	"github.com/odpf/compass/core/namespace"
 	"strings"
 	"time"
 
@@ -9,13 +11,14 @@ import (
 
 // TagModel is a model for tag value in database table
 type TagModel struct {
-	ID        uint                  `db:"id"`
-	Value     string                `db:"value"`
-	AssetID   string                `db:"asset_id"`
-	FieldID   uint                  `db:"field_id"`
-	CreatedAt time.Time             `db:"created_at"`
-	UpdatedAt time.Time             `db:"updated_at"`
-	Field     TagTemplateFieldModel `db:"-"`
+	ID          uint                  `db:"id"`
+	NamespaceID string                `db:"namespace_id"`
+	Value       string                `db:"value"`
+	AssetID     string                `db:"asset_id"`
+	FieldID     uint                  `db:"field_id"`
+	CreatedAt   time.Time             `db:"created_at"`
+	UpdatedAt   time.Time             `db:"updated_at"`
+	Field       TagTemplateFieldModel `db:"-"`
 }
 
 type TagModels []TagModel
@@ -78,6 +81,7 @@ type TagTemplateModel struct {
 	CreatedAt   time.Time              `db:"created_at"`
 	UpdatedAt   time.Time              `db:"updated_at"`
 	Fields      TagTemplateFieldModels `db:"-"`
+	NamespaceID uuid.UUID              `db:"namespace_id"`
 }
 
 func (tmp *TagTemplateModel) toTemplate() tag.Template {
@@ -91,8 +95,8 @@ func (tmp *TagTemplateModel) toTemplate() tag.Template {
 	}
 }
 
-func newTemplateModel(template *tag.Template) *TagTemplateModel {
-	fieldModels := newSliceOfFieldModel(template.Fields)
+func newTemplateModel(ns *namespace.Namespace, template *tag.Template) *TagTemplateModel {
+	fieldModels := newSliceOfFieldModel(ns, template.Fields)
 
 	return &TagTemplateModel{
 		URN:         template.URN,
@@ -125,6 +129,7 @@ type TagTemplateFieldModel struct {
 	CreatedAt   time.Time        `db:"created_at"`
 	UpdatedAt   time.Time        `db:"updated_at"`
 	Template    TagTemplateModel `db:"-"`
+	NamespaceID uuid.UUID        `db:"namespace_id"`
 }
 
 type TagTemplateFieldModels []TagTemplateFieldModel
@@ -160,7 +165,7 @@ func (fs *TagTemplateFieldModels) toDomainFields() []tag.Field {
 	return output
 }
 
-func newSliceOfFieldModel(listOfDomainField []tag.Field) TagTemplateFieldModels {
+func newSliceOfFieldModel(ns *namespace.Namespace, listOfDomainField []tag.Field) TagTemplateFieldModels {
 	newFields := TagTemplateFieldModels{}
 	for _, field := range listOfDomainField {
 		var options *string
@@ -176,6 +181,7 @@ func newSliceOfFieldModel(listOfDomainField []tag.Field) TagTemplateFieldModels 
 			DataType:    field.DataType,
 			Options:     options,
 			Required:    field.Required,
+			NamespaceID: ns.ID,
 		})
 	}
 	return newFields

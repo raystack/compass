@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -21,9 +22,13 @@ import (
 
 func TestGetTypes(t *testing.T) {
 	var (
-		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
-		ns       = namespace.DefaultNamespace
+		ns       = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
 	type testCase struct {
 		Description  string
@@ -37,21 +42,21 @@ func TestGetTypes(t *testing.T) {
 			Description:  "should return internal server error if failing to fetch types",
 			ExpectStatus: codes.Internal,
 			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
-				as.EXPECT().GetTypes(ctx, asset.Filter{Namespace: ns}).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
+				as.EXPECT().GetTypes(ctx, asset.Filter{}).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
 			},
 		},
 		{
 			Description:  "should return internal server error if failing to fetch counts",
 			ExpectStatus: codes.Internal,
 			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
-				as.EXPECT().GetTypes(ctx, asset.Filter{Namespace: ns}).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
+				as.EXPECT().GetTypes(ctx, asset.Filter{}).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
 			},
 		},
 		{
 			Description:  "should return all valid types with its asset count",
 			ExpectStatus: codes.OK,
 			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
-				as.EXPECT().GetTypes(ctx, asset.Filter{Namespace: ns}).Return(map[asset.Type]int{
+				as.EXPECT().GetTypes(ctx, asset.Filter{}).Return(map[asset.Type]int{
 					asset.Type("table"): 10,
 					asset.Type("topic"): 30,
 					asset.Type("job"):   15,
@@ -101,19 +106,16 @@ func TestGetTypes(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+			ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 
-			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.AssetService)
 			logger := log.NewNoop()
 			defer mockSvc.AssertExpectations(t)
 			tc.Setup(&tc, ctx, mockSvc)
 
-			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
-
-			handler := NewAPIServer(logger, nil, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, nil, mockSvc, nil, nil, nil, nil, nil)
 
 			got, err := handler.GetAllTypes(ctx, &compassv1beta1.GetAllTypesRequest{})
 			code := status.Code(err)

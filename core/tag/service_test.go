@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"testing"
 
 	"github.com/google/uuid"
@@ -151,7 +152,12 @@ func (s *ServiceTestSuite) TestValidate() {
 
 func (s *ServiceTestSuite) TestCreate() {
 	ctx := context.TODO()
-
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	s.Run("should return error if value validations return error", func() {
 		s.Setup()
 		t := s.buildTag()
@@ -164,7 +170,7 @@ func (s *ServiceTestSuite) TestCreate() {
 			},
 		}
 
-		actualError := s.tagService.CreateTag(ctx, &t)
+		actualError := s.tagService.CreateTag(ctx, ns, &t)
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
 	})
@@ -175,7 +181,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		template := s.buildTemplate()
 		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return(nil, errors.New("random error"))
 
-		err := s.tagService.CreateTag(ctx, &t)
+		err := s.tagService.CreateTag(ctx, ns, &t)
 		s.Error(err)
 	})
 
@@ -194,7 +200,7 @@ func (s *ServiceTestSuite) TestCreate() {
 			},
 		}
 
-		actualError := s.tagService.CreateTag(ctx, &t)
+		actualError := s.tagService.CreateTag(ctx, ns, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
@@ -215,7 +221,7 @@ func (s *ServiceTestSuite) TestCreate() {
 			},
 		}
 
-		actualError := s.tagService.CreateTag(ctx, &t)
+		actualError := s.tagService.CreateTag(ctx, ns, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
@@ -236,7 +242,7 @@ func (s *ServiceTestSuite) TestCreate() {
 			},
 		}
 
-		actualError := s.tagService.CreateTag(ctx, &t)
+		actualError := s.tagService.CreateTag(ctx, ns, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
@@ -247,9 +253,9 @@ func (s *ServiceTestSuite) TestCreate() {
 		t := s.buildTag()
 		template := s.buildTemplate()
 		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.repository.EXPECT().Create(mock.Anything, &t).Return(errors.New("random error"))
+		s.repository.EXPECT().Create(mock.Anything, ns, &t).Return(errors.New("random error"))
 
-		err := s.tagService.CreateTag(ctx, &t)
+		err := s.tagService.CreateTag(ctx, ns, &t)
 		s.Error(err)
 	})
 
@@ -259,9 +265,9 @@ func (s *ServiceTestSuite) TestCreate() {
 
 		template := s.buildTemplate()
 		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
-		s.repository.EXPECT().Create(mock.Anything, &t).Return(nil)
+		s.repository.EXPECT().Create(mock.Anything, ns, &t).Return(nil)
 
-		actualError := s.tagService.CreateTag(ctx, &t)
+		actualError := s.tagService.CreateTag(ctx, ns, &t)
 
 		s.NoError(actualError)
 	})

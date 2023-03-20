@@ -3,6 +3,8 @@ package postgres_test
 import (
 	"context"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"sort"
 	"testing"
 
@@ -24,6 +26,7 @@ type TagRepositoryTestSuite struct {
 	templateRepository *postgres.TagTemplateRepository
 	pool               *dockertest.Pool
 	resource           *dockertest.Resource
+	ns                 *namespace.Namespace
 }
 
 func (r *TagRepositoryTestSuite) SetupSuite() {
@@ -34,8 +37,13 @@ func (r *TagRepositoryTestSuite) SetupSuite() {
 	if err != nil {
 		r.T().Fatal(err)
 	}
-
-	r.ctx = context.TODO()
+	r.ns = &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
+	r.ctx = grpc_interceptor.BuildContextWithNamespace(context.Background(), r.ns)
 	r.repository, err = postgres.NewTagRepository(r.client)
 	if err != nil {
 		r.T().Fatal(err)
@@ -78,7 +86,7 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 
 		expectedErrorMsg := "tag is nil"
 
-		actualError := r.repository.Create(r.ctx, domainTag)
+		actualError := r.repository.Create(r.ctx, r.ns, domainTag)
 
 		r.EqualError(actualError, expectedErrorMsg)
 	})
@@ -88,7 +96,7 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 		r.NoError(err)
 		domain := getDomainTag()
 
-		err = r.repository.Create(r.ctx, &domain)
+		err = r.repository.Create(r.ctx, r.ns, &domain)
 
 		r.EqualError(err, tag.TemplateNotFoundError{URN: domain.TemplateURN}.Error())
 	})
@@ -98,11 +106,11 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 		r.NoError(err)
 
 		domainTemplate := getTemplate()
-		err = r.templateRepository.Create(r.ctx, domainTemplate)
+		err = r.templateRepository.Create(r.ctx, r.ns, domainTemplate)
 		r.NoError(err)
 		domainTag := getDomainTag()
 
-		err = r.repository.Create(r.ctx, &domainTag)
+		err = r.repository.Create(r.ctx, r.ns, &domainTag)
 		r.NoError(err)
 
 		tags, err := r.repository.Read(r.ctx, domainTag)
@@ -132,11 +140,11 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 		r.NoError(err)
 
 		domainTemplate := getTemplate()
-		err = r.templateRepository.Create(r.ctx, domainTemplate)
+		err = r.templateRepository.Create(r.ctx, r.ns, domainTemplate)
 		r.NoError(err)
 		domainTag := getDomainTag()
 
-		err = r.repository.Create(r.ctx, &domainTag)
+		err = r.repository.Create(r.ctx, r.ns, &domainTag)
 		r.NoError(err)
 
 		for _, value := range domainTag.TagValues {
@@ -180,11 +188,11 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		r.NoError(err)
 
 		domainTemplate := getTemplate()
-		err = r.templateRepository.Create(r.ctx, domainTemplate)
+		err = r.templateRepository.Create(r.ctx, r.ns, domainTemplate)
 		r.Require().NoError(err)
 
 		domainTag := getDomainTag()
-		err = r.repository.Create(r.ctx, &domainTag)
+		err = r.repository.Create(r.ctx, r.ns, &domainTag)
 		r.Require().NoError(err)
 
 		tags, err := r.repository.Read(r.ctx, tag.Tag{
@@ -204,7 +212,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		var templateURN = "governance_policy"
 
 		domainTemplate := getTemplate()
-		err = r.templateRepository.Create(r.ctx, domainTemplate)
+		err = r.templateRepository.Create(r.ctx, r.ns, domainTemplate)
 		r.NoError(err)
 
 		paramDomainTag := tag.Tag{
@@ -230,11 +238,11 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		var templateURN = "governance_policy"
 
 		domainTemplate := getTemplate()
-		err = r.templateRepository.Create(r.ctx, domainTemplate)
+		err = r.templateRepository.Create(r.ctx, r.ns, domainTemplate)
 		r.NoError(err)
 		domainTag := getDomainTag()
 
-		if err := r.repository.Create(r.ctx, &domainTag); err != nil {
+		if err := r.repository.Create(r.ctx, r.ns, &domainTag); err != nil {
 			panic(err)
 		}
 		paramDomainTag := tag.Tag{
@@ -279,11 +287,11 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 		r.NoError(err)
 
 		domainTemplate := getTemplate()
-		err = r.templateRepository.Create(r.ctx, domainTemplate)
+		err = r.templateRepository.Create(r.ctx, r.ns, domainTemplate)
 		r.Require().NoError(err)
 
 		domainTag := getDomainTag()
-		err = r.repository.Create(r.ctx, &domainTag)
+		err = r.repository.Create(r.ctx, r.ns, &domainTag)
 		r.Require().NoError(err)
 
 		domainTag.TagValues[0].FieldValue = "Restricted"
@@ -306,11 +314,11 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 		r.NoError(err)
 
 		domainTemplate := getTemplate()
-		err = r.templateRepository.Create(r.ctx, domainTemplate)
+		err = r.templateRepository.Create(r.ctx, r.ns, domainTemplate)
 		r.NoError(err)
 		domainTag := getDomainTag()
 
-		if err := r.repository.Create(r.ctx, &domainTag); err != nil {
+		if err := r.repository.Create(r.ctx, r.ns, &domainTag); err != nil {
 			panic(err)
 		}
 		domainTag.TagValues = domainTag.TagValues[:1]
@@ -343,12 +351,12 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		r.NoError(err)
 
 		domainTemplate := getTemplate()
-		err = r.templateRepository.Create(r.ctx, domainTemplate)
+		err = r.templateRepository.Create(r.ctx, r.ns, domainTemplate)
 		r.NoError(err)
 
 		domainTag := getDomainTag()
 
-		if err := r.repository.Create(r.ctx, &domainTag); err != nil {
+		if err := r.repository.Create(r.ctx, r.ns, &domainTag); err != nil {
 			r.T().Fatal(err)
 		}
 
@@ -390,7 +398,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 
 		var assetID = uuid.NewString()
 		domainTemplate := getTemplate()
-		err = r.templateRepository.Create(r.ctx, domainTemplate)
+		err = r.templateRepository.Create(r.ctx, r.ns, domainTemplate)
 		r.NoError(err)
 
 		paramDomainTag := tag.Tag{

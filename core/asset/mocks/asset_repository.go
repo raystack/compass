@@ -25,13 +25,13 @@ func (_m *AssetRepository) EXPECT() *AssetRepository_Expecter {
 	return &AssetRepository_Expecter{mock: &_m.Mock}
 }
 
-// AddProbe provides a mock function with given fields: ctx, assetURN, probe
-func (_m *AssetRepository) AddProbe(ctx context.Context, assetURN string, probe *asset.Probe) error {
-	ret := _m.Called(ctx, assetURN, probe)
+// AddProbe provides a mock function with given fields: ctx, ns, assetURN, probe
+func (_m *AssetRepository) AddProbe(ctx context.Context, ns *namespace.Namespace, assetURN string, probe *asset.Probe) error {
+	ret := _m.Called(ctx, ns, assetURN, probe)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, *asset.Probe) error); ok {
-		r0 = rf(ctx, assetURN, probe)
+	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string, *asset.Probe) error); ok {
+		r0 = rf(ctx, ns, assetURN, probe)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -46,15 +46,16 @@ type AssetRepository_AddProbe_Call struct {
 
 // AddProbe is a helper method to define mock.On call
 //   - ctx context.Context
+//   - ns *namespace.Namespace
 //   - assetURN string
 //   - probe *asset.Probe
-func (_e *AssetRepository_Expecter) AddProbe(ctx interface{}, assetURN interface{}, probe interface{}) *AssetRepository_AddProbe_Call {
-	return &AssetRepository_AddProbe_Call{Call: _e.mock.On("AddProbe", ctx, assetURN, probe)}
+func (_e *AssetRepository_Expecter) AddProbe(ctx interface{}, ns interface{}, assetURN interface{}, probe interface{}) *AssetRepository_AddProbe_Call {
+	return &AssetRepository_AddProbe_Call{Call: _e.mock.On("AddProbe", ctx, ns, assetURN, probe)}
 }
 
-func (_c *AssetRepository_AddProbe_Call) Run(run func(ctx context.Context, assetURN string, probe *asset.Probe)) *AssetRepository_AddProbe_Call {
+func (_c *AssetRepository_AddProbe_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, assetURN string, probe *asset.Probe)) *AssetRepository_AddProbe_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(*asset.Probe))
+		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(string), args[3].(*asset.Probe))
 	})
 	return _c
 }
@@ -64,18 +65,18 @@ func (_c *AssetRepository_AddProbe_Call) Return(_a0 error) *AssetRepository_AddP
 	return _c
 }
 
-func (_c *AssetRepository_AddProbe_Call) RunAndReturn(run func(context.Context, string, *asset.Probe) error) *AssetRepository_AddProbe_Call {
+func (_c *AssetRepository_AddProbe_Call) RunAndReturn(run func(context.Context, *namespace.Namespace, string, *asset.Probe) error) *AssetRepository_AddProbe_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// DeleteByID provides a mock function with given fields: ctx, ns, id
-func (_m *AssetRepository) DeleteByID(ctx context.Context, ns *namespace.Namespace, id string) error {
-	ret := _m.Called(ctx, ns, id)
+// DeleteByID provides a mock function with given fields: ctx, id
+func (_m *AssetRepository) DeleteByID(ctx context.Context, id string) error {
+	ret := _m.Called(ctx, id)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string) error); ok {
-		r0 = rf(ctx, ns, id)
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -90,15 +91,14 @@ type AssetRepository_DeleteByID_Call struct {
 
 // DeleteByID is a helper method to define mock.On call
 //   - ctx context.Context
-//   - ns *namespace.Namespace
 //   - id string
-func (_e *AssetRepository_Expecter) DeleteByID(ctx interface{}, ns interface{}, id interface{}) *AssetRepository_DeleteByID_Call {
-	return &AssetRepository_DeleteByID_Call{Call: _e.mock.On("DeleteByID", ctx, ns, id)}
+func (_e *AssetRepository_Expecter) DeleteByID(ctx interface{}, id interface{}) *AssetRepository_DeleteByID_Call {
+	return &AssetRepository_DeleteByID_Call{Call: _e.mock.On("DeleteByID", ctx, id)}
 }
 
-func (_c *AssetRepository_DeleteByID_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, id string)) *AssetRepository_DeleteByID_Call {
+func (_c *AssetRepository_DeleteByID_Call) Run(run func(ctx context.Context, id string)) *AssetRepository_DeleteByID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(string))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
@@ -108,18 +108,18 @@ func (_c *AssetRepository_DeleteByID_Call) Return(_a0 error) *AssetRepository_De
 	return _c
 }
 
-func (_c *AssetRepository_DeleteByID_Call) RunAndReturn(run func(context.Context, *namespace.Namespace, string) error) *AssetRepository_DeleteByID_Call {
+func (_c *AssetRepository_DeleteByID_Call) RunAndReturn(run func(context.Context, string) error) *AssetRepository_DeleteByID_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// DeleteByURN provides a mock function with given fields: ctx, ns, urn
-func (_m *AssetRepository) DeleteByURN(ctx context.Context, ns *namespace.Namespace, urn string) error {
-	ret := _m.Called(ctx, ns, urn)
+// DeleteByURN provides a mock function with given fields: ctx, urn
+func (_m *AssetRepository) DeleteByURN(ctx context.Context, urn string) error {
+	ret := _m.Called(ctx, urn)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string) error); ok {
-		r0 = rf(ctx, ns, urn)
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, urn)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -134,15 +134,14 @@ type AssetRepository_DeleteByURN_Call struct {
 
 // DeleteByURN is a helper method to define mock.On call
 //   - ctx context.Context
-//   - ns *namespace.Namespace
 //   - urn string
-func (_e *AssetRepository_Expecter) DeleteByURN(ctx interface{}, ns interface{}, urn interface{}) *AssetRepository_DeleteByURN_Call {
-	return &AssetRepository_DeleteByURN_Call{Call: _e.mock.On("DeleteByURN", ctx, ns, urn)}
+func (_e *AssetRepository_Expecter) DeleteByURN(ctx interface{}, urn interface{}) *AssetRepository_DeleteByURN_Call {
+	return &AssetRepository_DeleteByURN_Call{Call: _e.mock.On("DeleteByURN", ctx, urn)}
 }
 
-func (_c *AssetRepository_DeleteByURN_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, urn string)) *AssetRepository_DeleteByURN_Call {
+func (_c *AssetRepository_DeleteByURN_Call) Run(run func(ctx context.Context, urn string)) *AssetRepository_DeleteByURN_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(string))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
@@ -152,7 +151,7 @@ func (_c *AssetRepository_DeleteByURN_Call) Return(_a0 error) *AssetRepository_D
 	return _c
 }
 
-func (_c *AssetRepository_DeleteByURN_Call) RunAndReturn(run func(context.Context, *namespace.Namespace, string) error) *AssetRepository_DeleteByURN_Call {
+func (_c *AssetRepository_DeleteByURN_Call) RunAndReturn(run func(context.Context, string) error) *AssetRepository_DeleteByURN_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -212,23 +211,23 @@ func (_c *AssetRepository_GetAll_Call) RunAndReturn(run func(context.Context, as
 	return _c
 }
 
-// GetByID provides a mock function with given fields: ctx, ns, id
-func (_m *AssetRepository) GetByID(ctx context.Context, ns *namespace.Namespace, id string) (asset.Asset, error) {
-	ret := _m.Called(ctx, ns, id)
+// GetByID provides a mock function with given fields: ctx, id
+func (_m *AssetRepository) GetByID(ctx context.Context, id string) (asset.Asset, error) {
+	ret := _m.Called(ctx, id)
 
 	var r0 asset.Asset
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string) (asset.Asset, error)); ok {
-		return rf(ctx, ns, id)
+	if rf, ok := ret.Get(0).(func(context.Context, string) (asset.Asset, error)); ok {
+		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string) asset.Asset); ok {
-		r0 = rf(ctx, ns, id)
+	if rf, ok := ret.Get(0).(func(context.Context, string) asset.Asset); ok {
+		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Get(0).(asset.Asset)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *namespace.Namespace, string) error); ok {
-		r1 = rf(ctx, ns, id)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -243,15 +242,14 @@ type AssetRepository_GetByID_Call struct {
 
 // GetByID is a helper method to define mock.On call
 //   - ctx context.Context
-//   - ns *namespace.Namespace
 //   - id string
-func (_e *AssetRepository_Expecter) GetByID(ctx interface{}, ns interface{}, id interface{}) *AssetRepository_GetByID_Call {
-	return &AssetRepository_GetByID_Call{Call: _e.mock.On("GetByID", ctx, ns, id)}
+func (_e *AssetRepository_Expecter) GetByID(ctx interface{}, id interface{}) *AssetRepository_GetByID_Call {
+	return &AssetRepository_GetByID_Call{Call: _e.mock.On("GetByID", ctx, id)}
 }
 
-func (_c *AssetRepository_GetByID_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, id string)) *AssetRepository_GetByID_Call {
+func (_c *AssetRepository_GetByID_Call) Run(run func(ctx context.Context, id string)) *AssetRepository_GetByID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(string))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
@@ -261,28 +259,28 @@ func (_c *AssetRepository_GetByID_Call) Return(_a0 asset.Asset, _a1 error) *Asse
 	return _c
 }
 
-func (_c *AssetRepository_GetByID_Call) RunAndReturn(run func(context.Context, *namespace.Namespace, string) (asset.Asset, error)) *AssetRepository_GetByID_Call {
+func (_c *AssetRepository_GetByID_Call) RunAndReturn(run func(context.Context, string) (asset.Asset, error)) *AssetRepository_GetByID_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetByURN provides a mock function with given fields: ctx, ns, urn
-func (_m *AssetRepository) GetByURN(ctx context.Context, ns *namespace.Namespace, urn string) (asset.Asset, error) {
-	ret := _m.Called(ctx, ns, urn)
+// GetByURN provides a mock function with given fields: ctx, urn
+func (_m *AssetRepository) GetByURN(ctx context.Context, urn string) (asset.Asset, error) {
+	ret := _m.Called(ctx, urn)
 
 	var r0 asset.Asset
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string) (asset.Asset, error)); ok {
-		return rf(ctx, ns, urn)
+	if rf, ok := ret.Get(0).(func(context.Context, string) (asset.Asset, error)); ok {
+		return rf(ctx, urn)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string) asset.Asset); ok {
-		r0 = rf(ctx, ns, urn)
+	if rf, ok := ret.Get(0).(func(context.Context, string) asset.Asset); ok {
+		r0 = rf(ctx, urn)
 	} else {
 		r0 = ret.Get(0).(asset.Asset)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *namespace.Namespace, string) error); ok {
-		r1 = rf(ctx, ns, urn)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, urn)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -297,15 +295,14 @@ type AssetRepository_GetByURN_Call struct {
 
 // GetByURN is a helper method to define mock.On call
 //   - ctx context.Context
-//   - ns *namespace.Namespace
 //   - urn string
-func (_e *AssetRepository_Expecter) GetByURN(ctx interface{}, ns interface{}, urn interface{}) *AssetRepository_GetByURN_Call {
-	return &AssetRepository_GetByURN_Call{Call: _e.mock.On("GetByURN", ctx, ns, urn)}
+func (_e *AssetRepository_Expecter) GetByURN(ctx interface{}, urn interface{}) *AssetRepository_GetByURN_Call {
+	return &AssetRepository_GetByURN_Call{Call: _e.mock.On("GetByURN", ctx, urn)}
 }
 
-func (_c *AssetRepository_GetByURN_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, urn string)) *AssetRepository_GetByURN_Call {
+func (_c *AssetRepository_GetByURN_Call) Run(run func(ctx context.Context, urn string)) *AssetRepository_GetByURN_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(string))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
@@ -315,28 +312,28 @@ func (_c *AssetRepository_GetByURN_Call) Return(_a0 asset.Asset, _a1 error) *Ass
 	return _c
 }
 
-func (_c *AssetRepository_GetByURN_Call) RunAndReturn(run func(context.Context, *namespace.Namespace, string) (asset.Asset, error)) *AssetRepository_GetByURN_Call {
+func (_c *AssetRepository_GetByURN_Call) RunAndReturn(run func(context.Context, string) (asset.Asset, error)) *AssetRepository_GetByURN_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetByVersionWithID provides a mock function with given fields: ctx, ns, id, version
-func (_m *AssetRepository) GetByVersionWithID(ctx context.Context, ns *namespace.Namespace, id string, version string) (asset.Asset, error) {
-	ret := _m.Called(ctx, ns, id, version)
+// GetByVersionWithID provides a mock function with given fields: ctx, id, version
+func (_m *AssetRepository) GetByVersionWithID(ctx context.Context, id string, version string) (asset.Asset, error) {
+	ret := _m.Called(ctx, id, version)
 
 	var r0 asset.Asset
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string, string) (asset.Asset, error)); ok {
-		return rf(ctx, ns, id, version)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (asset.Asset, error)); ok {
+		return rf(ctx, id, version)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string, string) asset.Asset); ok {
-		r0 = rf(ctx, ns, id, version)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) asset.Asset); ok {
+		r0 = rf(ctx, id, version)
 	} else {
 		r0 = ret.Get(0).(asset.Asset)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *namespace.Namespace, string, string) error); ok {
-		r1 = rf(ctx, ns, id, version)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, id, version)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -351,16 +348,15 @@ type AssetRepository_GetByVersionWithID_Call struct {
 
 // GetByVersionWithID is a helper method to define mock.On call
 //   - ctx context.Context
-//   - ns *namespace.Namespace
 //   - id string
 //   - version string
-func (_e *AssetRepository_Expecter) GetByVersionWithID(ctx interface{}, ns interface{}, id interface{}, version interface{}) *AssetRepository_GetByVersionWithID_Call {
-	return &AssetRepository_GetByVersionWithID_Call{Call: _e.mock.On("GetByVersionWithID", ctx, ns, id, version)}
+func (_e *AssetRepository_Expecter) GetByVersionWithID(ctx interface{}, id interface{}, version interface{}) *AssetRepository_GetByVersionWithID_Call {
+	return &AssetRepository_GetByVersionWithID_Call{Call: _e.mock.On("GetByVersionWithID", ctx, id, version)}
 }
 
-func (_c *AssetRepository_GetByVersionWithID_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, id string, version string)) *AssetRepository_GetByVersionWithID_Call {
+func (_c *AssetRepository_GetByVersionWithID_Call) Run(run func(ctx context.Context, id string, version string)) *AssetRepository_GetByVersionWithID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(string), args[3].(string))
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
@@ -370,28 +366,28 @@ func (_c *AssetRepository_GetByVersionWithID_Call) Return(_a0 asset.Asset, _a1 e
 	return _c
 }
 
-func (_c *AssetRepository_GetByVersionWithID_Call) RunAndReturn(run func(context.Context, *namespace.Namespace, string, string) (asset.Asset, error)) *AssetRepository_GetByVersionWithID_Call {
+func (_c *AssetRepository_GetByVersionWithID_Call) RunAndReturn(run func(context.Context, string, string) (asset.Asset, error)) *AssetRepository_GetByVersionWithID_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetByVersionWithURN provides a mock function with given fields: ctx, ns, urn, version
-func (_m *AssetRepository) GetByVersionWithURN(ctx context.Context, ns *namespace.Namespace, urn string, version string) (asset.Asset, error) {
-	ret := _m.Called(ctx, ns, urn, version)
+// GetByVersionWithURN provides a mock function with given fields: ctx, urn, version
+func (_m *AssetRepository) GetByVersionWithURN(ctx context.Context, urn string, version string) (asset.Asset, error) {
+	ret := _m.Called(ctx, urn, version)
 
 	var r0 asset.Asset
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string, string) (asset.Asset, error)); ok {
-		return rf(ctx, ns, urn, version)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (asset.Asset, error)); ok {
+		return rf(ctx, urn, version)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string, string) asset.Asset); ok {
-		r0 = rf(ctx, ns, urn, version)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) asset.Asset); ok {
+		r0 = rf(ctx, urn, version)
 	} else {
 		r0 = ret.Get(0).(asset.Asset)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *namespace.Namespace, string, string) error); ok {
-		r1 = rf(ctx, ns, urn, version)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, urn, version)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -406,16 +402,15 @@ type AssetRepository_GetByVersionWithURN_Call struct {
 
 // GetByVersionWithURN is a helper method to define mock.On call
 //   - ctx context.Context
-//   - ns *namespace.Namespace
 //   - urn string
 //   - version string
-func (_e *AssetRepository_Expecter) GetByVersionWithURN(ctx interface{}, ns interface{}, urn interface{}, version interface{}) *AssetRepository_GetByVersionWithURN_Call {
-	return &AssetRepository_GetByVersionWithURN_Call{Call: _e.mock.On("GetByVersionWithURN", ctx, ns, urn, version)}
+func (_e *AssetRepository_Expecter) GetByVersionWithURN(ctx interface{}, urn interface{}, version interface{}) *AssetRepository_GetByVersionWithURN_Call {
+	return &AssetRepository_GetByVersionWithURN_Call{Call: _e.mock.On("GetByVersionWithURN", ctx, urn, version)}
 }
 
-func (_c *AssetRepository_GetByVersionWithURN_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, urn string, version string)) *AssetRepository_GetByVersionWithURN_Call {
+func (_c *AssetRepository_GetByVersionWithURN_Call) Run(run func(ctx context.Context, urn string, version string)) *AssetRepository_GetByVersionWithURN_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(string), args[3].(string))
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
@@ -425,7 +420,7 @@ func (_c *AssetRepository_GetByVersionWithURN_Call) Return(_a0 asset.Asset, _a1 
 	return _c
 }
 
-func (_c *AssetRepository_GetByVersionWithURN_Call) RunAndReturn(run func(context.Context, *namespace.Namespace, string, string) (asset.Asset, error)) *AssetRepository_GetByVersionWithURN_Call {
+func (_c *AssetRepository_GetByVersionWithURN_Call) RunAndReturn(run func(context.Context, string, string) (asset.Asset, error)) *AssetRepository_GetByVersionWithURN_Call {
 	_c.Call.Return(run)
 	return _c
 }

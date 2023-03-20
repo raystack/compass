@@ -128,7 +128,6 @@ func (repo *DiscoveryRepository) createUpsertBody(ns *namespace.Namespace, ast *
 		Asset:       *ast,
 		NamespaceID: ns.ID.String(),
 	})
-	fmt.Println(payload.String())
 	if err != nil {
 		return nil, fmt.Errorf("error serialising asset: %w", err)
 	}

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"reflect"
 	"testing"
 	"time"
@@ -24,6 +26,12 @@ import (
 
 func TestCreateComment(t *testing.T) {
 	var (
+		ns = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 		userID       = uuid.NewString()
 		userUUID     = uuid.NewString()
 		discussionID = "11111"
@@ -32,13 +40,14 @@ func TestCreateComment(t *testing.T) {
 			Body:         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
 		}
 	)
-
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type TestCase struct {
 		Description  string
 		Request      *compassv1beta1.CreateCommentRequest
 		ExpectStatus codes.Code
 		Result       string
-		Setup        func(context.Context, *mocks.DiscussionService)
+		Setup        func(context.Context, *mocks.DiscussionService, *mocks.NamespaceService)
 	}
 
 	var testCases = []TestCase{
@@ -48,6 +57,8 @@ func TestCreateComment(t *testing.T) {
 				DiscussionId: discussionID,
 			},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: "should return invalid request if discussion_id is not integer",
@@ -56,6 +67,8 @@ func TestCreateComment(t *testing.T) {
 				Body:         validRequest.Body,
 			},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: "should return invalid request if discussion_id is < 1",
@@ -64,6 +77,8 @@ func TestCreateComment(t *testing.T) {
 				Body:         validRequest.Body,
 			},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: "should return internal server error if the comment creation failed",
@@ -72,9 +87,9 @@ func TestCreateComment(t *testing.T) {
 				Body:         validRequest.GetBody(),
 			},
 			ExpectStatus: codes.Internal,
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				expectedErr := errors.New("unknown error")
-				ds.EXPECT().CreateComment(ctx, mock.AnythingOfType("*discussion.Comment")).Return("", expectedErr)
+				ds.EXPECT().CreateComment(ctx, ns, mock.AnythingOfType("*discussion.Comment")).Return("", expectedErr)
 			},
 		},
 		{
@@ -84,28 +99,28 @@ func TestCreateComment(t *testing.T) {
 				Body:         validRequest.GetBody(),
 			},
 			ExpectStatus: codes.OK,
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
-				ds.EXPECT().CreateComment(ctx, mock.AnythingOfType("*discussion.Comment")).Return("", nil)
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
+				ds.EXPECT().CreateComment(ctx, ns, mock.AnythingOfType("*discussion.Comment")).Return("", nil)
 			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
+			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockSvc)
+				tc.Setup(ctx, mockSvc, mockNamespaceSvc)
 			}
+			defer mockNamespaceSvc.AssertExpectations(t)
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.CreateComment(ctx, tc.Request)
 			code := status.Code(err)
@@ -126,12 +141,20 @@ func TestGetAllComments(t *testing.T) {
 		userID       = uuid.NewString()
 		userUUID     = uuid.NewString()
 		discussionID = "11111"
+		ns           = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.GetAllCommentsRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.DiscussionService)
+		Setup        func(context.Context, *mocks.DiscussionService, *mocks.NamespaceService)
 		PostCheck    func(resp *compassv1beta1.GetAllCommentsResponse) error
 	}
 	var testCases = []testCase{
@@ -141,6 +164,8 @@ func TestGetAllComments(t *testing.T) {
 				DiscussionId: "test",
 			},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: `should return invalid argument if discussion_id is < 1`,
@@ -148,6 +173,8 @@ func TestGetAllComments(t *testing.T) {
 				DiscussionId: "0",
 			},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: `should return internal server error if fetching fails`,
@@ -155,7 +182,7 @@ func TestGetAllComments(t *testing.T) {
 				DiscussionId: discussionID,
 			},
 			ExpectStatus: codes.Internal,
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				ds.EXPECT().GetComments(ctx, discussionID, discussion.Filter{
 					Type:          "all",
 					State:         "open",
@@ -174,7 +201,7 @@ func TestGetAllComments(t *testing.T) {
 				Offset:       50,
 			},
 			ExpectStatus: codes.OK,
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				ds.EXPECT().GetComments(ctx, discussionID, discussion.Filter{
 					Type:          "all",
 					State:         discussion.StateOpen.String(),
@@ -191,7 +218,7 @@ func TestGetAllComments(t *testing.T) {
 				DiscussionId: discussionID,
 			},
 			ExpectStatus: codes.OK,
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				ds.EXPECT().GetComments(ctx, discussionID, discussion.Filter{
 					Type:          "all",
 					State:         discussion.StateOpen.String(),
@@ -219,20 +246,20 @@ func TestGetAllComments(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
+			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockSvc)
+				tc.Setup(ctx, mockSvc, mockNamespaceSvc)
 			}
+			defer mockNamespaceSvc.AssertExpectations(t)
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAllComments(ctx, tc.Request)
 			code := status.Code(err)
@@ -256,12 +283,20 @@ func TestGetComment(t *testing.T) {
 		userUUID     = uuid.NewString()
 		discussionID = "123"
 		commentID    = "11"
+		ns           = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.GetCommentRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.DiscussionService)
+		Setup        func(context.Context, *mocks.DiscussionService, *mocks.NamespaceService)
 		PostCheck    func(resp *compassv1beta1.GetCommentResponse) error
 	}
 	var testCases = []testCase{
@@ -272,7 +307,7 @@ func TestGetComment(t *testing.T) {
 				Id:           commentID,
 				DiscussionId: discussionID,
 			},
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				ds.EXPECT().GetComment(ctx, commentID, discussionID).Return(discussion.Comment{}, errors.New("unknown error"))
 			},
 		},
@@ -283,6 +318,8 @@ func TestGetComment(t *testing.T) {
 				Id:           commentID,
 				DiscussionId: "random",
 			},
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description:  `should return invalid argument if discussion id < 0`,
@@ -290,6 +327,8 @@ func TestGetComment(t *testing.T) {
 			Request: &compassv1beta1.GetCommentRequest{
 				Id:           commentID,
 				DiscussionId: "-1",
+			},
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 			},
 		},
 		{
@@ -299,6 +338,8 @@ func TestGetComment(t *testing.T) {
 				Id:           "random",
 				DiscussionId: discussionID,
 			},
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description:  `should return invalid argument if comment id < 0`,
@@ -306,6 +347,8 @@ func TestGetComment(t *testing.T) {
 			Request: &compassv1beta1.GetCommentRequest{
 				Id:           "-1",
 				DiscussionId: discussionID,
+			},
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 			},
 		},
 		{
@@ -315,7 +358,7 @@ func TestGetComment(t *testing.T) {
 				Id:           commentID,
 				DiscussionId: discussionID,
 			},
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				ds.EXPECT().GetComment(ctx, commentID, discussionID).Return(discussion.Comment{}, discussion.NotFoundError{DiscussionID: discussionID, CommentID: commentID})
 			},
 		},
@@ -326,7 +369,7 @@ func TestGetComment(t *testing.T) {
 				Id:           commentID,
 				DiscussionId: discussionID,
 			},
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				ds.EXPECT().GetComment(ctx, commentID, discussionID).Return(discussion.Comment{ID: commentID, DiscussionID: discussionID}, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetCommentResponse) error {
@@ -346,20 +389,20 @@ func TestGetComment(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
+			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockSvc)
+				tc.Setup(ctx, mockSvc, mockNamespaceSvc)
 			}
+			defer mockNamespaceSvc.AssertExpectations(t)
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetComment(ctx, tc.Request)
 			code := status.Code(err)
@@ -383,7 +426,15 @@ func TestUpdateComment(t *testing.T) {
 		userUUID     = uuid.NewString()
 		discussionID = "123"
 		commentID    = "11"
+		ns           = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	var validRequest = &compassv1beta1.UpdateCommentRequest{
 		Id:           commentID,
 		DiscussionId: discussionID,
@@ -393,7 +444,7 @@ func TestUpdateComment(t *testing.T) {
 		Description  string
 		Request      *compassv1beta1.UpdateCommentRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.DiscussionService)
+		Setup        func(context.Context, *mocks.DiscussionService, *mocks.NamespaceService)
 	}{
 		{
 			Description: "discussion id is not integer return bad request",
@@ -426,6 +477,8 @@ func TestUpdateComment(t *testing.T) {
 				DiscussionId: discussionID,
 			},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: "empty object return bad request",
@@ -448,7 +501,7 @@ func TestUpdateComment(t *testing.T) {
 			Description:  "should return internal server error if the update comment failed",
 			Request:      validRequest,
 			ExpectStatus: codes.Internal,
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				cmt := &discussion.Comment{
 					ID:           validRequest.Id,
 					DiscussionID: validRequest.DiscussionId,
@@ -463,7 +516,7 @@ func TestUpdateComment(t *testing.T) {
 			Description:  "should return Not Found if the discussion id or comment id not found",
 			Request:      validRequest,
 			ExpectStatus: codes.NotFound,
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				cmt := &discussion.Comment{
 					ID:           validRequest.Id,
 					DiscussionID: validRequest.DiscussionId,
@@ -478,7 +531,7 @@ func TestUpdateComment(t *testing.T) {
 			Description:  "should return status OK if the comment is successfully updated",
 			Request:      validRequest,
 			ExpectStatus: codes.OK,
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				cmt := &discussion.Comment{
 					ID:           validRequest.Id,
 					DiscussionID: validRequest.DiscussionId,
@@ -492,19 +545,19 @@ func TestUpdateComment(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
+			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockSvc)
+				tc.Setup(ctx, mockSvc, mockNamespaceSvc)
 			}
+			defer mockNamespaceSvc.AssertExpectations(t)
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
-			handler := NewAPIServer(logger, nil, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			_, err := handler.UpdateComment(ctx, tc.Request)
 			code := status.Code(err)
@@ -522,13 +575,20 @@ func TestDeleteComment(t *testing.T) {
 		userUUID     = uuid.NewString()
 		discussionID = "123"
 		commentID    = "11"
+		ns           = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
-
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	testCases := []struct {
 		Description  string
 		Request      *compassv1beta1.DeleteCommentRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.DiscussionService)
+		Setup        func(context.Context, *mocks.DiscussionService, *mocks.NamespaceService)
 	}{
 		{
 			Description:  "discussion id is not integer return bad request",
@@ -569,7 +629,7 @@ func TestDeleteComment(t *testing.T) {
 				Id:           commentID,
 				DiscussionId: discussionID,
 			},
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				expectedErr := errors.New("unknown error")
 				ds.EXPECT().DeleteComment(ctx, commentID, discussionID).Return(expectedErr)
 			},
@@ -581,7 +641,7 @@ func TestDeleteComment(t *testing.T) {
 				Id:           commentID,
 				DiscussionId: discussionID,
 			},
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				expectedErr := discussion.NotFoundError{DiscussionID: discussionID, CommentID: commentID}
 				ds.EXPECT().DeleteComment(ctx, commentID, discussionID).Return(expectedErr)
 			},
@@ -593,7 +653,7 @@ func TestDeleteComment(t *testing.T) {
 				Id:           commentID,
 				DiscussionId: discussionID,
 			},
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				ds.EXPECT().DeleteComment(ctx, commentID, discussionID).Return(nil)
 			},
 		},
@@ -601,20 +661,20 @@ func TestDeleteComment(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
+			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockSvc)
+				tc.Setup(ctx, mockSvc, mockNamespaceSvc)
 			}
+			defer mockNamespaceSvc.AssertExpectations(t)
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			_, err := handler.DeleteComment(ctx, tc.Request)
 			code := status.Code(err)

@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"time"
 
 	"github.com/odpf/compass/core/tag"
@@ -16,17 +18,20 @@ import (
 
 type TagTemplateService interface {
 	Validate(template tag.Template) error
-	CreateTemplate(ctx context.Context, template *tag.Template) error
+	CreateTemplate(ctx context.Context, ns *namespace.Namespace, template *tag.Template) error
 	GetTemplates(ctx context.Context, templateURN string) ([]tag.Template, error)
-	UpdateTemplate(ctx context.Context, templateURN string, template *tag.Template) error
+	UpdateTemplate(ctx context.Context, ns *namespace.Namespace, templateURN string, template *tag.Template) error
 	GetTemplate(ctx context.Context, urn string) (tag.Template, error)
 	DeleteTemplate(ctx context.Context, urn string) error
 }
 
 // GetAllTagTemplates handles template read requests
 func (server *APIServer) GetAllTagTemplates(ctx context.Context, req *compassv1beta1.GetAllTagTemplatesRequest) (*compassv1beta1.GetAllTagTemplatesResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
@@ -47,8 +52,11 @@ func (server *APIServer) GetAllTagTemplates(ctx context.Context, req *compassv1b
 
 // CreateTagTemplate handles template creation requests
 func (server *APIServer) CreateTagTemplate(ctx context.Context, req *compassv1beta1.CreateTagTemplateRequest) (*compassv1beta1.CreateTagTemplateResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
@@ -76,7 +84,7 @@ func (server *APIServer) CreateTagTemplate(ctx context.Context, req *compassv1be
 		Description: req.GetDescription(),
 		Fields:      templateFields,
 	}
-	err = server.tagTemplateService.CreateTemplate(ctx, &template)
+	err := server.tagTemplateService.CreateTemplate(ctx, ns, &template)
 	if errors.As(err, new(tag.DuplicateTemplateError)) {
 		return nil, status.Error(codes.AlreadyExists, err.Error())
 	}
@@ -91,8 +99,11 @@ func (server *APIServer) CreateTagTemplate(ctx context.Context, req *compassv1be
 
 // GetTagTemplate handles template read requests based on URN
 func (server *APIServer) GetTagTemplate(ctx context.Context, req *compassv1beta1.GetTagTemplateRequest) (*compassv1beta1.GetTagTemplateResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
@@ -110,8 +121,11 @@ func (server *APIServer) GetTagTemplate(ctx context.Context, req *compassv1beta1
 }
 
 func (server *APIServer) UpdateTagTemplate(ctx context.Context, req *compassv1beta1.UpdateTagTemplateRequest) (*compassv1beta1.UpdateTagTemplateResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
@@ -136,7 +150,7 @@ func (server *APIServer) UpdateTagTemplate(ctx context.Context, req *compassv1be
 		Description: req.GetDescription(),
 		Fields:      templateFields,
 	}
-	if err = server.tagTemplateService.UpdateTemplate(ctx, req.TemplateUrn, &template); err != nil {
+	if err := server.tagTemplateService.UpdateTemplate(ctx, ns, req.TemplateUrn, &template); err != nil {
 		if errors.As(err, new(tag.TemplateNotFoundError)) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
@@ -153,12 +167,15 @@ func (server *APIServer) UpdateTagTemplate(ctx context.Context, req *compassv1be
 
 // DeleteTagTemplate handles template delete request based on URN
 func (server *APIServer) DeleteTagTemplate(ctx context.Context, req *compassv1beta1.DeleteTagTemplateRequest) (*compassv1beta1.DeleteTagTemplateResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
-	err = server.tagTemplateService.DeleteTemplate(ctx, req.GetTemplateUrn())
+	err := server.tagTemplateService.DeleteTemplate(ctx, req.GetTemplateUrn())
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}

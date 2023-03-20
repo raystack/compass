@@ -13,7 +13,7 @@ import (
 )
 
 func searchCommand(cfg *Config) *cobra.Command {
-	var namespaceID, filter, query, rankby string
+	var filter, query, rankBy string
 	var size uint32
 	cmd := &cobra.Command{
 		Use:     "search <text>",
@@ -37,8 +37,8 @@ func searchCommand(cfg *Config) *cobra.Command {
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
-			res, err := clnt.SearchAssets(ctx, makeSearchAssetRequest(namespaceID, args[0], filter, query, rankby, size))
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
+			res, err := clnt.SearchAssets(ctx, makeSearchAssetRequest(namespaceID, args[0], filter, query, rankBy, size))
 			if err != nil {
 				return err
 			}
@@ -52,15 +52,14 @@ func searchCommand(cfg *Config) *cobra.Command {
 	cmd.Flags().StringVarP(&namespaceID, "namespace", "n", namespace.DefaultNamespace.ID.String(), "namespace id or name")
 	cmd.Flags().StringVarP(&filter, "filter", "f", "", "--filter=field_key1:val1,key2:val2,key3:val3 gives exact match for values")
 	cmd.Flags().StringVarP(&query, "query", "q", "", "--query=--filter=field_key1:val1 supports fuzzy search")
-	cmd.Flags().StringVarP(&rankby, "rankby", "r", "", "--rankby=<numeric_field>")
+	cmd.Flags().StringVarP(&rankBy, "rankby", "r", "", "--rankby=<numeric_field>")
 	cmd.Flags().Uint32VarP(&size, "size", "s", 0, "--size=10 maximum size of response query")
 	return cmd
 }
 
 func makeSearchAssetRequest(namespaceID, text, filter, query, rankby string, size uint32) *compassv1beta1.SearchAssetsRequest {
 	newReq := &compassv1beta1.SearchAssetsRequest{
-		Text:         text,
-		NamespaceUrn: namespaceID,
+		Text: text,
 	}
 	if filter != "" {
 		newReq.Filter = makeMapFromString(filter)

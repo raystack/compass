@@ -2,6 +2,8 @@ package asset
 
 import (
 	"context"
+
+	"github.com/odpf/compass/core/namespace"
 )
 
 type LineageDirection string
@@ -28,7 +30,7 @@ type LineageQuery struct {
 //go:generate mockery --name=LineageRepository -r --case underscore --with-expecter --structname=LineageRepository --filename=lineage_repository.go --output=./mocks
 type LineageRepository interface {
 	GetGraph(ctx context.Context, urn string, query LineageQuery) (LineageGraph, error)
-	Upsert(ctx context.Context, urn string, upstreams, downstreams []string) error
+	Upsert(ctx context.Context, ns *namespace.Namespace, urn string, upstreams, downstreams []string) error
 	DeleteByURN(ctx context.Context, urn string) error
 }
 

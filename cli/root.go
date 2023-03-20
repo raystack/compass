@@ -6,34 +6,38 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use:           "compass <command> <subcommand> [flags]",
-	Short:         "Discovery & Lineage Service",
-	Long:          "Metadata Discovery & Lineage Service.",
-	SilenceErrors: true,
-	SilenceUsage:  true,
-	Example: heredoc.Doc(`
+var (
+	rootCmd = &cobra.Command{
+		Use:           "compass <command> <subcommand> [flags]",
+		Short:         "Discovery & Lineage Service",
+		Long:          "Metadata Discovery & Lineage Service.",
+		SilenceErrors: true,
+		SilenceUsage:  true,
+		Example: heredoc.Doc(`
 	$ compass asset
 	$ compass discussion
 	$ compass search
 	$ compass server
 	`),
-	Annotations: map[string]string{
-		"group": "core",
-		"help:learn": heredoc.Doc(`
+		Annotations: map[string]string{
+			"group": "core",
+			"help:learn": heredoc.Doc(`
 			Use 'compass <command> --help' for info about a command.
 			Read the manual at https://odpf.github.io/compass/
 		`),
-		"help:feedback": heredoc.Doc(`
+			"help:feedback": heredoc.Doc(`
 			Open an issue here https://github.com/odpf/compass/issues
 		`),
-	},
-}
+		},
+	}
+
+	namespaceID string
+)
 
 func New(cliConfig *Config) *cobra.Command {
-
-	if cliConfig.Client.ServerHeaderKeyUUID == "" {
-		cliConfig.Client.ServerHeaderKeyUUID = cliConfig.Service.Identity.HeaderKeyUUID
+	if cliConfig.Client.ServerHeaderKeyUserUUID == "" {
+		// defaulting to server defined key
+		cliConfig.Client.ServerHeaderKeyUserUUID = cliConfig.Service.Identity.HeaderKeyUserUUID
 	}
 
 	rootCmd.PersistentPreRunE = func(subCmd *cobra.Command, args []string) error {
@@ -52,6 +56,7 @@ func New(cliConfig *Config) *cobra.Command {
 	rootCmd.AddCommand(
 		serverCmd(cliConfig),
 		configCommand(cliConfig),
+		namespacesCommand(cliConfig),
 		assetsCommand(cliConfig),
 		discussionsCommand(cliConfig),
 		searchCommand(cliConfig),

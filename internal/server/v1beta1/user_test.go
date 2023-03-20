@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"reflect"
 	"testing"
 	"time"
@@ -29,6 +31,12 @@ func TestGetUserStarredAssets(t *testing.T) {
 		userID   = uuid.NewString()
 		offset   = 2
 		size     = 10
+		ns       = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
 	type testCase struct {
 		Description  string
@@ -100,6 +108,7 @@ func TestGetUserStarredAssets(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+			ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 
 			logger := log.NewNoop()
 
@@ -111,9 +120,11 @@ func TestGetUserStarredAssets(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockStarSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockNamespaceSvc := new(mocks.NamespaceService)
+			defer mockNamespaceSvc.AssertExpectations(t)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetUserStarredAssets(ctx, &compassv1beta1.GetUserStarredAssetsRequest{
 				UserId: userID,
@@ -141,6 +152,12 @@ func TestGetMyStarredAssets(t *testing.T) {
 		userID   = uuid.NewString()
 		offset   = 2
 		size     = 10
+		ns       = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
 	type testCase struct {
 		Description  string
@@ -212,6 +229,7 @@ func TestGetMyStarredAssets(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+			ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 
 			logger := log.NewNoop()
 
@@ -223,9 +241,11 @@ func TestGetMyStarredAssets(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockStarSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockNamespaceSvc := new(mocks.NamespaceService)
+			defer mockNamespaceSvc.AssertExpectations(t)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetMyStarredAssets(ctx, &compassv1beta1.GetMyStarredAssetsRequest{
 				Offset: uint32(offset),
@@ -253,6 +273,12 @@ func TestGetMyStarredAsset(t *testing.T) {
 		assetID   = uuid.NewString()
 		assetType = "an-asset-type"
 		assetURN  = "dummy-asset-urn"
+		ns        = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
 	type testCase struct {
 		Description  string
@@ -314,6 +340,7 @@ func TestGetMyStarredAsset(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+			ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 
 			logger := log.NewNoop()
 
@@ -325,9 +352,11 @@ func TestGetMyStarredAsset(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockStarSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockNamespaceSvc := new(mocks.NamespaceService)
+			defer mockNamespaceSvc.AssertExpectations(t)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetMyStarredAsset(ctx, &compassv1beta1.GetMyStarredAssetRequest{
 				AssetId: assetID,
@@ -352,6 +381,12 @@ func TestStarAsset(t *testing.T) {
 		userID   = uuid.NewString()
 		assetID  = uuid.NewString()
 		userUUID = uuid.NewString()
+		ns       = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
 	type testCase struct {
 		Description  string
@@ -364,48 +399,49 @@ func TestStarAsset(t *testing.T) {
 			Description:  "should return invalid argument if asset id in param is invalid",
 			ExpectStatus: codes.InvalidArgument,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
-				ss.EXPECT().Stars(ctx, userID, assetID).Return("", star.ErrEmptyAssetID)
+				ss.EXPECT().Stars(ctx, ns, userID, assetID).Return("", star.ErrEmptyAssetID)
 			},
 		},
 		{
 			Description:  "should return invalid argument if star repository return invalid error",
 			ExpectStatus: codes.InvalidArgument,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
-				ss.EXPECT().Stars(ctx, userID, assetID).Return("", star.InvalidError{})
+				ss.EXPECT().Stars(ctx, ns, userID, assetID).Return("", star.InvalidError{})
 			},
 		},
 		{
 			Description:  "should return invalid argument if user not found",
 			ExpectStatus: codes.InvalidArgument,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
-				ss.EXPECT().Stars(ctx, userID, assetID).Return("", star.UserNotFoundError{UserID: userID})
+				ss.EXPECT().Stars(ctx, ns, userID, assetID).Return("", star.UserNotFoundError{UserID: userID})
 			},
 		},
 		{
 			Description:  "should return internal server error if failed to star an asset",
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
-				ss.EXPECT().Stars(ctx, userID, assetID).Return("", errors.New("failed to star an asset"))
+				ss.EXPECT().Stars(ctx, ns, userID, assetID).Return("", errors.New("failed to star an asset"))
 			},
 		},
 		{
 			Description:  "should return ok if starring success",
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
-				ss.EXPECT().Stars(ctx, userID, assetID).Return("1234", nil)
+				ss.EXPECT().Stars(ctx, ns, userID, assetID).Return("1234", nil)
 			},
 		},
 		{
 			Description:  "should return ok if asset is already starred",
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
-				ss.EXPECT().Stars(ctx, userID, assetID).Return("", star.DuplicateRecordError{})
+				ss.EXPECT().Stars(ctx, ns, userID, assetID).Return("", star.DuplicateRecordError{})
 			},
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+			ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 
 			logger := log.NewNoop()
 
@@ -417,9 +453,11 @@ func TestStarAsset(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockStarSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockNamespaceSvc := new(mocks.NamespaceService)
+			defer mockNamespaceSvc.AssertExpectations(t)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			_, err := handler.StarAsset(ctx, &compassv1beta1.StarAssetRequest{
 				AssetId: assetID,
@@ -438,6 +476,12 @@ func TestUnstarAsset(t *testing.T) {
 		userID   = uuid.NewString()
 		assetID  = uuid.NewString()
 		userUUID = uuid.NewString()
+		ns       = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
 	type testCase struct {
 		Description  string
@@ -478,6 +522,7 @@ func TestUnstarAsset(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+			ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 
 			logger := log.NewNoop()
 
@@ -489,9 +534,11 @@ func TestUnstarAsset(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockStarSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockNamespaceSvc := new(mocks.NamespaceService)
+			defer mockNamespaceSvc.AssertExpectations(t)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			_, err := handler.UnstarAsset(ctx, &compassv1beta1.UnstarAssetRequest{
 				AssetId: assetID,
@@ -509,6 +556,12 @@ func TestGetMyDiscussions(t *testing.T) {
 	var (
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
+		ns       = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
 	type testCase struct {
 		Description  string
@@ -631,6 +684,7 @@ func TestGetMyDiscussions(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+			ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 
 			logger := log.NewNoop()
 
@@ -642,9 +696,11 @@ func TestGetMyDiscussions(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockDiscussionSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockNamespaceSvc := new(mocks.NamespaceService)
+			defer mockNamespaceSvc.AssertExpectations(t)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockDiscussionSvc, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockDiscussionSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetMyDiscussions(ctx, tc.Request)
 			code := status.Code(err)

@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 
 	"github.com/odpf/compass/core/tag/validator"
 )
 
-// Service is a type of service that manages business process
+// TemplateService is a type of service that manages business process
 type TemplateService struct {
 	validator  validator.Validator
 	repository TagTemplateRepository
@@ -24,8 +25,8 @@ func (s *TemplateService) Validate(template Template) error {
 	return err
 }
 
-// Create handles create business operation for template
-func (s *TemplateService) CreateTemplate(ctx context.Context, template *Template) error {
+// CreateTemplate handles create business operation for template
+func (s *TemplateService) CreateTemplate(ctx context.Context, ns *namespace.Namespace, template *Template) error {
 	if template == nil {
 		return errors.New("template is nil")
 	}
@@ -42,7 +43,7 @@ func (s *TemplateService) CreateTemplate(ctx context.Context, template *Template
 		return DuplicateTemplateError{URN: template.URN}
 	}
 
-	err = s.repository.Create(ctx, template)
+	err = s.repository.Create(ctx, ns, template)
 	if err != nil {
 		return fmt.Errorf("error creating template: %w", err)
 	}
@@ -67,7 +68,7 @@ func (s *TemplateService) GetTemplates(ctx context.Context, templateURN string) 
 }
 
 // UpdateTemplate handles update business operation for template
-func (s *TemplateService) UpdateTemplate(ctx context.Context, templateURN string, template *Template) error {
+func (s *TemplateService) UpdateTemplate(ctx context.Context, ns *namespace.Namespace, templateURN string, template *Template) error {
 	if template == nil {
 		return errors.New("template is nil")
 	}
@@ -106,7 +107,7 @@ func (s *TemplateService) UpdateTemplate(ctx context.Context, templateURN string
 		}
 	}
 
-	err = s.repository.Update(ctx, templateURN, template)
+	err = s.repository.Update(ctx, ns, templateURN, template)
 	if err != nil {
 		return fmt.Errorf("error updating template: %w", err)
 	}

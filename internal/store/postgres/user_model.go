@@ -7,12 +7,13 @@ import (
 )
 
 type UserModel struct {
-	ID        sql.NullString `db:"id"`
-	UUID      sql.NullString `db:"uuid"`
-	Email     sql.NullString `db:"email"`
-	Provider  sql.NullString `db:"provider"`
-	CreatedAt sql.NullTime   `db:"created_at"`
-	UpdatedAt sql.NullTime   `db:"updated_at"`
+	ID          sql.NullString `db:"id"`
+	NamespaceID string         `db:"namespace_id"`
+	UUID        sql.NullString `db:"uuid"`
+	Email       sql.NullString `db:"email"`
+	Provider    sql.NullString `db:"provider"`
+	CreatedAt   sql.NullTime   `db:"created_at"`
+	UpdatedAt   sql.NullTime   `db:"updated_at"`
 }
 
 func (u *UserModel) toUser() user.User {

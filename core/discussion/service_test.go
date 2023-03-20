@@ -3,6 +3,8 @@ package discussion_test
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
+	"github.com/odpf/compass/core/namespace"
 	"testing"
 
 	"github.com/odpf/compass/core/discussion"
@@ -248,6 +250,12 @@ func TestGetDeleteComment(t *testing.T) {
 
 func TestCreateDiscussions(t *testing.T) {
 	ctx := context.Background()
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	validDiscussion := discussion.Discussion{
 		ID: "1", Title: "title", Body: "body", Type: "openended",
 	}
@@ -264,7 +272,7 @@ func TestCreateDiscussions(t *testing.T) {
 		{
 			Description: "throws error for empty discussion",
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
-				dr.EXPECT().Create(ctx, &discussion.Discussion{}).Return("", errors.New("empty fields"))
+				dr.EXPECT().Create(ctx, ns, &discussion.Discussion{}).Return("", errors.New("empty fields"))
 			},
 			Err:        errors.New("empty fields"),
 			Discussion: discussion.Discussion{},
@@ -272,7 +280,7 @@ func TestCreateDiscussions(t *testing.T) {
 		{
 			Description: "throws error for invalid type",
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
-				dr.EXPECT().Create(ctx, &invalidDiscussion).Return("", discussion.InvalidError{})
+				dr.EXPECT().Create(ctx, ns, &invalidDiscussion).Return("", discussion.InvalidError{})
 			},
 			Err:        discussion.InvalidError{},
 			Discussion: invalidDiscussion,
@@ -280,7 +288,7 @@ func TestCreateDiscussions(t *testing.T) {
 		{
 			Description: "create discussion without error for correct input",
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
-				dr.EXPECT().Create(ctx, &validDiscussion).Return("", nil)
+				dr.EXPECT().Create(ctx, ns, &validDiscussion).Return("", nil)
 			},
 			Discussion: validDiscussion,
 		},
@@ -295,7 +303,7 @@ func TestCreateDiscussions(t *testing.T) {
 			defer mockDiscussionRepo.AssertExpectations(t)
 
 			svc := discussion.NewService(mockDiscussionRepo)
-			_, err := svc.CreateDiscussion(ctx, &tc.Discussion)
+			_, err := svc.CreateDiscussion(ctx, ns, &tc.Discussion)
 			assert.Equal(t, tc.Err, err)
 		})
 	}
@@ -358,6 +366,12 @@ func TestPatchDiscussions(t *testing.T) {
 
 func TestCreateComment(t *testing.T) {
 	ctx := context.Background()
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	validComment := discussion.Comment{
 		ID: "1", DiscussionID: "id-1", Body: "body",
 	}
@@ -370,7 +384,7 @@ func TestCreateComment(t *testing.T) {
 		{
 			Description: "throw error for empty fields",
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
-				dr.EXPECT().CreateComment(ctx, &discussion.Comment{}).Return("", errors.New("empty fields"))
+				dr.EXPECT().CreateComment(ctx, ns, &discussion.Comment{}).Return("", errors.New("empty fields"))
 			},
 			Err:     errors.New("empty fields"),
 			Comment: discussion.Comment{},
@@ -378,7 +392,7 @@ func TestCreateComment(t *testing.T) {
 		{
 			Description: "create comment for proper data",
 			Setup: func(ctx context.Context, dr *mocks.DiscussionRepository) {
-				dr.EXPECT().CreateComment(ctx, &validComment).Return("", nil)
+				dr.EXPECT().CreateComment(ctx, ns, &validComment).Return("", nil)
 			},
 			Comment: validComment,
 		},
@@ -393,7 +407,7 @@ func TestCreateComment(t *testing.T) {
 			defer mockDiscussionRepo.AssertExpectations(t)
 
 			svc := discussion.NewService(mockDiscussionRepo)
-			_, err := svc.CreateComment(ctx, &tc.Comment)
+			_, err := svc.CreateComment(ctx, ns, &tc.Comment)
 			assert.Equal(t, tc.Err, err)
 		})
 	}

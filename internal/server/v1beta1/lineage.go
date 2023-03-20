@@ -3,6 +3,7 @@ package handlersv1beta1
 import (
 	"context"
 	"fmt"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 
 	"github.com/odpf/compass/core/asset"
 	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
@@ -12,8 +13,11 @@ import (
 )
 
 func (server *APIServer) GetGraph(ctx context.Context, req *compassv1beta1.GetGraphRequest) (*compassv1beta1.GetGraphResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 

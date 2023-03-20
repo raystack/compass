@@ -3,6 +3,8 @@ package postgres_test
 import (
 	"context"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"testing"
 
 	"github.com/google/uuid"
@@ -21,6 +23,7 @@ type UserRepositoryTestSuite struct {
 	pool       *dockertest.Pool
 	resource   *dockertest.Resource
 	repository *postgres.UserRepository
+	ns         *namespace.Namespace
 }
 
 func (r *UserRepositoryTestSuite) SetupSuite() {
@@ -31,8 +34,13 @@ func (r *UserRepositoryTestSuite) SetupSuite() {
 	if err != nil {
 		r.T().Fatal(err)
 	}
-
-	r.ctx = context.TODO()
+	r.ns = &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "umbrella",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
+	r.ctx = grpc_interceptor.BuildContextWithNamespace(context.Background(), r.ns)
 	r.repository, err = postgres.NewUserRepository(r.client)
 	if err != nil {
 		r.T().Fatal(err)
@@ -64,13 +72,13 @@ func (r *UserRepositoryTestSuite) insertEmail(email string) error {
 func (r *UserRepositoryTestSuite) TestCreate() {
 	r.Run("return no error if succesfully create user", func() {
 		user := getUser("user@odpf.io")
-		id, err := r.repository.Create(r.ctx, user)
+		id, err := r.repository.Create(r.ctx, r.ns, user)
 		r.NotEmpty(id)
 		r.NoError(err)
 	})
 
 	r.Run("return ErrNoUserInformation if user is nil", func() {
-		id, err := r.repository.Create(r.ctx, nil)
+		id, err := r.repository.Create(r.ctx, r.ns, nil)
 		r.ErrorIs(err, user.ErrNoUserInformation)
 		r.Empty(id)
 	})
@@ -80,11 +88,11 @@ func (r *UserRepositoryTestSuite) TestCreate() {
 		r.NoError(err)
 
 		ud := getUser("user@odpf.io")
-		id, err := r.repository.Create(r.ctx, ud)
+		id, err := r.repository.Create(r.ctx, r.ns, ud)
 		r.NoError(err)
 		r.NotEmpty(id)
 
-		id, err = r.repository.Create(r.ctx, ud)
+		id, err = r.repository.Create(r.ctx, r.ns, ud)
 		r.ErrorAs(err, new(user.DuplicateRecordError))
 		r.Empty(id)
 	})
@@ -103,7 +111,7 @@ func (r *UserRepositoryTestSuite) TestCreateWithTx() {
 		var id string
 		err := r.client.RunWithinTx(r.ctx, func(tx *sqlx.Tx) error {
 			var err error
-			id, err = r.repository.CreateWithTx(r.ctx, tx, validUserWithoutUUID)
+			id, err = r.repository.CreateWithTx(r.ctx, tx, r.ns, validUserWithoutUUID)
 			return err
 		})
 		r.NotEmpty(id)
@@ -114,7 +122,7 @@ func (r *UserRepositoryTestSuite) TestCreateWithTx() {
 		var id string
 		err := r.client.RunWithinTx(r.ctx, func(tx *sqlx.Tx) error {
 			var err error
-			id, err = r.repository.CreateWithTx(r.ctx, tx, validUserWithoutEmail)
+			id, err = r.repository.CreateWithTx(r.ctx, tx, r.ns, validUserWithoutEmail)
 			return err
 		})
 		r.NotEmpty(id)
@@ -125,7 +133,7 @@ func (r *UserRepositoryTestSuite) TestCreateWithTx() {
 		var id string
 		err := r.client.RunWithinTx(r.ctx, func(tx *sqlx.Tx) error {
 			var err error
-			id, err = r.repository.CreateWithTx(r.ctx, tx, nil)
+			id, err = r.repository.CreateWithTx(r.ctx, tx, r.ns, nil)
 			return err
 		})
 		r.ErrorIs(err, user.ErrNoUserInformation)
@@ -136,13 +144,13 @@ func (r *UserRepositoryTestSuite) TestCreateWithTx() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		id, err := r.repository.Create(r.ctx, validUserWithoutUUID)
+		id, err := r.repository.Create(r.ctx, r.ns, validUserWithoutUUID)
 		r.NoError(err)
 		r.NotEmpty(id)
 
 		err = r.client.RunWithinTx(r.ctx, func(tx *sqlx.Tx) error {
 			var err error
-			id, err = r.repository.CreateWithTx(r.ctx, tx, validUserWithoutUUID)
+			id, err = r.repository.CreateWithTx(r.ctx, tx, r.ns, validUserWithoutUUID)
 			return err
 		})
 		r.ErrorAs(err, new(user.DuplicateRecordError))
@@ -163,7 +171,7 @@ func (r *UserRepositoryTestSuite) TestGetBy() {
 			r.NoError(err)
 
 			user := getUser("use-getbyemail@odpf.io")
-			id, err := r.repository.Create(r.ctx, user)
+			id, err := r.repository.Create(r.ctx, r.ns, user)
 			r.NoError(err)
 			r.NotEmpty(id)
 
@@ -185,7 +193,7 @@ func (r *UserRepositoryTestSuite) TestGetBy() {
 			r.NoError(err)
 
 			user := getUser("use-getbyuuid@odpf.io")
-			id, err := r.repository.Create(r.ctx, user)
+			id, err := r.repository.Create(r.ctx, r.ns, user)
 			r.NoError(err)
 			r.NotEmpty(id)
 
@@ -199,7 +207,7 @@ func (r *UserRepositoryTestSuite) TestGetBy() {
 
 func (r *UserRepositoryTestSuite) TestUpsertByEmail() {
 	r.Run("return ErrNoUserInformation if user is nil", func() {
-		id, err := r.repository.UpsertByEmail(r.ctx, nil)
+		id, err := r.repository.UpsertByEmail(r.ctx, r.ns, nil)
 		r.ErrorIs(err, user.ErrNoUserInformation)
 		r.Empty(id)
 	})
@@ -211,18 +219,18 @@ func (r *UserRepositoryTestSuite) TestUpsertByEmail() {
 		r.NoError(err)
 
 		usr.UUID = uuid.NewString()
-		id, err := r.repository.UpsertByEmail(r.ctx, usr)
+		id, err := r.repository.UpsertByEmail(r.ctx, r.ns, usr)
 		r.NoError(err)
 		r.NotEmpty(id)
 
-		id, err = r.repository.UpsertByEmail(r.ctx, usr)
+		id, err = r.repository.UpsertByEmail(r.ctx, r.ns, usr)
 		r.ErrorIs(err, user.DuplicateRecordError{UUID: usr.UUID, Email: usr.Email})
 		r.Empty(id)
 	})
 
 	r.Run("new row is inserted with uuid and email if user not exist", func() {
 		usr := &user.User{UUID: uuid.NewString(), Email: "user-upsert-1@odpf.io"}
-		id, err := r.repository.UpsertByEmail(r.ctx, usr)
+		id, err := r.repository.UpsertByEmail(r.ctx, r.ns, usr)
 		r.NoError(err)
 		r.NotEmpty(id)
 
@@ -234,7 +242,7 @@ func (r *UserRepositoryTestSuite) TestUpsertByEmail() {
 
 	r.Run("new row is inserted with uuid only if user not exist", func() {
 		usr := &user.User{UUID: uuid.NewString()}
-		id, err := r.repository.UpsertByEmail(r.ctx, usr)
+		id, err := r.repository.UpsertByEmail(r.ctx, r.ns, usr)
 		r.NoError(err)
 		r.NotEmpty(id)
 
@@ -251,7 +259,7 @@ func (r *UserRepositoryTestSuite) TestUpsertByEmail() {
 		r.NoError(err)
 
 		usr.UUID = uuid.NewString()
-		id, err := r.repository.UpsertByEmail(r.ctx, usr)
+		id, err := r.repository.UpsertByEmail(r.ctx, r.ns, usr)
 		r.NoError(err)
 		r.NotEmpty(id)
 
@@ -264,11 +272,11 @@ func (r *UserRepositoryTestSuite) TestUpsertByEmail() {
 	r.Run("upserting existing row with non empty uuid would return error", func() {
 		usr := &user.User{UUID: uuid.NewString(), Email: "user-upsert-3@odpf.io"}
 
-		id, err := r.repository.Create(r.ctx, usr)
+		id, err := r.repository.Create(r.ctx, r.ns, usr)
 		r.NoError(err)
 		r.NotEmpty(id)
 
-		id, err = r.repository.UpsertByEmail(r.ctx, usr)
+		id, err = r.repository.UpsertByEmail(r.ctx, r.ns, usr)
 		r.Error(err)
 		r.Empty(id)
 	})

@@ -23,7 +23,7 @@ const (
 	defaultSearchIndexAlias = "universe"
 
 	// DefaultSharedIndexName use single shared index for small tenants
-	DefaultSharedIndexName = "base"
+	DefaultSharedIndexName = "compass-idx-default"
 
 	// DefaultShardCountPerIndex provides shard count in an index. For large scale, it should be at least 12
 	DefaultShardCountPerIndex = 6

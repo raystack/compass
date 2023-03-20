@@ -4,15 +4,16 @@ package tag
 
 import (
 	"context"
+	"github.com/odpf/compass/core/namespace"
 	"time"
 )
 
 // TagTemplateRepository is a contract to communicate with the primary store
 type TagTemplateRepository interface {
-	Create(ctx context.Context, template *Template) error
+	Create(ctx context.Context, ns *namespace.Namespace, template *Template) error
 	Read(ctx context.Context, templateURN string) ([]Template, error)
 	ReadAll(ctx context.Context) ([]Template, error)
-	Update(ctx context.Context, templateURN string, template *Template) error
+	Update(ctx context.Context, ns *namespace.Namespace, templateURN string, template *Template) error
 	Delete(ctx context.Context, templateURN string) error
 }
 

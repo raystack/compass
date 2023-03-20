@@ -107,6 +107,10 @@ func newTestClient(logger log.Logger) (*postgres.Client, *dockertest.Pool, *dock
 			return err
 		}
 
+		if _, err = pgClient.ExecContext(context.Background(), ";"); err != nil {
+			return err
+		}
+
 		return nil
 	}); err != nil {
 		return nil, nil, nil, fmt.Errorf("could not connect to docker: %w", err)
@@ -137,14 +141,14 @@ func setup(ctx context.Context, client *postgres.Client) (err error) {
 		return
 	}
 
-	err = client.Migrate(pgConfig)
+	_, err = client.Migrate(pgConfig)
 	return
 }
 
 // helper functions
-func createUser(userRepo user.Repository, email string) (string, error) {
+func createUser(userRepo user.Repository, ns *namespace.Namespace, email string) (string, error) {
 	user := getUser(email)
-	id, err := userRepo.Create(context.Background(), user)
+	id, err := userRepo.Create(context.Background(), ns, user)
 	if err != nil {
 		return "", err
 	}
@@ -189,11 +193,11 @@ func getUser(email string) *user.User {
 	}
 }
 
-func createUsers(userRepo user.Repository, num int) (users []user.User, err error) {
+func createUsers(userRepo user.Repository, ns *namespace.Namespace, num int) (users []user.User, err error) {
 	for i := 0; i < num; i++ {
 		email := fmt.Sprintf("user-test-%d@odpf.io", i+1)
 		user1 := user.User{UUID: uuid.NewString(), Email: email, Provider: defaultProviderName}
-		user1.ID, err = userRepo.Create(context.Background(), &user1)
+		user1.ID, err = userRepo.Create(context.Background(), ns, &user1)
 		if err != nil {
 			return
 		}

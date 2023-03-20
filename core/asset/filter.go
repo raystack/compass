@@ -1,7 +1,6 @@
 package asset
 
 import (
-	"github.com/odpf/compass/core/namespace"
 	"strings"
 
 	"github.com/odpf/compass/core/validator"
@@ -17,9 +16,6 @@ type Filter struct {
 	QueryFields   []string
 	Query         string
 	Data          map[string][]string
-
-	// Namespace under which assets are partitioned, *Required*
-	Namespace *namespace.Namespace `validate:"required"`
 }
 
 func (f *Filter) Validate() error {
@@ -36,13 +32,10 @@ type filterBuilder struct {
 	offset        int
 	sortBy        string
 	sortDirection string
-	ns            *namespace.Namespace
 }
 
-func NewFilterBuilder(ns *namespace.Namespace) *filterBuilder {
-	return &filterBuilder{
-		ns: ns,
-	}
+func NewFilterBuilder() *filterBuilder {
+	return &filterBuilder{}
 }
 
 func (fb *filterBuilder) Types(types string) *filterBuilder {
@@ -97,7 +90,6 @@ func (fb *filterBuilder) Build() (Filter, error) {
 		SortBy:        fb.sortBy,
 		SortDirection: fb.sortDirection,
 		Query:         fb.q,
-		Namespace:     fb.ns,
 	}
 
 	if len(fb.data) != 0 {

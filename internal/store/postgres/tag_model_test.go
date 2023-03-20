@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"github.com/odpf/compass/core/namespace"
 	"sort"
 	"testing"
 
@@ -10,7 +11,6 @@ import (
 )
 
 func TestTagModel(t *testing.T) {
-
 	assetID := uuid.NewString()
 
 	templates := getTemplateModels()
@@ -61,7 +61,12 @@ func TestTagModel(t *testing.T) {
 }
 
 func TestTemplateModel(t *testing.T) {
-
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	templates := getTemplateModels()
 
 	t.Run("successfully convert template model to template", func(t *testing.T) {
@@ -111,6 +116,7 @@ func TestTemplateModel(t *testing.T) {
 					DataType:    "enumerated",
 					Options:     &option,
 					Required:    true,
+					NamespaceID: ns.ID,
 				},
 				{
 					ID:          0x2,
@@ -119,11 +125,12 @@ func TestTemplateModel(t *testing.T) {
 					Description: "Email of the admin of the asset.",
 					DataType:    "string",
 					Required:    true,
+					NamespaceID: ns.ID,
 				},
 			},
 		}
 
-		templateModel := newTemplateModel(template)
+		templateModel := newTemplateModel(ns, template)
 
 		assert.EqualValues(t, expectedTemplateModel, templateModel)
 	})
@@ -131,6 +138,12 @@ func TestTemplateModel(t *testing.T) {
 
 func TestFieldModels(t *testing.T) {
 	fieldModels := getFieldModels()
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	t.Run("successfully convert fields model to fields", func(t *testing.T) {
 		expectedDomainFields := []tag.Field{
 			{
@@ -168,6 +181,7 @@ func TestFieldModels(t *testing.T) {
 				DataType:    "enumerated",
 				Options:     &option,
 				Required:    true,
+				NamespaceID: ns.ID,
 			},
 			{
 				ID:          2,
@@ -176,10 +190,11 @@ func TestFieldModels(t *testing.T) {
 				Description: "Email of the admin of the asset.",
 				DataType:    "string",
 				Required:    true,
+				NamespaceID: ns.ID,
 			},
 		}
 
-		actualFieldModels := newSliceOfFieldModel(domainFields)
+		actualFieldModels := newSliceOfFieldModel(ns, domainFields)
 
 		assert.EqualValues(t, expectedFieldModels, actualFieldModels)
 	})

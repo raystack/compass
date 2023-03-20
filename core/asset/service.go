@@ -46,7 +46,7 @@ func (s *Service) UpsertAsset(ctx context.Context, ns *namespace.Namespace, ast 
 		return "", err
 	}
 
-	if err := s.lineageRepository.Upsert(ctx, ast.URN, upstreams, downstreams); err != nil {
+	if err := s.lineageRepository.Upsert(ctx, ns, ast.URN, upstreams, downstreams); err != nil {
 		return "", err
 	}
 
@@ -93,13 +93,13 @@ func (s *Service) DeleteAsset(ctx context.Context, ns *namespace.Namespace, id s
 	return s.lineageRepository.DeleteByURN(ctx, id)
 }
 
-func (s *Service) GetAssetByID(ctx context.Context, ns *namespace.Namespace, id string) (ast Asset, err error) {
+func (s *Service) GetAssetByID(ctx context.Context, id string) (ast Asset, err error) {
 	if isValidUUID(id) {
-		if ast, err = s.assetRepository.GetByID(ctx, ns, id); err != nil {
+		if ast, err = s.assetRepository.GetByID(ctx, id); err != nil {
 			return Asset{}, fmt.Errorf("error when getting asset by id: %w", err)
 		}
 	} else {
-		if ast, err = s.assetRepository.GetByURN(ctx, ns, id); err != nil {
+		if ast, err = s.assetRepository.GetByURN(ctx, id); err != nil {
 			return Asset{}, fmt.Errorf("error when getting asset by urn: %w", err)
 		}
 	}
@@ -114,20 +114,20 @@ func (s *Service) GetAssetByID(ctx context.Context, ns *namespace.Namespace, id 
 	return
 }
 
-func (s *Service) GetAssetByVersion(ctx context.Context, ns *namespace.Namespace, id string, version string) (Asset, error) {
+func (s *Service) GetAssetByVersion(ctx context.Context, id string, version string) (Asset, error) {
 	if isValidUUID(id) {
-		return s.assetRepository.GetByVersionWithID(ctx, ns, id, version)
+		return s.assetRepository.GetByVersionWithID(ctx, id, version)
 	}
 
-	return s.assetRepository.GetByVersionWithURN(ctx, ns, id, version)
+	return s.assetRepository.GetByVersionWithURN(ctx, id, version)
 }
 
 func (s *Service) GetAssetVersionHistory(ctx context.Context, flt Filter, id string) ([]Asset, error) {
 	return s.assetRepository.GetVersionHistory(ctx, flt, id)
 }
 
-func (s *Service) AddProbe(ctx context.Context, assetURN string, probe *Probe) error {
-	return s.assetRepository.AddProbe(ctx, assetURN, probe)
+func (s *Service) AddProbe(ctx context.Context, ns *namespace.Namespace, assetURN string, probe *Probe) error {
+	return s.assetRepository.AddProbe(ctx, ns, assetURN, probe)
 }
 
 func (s *Service) GetLineage(ctx context.Context, urn string, query LineageQuery) (Lineage, error) {

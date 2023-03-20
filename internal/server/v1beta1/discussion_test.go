@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"reflect"
 	"testing"
 	"time"
@@ -27,11 +29,19 @@ func TestGetAllDiscussions(t *testing.T) {
 	var (
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
+		ns       = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.GetAllDiscussionsRequest
-		Setup        func(context.Context, *mocks.DiscussionService)
+		Setup        func(context.Context, *mocks.DiscussionService, *mocks.NamespaceService)
 		ExpectStatus codes.Code
 		PostCheck    func(resp *compassv1beta1.GetAllDiscussionsResponse) error
 	}
@@ -39,7 +49,7 @@ func TestGetAllDiscussions(t *testing.T) {
 	var testCases = []testCase{
 		{
 			Description: `should return internal server error if fetching fails`,
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				ds.EXPECT().GetDiscussions(ctx, discussion.Filter{
 					Type:          "all",
 					State:         discussion.StateOpen.String(),
@@ -63,7 +73,7 @@ func TestGetAllDiscussions(t *testing.T) {
 				Size:      30,
 				Offset:    50,
 			},
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				ds.EXPECT().GetDiscussions(ctx, discussion.Filter{
 					Type:          discussion.TypeIssues.String(),
 					State:         discussion.StateClosed.String(),
@@ -81,7 +91,7 @@ func TestGetAllDiscussions(t *testing.T) {
 		},
 		{
 			Description: "should return status OK along with list of discussions",
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				ds.EXPECT().GetDiscussions(ctx, discussion.Filter{
 					Type:          "all",
 					State:         discussion.StateOpen.String(),
@@ -111,20 +121,20 @@ func TestGetAllDiscussions(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
+			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockSvc)
+				tc.Setup(ctx, mockSvc, mockNamespaceSvc)
 			}
+			defer mockNamespaceSvc.AssertExpectations(t)
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAllDiscussions(ctx, tc.Request)
 			code := status.Code(err)
@@ -146,7 +156,15 @@ func TestCreateDiscussion(t *testing.T) {
 	var (
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
+		ns       = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	var validRequest = &compassv1beta1.CreateDiscussionRequest{
 		Title: "Lorem Ipsum",
 		Body:  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
@@ -156,7 +174,7 @@ func TestCreateDiscussion(t *testing.T) {
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.CreateDiscussionRequest
-		Setup        func(context.Context, *mocks.DiscussionService)
+		Setup        func(context.Context, *mocks.DiscussionService, *mocks.NamespaceService)
 		ExpectStatus codes.Code
 	}
 
@@ -204,8 +222,8 @@ func TestCreateDiscussion(t *testing.T) {
 			Description:  "should return internal server error if the discussion creation fails",
 			Request:      validRequest,
 			ExpectStatus: codes.Internal,
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
-				ds.EXPECT().CreateDiscussion(ctx, mock.AnythingOfType("*discussion.Discussion")).Return("", errors.New("some error"))
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
+				ds.EXPECT().CreateDiscussion(ctx, ns, mock.AnythingOfType("*discussion.Discussion")).Return("", errors.New("some error"))
 			},
 		},
 		{
@@ -221,7 +239,7 @@ func TestCreateDiscussion(t *testing.T) {
 			Description:  "should return OK and discussion ID if the discussion is successfully created",
 			Request:      validRequest,
 			ExpectStatus: codes.OK,
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				dsc := discussion.Discussion{
 					Title: "Lorem Ipsum",
 					Body:  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
@@ -231,7 +249,7 @@ func TestCreateDiscussion(t *testing.T) {
 				}
 				discussionWithID := dsc
 				discussionWithID.ID = "12"
-				ds.EXPECT().CreateDiscussion(ctx, &dsc).Run(func(ctx context.Context, dsc *discussion.Discussion) {
+				ds.EXPECT().CreateDiscussion(ctx, ns, &dsc).Run(func(ctx context.Context, ns *namespace.Namespace, dsc *discussion.Discussion) {
 					dsc.ID = discussionWithID.ID
 				}).Return(discussionWithID.ID, nil)
 			},
@@ -240,20 +258,20 @@ func TestCreateDiscussion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
+			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockSvc)
+				tc.Setup(ctx, mockSvc, mockNamespaceSvc)
 			}
+			defer mockNamespaceSvc.AssertExpectations(t)
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 			_, err := handler.CreateDiscussion(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
@@ -269,12 +287,19 @@ func TestGetDiscussion(t *testing.T) {
 		userID       = uuid.NewString()
 		userUUID     = uuid.NewString()
 		discussionID = "123"
+		ns           = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
-
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type TestCase struct {
 		Description  string
 		Request      *compassv1beta1.GetDiscussionRequest
-		Setup        func(context.Context, *mocks.DiscussionService)
+		Setup        func(context.Context, *mocks.DiscussionService, *mocks.NamespaceService)
 		ExpectStatus codes.Code
 		PostCheck    func(resp *compassv1beta1.GetDiscussionResponse) error
 	}
@@ -286,7 +311,7 @@ func TestGetDiscussion(t *testing.T) {
 			Request: &compassv1beta1.GetDiscussionRequest{
 				Id: discussionID,
 			},
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				ds.EXPECT().GetDiscussion(ctx, discussionID).Return(discussion.Discussion{}, errors.New("unknown error"))
 			},
 		},
@@ -310,7 +335,7 @@ func TestGetDiscussion(t *testing.T) {
 			Request: &compassv1beta1.GetDiscussionRequest{
 				Id: discussionID,
 			},
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				ds.EXPECT().GetDiscussion(ctx, discussionID).Return(discussion.Discussion{}, discussion.NotFoundError{DiscussionID: discussionID})
 			},
 		},
@@ -320,7 +345,7 @@ func TestGetDiscussion(t *testing.T) {
 			Request: &compassv1beta1.GetDiscussionRequest{
 				Id: discussionID,
 			},
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				ds.EXPECT().GetDiscussion(ctx, discussionID).Return(discussion.Discussion{ID: discussionID}, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetDiscussionResponse) error {
@@ -340,19 +365,19 @@ func TestGetDiscussion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
+			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockSvc)
+				tc.Setup(ctx, mockSvc, mockNamespaceSvc)
 			}
+			defer mockNamespaceSvc.AssertExpectations(t)
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
-			handler := NewAPIServer(logger, nil, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetDiscussion(ctx, tc.Request)
 			code := status.Code(err)
@@ -375,15 +400,22 @@ func TestPatchDiscussion(t *testing.T) {
 		userID       = uuid.NewString()
 		userUUID     = uuid.NewString()
 		discussionID = "123"
+		ns           = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
-
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	var validRequest = &compassv1beta1.PatchDiscussionRequest{Id: discussionID, Title: "lorem ipsum"}
 
 	type TestCase struct {
 		Description  string
 		Request      *compassv1beta1.PatchDiscussionRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.DiscussionService)
+		Setup        func(context.Context, *mocks.DiscussionService, *mocks.NamespaceService)
 	}
 
 	testCases := []TestCase{
@@ -452,7 +484,7 @@ func TestPatchDiscussion(t *testing.T) {
 			Description:  "should return internal server error if the discussion patch fails",
 			Request:      validRequest,
 			ExpectStatus: codes.Internal,
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				expectedErr := errors.New("unknown error")
 				ds.EXPECT().PatchDiscussion(ctx, mock.AnythingOfType("*discussion.Discussion")).Return(expectedErr)
 			},
@@ -461,7 +493,7 @@ func TestPatchDiscussion(t *testing.T) {
 			Description:  "should return Not Found if the discussion id is invalid",
 			Request:      validRequest,
 			ExpectStatus: codes.NotFound,
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				expectedErr := discussion.NotFoundError{DiscussionID: discussionID}
 				ds.EXPECT().PatchDiscussion(ctx, mock.AnythingOfType("*discussion.Discussion")).Return(expectedErr)
 			},
@@ -470,7 +502,7 @@ func TestPatchDiscussion(t *testing.T) {
 			Description:  "should return OK if the discussion is successfully patched",
 			Request:      validRequest,
 			ExpectStatus: codes.OK,
-			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
+			Setup: func(ctx context.Context, ds *mocks.DiscussionService, nss *mocks.NamespaceService) {
 				ds.EXPECT().PatchDiscussion(ctx, mock.AnythingOfType("*discussion.Discussion")).Return(nil)
 			},
 		},
@@ -478,20 +510,20 @@ func TestPatchDiscussion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
+			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockSvc)
+				tc.Setup(ctx, mockSvc, mockNamespaceSvc)
 			}
+			defer mockNamespaceSvc.AssertExpectations(t)
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 			_, err := handler.PatchDiscussion(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {

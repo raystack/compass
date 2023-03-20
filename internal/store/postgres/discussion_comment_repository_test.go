@@ -11,7 +11,7 @@ func (r *DiscussionRepositoryTestSuite) TestCreateComment() {
 			Body:         "This is a new comment",
 			Owner:        r.users[len(r.users)-1],
 		}
-		id, err := r.repository.CreateComment(r.ctx, cmt)
+		id, err := r.repository.CreateComment(r.ctx, r.ns, cmt)
 		r.NoError(err)
 		r.NotEmpty(id)
 	})
@@ -21,7 +21,7 @@ func (r *DiscussionRepositoryTestSuite) TestCreateComment() {
 			Body:  "  ",
 			Owner: r.users[len(r.users)-1],
 		}
-		id, err := r.repository.CreateComment(r.ctx, cmt)
+		id, err := r.repository.CreateComment(r.ctx, r.ns, cmt)
 		r.Error(err)
 		r.Empty(id)
 	})
@@ -30,7 +30,7 @@ func (r *DiscussionRepositoryTestSuite) TestCreateComment() {
 		cmt := &discussion.Comment{
 			Body: "This is Body",
 		}
-		id, err := r.repository.CreateComment(r.ctx, cmt)
+		id, err := r.repository.CreateComment(r.ctx, r.ns, cmt)
 		r.Error(err)
 		r.Empty(id)
 	})
@@ -41,7 +41,7 @@ func (r *DiscussionRepositoryTestSuite) TestCreateComment() {
 			Owner: r.users[len(r.users)-1],
 		}
 		cmt.DiscussionID = "9278"
-		id, err := r.repository.CreateComment(r.ctx, cmt)
+		id, err := r.repository.CreateComment(r.ctx, r.ns, cmt)
 		r.ErrorAs(err, new(discussion.NotFoundError))
 		r.Empty(id)
 	})

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -21,12 +22,12 @@ type TagRepository struct {
 }
 
 // Create inserts tag to database
-func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
+func (r *TagRepository) Create(ctx context.Context, ns *namespace.Namespace, domainTag *tag.Tag) error {
 	if domainTag == nil {
 		return errNilTag
 	}
 
-	templateFieldModels, err := readTemplatesByURNFromDB(ctx, r.client.db, domainTag.TemplateURN)
+	templateFieldModels, err := r.readTemplatesByURNFromDB(ctx, domainTag.TemplateURN)
 	if err != nil {
 		return err
 	}
@@ -56,11 +57,12 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 
 			if err := tx.QueryRowxContext(ctx, `
 						INSERT INTO tags
-							(value, asset_id, field_id, created_at, updated_at)
+							(value, asset_id, field_id, created_at, updated_at, namespace_id)
 						VALUES
-							($1, $2, $3, $4, $5)
+							($1, $2, $3, $4, $5, $6)
 						RETURNING *`,
-				tagToInsert.Value, tagToInsert.AssetID, tagToInsert.FieldID, tagToInsert.CreatedAt, tagToInsert.UpdatedAt).
+				tagToInsert.Value, tagToInsert.AssetID, tagToInsert.FieldID,
+				tagToInsert.CreatedAt, tagToInsert.UpdatedAt, ns.ID).
 				StructScan(&insertedTagValue); err != nil {
 				if err := checkPostgresError(err); errors.Is(err, errDuplicateKey) {
 					return tag.DuplicateError{
@@ -114,7 +116,7 @@ func (r *TagRepository) Read(ctx context.Context, filter tag.Tag) ([]tag.Tag, er
 	}
 
 	var templateTagFields TagJoinTemplateTagFieldModels
-	if err := r.client.db.SelectContext(ctx, &templateTagFields, sqlQuery, sqlArgs...); err != nil {
+	if err := r.client.SelectContext(ctx, &templateTagFields, sqlQuery, sqlArgs...); err != nil {
 		return nil, fmt.Errorf("failed reading domain tag: %w", err)
 	}
 
@@ -138,7 +140,7 @@ func (r *TagRepository) Update(ctx context.Context, domainTag *tag.Tag) error {
 		return errNilTag
 	}
 
-	templateFieldModels, err := readTemplatesByURNFromDB(ctx, r.client.db, domainTag.TemplateURN)
+	templateFieldModels, err := r.readTemplatesByURNFromDB(ctx, domainTag.TemplateURN)
 	if err != nil {
 		return err
 	}
@@ -200,7 +202,7 @@ func (r *TagRepository) Delete(ctx context.Context, domainTag tag.Tag) error {
 	deletedModelTags := []TagModel{}
 	fieldIDMap := map[uint]bool{}
 	if domainTag.TemplateURN != "" {
-		assetTemplatesFields, err := readTemplatesByURNFromDB(ctx, r.client.db, domainTag.TemplateURN)
+		assetTemplatesFields, err := r.readTemplatesByURNFromDB(ctx, domainTag.TemplateURN)
 		if err != nil {
 			return err
 		}
@@ -274,6 +276,30 @@ func (r *TagRepository) complementTag(domainTag *tag.Tag, template tag.Template,
 	domainTag.TemplateDisplayName = template.DisplayName
 	domainTag.TagValues = listOfTagValue
 	return nil
+}
+
+func (r *TagRepository) readTemplatesByURNFromDB(ctx context.Context, templateURN string) (TagJoinTemplateFieldModels, error) {
+	var templateFields TagJoinTemplateFieldModels
+	// return empty with nil error if not found
+	if err := r.client.SelectContext(ctx, &templateFields, `
+		SELECT
+			t.urn as "tag_templates.urn", t.display_name as "tag_templates.display_name", t.description as "tag_templates.description",
+			t.created_at as "tag_templates.created_at", t.updated_at as "tag_templates.updated_at",
+			f.id as "tag_template_fields.id", f.urn as "tag_template_fields.urn", f.display_name as "tag_template_fields.display_name", f.description as "tag_template_fields.description",
+			f.data_type as "tag_template_fields.data_type", f.options as "tag_template_fields.options", f.required as "tag_template_fields.required", f.template_urn as "tag_template_fields.template_urn",
+			f.created_at as "tag_template_fields.created_at", f.updated_at as "tag_template_fields.updated_at"
+		FROM
+			tag_templates t
+		JOIN
+			tag_template_fields f
+		ON
+			f.template_urn = t.urn
+		WHERE
+			t.urn = $1`, templateURN); err != nil {
+		return nil, fmt.Errorf("tag_templates: failed to read from DB %w", err)
+	}
+
+	return templateFields, nil
 }
 
 // NewTagRepository initializes tag repository

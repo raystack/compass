@@ -4,6 +4,7 @@ package namespace
 //go:generate mockery --name=DiscoveryRepository -r --case underscore --with-expecter --structname NamespaceDiscoveryRepository --filename discovery_repository.go --output=./mocks
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 )
 
@@ -42,6 +43,10 @@ type Namespace struct {
 
 	State    State                  `json:"state"`
 	Metadata map[string]interface{} `json:"metadata"`
+}
+
+func (n Namespace) String() string {
+	return fmt.Sprintf("namespace::%s", n.Name)
 }
 
 type StorageRepository interface {

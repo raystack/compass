@@ -25,10 +25,6 @@ type NamespaceRepository struct {
 
 // Create insert a new namespace in the database
 func (n *NamespaceRepository) Create(ctx context.Context, ns *namespace.Namespace) (string, error) {
-	return n.create(ctx, n.client.db, ns)
-}
-
-func (n *NamespaceRepository) create(ctx context.Context, querier sqlx.QueryerContext, ns *namespace.Namespace) (string, error) {
 	var nsID string
 	if ns == nil || ns.Name == "" {
 		return "", errors.New("invalid namespace")
@@ -45,8 +41,11 @@ func (n *NamespaceRepository) create(ctx context.Context, querier sqlx.QueryerCo
 		return "", err
 	}
 
-	if err := querier.QueryRowxContext(ctx, query, args...).Scan(&nsID); err != nil {
-		err := checkPostgresError(err)
+	err = n.client.QueryFn(ctx, func(conn *sqlx.Conn) error {
+		return conn.QueryRowxContext(ctx, query, args...).Scan(&nsID)
+	})
+	if err != nil {
+		err = checkPostgresError(err)
 		if errors.Is(err, errDuplicateKey) {
 			return "", errors.New("namespace already exists")
 		}
@@ -72,7 +71,7 @@ func (n *NamespaceRepository) Update(ctx context.Context, ns *namespace.Namespac
 		return err
 	}
 
-	_, err = n.client.db.ExecContext(ctx, query, args...)
+	_, err = n.client.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("error running update namespace query: %w", err)
 	}
@@ -87,7 +86,7 @@ func (n *NamespaceRepository) GetByName(ctx context.Context, name string) (*name
 	}
 
 	var nsModel NamespaceModel
-	if err := n.client.db.GetContext(ctx, &nsModel, query, args...); err != nil {
+	if err := n.client.GetContext(ctx, &nsModel, query, args...); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNamespaceNotFound
 		}
@@ -105,7 +104,7 @@ func (n *NamespaceRepository) GetByID(ctx context.Context, uuid uuid.UUID) (*nam
 	}
 
 	var nsModel NamespaceModel
-	if err := n.client.db.GetContext(ctx, &nsModel, query, args...); err != nil {
+	if err := n.client.GetContext(ctx, &nsModel, query, args...); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNamespaceNotFound
 		}
@@ -121,7 +120,7 @@ func (n *NamespaceRepository) List(ctx context.Context) ([]*namespace.Namespace,
 	if err != nil {
 		return nil, err
 	}
-	if err := n.client.db.SelectContext(ctx, &nsModels, query); err != nil {
+	if err := n.client.SelectContext(ctx, &nsModels, query); err != nil {
 		return nil, err
 	}
 	var namespaces []*namespace.Namespace

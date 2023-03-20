@@ -3,6 +3,7 @@ package handlersv1beta1
 import (
 	"context"
 	"fmt"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"strings"
 
 	"github.com/odpf/compass/core/asset"
@@ -12,18 +13,17 @@ import (
 )
 
 func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.SearchAssetsRequest) (*compassv1beta1.SearchAssetsResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
 	text := strings.TrimSpace(req.GetText())
 	if text == "" {
 		return nil, status.Error(codes.InvalidArgument, "'text' must be specified")
-	}
-	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
-	if err != nil {
-		return nil, err
 	}
 
 	cfg := asset.SearchConfig{
@@ -55,8 +55,11 @@ func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.S
 }
 
 func (server *APIServer) SuggestAssets(ctx context.Context, req *compassv1beta1.SuggestAssetsRequest) (*compassv1beta1.SuggestAssetsResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
@@ -64,16 +67,11 @@ func (server *APIServer) SuggestAssets(ctx context.Context, req *compassv1beta1.
 	if text == "" {
 		return nil, status.Error(codes.InvalidArgument, "'text' must be specified")
 	}
-	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
-	if err != nil {
-		return nil, err
-	}
 
 	cfg := asset.SearchConfig{
 		Text:      text,
 		Namespace: ns,
 	}
-
 	suggestions, err := server.assetService.SuggestAssets(ctx, cfg)
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())

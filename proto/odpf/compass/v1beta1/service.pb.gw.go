@@ -770,29 +770,12 @@ func local_request_CompassService_GetAllTypes_0(ctx context.Context, marshaler r
 }
 
 var (
-	filter_CompassService_GetAllAssets_0 = &utilities.DoubleArray{Encoding: map[string]int{"namespace_urn": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_CompassService_GetAllAssets_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
 
 func request_CompassService_GetAllAssets_0(ctx context.Context, marshaler runtime.Marshaler, client CompassServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetAllAssetsRequest
 	var metadata runtime.ServerMetadata
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
@@ -809,23 +792,6 @@ func request_CompassService_GetAllAssets_0(ctx context.Context, marshaler runtim
 func local_request_CompassService_GetAllAssets_0(ctx context.Context, marshaler runtime.Marshaler, server CompassServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetAllAssetsRequest
 	var metadata runtime.ServerMetadata
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
@@ -849,16 +815,6 @@ func request_CompassService_GetAssetByID_0(ctx context.Context, marshaler runtim
 		err error
 		_   = err
 	)
-
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
 
 	val, ok = pathParams["id"]
 	if !ok {
@@ -885,16 +841,6 @@ func local_request_CompassService_GetAssetByID_0(ctx context.Context, marshaler 
 		err error
 		_   = err
 	)
-
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
 
 	val, ok = pathParams["id"]
 	if !ok {
@@ -923,23 +869,6 @@ func request_CompassService_UpsertAsset_0(ctx context.Context, marshaler runtime
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
-
 	msg, err := client.UpsertAsset(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -955,23 +884,6 @@ func local_request_CompassService_UpsertAsset_0(ctx context.Context, marshaler r
 	}
 	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
 	}
 
 	msg, err := server.UpsertAsset(ctx, &protoReq)
@@ -991,23 +903,6 @@ func request_CompassService_UpsertPatchAsset_0(ctx context.Context, marshaler ru
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
-
 	msg, err := client.UpsertPatchAsset(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -1025,23 +920,6 @@ func local_request_CompassService_UpsertPatchAsset_0(ctx context.Context, marsha
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
-
 	msg, err := server.UpsertPatchAsset(ctx, &protoReq)
 	return msg, metadata, err
 
@@ -1057,16 +935,6 @@ func request_CompassService_DeleteAsset_0(ctx context.Context, marshaler runtime
 		err error
 		_   = err
 	)
-
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
 
 	val, ok = pathParams["id"]
 	if !ok {
@@ -1094,16 +962,6 @@ func local_request_CompassService_DeleteAsset_0(ctx context.Context, marshaler r
 		_   = err
 	)
 
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
-
 	val, ok = pathParams["id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
@@ -1120,7 +978,7 @@ func local_request_CompassService_DeleteAsset_0(ctx context.Context, marshaler r
 }
 
 var (
-	filter_CompassService_GetAssetStargazers_0 = &utilities.DoubleArray{Encoding: map[string]int{"namespace_urn": 0, "id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+	filter_CompassService_GetAssetStargazers_0 = &utilities.DoubleArray{Encoding: map[string]int{"id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
 func request_CompassService_GetAssetStargazers_0(ctx context.Context, marshaler runtime.Marshaler, client CompassServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -1133,16 +991,6 @@ func request_CompassService_GetAssetStargazers_0(ctx context.Context, marshaler 
 		err error
 		_   = err
 	)
-
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
 
 	val, ok = pathParams["id"]
 	if !ok {
@@ -1177,16 +1025,6 @@ func local_request_CompassService_GetAssetStargazers_0(ctx context.Context, mars
 		_   = err
 	)
 
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
-
 	val, ok = pathParams["id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
@@ -1210,7 +1048,7 @@ func local_request_CompassService_GetAssetStargazers_0(ctx context.Context, mars
 }
 
 var (
-	filter_CompassService_GetAssetVersionHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"namespace_urn": 0, "id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+	filter_CompassService_GetAssetVersionHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
 func request_CompassService_GetAssetVersionHistory_0(ctx context.Context, marshaler runtime.Marshaler, client CompassServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -1223,16 +1061,6 @@ func request_CompassService_GetAssetVersionHistory_0(ctx context.Context, marsha
 		err error
 		_   = err
 	)
-
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
 
 	val, ok = pathParams["id"]
 	if !ok {
@@ -1267,16 +1095,6 @@ func local_request_CompassService_GetAssetVersionHistory_0(ctx context.Context, 
 		_   = err
 	)
 
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
-
 	val, ok = pathParams["id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
@@ -1309,16 +1127,6 @@ func request_CompassService_GetAssetByVersion_0(ctx context.Context, marshaler r
 		err error
 		_   = err
 	)
-
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
 
 	val, ok = pathParams["id"]
 	if !ok {
@@ -1355,16 +1163,6 @@ func local_request_CompassService_GetAssetByVersion_0(ctx context.Context, marsh
 		err error
 		_   = err
 	)
-
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
 
 	val, ok = pathParams["id"]
 	if !ok {
@@ -1410,16 +1208,6 @@ func request_CompassService_CreateAssetProbe_0(ctx context.Context, marshaler ru
 		_   = err
 	)
 
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
-
 	val, ok = pathParams["asset_urn"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "asset_urn")
@@ -1453,16 +1241,6 @@ func local_request_CompassService_CreateAssetProbe_0(ctx context.Context, marsha
 		err error
 		_   = err
 	)
-
-	val, ok = pathParams["namespace_urn"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "namespace_urn")
-	}
-
-	protoReq.NamespaceUrn, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "namespace_urn", err)
-	}
 
 	val, ok = pathParams["asset_urn"]
 	if !ok {
@@ -2848,7 +2626,7 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllAssets", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllAssets", runtime.WithHTTPPathPattern("/v1beta1/assets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2873,7 +2651,7 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByID", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets/{id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByID", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2898,7 +2676,7 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertAsset", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertAsset", runtime.WithHTTPPathPattern("/v1beta1/assets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2923,7 +2701,7 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertPatchAsset", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertPatchAsset", runtime.WithHTTPPathPattern("/v1beta1/assets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2948,7 +2726,7 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteAsset", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets/{id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteAsset", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2973,7 +2751,7 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetStargazers", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets/{id}/stargazers"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetStargazers", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/stargazers"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -2998,7 +2776,7 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetVersionHistory", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets/{id}/versions"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetVersionHistory", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/versions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3023,7 +2801,7 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByVersion", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets/{id}/versions/{version}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByVersion", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/versions/{version}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3048,7 +2826,7 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateAssetProbe", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets/{asset_urn}/probes"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateAssetProbe", runtime.WithHTTPPathPattern("/v1beta1/assets/{asset_urn}/probes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3898,7 +3676,7 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllAssets", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAllAssets", runtime.WithHTTPPathPattern("/v1beta1/assets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3920,7 +3698,7 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByID", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets/{id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByID", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3942,7 +3720,7 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertAsset", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertAsset", runtime.WithHTTPPathPattern("/v1beta1/assets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3964,7 +3742,7 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertPatchAsset", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/UpsertPatchAsset", runtime.WithHTTPPathPattern("/v1beta1/assets"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -3986,7 +3764,7 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteAsset", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets/{id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/DeleteAsset", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4008,7 +3786,7 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetStargazers", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets/{id}/stargazers"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetStargazers", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/stargazers"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4030,7 +3808,7 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetVersionHistory", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets/{id}/versions"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetVersionHistory", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/versions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4052,7 +3830,7 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByVersion", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets/{id}/versions/{version}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/GetAssetByVersion", runtime.WithHTTPPathPattern("/v1beta1/assets/{id}/versions/{version}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4074,7 +3852,7 @@ func RegisterCompassServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateAssetProbe", runtime.WithHTTPPathPattern("/v1beta1/namespaces/{namespace_urn}/assets/{asset_urn}/probes"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/odpf.compass.v1beta1.CompassService/CreateAssetProbe", runtime.WithHTTPPathPattern("/v1beta1/assets/{asset_urn}/probes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4560,23 +4338,23 @@ var (
 
 	pattern_CompassService_GetAllTypes_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1beta1", "types"}, ""))
 
-	pattern_CompassService_GetAllAssets_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1beta1", "namespaces", "namespace_urn", "assets"}, ""))
+	pattern_CompassService_GetAllAssets_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1beta1", "assets"}, ""))
 
-	pattern_CompassService_GetAssetByID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1beta1", "namespaces", "namespace_urn", "assets", "id"}, ""))
+	pattern_CompassService_GetAssetByID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1beta1", "assets", "id"}, ""))
 
-	pattern_CompassService_UpsertAsset_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1beta1", "namespaces", "namespace_urn", "assets"}, ""))
+	pattern_CompassService_UpsertAsset_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1beta1", "assets"}, ""))
 
-	pattern_CompassService_UpsertPatchAsset_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1beta1", "namespaces", "namespace_urn", "assets"}, ""))
+	pattern_CompassService_UpsertPatchAsset_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1beta1", "assets"}, ""))
 
-	pattern_CompassService_DeleteAsset_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1beta1", "namespaces", "namespace_urn", "assets", "id"}, ""))
+	pattern_CompassService_DeleteAsset_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1beta1", "assets", "id"}, ""))
 
-	pattern_CompassService_GetAssetStargazers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1beta1", "namespaces", "namespace_urn", "assets", "id", "stargazers"}, ""))
+	pattern_CompassService_GetAssetStargazers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1beta1", "assets", "id", "stargazers"}, ""))
 
-	pattern_CompassService_GetAssetVersionHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1beta1", "namespaces", "namespace_urn", "assets", "id", "versions"}, ""))
+	pattern_CompassService_GetAssetVersionHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1beta1", "assets", "id", "versions"}, ""))
 
-	pattern_CompassService_GetAssetByVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6}, []string{"v1beta1", "namespaces", "namespace_urn", "assets", "id", "versions", "version"}, ""))
+	pattern_CompassService_GetAssetByVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1beta1", "assets", "id", "versions", "version"}, ""))
 
-	pattern_CompassService_CreateAssetProbe_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1beta1", "namespaces", "namespace_urn", "assets", "asset_urn", "probes"}, ""))
+	pattern_CompassService_CreateAssetProbe_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1beta1", "assets", "asset_urn", "probes"}, ""))
 
 	pattern_CompassService_GetUserStarredAssets_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1beta1", "users", "user_id", "starred"}, ""))
 

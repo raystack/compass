@@ -3,6 +3,7 @@ package handlersv1beta1
 import (
 	"context"
 	"errors"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"strings"
 	"time"
 
@@ -17,11 +18,11 @@ import (
 // CreateComment will create a new comment of a discussion
 // field body is mandatory
 func (server *APIServer) CreateComment(ctx context.Context, req *compassv1beta1.CreateCommentRequest) (*compassv1beta1.CreateCommentResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
 	}
-
 	if err := req.ValidateAll(); err != nil {
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
@@ -41,7 +42,7 @@ func (server *APIServer) CreateComment(ctx context.Context, req *compassv1beta1.
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	id, err := server.discussionService.CreateComment(ctx, &cmt)
+	id, err := server.discussionService.CreateComment(ctx, ns, &cmt)
 	if errors.As(err, new(discussion.NotFoundError)) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
@@ -54,15 +55,13 @@ func (server *APIServer) CreateComment(ctx context.Context, req *compassv1beta1.
 
 // GetAllComments returns all comments of a discussion
 func (server *APIServer) GetAllComments(ctx context.Context, req *compassv1beta1.GetAllCommentsRequest) (*compassv1beta1.GetAllCommentsResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	if err := req.ValidateAll(); err != nil {
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
-
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
+		return nil, err
+	}
 	if err := server.validateIDInteger(req.DiscussionId); err != nil {
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(discussion.InvalidError{DiscussionID: req.DiscussionId}))
 	}
@@ -87,11 +86,13 @@ func (server *APIServer) GetAllComments(ctx context.Context, req *compassv1beta1
 
 // GetComment returns a comment discussion by id from path
 func (server *APIServer) GetComment(ctx context.Context, req *compassv1beta1.GetCommentRequest) (*compassv1beta1.GetCommentResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
-
 	if err := server.validateIDInteger(req.DiscussionId); err != nil {
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(discussion.InvalidError{DiscussionID: req.DiscussionId}))
 	}
@@ -113,9 +114,13 @@ func (server *APIServer) GetComment(ctx context.Context, req *compassv1beta1.Get
 
 // UpdateComment is an api to update a comment by discussion id
 func (server *APIServer) UpdateComment(ctx context.Context, req *compassv1beta1.UpdateCommentRequest) (*compassv1beta1.UpdateCommentResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
+	}
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
 
 	if err := req.ValidateAll(); err != nil {
@@ -154,15 +159,13 @@ func (server *APIServer) UpdateComment(ctx context.Context, req *compassv1beta1.
 
 // DeleteComment is an api to delete a comment by discussion id
 func (server *APIServer) DeleteComment(ctx context.Context, req *compassv1beta1.DeleteCommentRequest) (*compassv1beta1.DeleteCommentResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	if err := req.ValidateAll(); err != nil {
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
-
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
+		return nil, err
+	}
 	if err := server.validateIDInteger(req.DiscussionId); err != nil {
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(discussion.InvalidError{DiscussionID: req.DiscussionId}))
 	}
@@ -171,7 +174,7 @@ func (server *APIServer) DeleteComment(ctx context.Context, req *compassv1beta1.
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(discussion.InvalidError{DiscussionID: req.DiscussionId, CommentID: req.Id}))
 	}
 
-	err = server.discussionService.DeleteComment(ctx, req.Id, req.DiscussionId)
+	err := server.discussionService.DeleteComment(ctx, req.Id, req.DiscussionId)
 	if errors.As(err, new(discussion.NotFoundError)) {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}

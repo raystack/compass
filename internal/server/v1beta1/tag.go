@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"time"
 
 	"github.com/odpf/compass/core/tag"
@@ -23,7 +25,7 @@ var (
 
 type TagService interface {
 	Validate(tag *tag.Tag) error
-	CreateTag(ctx context.Context, tag *tag.Tag) error
+	CreateTag(ctx context.Context, ns *namespace.Namespace, tag *tag.Tag) error
 	GetTagsByAssetID(ctx context.Context, assetID string) ([]tag.Tag, error)
 	FindTagByAssetIDAndTemplateURN(ctx context.Context, assetID, templateURN string) (tag.Tag, error)
 	DeleteTag(ctx context.Context, assetID, templateURN string) error
@@ -32,8 +34,11 @@ type TagService interface {
 
 // GetTagByAssetAndTemplate handles get tag by asset requests
 func (server *APIServer) GetTagByAssetAndTemplate(ctx context.Context, req *compassv1beta1.GetTagByAssetAndTemplateRequest) (*compassv1beta1.GetTagByAssetAndTemplateResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
@@ -68,8 +73,11 @@ func (server *APIServer) GetTagByAssetAndTemplate(ctx context.Context, req *comp
 
 // CreateTagAsset handles tag creation requests
 func (server *APIServer) CreateTagAsset(ctx context.Context, req *compassv1beta1.CreateTagAssetRequest) (*compassv1beta1.CreateTagAssetResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
@@ -100,7 +108,7 @@ func (server *APIServer) CreateTagAsset(ctx context.Context, req *compassv1beta1
 		TemplateDescription: req.GetTemplateDescription(),
 	}
 
-	err = server.tagService.CreateTag(ctx, &tagDomain)
+	err := server.tagService.CreateTag(ctx, ns, &tagDomain)
 	if errors.As(err, new(tag.DuplicateError)) {
 		return nil, status.Error(codes.AlreadyExists, err.Error())
 
@@ -128,8 +136,11 @@ func (server *APIServer) CreateTagAsset(ctx context.Context, req *compassv1beta1
 
 // UpdateTagAsset handles tag update requests
 func (server *APIServer) UpdateTagAsset(ctx context.Context, req *compassv1beta1.UpdateTagAssetRequest) (*compassv1beta1.UpdateTagAssetResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
@@ -161,7 +172,7 @@ func (server *APIServer) UpdateTagAsset(ctx context.Context, req *compassv1beta1
 		TemplateDescription: req.GetTemplateDescription(),
 	}
 
-	err = server.tagService.UpdateTag(ctx, &tagDomain)
+	err := server.tagService.UpdateTag(ctx, &tagDomain)
 	if err != nil {
 		if errors.As(err, new(tag.NotFoundError)) || errors.As(err, new(tag.TemplateNotFoundError)) {
 			return nil, status.Error(codes.NotFound, err.Error())
@@ -184,8 +195,11 @@ func (server *APIServer) UpdateTagAsset(ctx context.Context, req *compassv1beta1
 
 // DeleteTagAsset handles delete tag by asset and template requests
 func (server *APIServer) DeleteTagAsset(ctx context.Context, req *compassv1beta1.DeleteTagAssetRequest) (*compassv1beta1.DeleteTagAssetResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
@@ -200,7 +214,7 @@ func (server *APIServer) DeleteTagAsset(ctx context.Context, req *compassv1beta1
 		return nil, status.Error(codes.InvalidArgument, errEmptyTemplateURN.Error())
 	}
 
-	err = server.tagService.DeleteTag(ctx, req.GetAssetId(), req.GetTemplateUrn())
+	err := server.tagService.DeleteTag(ctx, req.GetAssetId(), req.GetTemplateUrn())
 	if err != nil {
 		if errors.As(err, new(tag.TemplateNotFoundError)) || errors.As(err, new(tag.NotFoundError)) {
 			return nil, status.Error(codes.NotFound, err.Error())
@@ -213,8 +227,11 @@ func (server *APIServer) DeleteTagAsset(ctx context.Context, req *compassv1beta1
 
 // GetAllTagsByAsset handles get all tags by asset requests
 func (server *APIServer) GetAllTagsByAsset(ctx context.Context, req *compassv1beta1.GetAllTagsByAssetRequest) (*compassv1beta1.GetAllTagsByAssetResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
