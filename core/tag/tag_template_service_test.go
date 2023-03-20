@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/odpf/compass/core/namespace"
 	"testing"
 	"time"
 
@@ -260,11 +262,16 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 
 func (s *TemplateServiceTestSuite) TestCreate() {
 	ctx := context.TODO()
-
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	s.Run("should return error if domain template is nil", func() {
 		s.Setup()
 
-		err := s.service.CreateTemplate(ctx, nil)
+		err := s.service.CreateTemplate(ctx, ns, nil)
 		s.Error(err)
 	})
 
@@ -280,7 +287,7 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 			},
 		}
 
-		actualError := s.service.CreateTemplate(ctx, &template)
+		actualError := s.service.CreateTemplate(ctx, ns, &template)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
@@ -291,7 +298,7 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 		template := s.buildTemplate()
 		s.repository.EXPECT().Read(ctx, template.URN).Return(nil, errors.New("unexpected error"))
 
-		err := s.service.CreateTemplate(ctx, &template)
+		err := s.service.CreateTemplate(ctx, ns, &template)
 		s.Error(err)
 	})
 
@@ -300,7 +307,7 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 		template := s.buildTemplate()
 		s.repository.EXPECT().Read(ctx, template.URN).Return([]tag.Template{{}}, nil)
 
-		err := s.service.CreateTemplate(ctx, &template)
+		err := s.service.CreateTemplate(ctx, ns, &template)
 		s.Equal(tag.DuplicateTemplateError{URN: template.URN}, err)
 	})
 
@@ -312,9 +319,9 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 		referenceDomainTemplate.CreatedAt = now
 
 		s.repository.EXPECT().Read(ctx, originalDomainTemplate.URN).Return([]tag.Template{}, nil)
-		s.repository.EXPECT().Create(ctx, &originalDomainTemplate).Return(errors.New("unexpected error"))
+		s.repository.EXPECT().Create(ctx, ns, &originalDomainTemplate).Return(errors.New("unexpected error"))
 
-		err := s.service.CreateTemplate(ctx, &originalDomainTemplate)
+		err := s.service.CreateTemplate(ctx, ns, &originalDomainTemplate)
 		s.Error(err)
 	})
 
@@ -326,11 +333,11 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 		referenceDomainTemplate.CreatedAt = now
 
 		s.repository.EXPECT().Read(ctx, originalDomainTemplate.URN).Return([]tag.Template{}, nil)
-		s.repository.EXPECT().Create(ctx, &originalDomainTemplate).Run(func(ctx context.Context, template *tag.Template) {
+		s.repository.EXPECT().Create(ctx, ns, &originalDomainTemplate).Run(func(ctx context.Context, ns *namespace.Namespace, template *tag.Template) {
 			template.CreatedAt = now
 		}).Return(nil)
 
-		actualError := s.service.CreateTemplate(ctx, &originalDomainTemplate)
+		actualError := s.service.CreateTemplate(ctx, ns, &originalDomainTemplate)
 
 		s.NoError(actualError)
 		s.EqualValues(referenceDomainTemplate, originalDomainTemplate)
@@ -339,7 +346,6 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 
 func (s *TemplateServiceTestSuite) TestIndex() {
 	ctx := context.TODO()
-
 	s.Run("should return nil and error if encountered unexpected error during read", func() {
 		s.Setup()
 		template := s.buildTemplate()
@@ -386,12 +392,17 @@ func (s *TemplateServiceTestSuite) TestIndex() {
 
 func (s *TemplateServiceTestSuite) TestUpdate() {
 	ctx := context.TODO()
-
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	s.Run("should return error if domain template is nil", func() {
 		s.Setup()
 		var template *tag.Template = nil
 
-		err := s.service.UpdateTemplate(ctx, "", template)
+		err := s.service.UpdateTemplate(ctx, ns, "", template)
 		s.EqualError(err, "template is nil")
 	})
 
@@ -407,7 +418,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 			},
 		}
 
-		actualError := s.service.UpdateTemplate(ctx, template.URN, &template)
+		actualError := s.service.UpdateTemplate(ctx, ns, template.URN, &template)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
@@ -419,7 +430,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 
 		s.repository.EXPECT().Read(ctx, template.URN).Return(nil, errors.New("unexpected error"))
 
-		err := s.service.UpdateTemplate(ctx, template.URN, &template)
+		err := s.service.UpdateTemplate(ctx, ns, template.URN, &template)
 		s.Error(err)
 	})
 
@@ -440,7 +451,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 			},
 		}
 
-		actualError := s.service.UpdateTemplate(ctx, newTemplate.URN, &newTemplate)
+		actualError := s.service.UpdateTemplate(ctx, ns, newTemplate.URN, &newTemplate)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
@@ -463,7 +474,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 			},
 		}
 
-		actualError := s.service.UpdateTemplate(ctx, template.URN, &newTemplate)
+		actualError := s.service.UpdateTemplate(ctx, ns, template.URN, &newTemplate)
 
 		s.EqualError(actualError, expectedErrorMsg)
 		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
@@ -475,9 +486,9 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		newTemplate := s.buildTemplate()
 
 		s.repository.EXPECT().Read(ctx, newTemplate.URN).Return([]tag.Template{template}, nil)
-		s.repository.EXPECT().Update(ctx, newTemplate.URN, &newTemplate).Return(errors.New("unexpected error"))
+		s.repository.EXPECT().Update(ctx, ns, newTemplate.URN, &newTemplate).Return(errors.New("unexpected error"))
 
-		err := s.service.UpdateTemplate(ctx, template.URN, &newTemplate)
+		err := s.service.UpdateTemplate(ctx, ns, template.URN, &newTemplate)
 		s.Error(err)
 	})
 
@@ -487,11 +498,11 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		newTemplate := s.buildTemplate()
 
 		s.repository.EXPECT().Read(ctx, template.URN).Return([]tag.Template{template}, nil)
-		s.repository.EXPECT().Update(ctx, newTemplate.URN, &newTemplate).Run(func(ctx context.Context, templateURN string, template *tag.Template) {
+		s.repository.EXPECT().Update(ctx, ns, newTemplate.URN, &newTemplate).Run(func(ctx context.Context, ns *namespace.Namespace, templateURN string, template *tag.Template) {
 			template.UpdatedAt = time.Now()
 		}).Return(nil)
 
-		actualError := s.service.UpdateTemplate(ctx, template.URN, &newTemplate)
+		actualError := s.service.UpdateTemplate(ctx, ns, template.URN, &newTemplate)
 		s.NoError(actualError)
 	})
 }

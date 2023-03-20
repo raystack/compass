@@ -5,8 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"time"
 
 	"github.com/odpf/compass/core/asset"
@@ -28,8 +28,8 @@ type StatsDClient interface {
 
 type AssetService interface {
 	GetAllAssets(ctx context.Context, flt asset.Filter, withTotal bool) ([]asset.Asset, uint32, error)
-	GetAssetByID(ctx context.Context, ns *namespace.Namespace, id string) (asset.Asset, error)
-	GetAssetByVersion(ctx context.Context, ns *namespace.Namespace, id string, version string) (asset.Asset, error)
+	GetAssetByID(ctx context.Context, id string) (asset.Asset, error)
+	GetAssetByVersion(ctx context.Context, id string, version string) (asset.Asset, error)
 	GetAssetVersionHistory(ctx context.Context, flt asset.Filter, id string) ([]asset.Asset, error)
 	UpsertAsset(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset, upstreams, downstreams []string) (string, error)
 	UpsertAssetWithoutLineage(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset) (string, error)
@@ -41,25 +41,20 @@ type AssetService interface {
 	SearchAssets(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error)
 	SuggestAssets(ctx context.Context, cfg asset.SearchConfig) (suggestions []string, err error)
 
-	AddProbe(ctx context.Context, assetURN string, probe *asset.Probe) error
+	AddProbe(ctx context.Context, ns *namespace.Namespace, assetURN string, probe *asset.Probe) error
 }
 
 func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.GetAllAssetsRequest) (*compassv1beta1.GetAllAssetsResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	if err := req.ValidateAll(); err != nil {
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
 
-	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
-	if err != nil {
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
-	flt, err := asset.NewFilterBuilder(ns).
+	flt, err := asset.NewFilterBuilder().
 		Types(req.GetTypes()).
 		Services(req.GetServices()).
 		Q(req.GetQ()).
@@ -79,7 +74,7 @@ func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.G
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	assetsProto := []*compassv1beta1.Asset{}
+	var assetsProto []*compassv1beta1.Asset
 	for _, a := range assets {
 		ap, err := assetToProto(a, false)
 		if err != nil {
@@ -100,17 +95,16 @@ func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.G
 }
 
 func (server *APIServer) GetAssetByID(ctx context.Context, req *compassv1beta1.GetAssetByIDRequest) (*compassv1beta1.GetAssetByIDResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
-	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
-	if err != nil {
-		return nil, err
-	}
-
-	ast, err := server.assetService.GetAssetByID(ctx, ns, req.GetId())
+	ast, err := server.assetService.GetAssetByID(ctx, req.GetId())
 	if err != nil {
 		if errors.As(err, new(asset.InvalidError)) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -132,8 +126,12 @@ func (server *APIServer) GetAssetByID(ctx context.Context, req *compassv1beta1.G
 }
 
 func (server *APIServer) GetAssetStargazers(ctx context.Context, req *compassv1beta1.GetAssetStargazersRequest) (*compassv1beta1.GetAssetStargazersResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
@@ -162,8 +160,12 @@ func (server *APIServer) GetAssetStargazers(ctx context.Context, req *compassv1b
 }
 
 func (server *APIServer) GetAssetVersionHistory(ctx context.Context, req *compassv1beta1.GetAssetVersionHistoryRequest) (*compassv1beta1.GetAssetVersionHistoryResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
@@ -196,8 +198,12 @@ func (server *APIServer) GetAssetVersionHistory(ctx context.Context, req *compas
 }
 
 func (server *APIServer) GetAssetByVersion(ctx context.Context, req *compassv1beta1.GetAssetByVersionRequest) (*compassv1beta1.GetAssetByVersionResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
@@ -205,12 +211,7 @@ func (server *APIServer) GetAssetByVersion(ctx context.Context, req *compassv1be
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
-	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
-	if err != nil {
-		return nil, err
-	}
-
-	ast, err := server.assetService.GetAssetByVersion(ctx, ns, req.GetId(), req.GetVersion())
+	ast, err := server.assetService.GetAssetByVersion(ctx, req.GetId(), req.GetVersion())
 	if err != nil {
 		if errors.As(err, new(asset.InvalidError)) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -232,12 +233,12 @@ func (server *APIServer) GetAssetByVersion(ctx context.Context, req *compassv1be
 }
 
 func (server *APIServer) UpsertAsset(ctx context.Context, req *compassv1beta1.UpsertAssetRequest) (*compassv1beta1.UpsertAssetResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
-	if err != nil {
-		return nil, err
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
 
-	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
 	}
@@ -268,7 +269,12 @@ func (server *APIServer) UpsertAsset(ctx context.Context, req *compassv1beta1.Up
 }
 
 func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1beta1.UpsertPatchAssetRequest) (*compassv1beta1.UpsertPatchAssetResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
 	}
@@ -283,12 +289,7 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1bet
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
-	if err != nil {
-		return nil, err
-	}
-
-	ast, err := server.assetService.GetAssetByID(ctx, ns, urn)
+	ast, err := server.assetService.GetAssetByID(ctx, urn)
 	if err != nil && !errors.As(err, &asset.NotFoundError{}) {
 		return nil, internalServerError(server.logger, err.Error())
 	}
@@ -315,13 +316,12 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1bet
 }
 
 func (server *APIServer) DeleteAsset(ctx context.Context, req *compassv1beta1.DeleteAssetRequest) (*compassv1beta1.DeleteAssetResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
-		return nil, err
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
 
-	ns, err := server.fetchNamespace(ctx, req.GetNamespaceUrn())
-	if err != nil {
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
@@ -345,9 +345,13 @@ func (server *APIServer) DeleteAsset(ctx context.Context, req *compassv1beta1.De
 }
 
 func (server *APIServer) CreateAssetProbe(ctx context.Context, req *compassv1beta1.CreateAssetProbeRequest) (*compassv1beta1.CreateAssetProbeResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
+	}
+
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
 
 	if req.Probe.Status == "" {
@@ -363,7 +367,7 @@ func (server *APIServer) CreateAssetProbe(ctx context.Context, req *compassv1bet
 		Metadata:     req.Probe.Metadata.AsMap(),
 		Timestamp:    req.Probe.Timestamp.AsTime(),
 	}
-	if err := server.assetService.AddProbe(ctx, req.AssetUrn, &probe); err != nil {
+	if err := server.assetService.AddProbe(ctx, ns, req.AssetUrn, &probe); err != nil {
 		if errors.As(err, &asset.NotFoundError{}) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
@@ -373,27 +377,6 @@ func (server *APIServer) CreateAssetProbe(ctx context.Context, req *compassv1bet
 	return &compassv1beta1.CreateAssetProbeResponse{
 		Id: probe.ID,
 	}, nil
-}
-
-// fetchNamespace by name or id
-func (server *APIServer) fetchNamespace(ctx context.Context, namespaceID string) (*namespace.Namespace, error) {
-	var ns *namespace.Namespace
-	if len(namespaceID) == 0 {
-		return nil, status.Error(codes.InvalidArgument, "namespace is required as uuid or name")
-	}
-
-	nsID, err := uuid.Parse(namespaceID)
-	if err != nil {
-		// if fail to parse a valid uuid, must be a name
-		if ns, err = server.namespaceService.GetByName(ctx, namespaceID); err != nil {
-			return nil, status.Error(codes.NotFound, err.Error())
-		}
-	} else {
-		if ns, err = server.namespaceService.GetByID(ctx, nsID); err != nil {
-			return nil, status.Error(codes.NotFound, err.Error())
-		}
-	}
-	return ns, nil
 }
 
 func (server *APIServer) upsertAsset(

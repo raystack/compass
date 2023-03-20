@@ -2426,8 +2426,6 @@ func (m *SearchAssetsRequest) validate(all bool) error {
 
 	}
 
-	// no validation rules for NamespaceUrn
-
 	if len(errors) > 0 {
 		return SearchAssetsRequestMultiError(errors)
 	}
@@ -2669,8 +2667,6 @@ func (m *SuggestAssetsRequest) validate(all bool) error {
 	if m.GetText() != "" {
 
 	}
-
-	// no validation rules for NamespaceUrn
 
 	if len(errors) > 0 {
 		return SuggestAssetsRequestMultiError(errors)
@@ -3491,8 +3487,6 @@ func (m *GetAllAssetsRequest) validate(all bool) error {
 
 	// no validation rules for WithTotal
 
-	// no validation rules for NamespaceUrn
-
 	if len(errors) > 0 {
 		return GetAllAssetsRequestMultiError(errors)
 	}
@@ -3734,8 +3728,6 @@ func (m *GetAssetByIDRequest) validate(all bool) error {
 	var errors []error
 
 	// no validation rules for Id
-
-	// no validation rules for NamespaceUrn
 
 	if len(errors) > 0 {
 		return GetAssetByIDRequestMultiError(errors)
@@ -4067,8 +4059,6 @@ func (m *UpsertAssetRequest) validate(all bool) error {
 
 	}
 
-	// no validation rules for NamespaceUrn
-
 	if len(errors) > 0 {
 		return UpsertAssetRequestMultiError(errors)
 	}
@@ -4374,8 +4364,6 @@ func (m *UpsertPatchAssetRequest) validate(all bool) error {
 
 	// no validation rules for OverwriteLineage
 
-	// no validation rules for NamespaceUrn
-
 	if len(errors) > 0 {
 		return UpsertPatchAssetRequestMultiError(errors)
 	}
@@ -4583,8 +4571,6 @@ func (m *DeleteAssetRequest) validate(all bool) error {
 	var errors []error
 
 	// no validation rules for Id
-
-	// no validation rules for NamespaceUrn
 
 	if len(errors) > 0 {
 		return DeleteAssetRequestMultiError(errors)
@@ -4821,8 +4807,6 @@ func (m *GetAssetStargazersRequest) validate(all bool) error {
 		}
 
 	}
-
-	// no validation rules for NamespaceUrn
 
 	if len(errors) > 0 {
 		return GetAssetStargazersRequestMultiError(errors)
@@ -5094,8 +5078,6 @@ func (m *GetAssetVersionHistoryRequest) validate(all bool) error {
 
 	}
 
-	// no validation rules for NamespaceUrn
-
 	if len(errors) > 0 {
 		return GetAssetVersionHistoryRequestMultiError(errors)
 	}
@@ -5339,8 +5321,6 @@ func (m *GetAssetByVersionRequest) validate(all bool) error {
 	// no validation rules for Id
 
 	// no validation rules for Version
-
-	// no validation rules for NamespaceUrn
 
 	if len(errors) > 0 {
 		return GetAssetByVersionRequestMultiError(errors)
@@ -5614,8 +5594,6 @@ func (m *CreateAssetProbeRequest) validate(all bool) error {
 			}
 		}
 	}
-
-	// no validation rules for NamespaceUrn
 
 	if len(errors) > 0 {
 		return CreateAssetProbeRequestMultiError(errors)
@@ -9771,6 +9749,8 @@ func (m *CreateNamespaceRequest) validate(all bool) error {
 	}
 
 	var errors []error
+
+	// no validation rules for Id
 
 	if utf8.RuneCountInString(m.GetName()) < 3 {
 		err := CreateNamespaceRequestValidationError{

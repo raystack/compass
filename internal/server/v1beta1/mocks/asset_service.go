@@ -25,13 +25,13 @@ func (_m *AssetService) EXPECT() *AssetService_Expecter {
 	return &AssetService_Expecter{mock: &_m.Mock}
 }
 
-// AddProbe provides a mock function with given fields: ctx, assetURN, probe
-func (_m *AssetService) AddProbe(ctx context.Context, assetURN string, probe *asset.Probe) error {
-	ret := _m.Called(ctx, assetURN, probe)
+// AddProbe provides a mock function with given fields: ctx, ns, assetURN, probe
+func (_m *AssetService) AddProbe(ctx context.Context, ns *namespace.Namespace, assetURN string, probe *asset.Probe) error {
+	ret := _m.Called(ctx, ns, assetURN, probe)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, *asset.Probe) error); ok {
-		r0 = rf(ctx, assetURN, probe)
+	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string, *asset.Probe) error); ok {
+		r0 = rf(ctx, ns, assetURN, probe)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -46,15 +46,16 @@ type AssetService_AddProbe_Call struct {
 
 // AddProbe is a helper method to define mock.On call
 //   - ctx context.Context
+//   - ns *namespace.Namespace
 //   - assetURN string
 //   - probe *asset.Probe
-func (_e *AssetService_Expecter) AddProbe(ctx interface{}, assetURN interface{}, probe interface{}) *AssetService_AddProbe_Call {
-	return &AssetService_AddProbe_Call{Call: _e.mock.On("AddProbe", ctx, assetURN, probe)}
+func (_e *AssetService_Expecter) AddProbe(ctx interface{}, ns interface{}, assetURN interface{}, probe interface{}) *AssetService_AddProbe_Call {
+	return &AssetService_AddProbe_Call{Call: _e.mock.On("AddProbe", ctx, ns, assetURN, probe)}
 }
 
-func (_c *AssetService_AddProbe_Call) Run(run func(ctx context.Context, assetURN string, probe *asset.Probe)) *AssetService_AddProbe_Call {
+func (_c *AssetService_AddProbe_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, assetURN string, probe *asset.Probe)) *AssetService_AddProbe_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(*asset.Probe))
+		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(string), args[3].(*asset.Probe))
 	})
 	return _c
 }
@@ -64,7 +65,7 @@ func (_c *AssetService_AddProbe_Call) Return(_a0 error) *AssetService_AddProbe_C
 	return _c
 }
 
-func (_c *AssetService_AddProbe_Call) RunAndReturn(run func(context.Context, string, *asset.Probe) error) *AssetService_AddProbe_Call {
+func (_c *AssetService_AddProbe_Call) RunAndReturn(run func(context.Context, *namespace.Namespace, string, *asset.Probe) error) *AssetService_AddProbe_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -176,23 +177,23 @@ func (_c *AssetService_GetAllAssets_Call) RunAndReturn(run func(context.Context,
 	return _c
 }
 
-// GetAssetByID provides a mock function with given fields: ctx, ns, id
-func (_m *AssetService) GetAssetByID(ctx context.Context, ns *namespace.Namespace, id string) (asset.Asset, error) {
-	ret := _m.Called(ctx, ns, id)
+// GetAssetByID provides a mock function with given fields: ctx, id
+func (_m *AssetService) GetAssetByID(ctx context.Context, id string) (asset.Asset, error) {
+	ret := _m.Called(ctx, id)
 
 	var r0 asset.Asset
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string) (asset.Asset, error)); ok {
-		return rf(ctx, ns, id)
+	if rf, ok := ret.Get(0).(func(context.Context, string) (asset.Asset, error)); ok {
+		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string) asset.Asset); ok {
-		r0 = rf(ctx, ns, id)
+	if rf, ok := ret.Get(0).(func(context.Context, string) asset.Asset); ok {
+		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Get(0).(asset.Asset)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *namespace.Namespace, string) error); ok {
-		r1 = rf(ctx, ns, id)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -207,15 +208,14 @@ type AssetService_GetAssetByID_Call struct {
 
 // GetAssetByID is a helper method to define mock.On call
 //   - ctx context.Context
-//   - ns *namespace.Namespace
 //   - id string
-func (_e *AssetService_Expecter) GetAssetByID(ctx interface{}, ns interface{}, id interface{}) *AssetService_GetAssetByID_Call {
-	return &AssetService_GetAssetByID_Call{Call: _e.mock.On("GetAssetByID", ctx, ns, id)}
+func (_e *AssetService_Expecter) GetAssetByID(ctx interface{}, id interface{}) *AssetService_GetAssetByID_Call {
+	return &AssetService_GetAssetByID_Call{Call: _e.mock.On("GetAssetByID", ctx, id)}
 }
 
-func (_c *AssetService_GetAssetByID_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, id string)) *AssetService_GetAssetByID_Call {
+func (_c *AssetService_GetAssetByID_Call) Run(run func(ctx context.Context, id string)) *AssetService_GetAssetByID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(string))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
@@ -225,28 +225,28 @@ func (_c *AssetService_GetAssetByID_Call) Return(_a0 asset.Asset, _a1 error) *As
 	return _c
 }
 
-func (_c *AssetService_GetAssetByID_Call) RunAndReturn(run func(context.Context, *namespace.Namespace, string) (asset.Asset, error)) *AssetService_GetAssetByID_Call {
+func (_c *AssetService_GetAssetByID_Call) RunAndReturn(run func(context.Context, string) (asset.Asset, error)) *AssetService_GetAssetByID_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetAssetByVersion provides a mock function with given fields: ctx, ns, id, version
-func (_m *AssetService) GetAssetByVersion(ctx context.Context, ns *namespace.Namespace, id string, version string) (asset.Asset, error) {
-	ret := _m.Called(ctx, ns, id, version)
+// GetAssetByVersion provides a mock function with given fields: ctx, id, version
+func (_m *AssetService) GetAssetByVersion(ctx context.Context, id string, version string) (asset.Asset, error) {
+	ret := _m.Called(ctx, id, version)
 
 	var r0 asset.Asset
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string, string) (asset.Asset, error)); ok {
-		return rf(ctx, ns, id, version)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (asset.Asset, error)); ok {
+		return rf(ctx, id, version)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string, string) asset.Asset); ok {
-		r0 = rf(ctx, ns, id, version)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) asset.Asset); ok {
+		r0 = rf(ctx, id, version)
 	} else {
 		r0 = ret.Get(0).(asset.Asset)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *namespace.Namespace, string, string) error); ok {
-		r1 = rf(ctx, ns, id, version)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, id, version)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -261,16 +261,15 @@ type AssetService_GetAssetByVersion_Call struct {
 
 // GetAssetByVersion is a helper method to define mock.On call
 //   - ctx context.Context
-//   - ns *namespace.Namespace
 //   - id string
 //   - version string
-func (_e *AssetService_Expecter) GetAssetByVersion(ctx interface{}, ns interface{}, id interface{}, version interface{}) *AssetService_GetAssetByVersion_Call {
-	return &AssetService_GetAssetByVersion_Call{Call: _e.mock.On("GetAssetByVersion", ctx, ns, id, version)}
+func (_e *AssetService_Expecter) GetAssetByVersion(ctx interface{}, id interface{}, version interface{}) *AssetService_GetAssetByVersion_Call {
+	return &AssetService_GetAssetByVersion_Call{Call: _e.mock.On("GetAssetByVersion", ctx, id, version)}
 }
 
-func (_c *AssetService_GetAssetByVersion_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, id string, version string)) *AssetService_GetAssetByVersion_Call {
+func (_c *AssetService_GetAssetByVersion_Call) Run(run func(ctx context.Context, id string, version string)) *AssetService_GetAssetByVersion_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(string), args[3].(string))
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
@@ -280,7 +279,7 @@ func (_c *AssetService_GetAssetByVersion_Call) Return(_a0 asset.Asset, _a1 error
 	return _c
 }
 
-func (_c *AssetService_GetAssetByVersion_Call) RunAndReturn(run func(context.Context, *namespace.Namespace, string, string) (asset.Asset, error)) *AssetService_GetAssetByVersion_Call {
+func (_c *AssetService_GetAssetByVersion_Call) RunAndReturn(run func(context.Context, string, string) (asset.Asset, error)) *AssetService_GetAssetByVersion_Call {
 	_c.Call.Return(run)
 	return _c
 }

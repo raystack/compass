@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -25,12 +26,12 @@ type TagTemplateRepository struct {
 }
 
 // Create inserts template to database
-func (r *TagTemplateRepository) Create(ctx context.Context, templateDomain *tag.Template) error {
+func (r *TagTemplateRepository) Create(ctx context.Context, ns *namespace.Namespace, templateDomain *tag.Template) error {
 	if templateDomain == nil {
 		return errNilTemplate
 	}
 
-	templateModel := newTemplateModel(templateDomain)
+	templateModel := newTemplateModel(ns, templateDomain)
 
 	timestamp := time.Now().UTC()
 	templateModel.CreatedAt = timestamp
@@ -38,7 +39,7 @@ func (r *TagTemplateRepository) Create(ctx context.Context, templateDomain *tag.
 
 	if err := r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		insertedTemplate := *templateModel
-		if err := insertTemplateToDBTx(ctx, tx, &insertedTemplate); err != nil {
+		if err := insertTemplateToDBTx(ctx, tx, ns, &insertedTemplate); err != nil {
 			return err
 		}
 
@@ -56,7 +57,7 @@ func (r *TagTemplateRepository) Create(ctx context.Context, templateDomain *tag.
 		*templateModel = insertedTemplate
 		return nil
 	}); err != nil {
-		return errors.New("failed to insert template")
+		return fmt.Errorf("failed to insert template: %w", err)
 	}
 
 	*templateDomain = templateModel.toTemplate()
@@ -69,7 +70,7 @@ func (r *TagTemplateRepository) Read(ctx context.Context, templateURN string) ([
 	var templatesFieldModels TagJoinTemplateFieldModels
 
 	// return empty with nil error if not found
-	templatesFieldModels, err := readTemplatesByURNFromDB(ctx, r.client.db, templateURN)
+	templatesFieldModels, err := r.readTemplatesByURNFromDB(ctx, templateURN)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +89,7 @@ func (r *TagTemplateRepository) ReadAll(ctx context.Context) ([]tag.Template, er
 	templates := []tag.Template{}
 	var templatesFieldModels TagJoinTemplateFieldModels
 	// return empty with nil error if not found
-	templatesFieldModels, err := readAllTemplatesFromDB(ctx, r.client.db)
+	templatesFieldModels, err := r.readAllTemplatesFromDB(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -103,12 +104,12 @@ func (r *TagTemplateRepository) ReadAll(ctx context.Context) ([]tag.Template, er
 }
 
 // Update updates template into database
-func (r *TagTemplateRepository) Update(ctx context.Context, targetURN string, templateDomain *tag.Template) error {
+func (r *TagTemplateRepository) Update(ctx context.Context, ns *namespace.Namespace, targetURN string, templateDomain *tag.Template) error {
 	if templateDomain == nil {
 		return errNilTemplate
 	}
 
-	templateModel := newTemplateModel(templateDomain)
+	templateModel := newTemplateModel(ns, templateDomain)
 	updatedTemplateModel := *templateModel
 	if err := r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		timestamp := time.Now().UTC()
@@ -153,7 +154,7 @@ func (r *TagTemplateRepository) Update(ctx context.Context, targetURN string, te
 
 // Delete deletes template and its fields from database
 func (r *TagTemplateRepository) Delete(ctx context.Context, templateURN string) error {
-	res, err := r.client.db.ExecContext(ctx, `
+	res, err := r.client.ExecContext(ctx, `
 					DELETE FROM
 						tag_templates 
 					WHERE
@@ -173,17 +174,18 @@ func (r *TagTemplateRepository) Delete(ctx context.Context, templateURN string) 
 	return nil
 }
 
-func insertTemplateToDBTx(ctx context.Context, tx *sqlx.Tx, templateModel *TagTemplateModel) error {
+func insertTemplateToDBTx(ctx context.Context, tx *sqlx.Tx, ns *namespace.Namespace, templateModel *TagTemplateModel) error {
 	var insertedTemplate TagTemplateModel
 	if err := tx.QueryRowxContext(ctx, `
 					INSERT INTO 
 					tag_templates 
-						(urn,display_name,description,created_at,updated_at) 
+						(urn,display_name,description,created_at,updated_at,namespace_id) 
 					VALUES 
-						($1,$2,$3,$4,$5)
+						($1,$2,$3,$4,$5,$6)
 					RETURNING *
 				`,
-		templateModel.URN, templateModel.DisplayName, templateModel.Description, templateModel.CreatedAt, templateModel.UpdatedAt).
+		templateModel.URN, templateModel.DisplayName, templateModel.Description,
+		templateModel.CreatedAt, templateModel.UpdatedAt, ns.ID).
 		StructScan(&insertedTemplate); err != nil {
 		return fmt.Errorf("failed to insert a template: %w", err)
 	}
@@ -197,12 +199,13 @@ func insertFieldToDBTx(ctx context.Context, tx *sqlx.Tx, field *TagTemplateField
 	if err := tx.QueryRowxContext(ctx, `
 					INSERT INTO 
 					tag_template_fields 
-						(urn, display_name, description, data_type, options, required, template_urn, created_at, updated_at)
+						(urn, display_name, description, data_type, options, required, template_urn, created_at, updated_at, namespace_id)
 					VALUES 
-						($1,$2,$3,$4,$5,$6,$7,$8,$9)
+						($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
 					RETURNING *
 					`,
-		field.URN, field.DisplayName, field.Description, field.DataType, field.Options, field.Required, field.TemplateURN, field.CreatedAt, field.UpdatedAt).
+		field.URN, field.DisplayName, field.Description, field.DataType, field.Options, field.Required, field.TemplateURN,
+		field.CreatedAt, field.UpdatedAt, field.NamespaceID).
 		StructScan(&insertedField); err != nil {
 		return fmt.Errorf("failed to insert a field: %w", err)
 	}
@@ -210,10 +213,10 @@ func insertFieldToDBTx(ctx context.Context, tx *sqlx.Tx, field *TagTemplateField
 	return nil
 }
 
-func readAllTemplatesFromDB(ctx context.Context, db *sqlx.DB) (TagJoinTemplateFieldModels, error) {
+func (r *TagTemplateRepository) readAllTemplatesFromDB(ctx context.Context) (TagJoinTemplateFieldModels, error) {
 	var templateFields TagJoinTemplateFieldModels
 	// return empty with nil error if not found
-	if err := db.Select(&templateFields, `
+	if err := r.client.SelectContext(ctx, &templateFields, `
 		SELECT
 			t.urn as "tag_templates.urn", t.display_name as "tag_templates.display_name", t.description as "tag_templates.description",
 			t.created_at as "tag_templates.created_at", t.updated_at as "tag_templates.updated_at",
@@ -232,10 +235,10 @@ func readAllTemplatesFromDB(ctx context.Context, db *sqlx.DB) (TagJoinTemplateFi
 	return templateFields, nil
 }
 
-func readTemplatesByURNFromDB(ctx context.Context, db *sqlx.DB, templateURN string) (TagJoinTemplateFieldModels, error) {
+func (r *TagTemplateRepository) readTemplatesByURNFromDB(ctx context.Context, templateURN string) (TagJoinTemplateFieldModels, error) {
 	var templateFields TagJoinTemplateFieldModels
 	// return empty with nil error if not found
-	if err := db.Select(&templateFields, `
+	if err := r.client.SelectContext(ctx, &templateFields, `
 		SELECT
 			t.urn as "tag_templates.urn", t.display_name as "tag_templates.display_name", t.description as "tag_templates.description",
 			t.created_at as "tag_templates.created_at", t.updated_at as "tag_templates.updated_at",

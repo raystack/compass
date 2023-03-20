@@ -7,6 +7,8 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
+	namespace "github.com/odpf/compass/core/namespace"
+
 	tag "github.com/odpf/compass/core/tag"
 )
 
@@ -23,13 +25,13 @@ func (_m *TagTemplateService) EXPECT() *TagTemplateService_Expecter {
 	return &TagTemplateService_Expecter{mock: &_m.Mock}
 }
 
-// CreateTemplate provides a mock function with given fields: ctx, template
-func (_m *TagTemplateService) CreateTemplate(ctx context.Context, template *tag.Template) error {
-	ret := _m.Called(ctx, template)
+// CreateTemplate provides a mock function with given fields: ctx, ns, template
+func (_m *TagTemplateService) CreateTemplate(ctx context.Context, ns *namespace.Namespace, template *tag.Template) error {
+	ret := _m.Called(ctx, ns, template)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *tag.Template) error); ok {
-		r0 = rf(ctx, template)
+	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, *tag.Template) error); ok {
+		r0 = rf(ctx, ns, template)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -44,14 +46,15 @@ type TagTemplateService_CreateTemplate_Call struct {
 
 // CreateTemplate is a helper method to define mock.On call
 //   - ctx context.Context
+//   - ns *namespace.Namespace
 //   - template *tag.Template
-func (_e *TagTemplateService_Expecter) CreateTemplate(ctx interface{}, template interface{}) *TagTemplateService_CreateTemplate_Call {
-	return &TagTemplateService_CreateTemplate_Call{Call: _e.mock.On("CreateTemplate", ctx, template)}
+func (_e *TagTemplateService_Expecter) CreateTemplate(ctx interface{}, ns interface{}, template interface{}) *TagTemplateService_CreateTemplate_Call {
+	return &TagTemplateService_CreateTemplate_Call{Call: _e.mock.On("CreateTemplate", ctx, ns, template)}
 }
 
-func (_c *TagTemplateService_CreateTemplate_Call) Run(run func(ctx context.Context, template *tag.Template)) *TagTemplateService_CreateTemplate_Call {
+func (_c *TagTemplateService_CreateTemplate_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, template *tag.Template)) *TagTemplateService_CreateTemplate_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*tag.Template))
+		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(*tag.Template))
 	})
 	return _c
 }
@@ -61,7 +64,7 @@ func (_c *TagTemplateService_CreateTemplate_Call) Return(_a0 error) *TagTemplate
 	return _c
 }
 
-func (_c *TagTemplateService_CreateTemplate_Call) RunAndReturn(run func(context.Context, *tag.Template) error) *TagTemplateService_CreateTemplate_Call {
+func (_c *TagTemplateService_CreateTemplate_Call) RunAndReturn(run func(context.Context, *namespace.Namespace, *tag.Template) error) *TagTemplateService_CreateTemplate_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -217,13 +220,13 @@ func (_c *TagTemplateService_GetTemplates_Call) RunAndReturn(run func(context.Co
 	return _c
 }
 
-// UpdateTemplate provides a mock function with given fields: ctx, templateURN, template
-func (_m *TagTemplateService) UpdateTemplate(ctx context.Context, templateURN string, template *tag.Template) error {
-	ret := _m.Called(ctx, templateURN, template)
+// UpdateTemplate provides a mock function with given fields: ctx, ns, templateURN, template
+func (_m *TagTemplateService) UpdateTemplate(ctx context.Context, ns *namespace.Namespace, templateURN string, template *tag.Template) error {
+	ret := _m.Called(ctx, ns, templateURN, template)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, *tag.Template) error); ok {
-		r0 = rf(ctx, templateURN, template)
+	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string, *tag.Template) error); ok {
+		r0 = rf(ctx, ns, templateURN, template)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -238,15 +241,16 @@ type TagTemplateService_UpdateTemplate_Call struct {
 
 // UpdateTemplate is a helper method to define mock.On call
 //   - ctx context.Context
+//   - ns *namespace.Namespace
 //   - templateURN string
 //   - template *tag.Template
-func (_e *TagTemplateService_Expecter) UpdateTemplate(ctx interface{}, templateURN interface{}, template interface{}) *TagTemplateService_UpdateTemplate_Call {
-	return &TagTemplateService_UpdateTemplate_Call{Call: _e.mock.On("UpdateTemplate", ctx, templateURN, template)}
+func (_e *TagTemplateService_Expecter) UpdateTemplate(ctx interface{}, ns interface{}, templateURN interface{}, template interface{}) *TagTemplateService_UpdateTemplate_Call {
+	return &TagTemplateService_UpdateTemplate_Call{Call: _e.mock.On("UpdateTemplate", ctx, ns, templateURN, template)}
 }
 
-func (_c *TagTemplateService_UpdateTemplate_Call) Run(run func(ctx context.Context, templateURN string, template *tag.Template)) *TagTemplateService_UpdateTemplate_Call {
+func (_c *TagTemplateService_UpdateTemplate_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, templateURN string, template *tag.Template)) *TagTemplateService_UpdateTemplate_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(*tag.Template))
+		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(string), args[3].(*tag.Template))
 	})
 	return _c
 }
@@ -256,7 +260,7 @@ func (_c *TagTemplateService_UpdateTemplate_Call) Return(_a0 error) *TagTemplate
 	return _c
 }
 
-func (_c *TagTemplateService_UpdateTemplate_Call) RunAndReturn(run func(context.Context, string, *tag.Template) error) *TagTemplateService_UpdateTemplate_Call {
+func (_c *TagTemplateService_UpdateTemplate_Call) RunAndReturn(run func(context.Context, *namespace.Namespace, string, *tag.Template) error) *TagTemplateService_UpdateTemplate_Call {
 	_c.Call.Return(run)
 	return _c
 }

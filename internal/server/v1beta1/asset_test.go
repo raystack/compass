@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"reflect"
 	"testing"
 	"time"
@@ -46,30 +47,27 @@ func TestGetAllAssets(t *testing.T) {
 		State:    namespace.SharedState,
 		Metadata: nil,
 	}
-	defaultFilter, _ := asset.NewFilterBuilder(ns).Build()
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+	defaultFilter, _ := asset.NewFilterBuilder().Build()
 
 	var testCases = []testCase{
 		{
 			Description:  `should return internal server error if fetching fails`,
 			ExpectStatus: codes.Internal,
-			Request: &compassv1beta1.GetAllAssetsRequest{
-				NamespaceUrn: ns.ID.String(),
-			},
+			Request:      &compassv1beta1.GetAllAssetsRequest{},
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				as.EXPECT().GetAllAssets(ctx, defaultFilter, false).Return([]asset.Asset{}, 0, errors.New("unknown error"))
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 		},
 		{
 			Description: `should return internal server error if fetching total fails`,
 			Request: &compassv1beta1.GetAllAssetsRequest{
-				WithTotal:    true,
-				NamespaceUrn: ns.ID.String(),
+				WithTotal: true,
 			},
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				as.EXPECT().GetAllAssets(ctx, defaultFilter, true).Return([]asset.Asset{}, 0, errors.New("unknown error"))
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 		},
 		{
@@ -83,12 +81,11 @@ func TestGetAllAssets(t *testing.T) {
 					"dataset": "booking",
 					"project": "p-godata-id",
 				},
-				Q:            "internal",
-				QFields:      "name,urn",
-				Size:         30,
-				Offset:       50,
-				WithTotal:    false,
-				NamespaceUrn: ns.ID.String(),
+				Q:         "internal",
+				QFields:   "name,urn",
+				Size:      30,
+				Offset:    50,
+				WithTotal: false,
 			},
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
@@ -105,24 +102,19 @@ func TestGetAllAssets(t *testing.T) {
 						"dataset": {"booking"},
 						"project": {"p-godata-id"},
 					},
-					Namespace: ns,
 				}
 				as.EXPECT().GetAllAssets(ctx, cfg, false).Return([]asset.Asset{}, 0, nil)
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 		},
 		{
 			Description:  "should return status OK along with list of assets",
 			ExpectStatus: codes.OK,
-			Request: &compassv1beta1.GetAllAssetsRequest{
-				NamespaceUrn: ns.ID.String(),
-			},
+			Request:      &compassv1beta1.GetAllAssetsRequest{},
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				as.EXPECT().GetAllAssets(ctx, defaultFilter, false).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2", Owners: []user.User{{Email: "dummy@trash.com"}}},
 				}, 0, nil)
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAllAssetsResponse) error {
 				expected := &compassv1beta1.GetAllAssetsResponse{
@@ -142,26 +134,23 @@ func TestGetAllAssets(t *testing.T) {
 			Description:  "should return total in the payload if with_total flag is given",
 			ExpectStatus: codes.OK,
 			Request: &compassv1beta1.GetAllAssetsRequest{
-				Types:        "job",
-				Services:     "kafka",
-				Size:         10,
-				Offset:       5,
-				WithTotal:    true,
-				NamespaceUrn: ns.ID.String(),
+				Types:     "job",
+				Services:  "kafka",
+				Size:      10,
+				Offset:    5,
+				WithTotal: true,
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				as.EXPECT().GetAllAssets(ctx, asset.Filter{
-					Types:     []asset.Type{"job"},
-					Services:  []string{"kafka"},
-					Size:      10,
-					Offset:    5,
-					Namespace: ns,
+					Types:    []asset.Type{"job"},
+					Services: []string{"kafka"},
+					Size:     10,
+					Offset:   5,
 				}, true).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
 					{ID: "testid-3"},
 				}, 150, nil)
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAllAssetsResponse) error {
 				expected := &compassv1beta1.GetAllAssetsResponse{
@@ -182,7 +171,6 @@ func TestGetAllAssets(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
@@ -195,7 +183,7 @@ func TestGetAllAssets(t *testing.T) {
 			defer mockAssetSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
@@ -226,8 +214,8 @@ func TestGetAssetByID(t *testing.T) {
 			State:    namespace.SharedState,
 			Metadata: nil,
 		}
-		now      = time.Now()
-		ast      = asset.Asset{
+		now = time.Now()
+		ast = asset.Asset{
 			ID:     assetID,
 			Owners: []user.User{{Email: "dummy@trash.com"}},
 			Probes: []asset.Probe{
@@ -253,6 +241,8 @@ func TestGetAssetByID(t *testing.T) {
 			},
 		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 
 	type testCase struct {
 		Description  string
@@ -266,32 +256,28 @@ func TestGetAssetByID(t *testing.T) {
 			Description:  `should return invalid argument if asset id is not uuid`,
 			ExpectStatus: codes.InvalidArgument,
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
-				as.EXPECT().GetAssetByID(ctx, ns, assetID).Return(asset.Asset{}, asset.InvalidError{AssetID: assetID})
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
+				as.EXPECT().GetAssetByID(ctx, assetID).Return(asset.Asset{}, asset.InvalidError{AssetID: assetID})
 			},
 		},
 		{
 			Description:  `should return not found if asset doesn't exist`,
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
-				as.EXPECT().GetAssetByID(ctx, ns, assetID).Return(asset.Asset{}, asset.NotFoundError{AssetID: assetID})
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
+				as.EXPECT().GetAssetByID(ctx, assetID).Return(asset.Asset{}, asset.NotFoundError{AssetID: assetID})
 			},
 		},
 		{
 			Description:  `should return internal server error if fetching fails`,
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
-				as.EXPECT().GetAssetByID(ctx, ns, assetID).Return(asset.Asset{}, errors.New("unknown error"))
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
+				as.EXPECT().GetAssetByID(ctx, assetID).Return(asset.Asset{}, errors.New("unknown error"))
 			},
 		},
 		{
 			Description:  "should return http 200 status along with the asset, if found",
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
-				as.EXPECT().GetAssetByID(ctx, ns, assetID).Return(ast, nil)
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
+				as.EXPECT().GetAssetByID(ctx, assetID).Return(ast, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAssetByIDResponse) error {
 				expected := &compassv1beta1.GetAssetByIDResponse{
@@ -328,8 +314,6 @@ func TestGetAssetByID(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-
 			logger := log.NewNoop()
 			mockUserSvc := mocks.NewUserService(t)
 			mockAssetSvc := mocks.NewAssetService(t)
@@ -339,13 +323,12 @@ func TestGetAssetByID(t *testing.T) {
 			}
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAssetByID(ctx, &compassv1beta1.GetAssetByIDRequest{
-				Id:           assetID,
-				NamespaceUrn: ns.ID.String(),
+				Id: assetID,
 			})
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
@@ -374,7 +357,6 @@ func TestUpsertAsset(t *testing.T) {
 			Metadata: nil,
 		}
 		validPayload = &compassv1beta1.UpsertAssetRequest{
-			NamespaceUrn: ns.ID.String(),
 			Asset: &compassv1beta1.UpsertAssetRequest_Asset{
 				Urn:     "test dagger",
 				Type:    "table",
@@ -405,6 +387,8 @@ func TestUpsertAsset(t *testing.T) {
 			},
 		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.UpsertAssetRequest
@@ -418,11 +402,15 @@ func TestUpsertAsset(t *testing.T) {
 			Description:  "empty payload will return invalid argument",
 			Request:      &compassv1beta1.UpsertAssetRequest{},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description:  "empty asset will return invalid argument",
 			Request:      &compassv1beta1.UpsertAssetRequest{Asset: &compassv1beta1.UpsertAssetRequest_Asset{}},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: "empty urn will return invalid argument",
@@ -434,10 +422,8 @@ func TestUpsertAsset(t *testing.T) {
 					Service: "some-service",
 					Type:    "table",
 				},
-				NamespaceUrn: ns.ID.String(),
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 			ExpectStatus: codes.InvalidArgument,
 		},
@@ -453,6 +439,8 @@ func TestUpsertAsset(t *testing.T) {
 				},
 			},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: "empty type will return invalid argument",
@@ -466,6 +454,8 @@ func TestUpsertAsset(t *testing.T) {
 				},
 			},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: "invalid type will return invalid argument",
@@ -479,6 +469,8 @@ func TestUpsertAsset(t *testing.T) {
 				},
 			},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: "should return internal server error when upserting asset service failed",
@@ -491,7 +483,6 @@ func TestUpsertAsset(t *testing.T) {
 					mock.AnythingOfType("[]string"),
 					mock.AnythingOfType("[]string"),
 				).Return("", expectedErr)
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 			Request:      validPayload,
 			ExpectStatus: codes.Internal,
@@ -518,7 +509,6 @@ func TestUpsertAsset(t *testing.T) {
 				as.EXPECT().UpsertAsset(ctx, ns, &ast, upstreams, downstreams).Return(assetWithID.ID, nil).Run(func(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset, upstreams, downstreams []string) {
 					ast.ID = assetWithID.ID
 				})
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 			Request:      validPayload,
 			ExpectStatus: codes.OK,
@@ -535,7 +525,6 @@ func TestUpsertAsset(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
@@ -548,7 +537,7 @@ func TestUpsertAsset(t *testing.T) {
 			defer mockAssetSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
@@ -580,7 +569,6 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Metadata: nil,
 		}
 		validPayload = &compassv1beta1.UpsertPatchAssetRequest{
-			NamespaceUrn: ns.ID.String(),
 			Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
 				Urn:     "test dagger",
 				Type:    "table",
@@ -621,6 +609,8 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
 		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.UpsertPatchAssetRequest
@@ -634,11 +624,15 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Description:  "empty payload will return invalid argument",
 			Request:      &compassv1beta1.UpsertPatchAssetRequest{},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description:  "empty asset will return invalid argument",
 			Request:      &compassv1beta1.UpsertPatchAssetRequest{Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{}},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: "empty urn will return invalid argument",
@@ -652,6 +646,8 @@ func TestUpsertPatchAsset(t *testing.T) {
 				},
 			},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: "empty service will return invalid argument",
@@ -665,6 +661,8 @@ func TestUpsertPatchAsset(t *testing.T) {
 				},
 			},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: "empty type will return invalid argument",
@@ -678,6 +676,8 @@ func TestUpsertPatchAsset(t *testing.T) {
 				},
 			},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: "invalid type will return invalid argument",
@@ -691,13 +691,14 @@ func TestUpsertPatchAsset(t *testing.T) {
 				},
 			},
 			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description: "should return internal server error when finding asset failed",
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				expectedErr := errors.New("unknown error")
-				as.EXPECT().GetAssetByID(ctx, ns, "test dagger").Return(currentAsset, expectedErr)
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
+				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, expectedErr)
 			},
 			Request:      validPayload,
 			ExpectStatus: codes.Internal,
@@ -706,9 +707,8 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Description: "should return internal server error when upserting asset service failed",
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				expectedErr := errors.New("unknown error")
-				as.EXPECT().GetAssetByID(ctx, ns, "test dagger").Return(currentAsset, nil)
+				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
 				as.EXPECT().UpsertAsset(ctx, ns, mock.AnythingOfType("*asset.Asset"), mock.AnythingOfType("[]string"), mock.AnythingOfType("[]string")).Return("1234-5678", expectedErr)
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 			Request:      validPayload,
 			ExpectStatus: codes.Internal,
@@ -732,11 +732,10 @@ func TestUpsertPatchAsset(t *testing.T) {
 				assetWithID := patchedAsset
 				assetWithID.ID = assetID
 
-				as.EXPECT().GetAssetByID(ctx, ns, "test dagger").Return(currentAsset, nil)
+				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
 				as.EXPECT().UpsertAsset(ctx, ns, &patchedAsset, upstreams, downstreams).Return(assetWithID.ID, nil).Run(func(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset, upstreams, downstreams []string) {
 					patchedAsset.ID = assetWithID.ID
 				})
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 			Request:      validPayload,
 			ExpectStatus: codes.OK,
@@ -768,13 +767,12 @@ func TestUpsertPatchAsset(t *testing.T) {
 				assetWithID := patchedAsset
 				assetWithID.ID = assetID
 
-				as.EXPECT().GetAssetByID(ctx, ns, "test dagger").Return(currentAsset, nil)
+				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
 				as.EXPECT().UpsertAssetWithoutLineage(ctx, ns, &patchedAsset).
 					Return(assetWithID.ID, nil).
 					Run(func(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset) {
 						patchedAsset.ID = assetWithID.ID
 					})
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 			Request: &compassv1beta1.UpsertPatchAssetRequest{
 				Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
@@ -785,7 +783,6 @@ func TestUpsertPatchAsset(t *testing.T) {
 					Data:    &structpb.Struct{},
 					Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "", Email: "email@email.com", Provider: "provider"}},
 				},
-				NamespaceUrn: ns.ID.String(),
 			},
 			ExpectStatus: codes.OK,
 			PostCheck: func(resp *compassv1beta1.UpsertPatchAssetResponse) error {
@@ -816,13 +813,12 @@ func TestUpsertPatchAsset(t *testing.T) {
 				assetWithID := patchedAsset
 				assetWithID.ID = assetID
 
-				as.EXPECT().GetAssetByID(ctx, ns, "test dagger").Return(currentAsset, nil)
+				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
 				as.EXPECT().UpsertAsset(ctx, ns, &patchedAsset, []string{}, []string{}).
 					Return(assetWithID.ID, nil).
 					Run(func(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset, _, _ []string) {
 						patchedAsset.ID = assetWithID.ID
 					})
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 			Request: &compassv1beta1.UpsertPatchAssetRequest{
 				Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
@@ -834,7 +830,6 @@ func TestUpsertPatchAsset(t *testing.T) {
 					Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "", Email: "email@email.com", Provider: "provider"}},
 				},
 				OverwriteLineage: true,
-				NamespaceUrn:     ns.ID.String(),
 			},
 			ExpectStatus: codes.OK,
 			PostCheck: func(resp *compassv1beta1.UpsertPatchAssetResponse) error {
@@ -851,7 +846,6 @@ func TestUpsertPatchAsset(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
@@ -864,7 +858,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 			defer mockAssetSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
@@ -895,6 +889,8 @@ func TestDeleteAsset(t *testing.T) {
 			Metadata: nil,
 		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type TestCase struct {
 		Description  string
 		AssetID      string
@@ -909,7 +905,6 @@ func TestDeleteAsset(t *testing.T) {
 			ExpectStatus: codes.InvalidArgument,
 			Setup: func(ctx context.Context, as *mocks.AssetService, astID string, nss *mocks.NamespaceService) {
 				as.EXPECT().DeleteAsset(ctx, ns, "not-uuid").Return(asset.InvalidError{AssetID: astID})
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 		},
 		{
@@ -918,7 +913,6 @@ func TestDeleteAsset(t *testing.T) {
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, as *mocks.AssetService, astID string, nss *mocks.NamespaceService) {
 				as.EXPECT().DeleteAsset(ctx, ns, astID).Return(asset.NotFoundError{AssetID: astID})
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 		},
 		{
@@ -927,7 +921,6 @@ func TestDeleteAsset(t *testing.T) {
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, as *mocks.AssetService, astID string, nss *mocks.NamespaceService) {
 				as.EXPECT().DeleteAsset(ctx, ns, astID).Return(errors.New("error deleting asset"))
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 		},
 		{
@@ -936,13 +929,11 @@ func TestDeleteAsset(t *testing.T) {
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, as *mocks.AssetService, astID string, nss *mocks.NamespaceService) {
 				as.EXPECT().DeleteAsset(ctx, ns, astID).Return(nil)
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
 			},
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
@@ -955,13 +946,12 @@ func TestDeleteAsset(t *testing.T) {
 			defer mockAssetSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			_, err := handler.DeleteAsset(ctx, &compassv1beta1.DeleteAssetRequest{
-				Id:           tc.AssetID,
-				NamespaceUrn: ns.ID.String(),
+				Id: tc.AssetID,
 			})
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
@@ -973,7 +963,12 @@ func TestDeleteAsset(t *testing.T) {
 }
 
 func TestGetAssetStargazers(t *testing.T) {
-
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	var (
 		offset         = 10
 		size           = 20
@@ -982,12 +977,13 @@ func TestGetAssetStargazers(t *testing.T) {
 		userID         = uuid.NewString()
 		userUUID       = uuid.NewString()
 	)
-
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type TestCase struct {
 		Description  string
 		Request      *compassv1beta1.GetAssetStargazersRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.StarService)
+		Setup        func(ctx context.Context, ss *mocks.StarService, nss *mocks.NamespaceService)
 		PostCheck    func(resp *compassv1beta1.GetAssetStargazersResponse) error
 	}
 
@@ -1000,7 +996,7 @@ func TestGetAssetStargazers(t *testing.T) {
 				Size:   uint32(size),
 				Offset: uint32(offset),
 			},
-			Setup: func(ctx context.Context, ss *mocks.StarService) {
+			Setup: func(ctx context.Context, ss *mocks.StarService, nss *mocks.NamespaceService) {
 				ss.EXPECT().GetStargazers(ctx, defaultStarCfg, assetID).Return(nil, errors.New("some error"))
 			},
 		},
@@ -1012,7 +1008,7 @@ func TestGetAssetStargazers(t *testing.T) {
 				Size:   uint32(size),
 				Offset: uint32(offset),
 			},
-			Setup: func(ctx context.Context, ss *mocks.StarService) {
+			Setup: func(ctx context.Context, ss *mocks.StarService, nss *mocks.NamespaceService) {
 				ss.EXPECT().GetStargazers(ctx, defaultStarCfg, assetID).Return(nil, star.NotFoundError{})
 			},
 		},
@@ -1024,26 +1020,25 @@ func TestGetAssetStargazers(t *testing.T) {
 				Size:   uint32(size),
 				Offset: uint32(offset),
 			},
-			Setup: func(ctx context.Context, ss *mocks.StarService) {
-				ss.EXPECT().GetStargazers(ctx, defaultStarCfg, assetID).Return([]user.User{{ID: "1"}, {ID: "2"}, {ID: "3"}}, nil)
+			Setup: func(ctx context.Context, ss *mocks.StarService, nss *mocks.NamespaceService) {
+				ss.EXPECT().GetStargazers(ctx, defaultStarCfg, assetID).Return(nil, nil)
 			},
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockStarSvc := new(mocks.StarService)
+			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockStarSvc)
+				tc.Setup(ctx, mockStarSvc, mockNamespaceSvc)
 			}
 			defer mockStarSvc.AssertExpectations(t)
-			mockNamespaceSvc := new(mocks.NamespaceService)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
@@ -1064,13 +1059,19 @@ func TestGetAssetStargazers(t *testing.T) {
 }
 
 func TestGetAssetVersionHistory(t *testing.T) {
-
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	var (
 		assetID  = uuid.NewString()
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
 	)
-
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type TestCase struct {
 		Description  string
 		Request      *compassv1beta1.GetAssetVersionHistoryRequest
@@ -1147,7 +1148,6 @@ func TestGetAssetVersionHistory(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
@@ -1160,7 +1160,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 			defer mockAssetSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
@@ -1199,7 +1199,8 @@ func TestGetAssetByVersion(t *testing.T) {
 			Owners:  []user.User{{Email: "dummy@trash.com"}},
 		}
 	)
-
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type TestCase struct {
 		Description  string
 		Request      *compassv1beta1.GetAssetByVersionRequest
@@ -1212,53 +1213,45 @@ func TestGetAssetByVersion(t *testing.T) {
 		{
 			Description: `should return invalid argument if asset id is not uuid`,
 			Request: &compassv1beta1.GetAssetByVersionRequest{
-				Id:           assetID,
-				Version:      version,
-				NamespaceUrn: ns.ID.String(),
+				Id:      assetID,
+				Version: version,
 			},
 			ExpectStatus: codes.InvalidArgument,
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
-				as.EXPECT().GetAssetByVersion(ctx, ns, assetID, version).Return(asset.Asset{}, asset.InvalidError{AssetID: assetID})
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
+				as.EXPECT().GetAssetByVersion(ctx, assetID, version).Return(asset.Asset{}, asset.InvalidError{AssetID: assetID})
 			},
 		},
 		{
 			Description:  `should return not found if asset doesn't exist`,
 			ExpectStatus: codes.NotFound,
 			Request: &compassv1beta1.GetAssetByVersionRequest{
-				Id:           assetID,
-				Version:      version,
-				NamespaceUrn: ns.ID.String(),
+				Id:      assetID,
+				Version: version,
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
-				as.EXPECT().GetAssetByVersion(ctx, ns, assetID, version).Return(asset.Asset{}, asset.NotFoundError{AssetID: assetID})
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
+				as.EXPECT().GetAssetByVersion(ctx, assetID, version).Return(asset.Asset{}, asset.NotFoundError{AssetID: assetID})
 			},
 		},
 		{
 			Description:  `should return internal server error if fetching fails`,
 			ExpectStatus: codes.Internal,
 			Request: &compassv1beta1.GetAssetByVersionRequest{
-				Id:           assetID,
-				Version:      version,
-				NamespaceUrn: ns.ID.String(),
+				Id:      assetID,
+				Version: version,
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
-				as.EXPECT().GetAssetByVersion(ctx, ns, assetID, version).Return(asset.Asset{}, errors.New("unknown error"))
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
+				as.EXPECT().GetAssetByVersion(ctx, assetID, version).Return(asset.Asset{}, errors.New("unknown error"))
 			},
 		},
 		{
 			Description:  "should return status OK along with the asset if found",
 			ExpectStatus: codes.OK,
 			Request: &compassv1beta1.GetAssetByVersionRequest{
-				Id:           assetID,
-				Version:      version,
-				NamespaceUrn: ns.ID.String(),
+				Id:      assetID,
+				Version: version,
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
-				as.EXPECT().GetAssetByVersion(ctx, ns, assetID, version).Return(ast, nil)
-				nss.EXPECT().GetByID(ctx, ns.ID).Return(ns, nil)
+				as.EXPECT().GetAssetByVersion(ctx, assetID, version).Return(ast, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAssetByVersionResponse) error {
 				expected := &compassv1beta1.GetAssetByVersionResponse{
@@ -1277,7 +1270,6 @@ func TestGetAssetByVersion(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
@@ -1290,7 +1282,7 @@ func TestGetAssetByVersion(t *testing.T) {
 			defer mockAssetSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
@@ -1311,6 +1303,12 @@ func TestGetAssetByVersion(t *testing.T) {
 }
 
 func TestCreateAssetProbe(t *testing.T) {
+	ns := &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
 	var (
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
@@ -1318,7 +1316,8 @@ func TestCreateAssetProbe(t *testing.T) {
 		now      = time.Now().UTC()
 		probeID  = uuid.NewString()
 	)
-
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.CreateAssetProbeRequest
@@ -1337,6 +1336,8 @@ func TestCreateAssetProbe(t *testing.T) {
 					Timestamp: timestamppb.New(now),
 				},
 			},
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
+			},
 		},
 		{
 			Description:  `should return error if timestamp is missing`,
@@ -1346,6 +1347,8 @@ func TestCreateAssetProbe(t *testing.T) {
 				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
 					Status: "RUNNING",
 				},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 			},
 		},
 		{
@@ -1360,7 +1363,7 @@ func TestCreateAssetProbe(t *testing.T) {
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				as.EXPECT().
-					AddProbe(ctx, assetURN, mock.AnythingOfType("*asset.Probe")).
+					AddProbe(ctx, ns, assetURN, mock.AnythingOfType("*asset.Probe")).
 					Return(asset.NotFoundError{URN: assetURN})
 			},
 		},
@@ -1376,7 +1379,7 @@ func TestCreateAssetProbe(t *testing.T) {
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				as.EXPECT().
-					AddProbe(ctx, assetURN, mock.AnythingOfType("*asset.Probe")).
+					AddProbe(ctx, ns, assetURN, mock.AnythingOfType("*asset.Probe")).
 					Return(errors.New("unknown error"))
 			},
 		},
@@ -1405,7 +1408,7 @@ func TestCreateAssetProbe(t *testing.T) {
 						"foo2": "bar2",
 					},
 				}
-				as.EXPECT().AddProbe(ctx, assetURN, expectedProbe).Run(func(ctx context.Context, assetURN string, probe *asset.Probe) {
+				as.EXPECT().AddProbe(ctx, ns, assetURN, expectedProbe).Run(func(ctx context.Context, ns *namespace.Namespace, assetURN string, probe *asset.Probe) {
 					probe.ID = probeID
 				}).Return(nil)
 			},
@@ -1422,18 +1425,17 @@ func TestCreateAssetProbe(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
 			mockUserSvc := mocks.NewUserService(t)
 			mockAssetSvc := mocks.NewAssetService(t)
 			mockNamespaceSvc := new(mocks.NamespaceService)
+			defer mockNamespaceSvc.AssertExpectations(t)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockAssetSvc, mockNamespaceSvc)
 			}
-			defer mockNamespaceSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 

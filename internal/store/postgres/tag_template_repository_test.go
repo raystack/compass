@@ -3,6 +3,9 @@ package postgres_test
 import (
 	"context"
 	"encoding/json"
+	"github.com/google/uuid"
+	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"testing"
 	"time"
 
@@ -20,6 +23,7 @@ type TagTemplateRepositoryTestSuite struct {
 	repository *postgres.TagTemplateRepository
 	pool       *dockertest.Pool
 	resource   *dockertest.Resource
+	ns         *namespace.Namespace
 }
 
 func (r *TagTemplateRepositoryTestSuite) SetupSuite() {
@@ -30,8 +34,13 @@ func (r *TagTemplateRepositoryTestSuite) SetupSuite() {
 	if err != nil {
 		r.T().Fatal(err)
 	}
-
-	r.ctx = context.TODO()
+	r.ns = &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
+	r.ctx = grpc_interceptor.BuildContextWithNamespace(context.Background(), r.ns)
 	r.repository, err = postgres.NewTagTemplateRepository(r.client)
 	if err != nil {
 		r.T().Fatal(err)
@@ -67,7 +76,7 @@ func (r *TagTemplateRepositoryTestSuite) TestCreate() {
 
 		expectedErrorMsg := "template is nil"
 
-		actualError := r.repository.Create(r.ctx, template)
+		actualError := r.repository.Create(r.ctx, r.ns, template)
 
 		r.EqualError(actualError, expectedErrorMsg)
 	})
@@ -78,7 +87,7 @@ func (r *TagTemplateRepositoryTestSuite) TestCreate() {
 
 		template := r.getTemplate()
 
-		actualError := r.repository.Create(r.ctx, &template)
+		actualError := r.repository.Create(r.ctx, r.ns, &template)
 		r.NoError(actualError)
 
 		var actualRecord tag.Template
@@ -101,7 +110,7 @@ func (r *TagTemplateRepositoryTestSuite) TestCreate() {
 		originalTemplate := r.getTemplate()
 		referenceTemplate := r.getTemplate()
 
-		actualError := r.repository.Create(r.ctx, &originalTemplate)
+		actualError := r.repository.Create(r.ctx, r.ns, &originalTemplate)
 		r.NoError(actualError)
 
 		r.Equal(referenceTemplate.URN, originalTemplate.URN)
@@ -119,10 +128,10 @@ func (r *TagTemplateRepositoryTestSuite) TestCreate() {
 
 		template := r.getTemplate()
 
-		if err := r.repository.Create(r.ctx, &template); err != nil {
+		if err := r.repository.Create(r.ctx, r.ns, &template); err != nil {
 			r.Error(err)
 		}
-		actualError := r.repository.Create(r.ctx, &template)
+		actualError := r.repository.Create(r.ctx, r.ns, &template)
 
 		r.Error(actualError)
 	})
@@ -145,7 +154,7 @@ func (r *TagTemplateRepositoryTestSuite) TestRead() {
 		r.NoError(err)
 
 		template := r.getTemplate()
-		if err := r.repository.Create(r.ctx, &template); err != nil {
+		if err := r.repository.Create(r.ctx, r.ns, &template); err != nil {
 			panic(err)
 		}
 		now := time.Now()
@@ -174,7 +183,7 @@ func (r *TagTemplateRepositoryTestSuite) TestRead() {
 			DataType:    "string",
 		})
 
-		err = r.repository.Create(r.ctx, &template)
+		err = r.repository.Create(r.ctx, r.ns, &template)
 		r.NoError(err)
 
 		templates, err := r.repository.Read(r.ctx, template.URN)
@@ -201,7 +210,7 @@ func (r *TagTemplateRepositoryTestSuite) TestReadAll() {
 		r.NoError(err)
 
 		template := r.getTemplate()
-		if err := r.repository.Create(r.ctx, &template); err != nil {
+		if err := r.repository.Create(r.ctx, r.ns, &template); err != nil {
 			panic(err)
 		}
 		now := time.Now()
@@ -230,7 +239,7 @@ func (r *TagTemplateRepositoryTestSuite) TestReadAll() {
 			DataType:    "string",
 		})
 
-		err = r.repository.Create(r.ctx, &template)
+		err = r.repository.Create(r.ctx, r.ns, &template)
 		r.NoError(err)
 
 		templates, err := r.repository.ReadAll(r.ctx)
@@ -248,7 +257,7 @@ func (r *TagTemplateRepositoryTestSuite) TestUpdate() {
 
 		expectedErrorMsg := "template is nil"
 
-		actualError := r.repository.Update(r.ctx, "", template)
+		actualError := r.repository.Update(r.ctx, r.ns, "", template)
 
 		r.EqualError(actualError, expectedErrorMsg)
 	})
@@ -259,7 +268,7 @@ func (r *TagTemplateRepositoryTestSuite) TestUpdate() {
 
 		template := r.getTemplate()
 
-		actualError := r.repository.Update(r.ctx, template.URN, &template)
+		actualError := r.repository.Update(r.ctx, r.ns, template.URN, &template)
 
 		r.Error(actualError)
 	})
@@ -269,7 +278,7 @@ func (r *TagTemplateRepositoryTestSuite) TestUpdate() {
 		r.NoError(err)
 
 		template := r.getTemplate()
-		err = r.repository.Create(r.ctx, &template)
+		err = r.repository.Create(r.ctx, r.ns, &template)
 		r.NoError(err)
 
 		template.DisplayName = "Random Display"
@@ -281,7 +290,7 @@ func (r *TagTemplateRepositoryTestSuite) TestUpdate() {
 			DataType:    "string",
 		})
 
-		actualError := r.repository.Update(r.ctx, template.URN, &template)
+		actualError := r.repository.Update(r.ctx, r.ns, template.URN, &template)
 		r.NoError(actualError)
 
 		templates, err := r.repository.Read(r.ctx, template.URN)
@@ -307,18 +316,18 @@ func (r *TagTemplateRepositoryTestSuite) TestUpdate() {
 
 		template1 := r.getTemplate()
 		template1.URN = "hello1"
-		if err := r.repository.Create(r.ctx, &template1); err != nil {
+		if err := r.repository.Create(r.ctx, r.ns, &template1); err != nil {
 			panic(err)
 		}
 		template2 := r.getTemplate()
 		template2.URN = "hello2"
-		if err := r.repository.Create(r.ctx, &template2); err != nil {
+		if err := r.repository.Create(r.ctx, r.ns, &template2); err != nil {
 			panic(err)
 		}
 		targetURN := template2.URN
 		template2.URN = "hello1"
 
-		actualError := r.repository.Update(r.ctx, targetURN, &template2)
+		actualError := r.repository.Update(r.ctx, r.ns, targetURN, &template2)
 
 		r.Error(actualError)
 	})
@@ -328,12 +337,12 @@ func (r *TagTemplateRepositoryTestSuite) TestUpdate() {
 		r.NoError(err)
 
 		template := r.getTemplate()
-		if err := r.repository.Create(r.ctx, &template); err != nil {
+		if err := r.repository.Create(r.ctx, r.ns, &template); err != nil {
 			panic(err)
 		}
 		template.Fields[0].ID = 2
 
-		actualError := r.repository.Update(r.ctx, template.URN, &template)
+		actualError := r.repository.Update(r.ctx, r.ns, template.URN, &template)
 
 		r.Error(actualError)
 	})
@@ -351,13 +360,13 @@ func (r *TagTemplateRepositoryTestSuite) TestUpdate() {
 			Required:    false,
 		})
 
-		if err := r.repository.Create(r.ctx, &template); err != nil {
+		if err := r.repository.Create(r.ctx, r.ns, &template); err != nil {
 			panic(err)
 		}
 
 		template.Fields[1].URN = template.Fields[0].URN
 
-		actualError := r.repository.Update(r.ctx, template.URN, &template)
+		actualError := r.repository.Update(r.ctx, r.ns, template.URN, &template)
 
 		r.Error(actualError)
 	})
@@ -379,7 +388,7 @@ func (r *TagTemplateRepositoryTestSuite) TestDelete() {
 		r.NoError(err)
 
 		template := r.getTemplate()
-		if err := r.repository.Create(r.ctx, &template); err != nil {
+		if err := r.repository.Create(r.ctx, r.ns, &template); err != nil {
 			panic(err)
 		}
 

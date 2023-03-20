@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 
 	"github.com/odpf/compass/core/tag/validator"
 )
@@ -30,7 +31,7 @@ func (s *Service) Validate(tag *Tag) error {
 }
 
 // Create handles business process for create
-func (s *Service) CreateTag(ctx context.Context, tag *Tag) error {
+func (s *Service) CreateTag(ctx context.Context, ns *namespace.Namespace, tag *Tag) error {
 	if err := s.Validate(tag); err != nil {
 		return err
 	}
@@ -47,7 +48,7 @@ func (s *Service) CreateTag(ctx context.Context, tag *Tag) error {
 	if err := s.validateFieldValueIsValid(*tag, template); err != nil {
 		return err
 	}
-	if err := s.repository.Create(ctx, tag); err != nil {
+	if err := s.repository.Create(ctx, ns, tag); err != nil {
 		return err
 	}
 

@@ -21,11 +21,6 @@ type NamespaceService interface {
 }
 
 func (server *APIServer) ListNamespaces(ctx context.Context, req *compassv1beta1.ListNamespacesRequest) (*compassv1beta1.ListNamespacesResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	namespaces, err := server.namespaceService.List(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -44,11 +39,6 @@ func (server *APIServer) ListNamespaces(ctx context.Context, req *compassv1beta1
 }
 
 func (server *APIServer) GetNamespace(ctx context.Context, req *compassv1beta1.GetNamespaceRequest) (*compassv1beta1.GetNamespaceResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	var ns *namespace.Namespace
 	if nsID, err := uuid.Parse(req.GetUrn()); err == nil {
 		if ns, err = server.namespaceService.GetByID(ctx, nsID); err != nil {
@@ -70,11 +60,6 @@ func (server *APIServer) GetNamespace(ctx context.Context, req *compassv1beta1.G
 }
 
 func (server *APIServer) CreateNamespace(ctx context.Context, req *compassv1beta1.CreateNamespaceRequest) (*compassv1beta1.CreateNamespaceResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	if err := req.Validate(); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -83,8 +68,12 @@ func (server *APIServer) CreateNamespace(ctx context.Context, req *compassv1beta
 	if req.GetMetadata() != nil {
 		metadata = req.GetMetadata().AsMap()
 	}
+	namespaceID := uuid.New()
+	if id, err := uuid.Parse(req.GetId()); err == nil {
+		namespaceID = id
+	}
 	ns := &namespace.Namespace{
-		ID:       uuid.New(),
+		ID:       namespaceID,
 		Name:     req.GetName(),
 		State:    namespace.State(req.GetState()),
 		Metadata: metadata,
@@ -99,11 +88,6 @@ func (server *APIServer) CreateNamespace(ctx context.Context, req *compassv1beta
 }
 
 func (server *APIServer) UpdateNamespace(ctx context.Context, req *compassv1beta1.UpdateNamespaceRequest) (*compassv1beta1.UpdateNamespaceResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	var nsID uuid.UUID
 	var nsName string
 	if id, err := uuid.Parse(req.GetUrn()); err == nil {

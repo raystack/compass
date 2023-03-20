@@ -9,6 +9,8 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
+	namespace "github.com/odpf/compass/core/namespace"
+
 	star "github.com/odpf/compass/core/star"
 
 	user "github.com/odpf/compass/core/user"
@@ -27,23 +29,23 @@ func (_m *StarRepository) EXPECT() *StarRepository_Expecter {
 	return &StarRepository_Expecter{mock: &_m.Mock}
 }
 
-// Create provides a mock function with given fields: ctx, userID, assetID
-func (_m *StarRepository) Create(ctx context.Context, userID string, assetID string) (string, error) {
-	ret := _m.Called(ctx, userID, assetID)
+// Create provides a mock function with given fields: ctx, ns, userID, assetID
+func (_m *StarRepository) Create(ctx context.Context, ns *namespace.Namespace, userID string, assetID string) (string, error) {
+	ret := _m.Called(ctx, ns, userID, assetID)
 
 	var r0 string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) (string, error)); ok {
-		return rf(ctx, userID, assetID)
+	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string, string) (string, error)); ok {
+		return rf(ctx, ns, userID, assetID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) string); ok {
-		r0 = rf(ctx, userID, assetID)
+	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string, string) string); ok {
+		r0 = rf(ctx, ns, userID, assetID)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = rf(ctx, userID, assetID)
+	if rf, ok := ret.Get(1).(func(context.Context, *namespace.Namespace, string, string) error); ok {
+		r1 = rf(ctx, ns, userID, assetID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -58,15 +60,16 @@ type StarRepository_Create_Call struct {
 
 // Create is a helper method to define mock.On call
 //   - ctx context.Context
+//   - ns *namespace.Namespace
 //   - userID string
 //   - assetID string
-func (_e *StarRepository_Expecter) Create(ctx interface{}, userID interface{}, assetID interface{}) *StarRepository_Create_Call {
-	return &StarRepository_Create_Call{Call: _e.mock.On("Create", ctx, userID, assetID)}
+func (_e *StarRepository_Expecter) Create(ctx interface{}, ns interface{}, userID interface{}, assetID interface{}) *StarRepository_Create_Call {
+	return &StarRepository_Create_Call{Call: _e.mock.On("Create", ctx, ns, userID, assetID)}
 }
 
-func (_c *StarRepository_Create_Call) Run(run func(ctx context.Context, userID string, assetID string)) *StarRepository_Create_Call {
+func (_c *StarRepository_Create_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, userID string, assetID string)) *StarRepository_Create_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(string))
+		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(string), args[3].(string))
 	})
 	return _c
 }
@@ -76,7 +79,7 @@ func (_c *StarRepository_Create_Call) Return(_a0 string, _a1 error) *StarReposit
 	return _c
 }
 
-func (_c *StarRepository_Create_Call) RunAndReturn(run func(context.Context, string, string) (string, error)) *StarRepository_Create_Call {
+func (_c *StarRepository_Create_Call) RunAndReturn(run func(context.Context, *namespace.Namespace, string, string) (string, error)) *StarRepository_Create_Call {
 	_c.Call.Return(run)
 	return _c
 }

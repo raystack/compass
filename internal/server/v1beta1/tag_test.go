@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"reflect"
 	"testing"
 	"time"
@@ -83,7 +85,15 @@ func TestGetTagByAssetAndTemplate(t *testing.T) {
 	var (
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
+		ns       = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.GetTagByAssetAndTemplateRequest
@@ -184,7 +194,6 @@ func TestGetTagByAssetAndTemplate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
@@ -196,9 +205,12 @@ func TestGetTagByAssetAndTemplate(t *testing.T) {
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockNamespaceSvc := new(mocks.NamespaceService)
+			defer mockNamespaceSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.GetTagByAssetAndTemplate(ctx, tc.Request)
 			code := status.Code(err)
@@ -227,7 +239,15 @@ func TestCreateTagAsset(t *testing.T) {
 			TemplateDisplayName: sampleTagPB.TemplateDisplayName,
 			TemplateDescription: sampleTagPB.TemplateDescription,
 		}
+		ns = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.CreateTagAssetRequest
@@ -268,7 +288,7 @@ func TestCreateTagAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				ts.EXPECT().CreateTag(ctx, &sampleTag).Return(tag.TemplateNotFoundError{URN: sampleTemplate.URN})
+				ts.EXPECT().CreateTag(ctx, ns, &sampleTag).Return(tag.TemplateNotFoundError{URN: sampleTemplate.URN})
 			},
 		},
 		{
@@ -276,7 +296,7 @@ func TestCreateTagAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.InvalidArgument,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				ts.EXPECT().CreateTag(ctx, &sampleTag).Return(tag.ValidationError{Err: errors.New("validation error")})
+				ts.EXPECT().CreateTag(ctx, ns, &sampleTag).Return(tag.ValidationError{Err: errors.New("validation error")})
 			},
 		},
 		{
@@ -284,7 +304,7 @@ func TestCreateTagAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.Internal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				ts.EXPECT().CreateTag(ctx, &sampleTag).Return(errors.New("unexpected error during insert"))
+				ts.EXPECT().CreateTag(ctx, ns, &sampleTag).Return(errors.New("unexpected error during insert"))
 			},
 		},
 		{
@@ -292,7 +312,7 @@ func TestCreateTagAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.AlreadyExists,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				ts.EXPECT().CreateTag(ctx, &sampleTag).Return(tag.DuplicateError{})
+				ts.EXPECT().CreateTag(ctx, ns, &sampleTag).Return(tag.DuplicateError{})
 			},
 		},
 		{
@@ -300,7 +320,7 @@ func TestCreateTagAsset(t *testing.T) {
 			Request:      validRequest,
 			ExpectStatus: codes.OK,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
-				ts.EXPECT().CreateTag(ctx, &sampleTag).Return(nil)
+				ts.EXPECT().CreateTag(ctx, ns, &sampleTag).Return(nil)
 			},
 			PostCheck: func(resp *compassv1beta1.CreateTagAssetResponse) error {
 				expected := &compassv1beta1.CreateTagAssetResponse{
@@ -316,7 +336,6 @@ func TestCreateTagAsset(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
@@ -328,9 +347,11 @@ func TestCreateTagAsset(t *testing.T) {
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockNamespaceSvc := new(mocks.NamespaceService)
+			defer mockNamespaceSvc.AssertExpectations(t)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.CreateTagAsset(ctx, tc.Request)
 			code := status.Code(err)
@@ -359,7 +380,15 @@ func TestUpdateTagAsset(t *testing.T) {
 			TemplateDisplayName: sampleTagPB.TemplateDisplayName,
 			TemplateDescription: sampleTagPB.TemplateDescription,
 		}
+		ns = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.UpdateTagAssetRequest
@@ -432,7 +461,6 @@ func TestUpdateTagAsset(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
@@ -444,9 +472,11 @@ func TestUpdateTagAsset(t *testing.T) {
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockNamespaceSvc := new(mocks.NamespaceService)
+			defer mockNamespaceSvc.AssertExpectations(t)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.UpdateTagAsset(ctx, tc.Request)
 			code := status.Code(err)
@@ -468,7 +498,15 @@ func TestDeleteTagAsset(t *testing.T) {
 	var (
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
+		ns       = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.DeleteTagAssetRequest
@@ -529,7 +567,6 @@ func TestDeleteTagAsset(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
@@ -541,9 +578,11 @@ func TestDeleteTagAsset(t *testing.T) {
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockNamespaceSvc := new(mocks.NamespaceService)
+			defer mockNamespaceSvc.AssertExpectations(t)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			_, err := handler.DeleteTagAsset(ctx, tc.Request)
 			code := status.Code(err)
@@ -562,7 +601,15 @@ func TestGetAllTagsByAsset(t *testing.T) {
 		validRequest = &compassv1beta1.GetAllTagsByAssetRequest{
 			AssetId: assetID,
 		}
+		ns = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.GetAllTagsByAssetRequest
@@ -608,7 +655,6 @@ func TestGetAllTagsByAsset(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
@@ -620,9 +666,11 @@ func TestGetAllTagsByAsset(t *testing.T) {
 			defer mockTagSvc.AssertExpectations(t)
 			defer mockTemplateSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockNamespaceSvc := new(mocks.NamespaceService)
+			defer mockNamespaceSvc.AssertExpectations(t)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.GetAllTagsByAsset(ctx, tc.Request)
 			code := status.Code(err)

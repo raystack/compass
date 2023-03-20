@@ -2,6 +2,7 @@ package star
 
 import (
 	"context"
+	"github.com/odpf/compass/core/namespace"
 
 	"github.com/odpf/compass/core/asset"
 	"github.com/odpf/compass/core/user"
@@ -26,8 +27,8 @@ func (s *Service) GetStarredAssetByUserID(ctx context.Context, userID, assetID s
 func (s *Service) GetStargazers(ctx context.Context, flt Filter, assetID string) ([]user.User, error) {
 	return s.starRepository.GetStargazers(ctx, flt, assetID)
 }
-func (s *Service) Stars(ctx context.Context, userID, assetID string) (string, error) {
-	return s.starRepository.Create(ctx, userID, assetID)
+func (s *Service) Stars(ctx context.Context, ns *namespace.Namespace, userID, assetID string) (string, error) {
+	return s.starRepository.Create(ctx, ns, userID, assetID)
 }
 func (s *Service) Unstars(ctx context.Context, userID, assetID string) error {
 	return s.starRepository.Delete(ctx, userID, assetID)

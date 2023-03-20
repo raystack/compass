@@ -16,9 +16,10 @@ func (gm LineageGraphModel) toGraph() asset.LineageGraph {
 }
 
 type LineageEdgeModel struct {
-	Source string  `db:"source"`
-	Target string  `db:"target"`
-	Prop   JSONMap `db:"prop"`
+	NamespaceID string  `db:"namespace_id"`
+	Source      string  `db:"source"`
+	Target      string  `db:"target"`
+	Prop        JSONMap `db:"prop"`
 }
 
 func (m LineageEdgeModel) toEdge() asset.LineageEdge {

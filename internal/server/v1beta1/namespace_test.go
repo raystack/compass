@@ -19,7 +19,6 @@ import (
 
 func TestAPIServer_ListNamespaces(t *testing.T) {
 	var (
-		userID           = uuid.NewString()
 		userUUID         = uuid.NewString()
 		mockedNamespaces = []*namespace.Namespace{
 			{
@@ -70,8 +69,6 @@ func TestAPIServer_ListNamespaces(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
-
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.ListNamespaces(ctx, tc.Request)
@@ -92,7 +89,6 @@ func TestAPIServer_ListNamespaces(t *testing.T) {
 
 func TestAPIServer_GetNamespaces(t *testing.T) {
 	var (
-		userID           = uuid.NewString()
 		userUUID         = uuid.NewString()
 		mockedNamespaces = []*namespace.Namespace{
 			{
@@ -155,8 +151,6 @@ func TestAPIServer_GetNamespaces(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
-
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetNamespace(ctx, tc.Request)
@@ -177,7 +171,6 @@ func TestAPIServer_GetNamespaces(t *testing.T) {
 
 func TestAPIServer_CreateNamespaces(t *testing.T) {
 	var (
-		userID           = uuid.NewString()
 		userUUID         = uuid.NewString()
 		mockedNamespaces = []*namespace.Namespace{
 			{
@@ -243,8 +236,6 @@ func TestAPIServer_CreateNamespaces(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
-
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.CreateNamespace(ctx, tc.Request)
@@ -265,7 +256,6 @@ func TestAPIServer_CreateNamespaces(t *testing.T) {
 
 func TestAPIServer_UpdateNamespaces(t *testing.T) {
 	var (
-		userID           = uuid.NewString()
 		userUUID         = uuid.NewString()
 		mockedNamespaces = []*namespace.Namespace{
 			{
@@ -314,8 +304,6 @@ func TestAPIServer_UpdateNamespaces(t *testing.T) {
 			}
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
-
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 

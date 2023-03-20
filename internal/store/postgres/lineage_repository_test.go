@@ -3,6 +3,9 @@ package postgres_test
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"testing"
 
 	"github.com/odpf/compass/core/asset"
@@ -19,6 +22,7 @@ type LineageRepositoryTestSuite struct {
 	pool       *dockertest.Pool
 	resource   *dockertest.Resource
 	repository *postgres.LineageRepository
+	ns         *namespace.Namespace
 }
 
 func (r *LineageRepositoryTestSuite) SetupSuite() {
@@ -30,7 +34,13 @@ func (r *LineageRepositoryTestSuite) SetupSuite() {
 		r.T().Fatal(err)
 	}
 
-	r.ctx = context.TODO()
+	r.ns = &namespace.Namespace{
+		ID:       uuid.New(),
+		Name:     "tenant",
+		State:    namespace.SharedState,
+		Metadata: nil,
+	}
+	r.ctx = grpc_interceptor.BuildContextWithNamespace(context.Background(), r.ns)
 
 	r.repository, err = postgres.NewLineageRepository(r.client)
 	if err != nil {
@@ -60,13 +70,13 @@ func (r *LineageRepositoryTestSuite) TestGetGraph() {
 	//  				> optimus-tgg-1 >	rootNode > metabase-tgg-99 >
 	// table-51 																							metabase-tgg-52
 	//
-	err := r.repository.Upsert(r.ctx, rootNode, []string{"optimus-tgg-1"}, []string{"metabase-tgg-99"})
+	err := r.repository.Upsert(r.ctx, r.ns, rootNode, []string{"optimus-tgg-1"}, []string{"metabase-tgg-99"})
 	r.Require().NoError(err)
 	// populate upstream's node
-	err = r.repository.Upsert(r.ctx, "optimus-tgg-1", []string{"table-50", "table-51"}, nil)
+	err = r.repository.Upsert(r.ctx, r.ns, "optimus-tgg-1", []string{"table-50", "table-51"}, nil)
 	r.Require().NoError(err)
 	// populate downstream's node
-	err = r.repository.Upsert(r.ctx, "metabase-tgg-99", nil, []string{"metabase-tgg-51", "metabase-tgg-52"})
+	err = r.repository.Upsert(r.ctx, r.ns, "metabase-tgg-99", nil, []string{"metabase-tgg-51", "metabase-tgg-52"})
 	r.Require().NoError(err)
 
 	r.Run("should recursively fetch all graph", func() {
@@ -117,7 +127,7 @@ func (r *LineageRepositoryTestSuite) TestUpsert() {
 		nodeURN := "table-1"
 		upstreams := []string{"job-1"}
 		downstreams := []string{"dashboard-1", "dashboard-2"}
-		err := r.repository.Upsert(r.ctx, nodeURN, upstreams, downstreams)
+		err := r.repository.Upsert(r.ctx, r.ns, nodeURN, upstreams, downstreams)
 		r.NoError(err)
 
 		graph, err := r.repository.GetGraph(r.ctx, nodeURN, asset.LineageQuery{})
@@ -133,11 +143,11 @@ func (r *LineageRepositoryTestSuite) TestUpsert() {
 		nodeURN := "update-table"
 
 		// create initial
-		err := r.repository.Upsert(r.ctx, nodeURN, []string{"job-99"}, []string{"dashboard-99"})
+		err := r.repository.Upsert(r.ctx, r.ns, nodeURN, []string{"job-99"}, []string{"dashboard-99"})
 		r.NoError(err)
 
 		// update
-		err = r.repository.Upsert(r.ctx, nodeURN, []string{"job-99", "job-100"}, []string{"dashboard-93"})
+		err = r.repository.Upsert(r.ctx, r.ns, nodeURN, []string{"job-99", "job-100"}, []string{"dashboard-93"})
 		r.NoError(err)
 
 		graph, err := r.repository.GetGraph(r.ctx, nodeURN, asset.LineageQuery{})
@@ -155,7 +165,7 @@ func (r *LineageRepositoryTestSuite) TestDeleteByURN() {
 		nodeURN := "table-1"
 
 		// create initial
-		err := r.repository.Upsert(r.ctx, nodeURN, []string{"table-2"}, []string{"table-3"})
+		err := r.repository.Upsert(r.ctx, r.ns, nodeURN, []string{"table-2"}, []string{"table-3"})
 		r.NoError(err)
 
 		err = r.repository.DeleteByURN(r.ctx, nodeURN)

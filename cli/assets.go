@@ -55,12 +55,12 @@ func assetsCommand(cfg *Config) *cobra.Command {
 		versionHistoryAssetCommand(cfg),
 		viewAssetByVersionCommand(cfg),
 	)
-
+	cmd.PersistentFlags().StringVarP(&namespaceID, "namespace", "n", namespace.DefaultNamespace.ID.String(), "namespace id or name")
 	return cmd
 }
 
 func listAllAssetsCommand(cfg *Config) *cobra.Command {
-	var namespaceID, types, services, q, qFields, sort, sort_dir, output string
+	var types, services, q, qFields, sort, sort_dir, output string
 	var data map[string]string
 	var size, page uint32
 	cmd := &cobra.Command{
@@ -83,7 +83,7 @@ func listAllAssetsCommand(cfg *Config) *cobra.Command {
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
 			res, err := clnt.GetAllAssets(ctx, &compassv1beta1.GetAllAssetsRequest{
 				Q:         q,
 				QFields:   qFields,
@@ -94,7 +94,6 @@ func listAllAssetsCommand(cfg *Config) *cobra.Command {
 				Data:      data,
 				Size:      size,
 				Offset:    page,
-				NamespaceUrn: namespaceID,
 			})
 
 			if err != nil {
@@ -119,7 +118,6 @@ func listAllAssetsCommand(cfg *Config) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&namespaceID, "namespace", "n", namespace.DefaultNamespace.ID.String(), "namespace id or name")
 	cmd.Flags().StringVarP(&types, "types", "t", "", "filter by types")
 	cmd.Flags().StringVarP(&services, "services", "s", "", "filter by services")
 	cmd.Flags().StringToStringVarP(&data, "data", "d", nil, "filter by field in asset.data")
@@ -135,7 +133,6 @@ func listAllAssetsCommand(cfg *Config) *cobra.Command {
 }
 
 func viewAssetByIDCommand(cfg *Config) *cobra.Command {
-	var namespaceID string
 	cmd := &cobra.Command{
 		Use:   "view <urn>",
 		Short: "view asset for the given ID or URN",
@@ -158,10 +155,9 @@ func viewAssetByIDCommand(cfg *Config) *cobra.Command {
 			defer cancel()
 
 			assetID := args[0]
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
 			res, err := clnt.GetAssetByID(ctx, &compassv1beta1.GetAssetByIDRequest{
-				Id:           assetID,
-				NamespaceUrn: namespaceID,
+				Id: assetID,
 			})
 			if err != nil {
 				return err
@@ -172,13 +168,11 @@ func viewAssetByIDCommand(cfg *Config) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&namespaceID, "namespace", "n", namespace.DefaultNamespace.ID.String(), "namespace id or name")
 	return cmd
 }
 
 func editAssetCommand(cfg *Config) *cobra.Command {
 	var filePath string
-	var namespaceID string
 	cmd := &cobra.Command{
 		Use:   "edit",
 		Short: "upsert a new asset or patch",
@@ -209,11 +203,10 @@ func editAssetCommand(cfg *Config) *cobra.Command {
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
 			res, err := clnt.UpsertPatchAsset(ctx, &compassv1beta1.UpsertPatchAssetRequest{
-				Asset:        reqBody.Asset,
-				Upstreams:    reqBody.Upstreams,
-				NamespaceUrn: namespaceID,
+				Asset:     reqBody.Asset,
+				Upstreams: reqBody.Upstreams,
 			})
 
 			if err != nil {
@@ -225,7 +218,6 @@ func editAssetCommand(cfg *Config) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&namespaceID, "namespace", "n", namespace.DefaultNamespace.ID.String(), "namespace id or name")
 	cmd.Flags().StringVarP(&filePath, "body", "b", "", "filepath to body that has to be upserted")
 	if err := cmd.MarkFlagRequired("body"); err != nil {
 		panic(err)
@@ -235,7 +227,6 @@ func editAssetCommand(cfg *Config) *cobra.Command {
 }
 
 func deleteAssetByIDCommand(cfg *Config) *cobra.Command {
-	var namespaceID string
 	cmd := &cobra.Command{
 		Use:   "delete <id>",
 		Short: "delete asset with the given ID",
@@ -257,10 +248,9 @@ func deleteAssetByIDCommand(cfg *Config) *cobra.Command {
 			defer cancel()
 
 			assetID := args[0]
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
 			_, err = clnt.DeleteAsset(ctx, &compassv1beta1.DeleteAssetRequest{
-				Id:           assetID,
-				NamespaceUrn: namespaceID,
+				Id: assetID,
 			})
 			if err != nil {
 				return err
@@ -270,7 +260,6 @@ func deleteAssetByIDCommand(cfg *Config) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&namespaceID, "namespace", "n", namespace.DefaultNamespace.ID.String(), "namespace id or name")
 	return cmd
 }
 
@@ -299,7 +288,7 @@ func listAllTypesCommand(cfg *Config) *cobra.Command {
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, "")
 			res, err := clnt.GetAllTypes(ctx, &compassv1beta1.GetAllTypesRequest{
 				Q:        q,
 				QFields:  qFields,
@@ -351,7 +340,7 @@ func listAssetStargazerCommand(cfg *Config) *cobra.Command {
 			defer cancel()
 
 			assetID := args[0]
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
 			res, err := clnt.GetAssetStargazers(ctx, &compassv1beta1.GetAssetStargazersRequest{
 				Id:     assetID,
 				Size:   size,
@@ -390,7 +379,7 @@ func starAssetCommand(cfg *Config) *cobra.Command {
 			defer cancel()
 
 			assetID := args[0]
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
 			_, err = clnt.StarAsset(ctx, &compassv1beta1.StarAssetRequest{
 				AssetId: assetID,
 			})
@@ -404,7 +393,6 @@ func starAssetCommand(cfg *Config) *cobra.Command {
 			return nil
 		},
 	}
-
 	return cmd
 }
 
@@ -427,7 +415,7 @@ func unstarAssetCommand(cfg *Config) *cobra.Command {
 			defer cancel()
 
 			assetID := args[0]
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
 			_, err = clnt.UnstarAsset(ctx, &compassv1beta1.UnstarAssetRequest{
 				AssetId: assetID,
 			})
@@ -448,6 +436,7 @@ func unstarAssetCommand(cfg *Config) *cobra.Command {
 func starredAssetCommand(cfg *Config) *cobra.Command {
 	var size, page uint32
 	var output string
+
 	cmd := &cobra.Command{
 		Use:   "starred",
 		Short: "list all the starred assets for current user",
@@ -465,7 +454,7 @@ func starredAssetCommand(cfg *Config) *cobra.Command {
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
 			res, err := clnt.GetMyStarredAssets(ctx, &compassv1beta1.GetMyStarredAssetsRequest{
 				Size:   size,
 				Offset: page,
@@ -491,7 +480,6 @@ func starredAssetCommand(cfg *Config) *cobra.Command {
 			return nil
 		},
 	}
-
 	cmd.Flags().StringVarP(&output, "out", "o", "table", "flag to control output viewing, for json `-o json`")
 	cmd.Flags().Uint32Var(&size, "size", pageSize, "Size of each page")
 	cmd.Flags().Uint32Var(&page, "page", pageOffset, "Page number offset (starts from 0)")
@@ -518,7 +506,7 @@ func versionHistoryAssetCommand(cfg *Config) *cobra.Command {
 			defer cancel()
 
 			assetID := args[0]
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
 			res, err := clnt.GetAssetVersionHistory(ctx, &compassv1beta1.GetAssetVersionHistoryRequest{
 				Id:     assetID,
 				Size:   size,
@@ -562,7 +550,7 @@ func viewAssetByVersionCommand(cfg *Config) *cobra.Command {
 
 			assetID := args[0]
 			assetVersion := args[1]
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
 			res, err := clnt.GetAssetByVersion(ctx, &compassv1beta1.GetAssetByVersionRequest{
 				Id:      assetID,
 				Version: assetVersion,
@@ -577,6 +565,5 @@ func viewAssetByVersionCommand(cfg *Config) *cobra.Command {
 			return nil
 		},
 	}
-
 	return cmd
 }

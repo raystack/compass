@@ -3,6 +3,7 @@ package user
 //go:generate mockery --name=Repository -r --case underscore --with-expecter --structname UserRepository --filename user_repository.go --output=./mocks
 import (
 	"context"
+	"github.com/odpf/compass/core/namespace"
 	"time"
 )
 
@@ -31,8 +32,8 @@ func (u *User) Validate() error {
 
 // Repository contains interface of supported methods
 type Repository interface {
-	Create(ctx context.Context, u *User) (string, error)
+	Create(ctx context.Context, ns *namespace.Namespace, u *User) (string, error)
 	GetByEmail(ctx context.Context, email string) (User, error)
 	GetByUUID(ctx context.Context, uuid string) (User, error)
-	UpsertByEmail(ctx context.Context, u *User) (string, error)
+	UpsertByEmail(ctx context.Context, ns *namespace.Namespace, u *User) (string, error)
 }

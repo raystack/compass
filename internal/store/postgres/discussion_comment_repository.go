@@ -5,21 +5,24 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/jmoiron/sqlx"
+	"github.com/odpf/compass/core/namespace"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/odpf/compass/core/discussion"
 )
 
-// Create adds a new comment to a specific discussion
-func (r *DiscussionRepository) CreateComment(ctx context.Context, cmt *discussion.Comment) (string, error) {
+// CreateComment adds a new comment to a specific discussion
+func (r *DiscussionRepository) CreateComment(ctx context.Context, ns *namespace.Namespace, cmt *discussion.Comment) (string, error) {
 	var commentID string
 	query, args, err := sq.Insert("comments").
 		Columns("discussion_id",
 			"body",
 			"owner",
-			"updated_by").
-		Values(cmt.DiscussionID, cmt.Body, cmt.Owner.ID, cmt.Owner.ID).
+			"updated_by",
+			"namespace_id").
+		Values(cmt.DiscussionID, cmt.Body, cmt.Owner.ID, cmt.Owner.ID, ns.ID).
 		Suffix("RETURNING \"id\"").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -27,12 +30,14 @@ func (r *DiscussionRepository) CreateComment(ctx context.Context, cmt *discussio
 		return "", fmt.Errorf("error building insert query: %w", err)
 	}
 
-	if err = r.client.db.QueryRowContext(ctx, query, args...).Scan(&commentID); err != nil {
+	err = r.client.QueryFn(ctx, func(conn *sqlx.Conn) error {
+		return conn.QueryRowxContext(ctx, query, args...).Scan(&commentID)
+	})
+	if err != nil {
 		err = checkPostgresError(err)
 		if errors.Is(err, errForeignKeyViolation) {
 			return "", discussion.NotFoundError{DiscussionID: cmt.DiscussionID}
 		}
-
 		return "", fmt.Errorf("error running insert query: %w", err)
 	}
 
@@ -43,7 +48,7 @@ func (r *DiscussionRepository) CreateComment(ctx context.Context, cmt *discussio
 	return commentID, nil
 }
 
-// GetAll fetches all comments of a specific discussion
+// GetAllComments fetches all comments of a specific discussion
 func (r *DiscussionRepository) GetAllComments(ctx context.Context, did string, flt discussion.Filter) ([]discussion.Comment, error) {
 
 	builder := r.selectCommentsSQL()
@@ -56,7 +61,7 @@ func (r *DiscussionRepository) GetAllComments(ctx context.Context, did string, f
 	}
 
 	cmts := []discussion.Comment{}
-	err = r.client.db.SelectContext(ctx, &cmts, query, args...)
+	err = r.client.SelectContext(ctx, &cmts, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("error getting list of comments: %w", err)
 	}
@@ -78,7 +83,7 @@ func (r *DiscussionRepository) GetComment(ctx context.Context, cid string, did s
 	}
 
 	cmt := discussion.Comment{}
-	err = r.client.db.GetContext(ctx, &cmt, query, args...)
+	err = r.client.GetContext(ctx, &cmt, query, args...)
 	if errors.Is(err, sql.ErrNoRows) {
 		return discussion.Comment{}, discussion.NotFoundError{CommentID: cid, DiscussionID: did}
 	}
@@ -104,7 +109,7 @@ func (r *DiscussionRepository) UpdateComment(ctx context.Context, cmt *discussio
 		return fmt.Errorf("error building query: %w", err)
 	}
 
-	res, err := r.client.db.ExecContext(ctx, query, args...)
+	res, err := r.client.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("failed updating comment with id %s and discussion id %s: %w", cmt.ID, cmt.DiscussionID, err)
 	}
@@ -131,7 +136,7 @@ func (r *DiscussionRepository) DeleteComment(ctx context.Context, cid string, di
 		return fmt.Errorf("error building query: %w", err)
 	}
 
-	res, err := r.client.db.ExecContext(ctx, query, args...)
+	res, err := r.client.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("failed deleting comment with id %s and discussion id: %w", cid, err)
 	}

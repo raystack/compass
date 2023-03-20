@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/internal/client"
 	"net/http"
 	"strings"
 	"time"
@@ -47,9 +48,9 @@ func (cfg Config) grpcAddr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.
 
 type IdentityConfig struct {
 	// User Identity
-	HeaderKeyUUID       string `yaml:"headerkey_uuid" mapstructure:"headerkey_uuid" default:"Compass-User-UUID"`
-	HeaderValueUUID     string `yaml:"headervalue_uuid" mapstructure:"headervalue_uuid" default:"odpf@email.com"`
-	HeaderKeyEmail      string `yaml:"headerkey_email" mapstructure:"headerkey_email" default:"Compass-User-Email"`
+	HeaderKeyUserUUID   string `yaml:"headerkey_uuid" mapstructure:"headerkey_uuid" default:"Compass-User-UUID"`
+	HeaderValueUserUUID string `yaml:"headervalue_uuid" mapstructure:"headervalue_uuid" default:"odpf@email.com"`
+	HeaderKeyUserEmail  string `yaml:"headerkey_email" mapstructure:"headerkey_email" default:"Compass-User-Email"`
 	ProviderDefaultName string `yaml:"provider_default_name" mapstructure:"provider_default_name" default:""`
 }
 
@@ -74,7 +75,6 @@ func Serve(
 	tagTemplateService handlersv1beta1.TagTemplateService,
 	userService handlersv1beta1.UserService,
 ) error {
-
 	v1beta1Handler := handlersv1beta1.NewAPIServer(
 		logger,
 		namespaceService,
@@ -96,7 +96,8 @@ func Serve(
 			grpc_logrus.UnaryServerInterceptor(logger.Entry()),
 			nrgrpc.UnaryServerInterceptor(nrApp),
 			grpc_interceptor.StatsD(statsdReporter),
-			grpc_interceptor.UserHeaderCtx(config.Identity.HeaderKeyUUID, config.Identity.HeaderKeyEmail),
+			grpc_interceptor.UserHeaderCtx(config.Identity.HeaderKeyUserUUID, config.Identity.HeaderKeyUserEmail),
+			grpc_interceptor.NamespaceUnaryInterceptor(namespaceService),
 		)),
 	)
 	reflection.Register(grpcServer)
@@ -170,16 +171,19 @@ func Serve(
 	}
 
 	logger.Info("server stopped")
-
 	return nil
 }
 
+// makeHeaderMatcher overrides the default grpc gateway behaviour of only mapping http headers
+// that start with "grpc-metadata-" prefix
 func makeHeaderMatcher(c Config) func(key string) (string, bool) {
 	return func(key string) (string, bool) {
 		switch strings.ToLower(key) {
-		case strings.ToLower(c.Identity.HeaderKeyUUID):
+		case strings.ToLower(c.Identity.HeaderKeyUserUUID):
 			return key, true
-		case strings.ToLower(c.Identity.HeaderKeyEmail):
+		case strings.ToLower(c.Identity.HeaderKeyUserEmail):
+			return key, true
+		case client.NamespaceHeaderKey:
 			return key, true
 		default:
 			return runtime.DefaultHeaderMatcher(key)

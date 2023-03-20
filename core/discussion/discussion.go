@@ -5,6 +5,7 @@ package discussion
 import (
 	"context"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"strings"
 	"time"
 
@@ -14,12 +15,12 @@ import (
 const MAX_ARRAY_FIELD_NUM = 10
 
 type Repository interface {
+	Create(ctx context.Context, ns *namespace.Namespace, discussion *Discussion) (string, error)
 	GetAll(ctx context.Context, filter Filter) ([]Discussion, error)
-	Create(ctx context.Context, discussion *Discussion) (string, error)
 	Get(ctx context.Context, did string) (Discussion, error)
 	Patch(ctx context.Context, discussion *Discussion) error
 	GetAllComments(ctx context.Context, discussionID string, filter Filter) ([]Comment, error)
-	CreateComment(ctx context.Context, cmt *Comment) (string, error)
+	CreateComment(ctx context.Context, ns *namespace.Namespace, cmt *Comment) (string, error)
 	GetComment(ctx context.Context, commentID string, discussionID string) (Comment, error)
 	UpdateComment(ctx context.Context, cmt *Comment) error
 	DeleteComment(ctx context.Context, commentID string, discussionID string) error
@@ -72,7 +73,7 @@ func (d Discussion) IsEmpty() bool {
 	return true
 }
 
-// Validate checks emptyness required fields and constraint in discussion and return error if the required is empty
+// Validate checks emptiness required fields and constraint in discussion and return error if the required is empty
 func (d Discussion) Validate() error {
 	if len(strings.TrimSpace(d.Title)) == 0 {
 		return fmt.Errorf("title cannot be empty")
@@ -89,7 +90,7 @@ func (d Discussion) Validate() error {
 	return d.ValidateConstraint()
 }
 
-// ValidateConstraint checks whether non empty/nil fields fulfill the contract
+// ValidateConstraint checks whether non-empty/nil fields fulfill the contract
 func (d Discussion) ValidateConstraint() error {
 	if len(strings.TrimSpace(d.Type.String())) > 0 && !IsTypeStringValid(d.Type.String()) {
 		return ErrInvalidType

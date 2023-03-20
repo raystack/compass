@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"strings"
 
 	sq "github.com/Masterminds/squirrel"
@@ -57,7 +58,7 @@ func (repo *LineageRepository) DeleteByURN(ctx context.Context, urn string) erro
 		return fmt.Errorf("error building delete query when deleting asset with URN = %q: %w", urn, err)
 	}
 
-	res, err := repo.client.db.Exec(deleteQuery)
+	res, err := repo.client.ExecContext(ctx, deleteQuery)
 	if err != nil {
 		return fmt.Errorf("error deleting asset with URN = %q: %w", urn, err)
 	}
@@ -73,7 +74,7 @@ func (repo *LineageRepository) DeleteByURN(ctx context.Context, urn string) erro
 }
 
 // Upsert insert or delete connections of a given node by comparing them with current state
-func (repo *LineageRepository) Upsert(ctx context.Context, urn string, upstreams, downstreams []string) error {
+func (repo *LineageRepository) Upsert(ctx context.Context, ns *namespace.Namespace, urn string, upstreams, downstreams []string) error {
 	currentGraph, err := repo.getDirectLineage(ctx, urn)
 	if err != nil {
 		return fmt.Errorf("error getting node's direct lineage: %w", err)
@@ -83,7 +84,7 @@ func (repo *LineageRepository) Upsert(ctx context.Context, urn string, upstreams
 	toRemoves = repo.filterSelfDeleteOnly(urn, toRemoves)
 
 	return repo.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
-		err := repo.insertGraph(ctx, tx, toInserts)
+		err := repo.insertGraph(ctx, tx, ns, toInserts)
 		if err != nil {
 			return fmt.Errorf("error inserting graph: %w", err)
 		}
@@ -135,14 +136,14 @@ func (repo *LineageRepository) filterSelfDeleteOnly(urn string, toRemoves asset.
 	return
 }
 
-func (repo *LineageRepository) insertGraph(ctx context.Context, execer sqlx.ExecerContext, graph asset.LineageGraph) error {
+func (repo *LineageRepository) insertGraph(ctx context.Context, execer sqlx.ExecerContext, ns *namespace.Namespace, graph asset.LineageGraph) error {
 	if len(graph) == 0 {
 		return nil
 	}
 
-	builder := sq.Insert("lineage_graph").Columns("source", "target", "prop").PlaceholderFormat(sq.Dollar)
+	builder := sq.Insert("lineage_graph").Columns("source", "target", "prop", "namespace_id").PlaceholderFormat(sq.Dollar)
 	for _, edge := range graph {
-		builder = builder.Values(edge.Source, edge.Target, edge.Prop)
+		builder = builder.Values(edge.Source, edge.Target, edge.Prop, ns.ID)
 	}
 	builder = builder.Suffix("ON CONFLICT DO NOTHING")
 
@@ -226,7 +227,7 @@ func (repo *LineageRepository) getUpstreamsGraph(ctx context.Context, urn string
 	}
 
 	var gm LineageGraphModel
-	err = repo.client.db.SelectContext(ctx, &gm, query, args...)
+	err = repo.client.SelectContext(ctx, &gm, query, args...)
 	if err != nil {
 		return graph, fmt.Errorf("error running upstream query: %w", err)
 	}
@@ -245,7 +246,7 @@ func (repo *LineageRepository) getDownstreamsGraph(ctx context.Context, urn stri
 	}
 
 	var gm LineageGraphModel
-	err = repo.client.db.SelectContext(ctx, &gm, query, args...)
+	err = repo.client.SelectContext(ctx, &gm, query, args...)
 	if err != nil {
 		return graph, fmt.Errorf("error running downstream query: %w", err)
 	}
@@ -323,7 +324,7 @@ func (repo *LineageRepository) buildRecursiveQuery(alias string, nonRecursiveBui
 func (repo *LineageRepository) getDirectLineage(ctx context.Context, urn string) (graph asset.LineageGraph, err error) {
 	query := `SELECT * FROM lineage_graph WHERE (source = $1 OR target = $1)`
 	var gm LineageGraphModel
-	if err = repo.client.db.SelectContext(ctx, &gm, query, urn); err != nil {
+	if err = repo.client.SelectContext(ctx, &gm, query, urn); err != nil {
 		err = fmt.Errorf("error running fetch direct nodes query: %w", err)
 		return
 	}

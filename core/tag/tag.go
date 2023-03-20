@@ -3,12 +3,13 @@ package tag
 //go:generate mockery --name=TagRepository -r --case underscore --with-expecter --structname TagRepository --filename tag_repository.go --output=./mocks
 import (
 	"context"
+	"github.com/odpf/compass/core/namespace"
 	"time"
 )
 
 // TagRepository is a contract to communicate with the primary store
 type TagRepository interface {
-	Create(ctx context.Context, tag *Tag) error
+	Create(ctx context.Context, ns *namespace.Namespace, tag *Tag) error
 	Read(ctx context.Context, filter Tag) ([]Tag, error)
 	Update(ctx context.Context, tag *Tag) error
 	Delete(ctx context.Context, filter Tag) error

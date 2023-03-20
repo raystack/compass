@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/jmoiron/sqlx"
+	"github.com/odpf/compass/core/namespace"
 	"strings"
 
 	sq "github.com/Masterminds/squirrel"
@@ -30,7 +32,7 @@ func (r *DiscussionRepository) GetAll(ctx context.Context, flt discussion.Filter
 	}
 
 	dms := []DiscussionModel{}
-	err = r.client.db.SelectContext(ctx, &dms, query, args...)
+	err = r.client.SelectContext(ctx, &dms, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("error getting discussion list: %w", err)
 	}
@@ -44,7 +46,7 @@ func (r *DiscussionRepository) GetAll(ctx context.Context, flt discussion.Filter
 }
 
 // Create inserts a new discussion data
-func (r *DiscussionRepository) Create(ctx context.Context, dsc *discussion.Discussion) (string, error) {
+func (r *DiscussionRepository) Create(ctx context.Context, ns *namespace.Namespace, dsc *discussion.Discussion) (string, error) {
 	dm := newDiscussionModel(dsc)
 	var discussionID string
 	query, args, err := sq.Insert("discussions").
@@ -55,8 +57,9 @@ func (r *DiscussionRepository) Create(ctx context.Context, dsc *discussion.Discu
 			"owner",
 			"labels",
 			"assets",
-			"assignees").
-		Values(dm.Title, dm.Body, discussion.StateOpen, dm.Type, dm.Owner.ID, dm.Labels, dm.Assets, dm.Assignees).
+			"assignees",
+			"namespace_id").
+		Values(dm.Title, dm.Body, discussion.StateOpen, dm.Type, dm.Owner.ID, dm.Labels, dm.Assets, dm.Assignees, ns.ID).
 		Suffix("RETURNING \"id\"").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -64,7 +67,9 @@ func (r *DiscussionRepository) Create(ctx context.Context, dsc *discussion.Discu
 		return "", fmt.Errorf("error building insert query: %w", err)
 	}
 
-	err = r.client.db.QueryRowContext(ctx, query, args...).Scan(&discussionID)
+	err = r.client.QueryFn(ctx, func(conn *sqlx.Conn) error {
+		return conn.QueryRowxContext(ctx, query, args...).Scan(&discussionID)
+	})
 	if err != nil {
 		return "", fmt.Errorf("error running insert query: %w", err)
 	}
@@ -86,7 +91,7 @@ func (r *DiscussionRepository) Get(ctx context.Context, did string) (discussion.
 	}
 
 	var discussionModel DiscussionModel
-	err = r.client.db.GetContext(ctx, &discussionModel, query, args...)
+	err = r.client.GetContext(ctx, &discussionModel, query, args...)
 	if errors.Is(err, sql.ErrNoRows) {
 		return discussion.Discussion{}, discussion.NotFoundError{DiscussionID: did}
 	}
@@ -110,7 +115,7 @@ func (r *DiscussionRepository) Patch(ctx context.Context, dsc *discussion.Discus
 		return fmt.Errorf("error building query: %w", err)
 	}
 
-	res, err := r.client.db.ExecContext(ctx, query, args...)
+	res, err := r.client.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("failed updating discussion with id %s: %w", dm.ID, err)
 	}
@@ -281,7 +286,7 @@ func NewDiscussionRepository(c *Client, defaultGetMaxSize int) (*DiscussionRepos
 		return nil, errors.New("postgres client is nil")
 	}
 	if defaultGetMaxSize == 0 {
-		defaultGetMaxSize = DEFAULT_MAX_RESULT_SIZE
+		defaultGetMaxSize = DefaultMaxResultSize
 	}
 
 	return &DiscussionRepository{

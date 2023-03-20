@@ -7,6 +7,8 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
+	namespace "github.com/odpf/compass/core/namespace"
+
 	tag "github.com/odpf/compass/core/tag"
 )
 
@@ -23,13 +25,13 @@ func (_m *TagService) EXPECT() *TagService_Expecter {
 	return &TagService_Expecter{mock: &_m.Mock}
 }
 
-// CreateTag provides a mock function with given fields: ctx, _a1
-func (_m *TagService) CreateTag(ctx context.Context, _a1 *tag.Tag) error {
-	ret := _m.Called(ctx, _a1)
+// CreateTag provides a mock function with given fields: ctx, ns, _a2
+func (_m *TagService) CreateTag(ctx context.Context, ns *namespace.Namespace, _a2 *tag.Tag) error {
+	ret := _m.Called(ctx, ns, _a2)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *tag.Tag) error); ok {
-		r0 = rf(ctx, _a1)
+	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, *tag.Tag) error); ok {
+		r0 = rf(ctx, ns, _a2)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -44,14 +46,15 @@ type TagService_CreateTag_Call struct {
 
 // CreateTag is a helper method to define mock.On call
 //   - ctx context.Context
-//   - _a1 *tag.Tag
-func (_e *TagService_Expecter) CreateTag(ctx interface{}, _a1 interface{}) *TagService_CreateTag_Call {
-	return &TagService_CreateTag_Call{Call: _e.mock.On("CreateTag", ctx, _a1)}
+//   - ns *namespace.Namespace
+//   - _a2 *tag.Tag
+func (_e *TagService_Expecter) CreateTag(ctx interface{}, ns interface{}, _a2 interface{}) *TagService_CreateTag_Call {
+	return &TagService_CreateTag_Call{Call: _e.mock.On("CreateTag", ctx, ns, _a2)}
 }
 
-func (_c *TagService_CreateTag_Call) Run(run func(ctx context.Context, _a1 *tag.Tag)) *TagService_CreateTag_Call {
+func (_c *TagService_CreateTag_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, _a2 *tag.Tag)) *TagService_CreateTag_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*tag.Tag))
+		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(*tag.Tag))
 	})
 	return _c
 }
@@ -61,7 +64,7 @@ func (_c *TagService_CreateTag_Call) Return(_a0 error) *TagService_CreateTag_Cal
 	return _c
 }
 
-func (_c *TagService_CreateTag_Call) RunAndReturn(run func(context.Context, *tag.Tag) error) *TagService_CreateTag_Call {
+func (_c *TagService_CreateTag_Call) RunAndReturn(run func(context.Context, *namespace.Namespace, *tag.Tag) error) *TagService_CreateTag_Call {
 	_c.Call.Return(run)
 	return _c
 }

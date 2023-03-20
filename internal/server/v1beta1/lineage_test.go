@@ -2,6 +2,8 @@ package handlersv1beta1
 
 import (
 	"context"
+	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"testing"
 	"time"
 
@@ -23,10 +25,17 @@ func TestGetLineageGraph(t *testing.T) {
 	var (
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
+		ns       = &namespace.Namespace{
+			ID:       uuid.New(),
+			Name:     "tenant",
+			State:    namespace.SharedState,
+			Metadata: nil,
+		}
 	)
+	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
 	t.Run("get Lineage", func(t *testing.T) {
 		t.Run("should return a graph containing the requested resource, along with it's related resources", func(t *testing.T) {
-			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			logger := log.NewNoop()
 			nodeURN := "job-1"
 			level := 8
@@ -55,13 +64,15 @@ func TestGetLineageGraph(t *testing.T) {
 			}
 			mockSvc := new(mocks.AssetService)
 			mockUserSvc := new(mocks.UserService)
+			mockNamespaceSvc := new(mocks.NamespaceService)
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockSvc.AssertExpectations(t)
+			defer mockNamespaceSvc.AssertExpectations(t)
 
 			mockSvc.EXPECT().GetLineage(ctx, nodeURN, asset.LineageQuery{Level: level, Direction: direction}).Return(lineage, nil)
-			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(logger, mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetGraph(ctx, &compassv1beta1.GetGraphRequest{
 				Urn:       nodeURN,

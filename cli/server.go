@@ -67,22 +67,25 @@ func serverStartCommand(cfg *Config) *cobra.Command {
 }
 
 func serverMigrateCommand(cfg *Config) *cobra.Command {
-
+	var down bool
 	c := &cobra.Command{
 		Use:   "migrate",
 		Short: "Run storage migration",
 		Example: heredoc.Doc(`
 			$ compass server migrate
+			$ compass server migrate --down
 		`),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx, cancel := signal.NotifyContext(cmd.Context(), syscall.SIGINT, syscall.SIGTERM)
 			defer cancel()
-
+			if down {
+				return migrateDown(cfg)
+			}
 			return runMigrations(ctx, cfg)
 		},
 	}
-
+	c.Flags().BoolVar(&down, "down", false, "rollback migration one step")
 	return c
 }
 
@@ -243,7 +246,7 @@ func runMigrations(ctx context.Context, config *Config) error {
 		return err
 	}
 
-	err = pgClient.Migrate(config.DB)
+	ver, err := pgClient.Migrate(config.DB)
 	if err != nil {
 		return fmt.Errorf("problem with migration %w", err)
 	}
@@ -260,6 +263,27 @@ func runMigrations(ctx context.Context, config *Config) error {
 	} else if err != nil {
 		return fmt.Errorf("problem with migration %w", err)
 	}
-	logger.Info("Migration finished.")
+	logger.Info(fmt.Sprintf("Migration finished. Version: %d", ver))
+	return nil
+}
+
+func migrateDown(config *Config) error {
+	fmt.Println("Preparing rolling back one step of migration...")
+
+	logger := initLogger(config.LogLevel)
+	logger.Info("compass is migrating", "version", Version)
+
+	logger.Info("Initiating Postgres client...")
+	pgClient, err := postgres.NewClient(config.DB)
+	if err != nil {
+		logger.Error("failed to prepare migration", "error", err)
+		return err
+	}
+
+	ver, err := pgClient.MigrateDown(config.DB)
+	if err != nil {
+		return fmt.Errorf("problem with migration %w", err)
+	}
+	logger.Info(fmt.Sprintf("Migration finished. Version: %d", ver))
 	return nil
 }

@@ -4,6 +4,8 @@ package handlersv1beta1
 import (
 	"context"
 	"errors"
+	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"strings"
 	"time"
 
@@ -18,12 +20,15 @@ import (
 )
 
 type UserService interface {
-	ValidateUser(ctx context.Context, uuid, email string) (string, error)
+	ValidateUser(ctx context.Context, ns *namespace.Namespace, uuid, email string) (string, error)
 }
 
 func (server *APIServer) GetUserStarredAssets(ctx context.Context, req *compassv1beta1.GetUserStarredAssetsRequest) (*compassv1beta1.GetUserStarredAssetsResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
-	if err != nil {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
@@ -59,7 +64,11 @@ func (server *APIServer) GetUserStarredAssets(ctx context.Context, req *compassv
 }
 
 func (server *APIServer) GetMyStarredAssets(ctx context.Context, req *compassv1beta1.GetMyStarredAssetsRequest) (*compassv1beta1.GetMyStarredAssetsResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +105,11 @@ func (server *APIServer) GetMyStarredAssets(ctx context.Context, req *compassv1b
 }
 
 func (server *APIServer) GetMyStarredAsset(ctx context.Context, req *compassv1beta1.GetMyStarredAssetRequest) (*compassv1beta1.GetMyStarredAssetResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
 	}
@@ -123,12 +136,16 @@ func (server *APIServer) GetMyStarredAsset(ctx context.Context, req *compassv1be
 }
 
 func (server *APIServer) StarAsset(ctx context.Context, req *compassv1beta1.StarAssetRequest) (*compassv1beta1.StarAssetResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
 	}
 
-	starID, err := server.starService.Stars(ctx, userID, req.GetAssetId())
+	starID, err := server.starService.Stars(ctx, ns, userID, req.GetAssetId())
 	if err != nil {
 		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -151,7 +168,11 @@ func (server *APIServer) StarAsset(ctx context.Context, req *compassv1beta1.Star
 }
 
 func (server *APIServer) UnstarAsset(ctx context.Context, req *compassv1beta1.UnstarAssetRequest) (*compassv1beta1.UnstarAssetResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +192,11 @@ func (server *APIServer) UnstarAsset(ctx context.Context, req *compassv1beta1.Un
 }
 
 func (server *APIServer) GetMyDiscussions(ctx context.Context, req *compassv1beta1.GetMyDiscussionsRequest) (*compassv1beta1.GetMyDiscussionsResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
 	}

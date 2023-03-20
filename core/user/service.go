@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"github.com/odpf/compass/core/namespace"
 
 	"github.com/odpf/compass/pkg/statsd"
 	"github.com/odpf/salt/log"
@@ -17,7 +18,7 @@ type Service struct {
 
 // ValidateUser checks if user uuid is already in DB
 // if exist in DB, return user ID, if not exist in DB, create a new one
-func (s *Service) ValidateUser(ctx context.Context, uuid, email string) (string, error) {
+func (s *Service) ValidateUser(ctx context.Context, ns *namespace.Namespace, uuid, email string) (string, error) {
 	if uuid == "" {
 		return "", ErrNoUserInformation
 	}
@@ -37,8 +38,11 @@ func (s *Service) ValidateUser(ctx context.Context, uuid, email string) (string,
 		s.logger.Error(err.Error())
 		return "", err
 	}
+	if !errors.As(err, &NotFoundError{}) {
+		return "", err
+	}
 
-	uid, err := s.repository.UpsertByEmail(ctx, &User{
+	uid, err := s.repository.UpsertByEmail(ctx, ns, &User{
 		UUID:  uuid,
 		Email: email,
 	})

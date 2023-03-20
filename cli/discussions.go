@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/odpf/compass/core/namespace"
 	"os"
 
 	"github.com/odpf/compass/internal/client"
@@ -33,7 +34,7 @@ func discussionsCommand(cfg *Config) *cobra.Command {
 		viewDiscussionByIDCommand(cfg),
 		postDiscussionCommand(cfg),
 	)
-
+	cmd.PersistentFlags().StringVarP(&namespaceID, "namespace", "n", namespace.DefaultNamespace.ID.String(), "namespace id or name")
 	return cmd
 }
 
@@ -58,7 +59,7 @@ func listAllDiscussionsCommand(cfg *Config) *cobra.Command {
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
 			res, err := clnt.GetAllDiscussions(ctx, &compassv1beta1.GetAllDiscussionsRequest{})
 			if err != nil {
 				return err
@@ -109,7 +110,7 @@ func viewDiscussionByIDCommand(cfg *Config) *cobra.Command {
 			defer cancel()
 
 			discussionID := args[0]
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
 			res, err := clnt.GetDiscussion(ctx, &compassv1beta1.GetDiscussionRequest{
 				Id: discussionID,
 			})
@@ -157,7 +158,7 @@ func postDiscussionCommand(cfg *Config) *cobra.Command {
 			}
 			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client)
+			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
 			res, err := clnt.CreateDiscussion(ctx, &compassv1beta1.CreateDiscussionRequest{
 				Title:  reqBody.Title,
 				Body:   reqBody.Body,
