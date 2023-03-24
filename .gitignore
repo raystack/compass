@@ -27,3 +27,4 @@ vendor/
 config.yaml
 compass.yaml
 temp/
+.playground/

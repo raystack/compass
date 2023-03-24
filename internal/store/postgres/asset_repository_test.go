@@ -951,8 +951,8 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				Type:    "table",
 				Service: "bigquery",
 				Owners: []user.User{
-					r.users[1],
-					r.users[2],
+					stripUserID(r.users[1]),
+					{Email: r.users[2].Email},
 				},
 				UpdatedBy: r.users[0],
 			}
@@ -966,9 +966,8 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			r.NoError(err)
 
 			r.Len(actual.Owners, len(ast.Owners))
-			for i, owner := range actual.Owners {
-				r.Equal(ast.Owners[i].ID, owner.ID)
-			}
+			r.Equal(r.users[1].ID, actual.Owners[0].ID)
+			r.Equal(r.users[2].ID, actual.Owners[1].ID)
 		})
 
 		r.Run("should create owners as users if they do not exist yet", func() {
@@ -977,7 +976,8 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				Type:    "table",
 				Service: "bigquery",
 				Owners: []user.User{
-					{Email: "newuser@example.com", Provider: defaultProviderName},
+					{Email: "newuser@example.com"},
+					{UUID: "795151e5-4c9f-4951-a8e1-6966b5aa2bb6"},
 				},
 				UpdatedBy: r.users[0],
 			}
@@ -990,10 +990,8 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			r.NoError(err)
 
 			r.Len(actual.Owners, len(ast.Owners))
-			for i, owner := range actual.Owners {
-				r.Equal(ast.Owners[i].Email, owner.Email)
-				r.NotEmpty(id)
-			}
+			r.Equal(ast.Owners[0].Email, actual.Owners[0].Email)
+			r.Equal(ast.Owners[1].UUID, actual.Owners[1].UUID)
 		})
 	})
 
@@ -1056,14 +1054,14 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				Type:    "table",
 				Service: "bigquery",
 				Owners: []user.User{
-					r.users[1],
-					r.users[2],
+					stripUserID(r.users[1]),
+					stripUserID(r.users[2]),
 				},
 				UpdatedBy: r.users[0],
 			}
 			newAsset := ast
 			newAsset.Owners = []user.User{
-				r.users[2],
+				stripUserID(r.users[2]),
 			}
 
 			id, err := r.repository.Upsert(r.ctx, &ast)
@@ -1079,9 +1077,7 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			actual, err := r.repository.GetByID(r.ctx, ast.ID)
 			r.NoError(err)
 			r.Len(actual.Owners, len(newAsset.Owners))
-			for i, owner := range actual.Owners {
-				r.Equal(newAsset.Owners[i].ID, owner.ID)
-			}
+			r.Equal(r.users[2].ID, actual.Owners[0].ID)
 		})
 
 		r.Run("should create new owners if it does not exist on old asset", func() {
@@ -1090,14 +1086,14 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				Type:    "table",
 				Service: "bigquery",
 				Owners: []user.User{
-					r.users[1],
+					stripUserID(r.users[1]),
 				},
 				UpdatedBy: r.users[0],
 			}
 			newAsset := ast
 			newAsset.Owners = []user.User{
-				r.users[1],
-				r.users[2],
+				stripUserID(r.users[1]),
+				stripUserID(r.users[2]),
 			}
 
 			id, err := r.repository.Upsert(r.ctx, &ast)
@@ -1113,9 +1109,8 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			actual, err := r.repository.GetByID(r.ctx, ast.ID)
 			r.NoError(err)
 			r.Len(actual.Owners, len(newAsset.Owners))
-			for i, owner := range actual.Owners {
-				r.Equal(newAsset.Owners[i].ID, owner.ID)
-			}
+			r.Equal(r.users[1].ID, actual.Owners[0].ID)
+			r.Equal(r.users[2].ID, actual.Owners[1].ID)
 		})
 
 		r.Run("should create users from owners if owner emails do not exist yet", func() {
@@ -1124,14 +1119,14 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				Type:    "table",
 				Service: "bigquery",
 				Owners: []user.User{
-					r.users[1],
+					stripUserID(r.users[1]),
 				},
 				UpdatedBy: r.users[0],
 			}
 			newAsset := ast
 			newAsset.Owners = []user.User{
-				r.users[1],
-				{Email: "newuser@example.com", Provider: defaultProviderName},
+				stripUserID(r.users[1]),
+				{Email: "newuser@example.com"},
 			}
 
 			id, err := r.repository.Upsert(r.ctx, &ast)
@@ -1147,10 +1142,10 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			actual, err := r.repository.GetByID(r.ctx, ast.ID)
 			r.NoError(err)
 			r.Len(actual.Owners, len(newAsset.Owners))
-			for i, owner := range actual.Owners {
-				r.Equal(newAsset.Owners[i].Email, owner.Email)
-				r.NotEmpty(id)
-			}
+			r.NotEmpty(actual.Owners[0].ID)
+			r.Equal(r.users[1].ID, actual.Owners[0].ID)
+			r.NotEmpty(actual.Owners[1].ID)
+			r.Equal(newAsset.Owners[1].Email, actual.Owners[1].Email)
 		})
 	})
 }
@@ -1829,4 +1824,9 @@ func (r *AssetRepositoryTestSuite) assertProbe(t *testing.T, expected asset.Prob
 
 func TestAssetRepository(t *testing.T) {
 	suite.Run(t, &AssetRepositoryTestSuite{})
+}
+
+func stripUserID(u user.User) user.User {
+	u.ID = ""
+	return u
 }
