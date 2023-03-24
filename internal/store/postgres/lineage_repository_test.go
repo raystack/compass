@@ -150,6 +150,29 @@ func (r *LineageRepositoryTestSuite) TestUpsert() {
 	})
 }
 
+func (r *LineageRepositoryTestSuite) TestDeleteByURN() {
+	r.Run("should delete asset from lineage", func() {
+		nodeURN := "table-1"
+
+		// create initial
+		err := r.repository.Upsert(r.ctx, nodeURN, []string{"table-2"}, []string{"table-3"})
+		r.NoError(err)
+
+		err = r.repository.DeleteByURN(r.ctx, nodeURN)
+		r.NoError(err)
+
+		graph, err := r.repository.GetGraph(r.ctx, nodeURN, asset.LineageQuery{})
+		r.Require().NoError(err)
+		r.compareGraphs(asset.LineageGraph{}, graph)
+	})
+
+	r.Run("delete when URN has no lineage", func() {
+		nodeURN := "table-1"
+		err := r.repository.DeleteByURN(r.ctx, nodeURN)
+		r.Equal(asset.LineageNotFoundError{URN: nodeURN}.Error(), err.Error())
+	})
+}
+
 func (r *LineageRepositoryTestSuite) compareGraphs(expected, actual asset.LineageGraph) {
 	expLen := len(expected)
 	r.Require().Len(actual, expLen)

@@ -48,6 +48,30 @@ func (repo *LineageRepository) GetGraph(ctx context.Context, urn string, query a
 	return graph, nil
 }
 
+func (repo *LineageRepository) DeleteByURN(ctx context.Context, urn string) error {
+
+	deleteQuery, _, err := sq.Delete("lineage_graph").Where(
+		fmt.Sprintf("source='%s' or target='%s'", urn, urn)).ToSql()
+
+	if err != nil {
+		return fmt.Errorf("error building delete query when deleting asset with URN = %q: %w", urn, err)
+	}
+
+	res, err := repo.client.db.Exec(deleteQuery)
+	if err != nil {
+		return fmt.Errorf("error deleting asset with URN = %q: %w", urn, err)
+	}
+	affectedRows, err := res.RowsAffected()
+
+	if err != nil {
+		return fmt.Errorf("error getting affected rows: %w", err)
+	}
+	if affectedRows == 0 {
+		return asset.LineageNotFoundError{URN: urn}
+	}
+	return nil
+}
+
 // Upsert insert or delete connections of a given node by comparing them with current state
 func (repo *LineageRepository) Upsert(ctx context.Context, urn string, upstreams, downstreams []string) error {
 	currentGraph, err := repo.getDirectLineage(ctx, urn)

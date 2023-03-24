@@ -67,18 +67,28 @@ func (s *Service) UpsertAssetWithoutLineage(ctx context.Context, ast *Asset) (st
 
 func (s *Service) DeleteAsset(ctx context.Context, id string) error {
 	if isValidUUID(id) {
+		asset, err := s.assetRepository.GetByID(ctx, id)
+		if err != nil {
+			return err
+		}
 		if err := s.assetRepository.DeleteByID(ctx, id); err != nil {
 			return err
 		}
-
-		return s.discoveryRepository.DeleteByID(ctx, id)
+		if err := s.discoveryRepository.DeleteByID(ctx, id); err != nil {
+			return err
+		}
+		return s.lineageRepository.DeleteByURN(ctx, asset.URN)
 	}
 
 	if err := s.assetRepository.DeleteByURN(ctx, id); err != nil {
 		return err
 	}
 
-	return s.discoveryRepository.DeleteByURN(ctx, id)
+	if err := s.discoveryRepository.DeleteByURN(ctx, id); err != nil {
+		return err
+	}
+
+	return s.lineageRepository.DeleteByURN(ctx, id)
 }
 
 func (s *Service) GetAssetByID(ctx context.Context, id string) (ast Asset, err error) {
