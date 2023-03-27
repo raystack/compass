@@ -133,24 +133,54 @@ view discussion for the given ID
 
 observe the lineage of metadata
 
+## `compass namespace`
+
+Manage namespaces
+
+### `compass namespace create [flags]`
+
+create a new namespace
+
+```
+-n, --name string    namespace unique name
+-s, --state string   is namespace shared with existing tenants or a dedicated one (default "shared")
+````
+
+### `compass namespace list [flags]`
+
+lists all namespaces
+
+```
+-o, --out -o json   flag to control output viewing, for json -o json (default "table")
+````
+
+### `compass namespace view <id>`
+
+view namespace for the given uuid or name
+
 ## `compass search <text> [flags]`
 
 query the metadata available
 
 ```
--f, --filter string   --filter=field_key1:val1,key2:val2,key3:val3 gives exact match for values
--q, --query string    --query=--filter=field_key1:val1 supports fuzzy search
--r, --rankby string   --rankby=<numeric_field>
--s, --size uint32     --size=10 maximum size of response query
+-f, --filter string      --filter=field_key1:val1,key2:val2,key3:val3 gives exact match for values
+-n, --namespace string   namespace id or name (default "00000000-0000-0000-0000-000000000000")
+-q, --query string       --query=--filter=field_key1:val1 supports fuzzy search
+-r, --rankby string      --rankby=<numeric_field>
+-s, --size uint32        --size=10 maximum size of response query
 ````
 
 ## `compass server <command>`
 
 Run compass server
 
-### `compass server migrate`
+### `compass server migrate [flags]`
 
 Run storage migration
+
+```
+--down   rollback migration one step
+````
 
 ### `compass server start`
 
