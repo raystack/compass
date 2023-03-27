@@ -4,9 +4,7 @@ This document details information about how Compass interfaces with elasticsearc
 
 ## Index Setup
 
-There is a migration command in compass to setup all storages. Once the migration is executed, all types are being created (if does not exist). When a type is created, an index is created in elasticsearch by it's name. All created indices are aliased to the `universe` index, which is used to run the search when all types need to be searched, or when `filter[type]` is not specifed in the Search API.
-
-The indices are also configured with a camel case tokenizer, to support proper lexing of some resources that use camel case in their nomenclature \(protobuf names for instance\). Given below is a sample of the index settings that are used:
+There is a migration command in compass to setup all storages. The indices are configured with a camel case tokenizer, to support proper lexing of some resources that use camel case in their nomenclature \(protobuf names for instance\). Given below is a sample of the index settings that are used:
 
 ```javascript
 // PUT http://${ES_HOST}/{index}
@@ -27,6 +25,30 @@ The indices are also configured with a camel case tokenizer, to support proper l
         }
     }
 ```
+
+One shared index is created for all services and tenants but each request(read/write) is routed to a unique shard for each tenant. Compass categorize tenants into two tires, `shared` and `dedicated`. For shared tenants, all the requests will be routed by namespace id over a single shard in an index. For dedicated tenants, each tenant will have its own index. Note, a single index will have N number of `types` same as the number of `Services` supported in Compass. This design will ensure, all the document insert/query requests are only confined to a single shard(in case of shared) or a single index(in case of dedicated).
+Details on why we did this is available at [issue #208](https://github.com/odpf/compass/issues/208).
+
+## Postgres
+
+To enforce multi-tenant restrictions at the database level, [Row Level Security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html) is used. RLS requires Postgres users used for application database connection not to be a table owner or a superuser else all RLS are bypassed by default. That means a Postgres user that is migrating the application and a user that is used to serve the app should both be different.
+
+To create a postgres user
+```sql
+CREATE USER "compass_user" WITH PASSWORD 'compass';
+GRANT CONNECT ON DATABASE "compass" TO "compass_user";
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "compass_user";
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO "compass_user";
+GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO "compass_user";
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA "public" GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES
+ON TABLES TO "compass_user";
+ALTER DEFAULT PRIVILEGES IN SCHEMA "public" GRANT USAGE ON SEQUENCES TO "compass_user";
+ALTER DEFAULT PRIVILEGES IN SCHEMA "public" GRANT EXECUTE ON FUNCTIONS TO "compass_user";
+```
+
+A middleware for grpc looks for `x-namespace-id` header to extract tenant id if not found falls back to `default` namespace. 
+Same could be passed in a `jwt token` of Authentication Bearer with `namespace_id` as a claim.
 
 ## Search
 

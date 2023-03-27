@@ -1,7 +1,7 @@
-# API
+# Compass
 Documentation of our Compass API with gRPC and gRPC-Gateway.
 
-## Version: 0.2.1
+## Version: 0.3.0
 
 **License:** [Apache License 2.0](https://github.com/odpf/compass/blob/main/LICENSE)
 
@@ -317,6 +317,8 @@ API for querying documents. 'text' is fuzzy matched against all the available da
 | text | query | text to search for (fuzzy) | No | string |
 | rankby | query | descendingly sort based on a numeric field in the asset. the nested field is written with period separated field name. eg, "rankby[data.profile.usage_count]" | No | string |
 | size | query | number of results to return | No | long |
+| include_fields | query |  | No | [ string ] |
+| offset | query | offset parameter defines the offset from the first result you want to fetch | No | long |
 
 ##### Responses
 
@@ -1097,6 +1099,111 @@ Get all assets starred by a user
 
 ## default
 
+### /v1beta1/namespaces
+
+#### GET
+##### Summary
+
+List namespace
+
+##### Description
+
+List all created namespaces
+
+##### Responses
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | A successful response. | [ListNamespacesResponse](#listnamespacesresponse) |
+| 400 | Returned when the data that user input is wrong. | [Status](#status) |
+| 404 | Returned when the resource does not exist. | [Status](#status) |
+| 409 | Returned when the resource already exist. | [Status](#status) |
+| 500 | Returned when theres is something wrong on the server side. | [Status](#status) |
+| default | An unexpected error response. | [Status](#status) |
+
+#### POST
+##### Summary
+
+Create a namespace
+
+##### Description
+
+Create a new namespace, throws error if already exists
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ------ |
+| body | body |  | Yes | [CreateNamespaceRequest](#createnamespacerequest) |
+
+##### Responses
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | A successful response. | [CreateNamespaceResponse](#createnamespaceresponse) |
+| 400 | Returned when the data that user input is wrong. | [Status](#status) |
+| 404 | Returned when the resource does not exist. | [Status](#status) |
+| 409 | Returned when the resource already exist. | [Status](#status) |
+| 500 | Returned when theres is something wrong on the server side. | [Status](#status) |
+| default | An unexpected error response. | [Status](#status) |
+
+### /v1beta1/namespaces/{urn}
+
+#### GET
+##### Summary
+
+Get namespace
+
+##### Description
+
+Fetch a namespace details, throws error if doesn't exists. Use id or name as urn.
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ------ |
+| urn | path | set either id or name | Yes | string |
+
+##### Responses
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | A successful response. | [GetNamespaceResponse](#getnamespaceresponse) |
+| 400 | Returned when the data that user input is wrong. | [Status](#status) |
+| 404 | Returned when the resource does not exist. | [Status](#status) |
+| 409 | Returned when the resource already exist. | [Status](#status) |
+| 500 | Returned when theres is something wrong on the server side. | [Status](#status) |
+| default | An unexpected error response. | [Status](#status) |
+
+#### PUT
+##### Summary
+
+Update namespace
+
+##### Description
+
+Update an existing namespace, throws error if doesn't exists. Use id or name as urn.
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ------ |
+| urn | path | set either id or name | Yes | string |
+| body | body |  | Yes | { **"metadata"**: object, **"state"**: string } |
+
+##### Responses
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | A successful response. | [UpdateNamespaceResponse](#updatenamespaceresponse) |
+| 400 | Returned when the data that user input is wrong. | [Status](#status) |
+| 404 | Returned when the resource does not exist. | [Status](#status) |
+| 409 | Returned when the resource already exist. | [Status](#status) |
+| 500 | Returned when theres is something wrong on the server side. | [Status](#status) |
+| default | An unexpected error response. | [Status](#status) |
+
+## default
+
 ### /v1beta1/search
 
 #### GET
@@ -1115,6 +1222,8 @@ API for querying documents. 'text' is fuzzy matched against all the available da
 | text | query | text to search for (fuzzy) | No | string |
 | rankby | query | descendingly sort based on a numeric field in the asset. the nested field is written with period separated field name. eg, "rankby[data.profile.usage_count]" | No | string |
 | size | query | number of results to return | No | long |
+| include_fields | query |  | No | [ string ] |
+| offset | query | offset parameter defines the offset from the first result you want to fetch | No | long |
 
 ##### Responses
 
@@ -1535,6 +1644,21 @@ Request to be sent to create a discussion
 | ---- | ---- | ----------- | -------- |
 | id | string |  | No |
 
+#### CreateNamespaceRequest
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| id | string | optional, if not specified will be auto generated | No |
+| metadata | object | key value pairs as metadata for the namespace | No |
+| name | string |  | No |
+| state | string |  | No |
+
+#### CreateNamespaceResponse
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| id | string |  | No |
+
 #### CreateTagAssetRequest
 
 Request to be sent to create a tag
@@ -1708,6 +1832,12 @@ Request to be sent to create a tag's template
 | ---- | ---- | ----------- | -------- |
 | data | [ [v1beta1.Asset](#v1beta1asset) ] |  | No |
 
+#### GetNamespaceResponse
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| namespace | [Namespace](#namespace) |  | No |
+
 #### GetTagByAssetAndTemplateResponse
 
 | Name | Type | Description | Required |
@@ -1741,6 +1871,21 @@ Request to be sent to create a tag's template
 | service | string |  | No |
 | type | string |  | No |
 | urn | string |  | No |
+
+#### ListNamespacesResponse
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| namespaces | [ [Namespace](#namespace) ] |  | No |
+
+#### Namespace
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| id | string |  | No |
+| metadata | object | key value pairs as metadata for the namespace | No |
+| name | string |  | No |
+| state | string |  | No |
 
 #### NodeAttributes
 
@@ -1850,6 +1995,12 @@ Request to be sent to create a tag's template
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
 | UpdateCommentResponse | object |  |  |
+
+#### UpdateNamespaceResponse
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| UpdateNamespaceResponse | object |  |  |
 
 #### UpdateTagAssetResponse
 
