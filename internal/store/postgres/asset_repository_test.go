@@ -951,8 +951,10 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				Type:    "table",
 				Service: "bigquery",
 				Owners: []user.User{
-					stripUserID(r.users[1]),
+					r.users[1],
 					{Email: r.users[2].Email},
+					{UUID: r.users[2].UUID}, // should get deduplicated by ID on fetch by UUID
+					{ID: r.users[1].ID},     // should get deduplicated by ID
 				},
 				UpdatedBy: r.users[0],
 			}
@@ -965,7 +967,7 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			actual, err := r.repository.GetByID(r.ctx, ast.ID)
 			r.NoError(err)
 
-			r.Len(actual.Owners, len(ast.Owners))
+			r.Len(actual.Owners, 2)
 			r.Equal(r.users[1].ID, actual.Owners[0].ID)
 			r.Equal(r.users[2].ID, actual.Owners[1].ID)
 		})
@@ -978,6 +980,7 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				Owners: []user.User{
 					{Email: "newuser@example.com"},
 					{UUID: "795151e5-4c9f-4951-a8e1-6966b5aa2bb6"},
+					{Email: "newuser@example.com"}, // should get deduplicated by ID on fetch user by email
 				},
 				UpdatedBy: r.users[0],
 			}
@@ -989,7 +992,7 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			actual, err := r.repository.GetByID(r.ctx, id)
 			r.NoError(err)
 
-			r.Len(actual.Owners, len(ast.Owners))
+			r.Len(actual.Owners, 2)
 			r.Equal(ast.Owners[0].Email, actual.Owners[0].Email)
 			r.Equal(ast.Owners[1].UUID, actual.Owners[1].UUID)
 		})

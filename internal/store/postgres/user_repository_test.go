@@ -173,6 +173,27 @@ func (r *UserRepositoryTestSuite) TestGetBy() {
 		})
 	})
 
+	r.Run("by email with tx, return the user created in the tx", func() {
+		err := setup(r.ctx, r.client)
+		r.NoError(err)
+
+		u := getUser("use-getbyemail@gotocompany.com")
+		err = r.client.RunWithinTx(r.ctx, func(tx *sqlx.Tx) error {
+			id, err := r.repository.CreateWithTx(r.ctx, tx, u)
+			r.NoError(err)
+
+			_, err = r.repository.GetByEmail(r.ctx, u.Email)
+			r.ErrorAs(err, new(user.NotFoundError))
+
+			u, err := r.repository.GetByEmailWithTx(r.ctx, tx, u.Email)
+			r.NoError(err)
+			r.Equal(id, u.ID)
+
+			return nil
+		})
+		r.NoError(err)
+	})
+
 	r.Run("by uuid", func() {
 		r.Run("return empty string and ErrNotFound if uuid not found in DB", func() {
 			usr, err := r.repository.GetByUUID(r.ctx, "random")
@@ -195,6 +216,26 @@ func (r *UserRepositoryTestSuite) TestGetBy() {
 		})
 	})
 
+	r.Run("by UUID with tx, return the user created in the tx", func() {
+		err := setup(r.ctx, r.client)
+		r.NoError(err)
+
+		u := getUser("use-getbyuuid@gotocompany.com")
+		err = r.client.RunWithinTx(r.ctx, func(tx *sqlx.Tx) error {
+			id, err := r.repository.CreateWithTx(r.ctx, tx, u)
+			r.NoError(err)
+
+			_, err = r.repository.GetByUUID(r.ctx, u.UUID)
+			r.ErrorAs(err, new(user.NotFoundError))
+
+			u, err := r.repository.GetByUUIDWithTx(r.ctx, tx, u.UUID)
+			r.NoError(err)
+			r.Equal(id, u.ID)
+
+			return nil
+		})
+		r.NoError(err)
+	})
 }
 
 func (r *UserRepositoryTestSuite) TestUpsertByEmail() {
