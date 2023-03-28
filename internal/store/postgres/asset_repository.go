@@ -287,21 +287,22 @@ func (r *AssetRepository) Upsert(ctx context.Context, ast *asset.Asset) (string,
 
 	if fetchedAsset.ID == "" {
 		// insert flow
-		fetchedAsset.ID, err = r.insert(ctx, ast)
+		id, err := r.insert(ctx, ast)
 		if err != nil {
-			return fetchedAsset.ID, fmt.Errorf("error inserting asset to DB: %w", err)
+			return "", fmt.Errorf("error inserting asset to DB: %w", err)
 		}
-	} else {
-		// update flow
-		changelog, err := fetchedAsset.Diff(ast)
-		if err != nil {
-			return "", fmt.Errorf("error diffing two assets: %w", err)
-		}
+		return id, nil
+	}
 
-		err = r.update(ctx, fetchedAsset.ID, ast, &fetchedAsset, changelog)
-		if err != nil {
-			return "", fmt.Errorf("error updating asset to DB: %w", err)
-		}
+	// update flow
+	changelog, err := fetchedAsset.Diff(ast)
+	if err != nil {
+		return "", fmt.Errorf("error diffing two assets: %w", err)
+	}
+
+	err = r.update(ctx, fetchedAsset.ID, ast, &fetchedAsset, changelog)
+	if err != nil {
+		return "", fmt.Errorf("error updating asset to DB: %w", err)
 	}
 
 	return fetchedAsset.ID, nil
@@ -461,6 +462,8 @@ func (r *AssetRepository) insert(ctx context.Context, ast *asset.Asset) (id stri
 		if err != nil {
 			return fmt.Errorf("error building insert query: %w", err)
 		}
+
+		ast.Version = asset.BaseVersion
 
 		err = tx.QueryRowContext(ctx, query, args...).Scan(&id)
 		if err != nil {
