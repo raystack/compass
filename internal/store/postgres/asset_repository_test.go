@@ -4,15 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/odpf/compass/core/namespace"
-	"github.com/odpf/compass/pkg/grpc_interceptor"
 	"os"
 	"sort"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/odpf/compass/core/namespace"
+	"github.com/odpf/compass/pkg/grpc_interceptor"
+
 	_ "embed"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
@@ -954,11 +956,11 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 				URN:       "urn-u-1",
 				Type:      "table",
 				Service:   "bigquery",
-				Version:   "0.1",
 				URL:       "https://sample-url.com",
 				UpdatedBy: r.users[0],
 			}
 			id, err := r.repository.Upsert(r.ctx, r.ns, &ast)
+			r.Equal(asset.BaseVersion, ast.Version)
 			r.NoError(err)
 			r.NotEmpty(id)
 			ast.ID = id
@@ -968,6 +970,14 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			r.NotEqual(time.Time{}, assetInDB.CreatedAt)
 			r.NotEqual(time.Time{}, assetInDB.UpdatedAt)
 			r.assertAsset(&ast, &assetInDB)
+
+			ast2 := ast
+			ast2.Description = "create a new version" // to force fetch from asset_versions.
+			_, err = r.repository.Upsert(r.ctx, r.ns, &ast2)
+			r.NoError(err)
+			assetv1, err := r.repository.GetByVersionWithID(r.ctx, ast.ID, asset.BaseVersion)
+			r.NoError(err)
+			r.Equal("0.1", assetv1.Version)
 		})
 
 		r.Run("should store owners if any", func() {
