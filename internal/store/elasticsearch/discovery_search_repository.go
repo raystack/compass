@@ -17,7 +17,6 @@ const (
 	defaultMaxResults                  = 200
 	defaultMinScore                    = 0.01
 	defaultFunctionScoreQueryScoreMode = "sum"
-	allIndices                         = "_all"
 	suggesterName                      = "name-phrase-suggest"
 )
 
@@ -33,7 +32,7 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 	if maxResults <= 0 {
 		maxResults = defaultMaxResults
 	}
-	query, err := repo.buildQuery(ctx, cfg)
+	query, err := repo.buildQuery(cfg)
 	if err != nil {
 		err = asset.DiscoveryError{Err: fmt.Errorf("error building query %w", err)}
 		return
@@ -41,7 +40,7 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 
 	res, err := repo.cli.client.Search(
 		repo.cli.client.Search.WithBody(query),
-		repo.cli.client.Search.WithIndex(allIndices),
+		repo.cli.client.Search.WithIndex(defaultSearchIndex),
 		repo.cli.client.Search.WithSize(maxResults),
 		repo.cli.client.Search.WithIgnoreUnavailable(true),
 		repo.cli.client.Search.WithSourceIncludes(returnedAssetFieldsResult...),
@@ -69,14 +68,14 @@ func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.Searc
 		maxResults = defaultMaxResults
 	}
 
-	query, err := repo.buildSuggestQuery(ctx, config)
+	query, err := repo.buildSuggestQuery(config)
 	if err != nil {
 		err = asset.DiscoveryError{Err: fmt.Errorf("error building query: %s", err)}
 		return
 	}
 	res, err := repo.cli.client.Search(
 		repo.cli.client.Search.WithBody(query),
-		repo.cli.client.Search.WithIndex(allIndices),
+		repo.cli.client.Search.WithIndex(defaultSearchIndex),
 		repo.cli.client.Search.WithSize(maxResults),
 		repo.cli.client.Search.WithIgnoreUnavailable(true),
 		repo.cli.client.Search.WithContext(ctx),
@@ -104,12 +103,12 @@ func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.Searc
 	return
 }
 
-func (repo *DiscoveryRepository) buildQuery(ctx context.Context, cfg asset.SearchConfig) (io.Reader, error) {
+func (repo *DiscoveryRepository) buildQuery(cfg asset.SearchConfig) (io.Reader, error) {
 	var query elastic.Query
 
-	query = repo.buildTextQuery(ctx, cfg.Text)
+	query = repo.buildTextQuery(cfg.Text)
 	query = repo.buildFilterTermQueries(query, cfg.Filters)
-	query = repo.buildFilterMatchQueries(ctx, query, cfg.Queries)
+	query = repo.buildFilterMatchQueries(query, cfg.Queries)
 	query = repo.buildFunctionScoreQuery(query, cfg.RankBy)
 
 	src, err := query.Source()
@@ -125,7 +124,7 @@ func (repo *DiscoveryRepository) buildQuery(ctx context.Context, cfg asset.Searc
 	return payload, json.NewEncoder(payload).Encode(q)
 }
 
-func (repo *DiscoveryRepository) buildSuggestQuery(ctx context.Context, cfg asset.SearchConfig) (io.Reader, error) {
+func (repo *DiscoveryRepository) buildSuggestQuery(cfg asset.SearchConfig) (io.Reader, error) {
 	suggester := elastic.NewCompletionSuggester(suggesterName).
 		Field("name.suggest").
 		SkipDuplicates(true).
@@ -147,7 +146,7 @@ func (repo *DiscoveryRepository) buildSuggestQuery(ctx context.Context, cfg asse
 	return payload, err
 }
 
-func (repo *DiscoveryRepository) buildTextQuery(ctx context.Context, text string) elastic.Query {
+func (repo *DiscoveryRepository) buildTextQuery(text string) elastic.Query {
 	boostedFields := []string{
 		"urn^10",
 		"name^5",
@@ -174,7 +173,7 @@ func (repo *DiscoveryRepository) buildTextQuery(ctx context.Context, text string
 		)
 }
 
-func (repo *DiscoveryRepository) buildFilterMatchQueries(ctx context.Context, query elastic.Query, queries map[string]string) elastic.Query {
+func (repo *DiscoveryRepository) buildFilterMatchQueries(query elastic.Query, queries map[string]string) elastic.Query {
 	if len(queries) == 0 {
 		return query
 	}

@@ -3,6 +3,7 @@ package asset
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 var (
@@ -36,9 +37,24 @@ func (err InvalidError) Error() string {
 }
 
 type DiscoveryError struct {
-	Err error
+	Op    string
+	ID    string
+	Index string
+	Err   error
 }
 
 func (err DiscoveryError) Error() string {
-	return fmt.Sprintf("discovery error: %s", err.Err)
+	var s strings.Builder
+	s.WriteString("discovery error: ")
+	if err.Op != "" {
+		s.WriteString(err.Op + ": ")
+	}
+	if err.ID != "" {
+		s.WriteString("doc ID '" + err.ID + "': ")
+	}
+	if err.Index != "" {
+		s.WriteString("index '" + err.Index + "': ")
+	}
+	s.WriteString(err.Err.Error())
+	return s.String()
 }

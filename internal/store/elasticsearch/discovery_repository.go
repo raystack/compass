@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"net/url"
 	"strings"
 
 	"github.com/goto/compass/core/asset"
@@ -33,31 +35,60 @@ func (repo *DiscoveryRepository) Upsert(ctx context.Context, ast asset.Asset) er
 
 	idxExists, err := repo.cli.indexExists(ctx, ast.Service)
 	if err != nil {
-		return asset.DiscoveryError{Err: err}
+		return asset.DiscoveryError{
+			Op:    "IndexExists",
+			ID:    ast.ID,
+			Index: ast.Service,
+			Err:   err,
+		}
 	}
 
 	if !idxExists {
 		if err := repo.cli.CreateIdx(ctx, ast.Service); err != nil {
-			return asset.DiscoveryError{Err: err}
+			return asset.DiscoveryError{
+				Op:    "CreateIndex",
+				ID:    ast.ID,
+				Index: ast.Service,
+				Err:   err,
+			}
 		}
 	}
 
-	body, err := repo.createUpsertBody(ast)
+	body, err := createUpsertBody(ast)
 	if err != nil {
-		return asset.DiscoveryError{Err: fmt.Errorf("error serialising payload: %w", err)}
+		return asset.DiscoveryError{
+			Op:  "EncodeAsset",
+			ID:  ast.ID,
+			Err: err,
+		}
 	}
-	res, err := repo.cli.client.Bulk(
+
+	index := repo.cli.client.Index
+	resp, err := index(
+		ast.Service,
 		body,
-		repo.cli.client.Bulk.WithRefresh("true"),
-		repo.cli.client.Bulk.WithContext(ctx),
+		index.WithDocumentID(url.PathEscape(ast.ID)),
+		index.WithContext(ctx),
 	)
 	if err != nil {
-		return asset.DiscoveryError{Err: err}
+		return asset.DiscoveryError{
+			Op:    "IndexDoc",
+			ID:    ast.ID,
+			Index: ast.Service,
+			Err:   err,
+		}
 	}
-	defer res.Body.Close()
-	if res.IsError() {
-		return asset.DiscoveryError{Err: fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))}
+	defer drainBody(resp)
+
+	if resp.IsError() {
+		return asset.DiscoveryError{
+			Op:    "IndexDoc",
+			ID:    ast.ID,
+			Index: ast.Service,
+			Err:   errors.New(errorReasonFromResponse(resp)),
+		}
 	}
+
 	return nil
 }
 
@@ -66,7 +97,7 @@ func (repo *DiscoveryRepository) DeleteByID(ctx context.Context, assetID string)
 		return asset.ErrEmptyID
 	}
 
-	return repo.deleteWithQuery(ctx, strings.NewReader(fmt.Sprintf(`{"query":{"term":{"_id": "%s"}}}`, assetID)))
+	return repo.deleteWithQuery(ctx, fmt.Sprintf(`{"query":{"term":{"_id": "%s"}}}`, assetID))
 }
 
 func (repo *DiscoveryRepository) DeleteByURN(ctx context.Context, assetURN string) error {
@@ -74,48 +105,38 @@ func (repo *DiscoveryRepository) DeleteByURN(ctx context.Context, assetURN strin
 		return asset.ErrEmptyURN
 	}
 
-	return repo.deleteWithQuery(ctx, strings.NewReader(fmt.Sprintf(`{"query":{"term":{"urn.keyword": "%s"}}}`, assetURN)))
+	return repo.deleteWithQuery(ctx, fmt.Sprintf(`{"query":{"term":{"urn.keyword": "%s"}}}`, assetURN))
 }
 
-func (repo *DiscoveryRepository) deleteWithQuery(ctx context.Context, qry io.Reader) error {
+func (repo *DiscoveryRepository) deleteWithQuery(ctx context.Context, qry string) error {
 	res, err := repo.cli.client.DeleteByQuery(
-		[]string{"_all"},
-		qry,
+		[]string{defaultSearchIndex},
+		strings.NewReader(qry),
 		repo.cli.client.DeleteByQuery.WithContext(ctx),
 		repo.cli.client.DeleteByQuery.WithRefresh(true),
 	)
 	if err != nil {
-		return asset.DiscoveryError{Err: fmt.Errorf("error deleting asset: %w", err)}
+		return asset.DiscoveryError{
+			Op:  "DeleteDoc",
+			Err: fmt.Errorf("query: %s: %w", qry, err),
+		}
 	}
-	defer res.Body.Close()
+	defer drainBody(res)
 	if res.IsError() {
-		return asset.DiscoveryError{Err: fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))}
+		return asset.DiscoveryError{
+			Op:  "DeleteDoc",
+			Err: fmt.Errorf("query: %s: %s", qry, errorReasonFromResponse(res)),
+		}
 	}
 
 	return nil
 }
 
-func (repo *DiscoveryRepository) createUpsertBody(ast asset.Asset) (io.Reader, error) {
-	payload := bytes.NewBuffer(nil)
-	err := repo.writeInsertAction(payload, ast)
-	if err != nil {
-		return nil, fmt.Errorf("createBulkInsertPayload: %w", err)
-	}
+func createUpsertBody(ast asset.Asset) (io.Reader, error) {
+	var buf bytes.Buffer
 
-	err = json.NewEncoder(payload).Encode(ast)
-	if err != nil {
-		return nil, fmt.Errorf("error serialising asset: %w", err)
+	if err := json.NewEncoder(&buf).Encode(ast); err != nil {
+		return nil, fmt.Errorf("encode asset: %w", err)
 	}
-	return payload, nil
-}
-
-func (repo *DiscoveryRepository) writeInsertAction(w io.Writer, ast asset.Asset) error {
-	action := map[string]interface{}{
-		"index": map[string]interface{}{
-			"_index": ast.Service,
-			"_id":    ast.ID,
-		},
-	}
-
-	return json.NewEncoder(w).Encode(action)
+	return &buf, nil
 }

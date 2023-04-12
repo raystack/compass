@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/goto/compass/core/asset"
 	store "github.com/goto/compass/internal/store/elasticsearch"
 	"github.com/goto/salt/log"
@@ -47,7 +48,7 @@ func TestSearcherSearch(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		err = loadTestFixture(esClient, "./testdata/search-test-fixture.json")
+		err = loadTestFixture(cli, esClient, "./testdata/search-test-fixture.json")
 		require.NoError(t, err)
 
 		repo := store.NewDiscoveryRepository(esClient)
@@ -219,7 +220,7 @@ func TestSearcherSuggest(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	err = loadTestFixture(esClient, "./testdata/suggest-test-fixture.json")
+	err = loadTestFixture(cli, esClient, "./testdata/suggest-test-fixture.json")
 	require.NoError(t, err)
 
 	repo := store.NewDiscoveryRepository(esClient)
@@ -245,7 +246,7 @@ func TestSearcherSuggest(t *testing.T) {
 	})
 }
 
-func loadTestFixture(esClient *store.Client, filePath string) (err error) {
+func loadTestFixture(cli *elasticsearch.Client, esClient *store.Client, filePath string) (err error) {
 	testFixtureJSON, err := os.ReadFile(filePath)
 	if err != nil {
 		return
@@ -266,6 +267,11 @@ func loadTestFixture(esClient *store.Client, filePath string) (err error) {
 			}
 		}
 	}
+
+	_, err = cli.Indices.Refresh(
+		cli.Indices.Refresh.WithIgnoreUnavailable(true),
+		cli.Indices.Refresh.WithIndex("universe"),
+	)
 
 	return err
 }

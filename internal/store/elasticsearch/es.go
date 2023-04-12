@@ -69,19 +69,19 @@ type searchResponse struct {
 // returns the raw message in case it fails
 func errorReasonFromResponse(res *esapi.Response) string {
 	var (
-		response struct {
+		r struct {
 			Error struct {
 				Reason string `json:"reason"`
 			} `json:"error"`
 		}
-		copy bytes.Buffer
+		cp bytes.Buffer
 	)
-	reader := io.TeeReader(res.Body, &copy)
-	err := json.NewDecoder(reader).Decode(&response)
+	err := json.NewDecoder(io.TeeReader(res.Body, &cp)).Decode(&r)
 	if err != nil {
-		return fmt.Sprintf("raw response = %s", copy.String())
+		return fmt.Sprintf("raw response: %s", cp.String())
 	}
-	return response.Error.Reason
+
+	return r.Error.Reason
 }
 
 type Client struct {
@@ -126,7 +126,7 @@ func (c *Client) Init() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer res.Body.Close()
+	defer drainBody(res)
 	if res.IsError() {
 		return "", errors.New(res.Status())
 	}
@@ -153,11 +153,11 @@ func (c *Client) CreateIdx(ctx context.Context, indexName string) error {
 		c.client.Indices.Create.WithContext(ctx),
 	)
 	if err != nil {
-		return asset.DiscoveryError{Err: err}
+		return fmt.Errorf("create index: '%s': %w", indexName, err)
 	}
-	defer res.Body.Close()
+	defer drainBody(res)
 	if res.IsError() {
-		return fmt.Errorf("error creating index %q: %s", indexName, errorReasonFromResponse(res))
+		return fmt.Errorf("create index '%s': %s", indexName, errorReasonFromResponse(res))
 	}
 	return nil
 }
@@ -173,8 +173,20 @@ func (c *Client) indexExists(ctx context.Context, name string) (bool, error) {
 		c.client.Indices.Exists.WithContext(ctx),
 	)
 	if err != nil {
-		return false, fmt.Errorf("indexExists: %w", err)
+		return false, fmt.Errorf("check index exists: %w", err)
 	}
-	defer res.Body.Close()
+	defer drainBody(res)
 	return res.StatusCode == 200, nil
+}
+
+// drainBody drains and closes the response body to avoid the following
+// gotcha:
+// http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/index.html#close_http_resp_body
+func drainBody(resp *esapi.Response) {
+	if resp == nil {
+		return
+	}
+
+	_, _ = io.Copy(io.Discard, resp.Body)
+	_ = resp.Body.Close()
 }

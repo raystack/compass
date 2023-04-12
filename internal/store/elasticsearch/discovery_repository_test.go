@@ -59,6 +59,44 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		assert.ErrorIs(t, err, asset.ErrUnknownType)
 	})
 
+	t.Run("should return error if response.body.Errors is true", func(t *testing.T) {
+		cli, err := esTestServer.NewClient()
+		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
+		require.NoError(t, err)
+
+		repo := store.NewDiscoveryRepository(esClient)
+
+		// upsert with create_time as a object
+		err = repo.Upsert(ctx, asset.Asset{
+			ID:      "sample-id",
+			Type:    asset.TypeTable,
+			Service: bigqueryService,
+			Data: map[string]interface{}{
+				"create_time": map[string]interface{}{
+					"seconds": 1618103237,
+					"nanos":   897000000,
+				},
+			},
+		})
+		require.NoError(t, err)
+
+		// upsert with create_time as a string
+		err = repo.Upsert(ctx, asset.Asset{
+			ID:      "sample-id",
+			Type:    asset.TypeTable,
+			Service: bigqueryService,
+			Data: map[string]interface{}{
+				"create_time": "2023-04-10T22:33:57.897Z",
+			},
+		})
+		assert.EqualError(t, err, "discovery error: IndexDoc: doc ID 'sample-id': index 'bigquery-test': object mapping for [data.create_time] tried to parse field [create_time] as object, but found a concrete value")
+	})
+
 	t.Run("should insert asset to the correct index by its service", func(t *testing.T) {
 		ast := asset.Asset{
 			ID:          "sample-id",
