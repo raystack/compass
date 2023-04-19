@@ -29,6 +29,7 @@ type LineageQuery struct {
 type LineageRepository interface {
 	GetGraph(ctx context.Context, urn string, query LineageQuery) (LineageGraph, error)
 	Upsert(ctx context.Context, urn string, upstreams, downstreams []string) error
+	DeleteByURN(ctx context.Context, urn string) error
 }
 
 type LineageGraph []LineageEdge

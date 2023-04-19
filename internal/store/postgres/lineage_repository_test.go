@@ -112,6 +112,29 @@ func (r *LineageRepositoryTestSuite) TestGetGraph() {
 	})
 }
 
+func (r *LineageRepositoryTestSuite) TestDeleteByURN() {
+	r.Run("should delete asset from lineage", func() {
+		nodeURN := "table-1"
+
+		// create initial
+		err := r.repository.Upsert(r.ctx, nodeURN, []string{"table-2"}, []string{"table-3"})
+		r.NoError(err)
+
+		err = r.repository.DeleteByURN(r.ctx, nodeURN)
+		r.NoError(err)
+
+		graph, err := r.repository.GetGraph(r.ctx, nodeURN, asset.LineageQuery{})
+		r.Require().NoError(err)
+		r.compareGraphs(asset.LineageGraph{}, graph)
+	})
+
+	r.Run("delete when URN has no lineage", func() {
+		nodeURN := "table-1"
+		err := r.repository.DeleteByURN(r.ctx, nodeURN)
+		r.NoError(err)
+	})
+}
+
 func (r *LineageRepositoryTestSuite) TestUpsert() {
 	r.Run("should insert all as graph if upstreams and downstreams are new", func() {
 		nodeURN := "table-1"

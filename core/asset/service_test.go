@@ -313,10 +313,19 @@ func TestService_DeleteAsset(t *testing.T) {
 
 	var testCases = []testCase{
 		{
+			Description: `with ID, should return error if asset repository get by id returns error`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, errors.New("unknown error"))
+			},
+			Err: errors.New("unknown error"),
+		},
+		{
 			Description: `with ID, should return error if asset repository delete return error`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				ar.EXPECT().DeleteByID(ctx, assetID).Return(errors.New("unknown error"))
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{ID: assetID, URN: urn}, nil)
+				ar.EXPECT().DeleteByURN(ctx, urn).Return(errors.New("unknown error"))
 			},
 			Err: errors.New("unknown error"),
 		},
@@ -324,8 +333,20 @@ func TestService_DeleteAsset(t *testing.T) {
 			Description: `with ID, should return error if discovery repository delete return error`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				ar.EXPECT().DeleteByID(ctx, assetID).Return(nil)
-				dr.EXPECT().DeleteByID(ctx, assetID).Return(errors.New("unknown error"))
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{ID: assetID, URN: urn}, nil)
+				ar.EXPECT().DeleteByURN(ctx, urn).Return(nil)
+				dr.EXPECT().DeleteByURN(ctx, urn).Return(errors.New("unknown error"))
+			},
+			Err: errors.New("unknown error"),
+		},
+		{
+			Description: `with ID, should return error if lineage repository delete return error`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{ID: assetID, URN: urn}, nil)
+				ar.EXPECT().DeleteByURN(ctx, urn).Return(nil)
+				dr.EXPECT().DeleteByURN(ctx, urn).Return(nil)
+				lr.EXPECT().DeleteByURN(ctx, urn).Return(errors.New("unknown error"))
 			},
 			Err: errors.New("unknown error"),
 		},
@@ -347,11 +368,23 @@ func TestService_DeleteAsset(t *testing.T) {
 			Err: errors.New("unknown error"),
 		},
 		{
-			Description: `should call DeleteByID on repositories when given a UUID`,
+			Description: `with URN, should return error if lineage repository delete return error`,
+			ID:          urn,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
+				ar.EXPECT().DeleteByURN(ctx, urn).Return(nil)
+				dr.EXPECT().DeleteByURN(ctx, urn).Return(nil)
+				lr.EXPECT().DeleteByURN(ctx, urn).Return(errors.New("unknown error"))
+			},
+			Err: errors.New("unknown error"),
+		},
+		{
+			Description: `should call DeleteByURN on repositories by fetching URN when given a UUID`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
-				ar.EXPECT().DeleteByID(ctx, assetID).Return(nil)
-				dr.EXPECT().DeleteByID(ctx, assetID).Return(nil)
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{ID: assetID, URN: urn}, nil)
+				ar.EXPECT().DeleteByURN(ctx, urn).Return(nil)
+				dr.EXPECT().DeleteByURN(ctx, urn).Return(nil)
+				lr.EXPECT().DeleteByURN(ctx, urn).Return(nil)
 			},
 			Err: nil,
 		},
@@ -361,6 +394,7 @@ func TestService_DeleteAsset(t *testing.T) {
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
 				ar.EXPECT().DeleteByURN(ctx, urn).Return(nil)
 				dr.EXPECT().DeleteByURN(ctx, urn).Return(nil)
+				lr.EXPECT().DeleteByURN(ctx, urn).Return(nil)
 			},
 			Err: nil,
 		},
