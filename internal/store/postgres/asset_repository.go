@@ -636,31 +636,31 @@ func (r *AssetRepository) getOwners(ctx context.Context, assetID string) (owners
 }
 
 // insertOwners inserts relation of asset id and user id
-func (r *AssetRepository) insertOwners(ctx context.Context, execer sqlx.ExecerContext, assetID string, owners []user.User) (err error) {
+func (r *AssetRepository) insertOwners(ctx context.Context, execer sqlx.ExecerContext, assetID string, owners []user.User) error {
 	if len(owners) == 0 {
-		return
+		return nil
 	}
 
 	if !isValidUUID(assetID) {
 		return asset.InvalidError{AssetID: assetID}
 	}
 
-	var values []string
-	var args = []interface{}{assetID}
-	for i, owner := range owners {
-		values = append(values, fmt.Sprintf("($1, $%d)", i+2))
-		args = append(args, owner.ID)
-	}
-	query := fmt.Sprintf(`
-		INSERT INTO asset_owners
-			(asset_id, user_id)
-		VALUES %s`, strings.Join(values, ","))
-	err = r.execContext(ctx, execer, query, args...)
-	if err != nil {
-		err = fmt.Errorf("error running insert owners query: %w", err)
+	sqlb := sq.Insert("asset_owners").
+		Columns("asset_id", "user_id")
+	for _, o := range owners {
+		sqlb = sqlb.Values(assetID, o.ID)
 	}
 
-	return
+	qry, args, err := sqlb.PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return fmt.Errorf("build insert owners SQL: %w", err)
+	}
+
+	if err := r.execContext(ctx, execer, qry, args...); err != nil {
+		return fmt.Errorf("error running insert owners query: %w", err)
+	}
+
+	return nil
 }
 
 func (r *AssetRepository) removeOwners(ctx context.Context, execer sqlx.ExecerContext, assetID string, owners []user.User) (err error) {
@@ -720,34 +720,38 @@ func (r *AssetRepository) compareOwners(current, newOwners []user.User) (toInser
 	return
 }
 
-func (r *AssetRepository) createOrFetchUsers(ctx context.Context, tx *sqlx.Tx, ns *namespace.Namespace, users []user.User) (results []user.User, err error) {
+func (r *AssetRepository) createOrFetchUsers(ctx context.Context, tx *sqlx.Tx, ns *namespace.Namespace, users []user.User) ([]user.User, error) {
+	var results []user.User
 	for _, u := range users {
+		var (
+			userID      string
+			fetchedUser user.User
+			err         error
+		)
 		if u.UUID != "" {
-			results = append(results, u)
-			continue
+			fetchedUser, err = r.userRepo.GetByUUID(ctx, u.UUID)
+		} else {
+			fetchedUser, err = r.userRepo.GetByEmail(ctx, u.Email)
 		}
-		var userID string
-		var fetchedUser user.User
-		fetchedUser, err = r.userRepo.GetByEmail(ctx, u.Email)
-		userID = fetchedUser.ID
+		if err == nil {
+			userID = fetchedUser.ID
+		}
 		if errors.As(err, &user.NotFoundError{}) {
 			u.Provider = r.defaultUserProvider
 			userID, err = r.userRepo.CreateWithTx(ctx, tx, ns, &u)
 			if err != nil {
-				err = fmt.Errorf("error creating owner: %w", err)
-				return
+				return nil, fmt.Errorf("error creating owner: %w", err)
 			}
 		}
 		if err != nil {
-			err = fmt.Errorf("error getting owner's ID: %w", err)
-			return
+			return nil, fmt.Errorf("error getting owner's ID: %w", err)
 		}
 
 		u.ID = userID
 		results = append(results, u)
 	}
 
-	return
+	return results, nil
 }
 
 func (r *AssetRepository) execContext(ctx context.Context, execer sqlx.ExecerContext, query string, args ...interface{}) error {

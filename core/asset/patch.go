@@ -54,6 +54,7 @@ func buildOwners(data interface{}) (owners []user.User) {
 	buildOwner := func(data map[string]interface{}) user.User {
 		return user.User{
 			ID:       getString("id", data),
+			UUID:     getString("uuid", data),
 			Email:    getString("email", data),
 			Provider: getString("provider", data),
 		}
