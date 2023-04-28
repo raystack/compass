@@ -109,11 +109,13 @@ func (repo *DiscoveryRepository) DeleteByURN(ctx context.Context, assetURN strin
 }
 
 func (repo *DiscoveryRepository) deleteWithQuery(ctx context.Context, qry string) error {
-	res, err := repo.cli.client.DeleteByQuery(
+	deleteByQ := repo.cli.client.DeleteByQuery
+	res, err := deleteByQ(
 		[]string{defaultSearchIndex},
 		strings.NewReader(qry),
-		repo.cli.client.DeleteByQuery.WithContext(ctx),
-		repo.cli.client.DeleteByQuery.WithRefresh(true),
+		deleteByQ.WithContext(ctx),
+		deleteByQ.WithRefresh(true),
+		deleteByQ.WithIgnoreUnavailable(true),
 	)
 	if err != nil {
 		return asset.DiscoveryError{

@@ -203,6 +203,7 @@ func TestDiscoveryRepositoryDeleteByID(t *testing.T) {
 	var (
 		ctx             = context.Background()
 		bigqueryService = "bigquery-test"
+		kafkaService    = "kafka-test"
 	)
 
 	t.Run("should return error if id empty", func(t *testing.T) {
@@ -261,12 +262,50 @@ func TestDiscoveryRepositoryDeleteByID(t *testing.T) {
 
 		assert.Equal(t, int64(0), body.Hits.Total.Value)
 	})
+
+	t.Run("should ignore unavailable indices", func(t *testing.T) {
+		ast1 := asset.Asset{
+			ID:      "id1",
+			Type:    asset.TypeTable,
+			Service: bigqueryService,
+			URN:     "urn1",
+		}
+		ast2 := asset.Asset{
+			ID:      "id2",
+			Type:    asset.TypeTopic,
+			Service: kafkaService,
+			URN:     "urn2",
+		}
+		cli, err := esTestServer.NewClient()
+		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
+		require.NoError(t, err)
+
+		repo := store.NewDiscoveryRepository(esClient)
+
+		err = repo.Upsert(ctx, ast1)
+		require.NoError(t, err)
+
+		err = repo.Upsert(ctx, ast2)
+		require.NoError(t, err)
+
+		_, err = cli.Indices.Close([]string{kafkaService})
+		require.NoError(t, err)
+
+		err = repo.DeleteByID(ctx, ast1.ID)
+		assert.NoError(t, err)
+	})
 }
 
 func TestDiscoveryRepositoryDeleteByURN(t *testing.T) {
 	var (
 		ctx             = context.Background()
 		bigqueryService = "bigquery-test"
+		kafkaService    = "kafka-test"
 	)
 
 	cli, err := esTestServer.NewClient()
@@ -313,5 +352,42 @@ func TestDiscoveryRepositoryDeleteByURN(t *testing.T) {
 		require.NoError(t, json.NewDecoder(res.Body).Decode(&body))
 
 		assert.Equal(t, int64(0), body.Hits.Total.Value)
+	})
+
+	t.Run("should ignore unavailable indices", func(t *testing.T) {
+		ast1 := asset.Asset{
+			ID:      "id1",
+			Type:    asset.TypeTable,
+			Service: bigqueryService,
+			URN:     "urn1",
+		}
+		ast2 := asset.Asset{
+			ID:      "id2",
+			Type:    asset.TypeTopic,
+			Service: kafkaService,
+			URN:     "urn2",
+		}
+		cli, err := esTestServer.NewClient()
+		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
+		require.NoError(t, err)
+
+		repo := store.NewDiscoveryRepository(esClient)
+
+		err = repo.Upsert(ctx, ast1)
+		require.NoError(t, err)
+
+		err = repo.Upsert(ctx, ast2)
+		require.NoError(t, err)
+
+		_, err = cli.Indices.Close([]string{kafkaService})
+		require.NoError(t, err)
+
+		err = repo.DeleteByURN(ctx, ast1.URN)
+		assert.NoError(t, err)
 	})
 }
