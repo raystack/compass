@@ -16,6 +16,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/testing/protocmp"
+
+	"github.com/goto/compass/internal/testutils"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSearch(t *testing.T) {
@@ -203,14 +206,11 @@ func TestSearch(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
-			mockUserSvc := new(mocks.UserService)
-			mockSvc := new(mocks.AssetService)
+			mockUserSvc := mocks.NewUserService(t)
+			mockSvc := mocks.NewAssetService(t)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockSvc)
 			}
-
-			defer mockUserSvc.AssertExpectations(t)
-			defer mockSvc.AssertExpectations(t)
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
@@ -304,14 +304,11 @@ func TestSuggest(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
 			logger := log.NewNoop()
-			mockUserSvc := new(mocks.UserService)
-			mockSvc := new(mocks.AssetService)
+			mockUserSvc := mocks.NewUserService(t)
+			mockSvc := mocks.NewAssetService(t)
 			if tc.Setup != nil {
 				tc.Setup(ctx, mockSvc)
 			}
-
-			defer mockUserSvc.AssertExpectations(t)
-			defer mockSvc.AssertExpectations(t)
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
@@ -328,6 +325,170 @@ func TestSuggest(t *testing.T) {
 					t.Error(err)
 					return
 				}
+			}
+		})
+	}
+}
+
+func TestGroupAssets(t *testing.T) {
+	var (
+		userID   = uuid.NewString()
+		userUUID = uuid.NewString()
+	)
+	type testCase struct {
+		Description  string
+		Request      *compassv1beta1.GroupAssetsRequest
+		ExpectStatus codes.Code
+		Setup        func(context.Context, *mocks.AssetService)
+		PostCheck    func(resp *compassv1beta1.GroupAssetsResponse)
+	}
+
+	var testCases = []testCase{
+		{
+			Description:  "should return invalid argument if 'groupby' parameter is empty or missing",
+			ExpectStatus: codes.InvalidArgument,
+			Request:      &compassv1beta1.GroupAssetsRequest{},
+		},
+		{
+			Description: "should report internal server if asset grouper fails",
+			Request: &compassv1beta1.GroupAssetsRequest{
+				Groupby: []string{"groupby"},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				err := fmt.Errorf("service unavailable")
+				as.EXPECT().GroupAssets(ctx, mock.AnythingOfType("asset.GroupConfig")).
+					Return([]asset.GroupResult{}, err)
+			},
+			ExpectStatus: codes.Internal,
+		},
+		{
+			Description: "should pass filter to group config format",
+			Request: &compassv1beta1.GroupAssetsRequest{
+				Groupby: []string{"resource"},
+				Filter: map[string]string{
+					"data.landscape": "th",
+					"type":           "topic",
+					"service":        "kafka,rabbitmq",
+				},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				cfg := asset.GroupConfig{
+					GroupBy: []string{"resource"},
+					Filters: map[string][]string{
+						"type":           {"topic"},
+						"service":        {"kafka", "rabbitmq"},
+						"data.landscape": {"th"},
+					},
+				}
+				as.EXPECT().GroupAssets(ctx, cfg).Return([]asset.GroupResult{}, nil)
+			},
+		},
+		{
+			Description: "should pass include fields to search config format",
+			Request: &compassv1beta1.GroupAssetsRequest{
+				Groupby: []string{"resource"},
+				Filter: map[string]string{
+					"data.landscape": "th",
+					"type":           "topic",
+					"service":        "kafka,rabbitmq",
+				},
+				IncludeFields: []string{"data.columns.name", "owners.email"},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				cfg := asset.GroupConfig{
+					GroupBy: []string{"resource"},
+					Filters: map[string][]string{
+						"type":           {"topic"},
+						"service":        {"kafka", "rabbitmq"},
+						"data.landscape": {"th"},
+					},
+					IncludedFields: []string{"data.columns.name", "owners.email"},
+				}
+				as.EXPECT().GroupAssets(ctx, cfg).Return([]asset.GroupResult{}, nil)
+			},
+		},
+		{
+			Description: "should return the grouped documents",
+			Request: &compassv1beta1.GroupAssetsRequest{
+				Groupby: []string{"resource"},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				cfg := asset.GroupConfig{
+					GroupBy: []string{"resource"},
+					Filters: make(map[string][]string),
+				}
+				response := []asset.GroupResult{
+					{
+						Fields: []asset.GroupField{{
+							Name:  "resource",
+							Value: "kafka",
+						},
+						},
+						Assets: []asset.Asset{{
+							Type:        "test",
+							ID:          "test-resource",
+							Description: "some description",
+							Service:     "test-service",
+							Labels: map[string]string{
+								"entity":    "gotocompany",
+								"landscape": "id",
+							},
+						},
+						},
+					},
+				}
+				as.EXPECT().GroupAssets(ctx, cfg).Return(response, nil)
+			},
+
+			PostCheck: func(resp *compassv1beta1.GroupAssetsResponse) {
+				expected := &compassv1beta1.GroupAssetsResponse{
+					AssetGroups: []*compassv1beta1.AssetGroup{
+						{
+							GroupFields: []*compassv1beta1.GroupField{
+								{
+									GroupKey:   "resource",
+									GroupValue: "kafka",
+								},
+							},
+							Assets: []*compassv1beta1.Asset{
+								{
+									Id:          "test-resource",
+									Description: "some description",
+									Service:     "test-service",
+									Type:        "test",
+									Labels: map[string]string{
+										"entity":    "gotocompany",
+										"landscape": "id",
+									},
+								},
+							},
+						},
+					},
+				}
+				testutils.AssertEqualProto(t, expected, resp)
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
+
+			logger := log.NewNoop()
+			mockUserSvc := mocks.NewUserService(t)
+			mockSvc := mocks.NewAssetService(t)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockSvc)
+			}
+
+			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
+
+			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, mockUserSvc)
+
+			expected, err := handler.GroupAssets(ctx, tc.Request)
+			code := status.Code(err)
+			assert.Equal(t, tc.ExpectStatus, code)
+			if tc.PostCheck != nil {
+				tc.PostCheck(expected)
 			}
 		})
 	}

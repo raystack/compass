@@ -160,6 +160,11 @@ func (s *Service) GetTypes(ctx context.Context, flt Filter) (map[Type]int, error
 func (s *Service) SearchAssets(ctx context.Context, cfg SearchConfig) (results []SearchResult, err error) {
 	return s.discoveryRepository.Search(ctx, cfg)
 }
+
+func (s *Service) GroupAssets(ctx context.Context, cfg GroupConfig) (results []GroupResult, err error) {
+	return s.discoveryRepository.GroupAssets(ctx, cfg)
+}
+
 func (s *Service) SuggestAssets(ctx context.Context, cfg SearchConfig) (suggestions []string, err error) {
 	return s.discoveryRepository.Suggest(ctx, cfg)
 }

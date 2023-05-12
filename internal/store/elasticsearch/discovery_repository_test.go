@@ -31,7 +31,7 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(esClient)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
 		err = repo.Upsert(ctx, asset.Asset{
 			ID:      "",
 			Type:    asset.TypeTable,
@@ -50,7 +50,7 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(esClient)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
 		err = repo.Upsert(ctx, asset.Asset{
 			ID:      "sample-id",
 			Type:    asset.Type("unknown-type"),
@@ -69,7 +69,7 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(esClient)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
 
 		// upsert with create_time as a object
 		err = repo.Upsert(ctx, asset.Asset{
@@ -126,7 +126,7 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(esClient)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
 		err = repo.Upsert(ctx, ast)
 		assert.NoError(t, err)
 
@@ -175,7 +175,7 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(esClient)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
 
 		err = repo.Upsert(ctx, existingAsset)
 		assert.NoError(t, err)
@@ -216,7 +216,7 @@ func TestDiscoveryRepositoryDeleteByID(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(esClient)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
 		err = repo.DeleteByID(ctx, "")
 		assert.ErrorIs(t, err, asset.ErrEmptyID)
 	})
@@ -238,7 +238,7 @@ func TestDiscoveryRepositoryDeleteByID(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(esClient)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
 
 		err = repo.Upsert(ctx, ast)
 		require.NoError(t, err)
@@ -285,7 +285,7 @@ func TestDiscoveryRepositoryDeleteByID(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(esClient)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
 
 		err = repo.Upsert(ctx, ast1)
 		require.NoError(t, err)
@@ -316,7 +316,7 @@ func TestDiscoveryRepositoryDeleteByURN(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	repo := store.NewDiscoveryRepository(esClient)
+	repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
 
 	t.Run("should return error if the given urn is empty", func(t *testing.T) {
 		err = repo.DeleteByURN(ctx, "")
@@ -350,7 +350,6 @@ func TestDiscoveryRepositoryDeleteByURN(t *testing.T) {
 			} `json:"hits"`
 		}
 		require.NoError(t, json.NewDecoder(res.Body).Decode(&body))
-
 		assert.Equal(t, int64(0), body.Hits.Total.Value)
 	})
 
@@ -376,7 +375,7 @@ func TestDiscoveryRepositoryDeleteByURN(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(esClient)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
 
 		err = repo.Upsert(ctx, ast1)
 		require.NoError(t, err)

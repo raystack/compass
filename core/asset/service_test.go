@@ -799,19 +799,21 @@ func TestService_GetLineage(t *testing.T) {
 	}
 }
 
-func TestService_SearchSuggestAssets(t *testing.T) {
+func TestService_SearchSuggestGroupAssets(t *testing.T) {
 	assetID := "some-id"
 	type testCase struct {
 		Description string
 		ID          string
 		ErrSearch   error
 		ErrSuggest  error
+		ErrGroup    error
 		Setup       func(context.Context, *mocks.DiscoveryRepository)
 	}
 
 	DisErr := asset.DiscoveryError{Err: errors.New("could not find")}
 
 	searchResults := []asset.SearchResult{}
+	groupResults := []asset.GroupResult{}
 	var testCases = []testCase{
 		{
 			Description: `should return error if the GetGraph function return error`,
@@ -819,19 +821,23 @@ func TestService_SearchSuggestAssets(t *testing.T) {
 			Setup: func(ctx context.Context, dr *mocks.DiscoveryRepository) {
 				dr.EXPECT().Search(ctx, asset.SearchConfig{}).Return(searchResults, DisErr)
 				dr.EXPECT().Suggest(ctx, asset.SearchConfig{}).Return([]string{}, DisErr)
+				dr.EXPECT().GroupAssets(ctx, asset.GroupConfig{}).Return(groupResults, DisErr)
 			},
 			ErrSearch:  DisErr,
 			ErrSuggest: DisErr,
+			ErrGroup:   DisErr,
 		},
 		{
-			Description: `should return no error if search and suggest function work`,
+			Description: `should return no error if search, group  and suggest function work`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, dr *mocks.DiscoveryRepository) {
 				dr.EXPECT().Search(ctx, asset.SearchConfig{}).Return(searchResults, nil)
 				dr.EXPECT().Suggest(ctx, asset.SearchConfig{}).Return([]string{}, nil)
+				dr.EXPECT().GroupAssets(ctx, asset.GroupConfig{}).Return(groupResults, nil)
 			},
 			ErrSearch:  nil,
 			ErrSuggest: nil,
+			ErrGroup:   nil,
 		},
 	}
 	for _, tc := range testCases {
@@ -853,6 +859,11 @@ func TestService_SearchSuggestAssets(t *testing.T) {
 			_, err = svc.SuggestAssets(ctx, asset.SearchConfig{})
 			if err != nil && !assert.Equal(t, tc.ErrSuggest.Error(), err.Error()) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.ErrSuggest)
+			}
+
+			_, err = svc.GroupAssets(ctx, asset.GroupConfig{})
+			if err != nil && !assert.Equal(t, tc.ErrSuggest.Error(), err.Error()) {
+				t.Fatalf("got error %v, expected error was %v", err, tc.ErrGroup)
 			}
 		})
 	}

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/goto/salt/log"
 	"io"
 	"net/url"
 	"strings"
@@ -16,12 +17,14 @@ import (
 // DiscoveryRepository implements discovery.Repository
 // with elasticsearch as the backing store.
 type DiscoveryRepository struct {
-	cli *Client
+	cli    *Client
+	logger log.Logger
 }
 
-func NewDiscoveryRepository(cli *Client) *DiscoveryRepository {
+func NewDiscoveryRepository(cli *Client, logger log.Logger) *DiscoveryRepository {
 	return &DiscoveryRepository{
-		cli: cli,
+		cli:    cli,
+		logger: logger,
 	}
 }
 
@@ -123,6 +126,7 @@ func (repo *DiscoveryRepository) deleteWithQuery(ctx context.Context, qry string
 			Err: fmt.Errorf("query: %s: %w", qry, err),
 		}
 	}
+
 	defer drainBody(res)
 	if res.IsError() {
 		return asset.DiscoveryError{

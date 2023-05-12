@@ -34,6 +34,8 @@ type CompassServiceClient interface {
 	DeleteComment(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*DeleteCommentResponse, error)
 	// Domain: Asset
 	SearchAssets(ctx context.Context, in *SearchAssetsRequest, opts ...grpc.CallOption) (*SearchAssetsResponse, error)
+	// Domain: Asset
+	GroupAssets(ctx context.Context, in *GroupAssetsRequest, opts ...grpc.CallOption) (*GroupAssetsResponse, error)
 	SuggestAssets(ctx context.Context, in *SuggestAssetsRequest, opts ...grpc.CallOption) (*SuggestAssetsResponse, error)
 	GetGraph(ctx context.Context, in *GetGraphRequest, opts ...grpc.CallOption) (*GetGraphResponse, error)
 	GetAllTypes(ctx context.Context, in *GetAllTypesRequest, opts ...grpc.CallOption) (*GetAllTypesResponse, error)
@@ -158,6 +160,15 @@ func (c *compassServiceClient) DeleteComment(ctx context.Context, in *DeleteComm
 func (c *compassServiceClient) SearchAssets(ctx context.Context, in *SearchAssetsRequest, opts ...grpc.CallOption) (*SearchAssetsResponse, error) {
 	out := new(SearchAssetsResponse)
 	err := c.cc.Invoke(ctx, "/gotocompany.compass.v1beta1.CompassService/SearchAssets", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *compassServiceClient) GroupAssets(ctx context.Context, in *GroupAssetsRequest, opts ...grpc.CallOption) (*GroupAssetsResponse, error) {
+	out := new(GroupAssetsResponse)
+	err := c.cc.Invoke(ctx, "/gotocompany.compass.v1beta1.CompassService/GroupAssets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -432,6 +443,8 @@ type CompassServiceServer interface {
 	DeleteComment(context.Context, *DeleteCommentRequest) (*DeleteCommentResponse, error)
 	// Domain: Asset
 	SearchAssets(context.Context, *SearchAssetsRequest) (*SearchAssetsResponse, error)
+	// Domain: Asset
+	GroupAssets(context.Context, *GroupAssetsRequest) (*GroupAssetsResponse, error)
 	SuggestAssets(context.Context, *SuggestAssetsRequest) (*SuggestAssetsResponse, error)
 	GetGraph(context.Context, *GetGraphRequest) (*GetGraphResponse, error)
 	GetAllTypes(context.Context, *GetAllTypesRequest) (*GetAllTypesResponse, error)
@@ -498,6 +511,9 @@ func (UnimplementedCompassServiceServer) DeleteComment(context.Context, *DeleteC
 }
 func (UnimplementedCompassServiceServer) SearchAssets(context.Context, *SearchAssetsRequest) (*SearchAssetsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchAssets not implemented")
+}
+func (UnimplementedCompassServiceServer) GroupAssets(context.Context, *GroupAssetsRequest) (*GroupAssetsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GroupAssets not implemented")
 }
 func (UnimplementedCompassServiceServer) SuggestAssets(context.Context, *SuggestAssetsRequest) (*SuggestAssetsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SuggestAssets not implemented")
@@ -772,6 +788,24 @@ func _CompassService_SearchAssets_Handler(srv interface{}, ctx context.Context, 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).SearchAssets(ctx, req.(*SearchAssetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompassService_GroupAssets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GroupAssetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompassServiceServer).GroupAssets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gotocompany.compass.v1beta1.CompassService/GroupAssets",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompassServiceServer).GroupAssets(ctx, req.(*GroupAssetsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1326,6 +1360,10 @@ var CompassService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SearchAssets",
 			Handler:    _CompassService_SearchAssets_Handler,
+		},
+		{
+			MethodName: "GroupAssets",
+			Handler:    _CompassService_GroupAssets_Handler,
 		},
 		{
 			MethodName: "SuggestAssets",

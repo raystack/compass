@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"sort"
 	"testing"
 
 	"github.com/elastic/go-elasticsearch/v7"
@@ -30,7 +31,7 @@ func TestSearcherSearch(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(esClient)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
 		_, err = repo.Search(ctx, asset.SearchConfig{
 			Text: "",
 		})
@@ -51,7 +52,7 @@ func TestSearcherSearch(t *testing.T) {
 		err = loadTestFixture(cli, esClient, "./testdata/search-test-fixture.json")
 		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(esClient)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
 
 		type expectedRow struct {
 			Type    string
@@ -223,7 +224,7 @@ func TestSearcherSuggest(t *testing.T) {
 	err = loadTestFixture(cli, esClient, "./testdata/suggest-test-fixture.json")
 	require.NoError(t, err)
 
-	repo := store.NewDiscoveryRepository(esClient)
+	repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
 
 	t.Run("fixtures", func(t *testing.T) {
 		testCases := []struct {
@@ -260,7 +261,7 @@ func loadTestFixture(cli *elasticsearch.Client, esClient *store.Client, filePath
 
 	ctx := context.TODO()
 	for _, testdata := range data {
-		repo := store.NewDiscoveryRepository(esClient)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
 		for _, ast := range testdata.Assets {
 			if err := repo.Upsert(ctx, ast); err != nil {
 				return err
@@ -274,4 +275,201 @@ func loadTestFixture(cli *elasticsearch.Client, esClient *store.Client, filePath
 	)
 
 	return err
+}
+
+func TestGroupAssets(t *testing.T) {
+	ctx := context.TODO()
+	t.Run("should return an error if group string array is empty", func(t *testing.T) {
+		cli, err := esTestServer.NewClient()
+		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
+		require.NoError(t, err)
+
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
+		_, err = repo.GroupAssets(ctx, asset.GroupConfig{
+			GroupBy: []string{""},
+		})
+
+		assert.Error(t, err)
+	})
+
+	t.Run("fixtures", func(t *testing.T) {
+		cli, err := esTestServer.NewClient()
+		require.NoError(t, err)
+		esClient, err := store.NewClient(
+			log.NewNoop(),
+			store.Config{},
+			store.WithClient(cli),
+		)
+		require.NoError(t, err)
+
+		err = loadTestFixture(cli, esClient, "./testdata/search-test-fixture.json")
+		require.NoError(t, err)
+
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
+
+		type groupTest struct {
+			Description string
+			Config      asset.GroupConfig
+			Expected    []asset.GroupResult
+		}
+		tests := []groupTest{
+			{
+				Description: "should group assets which match group by multiple fields",
+
+				Config: asset.GroupConfig{
+					GroupBy: []string{"type", "name"},
+				},
+				Expected: []asset.GroupResult{
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "table"},
+							{Name: "name", Value: "apple-invoice"},
+						},
+						Assets: []asset.Asset{{Name: "apple-invoice"}},
+					},
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "table"},
+							{Name: "name", Value: "microsoft-invoice"},
+						},
+						Assets: []asset.Asset{{Name: "microsoft-invoice"}},
+					},
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "table"},
+							{Name: "name", Value: "tablename-1"},
+						},
+						Assets: []asset.Asset{{Name: "tablename-1"}}},
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "table"},
+							{Name: "name", Value: "tablename-common"},
+						},
+						Assets: []asset.Asset{{Name: "tablename-common"}},
+					},
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "table"},
+							{Name: "name", Value: "tablename-mid"},
+						},
+						Assets: []asset.Asset{{Name: "tablename-mid"}},
+					},
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "topic"},
+							{Name: "name", Value: "consumer-mq-2"},
+						},
+						Assets: []asset.Asset{{Name: "consumer-mq-2"}},
+					},
+					{
+						Fields: []asset.GroupField{
+							{Name: "name", Value: "consumer-topic"},
+							{Name: "type", Value: "topic"},
+						},
+						Assets: []asset.Asset{{Name: "consumer-topic"}},
+					},
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "topic"},
+							{Name: "name", Value: "order-topic"},
+						},
+						Assets: []asset.Asset{{Name: "order-topic"}},
+					},
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "topic"},
+							{Name: "name", Value: "purchase-topic"},
+						},
+						Assets: []asset.Asset{{Name: "purchase-topic"}},
+					},
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "topic"},
+							{Name: "name", Value: "transaction"},
+						},
+						Assets: []asset.Asset{{Name: "transaction"}}},
+				},
+			},
+			{
+				Description: "should group assets which match group by fields",
+
+				Config: asset.GroupConfig{
+					GroupBy:        []string{"type"},
+					IncludedFields: []string{"name"},
+				},
+				Expected: []asset.GroupResult{
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "table"},
+						},
+						Assets: []asset.Asset{
+							{Name: "tablename-1"},
+							{Name: "tablename-common"},
+							{Name: "tablename-mid"},
+						},
+					},
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "topic"},
+						},
+						Assets: []asset.Asset{
+							{Name: "order-topic"},
+							{Name: "purchase-topic"},
+							{Name: "consumer-topic"},
+						},
+					},
+				},
+			},
+			{
+				Description: "should not return assets without fields specified in filters",
+				Config: asset.GroupConfig{
+					GroupBy: []string{"type"},
+					Filters: map[string][]string{
+						"data.country":     {"id"},
+						"data.environment": {"production"},
+						"data.company":     {"gotocompany"},
+					},
+					IncludedFields: []string{"name"},
+				},
+				Expected: []asset.GroupResult{
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "topic"}},
+						Assets: []asset.Asset{
+							{Name: "consumer-topic"},
+							{Name: "consumer-mq-2"},
+						},
+					},
+				},
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.Description, func(t *testing.T) {
+				results, err := repo.GroupAssets(ctx, test.Config)
+				assert.NoError(t, err)
+				assert.Equal(t, len(test.Expected), len(results))
+
+				for i, res := range test.Expected {
+					assert.Equal(t, len(res.Fields), len(results[i].Fields))
+					assert.Equal(t, len(res.Assets), len(results[i].Assets))
+					sort.SliceStable(res.Fields, func(i, j int) bool {
+						return res.Fields[i].Name > res.Fields[j].Name
+					})
+
+					sort.SliceStable(results[i].Fields, func(j, k int) bool {
+						return results[i].Fields[j].Name > results[i].Fields[k].Name
+					})
+					assert.Equal(t, res.Fields, results[i].Fields)
+					for j, assetRes := range res.Assets {
+						assert.Equal(t, assetRes.Name, results[i].Assets[j].Name)
+					}
+				}
+			})
+		}
+	})
 }

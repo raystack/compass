@@ -18,6 +18,7 @@ require (
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/golang-module/carbon/v2 v2.1.8
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.8
 	github.com/google/uuid v1.3.0
 	github.com/goto/salt v0.3.0

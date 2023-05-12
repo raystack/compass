@@ -39,11 +39,6 @@ type searchHit struct {
 	Source asset.Asset `json:"_source"`
 }
 
-type aggregationBucket struct {
-	Key      string `json:"key"`
-	DocCount int    `json:"doc_count"`
-}
-
 type searchResponse struct {
 	ScrollID string `json:"_scroll_id"`
 	Hits     struct {
@@ -63,6 +58,28 @@ type searchResponse struct {
 			Buckets                 []aggregationBucket
 		} `json:"aggregation_name"`
 	} `json:"aggregations"`
+}
+
+type groupResponse struct {
+	Aggregations struct {
+		CompositeAggregations struct {
+			Buckets []aggregationBucket `json:"buckets"`
+		} `json:"composite-group"`
+	} `json:"aggregations"`
+}
+
+type aggregationBucket struct {
+	Key      map[string]string `json:"key"`
+	DocCount int               `json:"doc_count"`
+	Hits     struct {
+		Hits struct {
+			Hits []groupHits `json:"hits"`
+		} `json:"hits"`
+	} `json:"hits"`
+}
+
+type groupHits struct {
+	Source asset.Asset `json:"_source"`
 }
 
 // extract error reason from an elasticsearch response

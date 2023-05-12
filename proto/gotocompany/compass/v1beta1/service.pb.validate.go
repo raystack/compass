@@ -2426,6 +2426,35 @@ func (m *SearchAssetsRequest) validate(all bool) error {
 
 	}
 
+	if all {
+		switch v := interface{}(m.GetFlags()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, SearchAssetsRequestValidationError{
+					field:  "Flags",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, SearchAssetsRequestValidationError{
+					field:  "Flags",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetFlags()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return SearchAssetsRequestValidationError{
+				field:  "Flags",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if len(errors) > 0 {
 		return SearchAssetsRequestMultiError(errors)
 	}
@@ -2505,6 +2534,678 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = SearchAssetsRequestValidationError{}
+
+// Validate checks the field values on GroupAssetsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GroupAssetsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GroupAssetsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GroupAssetsRequestMultiError, or nil if none found.
+func (m *GroupAssetsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GroupAssetsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	_GroupAssetsRequest_Groupby_Unique := make(map[string]struct{}, len(m.GetGroupby()))
+
+	for idx, item := range m.GetGroupby() {
+		_, _ = idx, item
+
+		if _, exists := _GroupAssetsRequest_Groupby_Unique[item]; exists {
+			err := GroupAssetsRequestValidationError{
+				field:  fmt.Sprintf("Groupby[%v]", idx),
+				reason: "repeated value must contain unique items",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		} else {
+			_GroupAssetsRequest_Groupby_Unique[item] = struct{}{}
+		}
+
+		// no validation rules for Groupby[idx]
+	}
+
+	// no validation rules for Filter
+
+	if len(m.GetIncludeFields()) > 0 {
+
+		_GroupAssetsRequest_IncludeFields_Unique := make(map[string]struct{}, len(m.GetIncludeFields()))
+
+		for idx, item := range m.GetIncludeFields() {
+			_, _ = idx, item
+
+			if _, exists := _GroupAssetsRequest_IncludeFields_Unique[item]; exists {
+				err := GroupAssetsRequestValidationError{
+					field:  fmt.Sprintf("IncludeFields[%v]", idx),
+					reason: "repeated value must contain unique items",
+				}
+				if !all {
+					return err
+				}
+				errors = append(errors, err)
+			} else {
+				_GroupAssetsRequest_IncludeFields_Unique[item] = struct{}{}
+			}
+
+			// no validation rules for IncludeFields[idx]
+		}
+
+	}
+
+	if m.GetSize() != 0 {
+
+		if m.GetSize() < 0 {
+			err := GroupAssetsRequestValidationError{
+				field:  "Size",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GroupAssetsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GroupAssetsRequestMultiError is an error wrapping multiple validation errors
+// returned by GroupAssetsRequest.ValidateAll() if the designated constraints
+// aren't met.
+type GroupAssetsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GroupAssetsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GroupAssetsRequestMultiError) AllErrors() []error { return m }
+
+// GroupAssetsRequestValidationError is the validation error returned by
+// GroupAssetsRequest.Validate if the designated constraints aren't met.
+type GroupAssetsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GroupAssetsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GroupAssetsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GroupAssetsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GroupAssetsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GroupAssetsRequestValidationError) ErrorName() string {
+	return "GroupAssetsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GroupAssetsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGroupAssetsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GroupAssetsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GroupAssetsRequestValidationError{}
+
+// Validate checks the field values on GroupAssetsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GroupAssetsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GroupAssetsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GroupAssetsResponseMultiError, or nil if none found.
+func (m *GroupAssetsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GroupAssetsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetAssetGroups() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GroupAssetsResponseValidationError{
+						field:  fmt.Sprintf("AssetGroups[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GroupAssetsResponseValidationError{
+						field:  fmt.Sprintf("AssetGroups[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GroupAssetsResponseValidationError{
+					field:  fmt.Sprintf("AssetGroups[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GroupAssetsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GroupAssetsResponseMultiError is an error wrapping multiple validation
+// errors returned by GroupAssetsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GroupAssetsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GroupAssetsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GroupAssetsResponseMultiError) AllErrors() []error { return m }
+
+// GroupAssetsResponseValidationError is the validation error returned by
+// GroupAssetsResponse.Validate if the designated constraints aren't met.
+type GroupAssetsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GroupAssetsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GroupAssetsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GroupAssetsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GroupAssetsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GroupAssetsResponseValidationError) ErrorName() string {
+	return "GroupAssetsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GroupAssetsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGroupAssetsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GroupAssetsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GroupAssetsResponseValidationError{}
+
+// Validate checks the field values on AssetGroup with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *AssetGroup) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AssetGroup with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AssetGroupMultiError, or
+// nil if none found.
+func (m *AssetGroup) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AssetGroup) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetGroupFields() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AssetGroupValidationError{
+						field:  fmt.Sprintf("GroupFields[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AssetGroupValidationError{
+						field:  fmt.Sprintf("GroupFields[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return AssetGroupValidationError{
+					field:  fmt.Sprintf("GroupFields[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	for idx, item := range m.GetAssets() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AssetGroupValidationError{
+						field:  fmt.Sprintf("Assets[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AssetGroupValidationError{
+						field:  fmt.Sprintf("Assets[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return AssetGroupValidationError{
+					field:  fmt.Sprintf("Assets[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return AssetGroupMultiError(errors)
+	}
+
+	return nil
+}
+
+// AssetGroupMultiError is an error wrapping multiple validation errors
+// returned by AssetGroup.ValidateAll() if the designated constraints aren't met.
+type AssetGroupMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AssetGroupMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AssetGroupMultiError) AllErrors() []error { return m }
+
+// AssetGroupValidationError is the validation error returned by
+// AssetGroup.Validate if the designated constraints aren't met.
+type AssetGroupValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AssetGroupValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AssetGroupValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AssetGroupValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AssetGroupValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AssetGroupValidationError) ErrorName() string { return "AssetGroupValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AssetGroupValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAssetGroup.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AssetGroupValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AssetGroupValidationError{}
+
+// Validate checks the field values on GroupField with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *GroupField) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GroupField with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in GroupFieldMultiError, or
+// nil if none found.
+func (m *GroupField) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GroupField) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for GroupKey
+
+	// no validation rules for GroupValue
+
+	if len(errors) > 0 {
+		return GroupFieldMultiError(errors)
+	}
+
+	return nil
+}
+
+// GroupFieldMultiError is an error wrapping multiple validation errors
+// returned by GroupField.ValidateAll() if the designated constraints aren't met.
+type GroupFieldMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GroupFieldMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GroupFieldMultiError) AllErrors() []error { return m }
+
+// GroupFieldValidationError is the validation error returned by
+// GroupField.Validate if the designated constraints aren't met.
+type GroupFieldValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GroupFieldValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GroupFieldValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GroupFieldValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GroupFieldValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GroupFieldValidationError) ErrorName() string { return "GroupFieldValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GroupFieldValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGroupField.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GroupFieldValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GroupFieldValidationError{}
+
+// Validate checks the field values on SearchFlags with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *SearchFlags) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SearchFlags with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in SearchFlagsMultiError, or
+// nil if none found.
+func (m *SearchFlags) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SearchFlags) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for IsColumnSearch
+
+	if len(errors) > 0 {
+		return SearchFlagsMultiError(errors)
+	}
+
+	return nil
+}
+
+// SearchFlagsMultiError is an error wrapping multiple validation errors
+// returned by SearchFlags.ValidateAll() if the designated constraints aren't met.
+type SearchFlagsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SearchFlagsMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SearchFlagsMultiError) AllErrors() []error { return m }
+
+// SearchFlagsValidationError is the validation error returned by
+// SearchFlags.Validate if the designated constraints aren't met.
+type SearchFlagsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SearchFlagsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SearchFlagsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SearchFlagsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SearchFlagsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SearchFlagsValidationError) ErrorName() string { return "SearchFlagsValidationError" }
+
+// Error satisfies the builtin error interface
+func (e SearchFlagsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSearchFlags.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SearchFlagsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SearchFlagsValidationError{}
 
 // Validate checks the field values on SearchAssetsResponse with the rules
 // defined in the proto definition for this message. If any rules are

@@ -11,6 +11,24 @@ type DiscoveryRepository interface {
 	DeleteByURN(ctx context.Context, assetURN string) error
 	Search(ctx context.Context, cfg SearchConfig) (results []SearchResult, err error)
 	Suggest(ctx context.Context, cfg SearchConfig) (suggestions []string, err error)
+	GroupAssets(ctx context.Context, cfg GroupConfig) (results []GroupResult, err error)
+}
+
+// GroupConfig represents a group query along
+// with any corresponding filter(s)
+type GroupConfig struct {
+	// IncludedFields specifies the fields to return in response
+	IncludedFields []string
+
+	// GroupBy fields to group on
+	GroupBy []string
+
+	// Filters specifies document level values to look for.
+	// Multiple values can be specified for a single key
+	Filters SearchFilter
+
+	// Number of documents you want in response
+	Size int
 }
 
 // SearchFilter is a filter intended to be used as a search
@@ -47,6 +65,16 @@ type SearchResult struct {
 	Description string                 `json:"description"`
 	Labels      map[string]string      `json:"labels"`
 	Data        map[string]interface{} `json:"data"`
+}
+
+type GroupResult struct {
+	Fields []GroupField
+	Assets []Asset
+}
+
+type GroupField struct {
+	Name  string
+	Value string
 }
 
 // ToAsset returns search result as asset

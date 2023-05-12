@@ -134,7 +134,7 @@ func runServer(config *Config) error {
 	if err != nil {
 		return fmt.Errorf("failed to create new asset repository: %w", err)
 	}
-	discoveryRepository := esStore.NewDiscoveryRepository(esClient)
+	discoveryRepository := esStore.NewDiscoveryRepository(esClient, logger)
 	lineageRepository, err := postgres.NewLineageRepository(pgClient)
 	if err != nil {
 		return fmt.Errorf("failed to create new lineage repository: %w", err)

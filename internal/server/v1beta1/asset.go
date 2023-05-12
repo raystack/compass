@@ -37,6 +37,7 @@ type AssetService interface {
 	GetTypes(ctx context.Context, flt asset.Filter) (map[asset.Type]int, error)
 
 	SearchAssets(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error)
+	GroupAssets(ctx context.Context, cfg asset.GroupConfig) (results []asset.GroupResult, err error)
 	SuggestAssets(ctx context.Context, cfg asset.SearchConfig) (suggestions []string, err error)
 
 	AddProbe(ctx context.Context, assetURN string, probe *asset.Probe) error
