@@ -9,6 +9,7 @@ var indexSettingsTemplate = `{
 		%q: {}
 	},
 	"settings": {
+		"index.mapping.ignore_malformed": true,
 		"analysis": {
 			"analyzer": {
 				"my_analyzer": {

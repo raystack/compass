@@ -13,7 +13,8 @@
                     "company": "gotocompany",
                     "environment": "integration",
                     "country": "us",
-                    "partition": 250
+                    "partition": 250,
+                    "malformed": "2023-05-23T04:35:42Z"
                 },
                 "type": "topic"
             },
@@ -29,7 +30,8 @@
                     "company": "microsoft",
                     "environment": "integration",
                     "country": "id",
-                    "partition": 100
+                    "partition": 100,
+                    "malformed": ""
                 },
                 "type": "topic"
             },
