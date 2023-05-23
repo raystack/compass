@@ -167,6 +167,7 @@ func TestSearcherSearch(t *testing.T) {
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-mid"},
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common-test"},
 				},
 			},
 			{
@@ -192,6 +193,20 @@ func TestSearcherSearch(t *testing.T) {
 				},
 				Expected: []expectedRow{
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common-test"},
+				},
+			},
+			{
+				Description: "should return 'bigquery::gcpproject/dataset/tablename-common-test' resource on top if searched for text 'tablename-common-test'",
+				Config: asset.SearchConfig{
+					Text:   "tablename-common-test",
+					RankBy: "data.profile.usage_count",
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common-test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-mid"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
 				},
 			},
 		}
@@ -323,6 +338,7 @@ func TestGroupAssets(t *testing.T) {
 
 				Config: asset.GroupConfig{
 					GroupBy: []string{"type", "name"},
+					Size:    15,
 				},
 				Expected: []asset.GroupResult{
 					{
@@ -351,6 +367,13 @@ func TestGroupAssets(t *testing.T) {
 							{Name: "name", Value: "tablename-common"},
 						},
 						Assets: []asset.Asset{{Name: "tablename-common"}},
+					},
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "table"},
+							{Name: "name", Value: "tablename-common-test"},
+						},
+						Assets: []asset.Asset{{Name: "tablename-common-test"}},
 					},
 					{
 						Fields: []asset.GroupField{
@@ -410,7 +433,7 @@ func TestGroupAssets(t *testing.T) {
 						Assets: []asset.Asset{
 							{Name: "tablename-1"},
 							{Name: "tablename-common"},
-							{Name: "tablename-mid"},
+							{Name: "tablename-common-test"},
 						},
 					},
 					{

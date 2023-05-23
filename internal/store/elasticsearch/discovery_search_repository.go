@@ -112,7 +112,7 @@ func (repo *DiscoveryRepository) buildQuery(cfg asset.SearchConfig) (io.Reader, 
 		query = elastic.NewBoolQuery().Should(query).Filter(filterQueries...)
 	}
 	query = repo.buildFilterMatchQueries(query, cfg.Queries)
-	query = repo.buildFunctionScoreQuery(query, cfg.RankBy)
+	query = repo.buildFunctionScoreQuery(query, cfg.RankBy, cfg.Text)
 
 	src, err := query.Source()
 	if err != nil {
@@ -237,34 +237,38 @@ func (repo *DiscoveryRepository) buildFilterExistsQueries(fields []string) ([]el
 	return filterQueries, true
 }
 
-func (repo *DiscoveryRepository) buildFunctionScoreQuery(query elastic.Query, rankBy string) elastic.Query {
-	if rankBy == "" {
-		return query
+func (repo *DiscoveryRepository) buildFunctionScoreQuery(query elastic.Query, rankBy string, text string) elastic.Query {
+
+	// Added exact match term query here so that exact match gets higher priority.
+	fsQuery := elastic.NewFunctionScoreQuery().
+		Add(
+			elastic.NewTermQuery("name.keyword", text),
+			elastic.NewWeightFactorFunction(2),
+		)
+
+	if rankBy != "" {
+		fsQuery.AddScoreFunc(
+			elastic.NewFieldValueFactorFunction().
+				Field(rankBy).
+				Modifier("log1p").
+				Missing(1.0).
+				Weight(1.0),
+		)
 	}
 
-	factorFunc := elastic.NewFieldValueFactorFunction().
-		Field(rankBy).
-		Modifier("log1p").
-		Missing(1.0).
-		Weight(1.0)
-
-	fsQuery := elastic.NewFunctionScoreQuery().
-		ScoreMode(defaultFunctionScoreQueryScoreMode).
-		AddScoreFunc(factorFunc).
-		Query(query)
-
+	fsQuery.Query(query).ScoreMode(defaultFunctionScoreQueryScoreMode)
 	return fsQuery
 }
 
 func (repo *DiscoveryRepository) toSearchResults(hits []searchHit) []asset.SearchResult {
-	results := []asset.SearchResult{}
-	for _, hit := range hits {
+	results := make([]asset.SearchResult, len(hits))
+	for i, hit := range hits {
 		r := hit.Source
 		id := r.ID
 		if id == "" { // this is for backward compatibility for asset without ID
 			id = r.URN
 		}
-		results = append(results, asset.SearchResult{
+		results[i] = asset.SearchResult{
 			Type:        r.Type.String(),
 			ID:          id,
 			URN:         r.URN,
@@ -273,7 +277,7 @@ func (repo *DiscoveryRepository) toSearchResults(hits []searchHit) []asset.Searc
 			Service:     r.Service,
 			Labels:      r.Labels,
 			Data:        r.Data,
-		})
+		}
 	}
 	return results
 }

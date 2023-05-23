@@ -266,7 +266,7 @@
                         "filter_conditions": [
                             "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
                         ],
-                        "usage_count": 10
+                        "usage_count": 100
                     },
                     "properties": {
                         "attributes": {
@@ -318,6 +318,97 @@
                         "name": "tablename-common",
                         "service": "bigquery",
                         "urn": "bigquery::gcpproject/dataset/tablename-common"
+                    }
+                },
+                "owners": [
+                    {
+                        "urn": "owner::bq/3",
+                        "name": "Mr.X",
+                        "role": "admin",
+                        "email": "mr.x@email.com"
+                    },
+                    {
+                        "urn": "owner::bq/4",
+                        "name": "Mrs.Y",
+                        "role": "user",
+                        "email": "mr.y@email.com"
+                    }
+                ],
+                "type": "table"
+            },
+            {
+                "id": "bigquery::gcpproject/dataset/tablename-common-test",
+                "urn": "bigquery::gcpproject/dataset/tablename-common-test",
+                "name": "tablename-common-test",
+                "service": "bigquery",
+                "description": "A sample of table record with high usage",
+                "data": {
+                    "preview": {},
+                    "profile": {
+                        "common_join": [
+                            {
+                                "conditions": [
+                                    "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
+                                ],
+                                "count": 1,
+                                "urn": "bigquery::gcpproject/dataset/tablename-mid"
+                            }
+                        ],
+                        "filter_conditions": [
+                            "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
+                        ],
+                        "usage_count": 1
+                    },
+                    "properties": {
+                        "attributes": {
+                            "dataset": "dataset",
+                            "full_qualified_name": "gcpproject:dataset.tablename-common-test",
+                            "partition_field": "event_timestamp",
+                            "project": "gcpproject",
+                            "type": "TABLE"
+                        },
+                        "labels": {
+                            "owner": "user_1"
+                        }
+                    },
+                    "schema": {
+                        "columns": [
+                            {
+                                "data_type": "STRING",
+                                "is_nullable": true,
+                                "name": "tablename-common-test-column1",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            },
+                            {
+                                "data_type": "STRING",
+                                "is_nullable": true,
+                                "name": "tablename-common-test-column2",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            },
+                            {
+                                "data_type": "BIGNUMERIC",
+                                "is_nullable": true,
+                                "name": "tablename-common-test-column3",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "resource": {
+                        "name": "tablename-common-test",
+                        "service": "bigquery",
+                        "urn": "bigquery::gcpproject/dataset/tablename-common-test"
                     }
                 },
                 "owners": [
