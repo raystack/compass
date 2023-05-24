@@ -57,6 +57,7 @@ func TestSearcherSearch(t *testing.T) {
 		type expectedRow struct {
 			Type    string
 			AssetID string
+			Data    map[string]interface{}
 		}
 		type searchTest struct {
 			Description    string
@@ -64,6 +65,7 @@ func TestSearcherSearch(t *testing.T) {
 			Expected       []expectedRow
 			MatchTotalRows bool
 		}
+
 		tests := []searchTest{
 			{
 				Description: "should fetch assets which has text in any of its fields",
@@ -209,6 +211,32 @@ func TestSearcherSearch(t *testing.T) {
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
 				},
 			},
+			{
+				Description: "should return highlighted text in resource if searched highlight text is enabled.",
+				Config: asset.SearchConfig{
+					Text:   "order",
+					RankBy: "data.profile.usage_count",
+					Flags: asset.SearchFlags{
+						EnableHighlight: true,
+					},
+				},
+
+				Expected: []expectedRow{
+					{
+						Type:    "topic",
+						AssetID: "order-topic",
+						Data: map[string]interface{}{
+							"_highlight": map[string]interface{}{"urn": []interface{}{"<em>order</em>-topic"},
+								"data.topic_name":  []interface{}{"<em>order</em>-topic"},
+								"name":             []interface{}{"<em>order</em>-topic"},
+								"description":      []interface{}{"Topic for each submitted <em>order</em>"},
+								"id":               []interface{}{"<em>order</em>-topic"},
+								"data.description": []interface{}{"Topic for each submitted <em>order</em>"},
+							},
+						},
+					},
+				},
+			},
 		}
 		for _, test := range tests {
 			t.Run(test.Description, func(t *testing.T) {
@@ -219,6 +247,9 @@ func TestSearcherSearch(t *testing.T) {
 				for i, res := range test.Expected {
 					assert.Equal(t, res.Type, results[i].Type)
 					assert.Equal(t, res.AssetID, results[i].ID)
+					if test.Config.Flags.EnableHighlight {
+						assert.Equal(t, res.Data["_highlight"], results[i].Data["_highlight"])
+					}
 				}
 			})
 		}

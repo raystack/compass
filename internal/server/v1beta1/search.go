@@ -28,6 +28,7 @@ func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.S
 		Filters:    filterConfigFromValues(req.GetFilter()),
 		RankBy:     req.GetRankby(),
 		Queries:    req.GetQuery(),
+		Flags:      getSearchFlagsFromFlags(req.GetFlags()),
 	}
 
 	results, err := server.assetService.SearchAssets(ctx, cfg)
@@ -134,4 +135,10 @@ func filterConfigFromValues(fltMap map[string]string) map[string][]string {
 		filter[key] = filterValues
 	}
 	return filter
+}
+
+func getSearchFlagsFromFlags(inputFlags *compassv1beta1.SearchFlags) asset.SearchFlags {
+	return asset.SearchFlags{
+		EnableHighlight: inputFlags.GetEnableHighlight(),
+	}
 }

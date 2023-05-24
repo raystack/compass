@@ -1252,6 +1252,16 @@ paths:
           in: query
           required: false
           type: boolean
+        - name: flags.disable_fuzzy
+          description: disable fuzzy search.
+          in: query
+          required: false
+          type: boolean
+        - name: flags.enable_highlight
+          description: enable highlight in search response.
+          in: query
+          required: false
+          type: boolean
       tags:
         - Search
         - Asset
@@ -2211,6 +2221,12 @@ definitions:
   SearchFlags:
     type: object
     properties:
+      disable_fuzzy:
+        type: boolean
+        description: disable fuzzy search.
+      enable_highlight:
+        type: boolean
+        description: enable highlight in search response.
       is_column_search:
         type: boolean
         description: search column names instead of table urn or name.

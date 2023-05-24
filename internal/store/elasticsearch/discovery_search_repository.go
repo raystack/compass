@@ -113,18 +113,18 @@ func (repo *DiscoveryRepository) buildQuery(cfg asset.SearchConfig) (io.Reader, 
 	}
 	query = repo.buildFilterMatchQueries(query, cfg.Queries)
 	query = repo.buildFunctionScoreQuery(query, cfg.RankBy, cfg.Text)
+	highLight := repo.buildHighLightQuery(cfg)
 
-	src, err := query.Source()
+	body, err := elastic.NewSearchRequest().
+		Query(query).
+		Highlight(highLight).
+		MinScore(defaultMinScore).
+		Body()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("build query: new search request: %w", err)
 	}
 
-	payload := new(bytes.Buffer)
-	q := &searchQuery{
-		MinScore: defaultMinScore,
-		Query:    src,
-	}
-	return payload, json.NewEncoder(payload).Encode(q)
+	return strings.NewReader(body), nil
 }
 
 func (repo *DiscoveryRepository) buildSuggestQuery(cfg asset.SearchConfig) (io.Reader, error) {
@@ -260,6 +260,13 @@ func (repo *DiscoveryRepository) buildFunctionScoreQuery(query elastic.Query, ra
 	return fsQuery
 }
 
+func (repo *DiscoveryRepository) buildHighLightQuery(cfg asset.SearchConfig) *elastic.Highlight {
+	if cfg.Flags.EnableHighlight {
+		return elastic.NewHighlight().Field("*")
+	}
+	return nil
+}
+
 func (repo *DiscoveryRepository) toSearchResults(hits []searchHit) []asset.SearchResult {
 	results := make([]asset.SearchResult, len(hits))
 	for i, hit := range hits {
@@ -267,6 +274,16 @@ func (repo *DiscoveryRepository) toSearchResults(hits []searchHit) []asset.Searc
 		id := r.ID
 		if id == "" { // this is for backward compatibility for asset without ID
 			id = r.URN
+		}
+
+		data := r.Data
+
+		if data != nil && hit.HighLight != nil {
+			data["_highlight"] = hit.HighLight
+		} else if data == nil && hit.HighLight != nil {
+			data = map[string]interface{}{
+				"_highlight": hit.HighLight,
+			}
 		}
 		results[i] = asset.SearchResult{
 			Type:        r.Type.String(),
@@ -276,7 +293,7 @@ func (repo *DiscoveryRepository) toSearchResults(hits []searchHit) []asset.Searc
 			Title:       r.Name,
 			Service:     r.Service,
 			Labels:      r.Labels,
-			Data:        r.Data,
+			Data:        data,
 		}
 	}
 	return results
@@ -294,7 +311,6 @@ func (repo *DiscoveryRepository) toSuggestions(response searchResponse) (results
 			results = append(results, option.Text)
 		}
 	}
-
 	return
 }
 func (repo *DiscoveryRepository) GroupAssets(ctx context.Context, cfg asset.GroupConfig) ([]asset.GroupResult, error) {

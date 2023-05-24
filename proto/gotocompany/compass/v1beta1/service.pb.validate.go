@@ -3130,6 +3130,10 @@ func (m *SearchFlags) validate(all bool) error {
 
 	// no validation rules for IsColumnSearch
 
+	// no validation rules for DisableFuzzy
+
+	// no validation rules for EnableHighlight
+
 	if len(errors) > 0 {
 		return SearchFlagsMultiError(errors)
 	}

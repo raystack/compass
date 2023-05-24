@@ -35,6 +35,13 @@ type GroupConfig struct {
 // criteria for operations involving asset search
 type SearchFilter = map[string][]string
 
+// SearchFlags is intended to be used as flags to control the search
+// behavior (e.g. column level search, disable fuzzy, enable highlight etc) for
+// operations involving asset search
+type SearchFlags struct {
+	EnableHighlight bool
+}
+
 // SearchConfig represents a search query along
 // with any corresponding filter(s)
 type SearchConfig struct {
@@ -53,6 +60,9 @@ type SearchConfig struct {
 
 	// Queries is a param to search a resource based on asset's fields
 	Queries map[string]string
+
+	// Flags flags to control the search behavior (e.g. column level search, disable fuzzy, etc)
+	Flags SearchFlags
 }
 
 // SearchResult represents an item/result in a list of search results
