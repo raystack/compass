@@ -105,19 +105,16 @@ func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.Searc
 }
 
 func (repo *DiscoveryRepository) buildQuery(cfg asset.SearchConfig) (io.Reader, error) {
-	var query elastic.Query
-
-	query = repo.buildTextQuery(cfg.Text)
-	if filterQueries, ok := repo.buildFilterTermQueries(cfg.Filters); ok {
-		query = elastic.NewBoolQuery().Should(query).Filter(filterQueries...)
-	}
-	query = repo.buildFilterMatchQueries(query, cfg.Queries)
-	query = repo.buildFunctionScoreQuery(query, cfg.RankBy, cfg.Text)
-	highLight := repo.buildHighLightQuery(cfg)
+	boolQuery := elastic.NewBoolQuery()
+	repo.buildTextQuery(boolQuery, cfg.Text)
+	repo.buildFilterTermQueries(boolQuery, cfg.Filters)
+	repo.buildMustMatchQueries(boolQuery, cfg.Queries)
+	query := repo.buildFunctionScoreQuery(boolQuery, cfg.RankBy, cfg.Text)
+	highlight := repo.buildHighlightQuery(cfg)
 
 	body, err := elastic.NewSearchRequest().
 		Query(query).
-		Highlight(highLight).
+		Highlight(highlight).
 		MinScore(defaultMinScore).
 		Body()
 	if err != nil {
@@ -149,60 +146,41 @@ func (repo *DiscoveryRepository) buildSuggestQuery(cfg asset.SearchConfig) (io.R
 	return payload, err
 }
 
-func (repo *DiscoveryRepository) buildTextQuery(text string) elastic.Query {
-	boostedFields := []string{
-		"urn^10",
-		"name^5",
-	}
-
-	return elastic.NewBoolQuery().
-		Should(
-			elastic.
-				NewMultiMatchQuery(
-					text,
-					boostedFields...,
-				),
-			elastic.
-				NewMultiMatchQuery(
-					text,
-					boostedFields...,
-				).
-				Fuzziness("AUTO"),
-			elastic.
-				NewMultiMatchQuery(
-					text,
-				).
-				Fuzziness("AUTO"),
-		)
+func (repo *DiscoveryRepository) buildTextQuery(q *elastic.BoolQuery, text string) {
+	boostedFields := []string{"urn^10", "name^5"}
+	q.Should(
+		elastic.NewMultiMatchQuery(text, boostedFields...),
+		elastic.NewMultiMatchQuery(text, boostedFields...).
+			Fuzziness("AUTO"),
+		elastic.NewMultiMatchQuery(text).
+			Fuzziness("AUTO"),
+	)
 }
 
-func (repo *DiscoveryRepository) buildFilterMatchQueries(query elastic.Query, queries map[string]string) elastic.Query {
+func (repo *DiscoveryRepository) buildMustMatchQueries(q *elastic.BoolQuery, queries map[string]string) {
 	if len(queries) == 0 {
-		return query
+		return
 	}
 
-	esQueries := []elastic.Query{}
 	for field, value := range queries {
-		esQueries = append(esQueries,
-			elastic.
-				NewMatchQuery(field, value).
-				Fuzziness("AUTO"))
+		q.Must(elastic.NewMatchQuery(field, value).
+			Fuzziness("AUTO"))
 	}
-
-	return elastic.NewBoolQuery().
-		Should(query).
-		Filter(esQueries...)
 }
 
-//
-func (repo *DiscoveryRepository) buildFilterTermQueries(filters map[string][]string) ([]elastic.Query, bool) {
+func (repo *DiscoveryRepository) buildFilterTermQueries(q *elastic.BoolQuery, filters map[string][]string) {
 	if len(filters) == 0 {
-		return nil, false
+		return
 	}
 
-	var filterQueries []elastic.Query
-	for key, rawValues := range filters {
+	for field, rawValues := range filters {
 		if len(rawValues) < 1 {
+			continue
+		}
+
+		key := fmt.Sprintf("%s.keyword", field)
+		if len(rawValues) == 1 {
+			q.Filter(elastic.NewTermQuery(key, rawValues[0]))
 			continue
 		}
 
@@ -210,35 +188,21 @@ func (repo *DiscoveryRepository) buildFilterTermQueries(filters map[string][]str
 		for _, rawVal := range rawValues {
 			values = append(values, rawVal)
 		}
-
-		key := fmt.Sprintf("%s.keyword", key)
-		filterQueries = append(
-			filterQueries,
-			elastic.NewTermsQuery(key, values...),
-		)
+		q.Filter(elastic.NewTermsQuery(key, values...))
 	}
-
-	return filterQueries, true
 }
 
-func (repo *DiscoveryRepository) buildFilterExistsQueries(fields []string) ([]elastic.Query, bool) {
+func (repo *DiscoveryRepository) buildFilterExistsQueries(q *elastic.BoolQuery, fields []string) {
 	if len(fields) == 0 {
-		return nil, false
+		return
 	}
 
-	var filterQueries []elastic.Query
 	for _, field := range fields {
-		filterQueries = append(
-			filterQueries,
-			elastic.NewExistsQuery(fmt.Sprintf("%s.keyword", field)),
-		)
+		q.Filter(elastic.NewExistsQuery(fmt.Sprintf("%s.keyword", field)))
 	}
-
-	return filterQueries, true
 }
 
 func (repo *DiscoveryRepository) buildFunctionScoreQuery(query elastic.Query, rankBy string, text string) elastic.Query {
-
 	// Added exact match term query here so that exact match gets higher priority.
 	fsQuery := elastic.NewFunctionScoreQuery().
 		Add(
@@ -260,7 +224,7 @@ func (repo *DiscoveryRepository) buildFunctionScoreQuery(query elastic.Query, ra
 	return fsQuery
 }
 
-func (repo *DiscoveryRepository) buildHighLightQuery(cfg asset.SearchConfig) *elastic.Highlight {
+func (repo *DiscoveryRepository) buildHighlightQuery(cfg asset.SearchConfig) *elastic.Highlight {
 	if cfg.Flags.EnableHighlight {
 		return elastic.NewHighlight().Field("*")
 	}
@@ -373,14 +337,10 @@ func (repo *DiscoveryRepository) toGroupResults(buckets []aggregationBucket) []a
 }
 
 func (repo *DiscoveryRepository) buildGroupQuery(cfg asset.GroupConfig) (*strings.Reader, error) {
+	boolQuery := elastic.NewBoolQuery()
 	// This code takes care of creating filter term queries from the input filters mentioned in request.
-	var filterQueries []elastic.Query
-	if filterExistsQueries, ok := repo.buildFilterExistsQueries(cfg.GroupBy); ok {
-		filterQueries = append(filterQueries, filterExistsQueries...)
-	}
-	if filterTermQueries, ok := repo.buildFilterTermQueries(cfg.Filters); ok {
-		filterQueries = append(filterQueries, filterTermQueries...)
-	}
+	repo.buildFilterExistsQueries(boolQuery, cfg.GroupBy)
+	repo.buildFilterTermQueries(boolQuery, cfg.Filters)
 
 	size := cfg.Size
 	if size <= 0 {
@@ -411,7 +371,7 @@ func (repo *DiscoveryRepository) buildGroupQuery(cfg asset.GroupConfig) (*string
 			))
 
 	body, err := elastic.NewSearchRequest().
-		Query(elastic.NewBoolQuery().Filter(filterQueries...)).
+		Query(boolQuery).
 		Aggregation("composite-group", compositeAggregation).
 		Body()
 	if err != nil {
