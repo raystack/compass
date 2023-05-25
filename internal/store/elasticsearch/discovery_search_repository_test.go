@@ -94,6 +94,14 @@ func TestSearcherSearch(t *testing.T) {
 				},
 			},
 			{
+				Description: "should disable fuzzy search",
+				Config: asset.SearchConfig{
+					Text:  "tpic",
+					Flags: asset.SearchFlags{DisableFuzzy: true},
+				},
+				Expected: []expectedRow{},
+			},
+			{
 				Description: "should put more weight on id fields",
 				Config: asset.SearchConfig{
 					Text: "invoice",

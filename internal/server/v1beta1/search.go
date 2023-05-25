@@ -140,5 +140,6 @@ func filterConfigFromValues(fltMap map[string]string) map[string][]string {
 func getSearchFlagsFromFlags(inputFlags *compassv1beta1.SearchFlags) asset.SearchFlags {
 	return asset.SearchFlags{
 		EnableHighlight: inputFlags.GetEnableHighlight(),
+		DisableFuzzy:    inputFlags.GetDisableFuzzy(),
 	}
 }

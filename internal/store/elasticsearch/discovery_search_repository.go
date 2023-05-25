@@ -106,9 +106,9 @@ func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.Searc
 
 func (repo *DiscoveryRepository) buildQuery(cfg asset.SearchConfig) (io.Reader, error) {
 	boolQuery := elastic.NewBoolQuery()
-	repo.buildTextQuery(boolQuery, cfg.Text)
+	repo.buildTextQuery(boolQuery, cfg)
 	repo.buildFilterTermQueries(boolQuery, cfg.Filters)
-	repo.buildMustMatchQueries(boolQuery, cfg.Queries)
+	repo.buildMustMatchQueries(boolQuery, cfg)
 	query := repo.buildFunctionScoreQuery(boolQuery, cfg.RankBy, cfg.Text)
 	highlight := repo.buildHighlightQuery(cfg)
 
@@ -146,23 +146,37 @@ func (repo *DiscoveryRepository) buildSuggestQuery(cfg asset.SearchConfig) (io.R
 	return payload, err
 }
 
-func (repo *DiscoveryRepository) buildTextQuery(q *elastic.BoolQuery, text string) {
+func (repo *DiscoveryRepository) buildTextQuery(q *elastic.BoolQuery, cfg asset.SearchConfig) {
 	boostedFields := []string{"urn^10", "name^5"}
+
+	if cfg.Flags.DisableFuzzy {
+		q.Should(
+			elastic.NewMultiMatchQuery(cfg.Text, boostedFields...),
+			elastic.NewMultiMatchQuery(cfg.Text),
+		)
+		return
+	}
+
 	q.Should(
-		elastic.NewMultiMatchQuery(text, boostedFields...),
-		elastic.NewMultiMatchQuery(text, boostedFields...).
+		elastic.NewMultiMatchQuery(cfg.Text, boostedFields...),
+		elastic.NewMultiMatchQuery(cfg.Text, boostedFields...).
 			Fuzziness("AUTO"),
-		elastic.NewMultiMatchQuery(text).
+		elastic.NewMultiMatchQuery(cfg.Text).
 			Fuzziness("AUTO"),
 	)
 }
 
-func (repo *DiscoveryRepository) buildMustMatchQueries(q *elastic.BoolQuery, queries map[string]string) {
-	if len(queries) == 0 {
+func (repo *DiscoveryRepository) buildMustMatchQueries(q *elastic.BoolQuery, cfg asset.SearchConfig) {
+	if len(cfg.Queries) == 0 {
 		return
 	}
 
-	for field, value := range queries {
+	for field, value := range cfg.Queries {
+		if cfg.Flags.DisableFuzzy {
+			q.Must(elastic.NewMatchQuery(field, value))
+			continue
+		}
+
 		q.Must(elastic.NewMatchQuery(field, value).
 			Fuzziness("AUTO"))
 	}

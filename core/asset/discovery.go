@@ -40,6 +40,9 @@ type SearchFilter = map[string][]string
 // operations involving asset search
 type SearchFlags struct {
 	EnableHighlight bool
+
+	// DisableFuzzy disables fuzziness on search
+	DisableFuzzy bool
 }
 
 // SearchConfig represents a search query along
