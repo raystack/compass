@@ -33,6 +33,11 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 	if maxResults <= 0 {
 		maxResults = defaultMaxResults
 	}
+	offset := cfg.Offset
+	if offset < 0 {
+		offset = 0
+	}
+
 	query, err := repo.buildQuery(cfg)
 	if err != nil {
 		err = asset.DiscoveryError{Err: fmt.Errorf("error building query %w", err)}
@@ -43,6 +48,7 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 		repo.cli.client.Search.WithBody(query),
 		repo.cli.client.Search.WithIndex(defaultSearchIndex),
 		repo.cli.client.Search.WithSize(maxResults),
+		repo.cli.client.Search.WithFrom(offset),
 		repo.cli.client.Search.WithIgnoreUnavailable(true),
 		repo.cli.client.Search.WithSourceIncludes(returnedAssetFieldsResult...),
 		repo.cli.client.Search.WithContext(ctx),

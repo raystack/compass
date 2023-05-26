@@ -194,6 +194,36 @@ func TestSearcherSearch(t *testing.T) {
 				},
 			},
 			{
+				Description: "should return 5 records with offset of 0",
+				Config: asset.SearchConfig{
+					Text:       "topic",
+					Offset:     0,
+					MaxResults: 5,
+				},
+				Expected: []expectedRow{
+					{Type: "topic", AssetID: "consumer-topic"},
+					{Type: "topic", AssetID: "order-topic"},
+					{Type: "topic", AssetID: "purchase-topic"},
+					{Type: "topic", AssetID: "consumer-mq-2"},
+					{Type: "topic", AssetID: "transaction"},
+				},
+			},
+			{
+				Description: "should return 4 records with offset of 1",
+				Config: asset.SearchConfig{
+					Text:       "topic",
+					Offset:     1,
+					MaxResults: 5,
+				},
+				Expected: []expectedRow{
+					//{Type: "topic", AssetID: "consumer-topic"},
+					{Type: "topic", AssetID: "order-topic"},
+					{Type: "topic", AssetID: "purchase-topic"},
+					{Type: "topic", AssetID: "consumer-mq-2"},
+					{Type: "topic", AssetID: "transaction"},
+				},
+			},
+			{
 				Description: "should return 'bigquery::gcpproject/dataset/tablename-common' resource on top if search by query table column name field with text 'tablename-common-column1'",
 				Config: asset.SearchConfig{
 					Text: "tablename",

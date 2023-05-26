@@ -66,6 +66,10 @@ type SearchConfig struct {
 
 	// Flags flags to control the search behavior (e.g. column level search, disable fuzzy, etc)
 	Flags SearchFlags
+
+	// Offset parameter defines the offset from the first result you want to fetch
+	// Note that MaxResults + Offset can not be more than the `index.max_result_window` index setting in ES cluster, which defaults to 10,000
+	Offset int
 }
 
 // SearchResult represents an item/result in a list of search results

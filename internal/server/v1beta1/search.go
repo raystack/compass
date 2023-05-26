@@ -29,6 +29,7 @@ func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.S
 		RankBy:     req.GetRankby(),
 		Queries:    req.GetQuery(),
 		Flags:      getSearchFlagsFromFlags(req.GetFlags()),
+		Offset:     int(req.GetOffset()),
 	}
 
 	results, err := server.assetService.SearchAssets(ctx, cfg)

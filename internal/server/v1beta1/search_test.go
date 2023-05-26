@@ -107,6 +107,23 @@ func TestSearch(t *testing.T) {
 
 				as.EXPECT().SearchAssets(ctx, cfg).Return([]asset.SearchResult{}, nil)
 			},
+		}, {
+			Description: "should parse offset",
+			Request: &compassv1beta1.SearchAssetsRequest{
+				Text:   "resource",
+				Offset: 10,
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+
+				cfg := asset.SearchConfig{
+					Text:    "resource",
+					Filters: make(map[string][]string),
+					Queries: map[string]string(nil),
+					Offset:  10,
+				}
+
+				as.EXPECT().SearchAssets(ctx, cfg).Return([]asset.SearchResult{}, nil)
+			},
 		},
 		{
 			Description: "should return the matched documents",
