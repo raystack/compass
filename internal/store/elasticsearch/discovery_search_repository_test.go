@@ -176,8 +176,10 @@ func TestSearcherSearch(t *testing.T) {
 				Expected: []expectedRow{
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-mid"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/test"},
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
-					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common-test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/abc-tablename-mid"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
 				},
 			},
 			{
@@ -233,18 +235,20 @@ func TestSearcherSearch(t *testing.T) {
 				},
 				Expected: []expectedRow{
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
-					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common-test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
 				},
 			},
 			{
-				Description: "should return 'bigquery::gcpproject/dataset/tablename-common-test' resource on top if searched for text 'tablename-common-test'",
+				Description: "should return 'bigquery::gcpproject/dataset/tablename-abc-common-test' resource on top if searched for text 'tablename-abc-common-test'",
 				Config: asset.SearchConfig{
-					Text:   "tablename-common-test",
+					Text:   "tablename-abc-common-test",
 					RankBy: "data.profile.usage_count",
 				},
 				Expected: []expectedRow{
-					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common-test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/abc-tablename-mid"},
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-mid"},
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
 				},
@@ -275,12 +279,24 @@ func TestSearcherSearch(t *testing.T) {
 					},
 				},
 			},
+			{
+				Description: "should return 'bigquery::gcpproject/dataset/tablename-abc-common-test' resource on top if " +
+					"searched for text 'abc-test' as it has both the keywords searched",
+				Config: asset.SearchConfig{
+					Text:   "abc-test",
+					RankBy: "data.profile.usage_count",
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/abc-tablename-mid"},
+				},
+			},
 		}
 		for _, test := range tests {
 			t.Run(test.Description, func(t *testing.T) {
 				results, err := repo.Search(ctx, test.Config)
 				require.NoError(t, err)
-
 				require.Equal(t, len(test.Expected), len(results))
 				for i, res := range test.Expected {
 					assert.Equal(t, res.Type, results[i].Type)
@@ -413,6 +429,13 @@ func TestGroupAssets(t *testing.T) {
 					{
 						Fields: []asset.GroupField{
 							{Name: "type", Value: "table"},
+							{Name: "name", Value: "abc-tablename-mid"},
+						},
+						Assets: []asset.Asset{{Name: "abc-tablename-mid"}},
+					},
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "table"},
 							{Name: "name", Value: "apple-invoice"},
 						},
 						Assets: []asset.Asset{{Name: "apple-invoice"}},
@@ -429,7 +452,15 @@ func TestGroupAssets(t *testing.T) {
 							{Name: "type", Value: "table"},
 							{Name: "name", Value: "tablename-1"},
 						},
-						Assets: []asset.Asset{{Name: "tablename-1"}}},
+						Assets: []asset.Asset{{Name: "tablename-1"}},
+					},
+					{
+						Fields: []asset.GroupField{
+							{Name: "type", Value: "table"},
+							{Name: "name", Value: "tablename-abc-common-test"},
+						},
+						Assets: []asset.Asset{{Name: "tablename-abc-common-test"}},
+					},
 					{
 						Fields: []asset.GroupField{
 							{Name: "type", Value: "table"},
@@ -440,16 +471,16 @@ func TestGroupAssets(t *testing.T) {
 					{
 						Fields: []asset.GroupField{
 							{Name: "type", Value: "table"},
-							{Name: "name", Value: "tablename-common-test"},
+							{Name: "name", Value: "tablename-mid"},
 						},
-						Assets: []asset.Asset{{Name: "tablename-common-test"}},
+						Assets: []asset.Asset{{Name: "tablename-mid"}},
 					},
 					{
 						Fields: []asset.GroupField{
 							{Name: "type", Value: "table"},
-							{Name: "name", Value: "tablename-mid"},
+							{Name: "name", Value: "test"},
 						},
-						Assets: []asset.Asset{{Name: "tablename-mid"}},
+						Assets: []asset.Asset{{Name: "test"}},
 					},
 					{
 						Fields: []asset.GroupField{
@@ -502,7 +533,7 @@ func TestGroupAssets(t *testing.T) {
 						Assets: []asset.Asset{
 							{Name: "tablename-1"},
 							{Name: "tablename-common"},
-							{Name: "tablename-common-test"},
+							{Name: "tablename-abc-common-test"},
 						},
 					},
 					{

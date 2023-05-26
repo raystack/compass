@@ -266,7 +266,7 @@
                         "filter_conditions": [
                             "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
                         ],
-                        "usage_count": 100
+                        "usage_count": 50
                     },
                     "properties": {
                         "attributes": {
@@ -337,9 +337,9 @@
                 "type": "table"
             },
             {
-                "id": "bigquery::gcpproject/dataset/tablename-common-test",
-                "urn": "bigquery::gcpproject/dataset/tablename-common-test",
-                "name": "tablename-common-test",
+                "id": "bigquery::gcpproject/dataset/tablename-abc-common-test",
+                "urn": "bigquery::gcpproject/dataset/tablename-abc-common-test",
+                "name": "tablename-abc-common-test",
                 "service": "bigquery",
                 "description": "A sample of table record with high usage",
                 "data": {
@@ -507,6 +507,195 @@
                         "name": "tablename-mid",
                         "service": "bigquery",
                         "urn": "bigquery::gcpproject/dataset/tablename-mid"
+                    }
+                },
+                "owners": [
+                    {
+                        "urn": "owner::bq/1",
+                        "name": "John Smith",
+                        "role": "user",
+                        "email": "john.smith@email.com"
+                    },
+                    {
+                        "urn": "owner::bq/2",
+                        "name": "Paul Smith",
+                        "role": "user",
+                        "email": "paul.smith@email.com"
+                    }
+                ],
+                "type": "table"
+            },
+            {
+                "id": "bigquery::gcpproject/dataset/abc-tablename-mid",
+                "urn": "bigquery::gcpproject/dataset/abc-tablename-mid",
+                "name": "abc-tablename-mid",
+                "service": "bigquery",
+                "description": "A sample of table record with high usage",
+                "data": {
+                    "preview": {},
+                    "profile": {
+                        "common_join": [
+                            {
+                                "conditions": [
+                                    "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
+                                ],
+                                "count": 3,
+                                "urn": "bigquery::gcpproject/dataset/tablename-mid"
+                            }
+                        ],
+                        "filter_conditions": [
+                            "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
+                        ],
+                        "usage_count": 1
+                    },
+                    "properties": {
+                        "attributes": {
+                            "dataset": "dataset",
+                            "full_qualified_name": "gcpproject:dataset.abc-tablename-mid",
+                            "partition_field": "event_timestamp",
+                            "project": "gcpproject",
+                            "type": "TABLE"
+                        },
+                        "labels": {
+                            "owner": "user_1"
+                        }
+                    },
+                    "schema": {
+                        "columns": [
+                            {
+                                "data_type": "STRING",
+                                "is_nullable": true,
+                                "name": "abc-tablename-mid-column1",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            },
+                            {
+                                "data_type": "STRING",
+                                "is_nullable": true,
+                                "name": "abc-tablename-mid-column2",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            },
+                            {
+                                "data_type": "BIGNUMERIC",
+                                "is_nullable": true,
+                                "name": "abc-tablename-mid-column3",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "resource": {
+                        "name": "abc-mid-test",
+                        "service": "bigquery",
+                        "urn": "bigquery::gcpproject/dataset/abc-tablename-mid"
+                    }
+                },
+                "owners": [
+                    {
+                        "urn": "owner::bq/3",
+                        "name": "Mr.X",
+                        "role": "admin",
+                        "email": "mr.x@email.com"
+                    },
+                    {
+                        "urn": "owner::bq/4",
+                        "name": "Mrs.Y",
+                        "role": "user",
+                        "email": "mr.y@email.com"
+                    }
+                ],
+                "type": "table"
+            },
+            {
+                "id": "bigquery::gcpproject/dataset/test",
+                "urn": "bigquery::gcpproject/dataset/test",
+                "name": "test",
+                "service": "bigquery",
+                "description": "A sample of table record with mid usage",
+                "data": {
+                    "preview": {},
+                    "profile": {
+                        "common_join": [
+                            {
+                                "conditions": [
+                                    "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
+                                ],
+                                "count": 1,
+                                "urn": "bigquery::gcpproject/dataset/tablename-high"
+                            },
+                            {
+                                "conditions": [
+                                    "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
+                                ],
+                                "count": 1,
+                                "urn": "bigquery::gcpproject/dataset/tablename-1"
+                            }
+                        ],
+                        "filter_conditions": [
+                            "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
+                        ],
+                        "usage_count": 2
+                    },
+                    "properties": {
+                        "attributes": {
+                            "dataset": "dataset",
+                            "full_qualified_name": "gcpproject:dataset.test",
+                            "partition_field": "event_timestamp",
+                            "project": "gcpproject",
+                            "type": "TABLE"
+                        },
+                        "labels": {
+                            "owner": "user_1"
+                        }
+                    },
+                    "schema": {
+                        "columns": [
+                            {
+                                "data_type": "STRING",
+                                "is_nullable": true,
+                                "name": "test-column1",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            },
+                            {
+                                "data_type": "STRING",
+                                "is_nullable": true,
+                                "name": "test-column2",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            },
+                            {
+                                "data_type": "BIGNUMERIC",
+                                "is_nullable": true,
+                                "name": "test-column3",
+                                "properties": {
+                                    "attributes": {
+                                        "mode": "NULLABLE"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "resource": {
+                        "name": "tablename-mid",
+                        "service": "bigquery",
+                        "urn": "bigquery::gcpproject/dataset/test"
                     }
                 },
                 "owners": [

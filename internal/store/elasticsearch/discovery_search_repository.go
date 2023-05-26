@@ -154,22 +154,23 @@ func (repo *DiscoveryRepository) buildSuggestQuery(cfg asset.SearchConfig) (io.R
 
 func (repo *DiscoveryRepository) buildTextQuery(q *elastic.BoolQuery, cfg asset.SearchConfig) {
 	boostedFields := []string{"urn^10", "name^5"}
-
-	if cfg.Flags.DisableFuzzy {
-		q.Should(
-			elastic.NewMultiMatchQuery(cfg.Text, boostedFields...),
-			elastic.NewMultiMatchQuery(cfg.Text),
-		)
-		return
-	}
-
 	q.Should(
-		elastic.NewMultiMatchQuery(cfg.Text, boostedFields...),
+		// Phrase query cannot have `FUZZINESS`
 		elastic.NewMultiMatchQuery(cfg.Text, boostedFields...).
-			Fuzziness("AUTO"),
-		elastic.NewMultiMatchQuery(cfg.Text).
-			Fuzziness("AUTO"),
+			Type("phrase"),
 	)
+	for _, mq := range []*elastic.MultiMatchQuery{
+		elastic.NewMultiMatchQuery(cfg.Text, boostedFields...).
+			Operator("and"),
+		elastic.NewMultiMatchQuery(cfg.Text, boostedFields...),
+		elastic.NewMultiMatchQuery(cfg.Text),
+	} {
+		if !cfg.Flags.DisableFuzzy {
+			mq.Fuzziness("AUTO")
+		}
+
+		q.Should(mq)
+	}
 }
 
 func (repo *DiscoveryRepository) buildMustMatchQueries(q *elastic.BoolQuery, cfg asset.SearchConfig) {
