@@ -290,7 +290,7 @@ func local_request_CompassService_CreateComment_0(ctx context.Context, marshaler
 }
 
 var (
-	filter_CompassService_GetAllComments_0 = &utilities.DoubleArray{Encoding: map[string]int{"discussion_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_CompassService_GetAllComments_0 = &utilities.DoubleArray{Encoding: map[string]int{"discussion_id": 0, "discussionId": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 )
 
 func request_CompassService_GetAllComments_0(ctx context.Context, marshaler runtime.Marshaler, client CompassServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -700,7 +700,7 @@ func local_request_CompassService_SuggestAssets_0(ctx context.Context, marshaler
 }
 
 var (
-	filter_CompassService_GetGraph_0 = &utilities.DoubleArray{Encoding: map[string]int{"urn": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_CompassService_GetGraph_0 = &utilities.DoubleArray{Encoding: map[string]int{"urn": 0}, Base: []int{1, 2, 0, 0}, Check: []int{0, 1, 2, 2}}
 )
 
 func request_CompassService_GetGraph_0(ctx context.Context, marshaler runtime.Marshaler, client CompassServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -1014,7 +1014,7 @@ func local_request_CompassService_DeleteAsset_0(ctx context.Context, marshaler r
 }
 
 var (
-	filter_CompassService_GetAssetStargazers_0 = &utilities.DoubleArray{Encoding: map[string]int{"id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_CompassService_GetAssetStargazers_0 = &utilities.DoubleArray{Encoding: map[string]int{"id": 0}, Base: []int{1, 2, 0, 0}, Check: []int{0, 1, 2, 2}}
 )
 
 func request_CompassService_GetAssetStargazers_0(ctx context.Context, marshaler runtime.Marshaler, client CompassServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -1084,7 +1084,7 @@ func local_request_CompassService_GetAssetStargazers_0(ctx context.Context, mars
 }
 
 var (
-	filter_CompassService_GetAssetVersionHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_CompassService_GetAssetVersionHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"id": 0}, Base: []int{1, 2, 0, 0}, Check: []int{0, 1, 2, 2}}
 )
 
 func request_CompassService_GetAssetVersionHistory_0(ctx context.Context, marshaler runtime.Marshaler, client CompassServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -1294,7 +1294,7 @@ func local_request_CompassService_CreateAssetProbe_0(ctx context.Context, marsha
 }
 
 var (
-	filter_CompassService_GetUserStarredAssets_0 = &utilities.DoubleArray{Encoding: map[string]int{"user_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_CompassService_GetUserStarredAssets_0 = &utilities.DoubleArray{Encoding: map[string]int{"user_id": 0, "userId": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 )
 
 func request_CompassService_GetUserStarredAssets_0(ctx context.Context, marshaler runtime.Marshaler, client CompassServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -3138,7 +3138,7 @@ func RegisterCompassServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 // RegisterCompassServiceHandlerFromEndpoint is same as RegisterCompassServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
 func RegisterCompassServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
-	conn, err := grpc.Dial(endpoint, opts...)
+	conn, err := grpc.DialContext(ctx, endpoint, opts...)
 	if err != nil {
 		return err
 	}
