@@ -13399,6 +13399,8 @@ func (m *CreateAssetProbeRequest_Probe) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Id
+
 	if utf8.RuneCountInString(m.GetStatus()) < 1 {
 		err := CreateAssetProbeRequest_ProbeValidationError{
 			field:  "Status",

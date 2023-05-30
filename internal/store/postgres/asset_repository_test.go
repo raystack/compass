@@ -1290,7 +1290,36 @@ func (r *AssetRepositoryTestSuite) TestAddProbe() {
 		r.ErrorAs(err, &asset.NotFoundError{URN: urn})
 	})
 
+	r.Run("should return error if probe already exists", func() {
+		ast := asset.Asset{
+			URN:       "urn-add-probe-1",
+			Type:      asset.TypeJob,
+			Service:   "airflow",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+		probeID := uuid.NewString()
+		probe := asset.Probe{
+			ID:           probeID,
+			Status:       "COMPLETED",
+			StatusReason: "Sample Reason",
+			Timestamp:    time.Now().Add(2 * time.Minute),
+			Metadata: map[string]interface{}{
+				"foo": "bar",
+			},
+		}
+
+		_, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+
+		err = r.repository.AddProbe(r.ctx, ast.URN, &probe)
+		r.NoError(err)
+
+		err = r.repository.AddProbe(r.ctx, ast.URN, &probe)
+		r.ErrorIs(err, asset.ErrProbeExists)
+	})
+
 	r.Run("should populate CreatedAt and persist probe", func() {
+		r.BeforeTest("", "")
 		ast := asset.Asset{
 			URN:       "urn-add-probe-1",
 			Type:      asset.TypeJob,
@@ -1335,6 +1364,33 @@ func (r *AssetRepositoryTestSuite) TestAddProbe() {
 		// cleanup
 		err = r.repository.DeleteByURN(r.ctx, ast.URN)
 		r.Require().NoError(err)
+	})
+
+	r.Run("should insert ID if specified", func() {
+		ast := asset.Asset{
+			URN:       "urn-add-probe-1",
+			Type:      asset.TypeJob,
+			Service:   "airflow",
+			UpdatedBy: user.User{ID: defaultAssetUpdaterUserID},
+		}
+		probeID := uuid.NewString()
+		probe := asset.Probe{
+			ID:           probeID,
+			Status:       "COMPLETED",
+			StatusReason: "Sample Reason",
+			Timestamp:    time.Now().Add(2 * time.Minute),
+			Metadata: map[string]interface{}{
+				"foo": "bar",
+			},
+		}
+
+		_, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+
+		err = r.repository.AddProbe(r.ctx, ast.URN, &probe)
+		r.NoError(err)
+
+		r.Equal(probeID, probe.ID)
 	})
 
 	r.Run("should populate Timestamp if empty", func() {

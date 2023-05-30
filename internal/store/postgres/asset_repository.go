@@ -346,21 +346,32 @@ func (r *AssetRepository) AddProbe(ctx context.Context, assetURN string, probe *
 		probe.Timestamp = probe.Timestamp.UTC()
 	}
 
-	query, args, err := sq.Insert("asset_probes").
-		Columns("asset_urn", "status", "status_reason", "metadata", "timestamp", "created_at").
-		Values(assetURN, probe.Status, probe.StatusReason, probe.Metadata, probe.Timestamp, probe.CreatedAt).
-		Suffix("RETURNING \"id\"").
+	insert := sq.Insert("asset_probes")
+	if probe.ID != "" {
+		insert = insert.Columns("id", "asset_urn", "status", "status_reason", "metadata", "timestamp", "created_at").
+			Values(probe.ID, assetURN, probe.Status, probe.StatusReason, probe.Metadata, probe.Timestamp, probe.CreatedAt)
+	} else {
+		insert = insert.Columns("asset_urn", "status", "status_reason", "metadata", "timestamp", "created_at").
+			Values(assetURN, probe.Status, probe.StatusReason, probe.Metadata, probe.Timestamp, probe.CreatedAt)
+	}
+
+	query, args, err := insert.Suffix("RETURNING \"id\"").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("error building insert asset probe query: %w", err)
+		return fmt.Errorf("build insert asset probe query: %w", err)
 	}
 
-	err = r.client.db.QueryRowContext(ctx, query, args...).Scan(&probe.ID)
-	if errors.Is(checkPostgresError(err), errForeignKeyViolation) {
-		return asset.NotFoundError{URN: assetURN}
-	} else if err != nil {
-		return fmt.Errorf("error running insert asset probe query: %w", err)
+	if err = r.client.db.QueryRowContext(ctx, query, args...).Scan(&probe.ID); err != nil {
+		switch e := checkPostgresError(err); {
+		case errors.Is(e, errForeignKeyViolation):
+			return asset.NotFoundError{URN: assetURN}
+
+		case errors.Is(e, errDuplicateKey):
+			return asset.ErrProbeExists
+		}
+
+		return fmt.Errorf("run insert asset probe query: %w", err)
 	}
 
 	return nil

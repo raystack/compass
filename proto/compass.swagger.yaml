@@ -1877,6 +1877,8 @@ definitions:
   CreateAssetProbeRequest.Probe:
     type: object
     properties:
+      id:
+        type: string
       metadata:
         type: object
       status:

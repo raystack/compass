@@ -1234,6 +1234,18 @@ func TestCreateAssetProbe(t *testing.T) {
 
 	var testCases = []testCase{
 		{
+			Description:  `should return error if id is not a valid UUID`,
+			ExpectStatus: codes.InvalidArgument,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
+					Id:        "invaliduuid",
+					Status:    "RUNNING",
+					Timestamp: timestamppb.New(now),
+				},
+			},
+		},
+		{
 			Description:  `should return error if status is missing`,
 			ExpectStatus: codes.InvalidArgument,
 			Request: &compassv1beta1.CreateAssetProbeRequest{
@@ -1267,6 +1279,26 @@ func TestCreateAssetProbe(t *testing.T) {
 				as.EXPECT().
 					AddProbe(ctx, assetURN, mock.AnythingOfType("*asset.Probe")).
 					Return(asset.NotFoundError{URN: assetURN})
+			},
+		},
+		{
+			Description:  `should return already exists if probe already exists`,
+			ExpectStatus: codes.AlreadyExists,
+			Request: &compassv1beta1.CreateAssetProbeRequest{
+				AssetUrn: assetURN,
+				Probe: &compassv1beta1.CreateAssetProbeRequest_Probe{
+					Id:        probeID,
+					Status:    "RUNNING",
+					Timestamp: timestamppb.New(now),
+				},
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService) {
+				as.EXPECT().AddProbe(ctx, assetURN, &asset.Probe{
+					ID:        probeID,
+					Status:    "RUNNING",
+					Metadata:  map[string]interface{}{},
+					Timestamp: now,
+				}).Return(asset.ErrProbeExists)
 			},
 		},
 		{

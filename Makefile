@@ -1,7 +1,7 @@
 NAME="github.com/goto/compass"
 VERSION=$(shell git describe --always --tags 2>/dev/null)
 COVERFILE="/tmp/compass.coverprofile"
-PROTON_COMMIT := "374259a5277ce724ecb0cda5091123db5d55c118"
+PROTON_COMMIT := "a6b2821e8ddd1127a63d3b376f860990d58931da"
 .PHONY: all build test clean install proto
 
 all: build
@@ -32,7 +32,6 @@ lint: ## Lint checker
 	
 proto: ## Generate the protobuf files
 	@echo " > generating protobuf from goto/proton"
-	@echo " > [info] make sure correct version of dependencies are installed using 'make install'"
 	@buf generate https://github.com/goto/proton/archive/${PROTON_COMMIT}.zip#strip_components=1 --template buf.gen.yaml --path gotocompany/compass -v
 	@echo " > protobuf compilation finished"
 

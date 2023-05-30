@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrEmptyID     = errors.New("asset does not have ID")
+	ErrProbeExists = errors.New("asset probe already exists")
 	ErrEmptyURN    = errors.New("asset does not have URN")
 	ErrUnknownType = errors.New("unknown type")
 	ErrNilAsset    = errors.New("nil asset")

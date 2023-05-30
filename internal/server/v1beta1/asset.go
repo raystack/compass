@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/goto/compass/core/asset"
 	"github.com/goto/compass/core/star"
 	"github.com/goto/compass/core/user"
@@ -318,6 +319,9 @@ func (server *APIServer) CreateAssetProbe(ctx context.Context, req *compassv1bet
 		return nil, err
 	}
 
+	if req.Probe.Id != "" && !isValidUUID(req.Probe.Id) {
+		return nil, status.Error(codes.InvalidArgument, "id should be a valid UUID")
+	}
 	if req.Probe.Status == "" {
 		return nil, status.Error(codes.InvalidArgument, "Status is required")
 	}
@@ -326,15 +330,21 @@ func (server *APIServer) CreateAssetProbe(ctx context.Context, req *compassv1bet
 	}
 
 	probe := asset.Probe{
+		ID:           req.Probe.Id,
 		Status:       req.Probe.Status,
 		StatusReason: req.Probe.StatusReason,
 		Metadata:     req.Probe.Metadata.AsMap(),
 		Timestamp:    req.Probe.Timestamp.AsTime(),
 	}
 	if err := server.assetService.AddProbe(ctx, req.AssetUrn, &probe); err != nil {
-		if errors.As(err, &asset.NotFoundError{}) {
+		switch {
+		case errors.As(err, &asset.NotFoundError{}):
 			return nil, status.Error(codes.NotFound, err.Error())
+
+		case errors.Is(err, asset.ErrProbeExists):
+			return nil, status.Error(codes.AlreadyExists, err.Error())
 		}
+
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -761,4 +771,9 @@ func diffChangeFromProto(pb *compassv1beta1.Change) diff.Change {
 		From: fromItf,
 		To:   toItf,
 	}
+}
+
+func isValidUUID(u string) bool {
+	_, err := uuid.Parse(u)
+	return err == nil
 }
