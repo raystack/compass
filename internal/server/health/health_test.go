@@ -17,7 +17,7 @@ func TestHealthCheck(t *testing.T) {
 		PostCheck    func(resp *grpc_health_v1.HealthCheckResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  `should return OK if server is serving`,
 			ExpectStatus: codes.OK,
@@ -54,7 +54,7 @@ func TestHealthWatch(t *testing.T) {
 		PostCheck    func(wc grpc_health_v1.Health_WatchClient) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  `should return unimplemented`,
 			ExpectStatus: codes.Unimplemented,
@@ -63,7 +63,6 @@ func TestHealthWatch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-
 			healthHandler := NewHandler()
 
 			err := healthHandler.Watch(tc.Request, nil)

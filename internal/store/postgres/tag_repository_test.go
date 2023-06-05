@@ -200,8 +200,8 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		var assetID = uuid.NewString()
-		var templateURN = "governance_policy"
+		assetID := uuid.NewString()
+		templateURN := "governance_policy"
 
 		domainTemplate := getTemplate()
 		err = r.templateRepository.Create(r.ctx, domainTemplate)
@@ -226,8 +226,8 @@ func (r *TagRepositoryTestSuite) TestRead() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		var assetID = domainAssetID
-		var templateURN = "governance_policy"
+		assetID := domainAssetID
+		templateURN := "governance_policy"
 
 		domainTemplate := getTemplate()
 		err = r.templateRepository.Create(r.ctx, domainTemplate)
@@ -373,8 +373,8 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		var assetID = uuid.NewString()
-		var templateURN = "random-urn"
+		assetID := uuid.NewString()
+		templateURN := "random-urn"
 		paramDomainTag := tag.Tag{
 			AssetID:     assetID,
 			TemplateURN: templateURN,
@@ -388,7 +388,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 		err := setup(r.ctx, r.client)
 		r.NoError(err)
 
-		var assetID = uuid.NewString()
+		assetID := uuid.NewString()
 		domainTemplate := getTemplate()
 		err = r.templateRepository.Create(r.ctx, domainTemplate)
 		r.NoError(err)

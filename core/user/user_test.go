@@ -13,7 +13,7 @@ func TestValidate(t *testing.T) {
 		ExpectError error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:       "should return error no user information if user is nil",
 			User:        nil,
@@ -32,7 +32,6 @@ func TestValidate(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.Title, func(t *testing.T) {
-
 			err := testCase.User.Validate()
 			assert.Equal(t, testCase.ExpectError, err)
 		})

@@ -10,7 +10,6 @@ import (
 	"github.com/goto/compass/core/tag"
 	"github.com/goto/compass/core/tag/mocks"
 	"github.com/goto/compass/core/tag/validator"
-
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -55,7 +54,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if display name is empty", func() {
@@ -72,7 +71,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if description is empty", func() {
@@ -89,7 +88,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if fields is nil", func() {
@@ -106,7 +105,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if fields is empty", func() {
@@ -123,7 +122,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if fields urn is empty", func() {
@@ -140,7 +139,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if fields display name is empty", func() {
@@ -157,7 +156,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if fields description is empty", func() {
@@ -174,7 +173,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if fields data type is invalid", func() {
@@ -191,7 +190,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if fields data type enumerated but options nil", func() {
@@ -208,7 +207,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if fields data type enumerated but options empty", func() {
@@ -225,7 +224,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if fields data type enumerated but options contains empty", func() {
@@ -244,7 +243,7 @@ func (s *TemplateServiceTestSuite) TestValidate() {
 		actualError := service.Validate(template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return nil if fields data type not enumerated and options empty", func() {
@@ -283,7 +282,7 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 		actualError := s.service.CreateTemplate(ctx, &template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if error encountered when checking for duplication", func() {
@@ -306,10 +305,7 @@ func (s *TemplateServiceTestSuite) TestCreate() {
 
 	s.Run("should return error if found error during create", func() {
 		s.Setup()
-		now := time.Now()
 		originalDomainTemplate := s.buildTemplate()
-		referenceDomainTemplate := s.buildTemplate()
-		referenceDomainTemplate.CreatedAt = now
 
 		s.repository.EXPECT().Read(ctx, originalDomainTemplate.URN).Return([]tag.Template{}, nil)
 		s.repository.EXPECT().Create(ctx, &originalDomainTemplate).Return(errors.New("unexpected error"))
@@ -410,7 +406,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		actualError := s.service.UpdateTemplate(ctx, template.URN, &template)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if encountered unexpected error during read for existence", func() {
@@ -443,7 +439,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		actualError := s.service.UpdateTemplate(ctx, newTemplate.URN, &newTemplate)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if trying to update field urn that already exist", func() {
@@ -466,7 +462,7 @@ func (s *TemplateServiceTestSuite) TestUpdate() {
 		actualError := s.service.UpdateTemplate(ctx, template.URN, &newTemplate)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if found error during update", func() {
@@ -501,7 +497,7 @@ func (s *TemplateServiceTestSuite) TestFind() {
 
 	s.Run("should return empty and error if found unexpected error", func() {
 		s.Setup()
-		var urn = "sample-urn"
+		urn := "sample-urn"
 		s.repository.EXPECT().Read(ctx, urn).Return(nil, errors.New("unexpected error"))
 
 		_, err := s.service.GetTemplate(ctx, urn)
@@ -510,7 +506,7 @@ func (s *TemplateServiceTestSuite) TestFind() {
 
 	s.Run("should return not found error if template is not found", func() {
 		s.Setup()
-		var urn = "sample-urn"
+		urn := "sample-urn"
 		s.repository.EXPECT().Read(ctx, urn).Return([]tag.Template{}, nil)
 
 		_, err := s.service.GetTemplate(ctx, urn)
@@ -520,7 +516,7 @@ func (s *TemplateServiceTestSuite) TestFind() {
 
 	s.Run("should return domain template and nil if record is found", func() {
 		s.Setup()
-		var urn = "sample-urn"
+		urn := "sample-urn"
 		template := s.buildTemplate()
 		s.repository.EXPECT().Read(ctx, urn).Return([]tag.Template{template}, nil)
 
@@ -538,7 +534,7 @@ func (s *TemplateServiceTestSuite) TestDelete() {
 
 	s.Run("should return error if encountered unexpected error during delete", func() {
 		s.Setup()
-		var urn = "sample-urn"
+		urn := "sample-urn"
 		s.repository.EXPECT().Delete(ctx, mock.Anything).Return(errors.New("unexpected error"))
 
 		actualError := s.service.DeleteTemplate(ctx, urn)
@@ -549,7 +545,7 @@ func (s *TemplateServiceTestSuite) TestDelete() {
 
 	s.Run("should return delete result from repository", func() {
 		s.Setup()
-		var urn = "sample-urn"
+		urn := "sample-urn"
 		s.repository.EXPECT().Delete(ctx, mock.Anything).Return(nil).Once()
 		s.repository.EXPECT().Delete(ctx, mock.Anything).Return(errors.New("unexpected error")).Once()
 

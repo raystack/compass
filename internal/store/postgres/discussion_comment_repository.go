@@ -45,12 +45,11 @@ func (r *DiscussionRepository) CreateComment(ctx context.Context, cmt *discussio
 
 // GetAll fetches all comments of a specific discussion
 func (r *DiscussionRepository) GetAllComments(ctx context.Context, did string, flt discussion.Filter) ([]discussion.Comment, error) {
-
 	builder := r.selectCommentsSQL()
 	builder = builder.Where(sq.Eq{"discussion_id": did})
 	builder = r.buildSelectOrderQuery(builder, flt)
 	builder = r.buildSelectLimitQuery(builder, flt)
-	query, args, err := r.buildSQL(builder)
+	query, args, err := builder.PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("error building query: %w", err)
 	}
@@ -65,14 +64,13 @@ func (r *DiscussionRepository) GetAllComments(ctx context.Context, did string, f
 }
 
 // Get fetchs a comment
-func (r *DiscussionRepository) GetComment(ctx context.Context, cid string, did string) (discussion.Comment, error) {
-
+func (r *DiscussionRepository) GetComment(ctx context.Context, cid, did string) (discussion.Comment, error) {
 	builder := r.selectCommentsSQL()
 	builder = builder.Where(sq.Eq{
 		"c.id":            cid,
 		"c.discussion_id": did,
 	})
-	query, args, err := r.buildSQL(builder)
+	query, args, err := builder.PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return discussion.Comment{}, fmt.Errorf("error building query: %w", err)
 	}
@@ -91,15 +89,16 @@ func (r *DiscussionRepository) GetComment(ctx context.Context, cid string, did s
 
 // Update updates a comment
 func (r *DiscussionRepository) UpdateComment(ctx context.Context, cmt *discussion.Comment) error {
-	builder := sq.Update("comments").
+	query, args, err := sq.Update("comments").
 		Set("body", cmt.Body).
 		Set("updated_by", cmt.UpdatedBy.ID).
 		Set("updated_at", time.Now()).
 		Where(sq.Eq{
 			"id":            cmt.ID,
 			"discussion_id": cmt.DiscussionID,
-		})
-	query, args, err := r.buildSQL(builder)
+		}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 	if err != nil {
 		return fmt.Errorf("error building query: %w", err)
 	}
@@ -120,13 +119,14 @@ func (r *DiscussionRepository) UpdateComment(ctx context.Context, cmt *discussio
 }
 
 // Delete removes a comment
-func (r *DiscussionRepository) DeleteComment(ctx context.Context, cid string, did string) error {
-	builder := sq.Delete("comments").
+func (r *DiscussionRepository) DeleteComment(ctx context.Context, cid, did string) error {
+	query, args, err := sq.Delete("comments").
 		Where(sq.Eq{
 			"id":            cid,
 			"discussion_id": did,
-		})
-	query, args, err := r.buildSQL(builder)
+		}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 	if err != nil {
 		return fmt.Errorf("error building query: %w", err)
 	}

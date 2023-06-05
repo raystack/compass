@@ -401,7 +401,8 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 			validateResult: func(r *DiscussionRepositoryTestSuite, result discussion.Discussion) {
 				r.Equal([]string(nil), result.Assignees)
 			},
-		}, {
+		},
+		{
 			description: "should return error if discussion id does not exist",
 			disc:        &discussion.Discussion{ID: "999", Assignees: []string{}},
 			err:         discussion.NotFoundError{DiscussionID: "999"},

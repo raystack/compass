@@ -83,7 +83,6 @@ func (r *TagRepository) Create(ctx context.Context, domainTag *tag.Tag) error {
 
 // Read reads tags grouped by its template
 func (r *TagRepository) Read(ctx context.Context, filter tag.Tag) ([]tag.Tag, error) {
-
 	if filter.AssetID == "" {
 		return nil, errEmptyAssetID
 	}

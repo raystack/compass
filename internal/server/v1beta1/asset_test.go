@@ -40,7 +40,7 @@ func TestGetAllAssets(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetAllAssetsResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  `should return internal server error if fetching fails`,
 			ExpectStatus: codes.Internal,
@@ -230,7 +230,7 @@ func TestGetAssetByID(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetAssetByIDResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  `should return invalid argument if asset id is not uuid`,
 			ExpectStatus: codes.InvalidArgument,
@@ -372,7 +372,7 @@ func TestUpsertAsset(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.UpsertAssetResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  "empty payload will return invalid argument",
 			Request:      &compassv1beta1.UpsertAssetRequest{},
@@ -578,7 +578,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.UpsertPatchAssetResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  "empty payload will return invalid argument",
 			Request:      &compassv1beta1.UpsertPatchAssetRequest{},
@@ -694,7 +694,6 @@ func TestUpsertPatchAsset(t *testing.T) {
 					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
 				}
 				return nil
-
 			},
 		},
 		{
@@ -740,7 +739,6 @@ func TestUpsertPatchAsset(t *testing.T) {
 					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
 				}
 				return nil
-
 			},
 		},
 		{
@@ -787,7 +785,6 @@ func TestUpsertPatchAsset(t *testing.T) {
 					return fmt.Errorf("expected response to be %+v, was %+v", expected, resp)
 				}
 				return nil
-
 			},
 		},
 	}
@@ -836,7 +833,7 @@ func TestDeleteAsset(t *testing.T) {
 		Setup        func(ctx context.Context, as *mocks.AssetService, astID string)
 	}
 
-	var testCases = []TestCase{
+	testCases := []TestCase{
 		{
 			Description:  "should return invalid argument when asset id is not uuid",
 			AssetID:      "not-uuid",
@@ -898,12 +895,10 @@ func TestDeleteAsset(t *testing.T) {
 }
 
 func TestGetAssetStargazers(t *testing.T) {
-
 	var (
 		offset         = 10
 		size           = 20
 		defaultStarCfg = star.Filter{Offset: offset, Size: size}
-		assetID        = uuid.NewString()
 		userID         = uuid.NewString()
 		userUUID       = uuid.NewString()
 	)
@@ -916,7 +911,7 @@ func TestGetAssetStargazers(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetAssetStargazersResponse) error
 	}
 
-	var testCases = []TestCase{
+	testCases := []TestCase{
 		{
 			Description:  "should return internal server error if failed to fetch star repository",
 			ExpectStatus: codes.Internal,
@@ -987,9 +982,7 @@ func TestGetAssetStargazers(t *testing.T) {
 }
 
 func TestGetAssetVersionHistory(t *testing.T) {
-
 	var (
-		assetID  = uuid.NewString()
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
 	)
@@ -1002,7 +995,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetAssetVersionHistoryResponse) error
 	}
 
-	var testCases = []TestCase{
+	testCases := []TestCase{
 		{
 			Description:  `should return invalid argument if asset id is not uuid`,
 			ExpectStatus: codes.InvalidArgument,
@@ -1102,11 +1095,9 @@ func TestGetAssetVersionHistory(t *testing.T) {
 }
 
 func TestGetAssetByVersion(t *testing.T) {
-
 	var (
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
-		assetID  = uuid.NewString()
 		version  = "0.2"
 		ast      = asset.Asset{
 			ID:      assetID,
@@ -1123,7 +1114,7 @@ func TestGetAssetByVersion(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetAssetByVersionResponse) error
 	}
 
-	var testCases = []TestCase{
+	testCases := []TestCase{
 		{
 			Description: `should return invalid argument if asset id is not uuid`,
 			Request: &compassv1beta1.GetAssetByVersionRequest{
@@ -1232,7 +1223,7 @@ func TestCreateAssetProbe(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.CreateAssetProbeResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  `should return error if id is not a valid UUID`,
 			ExpectStatus: codes.InvalidArgument,
@@ -1403,7 +1394,7 @@ func TestAssetToProto(t *testing.T) {
 		ExpectProto *compassv1beta1.Asset
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:       "should return nil data pb, label pb, empty owners pb, nil changelog pb, no timestamp pb if data is empty",
 			Asset:       asset.Asset{ID: "id1", URN: "urn1"},
@@ -1441,7 +1432,6 @@ func TestAssetToProto(t *testing.T) {
 				},
 				Changelog: []*compassv1beta1.Change{
 					{
-
 						From: structpb.NewStringValue("1"),
 						To:   structpb.NewStringValue("2"),
 						Path: []string{"path1/path2"},
@@ -1454,7 +1444,6 @@ func TestAssetToProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got, err := assetToProto(tc.Asset, true)
 			if err != nil {
 				t.Error(err)
@@ -1481,7 +1470,7 @@ func TestAssetFromProto(t *testing.T) {
 		ExpectAsset asset.Asset
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:       "should return empty labels, data, and owners if all pb empty",
 			AssetPB:     &compassv1beta1.Asset{Id: "id1"},
@@ -1507,7 +1496,6 @@ func TestAssetFromProto(t *testing.T) {
 				},
 				Changelog: []*compassv1beta1.Change{
 					{
-
 						From: structpb.NewStringValue("1"),
 						To:   structpb.NewStringValue("2"),
 						Path: []string{"path1/path2"},
@@ -1548,7 +1536,6 @@ func TestAssetFromProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got := assetFromProto(tc.AssetPB)
 			if reflect.DeepEqual(got, tc.ExpectAsset) == false {
 				t.Errorf("expected returned asset to be %+v, was %+v", tc.ExpectAsset, got)

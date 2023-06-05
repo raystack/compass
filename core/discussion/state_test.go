@@ -15,7 +15,7 @@ func TestState(t *testing.T) {
 			Result      string
 		}
 
-		var testCases = []TestCase{
+		testCases := []TestCase{
 			{
 				Description: "state open converts to \"open\"",
 				State:       discussion.StateOpen,
@@ -46,7 +46,7 @@ func TestState(t *testing.T) {
 			Result      discussion.State
 		}
 
-		var testCases = []TestCase{
+		testCases := []TestCase{
 			{
 				Description: "\"open\" converts to state open",
 				StateString: "open",
@@ -77,7 +77,7 @@ func TestState(t *testing.T) {
 			IsValid     bool
 		}
 
-		var testCases = []TestCase{
+		testCases := []TestCase{
 			{
 				Description: "supported state will return valid true",
 				StateString: "open",

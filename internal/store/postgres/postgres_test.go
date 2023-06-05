@@ -22,17 +22,14 @@ const (
 	defaultGetMaxSize   = 7
 )
 
-var (
-	pgConfig = postgres.Config{
-		Host:     "localhost",
-		User:     "test_user",
-		Password: "test_pass",
-		Name:     "test_db",
-	}
-)
+var pgConfig = postgres.Config{
+	Host:     "localhost",
+	User:     "test_user",
+	Password: "test_pass",
+	Name:     "test_db",
+}
 
 func newTestClient(logger log.Logger) (*postgres.Client, *dockertest.Pool, *dockertest.Resource, error) {
-
 	opts := &dockertest.RunOptions{
 		Repository: "postgres",
 		Tag:        "13",
@@ -125,19 +122,17 @@ func purgeDocker(pool *dockertest.Pool, resource *dockertest.Resource) error {
 	return nil
 }
 
-func setup(ctx context.Context, client *postgres.Client) (err error) {
-	var queries = []string{
+func setup(ctx context.Context, client *postgres.Client) error {
+	queries := []string{
 		"DROP SCHEMA public CASCADE",
 		"CREATE SCHEMA public",
 	}
 
-	err = client.ExecQueries(ctx, queries)
-	if err != nil {
-		return
+	if err := client.ExecQueries(ctx, queries); err != nil {
+		return err
 	}
 
-	err = client.Migrate(pgConfig)
-	return
+	return client.Migrate(pgConfig)
 }
 
 // helper functions
@@ -150,7 +145,7 @@ func createUser(userRepo user.Repository, email string) (string, error) {
 	return id, nil
 }
 
-func createAsset(assetRepo asset.Repository, updaterID string, ownerEmail, assetURN, assetType string) (*asset.Asset, error) {
+func createAsset(assetRepo asset.Repository, updaterID, ownerEmail, assetURN, assetType string) (*asset.Asset, error) {
 	ast := getAsset(ownerEmail, assetURN, assetType)
 	ast.UpdatedBy.ID = updaterID
 	id, err := assetRepo.Upsert(context.Background(), ast)
@@ -188,44 +183,49 @@ func getUser(email string) *user.User {
 	}
 }
 
-func createUsers(userRepo user.Repository, num int) (users []user.User, err error) {
+func createUsers(userRepo user.Repository, num int) ([]user.User, error) {
+	var users []user.User
 	for i := 0; i < num; i++ {
 		email := fmt.Sprintf("user-test-%d@gotocompany.com", i+1)
 		user1 := user.User{UUID: uuid.NewString(), Email: email, Provider: defaultProviderName}
+		var err error
 		user1.ID, err = userRepo.Create(context.Background(), &user1)
 		if err != nil {
-			return
+			return nil, err
 		}
 		users = append(users, user1)
 	}
-	return
+	return users, nil
 }
 
-func createAssets(assetRepo asset.Repository, users []user.User, astType asset.Type) (asts []asset.Asset, err error) {
-	var count = 0
+func createAssets(assetRepo asset.Repository, users []user.User, astType asset.Type) ([]asset.Asset, error) {
+	var aa []asset.Asset
+	count := 0
 	for _, usr := range users {
 		var ast *asset.Asset
 		count += 1
 		assetURN := fmt.Sprintf("asset-urn-%d", count)
-		ast, err = createAsset(assetRepo, usr.ID, usr.Email, assetURN, astType.String())
+		ast, err := createAsset(assetRepo, usr.ID, usr.Email, assetURN, astType.String())
 		if err != nil {
-			return
+			return nil, err
 		}
-		asts = append(asts, *ast)
+		aa = append(aa, *ast)
 	}
-	return
+	return aa, nil
 }
 
-func usersToUserIDs(users []user.User) (uids []string) {
+func usersToUserIDs(users []user.User) []string {
+	ids := make([]string, 0, len(users))
 	for _, us := range users {
-		uids = append(uids, us.ID)
+		ids = append(ids, us.ID)
 	}
-	return
+	return ids
 }
 
-func assetsToAssetIDs(assets []asset.Asset) (aids []string) {
+func assetsToAssetIDs(assets []asset.Asset) []string {
+	ids := make([]string, 0, len(assets))
 	for _, as := range assets {
-		aids = append(aids, as.ID)
+		ids = append(ids, as.ID)
 	}
-	return
+	return ids
 }

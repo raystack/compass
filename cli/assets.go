@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/goto/compass/internal/client"
 	compassv1beta1 "github.com/goto/compass/proto/gotocompany/compass/v1beta1"
-	"github.com/goto/salt/term"
-
-	"github.com/MakeNowJust/heredoc"
 	"github.com/goto/salt/printer"
+	"github.com/goto/salt/term"
 	"github.com/spf13/cobra"
 )
 
@@ -94,7 +93,6 @@ func listAllAssetsCommand(cfg *Config) *cobra.Command {
 				Size:      size,
 				Offset:    page,
 			})
-
 			if err != nil {
 				return err
 			}
@@ -209,7 +207,6 @@ func editAssetCommand(cfg *Config) *cobra.Command {
 				Asset:     reqBody.Asset,
 				Upstreams: reqBody.Upstreams,
 			})
-
 			if err != nil {
 				return err
 			}
@@ -298,7 +295,6 @@ func listAllTypesCommand(cfg *Config) *cobra.Command {
 				Services: services,
 				Data:     data,
 			})
-
 			if err != nil {
 				return err
 			}

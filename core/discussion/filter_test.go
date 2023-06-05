@@ -15,7 +15,7 @@ func TestValidateFilter(t *testing.T) {
 		errString   string
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: "empty filter will be valid",
 			Filter:      &discussion.Filter{},
@@ -59,7 +59,7 @@ func TestAssignDefault(t *testing.T) {
 		ExpectedFilter *discussion.Filter
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: "non empty fields in filter won't be changed",
 			Filter: &discussion.Filter{

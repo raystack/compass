@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/goto/compass/internal/client"
 	compassv1beta1 "github.com/goto/compass/proto/gotocompany/compass/v1beta1"
 	"github.com/goto/salt/printer"
 	"github.com/goto/salt/term"
-
-	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 )
 
@@ -166,7 +165,6 @@ func postDiscussionCommand(cfg *Config) *cobra.Command {
 				Labels: reqBody.Labels,
 				Assets: reqBody.Assets,
 			})
-
 			if err != nil {
 				return err
 			}

@@ -89,7 +89,8 @@ func (repo *LineageRepository) Upsert(ctx context.Context, urn string, upstreams
 	})
 }
 
-func (repo *LineageRepository) buildGraph(urn string, upstreams, downstreams []string) (graph asset.LineageGraph) {
+func (*LineageRepository) buildGraph(urn string, upstreams, downstreams []string) asset.LineageGraph {
+	graph := make(asset.LineageGraph, 0, len(upstreams)+len(downstreams))
 	for _, us := range upstreams {
 		graph = append(graph, asset.LineageEdge{
 			Source: us,
@@ -109,13 +110,14 @@ func (repo *LineageRepository) buildGraph(urn string, upstreams, downstreams []s
 		})
 	}
 
-	return
+	return graph
 }
 
 // filterSelfDeleteOnly filters edges that are not created by the given node
 // it uses prop["root"] field to figure out which node (source or target) is latest updater of the edge,
 // and only allow that node to delete the relation
-func (repo *LineageRepository) filterSelfDeleteOnly(urn string, toRemoves asset.LineageGraph) (res asset.LineageGraph) {
+func (*LineageRepository) filterSelfDeleteOnly(urn string, toRemoves asset.LineageGraph) asset.LineageGraph {
+	var res asset.LineageGraph
 	for _, edge := range toRemoves {
 		rootURN, ok := edge.Prop["root"]
 		if ok && rootURN != urn {
@@ -124,10 +126,10 @@ func (repo *LineageRepository) filterSelfDeleteOnly(urn string, toRemoves asset.
 		res = append(res, edge)
 	}
 
-	return
+	return res
 }
 
-func (repo *LineageRepository) insertGraph(ctx context.Context, execer sqlx.ExecerContext, graph asset.LineageGraph) error {
+func (*LineageRepository) insertGraph(ctx context.Context, execer sqlx.ExecerContext, graph asset.LineageGraph) error {
 	if len(graph) == 0 {
 		return nil
 	}
@@ -151,7 +153,7 @@ func (repo *LineageRepository) insertGraph(ctx context.Context, execer sqlx.Exec
 	return nil
 }
 
-func (repo *LineageRepository) removeGraph(ctx context.Context, execer sqlx.ExecerContext, graph asset.LineageGraph) error {
+func (*LineageRepository) removeGraph(ctx context.Context, execer sqlx.ExecerContext, graph asset.LineageGraph) error {
 	if len(graph) == 0 {
 		return nil
 	}
@@ -177,9 +179,9 @@ func (repo *LineageRepository) removeGraph(ctx context.Context, execer sqlx.Exec
 	return nil
 }
 
-func (repo *LineageRepository) compareGraph(current, new asset.LineageGraph) (toInserts, toRemoves asset.LineageGraph) {
+func (*LineageRepository) compareGraph(current, new asset.LineageGraph) (toInserts, toRemoves asset.LineageGraph) {
 	if len(current) == 0 && len(new) == 0 {
-		return
+		return nil, nil
 	}
 
 	currMap := map[string]asset.LineageEdge{}
@@ -206,7 +208,7 @@ func (repo *LineageRepository) compareGraph(current, new asset.LineageGraph) (to
 		toRemoves = append(toRemoves, edge)
 	}
 
-	return
+	return toInserts, toRemoves
 }
 
 func (repo *LineageRepository) getUpstreamsGraph(ctx context.Context, urn string, level int) (asset.LineageGraph, error) {
@@ -283,18 +285,18 @@ func (repo *LineageRepository) buildDownstreamQuery(urn string, level int) (quer
 	return repo.buildRecursiveQuery(alias, nonRecursiveBuilder, recursiveBuilder)
 }
 
-func (repo *LineageRepository) buildRecursiveQuery(alias string, nonRecursiveBuilder, recursiveBuilder sq.SelectBuilder) (query string, args []interface{}, err error) {
-
+func (*LineageRepository) buildRecursiveQuery(alias string, nonRecursiveBuilder, recursiveBuilder sq.SelectBuilder) (
+	query string, args []interface{}, err error,
+) {
 	cteBuilder := recursiveCTEBuilder{
 		alias:               alias,
 		columns:             []string{"source", "target", "prop", "depth", "path"},
 		nonRecursiveBuilder: nonRecursiveBuilder,
 		recursiveBuilder:    recursiveBuilder,
 	}
-	cteQuery, cteArgs, err := cteBuilder.toSql()
+	cteQuery, cteArgs, err := cteBuilder.toSQL()
 	if err != nil {
-		err = fmt.Errorf("error building recursive cte: %w", err)
-		return
+		return "", nil, fmt.Errorf("build recursive cte: %w", err)
 	}
 
 	query, args, err = sq.
@@ -304,25 +306,21 @@ func (repo *LineageRepository) buildRecursiveQuery(alias string, nonRecursiveBui
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		err = fmt.Errorf("error building final recursive query: %w", err)
-		return
+		return "", nil, fmt.Errorf("build final recursive query: %w", err)
 	}
 
 	args = append(cteArgs, args...)
-	return
+	return query, args, nil
 }
 
-func (repo *LineageRepository) getDirectLineage(ctx context.Context, urn string) (graph asset.LineageGraph, err error) {
+func (repo *LineageRepository) getDirectLineage(ctx context.Context, urn string) (asset.LineageGraph, error) {
 	query := `SELECT * FROM lineage_graph WHERE (source = $1 OR target = $1)`
 	var gm LineageGraphModel
-	if err = repo.client.db.SelectContext(ctx, &gm, query, urn); err != nil {
-		err = fmt.Errorf("error running fetch direct nodes query: %w", err)
-		return
+	if err := repo.client.db.SelectContext(ctx, &gm, query, urn); err != nil {
+		return nil, fmt.Errorf("run query to fetch direct nodes: %w", err)
 	}
 
-	graph = gm.toGraph()
-
-	return
+	return gm.toGraph(), nil
 }
 
 type recursiveCTEBuilder struct {
@@ -332,12 +330,15 @@ type recursiveCTEBuilder struct {
 	recursiveBuilder    sq.SelectBuilder
 }
 
-func (b *recursiveCTEBuilder) toSql() (query string, args []interface{}, err error) {
-	query, args, err = b.nonRecursiveBuilder.
+func (b *recursiveCTEBuilder) toSQL() (string, []interface{}, error) {
+	query, args, err := b.nonRecursiveBuilder.
 		Suffix("UNION ALL").
 		SuffixExpr(b.recursiveBuilder).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
+	if err != nil {
+		return "", nil, err
+	}
 
 	cols := strings.Join(b.columns, ", ")
 	query = fmt.Sprintf(`
@@ -346,5 +347,5 @@ func (b *recursiveCTEBuilder) toSql() (query string, args []interface{}, err err
 		) AS (%s)`,
 		b.alias, cols, query)
 
-	return
+	return query, args, nil
 }

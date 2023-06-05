@@ -14,7 +14,7 @@ func TestToAsset(t *testing.T) {
 		Expect       asset.Asset
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title: "should return correct asset",
 			SearchResult: asset.SearchResult{

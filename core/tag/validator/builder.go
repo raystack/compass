@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"errors"
 	"reflect"
 	"strings"
 
@@ -76,12 +77,12 @@ func (b *Builder) Validate(s interface{}) error {
 	if err == nil {
 		return nil
 	}
-	validationErrors, ok := err.(validator.ValidationErrors)
-	if !ok {
+	var validationErrs validator.ValidationErrors
+	if !errors.As(err, &validationErrs) {
 		return err
 	}
 	fieldErrors := make(FieldError)
-	for _, f := range validationErrors {
+	for _, f := range validationErrs {
 		var field string
 		splitNamespace := strings.Split(f.Namespace(), ".")
 		if len(splitNamespace) > 0 {
@@ -131,7 +132,7 @@ func (b *Builder) registerStructValidations(validate *validator.Validate, struct
 
 func (b *Builder) registerTranslations(validate *validator.Validate, translator ut.Translator, translations []Translation) error {
 	for _, t := range translations {
-		registerFn := b.getRegisterFn(t.Tag, t.Message, t.Override)
+		registerFn := getRegisterFn(t.Tag, t.Message, t.Override)
 		transFunc := t.TranslationFunc
 		if transFunc == nil {
 			transFunc = b.transFunc
@@ -152,15 +153,15 @@ func (b *Builder) tagNameFunc(fld reflect.StructField) string {
 	return name
 }
 
-func (b *Builder) getRegisterFn(tag string, translation string, override bool) validator.RegisterTranslationsFunc {
-	return func(ut ut.Translator) error {
-		return ut.Add(tag, translation, override)
-	}
-}
-
 func (b *Builder) transFunc(ut ut.Translator, fe validator.FieldError) string {
 	t, _ := ut.T(fe.Tag())
 	return t
+}
+
+func getRegisterFn(tag, translation string, override bool) validator.RegisterTranslationsFunc {
+	return func(ut ut.Translator) error {
+		return ut.Add(tag, translation, override)
+	}
 }
 
 // NewBuilder initializes builder

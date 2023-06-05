@@ -183,7 +183,6 @@ func (server *APIServer) DeleteComment(ctx context.Context, req *compassv1beta1.
 }
 
 func (server *APIServer) buildGetAllDiscussionsFilter(req *compassv1beta1.GetAllDiscussionsRequest) (discussion.Filter, error) {
-
 	fl := discussion.Filter{
 		Type:          req.GetType(),
 		State:         req.GetState(),
@@ -220,7 +219,6 @@ func (server *APIServer) buildGetAllDiscussionsFilter(req *compassv1beta1.GetAll
 }
 
 func (server *APIServer) buildGetAllCommentsFilter(req *compassv1beta1.GetAllCommentsRequest) (discussion.Filter, error) {
-
 	fl := discussion.Filter{
 		SortBy:        req.GetSort(),
 		SortDirection: req.GetDirection(),
@@ -240,7 +238,6 @@ func (server *APIServer) buildGetAllCommentsFilter(req *compassv1beta1.GetAllCom
 
 // commentToProto transforms struct to proto
 func commentToProto(c discussion.Comment) *compassv1beta1.Comment {
-
 	var createdAtPB *timestamppb.Timestamp
 	if !c.CreatedAt.IsZero() {
 		createdAtPB = timestamppb.New(c.CreatedAt)

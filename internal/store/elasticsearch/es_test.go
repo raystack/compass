@@ -20,7 +20,7 @@ import (
 func TestElasticsearch(t *testing.T) {
 	ctx := context.Background()
 	t.Run("Create", func(t *testing.T) {
-		var testCases = []struct {
+		testCases := []struct {
 			Title      string
 			Service    string
 			ShouldFail bool
@@ -62,6 +62,7 @@ func TestElasticsearch(t *testing.T) {
 				Service: daggerService,
 				Validate: func(esClient *store.Client, cli *elasticsearch.Client, indexName string) error {
 					searchIndex := "universe"
+					//nolint:noctx
 					req, err := http.NewRequest("GET", "/_alias/"+searchIndex, nil)
 					if err != nil {
 						return fmt.Errorf("error creating request: %w", err)
@@ -91,6 +92,7 @@ func TestElasticsearch(t *testing.T) {
 					analyzerPath := fmt.Sprintf("/%s/_analyze", indexName)
 					analyzerPayload := fmt.Sprintf(`{"analyzer": "my_analyzer", "text": %q}`, textToAnalyze)
 
+					//nolint:noctx
 					req, err := http.NewRequest("POST", analyzerPath, strings.NewReader(analyzerPayload))
 					if err != nil {
 						return fmt.Errorf("error creating analyzer request: %w", err)
@@ -99,7 +101,7 @@ func TestElasticsearch(t *testing.T) {
 
 					res, err := cli.Perform(req)
 					if err != nil {
-						return fmt.Errorf("error invoking analyzer: %v", err)
+						return fmt.Errorf("invoke analyzer: %w", err)
 					}
 					defer res.Body.Close()
 					if res.StatusCode != http.StatusOK {

@@ -72,7 +72,6 @@ func TestDiffTopLevel(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
-
 			var sourceAsset asset.Asset
 			err := json.Unmarshal([]byte(tc.Source), &sourceAsset)
 			if err != nil {
@@ -237,7 +236,6 @@ func TestDiffData(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
-
 			var sourceAsset asset.Asset
 			err := json.Unmarshal([]byte(tc.Source), &sourceAsset)
 			if err != nil {
@@ -367,7 +365,8 @@ func TestAssetPatch(t *testing.T) {
 					{Email: "new2@example.com"},
 				},
 			},
-		}, {
+		},
+		{
 			description: "should patch all allowed fields without labels and owners",
 			asset: asset.Asset{
 				URN:         "some-urn",

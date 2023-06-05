@@ -61,7 +61,6 @@ func (r *TagTemplateRepositoryTestSuite) TestNewRepository() {
 }
 
 func (r *TagTemplateRepositoryTestSuite) TestCreate() {
-
 	r.Run("should return error if template is nil", func() {
 		var template *tag.Template = nil
 

@@ -8,16 +8,13 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/google/uuid"
-
 	// Register database postgres
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	// Register golang migrate source
 	"github.com/golang-migrate/migrate/v4/source/iofs"
-
+	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -47,6 +44,7 @@ func (c *Client) RunWithinTx(ctx context.Context, f func(tx *sqlx.Tx) error) err
 
 	if err := f(tx); err != nil {
 		if txErr := tx.Rollback(); txErr != nil {
+			//nolint:errorlint
 			return fmt.Errorf("rollback transaction error: %v (original error: %w)", txErr, err)
 		}
 		return err
@@ -66,7 +64,7 @@ func (c *Client) Migrate(cfg Config) (err error) {
 	}
 
 	if err := m.Up(); err != nil {
-		if err == migrate.ErrNoChange {
+		if errors.Is(err, migrate.ErrNoChange) {
 			return nil
 		}
 		return fmt.Errorf("migration failed: %w", err)
@@ -104,11 +102,11 @@ func NewClient(cfg Config) (*Client, error) {
 func initMigration(cfg Config) (*migrate.Migrate, error) {
 	iofsDriver, err := iofs.New(fs, "migrations")
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	m, err := migrate.NewWithSourceInstance("iofs", iofsDriver, cfg.ConnectionURL().String())
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	return m, nil
 }

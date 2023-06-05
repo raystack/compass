@@ -59,7 +59,7 @@ func configInitCommand() *cobra.Command {
 }
 
 func configListCommand(cfg *Config) *cobra.Command {
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List server and client configuration settings",
 		Example: heredoc.Doc(`

@@ -19,12 +19,11 @@ type DiscussionRepository struct {
 
 // GetAll fetchs all discussion data
 func (r *DiscussionRepository) GetAll(ctx context.Context, flt discussion.Filter) ([]discussion.Discussion, error) {
-
 	builder := r.selectSQL()
 	builder = r.buildSelectFilterQuery(builder, flt)
 	builder = r.buildSelectOrderQuery(builder, flt)
 	builder = r.buildSelectLimitQuery(builder, flt)
-	query, args, err := r.buildSQL(builder)
+	query, args, err := builder.PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("error building query: %w", err)
 	}
@@ -78,9 +77,11 @@ func (r *DiscussionRepository) Create(ctx context.Context, dsc *discussion.Discu
 
 // Get returns a specific discussion by id
 func (r *DiscussionRepository) Get(ctx context.Context, did string) (discussion.Discussion, error) {
-	builder := r.selectSQL()
-	builder = builder.Where("d.id = ?", did).Limit(1)
-	query, args, err := r.buildSQL(builder)
+	query, args, err := r.selectSQL().
+		Where("d.id = ?", did).
+		Limit(1).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 	if err != nil {
 		return discussion.Discussion{}, fmt.Errorf("error building query: %w", err)
 	}
@@ -105,7 +106,7 @@ func (r *DiscussionRepository) Patch(ctx context.Context, dsc *discussion.Discus
 
 	dm := newDiscussionModel(dsc)
 	builder := r.patchSQL(dm)
-	query, args, err := r.buildSQL(builder)
+	query, args, err := builder.PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return fmt.Errorf("error building query: %w", err)
 	}
@@ -258,21 +259,6 @@ func (r *DiscussionRepository) buildSelectLimitQuery(builder sq.SelectBuilder, f
 	return builder.
 		Limit(uint64(limitSize)).
 		Offset(uint64(flt.Offset))
-}
-
-func (r *DiscussionRepository) buildSQL(builder sq.Sqlizer) (query string, args []interface{}, err error) {
-	query, args, err = builder.ToSql()
-	if err != nil {
-		err = fmt.Errorf("error transforming to sql")
-		return
-	}
-	query, err = sq.Dollar.ReplacePlaceholders(query)
-	if err != nil {
-		err = fmt.Errorf("error replacing placeholders to dollar")
-		return
-	}
-
-	return
 }
 
 // NewDiscussionRepository initializes discussion repository clients

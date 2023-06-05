@@ -14,12 +14,6 @@ type dummyService struct {
 }
 
 func (s *dummyService) Ping(ctx context.Context, ping *pb_testproto.PingRequest) (*pb_testproto.PingResponse, error) {
-	if ping.Value == "panic" {
-		panic("very bad thing happened")
-	}
-	if ping.Value == "nilpanic" {
-		panic(nil)
-	}
 	if ping.Value == "testuser" {
 		usr := user.FromContext(ctx)
 		if usr.UUID == "" {

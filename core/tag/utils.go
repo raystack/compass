@@ -9,7 +9,7 @@ import (
 	"github.com/goto/compass/core/tag/validator"
 )
 
-func buildFieldError(key string, message string) error {
+func buildFieldError(key, message string) error {
 	return ValidationError{
 		validator.FieldError{
 			key: message,
@@ -18,7 +18,7 @@ func buildFieldError(key string, message string) error {
 }
 
 func ParseTagValue(templateURN string, fieldID uint,
-	dataType string, tagValue string, options []string) (interface{}, error,
+	dataType, tagValue string, options []string) (interface{}, error,
 ) {
 	if tagValue == "" {
 		return nil, nil

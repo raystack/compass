@@ -29,28 +29,28 @@ func patchAsset(a *Asset, patchData map[string]interface{}) {
 }
 
 // buildLabels builds labels from interface{}
-func buildLabels(data interface{}) (labels map[string]string) {
+func buildLabels(data interface{}) map[string]string {
+	var labels map[string]string
 	switch d := data.(type) {
 	case map[string]interface{}:
 		labels = map[string]string{}
 		for key, value := range d {
-			stringVal, ok := value.(string)
+			s, ok := value.(string)
 			if !ok {
 				continue
 			}
-			labels[key] = stringVal
+			labels[key] = s
 		}
+
 	case map[string]string:
 		labels = d
-	default:
-		labels = nil
 	}
 
-	return
+	return labels
 }
 
 // buildOwners builds owners from interface{}
-func buildOwners(data interface{}) (owners []user.User) {
+func buildOwners(data interface{}) []user.User {
 	buildOwner := func(data map[string]interface{}) user.User {
 		return user.User{
 			ID:       getString("id", data),
@@ -60,9 +60,9 @@ func buildOwners(data interface{}) (owners []user.User) {
 		}
 	}
 
+	var owners []user.User
 	switch d := data.(type) {
 	case []interface{}:
-		owners = []user.User{}
 		for _, value := range d {
 			mapValue, ok := value.(map[string]interface{})
 			if !ok {
@@ -71,17 +71,14 @@ func buildOwners(data interface{}) (owners []user.User) {
 			owners = append(owners, buildOwner(mapValue))
 		}
 	case []map[string]interface{}:
-		owners = []user.User{}
 		for _, value := range d {
 			owners = append(owners, buildOwner(value))
 		}
 	case []user.User:
 		owners = d
-	default:
-		owners = nil
 	}
 
-	return
+	return owners
 }
 
 // patchAssetData patches asset's data using map

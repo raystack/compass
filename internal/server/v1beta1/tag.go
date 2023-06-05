@@ -103,7 +103,6 @@ func (server *APIServer) CreateTagAsset(ctx context.Context, req *compassv1beta1
 	err = server.tagService.CreateTag(ctx, &tagDomain)
 	if errors.As(err, new(tag.DuplicateError)) {
 		return nil, status.Error(codes.AlreadyExists, err.Error())
-
 	}
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
 		return nil, status.Error(codes.NotFound, err.Error())
@@ -113,7 +112,6 @@ func (server *APIServer) CreateTagAsset(ctx context.Context, req *compassv1beta1
 	}
 	if err != nil {
 		return nil, internalServerError(server.logger, fmt.Sprintf("error creating tag: %s", err.Error()))
-
 	}
 
 	tagPB, err := tagToProto(tagDomain)

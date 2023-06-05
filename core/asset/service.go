@@ -86,28 +86,33 @@ func (s *Service) DeleteAsset(ctx context.Context, id string) error {
 	return s.lineageRepository.DeleteByURN(ctx, id)
 }
 
-func (s *Service) GetAssetByID(ctx context.Context, id string) (ast Asset, err error) {
+func (s *Service) GetAssetByID(ctx context.Context, id string) (Asset, error) {
+	var ast Asset
 	if isValidUUID(id) {
-		if ast, err = s.assetRepository.GetByID(ctx, id); err != nil {
-			return Asset{}, fmt.Errorf("error when getting asset by id: %w", err)
+		var err error
+		ast, err = s.assetRepository.GetByID(ctx, id)
+		if err != nil {
+			return Asset{}, fmt.Errorf("get asset by id: %w", err)
 		}
 	} else {
-		if ast, err = s.assetRepository.GetByURN(ctx, id); err != nil {
-			return Asset{}, fmt.Errorf("error when getting asset by urn: %w", err)
+		var err error
+		ast, err = s.assetRepository.GetByURN(ctx, id)
+		if err != nil {
+			return Asset{}, fmt.Errorf("get asset by urn: %w", err)
 		}
 	}
 
 	probes, err := s.assetRepository.GetProbes(ctx, ast.URN)
 	if err != nil {
-		return Asset{}, fmt.Errorf("error when getting probes: %w", err)
+		return Asset{}, fmt.Errorf("get probes: %w", err)
 	}
 
 	ast.Probes = probes
 
-	return
+	return ast, nil
 }
 
-func (s *Service) GetAssetByVersion(ctx context.Context, id string, version string) (Asset, error) {
+func (s *Service) GetAssetByVersion(ctx context.Context, id, version string) (Asset, error) {
 	if isValidUUID(id) {
 		return s.assetRepository.GetByVersionWithID(ctx, id, version)
 	}

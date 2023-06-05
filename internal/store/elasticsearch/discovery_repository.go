@@ -6,12 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/goto/salt/log"
 	"io"
 	"net/url"
 	"strings"
 
 	"github.com/goto/compass/core/asset"
+	"github.com/goto/salt/log"
 )
 
 // DiscoveryRepository implements discovery.Repository

@@ -15,7 +15,7 @@ func TestType(t *testing.T) {
 			Result      string
 		}
 
-		var testCases = []TestCase{
+		testCases := []TestCase{
 			{
 				Description: "type openended converts to \"openended\"",
 				Type:        discussion.TypeOpenEnded,
@@ -51,7 +51,7 @@ func TestType(t *testing.T) {
 			Result      discussion.Type
 		}
 
-		var testCases = []TestCase{
+		testCases := []TestCase{
 			{
 				Description: "\"openended\" converts to type openended",
 				TypeString:  "openended",
@@ -87,7 +87,7 @@ func TestType(t *testing.T) {
 			IsValid     bool
 		}
 
-		var testCases = []TestCase{
+		testCases := []TestCase{
 			{
 				Description: "supported type will return valid true",
 				TypeString:  "openended",

@@ -13,7 +13,7 @@ func TestValidateFilter(t *testing.T) {
 		Filter      *asset.Filter
 		errString   string
 	}
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: "empty filter will be valid",
 			Filter:      &asset.Filter{},
@@ -57,7 +57,7 @@ func TestBuild(t *testing.T) {
 		Services      string
 		QFields       string
 	}
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: "invalid size and offset will return error",
 			Size:        -12,

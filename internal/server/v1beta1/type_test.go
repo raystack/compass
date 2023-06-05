@@ -30,7 +30,7 @@ func TestGetTypes(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetAllTypesResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  "should return internal server error if failing to fetch types",
 			ExpectStatus: codes.Internal,

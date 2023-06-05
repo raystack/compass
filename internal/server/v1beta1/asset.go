@@ -28,7 +28,7 @@ type StatsDClient interface {
 type AssetService interface {
 	GetAllAssets(ctx context.Context, flt asset.Filter, withTotal bool) ([]asset.Asset, uint32, error)
 	GetAssetByID(ctx context.Context, id string) (asset.Asset, error)
-	GetAssetByVersion(ctx context.Context, id string, version string) (asset.Asset, error)
+	GetAssetByVersion(ctx context.Context, id, version string) (asset.Asset, error)
 	GetAssetVersionHistory(ctx context.Context, flt asset.Filter, id string) ([]asset.Asset, error)
 	UpsertAsset(ctx context.Context, ast *asset.Asset, upstreams, downstreams []string) (string, error)
 	UpsertAssetWithoutLineage(ctx context.Context, ast *asset.Asset) (string, error)
@@ -359,7 +359,7 @@ func (server *APIServer) upsertAsset(
 	mode string,
 	reqUpstreams,
 	reqDownstreams []*compassv1beta1.LineageNode,
-) (assetID string, err error) {
+) (string, error) {
 	if err := server.validateAsset(ast); err != nil {
 		return "", status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -373,15 +373,16 @@ func (server *APIServer) upsertAsset(
 		downstreams = append(downstreams, pb.Urn)
 	}
 
-	assetID, err = server.assetService.UpsertAsset(ctx, &ast, upstreams, downstreams)
-	if errors.As(err, new(asset.InvalidError)) {
-		return "", status.Error(codes.InvalidArgument, err.Error())
-	} else if err != nil {
-		if errors.As(err, new(asset.DiscoveryError)) {
-			server.sendStatsDCounterMetric("discovery_error",
-				map[string]string{
-					"method": mode,
-				})
+	assetID, err := server.assetService.UpsertAsset(ctx, &ast, upstreams, downstreams)
+	if err != nil {
+		switch {
+		case errors.As(err, new(asset.InvalidError)):
+			return "", status.Error(codes.InvalidArgument, err.Error())
+
+		case errors.As(err, new(asset.DiscoveryError)):
+			server.sendStatsDCounterMetric("discovery_error", map[string]string{
+				"method": mode,
+			})
 		}
 		return "", internalServerError(server.logger, err.Error())
 	}
@@ -392,7 +393,7 @@ func (server *APIServer) upsertAsset(
 			"service": ast.Service,
 		})
 
-	return
+	return assetID, nil
 }
 
 func (server *APIServer) upsertAssetWithoutLineage(ctx context.Context, ast asset.Asset) (string, error) {
@@ -574,48 +575,51 @@ func dedupe(owners []*compassv1beta1.User) []*compassv1beta1.User {
 }
 
 // assetToProto transforms struct to proto
-func assetToProto(a asset.Asset, withChangelog bool) (assetPB *compassv1beta1.Asset, err error) {
+func assetToProto(a asset.Asset, withChangelog bool) (*compassv1beta1.Asset, error) {
 	var data *structpb.Struct
 	if len(a.Data) > 0 {
+		var err error
 		data, err = structpb.NewStruct(a.Data)
-		if err != nil {
-			return
-		}
-	}
-
-	owners := []*compassv1beta1.User{}
-	for _, o := range a.Owners {
-		owners = append(owners, userToProto(o))
-	}
-
-	var changelogProto []*compassv1beta1.Change
-	if withChangelog {
-		changelogProto, err = changelogToProto(a.Changelog)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	var createdAtPB *timestamppb.Timestamp
-	if !a.CreatedAt.IsZero() {
-		createdAtPB = timestamppb.New(a.CreatedAt)
+	var owners []*compassv1beta1.User
+	for _, o := range a.Owners {
+		owners = append(owners, userToProto(o))
 	}
 
-	var updatedAtPB *timestamppb.Timestamp
+	var changelog []*compassv1beta1.Change
+	if withChangelog {
+		var err error
+		changelog, err = changelogToProto(a.Changelog)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var createdAt *timestamppb.Timestamp
+	if !a.CreatedAt.IsZero() {
+		createdAt = timestamppb.New(a.CreatedAt)
+	}
+
+	var updatedAt *timestamppb.Timestamp
 	if !a.UpdatedAt.IsZero() {
-		updatedAtPB = timestamppb.New(a.UpdatedAt)
+		updatedAt = timestamppb.New(a.UpdatedAt)
 	}
 
 	var probes []*compassv1beta1.Probe
 	for _, probe := range a.Probes {
 		probeProto, err := probeToProto(probe)
 		if err != nil {
-			return assetPB, fmt.Errorf("error converting probe to proto: %w", err)
+			return nil, fmt.Errorf("convert probe to proto: %w", err)
 		}
+
 		probes = append(probes, probeProto)
 	}
 
-	assetPB = &compassv1beta1.Asset{
+	return &compassv1beta1.Asset{
 		Id:          a.ID,
 		Urn:         a.URN,
 		Type:        string(a.Type),
@@ -628,12 +632,11 @@ func assetToProto(a asset.Asset, withChangelog bool) (assetPB *compassv1beta1.As
 		Owners:      owners,
 		Version:     a.Version,
 		UpdatedBy:   userToProto(a.UpdatedBy),
-		Changelog:   changelogProto,
-		CreatedAt:   createdAtPB,
-		UpdatedAt:   updatedAtPB,
+		Changelog:   changelog,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
 		Probes:      probes,
-	}
-	return
+	}, nil
 }
 
 // probeToProto transforms asset.Probe struct to proto

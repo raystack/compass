@@ -6,11 +6,9 @@ import (
 
 type contextKeyType struct{}
 
-var (
-	// userContextKey is the key used for user.FromContext and
-	// user.NewContext.
-	userContextKey = contextKeyType(struct{}{})
-)
+// userContextKey is the key used for user.FromContext and
+// user.NewContext.
+var userContextKey = contextKeyType(struct{}{})
 
 // NewContext returns a new context.Context that carries the provided
 // user ID.

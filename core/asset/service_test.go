@@ -23,7 +23,7 @@ func TestService_GetAllAssets(t *testing.T) {
 		Setup       func(context.Context, *mocks.AssetRepository, *mocks.DiscoveryRepository, *mocks.LineageRepository)
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return error if asset repository get all return error and with total false`,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository, dr *mocks.DiscoveryRepository, lr *mocks.LineageRepository) {
@@ -112,7 +112,7 @@ func TestService_GetTypes(t *testing.T) {
 		Setup       func(context.Context, *mocks.AssetRepository)
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return error if asset repository get types return error`,
 			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
@@ -173,7 +173,7 @@ func TestService_UpsertAsset(t *testing.T) {
 		Setup       func(context.Context, *mocks.AssetRepository, *mocks.DiscoveryRepository, *mocks.LineageRepository)
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return error if asset repository upsert return error`,
 			Asset:       sampleAsset,
@@ -245,7 +245,7 @@ func TestService_UpsertAsset(t *testing.T) {
 
 func TestService_UpsertAssetWithoutLineage(t *testing.T) {
 	sampleAsset := &asset.Asset{ID: "some-id", URN: "some-urn", Type: asset.TypeDashboard, Service: "some-service"}
-	var testCases = []struct {
+	testCases := []struct {
 		Description string
 		Asset       *asset.Asset
 		Err         error
@@ -311,7 +311,7 @@ func TestService_DeleteAsset(t *testing.T) {
 		Setup       func(context.Context, *mocks.AssetRepository, *mocks.DiscoveryRepository, *mocks.LineageRepository)
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `with ID, should return error if asset repository get by id returns error`,
 			ID:          assetID,
@@ -435,7 +435,7 @@ func TestService_GetAssetByID(t *testing.T) {
 		ID: assetID,
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return error if the repository return error without id`,
 			ID:          assetID,
@@ -551,7 +551,7 @@ func TestService_GetAssetByVersion(t *testing.T) {
 		Setup       func(context.Context, *mocks.AssetRepository)
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return error if the GetByVersionWithID function return error`,
 			ID:          assetID,
@@ -615,7 +615,7 @@ func TestService_GetAssetVersionHistory(t *testing.T) {
 	}
 
 	ast := []asset.Asset{}
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return error if the GetVersionHistory function return error`,
 			ID:          assetID,
@@ -663,7 +663,7 @@ func TestService_GetLineage(t *testing.T) {
 		Err         error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return error if the GetGraph function return error`,
 			ID:          assetID,
@@ -814,7 +814,7 @@ func TestService_SearchSuggestGroupAssets(t *testing.T) {
 
 	searchResults := []asset.SearchResult{}
 	groupResults := []asset.GroupResult{}
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return error if the GetGraph function return error`,
 			ID:          assetID,

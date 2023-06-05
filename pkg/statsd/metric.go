@@ -26,7 +26,7 @@ func (m *Metric) Success() *Metric {
 }
 
 // Failure tags the metric as failure.
-func (m *Metric) Failure(err error) *Metric {
+func (m *Metric) Failure() *Metric {
 	if m == nil {
 		return m
 	}
@@ -35,7 +35,7 @@ func (m *Metric) Failure(err error) *Metric {
 }
 
 // Tag adds a tag to the metric.
-func (m *Metric) Tag(key string, val string) *Metric {
+func (m *Metric) Tag(key, val string) *Metric {
 	if m == nil {
 		return nil
 	}
@@ -81,7 +81,7 @@ func (m *Metric) processTagsDatadog() []string {
 }
 
 func (m *Metric) processTagsInflux(name string, tags map[string]string) string {
-	var finalName = name
+	finalName := name
 	for k, v := range m.tags {
 		finalName = fmt.Sprintf("%s,%s=%s", finalName, k, v)
 	}

@@ -1,6 +1,8 @@
+//nolint:gosec,noctx
 package testutil
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -75,9 +77,9 @@ func NewElasticsearchTestServer() *ElasticsearchTestServer {
 		// run a new elasticsearch server inside a docker container
 		idBytes, err := exec.Command(elasticSearchCmdLine[0], elasticSearchCmdLine[1:]...).Output()
 		if err != nil {
-			exitErr, ok := err.(*exec.ExitError)
-			if ok {
-				err = fmt.Errorf("%v: %s", err, exitErr.Stderr)
+			var exitErr *exec.ExitError
+			if errors.As(err, &exitErr) {
+				err = fmt.Errorf("%w: %s", err, exitErr.Stderr)
 			}
 			panic(fmt.Sprintf("failed to start elasticsearch server: %v", err))
 		}
@@ -141,22 +143,18 @@ func (srv *ElasticsearchTestServer) Close() error {
 	return exec.Command("docker", "kill", srv.containerID).Run()
 }
 
-func (srv *ElasticsearchTestServer) purge(cli *elasticsearch.Client) (err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf("purge: %w", err)
-		}
-	}()
+func (*ElasticsearchTestServer) purge(cli *elasticsearch.Client) error {
 	req, err := http.NewRequest("DELETE", "/_all", nil)
 	if err != nil {
-		return
+		return fmt.Errorf("purge: %w", err)
 	}
 	res, err := cli.Perform(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("purge: %w", err)
 	}
+	defer res.Body.Close()
 	if res.StatusCode > 299 {
-		return fmt.Errorf("elasticsearch server returned status code %d", res.StatusCode)
+		return fmt.Errorf("purge: elasticsearch server returned status code %d", res.StatusCode)
 	}
 	return nil
 }

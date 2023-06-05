@@ -128,7 +128,7 @@ func (server *APIServer) SuggestAssets(ctx context.Context, req *compassv1beta1.
 }
 
 func filterConfigFromValues(fltMap map[string]string) map[string][]string {
-	var filter = make(map[string][]string)
+	filter := make(map[string][]string)
 	for key, value := range fltMap {
 		var filterValues []string
 		filterValues = append(filterValues, strings.Split(value, ",")...)

@@ -20,9 +20,9 @@ type Repository interface {
 	Patch(ctx context.Context, discussion *Discussion) error
 	GetAllComments(ctx context.Context, discussionID string, filter Filter) ([]Comment, error)
 	CreateComment(ctx context.Context, cmt *Comment) (string, error)
-	GetComment(ctx context.Context, commentID string, discussionID string) (Comment, error)
+	GetComment(ctx context.Context, commentID, discussionID string) (Comment, error)
 	UpdateComment(ctx context.Context, cmt *Comment) error
-	DeleteComment(ctx context.Context, commentID string, discussionID string) error
+	DeleteComment(ctx context.Context, commentID, discussionID string) error
 }
 
 type Discussion struct {

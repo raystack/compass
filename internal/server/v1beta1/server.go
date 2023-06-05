@@ -26,9 +26,7 @@ type APIServer struct {
 	statsDReporter     StatsDClient
 }
 
-var (
-	errMissingUserInfo = errors.New("missing user information")
-)
+var errMissingUserInfo = errors.New("missing user information")
 
 func NewAPIServer(
 	logger log.Logger,

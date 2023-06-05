@@ -24,10 +24,9 @@ const (
 var returnedAssetFieldsResult = []string{"id", "urn", "type", "service", "name", "description", "data", "labels", "created_at", "updated_at"}
 
 // Search the asset store
-func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error) {
+func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchConfig) ([]asset.SearchResult, error) {
 	if strings.TrimSpace(cfg.Text) == "" {
-		err = asset.DiscoveryError{Err: errors.New("search text cannot be empty")}
-		return
+		return nil, asset.DiscoveryError{Err: errors.New("search text cannot be empty")}
 	}
 	maxResults := cfg.MaxResults
 	if maxResults <= 0 {
@@ -38,85 +37,123 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 		offset = 0
 	}
 
-	query, err := repo.buildQuery(cfg)
+	query, err := buildQuery(cfg)
 	if err != nil {
-		err = asset.DiscoveryError{Err: fmt.Errorf("error building query %w", err)}
-		return
+		return nil, asset.DiscoveryError{Err: fmt.Errorf("build query: %w", err)}
 	}
 
-	res, err := repo.cli.client.Search(
-		repo.cli.client.Search.WithBody(query),
-		repo.cli.client.Search.WithIndex(defaultSearchIndex),
-		repo.cli.client.Search.WithSize(maxResults),
-		repo.cli.client.Search.WithFrom(offset),
-		repo.cli.client.Search.WithIgnoreUnavailable(true),
-		repo.cli.client.Search.WithSourceIncludes(returnedAssetFieldsResult...),
-		repo.cli.client.Search.WithContext(ctx),
+	search := repo.cli.client.Search
+	res, err := search(
+		search.WithBody(query),
+		search.WithIndex(defaultSearchIndex),
+		search.WithSize(maxResults),
+		search.WithFrom(offset),
+		search.WithIgnoreUnavailable(true),
+		search.WithSourceIncludes(returnedAssetFieldsResult...),
+		search.WithContext(ctx),
 	)
 	if err != nil {
-		err = asset.DiscoveryError{Err: fmt.Errorf("error executing search %w", err)}
-		return
+		return nil, asset.DiscoveryError{Err: fmt.Errorf("execute search: %w", err)}
+	}
+	if res.IsError() {
+		return nil, asset.DiscoveryError{Err: fmt.Errorf("execute search: %s", errorReasonFromResponse(res))}
 	}
 
 	var response searchResponse
-	err = json.NewDecoder(res.Body).Decode(&response)
-	if err != nil {
-		err = asset.DiscoveryError{Err: fmt.Errorf("error decoding search response %w", err)}
-		return
+	if err = json.NewDecoder(res.Body).Decode(&response); err != nil {
+		return nil, asset.DiscoveryError{Err: fmt.Errorf("decode search response: %w", err)}
 	}
 
-	results = repo.toSearchResults(response.Hits.Hits)
-	return
+	return toSearchResults(response.Hits.Hits), nil
 }
 
-func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.SearchConfig) (results []string, err error) {
+func (repo *DiscoveryRepository) GroupAssets(ctx context.Context, cfg asset.GroupConfig) ([]asset.GroupResult, error) {
+	if len(cfg.GroupBy) == 0 || cfg.GroupBy[0] == "" {
+		err := asset.DiscoveryError{Op: "Group", Err: fmt.Errorf("group by field cannot be empty")}
+		return nil, err
+	}
+
+	queryBody, err := buildGroupQuery(cfg)
+	if err != nil {
+		return nil, asset.DiscoveryError{Op: "Group", Err: fmt.Errorf("build query: %w", err)}
+	}
+	repo.logger.Debug("group asset query", "query", queryBody, "config", cfg)
+
+	search := repo.cli.client.Search
+	res, err := search(
+		search.WithFilterPath("aggregations"),
+		search.WithBody(queryBody),
+		search.WithIgnoreUnavailable(true),
+		search.WithContext(ctx),
+		search.WithSize(0),
+	)
+	if err != nil {
+		err = asset.DiscoveryError{Op: "Group", Err: fmt.Errorf("execute group query: %w", err)}
+		return nil, err
+	}
+
+	defer drainBody(res)
+	if res.IsError() {
+		return nil, asset.DiscoveryError{Op: "Group", Err: fmt.Errorf(errorReasonFromResponse(res))}
+	}
+
+	var response groupResponse
+
+	err = json.NewDecoder(res.Body).Decode(&response)
+	if err != nil {
+		err = asset.DiscoveryError{Op: "Group", Err: fmt.Errorf("decode group response: %w", err)}
+		return nil, err
+	}
+	results := toGroupResults(response.Aggregations.CompositeAggregations.Buckets)
+	return results, nil
+}
+
+func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.SearchConfig) ([]string, error) {
 	maxResults := config.MaxResults
 	if maxResults <= 0 {
 		maxResults = defaultMaxResults
 	}
 
-	query, err := repo.buildSuggestQuery(config)
+	query, err := buildSuggestQuery(config)
 	if err != nil {
-		err = asset.DiscoveryError{Err: fmt.Errorf("error building query: %s", err)}
-		return
+		return nil, asset.DiscoveryError{Op: "Suggest", Err: fmt.Errorf("build query: %w", err)}
 	}
-	res, err := repo.cli.client.Search(
-		repo.cli.client.Search.WithBody(query),
-		repo.cli.client.Search.WithIndex(defaultSearchIndex),
-		repo.cli.client.Search.WithSize(maxResults),
-		repo.cli.client.Search.WithIgnoreUnavailable(true),
-		repo.cli.client.Search.WithContext(ctx),
+
+	search := repo.cli.client.Search
+	res, err := search(
+		search.WithBody(query),
+		search.WithIndex(defaultSearchIndex),
+		search.WithSize(maxResults),
+		search.WithIgnoreUnavailable(true),
+		search.WithContext(ctx),
 	)
 	if err != nil {
-		err = asset.DiscoveryError{Err: fmt.Errorf("error executing search %w", err)}
-		return
+		return nil, asset.DiscoveryError{Op: "Suggest", Err: fmt.Errorf("execute search: %w", err)}
 	}
 	if res.IsError() {
-		err = asset.DiscoveryError{Err: fmt.Errorf("error when searching %s", errorReasonFromResponse(res))}
-		return
+		return nil, asset.DiscoveryError{Op: "Suggest", Err: fmt.Errorf("execute search: %s", errorReasonFromResponse(res))}
 	}
 
 	var response searchResponse
-	err = json.NewDecoder(res.Body).Decode(&response)
-	if err != nil {
-		err = asset.DiscoveryError{Err: fmt.Errorf("error decoding search response %w", err)}
-		return
-	}
-	results, err = repo.toSuggestions(response)
-	if err != nil {
-		err = asset.DiscoveryError{Err: fmt.Errorf("error mapping response to suggestion %w", err)}
+	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+		return nil, asset.DiscoveryError{Op: "Suggest", Err: fmt.Errorf("decode search response: %w", err)}
 	}
 
-	return
+	results, err := toSuggestions(response)
+	if err != nil {
+		return nil, asset.DiscoveryError{Op: "Suggest", Err: fmt.Errorf("map response to suggestion: %w", err)}
+	}
+
+	return results, nil
 }
 
-func (repo *DiscoveryRepository) buildQuery(cfg asset.SearchConfig) (io.Reader, error) {
+func buildQuery(cfg asset.SearchConfig) (io.Reader, error) {
 	boolQuery := elastic.NewBoolQuery()
-	repo.buildTextQuery(boolQuery, cfg)
-	repo.buildFilterTermQueries(boolQuery, cfg.Filters)
-	repo.buildMustMatchQueries(boolQuery, cfg)
-	query := repo.buildFunctionScoreQuery(boolQuery, cfg.RankBy, cfg.Text)
-	highlight := repo.buildHighlightQuery(cfg)
+	buildTextQuery(boolQuery, cfg)
+	buildFilterTermQueries(boolQuery, cfg.Filters)
+	buildMustMatchQueries(boolQuery, cfg)
+	query := buildFunctionScoreQuery(boolQuery, cfg.RankBy, cfg.Text)
+	highlight := buildHighlightQuery(cfg)
 
 	body, err := elastic.NewSearchRequest().
 		Query(query).
@@ -130,7 +167,7 @@ func (repo *DiscoveryRepository) buildQuery(cfg asset.SearchConfig) (io.Reader, 
 	return strings.NewReader(body), nil
 }
 
-func (repo *DiscoveryRepository) buildSuggestQuery(cfg asset.SearchConfig) (io.Reader, error) {
+func buildSuggestQuery(cfg asset.SearchConfig) (io.Reader, error) {
 	suggester := elastic.NewCompletionSuggester(suggesterName).
 		Field("name.suggest").
 		SkipDuplicates(true).
@@ -152,7 +189,7 @@ func (repo *DiscoveryRepository) buildSuggestQuery(cfg asset.SearchConfig) (io.R
 	return payload, err
 }
 
-func (repo *DiscoveryRepository) buildTextQuery(q *elastic.BoolQuery, cfg asset.SearchConfig) {
+func buildTextQuery(q *elastic.BoolQuery, cfg asset.SearchConfig) {
 	boostedFields := []string{"urn^10", "name^5"}
 	q.Should(
 		// Phrase query cannot have `FUZZINESS`
@@ -173,7 +210,7 @@ func (repo *DiscoveryRepository) buildTextQuery(q *elastic.BoolQuery, cfg asset.
 	}
 }
 
-func (repo *DiscoveryRepository) buildMustMatchQueries(q *elastic.BoolQuery, cfg asset.SearchConfig) {
+func buildMustMatchQueries(q *elastic.BoolQuery, cfg asset.SearchConfig) {
 	if len(cfg.Queries) == 0 {
 		return
 	}
@@ -189,7 +226,7 @@ func (repo *DiscoveryRepository) buildMustMatchQueries(q *elastic.BoolQuery, cfg
 	}
 }
 
-func (repo *DiscoveryRepository) buildFilterTermQueries(q *elastic.BoolQuery, filters map[string][]string) {
+func buildFilterTermQueries(q *elastic.BoolQuery, filters map[string][]string) {
 	if len(filters) == 0 {
 		return
 	}
@@ -213,7 +250,7 @@ func (repo *DiscoveryRepository) buildFilterTermQueries(q *elastic.BoolQuery, fi
 	}
 }
 
-func (repo *DiscoveryRepository) buildFilterExistsQueries(q *elastic.BoolQuery, fields []string) {
+func buildFilterExistsQueries(q *elastic.BoolQuery, fields []string) {
 	if len(fields) == 0 {
 		return
 	}
@@ -223,7 +260,7 @@ func (repo *DiscoveryRepository) buildFilterExistsQueries(q *elastic.BoolQuery, 
 	}
 }
 
-func (repo *DiscoveryRepository) buildFunctionScoreQuery(query elastic.Query, rankBy string, text string) elastic.Query {
+func buildFunctionScoreQuery(query elastic.Query, rankBy, text string) elastic.Query {
 	// Added exact match term query here so that exact match gets higher priority.
 	fsQuery := elastic.NewFunctionScoreQuery().
 		Add(
@@ -245,14 +282,14 @@ func (repo *DiscoveryRepository) buildFunctionScoreQuery(query elastic.Query, ra
 	return fsQuery
 }
 
-func (repo *DiscoveryRepository) buildHighlightQuery(cfg asset.SearchConfig) *elastic.Highlight {
+func buildHighlightQuery(cfg asset.SearchConfig) *elastic.Highlight {
 	if cfg.Flags.EnableHighlight {
 		return elastic.NewHighlight().Field("*")
 	}
 	return nil
 }
 
-func (repo *DiscoveryRepository) toSearchResults(hits []searchHit) []asset.SearchResult {
+func toSearchResults(hits []searchHit) []asset.SearchResult {
 	results := make([]asset.SearchResult, len(hits))
 	for i, hit := range hits {
 		r := hit.Source
@@ -284,63 +321,22 @@ func (repo *DiscoveryRepository) toSearchResults(hits []searchHit) []asset.Searc
 	return results
 }
 
-func (repo *DiscoveryRepository) toSuggestions(response searchResponse) (results []string, err error) {
+func toSuggestions(response searchResponse) ([]string, error) {
 	suggests, exists := response.Suggest[suggesterName]
 	if !exists {
-		err = errors.New("suggester key does not exist")
-		return
+		return nil, errors.New("suggester key does not exist")
 	}
-	results = []string{}
+
+	var results []string
 	for _, s := range suggests {
 		for _, option := range s.Options {
 			results = append(results, option.Text)
 		}
 	}
-	return
-}
-func (repo *DiscoveryRepository) GroupAssets(ctx context.Context, cfg asset.GroupConfig) ([]asset.GroupResult, error) {
-	if len(cfg.GroupBy) == 0 || cfg.GroupBy[0] == "" {
-		err := asset.DiscoveryError{Op: "Group", Err: fmt.Errorf("group by field cannot be empty")}
-		return nil, err
-	}
-
-	queryBody, err := repo.buildGroupQuery(cfg)
-	if err != nil {
-		return nil, asset.DiscoveryError{Op: "Group", Err: fmt.Errorf("build query: %w", err)}
-	}
-	repo.logger.Debug("group asset query", "query", queryBody, "config", cfg)
-
-	search := repo.cli.client.Search
-	res, err := search(
-		search.WithFilterPath("aggregations"),
-		search.WithBody(queryBody),
-		search.WithIgnoreUnavailable(true),
-		search.WithContext(ctx),
-		search.WithSize(0),
-	)
-
-	if err != nil {
-		err = asset.DiscoveryError{Op: "Group", Err: fmt.Errorf("execute group query: %w", err)}
-		return nil, err
-	}
-
-	defer drainBody(res)
-	if res.IsError() {
-		return nil, asset.DiscoveryError{Op: "Group", Err: fmt.Errorf(errorReasonFromResponse(res))}
-	}
-
-	var response groupResponse
-
-	err = json.NewDecoder(res.Body).Decode(&response)
-	if err != nil {
-		err = asset.DiscoveryError{Op: "Group", Err: fmt.Errorf("decode group response: %w", err)}
-		return nil, err
-	}
-	results := repo.toGroupResults(response.Aggregations.CompositeAggregations.Buckets)
 	return results, nil
 }
 
-func (repo *DiscoveryRepository) toGroupResults(buckets []aggregationBucket) []asset.GroupResult {
+func toGroupResults(buckets []aggregationBucket) []asset.GroupResult {
 	groupResult := make([]asset.GroupResult, len(buckets))
 
 	for i, bucket := range buckets {
@@ -357,11 +353,11 @@ func (repo *DiscoveryRepository) toGroupResults(buckets []aggregationBucket) []a
 	return groupResult
 }
 
-func (repo *DiscoveryRepository) buildGroupQuery(cfg asset.GroupConfig) (*strings.Reader, error) {
+func buildGroupQuery(cfg asset.GroupConfig) (*strings.Reader, error) {
 	boolQuery := elastic.NewBoolQuery()
 	// This code takes care of creating filter term queries from the input filters mentioned in request.
-	repo.buildFilterExistsQueries(boolQuery, cfg.GroupBy)
-	repo.buildFilterTermQueries(boolQuery, cfg.Filters)
+	buildFilterExistsQueries(boolQuery, cfg.GroupBy)
+	buildFilterTermQueries(boolQuery, cfg.Filters)
 
 	size := cfg.Size
 	if size <= 0 {

@@ -21,7 +21,7 @@ func TestValidateUser(t *testing.T) {
 		ExpectErr   error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: "should return no user error when uuid is empty and email is optional",
 			UUID:        "",

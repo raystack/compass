@@ -89,7 +89,6 @@ func (r *AssetEndToEndTestSuite) TestAllNormalFlow() {
 	}
 	r.Equal(sampleAsset.Description, descriptionV3)
 	r.Equal(sampleAsset.Version, "0.3")
-
 }
 
 func (r *AssetEndToEndTestSuite) TestPatchAssetsAllFields() {
@@ -258,7 +257,6 @@ func (r *AssetEndToEndTestSuite) TestPatchAssetsAllFields() {
 	r.Equal("0.11", retrievedAsset.Version)
 	_, ok := retrievedAsset.Labels["label2"]
 	r.False(ok)
-
 }
 
 func generateAsset(urn, name string) asset.Asset {

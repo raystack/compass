@@ -84,7 +84,7 @@ func TestGetAllTagTemplates(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetAllTagTemplatesResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return internal server error if found unexpected error`,
 			Request: &compassv1beta1.GetAllTagTemplatesRequest{
@@ -116,7 +116,8 @@ func TestGetAllTagTemplates(t *testing.T) {
 				}
 				return nil
 			},
-		}, {
+		},
+		{
 			Description:  `should return all templates if no urn query params`,
 			Request:      &compassv1beta1.GetAllTagTemplatesRequest{},
 			ExpectStatus: codes.OK,
@@ -191,7 +192,7 @@ func TestCreateTagTemplate(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.CreateTagTemplateResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  `should return already exist if duplicate template`,
 			Request:      validRequest,
@@ -278,7 +279,7 @@ func TestGetTagTemplate(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetTagTemplateResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  `should return not found if template is not found`,
 			Request:      validRequest,
@@ -359,7 +360,7 @@ func TestUpdateTagTemplate(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.UpdateTagTemplateResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  `should return not found if template is not found`,
 			Request:      validRequest,
@@ -456,7 +457,7 @@ func TestDeleteTagTemplate(t *testing.T) {
 		Setup        func(context.Context, *mocks.TagService, *mocks.TagTemplateService)
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  `should return not found if template is not found`,
 			Request:      validRequest,
@@ -511,7 +512,7 @@ func TestTemplateToProto(t *testing.T) {
 		ExpectProto *compassv1beta1.TagTemplate
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:       "should return no timestamp pb and empty template field pb if timestamp and template field are empty",
 			Template:    tag.Template{URN: "urn", DisplayName: "display-name", Description: "description"},
@@ -525,7 +526,6 @@ func TestTemplateToProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got := tagTemplateToProto(tc.Template)
 			if diff := cmp.Diff(got, tc.ExpectProto, protocmp.Transform()); diff != "" {
 				t.Errorf("expected response to be %+v, was %+v", tc.ExpectProto, got)
@@ -542,7 +542,7 @@ func TestTagTemplateFromProto(t *testing.T) {
 		Expect tag.Template
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:  "should return non empty time.Time and field if timestamp pb and field pb are not empty or zero",
 			PB:     &compassv1beta1.TagTemplate{Urn: "urn", DisplayName: "display-name", Description: "description", Fields: []*compassv1beta1.TagTemplateField{{Id: 12, Urn: "urn1"}}, CreatedAt: timestamppb.New(timeDummy), UpdatedAt: timestamppb.New(timeDummy)},
@@ -556,7 +556,6 @@ func TestTagTemplateFromProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got := tagTemplateFromProto(tc.PB)
 			if reflect.DeepEqual(got, tc.Expect) == false {
 				t.Errorf("expected returned asset to be %+v, was %+v", tc.Expect, got)
@@ -573,7 +572,7 @@ func TestTemplateFieldToProto(t *testing.T) {
 		ExpectProto *compassv1beta1.TagTemplateField
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:       "should return no timestamp pb if timestamp is empty",
 			Field:       tag.Field{ID: 123, URN: "urn"},
@@ -587,7 +586,6 @@ func TestTemplateFieldToProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got := tagTemplateFieldToProto(tc.Field)
 			if diff := cmp.Diff(got, tc.ExpectProto, protocmp.Transform()); diff != "" {
 				t.Errorf("expected response to be %+v, was %+v", tc.ExpectProto, got)
@@ -604,7 +602,7 @@ func TestTagTemplateFieldFromProto(t *testing.T) {
 		Expect tag.Field
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:  "should return non empty time.Time if timestamp pb is not empty",
 			PB:     &compassv1beta1.TagTemplateField{Id: 123, Urn: "urn", CreatedAt: timestamppb.New(timeDummy), UpdatedAt: timestamppb.New(timeDummy)},
@@ -618,7 +616,6 @@ func TestTagTemplateFieldFromProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got := tagTemplateFieldFromProto(tc.PB)
 			if reflect.DeepEqual(got, tc.Expect) == false {
 				t.Errorf("expected returned asset to be %+v, was %+v", tc.Expect, got)

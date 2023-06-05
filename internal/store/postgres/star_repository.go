@@ -24,7 +24,7 @@ type StarRepository struct {
 }
 
 // Create insert a new record in the stars table
-func (r *StarRepository) Create(ctx context.Context, userID string, assetID string) (string, error) {
+func (r *StarRepository) Create(ctx context.Context, userID, assetID string) (string, error) {
 	var starID string
 	if userID == "" {
 		return "", star.ErrEmptyUserID
@@ -165,7 +165,7 @@ func (r *StarRepository) GetAllAssetsByUserID(ctx context.Context, flt star.Filt
 }
 
 // GetAssetByUserID fetch a specific starred asset by user id
-func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, assetID string) (asset.Asset, error) {
+func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID, assetID string) (asset.Asset, error) {
 	if userID == "" {
 		return asset.Asset{}, star.ErrEmptyUserID
 	}
@@ -222,7 +222,7 @@ func (r *StarRepository) GetAssetByUserID(ctx context.Context, userID string, as
 }
 
 // Delete will delete/unstar a starred asset for a user id
-func (r *StarRepository) Delete(ctx context.Context, userID string, assetID string) error {
+func (r *StarRepository) Delete(ctx context.Context, userID, assetID string) error {
 	if userID == "" {
 		return star.ErrEmptyUserID
 	}

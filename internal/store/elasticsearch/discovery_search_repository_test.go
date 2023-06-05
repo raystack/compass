@@ -218,7 +218,7 @@ func TestSearcherSearch(t *testing.T) {
 					MaxResults: 5,
 				},
 				Expected: []expectedRow{
-					//{Type: "topic", AssetID: "consumer-topic"},
+					// {Type: "topic", AssetID: "consumer-topic"},
 					{Type: "topic", AssetID: "order-topic"},
 					{Type: "topic", AssetID: "purchase-topic"},
 					{Type: "topic", AssetID: "consumer-mq-2"},
@@ -268,7 +268,8 @@ func TestSearcherSearch(t *testing.T) {
 						Type:    "topic",
 						AssetID: "order-topic",
 						Data: map[string]interface{}{
-							"_highlight": map[string]interface{}{"urn": []interface{}{"<em>order</em>-topic"},
+							"_highlight": map[string]interface{}{
+								"urn":              []interface{}{"<em>order</em>-topic"},
 								"data.topic_name":  []interface{}{"<em>order</em>-topic"},
 								"name":             []interface{}{"<em>order</em>-topic"},
 								"description":      []interface{}{"Topic for each submitted <em>order</em>"},
@@ -347,16 +348,16 @@ func TestSearcherSuggest(t *testing.T) {
 	})
 }
 
-func loadTestFixture(cli *elasticsearch.Client, esClient *store.Client, filePath string) (err error) {
+func loadTestFixture(cli *elasticsearch.Client, esClient *store.Client, filePath string) error {
 	testFixtureJSON, err := os.ReadFile(filePath)
 	if err != nil {
-		return
+		return err
 	}
 
 	var data []searchTestData
 	err = json.Unmarshal(testFixtureJSON, &data)
 	if err != nil {
-		return
+		return err
 	}
 
 	ctx := context.TODO()
@@ -515,7 +516,8 @@ func TestGroupAssets(t *testing.T) {
 							{Name: "type", Value: "topic"},
 							{Name: "name", Value: "transaction"},
 						},
-						Assets: []asset.Asset{{Name: "transaction"}}},
+						Assets: []asset.Asset{{Name: "transaction"}},
+					},
 				},
 			},
 			{
@@ -562,7 +564,8 @@ func TestGroupAssets(t *testing.T) {
 				Expected: []asset.GroupResult{
 					{
 						Fields: []asset.GroupField{
-							{Name: "type", Value: "topic"}},
+							{Name: "type", Value: "topic"},
+						},
 						Assets: []asset.Asset{
 							{Name: "consumer-topic"},
 							{Name: "consumer-mq-2"},

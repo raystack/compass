@@ -10,15 +10,14 @@ import (
 	"github.com/goto/compass/core/asset"
 	"github.com/goto/compass/core/user"
 	"github.com/goto/compass/internal/server/v1beta1/mocks"
+	"github.com/goto/compass/internal/testutils"
 	compassv1beta1 "github.com/goto/compass/proto/gotocompany/compass/v1beta1"
 	"github.com/goto/salt/log"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/testing/protocmp"
-
-	"github.com/goto/compass/internal/testutils"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestSearch(t *testing.T) {
@@ -34,7 +33,7 @@ func TestSearch(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.SearchAssetsResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  "should return invalid argument if 'text' parameter is empty or missing",
 			ExpectStatus: codes.InvalidArgument,
@@ -63,7 +62,6 @@ func TestSearch(t *testing.T) {
 				},
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
-
 				cfg := asset.SearchConfig{
 					Text: "resource",
 					Filters: map[string][]string{
@@ -91,7 +89,6 @@ func TestSearch(t *testing.T) {
 				},
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
-
 				cfg := asset.SearchConfig{
 					Text: "resource",
 					Filters: map[string][]string{
@@ -107,14 +104,14 @@ func TestSearch(t *testing.T) {
 
 				as.EXPECT().SearchAssets(ctx, cfg).Return([]asset.SearchResult{}, nil)
 			},
-		}, {
+		},
+		{
 			Description: "should parse offset",
 			Request: &compassv1beta1.SearchAssetsRequest{
 				Text:   "resource",
 				Offset: 10,
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
-
 				cfg := asset.SearchConfig{
 					Text:    "resource",
 					Filters: make(map[string][]string),
@@ -131,7 +128,6 @@ func TestSearch(t *testing.T) {
 				Text: "test",
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
-
 				cfg := asset.SearchConfig{
 					Text:    "test",
 					Filters: make(map[string][]string),
@@ -180,7 +176,6 @@ func TestSearch(t *testing.T) {
 				Size: 10,
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
-
 				cfg := asset.SearchConfig{
 					Text:       "resource",
 					MaxResults: 10,
@@ -262,7 +257,7 @@ func TestSuggest(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.SuggestAssetsResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  "should return invalid arguments if 'text' parameter is empty or missing",
 			ExpectStatus: codes.InvalidArgument,
@@ -287,7 +282,6 @@ func TestSuggest(t *testing.T) {
 				Text: "test",
 			},
 			Setup: func(ctx context.Context, as *mocks.AssetService) {
-
 				cfg := asset.SearchConfig{
 					Text: "test",
 				}
@@ -360,7 +354,7 @@ func TestGroupAssets(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GroupAssetsResponse)
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  "should return invalid argument if 'groupby' parameter is empty or missing",
 			ExpectStatus: codes.InvalidArgument,
@@ -436,21 +430,23 @@ func TestGroupAssets(t *testing.T) {
 				}
 				response := []asset.GroupResult{
 					{
-						Fields: []asset.GroupField{{
-							Name:  "resource",
-							Value: "kafka",
-						},
-						},
-						Assets: []asset.Asset{{
-							Type:        "test",
-							ID:          "test-resource",
-							Description: "some description",
-							Service:     "test-service",
-							Labels: map[string]string{
-								"entity":    "gotocompany",
-								"landscape": "id",
+						Fields: []asset.GroupField{
+							{
+								Name:  "resource",
+								Value: "kafka",
 							},
 						},
+						Assets: []asset.Asset{
+							{
+								Type:        "test",
+								ID:          "test-resource",
+								Description: "some description",
+								Service:     "test-service",
+								Labels: map[string]string{
+									"entity":    "gotocompany",
+									"landscape": "id",
+								},
+							},
 						},
 					},
 				}

@@ -117,7 +117,7 @@ func (c *Client) GetAssetWithVersion(id, version string) (asset.Asset, error) {
 	return responsePayload.Data, nil
 }
 
-func (c *Client) makeRequest(method, url string, payload interface{}, data interface{}) (err error) {
+func (c *Client) makeRequest(method, url string, payload, data interface{}) (err error) {
 	jsonBytes, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to encode the payload JSON: %w", err)

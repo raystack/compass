@@ -450,7 +450,6 @@ func (r *StarRepositoryTestSuite) TestDelete() {
 		r.Len(actualAssets, 2)
 		r.Contains(assetIDs, createdAsset1.ID)
 		r.Contains(assetIDs, createdAsset2.ID)
-
 	})
 }
 

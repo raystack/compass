@@ -37,7 +37,7 @@ func TestGetUserStarredAssets(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetUserStarredAssetsResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  "should return internal server error if failed to fetch starred",
 			ExpectStatus: codes.Internal,
@@ -149,7 +149,7 @@ func TestGetMyStarredAssets(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetMyStarredAssetsResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  "should return internal server error if failed to fetch starred",
 			ExpectStatus: codes.Internal,
@@ -261,7 +261,7 @@ func TestGetMyStarredAsset(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetMyStarredAssetResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  "should return invalid argument if asset id is empty",
 			ExpectStatus: codes.InvalidArgument,
@@ -359,7 +359,7 @@ func TestStarAsset(t *testing.T) {
 		Setup        func(context.Context, *mocks.StarService)
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  "should return invalid argument if asset id in param is invalid",
 			ExpectStatus: codes.InvalidArgument,
@@ -445,7 +445,7 @@ func TestUnstarAsset(t *testing.T) {
 		Setup        func(context.Context, *mocks.StarService)
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  "should return invalid argument if asset id in param is empty",
 			ExpectStatus: codes.InvalidArgument,
@@ -518,7 +518,7 @@ func TestGetMyDiscussions(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetMyDiscussionsResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  `should return internal server error if fetching fails`,
 			Request:      &compassv1beta1.GetMyDiscussionsRequest{},
@@ -561,7 +561,8 @@ func TestGetMyDiscussions(t *testing.T) {
 					DisjointAssigneeOwner: false,
 				}).Return([]discussion.Discussion{}, nil)
 			},
-		}, {
+		},
+		{
 			Description: `should search by assigned or created if filter is all`,
 			Request: &compassv1beta1.GetMyDiscussionsRequest{
 				Filter: "all",
@@ -670,7 +671,7 @@ func TestUserToProto(t *testing.T) {
 		ExpectProto *compassv1beta1.User
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:       "should return nil if UUID is empty",
 			User:        user.User{},
@@ -684,7 +685,6 @@ func TestUserToProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got := userToProto(tc.User)
 			if diff := cmp.Diff(got, tc.ExpectProto, protocmp.Transform()); diff != "" {
 				t.Errorf("expected response to be %+v, was %+v", tc.ExpectProto, got)
@@ -701,7 +701,7 @@ func TestUserToFullProto(t *testing.T) {
 		ExpectProto *compassv1beta1.User
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:       "should return nil if UUID is empty",
 			User:        user.User{},
@@ -720,7 +720,6 @@ func TestUserToFullProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got := userToFullProto(tc.User)
 			if diff := cmp.Diff(got, tc.ExpectProto, protocmp.Transform()); diff != "" {
 				t.Errorf("expected response to be %+v, was %+v", tc.ExpectProto, got)
@@ -737,7 +736,7 @@ func TestUserFromProto(t *testing.T) {
 		ExpectUser user.User
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:      "should return non empty time.Time if timestamp pb is not zero",
 			UserPB:     &compassv1beta1.User{Uuid: "uuid1", Provider: "provider", CreatedAt: timestamppb.New(timeDummy), UpdatedAt: timestamppb.New(timeDummy)},
@@ -751,7 +750,6 @@ func TestUserFromProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got := userFromProto(tc.UserPB)
 			if reflect.DeepEqual(got, tc.ExpectUser) == false {
 				t.Errorf("expected returned asset to be %+v, was %+v", tc.ExpectUser, got)

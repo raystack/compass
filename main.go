@@ -11,37 +11,41 @@ import (
 	"github.com/goto/compass/cli"
 )
 
-const (
-	exitOK    = 0
-	exitError = 1
-)
+const exitError = 1
 
 func main() {
+	if err := run(); err != nil {
+		os.Exit(exitError)
+	}
+}
+
+func run() error {
 	cliConfig, err := cli.LoadConfig()
 	if err != nil {
 		fmt.Println(err)
 	}
+
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
 	if cmd, err := cli.New(cliConfig).ExecuteContextC(ctx); err != nil {
 		printError(err)
 
-		cmdErr := strings.HasPrefix(err.Error(), "unknown command")
-		flagErr := strings.HasPrefix(err.Error(), "unknown flag")
-		sflagErr := strings.HasPrefix(err.Error(), "unknown shorthand flag")
-
-		if cmdErr || flagErr || sflagErr {
-			if !strings.HasSuffix(err.Error(), "\n") {
+		switch errStr := err.Error(); {
+		case strings.HasPrefix(errStr, "unknown command"),
+			strings.HasPrefix(errStr, "unknown flag"),
+			strings.HasPrefix(errStr, "unknown shorthand flag"):
+			if !strings.HasSuffix(errStr, "\n") {
 				fmt.Println()
 			}
 			fmt.Println(cmd.UsageString())
-			os.Exit(exitOK)
-		} else {
-			os.Exit(exitError)
+			return nil
 		}
+
+		return err
 	}
 
+	return nil
 }
 
 func printError(err error) {

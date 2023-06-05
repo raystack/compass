@@ -140,7 +140,7 @@ func (c *Client) Init() (string, error) {
 	if res.IsError() {
 		return "", errors.New(res.Status())
 	}
-	var info = struct {
+	info := struct {
 		ClusterName string `json:"cluster_name"`
 		Version     struct {
 			Number string `json:"number"`

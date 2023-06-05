@@ -15,9 +15,7 @@ const (
 	fieldOptionSeparator = ","
 )
 
-var (
-	errNilTemplate = errors.New("template is nil")
-)
+var errNilTemplate = errors.New("template is nil")
 
 // TagTemplateRepository is a type that manages template operation to the primary database
 type TagTemplateRepository struct {

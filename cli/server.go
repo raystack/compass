@@ -51,7 +51,6 @@ func serverCmd(cfg *Config) *cobra.Command {
 }
 
 func serverStartCommand(cfg *Config) *cobra.Command {
-
 	c := &cobra.Command{
 		Use:     "start",
 		Short:   "Start server on default port 8080",
@@ -66,7 +65,6 @@ func serverStartCommand(cfg *Config) *cobra.Command {
 }
 
 func serverMigrateCommand(cfg *Config) *cobra.Command {
-
 	c := &cobra.Command{
 		Use:   "migrate",
 		Short: "Run storage migration",

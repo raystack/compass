@@ -36,7 +36,7 @@ func TestGetAllDiscussions(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetAllDiscussionsResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return internal server error if fetching fails`,
 			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
@@ -147,7 +147,7 @@ func TestCreateDiscussion(t *testing.T) {
 		userID   = uuid.NewString()
 		userUUID = uuid.NewString()
 	)
-	var validRequest = &compassv1beta1.CreateDiscussionRequest{
+	validRequest := &compassv1beta1.CreateDiscussionRequest{
 		Title: "Lorem Ipsum",
 		Body:  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
 		Type:  discussion.TypeQAndA.String(),
@@ -160,7 +160,7 @@ func TestCreateDiscussion(t *testing.T) {
 		ExpectStatus codes.Code
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:  "should return invalid argument if empty object",
 			Request:      &compassv1beta1.CreateDiscussionRequest{},
@@ -279,7 +279,7 @@ func TestGetDiscussion(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetDiscussionResponse) error
 	}
 
-	var testCases = []TestCase{
+	testCases := []TestCase{
 		{
 			Description:  `should return internal server error if fetching fails`,
 			ExpectStatus: codes.Internal,
@@ -377,7 +377,7 @@ func TestPatchDiscussion(t *testing.T) {
 		discussionID = "123"
 	)
 
-	var validRequest = &compassv1beta1.PatchDiscussionRequest{Id: discussionID, Title: "lorem ipsum"}
+	validRequest := &compassv1beta1.PatchDiscussionRequest{Id: discussionID, Title: "lorem ipsum"}
 
 	type TestCase struct {
 		Description  string
@@ -510,7 +510,7 @@ func TestDiscussionToProto(t *testing.T) {
 		ExpectProto *compassv1beta1.Discussion
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:       "should return no timestamp pb if timestamp is zero",
 			Discussion:  discussion.Discussion{ID: "id1"},
@@ -524,7 +524,6 @@ func TestDiscussionToProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got := discussionToProto(tc.Discussion)
 			if diff := cmp.Diff(got, tc.ExpectProto, protocmp.Transform()); diff != "" {
 				t.Errorf("expected response to be %+v, was %+v", tc.ExpectProto, got)
@@ -541,7 +540,7 @@ func TestDiscussionFromProto(t *testing.T) {
 		ExpectDiscussion discussion.Discussion
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:            "should return non empty time.Time and owner if pb is not empty or zero",
 			DiscussionPB:     &compassv1beta1.Discussion{Id: "id1", Owner: &compassv1beta1.User{Id: "uid1"}, CreatedAt: timestamppb.New(timeDummy), UpdatedAt: timestamppb.New(timeDummy)},
@@ -555,7 +554,6 @@ func TestDiscussionFromProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got := discussionFromProto(tc.DiscussionPB)
 			if reflect.DeepEqual(got, tc.ExpectDiscussion) == false {
 				t.Errorf("expected returned asset to be %+v, was %+v", tc.ExpectDiscussion, got)

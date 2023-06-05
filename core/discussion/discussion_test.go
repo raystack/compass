@@ -16,7 +16,7 @@ func TestIsEmpty(t *testing.T) {
 		IsEmpty     bool
 	}
 
-	var testCases = []TestCase{
+	testCases := []TestCase{
 		{
 			Description: "all necessary fields are empty and nil will be considered empty",
 			Discussion:  discussion.Discussion{ID: "123", CreatedAt: time.Now(), UpdatedAt: time.Now()},
@@ -77,7 +77,7 @@ func TestValidateConstraint(t *testing.T) {
 		Err         error
 	}
 
-	var testCases = []TestCase{
+	testCases := []TestCase{
 		{
 			Description: "type is not one of supported types will return error",
 			Discussion:  discussion.Discussion{Type: "random"},
@@ -122,7 +122,7 @@ func TestValidateDiscussion(t *testing.T) {
 		Err         error
 	}
 
-	var testCases = []TestCase{
+	testCases := []TestCase{
 		{
 			Description: "empty title will return error",
 			Discussion:  discussion.Discussion{},

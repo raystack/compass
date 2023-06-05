@@ -13,7 +13,7 @@ func TestErrors(t *testing.T) {
 		ExpectedString string
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description:    "not found error return correct error string",
 			Err:            user.NotFoundError{UUID: "uuid", Email: "email"},

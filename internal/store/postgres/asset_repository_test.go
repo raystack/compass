@@ -203,7 +203,8 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 			config: asset.Filter{
 				Data: map[string][]string{
 					"properties.attributes.entity": {"alpha", "beta"},
-				}},
+				},
+			},
 			expectedQuery: `(data->'properties'->'attributes'->>'entity' = $1 OR data->'properties'->'attributes'->>'entity' = $2)`,
 		},
 	}
@@ -621,7 +622,6 @@ func (r *AssetRepositoryTestSuite) TestGetByID() {
 	})
 
 	r.Run("return owners if any", func() {
-
 		ast := asset.Asset{
 			URN:     "urn-gbi-3",
 			Type:    "table",
@@ -1879,7 +1879,7 @@ func (r *AssetRepositoryTestSuite) insertProbes(t *testing.T) {
 	}
 }
 
-func (r *AssetRepositoryTestSuite) assertAsset(expectedAsset *asset.Asset, actualAsset *asset.Asset) bool {
+func (r *AssetRepositoryTestSuite) assertAsset(expectedAsset, actualAsset *asset.Asset) bool {
 	// sanitize time to make the assets comparable
 	expectedAsset.CreatedAt = time.Time{}
 	expectedAsset.UpdatedAt = time.Time{}
@@ -1901,7 +1901,7 @@ func clearTimestamps(ast *asset.Asset) {
 	ast.UpdatedAt = time.Time{}
 }
 
-func (r *AssetRepositoryTestSuite) assertProbe(t *testing.T, expected asset.Probe, actual asset.Probe) bool {
+func (r *AssetRepositoryTestSuite) assertProbe(t *testing.T, expected, actual asset.Probe) bool {
 	t.Helper()
 
 	return r.Equal(expected.AssetURN, actual.AssetURN) &&

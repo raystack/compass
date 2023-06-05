@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/golang-module/carbon/v2"
 	"github.com/google/uuid"
 	"github.com/goto/compass/core/tag"
 	"github.com/goto/compass/core/tag/mocks"
 	"github.com/goto/compass/core/tag/validator"
-
-	"github.com/golang-module/carbon/v2"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -60,7 +59,7 @@ func (s *ServiceTestSuite) TestValidate() {
 		actualError := tagService.Validate(&t)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if template URN is empty", func() {
@@ -77,7 +76,7 @@ func (s *ServiceTestSuite) TestValidate() {
 		actualError := tagService.Validate(&t)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if tag values are nil", func() {
@@ -94,7 +93,7 @@ func (s *ServiceTestSuite) TestValidate() {
 		actualError := tagService.Validate(&t)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if tag values contains zero element", func() {
@@ -111,7 +110,7 @@ func (s *ServiceTestSuite) TestValidate() {
 		actualError := tagService.Validate(&t)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if tag value field ID is zero", func() {
@@ -128,7 +127,7 @@ func (s *ServiceTestSuite) TestValidate() {
 		actualError := tagService.Validate(&t)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if tag value field value is nil", func() {
@@ -145,7 +144,7 @@ func (s *ServiceTestSuite) TestValidate() {
 		actualError := tagService.Validate(&t)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 }
 
@@ -166,7 +165,7 @@ func (s *ServiceTestSuite) TestCreate() {
 
 		actualError := s.tagService.CreateTag(ctx, &t)
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if error retrieving template", func() {
@@ -197,7 +196,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		actualError := s.tagService.CreateTag(ctx, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if required field is not passed", func() {
@@ -218,8 +217,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		actualError := s.tagService.CreateTag(ctx, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
-
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if passed value is not parsable", func() {
@@ -239,7 +237,7 @@ func (s *ServiceTestSuite) TestCreate() {
 		actualError := s.tagService.CreateTag(ctx, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return repository error if repository met error", func() {
@@ -303,7 +301,7 @@ func (s *ServiceTestSuite) TestFindByAssetAndTemplate() {
 
 	s.Run("should return nil and error if tag is not found", func() {
 		s.Setup()
-		var assetID = uuid.NewString()
+		assetID := uuid.NewString()
 		template := s.buildTemplate()
 		s.templateRepo.EXPECT().Read(mock.Anything, template.URN).Return([]tag.Template{template}, nil)
 		s.repository.EXPECT().Read(mock.Anything, tag.Tag{
@@ -355,7 +353,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 		actualError := s.tagService.UpdateTag(ctx, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if error retrieving template", func() {
@@ -408,7 +406,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 		actualError := s.tagService.UpdateTag(ctx, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return error if passed value is not parsable", func() {
@@ -432,7 +430,7 @@ func (s *ServiceTestSuite) TestUpdate() {
 		actualError := s.tagService.UpdateTag(ctx, &t)
 
 		s.EqualError(actualError, expectedErrorMsg)
-		s.EqualValues(expectedFieldError, actualError.(tag.ValidationError))
+		s.EqualValues(expectedFieldError, actualError)
 	})
 
 	s.Run("should return repository error if repository met error", func() {

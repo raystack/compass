@@ -22,34 +22,36 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var assetID = uuid.NewString()
-var sampleTag = tag.Tag{
-	AssetID:             assetID,
-	TemplateURN:         "governance_policy",
-	TemplateDisplayName: "Governance Policy",
-	TemplateDescription: "Template that is mandatory to be used.",
-	TagValues: []tag.TagValue{
-		{
-			FieldID:          1,
-			FieldValue:       "Public",
-			FieldURN:         "classification",
-			FieldDisplayName: "classification",
-			FieldDescription: "The classification of this asset",
-			FieldDataType:    "enumerated",
-			FieldRequired:    true,
-			FieldOptions:     []string{"Public", "Restricted"},
+var (
+	assetID   = uuid.NewString()
+	sampleTag = tag.Tag{
+		AssetID:             assetID,
+		TemplateURN:         "governance_policy",
+		TemplateDisplayName: "Governance Policy",
+		TemplateDescription: "Template that is mandatory to be used.",
+		TagValues: []tag.TagValue{
+			{
+				FieldID:          1,
+				FieldValue:       "Public",
+				FieldURN:         "classification",
+				FieldDisplayName: "classification",
+				FieldDescription: "The classification of this asset",
+				FieldDataType:    "enumerated",
+				FieldRequired:    true,
+				FieldOptions:     []string{"Public", "Restricted"},
+			},
+			{
+				FieldID:          2,
+				FieldValue:       true,
+				FieldURN:         "is_encrypted",
+				FieldDisplayName: "Is Encrypted?",
+				FieldDescription: "Specify whether this asset is encrypted or not.",
+				FieldDataType:    "boolean",
+				FieldRequired:    true,
+			},
 		},
-		{
-			FieldID:          2,
-			FieldValue:       true,
-			FieldURN:         "is_encrypted",
-			FieldDisplayName: "Is Encrypted?",
-			FieldDescription: "Specify whether this asset is encrypted or not.",
-			FieldDataType:    "boolean",
-			FieldRequired:    true,
-		},
-	},
-}
+	}
+)
 
 var sampleTagPB = &compassv1beta1.Tag{
 	AssetId:             assetID,
@@ -92,7 +94,7 @@ func TestGetTagByAssetAndTemplate(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetTagByAssetAndTemplateResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return invalid argument if asset id is empty`,
 			Request: &compassv1beta1.GetTagByAssetAndTemplateRequest{
@@ -236,7 +238,7 @@ func TestCreateTagAsset(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.CreateTagAssetResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return invalid argument if asset id is empty`,
 			Request: &compassv1beta1.CreateTagAssetRequest{
@@ -368,7 +370,7 @@ func TestUpdateTagAsset(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.UpdateTagAssetResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return invalid argument if asset id is empty`,
 			Request: &compassv1beta1.UpdateTagAssetRequest{
@@ -476,7 +478,7 @@ func TestDeleteTagAsset(t *testing.T) {
 		Setup        func(context.Context, *mocks.TagService, *mocks.TagTemplateService)
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return invalid argument if asset id is empty`,
 			Request: &compassv1beta1.DeleteTagAssetRequest{
@@ -571,7 +573,7 @@ func TestGetAllTagsByAsset(t *testing.T) {
 		PostCheck    func(resp *compassv1beta1.GetAllTagsByAssetResponse) error
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Description: `should return invalid argument if asset id is empty`,
 			Request: &compassv1beta1.GetAllTagsByAssetRequest{
@@ -647,7 +649,7 @@ func TestTagToProto(t *testing.T) {
 		ExpectProto *compassv1beta1.Tag
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:       "should return empty field value pb if tag values is empty",
 			Tag:         tag.Tag{AssetID: "1111-2222-3333-4444"},
@@ -661,7 +663,6 @@ func TestTagToProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got, err := tagToProto(tc.Tag)
 			if err != nil {
 				t.Fatal(err)
@@ -680,7 +681,7 @@ func TestTagFromProto(t *testing.T) {
 		Expect tag.Tag
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:  "should return non empty tag values if tag values pb are not empty",
 			PB:     &compassv1beta1.Tag{AssetId: "1111-2222-3333-4444", TagValues: []*compassv1beta1.TagValue{{FieldId: 123, FieldUrn: "urn"}}},
@@ -694,7 +695,6 @@ func TestTagFromProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got := tagFromProto(tc.PB)
 			if reflect.DeepEqual(got, tc.Expect) == false {
 				t.Errorf("expected returned asset to be %+v, was %+v", tc.Expect, got)
@@ -711,7 +711,7 @@ func TestTagValueToProto(t *testing.T) {
 		ExpectProto *compassv1beta1.TagValue
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:       "should return no timestamp pb and empty field value pb if timestamp and field value are empty or zero",
 			TagValue:    tag.TagValue{FieldID: 123, FieldURN: "urn"},
@@ -725,7 +725,6 @@ func TestTagValueToProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got, err := tagValueToProto(tc.TagValue)
 			if err != nil {
 				t.Fatal(err)
@@ -745,7 +744,7 @@ func TestTagValueFromProto(t *testing.T) {
 		Expect tag.TagValue
 	}
 
-	var testCases = []testCase{
+	testCases := []testCase{
 		{
 			Title:  "should return non empty time.Time and field value if timestamp pb and field value pb are not empty or zero",
 			PB:     &compassv1beta1.TagValue{FieldId: 123, FieldUrn: "urn", FieldValue: structpb.NewStringValue("a value"), CreatedAt: timestamppb.New(timeDummy), UpdatedAt: timestamppb.New(timeDummy)},
@@ -759,7 +758,6 @@ func TestTagValueFromProto(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Title, func(t *testing.T) {
-
 			got := tagValueFromProto(tc.PB)
 			if reflect.DeepEqual(got, tc.Expect) == false {
 				t.Errorf("expected returned asset to be %+v, was %+v", tc.Expect, got)

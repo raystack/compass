@@ -5,9 +5,7 @@ import (
 	"fmt"
 )
 
-var (
-	ErrNoUserInformation = errors.New("no user information")
-)
+var ErrNoUserInformation = errors.New("no user information")
 
 type NotFoundError struct {
 	UUID  string

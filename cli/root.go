@@ -31,7 +31,6 @@ var rootCmd = &cobra.Command{
 }
 
 func New(cliConfig *Config) *cobra.Command {
-
 	if cliConfig.Client.ServerHeaderKeyUUID == "" {
 		cliConfig.Client.ServerHeaderKeyUUID = cliConfig.Service.Identity.HeaderKeyUUID
 	}

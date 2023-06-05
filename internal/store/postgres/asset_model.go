@@ -33,7 +33,6 @@ type AssetModel struct {
 }
 
 func (a *AssetModel) toAsset(owners []user.User) asset.Asset {
-
 	return asset.Asset{
 		ID:          a.ID,
 		URN:         a.URN,
@@ -53,7 +52,6 @@ func (a *AssetModel) toAsset(owners []user.User) asset.Asset {
 }
 
 func (a *AssetModel) toAssetVersion() (asset.Asset, error) {
-
 	var clog diff.Changelog
 	err := a.Changelog.Unmarshal(&clog)
 	if err != nil {

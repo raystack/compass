@@ -10,7 +10,6 @@ import (
 )
 
 func TestTagModel(t *testing.T) {
-
 	assetID := uuid.NewString()
 
 	templates := getTemplateModels()
@@ -23,10 +22,8 @@ func TestTagModel(t *testing.T) {
 		tagsMap := tags.buildMapByTemplateURN()
 
 		assert.EqualValues(t, expectedTagsMap, tagsMap)
-
 	})
 	t.Run("successfully build tags from tags model", func(t *testing.T) {
-
 		expectedTagDomains := []tag.Tag{
 			{
 				AssetID:     assetID,
@@ -49,10 +46,12 @@ func TestTagModel(t *testing.T) {
 						FieldDescription: "Email of the admin of the asset.",
 						FieldDataType:    "string",
 						FieldRequired:    true,
-					}},
+					},
+				},
 				TemplateDisplayName: "Governance Policy",
 				TemplateDescription: "Template that is mandatory to be used.",
-			}}
+			},
+		}
 
 		actualTagDomains := tags.toTags(assetID, templates)
 
@@ -61,7 +60,6 @@ func TestTagModel(t *testing.T) {
 }
 
 func TestTemplateModel(t *testing.T) {
-
 	templates := getTemplateModels()
 
 	t.Run("successfully convert template model to template", func(t *testing.T) {
@@ -95,7 +93,6 @@ func TestTemplateModel(t *testing.T) {
 	})
 
 	t.Run("successfully build from template model from template", func(t *testing.T) {
-
 		template := getTemplate()
 		option := "Public,Restricted"
 		expectedTemplateModel := &TagTemplateModel{
@@ -197,7 +194,6 @@ func TestTemplateFields(t *testing.T) {
 	templateModels := getTemplateModels()
 	templates := getTemplate()
 	t.Run("successfully build template models", func(t *testing.T) {
-
 		actualTemplateModels := tfs.toTemplateModels()
 
 		assert.EqualValues(t, templateModels[0], actualTemplateModels[0])
@@ -212,7 +208,6 @@ func TestTemplateFields(t *testing.T) {
 func TestTemplateTagFields(t *testing.T) {
 	ttfs := getTemplateTagFieldModels()
 	t.Run("successfully build templates model and tags model", func(t *testing.T) {
-
 		expectedTemplateModels := getTemplateModels()
 		expectedTagModels := getTagModels()
 		actualTemplateModels, actualTagModels := ttfs.toTemplateAndTagModels()

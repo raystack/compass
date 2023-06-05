@@ -22,9 +22,9 @@ type DiscussionService interface {
 	PatchDiscussion(ctx context.Context, discussion *discussion.Discussion) error
 	GetComments(ctx context.Context, discussionID string, filter discussion.Filter) ([]discussion.Comment, error)
 	CreateComment(ctx context.Context, cmt *discussion.Comment) (string, error)
-	GetComment(ctx context.Context, commentID string, discussionID string) (discussion.Comment, error)
+	GetComment(ctx context.Context, commentID, discussionID string) (discussion.Comment, error)
 	UpdateComment(ctx context.Context, cmt *discussion.Comment) error
-	DeleteComment(ctx context.Context, commentID string, discussionID string) error
+	DeleteComment(ctx context.Context, commentID, discussionID string) error
 }
 
 // GetAll returns all discussion based on filter in query params
@@ -185,7 +185,6 @@ func (server *APIServer) validateIDInteger(id string) error {
 
 // discussionToProto transforms struct to proto
 func discussionToProto(d discussion.Discussion) *compassv1beta1.Discussion {
-
 	var createdAtPB *timestamppb.Timestamp
 	if !d.CreatedAt.IsZero() {
 		createdAtPB = timestamppb.New(d.CreatedAt)

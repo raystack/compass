@@ -11,7 +11,6 @@ import (
 )
 
 func TestUserModel(t *testing.T) {
-
 	t.Run("should return user domain entitiy", func(t *testing.T) {
 		someUUID := uuid.NewString()
 		timestamp := time.Now().UTC()

@@ -106,6 +106,5 @@ func TestGetLineageGraph(t *testing.T) {
 				t.Errorf("expected: %+v\ngot: %+v\ndiff: %s\n", expected, got, diff)
 			}
 		})
-
 	})
 }
