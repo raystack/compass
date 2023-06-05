@@ -1486,7 +1486,7 @@ func (r *AssetRepositoryTestSuite) TestGetProbes() {
 		r.Require().NoError(err)
 		r.Require().Len(actual, 3)
 
-		expected := []asset.Probe{p1, p2, p3}
+		expected := []asset.Probe{p2, p3, p1}
 		r.Equal(expected[0].ID, actual[0].ID)
 		r.Equal(expected[1].ID, actual[1].ID)
 		r.Equal(expected[2].ID, actual[2].ID)
