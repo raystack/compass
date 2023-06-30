@@ -1,13 +1,12 @@
 const lightCodeTheme = require('prism-react-renderer/themes/dracula');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
-// With JSDoc @type annotations, IDEs can provide config autocompletion
-/** @type {import('@docusaurus/types').DocusaurusConfig} */
+/** @type {import('@docusaurus/types').Config} */
 (module.exports = {
   title: 'Compass',
   tagline: 'Data Catalog',
-  url: 'https://raystack.github.io/',
-  baseUrl: '/compass/',
+  url: 'https://compass-raystack.vercel.app/',
+  baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'assets/favicon.ico',
@@ -16,16 +15,14 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
   presets: [
     [
-      '@docusaurus/preset-classic',
+      'classic',
       ({
-        gtag: {
-          trackingID: 'G-XXX',
-        },
         docs: {
           routeBasePath: '/',
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl: 'https://github.com/raystack/compass/edit/master/docs/',
           sidebarCollapsed: true,
+          breadcrumbs: false,
         },
         blog: false,
         theme: {
@@ -71,31 +68,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
       },
       footer: {
         style: 'light',
-        links: [
-          {
-            title: 'Products',
-            items: [
-              { label: 'Optimus', href: 'https://github.com/raystack/optimus' },
-              { label: 'Firehose', href: 'https://github.com/raystack/firehose' },
-              { label: 'Raccoon', href: 'https://github.com/raystack/raccoon' },
-              { label: 'Dagger', href: 'https://raystack.github.io/dagger/' },
-            ],
-          },
-          {
-            title: 'Resources',
-            items: [
-              { label: 'Docs', to: '/' },
-              { label: 'Help', to: '/help', },
-            ],
-          },
-          {
-            title: 'Community',
-            items: [
-              { label: 'Slack', href: 'https://bit.ly/2RzPbtn' },
-              { label: 'GitHub', href: 'https://github.com/raystack/compass' }
-            ],
-          },
-        ],
+        links: [],
       },
       prism: {
         theme: lightCodeTheme,
