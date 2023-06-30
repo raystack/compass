@@ -36,4 +36,4 @@ service:
 client:
     host: localhost:8081
     serverheaderkey_uuid: Compass-User-UUID // if ommited, will use value on service.identity.headerkey_uuid
-    serverheadervalue_uuid: odpf@email.com
+    serverheadervalue_uuid: raystack@email.com

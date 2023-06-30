@@ -6,14 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"strings"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/user"
+	"github.com/raystack/compass/core/asset"
+	"github.com/raystack/compass/core/user"
 	"github.com/r3labs/diff/v2"
 )
 

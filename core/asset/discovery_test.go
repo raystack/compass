@@ -1,12 +1,12 @@
 package asset_test
 
 import (
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/odpf/compass/core/asset"
+	"github.com/raystack/compass/core/asset"
 )
 
 func TestToAsset(t *testing.T) {

@@ -3,13 +3,13 @@ package handlersv1beta1
 import (
 	"context"
 	"errors"
-	"github.com/odpf/compass/pkg/grpc_interceptor"
+	"github.com/raystack/compass/pkg/grpc_interceptor"
 	"strings"
 	"time"
 
-	"github.com/odpf/compass/core/discussion"
-	"github.com/odpf/compass/core/user"
-	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
+	"github.com/raystack/compass/core/discussion"
+	"github.com/raystack/compass/core/user"
+	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"

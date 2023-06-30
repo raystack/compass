@@ -7,7 +7,7 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
-	namespace "github.com/odpf/compass/core/namespace"
+	namespace "github.com/raystack/compass/core/namespace"
 
 	uuid "github.com/google/uuid"
 )

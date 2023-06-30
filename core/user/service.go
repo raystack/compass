@@ -3,10 +3,10 @@ package user
 import (
 	"context"
 	"errors"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 
-	"github.com/odpf/compass/pkg/statsd"
-	"github.com/odpf/salt/log"
+	"github.com/raystack/compass/pkg/statsd"
+	"github.com/raystack/salt/log"
 )
 
 // Service is a type of service that manages business process

@@ -3,7 +3,7 @@ package postgres_test
 import (
 	"testing"
 
-	"github.com/odpf/compass/internal/store/postgres"
+	"github.com/raystack/compass/internal/store/postgres"
 	"github.com/stretchr/testify/assert"
 )
 

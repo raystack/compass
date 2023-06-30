@@ -2,11 +2,11 @@ package postgres
 
 import (
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"strings"
 	"time"
 
-	"github.com/odpf/compass/core/tag"
+	"github.com/raystack/compass/core/tag"
 )
 
 // TagModel is a model for tag value in database table

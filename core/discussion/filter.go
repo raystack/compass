@@ -3,7 +3,7 @@ package discussion
 import (
 	"strings"
 
-	validator "github.com/odpf/compass/core/validator"
+	validator "github.com/raystack/compass/core/validator"
 )
 
 type Filter struct {

@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/tag"
-	"github.com/odpf/compass/core/tag/mocks"
-	"github.com/odpf/compass/core/tag/validator"
+	"github.com/raystack/compass/core/tag"
+	"github.com/raystack/compass/core/tag/mocks"
+	"github.com/raystack/compass/core/tag/validator"
 
 	"github.com/golang-module/carbon/v2"
 	"github.com/stretchr/testify/mock"

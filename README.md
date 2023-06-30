@@ -1,10 +1,10 @@
 # Compass
 
-![test workflow](https://github.com/odpf/compass/actions/workflows/test.yml/badge.svg)
-![build workflow](https://github.com/odpf/compass/actions/workflows/build_dev.yml/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/odpf/compass/badge.svg?branch=main)](https://coveralls.io/github/odpf/compass?branch=main)
+![test workflow](https://github.com/raystack/compass/actions/workflows/test.yml/badge.svg)
+![build workflow](https://github.com/raystack/compass/actions/workflows/build_dev.yml/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/raystack/compass/badge.svg?branch=main)](https://coveralls.io/github/raystack/compass?branch=main)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)
-[![Version](https://img.shields.io/github/v/release/odpf/compass?logo=semantic-release)](Version)
+[![Version](https://img.shields.io/github/v/release/raystack/compass?logo=semantic-release)](Version)
 
 Compass is a search and discovery engine built for querying application deployments, datasets and meta resources. It can also optionally track data flow relationships between these resources and allow the user to view a representation of the data flow graph.
 
@@ -25,27 +25,27 @@ Discover why users choose Compass as their main data discovery and lineage servi
 
 Explore the following resources to get started with Compass:
 
-- [Guides](https://odpf.github.io/compass/docs/guides) provides guidance on ingesting and querying metadata from Compass.
-- [Concepts](https://odpf.github.io/compass/docs/concepts) describes all important Compass concepts.
-- [Reference](https://odpf.github.io/compass/docs/reference) contains details about configurations, metrics and other aspects of Compass.
-- [Contribute](https://odpf.github.io/compass/docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Compass.
+- [Guides](https://raystack.github.io/compass/docs/guides) provides guidance on ingesting and querying metadata from Compass.
+- [Concepts](https://raystack.github.io/compass/docs/concepts) describes all important Compass concepts.
+- [Reference](https://raystack.github.io/compass/docs/reference) contains details about configurations, metrics and other aspects of Compass.
+- [Contribute](https://raystack.github.io/compass/docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Compass.
 
 ## Installation
 
-Install Compass on macOS, Windows, Linux, OpenBSD, FreeBSD, and on any machine. <br/>Refer this for [installations](https://odpf.github.io/compass/docs/installation) and [configurations](https://odpf.github.io/compass/docs/guides/configuration)
+Install Compass on macOS, Windows, Linux, OpenBSD, FreeBSD, and on any machine. <br/>Refer this for [installations](https://raystack.github.io/compass/docs/installation) and [configurations](https://raystack.github.io/compass/docs/guides/configuration)
 
 #### Binary (Cross-platform)
 
-Download the appropriate version for your platform from [releases](https://github.com/odpf/compass/releases) page. Once downloaded, the binary can be run from anywhere.
+Download the appropriate version for your platform from [releases](https://github.com/raystack/compass/releases) page. Once downloaded, the binary can be run from anywhere.
 You don’t need to install it into a global location. This works well for shared hosts and other systems where you don’t have a privileged account.
 Ideally, you should install it somewhere in your PATH for easy use. `/usr/local/bin` is the most probable location.
 
 #### macOS
 
-`compass` is available via a Homebrew Tap, and as downloadable binary from the [releases](https://github.com/odpf/compass/releases/latest) page:
+`compass` is available via a Homebrew Tap, and as downloadable binary from the [releases](https://github.com/raystack/compass/releases/latest) page:
 
 ```sh
-brew install odpf/tap/compass
+brew install raystack/tap/compass
 ```
 
 To upgrade to the latest version:
@@ -62,14 +62,14 @@ compass version
 
 #### Linux
 
-`compass` is available as downloadable binaries from the [releases](https://github.com/odpf/compass/releases/latest) page. Download the `.deb` or `.rpm` from the releases page and install with `sudo dpkg -i` and `sudo rpm -i` respectively.
+`compass` is available as downloadable binaries from the [releases](https://github.com/raystack/compass/releases/latest) page. Download the `.deb` or `.rpm` from the releases page and install with `sudo dpkg -i` and `sudo rpm -i` respectively.
 
 #### Windows
 
-`compass` is available via [scoop](https://scoop.sh/), and as a downloadable binary from the [releases](https://github.com/odpf/compass/releases/latest) page:
+`compass` is available via [scoop](https://scoop.sh/), and as a downloadable binary from the [releases](https://github.com/raystack/compass/releases/latest) page:
 
 ```
-scoop bucket add compass https://github.com/odpf/scoop-bucket.git
+scoop bucket add compass https://github.com/raystack/scoop-bucket.git
 ```
 
 To upgrade to the latest version:
@@ -83,20 +83,20 @@ scoop update compass
 We provide ready to use Docker container images. To pull the latest image:
 
 ```
-docker pull odpf/compass:latest
+docker pull raystack/compass:latest
 ```
 
 To pull a specific version:
 
 ```
-docker pull odpf/compass:v0.3.2
+docker pull raystack/compass:v0.3.2
 ```
 
 If you like to have a shell alias that runs the latest version of compass from docker whenever you type `compass`:
 
 ```
-mkdir -p $HOME/.config/odpf
-alias compass="docker run -e HOME=/tmp -v $HOME/.config/odpf:/tmp/.config/odpf --user $(id -u):$(id -g) --rm -it -p 3306:3306/tcp odpf/compass:latest"
+mkdir -p $HOME/.config/raystack
+alias compass="docker run -e HOME=/tmp -v $HOME/.config/raystack:/tmp/.config/raystack --user $(id -u):$(id -g) --rm -it -p 3306:3306/tcp raystack/compass:latest"
 ```
 
 ## Usage
@@ -121,7 +121,7 @@ compass reference
 
 #### API
 
-Compass provides a fully-featured GRPC and HTTP API to interact with Compass server. Both APIs adheres to a set of standards that are rigidly followed. Please refer to [proton](https://github.com/odpf/proton/tree/main/odpf/compass/v1beta1) for GRPC API definitions.
+Compass provides a fully-featured GRPC and HTTP API to interact with Compass server. Both APIs adheres to a set of standards that are rigidly followed. Please refer to [proton](https://github.com/raystack/proton/tree/main/raystack/compass/v1beta1) for GRPC API definitions.
 
 <details>
   <summary>Dependencies:</summary>
@@ -166,7 +166,7 @@ docker build . -t compass
 Before serving Compass app, we need to run the migration first. Run this docker command to migrate Compass.
 
 ```text
-$ docker run --rm --net compass_storage -p 8080:8080 -e ELASTICSEARCH_BROKERS=http://es:9200 -e DB_HOST=postgres -e DB_PORT=5432 -e DB_NAME=compass -e DB_USER=compass -e DB_PASSWORD=compass_password odpf/compass compass server migrate
+$ docker run --rm --net compass_storage -p 8080:8080 -e ELASTICSEARCH_BROKERS=http://es:9200 -e DB_HOST=postgres -e DB_PORT=5432 -e DB_NAME=compass -e DB_USER=compass -e DB_PASSWORD=compass_password raystack/compass compass server migrate
 ```
 
 If you are using Compass binary, you can run this command.
@@ -180,7 +180,7 @@ If you are using Compass binary, you can run this command.
 Once the migration has been done, Compass server can be started with this command.
 
 ```text
-docker run --net compass_storage -p 8080:8080 -e ELASTICSEARCH_BROKERS=http://es:9200 -e DB_HOST=postgres -e DB_PORT=5432 -e DB_NAME=compass -e DB_USER=compass -e DB_PASSWORD=compass_password odpf/compass compass server start
+docker run --net compass_storage -p 8080:8080 -e ELASTICSEARCH_BROKERS=http://es:9200 -e DB_HOST=postgres -e DB_PORT=5432 -e DB_NAME=compass -e DB_USER=compass -e DB_PASSWORD=compass_password raystack/compass compass server start
 ```
 
 If you are using Compass binary, you can run this command.
@@ -204,11 +204,11 @@ elasticsearch cluster, set the value of `ES_TEST_SERVER_URL` to the URL of the e
 
 Development of Compass happens in the open on GitHub, and we are grateful to the community for contributing bugfixes and improvements. Read below to learn how you can take part in improving Compass.
 
-Read our [contributing guide](https://odpf.github.io/compass/docs/contribute/contribution.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Compass.
+Read our [contributing guide](https://raystack.github.io/compass/docs/contribute/contribution.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Compass.
 
-To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/odpf/compass/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started.
+To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/raystack/compass/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started.
 
-This project exists thanks to all the [contributors](https://github.com/odpf/compass/graphs/contributors).
+This project exists thanks to all the [contributors](https://github.com/raystack/compass/graphs/contributors).
 
 ## License
 

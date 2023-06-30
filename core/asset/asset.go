@@ -3,10 +3,10 @@ package asset
 //go:generate mockery --name=Repository -r --case underscore --with-expecter --structname AssetRepository --filename asset_repository.go --output=./mocks
 import (
 	"context"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"time"
 
-	"github.com/odpf/compass/core/user"
+	"github.com/raystack/compass/core/user"
 	"github.com/r3labs/diff/v2"
 )
 

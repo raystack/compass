@@ -3,7 +3,7 @@ package asset
 import (
 	"context"
 
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 )
 
 type LineageDirection string

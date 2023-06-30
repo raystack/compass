@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/go-jose/go-jose/v3/jwt"
-	"github.com/odpf/compass/core/namespace"
-	"github.com/odpf/compass/internal/client"
+	"github.com/raystack/compass/core/namespace"
+	"github.com/raystack/compass/internal/client"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )

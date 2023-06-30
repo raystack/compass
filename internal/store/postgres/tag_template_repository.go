@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/odpf/compass/core/tag"
+	"github.com/raystack/compass/core/tag"
 )
 
 const (

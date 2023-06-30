@@ -8,7 +8,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/odpf/compass/cli"
+	"github.com/raystack/compass/cli"
 )
 
 const (

@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/namespace"
-	"github.com/odpf/compass/core/namespace/mocks"
-	"github.com/odpf/salt/log"
+	"github.com/raystack/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace/mocks"
+	"github.com/raystack/salt/log"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

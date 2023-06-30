@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/odpf/compass/core/user"
+	"github.com/raystack/compass/core/user"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )

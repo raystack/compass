@@ -1,12 +1,12 @@
 package postgres
 
 import (
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"sort"
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/tag"
+	"github.com/raystack/compass/core/tag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,7 +43,7 @@ func TestTagModel(t *testing.T) {
 						FieldRequired:    true,
 					}, {
 						FieldID:          2,
-						FieldValue:       "dexter@odpf.io",
+						FieldValue:       "dexter@raystack.io",
 						FieldURN:         "admin_email",
 						FieldDisplayName: "Admin Email",
 						FieldDescription: "Email of the admin of the asset.",
@@ -320,7 +320,7 @@ func getTagModels() TagModels {
 		},
 		{
 			ID:      2,
-			Value:   "dexter@odpf.io",
+			Value:   "dexter@raystack.io",
 			AssetID: "an-asset-id",
 			FieldID: 2,
 			Field:   fields[1],

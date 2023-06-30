@@ -10,12 +10,12 @@ jobs:
         ports:
           - 9200:9200
         env:
-          ES_TEST_SERVER_URL: 'http://elasticsearch:9200'
+          ES_TEST_SERVER_URL: "http://elasticsearch:9200"
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:
-          go-version: 1.18
+          go-version: "1.20"
       - name: Install dependencies
         run: sudo apt-get install build-essential
       - name: Install packages

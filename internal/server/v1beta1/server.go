@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"net/http"
 	"time"
 
-	"github.com/odpf/compass/core/user"
-	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
-	"github.com/odpf/salt/log"
+	"github.com/raystack/compass/core/user"
+	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
+	"github.com/raystack/salt/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

@@ -2,7 +2,7 @@ package cli
 
 import (
 	"github.com/MakeNowJust/heredoc"
-	"github.com/odpf/salt/cmdx"
+	"github.com/raystack/salt/cmdx"
 	"github.com/spf13/cobra"
 )
 
@@ -23,10 +23,10 @@ var (
 			"group": "core",
 			"help:learn": heredoc.Doc(`
 			Use 'compass <command> --help' for info about a command.
-			Read the manual at https://odpf.github.io/compass/
+			Read the manual at https://raystack.github.io/compass/
 		`),
 			"help:feedback": heredoc.Doc(`
-			Open an issue here https://github.com/odpf/compass/issues
+			Open an issue here https://github.com/raystack/compass/issues
 		`),
 		},
 	}

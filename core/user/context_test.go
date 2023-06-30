@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/odpf/compass/core/user"
+	"github.com/raystack/compass/core/user"
 )
 
 func TestContext(t *testing.T) {

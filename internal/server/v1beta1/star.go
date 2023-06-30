@@ -3,11 +3,11 @@ package handlersv1beta1
 //go:generate mockery --name=StarService -r --case underscore --with-expecter --structname StarService --filename star_service.go --output=./mocks
 import (
 	"context"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/star"
-	"github.com/odpf/compass/core/user"
+	"github.com/raystack/compass/core/asset"
+	"github.com/raystack/compass/core/star"
+	"github.com/raystack/compass/core/user"
 )
 
 type StarService interface {

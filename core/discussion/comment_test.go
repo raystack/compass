@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/odpf/compass/core/discussion"
+	"github.com/raystack/compass/core/discussion"
 	"github.com/stretchr/testify/assert"
 )
 

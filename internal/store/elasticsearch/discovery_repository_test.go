@@ -4,14 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/odpf/compass/core/asset"
-	store "github.com/odpf/compass/internal/store/elasticsearch"
-	"github.com/odpf/salt/log"
+	"github.com/raystack/compass/core/asset"
+	store "github.com/raystack/compass/internal/store/elasticsearch"
+	"github.com/raystack/salt/log"
 	"github.com/olivere/elastic/v7"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -83,7 +83,7 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 			Description: "sample-description",
 			Data: map[string]interface{}{
 				"foo": map[string]interface{}{
-					"company": "odpf",
+					"company": "raystack",
 				},
 			},
 			Labels: map[string]string{

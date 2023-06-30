@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx/types"
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/user"
+	"github.com/raystack/compass/core/asset"
+	"github.com/raystack/compass/core/user"
 	"github.com/r3labs/diff/v2"
 )
 

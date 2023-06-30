@@ -5,11 +5,11 @@ package discussion
 import (
 	"context"
 	"fmt"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"strings"
 	"time"
 
-	"github.com/odpf/compass/core/user"
+	"github.com/raystack/compass/core/user"
 )
 
 const MAX_ARRAY_FIELD_NUM = 10

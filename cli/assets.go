@@ -2,15 +2,15 @@ package cli
 
 import (
 	"fmt"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"os"
 
-	"github.com/odpf/compass/internal/client"
-	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
-	"github.com/odpf/salt/term"
+	"github.com/raystack/compass/internal/client"
+	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
+	"github.com/raystack/salt/term"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/odpf/salt/printer"
+	"github.com/raystack/salt/printer"
 	"github.com/spf13/cobra"
 )
 

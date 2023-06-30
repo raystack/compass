@@ -1,4 +1,4 @@
-NAME="github.com/odpf/compass"
+NAME="github.com/raystack/compass"
 VERSION=$(shell git describe --always --tags 2>/dev/null)
 COVERFILE="/tmp/compass.coverprofile"
 PROTON_COMMIT := "eeec3f31b21ee7d00b016fcdcd7070606aa33366"
@@ -31,9 +31,9 @@ lint: ## Lint checker
 	golangci-lint run
 	
 proto: ## Generate the protobuf files
-	@echo " > generating protobuf from odpf/proton"
+	@echo " > generating protobuf from raystack/proton"
 	@echo " > [info] make sure correct version of dependencies are installed using 'make install'"
-	@buf generate https://github.com/odpf/proton/archive/${PROTON_COMMIT}.zip#strip_components=1 --template buf.gen.yaml --path odpf/compass -v
+	@buf generate https://github.com/raystack/proton/archive/${PROTON_COMMIT}.zip#strip_components=1 --template buf.gen.yaml --path raystack/compass -v
 	@echo " > protobuf compilation finished"
 
 install: ## Install required dependencies

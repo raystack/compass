@@ -3,15 +3,15 @@ package postgres_test
 import (
 	"context"
 	"fmt"
-	"github.com/odpf/compass/core/namespace"
-	"github.com/odpf/compass/pkg/grpc_interceptor"
+	"github.com/raystack/compass/core/namespace"
+	"github.com/raystack/compass/pkg/grpc_interceptor"
 	"sort"
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/tag"
-	"github.com/odpf/compass/internal/store/postgres"
-	"github.com/odpf/salt/log"
+	"github.com/raystack/compass/core/tag"
+	"github.com/raystack/compass/internal/store/postgres"
+	"github.com/raystack/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
@@ -457,7 +457,7 @@ func getDomainTag() tag.Tag {
 			},
 			{
 				FieldID:          2,
-				FieldValue:       "dexter@odpf.io",
+				FieldValue:       "dexter@raystack.io",
 				FieldURN:         "admin_email",
 				FieldDisplayName: "Admin Email",
 				FieldDescription: "Email of the admin of the asset.",

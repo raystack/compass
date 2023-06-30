@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/odpf/compass/core/user"
+	"github.com/raystack/compass/core/user"
 )
 
 // UserRepository is a type that manages user operation to the primary database

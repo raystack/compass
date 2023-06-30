@@ -6,11 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/star"
-	"github.com/odpf/compass/core/user"
+	"github.com/raystack/compass/core/asset"
+	"github.com/raystack/compass/core/star"
+	"github.com/raystack/compass/core/user"
 )
 
 type StarClauses struct {

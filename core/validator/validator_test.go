@@ -3,7 +3,7 @@ package validator_test
 import (
 	"testing"
 
-	"github.com/odpf/compass/core/validator"
+	"github.com/raystack/compass/core/validator"
 	"gotest.tools/assert"
 )
 

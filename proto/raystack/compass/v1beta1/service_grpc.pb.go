@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             (unknown)
-// source: odpf/compass/v1beta1/service.proto
+// source: raystack/compass/v1beta1/service.proto
 
 package compassv1beta1
 
@@ -81,7 +81,7 @@ func NewCompassServiceClient(cc grpc.ClientConnInterface) CompassServiceClient {
 
 func (c *compassServiceClient) GetAllDiscussions(ctx context.Context, in *GetAllDiscussionsRequest, opts ...grpc.CallOption) (*GetAllDiscussionsResponse, error) {
 	out := new(GetAllDiscussionsResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAllDiscussions", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetAllDiscussions", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (c *compassServiceClient) GetAllDiscussions(ctx context.Context, in *GetAll
 
 func (c *compassServiceClient) CreateDiscussion(ctx context.Context, in *CreateDiscussionRequest, opts ...grpc.CallOption) (*CreateDiscussionResponse, error) {
 	out := new(CreateDiscussionResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/CreateDiscussion", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/CreateDiscussion", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +99,7 @@ func (c *compassServiceClient) CreateDiscussion(ctx context.Context, in *CreateD
 
 func (c *compassServiceClient) GetDiscussion(ctx context.Context, in *GetDiscussionRequest, opts ...grpc.CallOption) (*GetDiscussionResponse, error) {
 	out := new(GetDiscussionResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetDiscussion", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetDiscussion", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (c *compassServiceClient) GetDiscussion(ctx context.Context, in *GetDiscuss
 
 func (c *compassServiceClient) PatchDiscussion(ctx context.Context, in *PatchDiscussionRequest, opts ...grpc.CallOption) (*PatchDiscussionResponse, error) {
 	out := new(PatchDiscussionResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/PatchDiscussion", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/PatchDiscussion", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func (c *compassServiceClient) PatchDiscussion(ctx context.Context, in *PatchDis
 
 func (c *compassServiceClient) CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*CreateCommentResponse, error) {
 	out := new(CreateCommentResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/CreateComment", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/CreateComment", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +126,7 @@ func (c *compassServiceClient) CreateComment(ctx context.Context, in *CreateComm
 
 func (c *compassServiceClient) GetAllComments(ctx context.Context, in *GetAllCommentsRequest, opts ...grpc.CallOption) (*GetAllCommentsResponse, error) {
 	out := new(GetAllCommentsResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAllComments", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetAllComments", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +135,7 @@ func (c *compassServiceClient) GetAllComments(ctx context.Context, in *GetAllCom
 
 func (c *compassServiceClient) GetComment(ctx context.Context, in *GetCommentRequest, opts ...grpc.CallOption) (*GetCommentResponse, error) {
 	out := new(GetCommentResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetComment", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetComment", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +144,7 @@ func (c *compassServiceClient) GetComment(ctx context.Context, in *GetCommentReq
 
 func (c *compassServiceClient) UpdateComment(ctx context.Context, in *UpdateCommentRequest, opts ...grpc.CallOption) (*UpdateCommentResponse, error) {
 	out := new(UpdateCommentResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UpdateComment", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/UpdateComment", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func (c *compassServiceClient) UpdateComment(ctx context.Context, in *UpdateComm
 
 func (c *compassServiceClient) DeleteComment(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*DeleteCommentResponse, error) {
 	out := new(DeleteCommentResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/DeleteComment", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/DeleteComment", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func (c *compassServiceClient) DeleteComment(ctx context.Context, in *DeleteComm
 
 func (c *compassServiceClient) SearchAssets(ctx context.Context, in *SearchAssetsRequest, opts ...grpc.CallOption) (*SearchAssetsResponse, error) {
 	out := new(SearchAssetsResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/SearchAssets", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/SearchAssets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func (c *compassServiceClient) SearchAssets(ctx context.Context, in *SearchAsset
 
 func (c *compassServiceClient) SuggestAssets(ctx context.Context, in *SuggestAssetsRequest, opts ...grpc.CallOption) (*SuggestAssetsResponse, error) {
 	out := new(SuggestAssetsResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/SuggestAssets", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/SuggestAssets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func (c *compassServiceClient) SuggestAssets(ctx context.Context, in *SuggestAss
 
 func (c *compassServiceClient) GetGraph(ctx context.Context, in *GetGraphRequest, opts ...grpc.CallOption) (*GetGraphResponse, error) {
 	out := new(GetGraphResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetGraph", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetGraph", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +189,7 @@ func (c *compassServiceClient) GetGraph(ctx context.Context, in *GetGraphRequest
 
 func (c *compassServiceClient) GetAllTypes(ctx context.Context, in *GetAllTypesRequest, opts ...grpc.CallOption) (*GetAllTypesResponse, error) {
 	out := new(GetAllTypesResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAllTypes", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetAllTypes", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +198,7 @@ func (c *compassServiceClient) GetAllTypes(ctx context.Context, in *GetAllTypesR
 
 func (c *compassServiceClient) GetAllAssets(ctx context.Context, in *GetAllAssetsRequest, opts ...grpc.CallOption) (*GetAllAssetsResponse, error) {
 	out := new(GetAllAssetsResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAllAssets", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetAllAssets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +207,7 @@ func (c *compassServiceClient) GetAllAssets(ctx context.Context, in *GetAllAsset
 
 func (c *compassServiceClient) GetAssetByID(ctx context.Context, in *GetAssetByIDRequest, opts ...grpc.CallOption) (*GetAssetByIDResponse, error) {
 	out := new(GetAssetByIDResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAssetByID", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetAssetByID", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +216,7 @@ func (c *compassServiceClient) GetAssetByID(ctx context.Context, in *GetAssetByI
 
 func (c *compassServiceClient) UpsertAsset(ctx context.Context, in *UpsertAssetRequest, opts ...grpc.CallOption) (*UpsertAssetResponse, error) {
 	out := new(UpsertAssetResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UpsertAsset", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/UpsertAsset", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +225,7 @@ func (c *compassServiceClient) UpsertAsset(ctx context.Context, in *UpsertAssetR
 
 func (c *compassServiceClient) UpsertPatchAsset(ctx context.Context, in *UpsertPatchAssetRequest, opts ...grpc.CallOption) (*UpsertPatchAssetResponse, error) {
 	out := new(UpsertPatchAssetResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UpsertPatchAsset", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/UpsertPatchAsset", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -234,7 +234,7 @@ func (c *compassServiceClient) UpsertPatchAsset(ctx context.Context, in *UpsertP
 
 func (c *compassServiceClient) DeleteAsset(ctx context.Context, in *DeleteAssetRequest, opts ...grpc.CallOption) (*DeleteAssetResponse, error) {
 	out := new(DeleteAssetResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/DeleteAsset", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/DeleteAsset", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -243,7 +243,7 @@ func (c *compassServiceClient) DeleteAsset(ctx context.Context, in *DeleteAssetR
 
 func (c *compassServiceClient) GetAssetStargazers(ctx context.Context, in *GetAssetStargazersRequest, opts ...grpc.CallOption) (*GetAssetStargazersResponse, error) {
 	out := new(GetAssetStargazersResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAssetStargazers", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetAssetStargazers", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +252,7 @@ func (c *compassServiceClient) GetAssetStargazers(ctx context.Context, in *GetAs
 
 func (c *compassServiceClient) GetAssetVersionHistory(ctx context.Context, in *GetAssetVersionHistoryRequest, opts ...grpc.CallOption) (*GetAssetVersionHistoryResponse, error) {
 	out := new(GetAssetVersionHistoryResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAssetVersionHistory", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetAssetVersionHistory", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -261,7 +261,7 @@ func (c *compassServiceClient) GetAssetVersionHistory(ctx context.Context, in *G
 
 func (c *compassServiceClient) GetAssetByVersion(ctx context.Context, in *GetAssetByVersionRequest, opts ...grpc.CallOption) (*GetAssetByVersionResponse, error) {
 	out := new(GetAssetByVersionResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAssetByVersion", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetAssetByVersion", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -270,7 +270,7 @@ func (c *compassServiceClient) GetAssetByVersion(ctx context.Context, in *GetAss
 
 func (c *compassServiceClient) CreateAssetProbe(ctx context.Context, in *CreateAssetProbeRequest, opts ...grpc.CallOption) (*CreateAssetProbeResponse, error) {
 	out := new(CreateAssetProbeResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/CreateAssetProbe", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/CreateAssetProbe", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -279,7 +279,7 @@ func (c *compassServiceClient) CreateAssetProbe(ctx context.Context, in *CreateA
 
 func (c *compassServiceClient) GetUserStarredAssets(ctx context.Context, in *GetUserStarredAssetsRequest, opts ...grpc.CallOption) (*GetUserStarredAssetsResponse, error) {
 	out := new(GetUserStarredAssetsResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetUserStarredAssets", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetUserStarredAssets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +288,7 @@ func (c *compassServiceClient) GetUserStarredAssets(ctx context.Context, in *Get
 
 func (c *compassServiceClient) GetMyStarredAssets(ctx context.Context, in *GetMyStarredAssetsRequest, opts ...grpc.CallOption) (*GetMyStarredAssetsResponse, error) {
 	out := new(GetMyStarredAssetsResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetMyStarredAssets", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetMyStarredAssets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +297,7 @@ func (c *compassServiceClient) GetMyStarredAssets(ctx context.Context, in *GetMy
 
 func (c *compassServiceClient) GetMyStarredAsset(ctx context.Context, in *GetMyStarredAssetRequest, opts ...grpc.CallOption) (*GetMyStarredAssetResponse, error) {
 	out := new(GetMyStarredAssetResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetMyStarredAsset", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetMyStarredAsset", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -306,7 +306,7 @@ func (c *compassServiceClient) GetMyStarredAsset(ctx context.Context, in *GetMyS
 
 func (c *compassServiceClient) StarAsset(ctx context.Context, in *StarAssetRequest, opts ...grpc.CallOption) (*StarAssetResponse, error) {
 	out := new(StarAssetResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/StarAsset", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/StarAsset", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -315,7 +315,7 @@ func (c *compassServiceClient) StarAsset(ctx context.Context, in *StarAssetReque
 
 func (c *compassServiceClient) UnstarAsset(ctx context.Context, in *UnstarAssetRequest, opts ...grpc.CallOption) (*UnstarAssetResponse, error) {
 	out := new(UnstarAssetResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UnstarAsset", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/UnstarAsset", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -324,7 +324,7 @@ func (c *compassServiceClient) UnstarAsset(ctx context.Context, in *UnstarAssetR
 
 func (c *compassServiceClient) GetMyDiscussions(ctx context.Context, in *GetMyDiscussionsRequest, opts ...grpc.CallOption) (*GetMyDiscussionsResponse, error) {
 	out := new(GetMyDiscussionsResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetMyDiscussions", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetMyDiscussions", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -333,7 +333,7 @@ func (c *compassServiceClient) GetMyDiscussions(ctx context.Context, in *GetMyDi
 
 func (c *compassServiceClient) CreateTagAsset(ctx context.Context, in *CreateTagAssetRequest, opts ...grpc.CallOption) (*CreateTagAssetResponse, error) {
 	out := new(CreateTagAssetResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/CreateTagAsset", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/CreateTagAsset", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -342,7 +342,7 @@ func (c *compassServiceClient) CreateTagAsset(ctx context.Context, in *CreateTag
 
 func (c *compassServiceClient) GetTagByAssetAndTemplate(ctx context.Context, in *GetTagByAssetAndTemplateRequest, opts ...grpc.CallOption) (*GetTagByAssetAndTemplateResponse, error) {
 	out := new(GetTagByAssetAndTemplateResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetTagByAssetAndTemplate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetTagByAssetAndTemplate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -351,7 +351,7 @@ func (c *compassServiceClient) GetTagByAssetAndTemplate(ctx context.Context, in 
 
 func (c *compassServiceClient) UpdateTagAsset(ctx context.Context, in *UpdateTagAssetRequest, opts ...grpc.CallOption) (*UpdateTagAssetResponse, error) {
 	out := new(UpdateTagAssetResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UpdateTagAsset", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/UpdateTagAsset", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -360,7 +360,7 @@ func (c *compassServiceClient) UpdateTagAsset(ctx context.Context, in *UpdateTag
 
 func (c *compassServiceClient) DeleteTagAsset(ctx context.Context, in *DeleteTagAssetRequest, opts ...grpc.CallOption) (*DeleteTagAssetResponse, error) {
 	out := new(DeleteTagAssetResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/DeleteTagAsset", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/DeleteTagAsset", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -369,7 +369,7 @@ func (c *compassServiceClient) DeleteTagAsset(ctx context.Context, in *DeleteTag
 
 func (c *compassServiceClient) GetAllTagsByAsset(ctx context.Context, in *GetAllTagsByAssetRequest, opts ...grpc.CallOption) (*GetAllTagsByAssetResponse, error) {
 	out := new(GetAllTagsByAssetResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAllTagsByAsset", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetAllTagsByAsset", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -378,7 +378,7 @@ func (c *compassServiceClient) GetAllTagsByAsset(ctx context.Context, in *GetAll
 
 func (c *compassServiceClient) GetAllTagTemplates(ctx context.Context, in *GetAllTagTemplatesRequest, opts ...grpc.CallOption) (*GetAllTagTemplatesResponse, error) {
 	out := new(GetAllTagTemplatesResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetAllTagTemplates", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetAllTagTemplates", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -387,7 +387,7 @@ func (c *compassServiceClient) GetAllTagTemplates(ctx context.Context, in *GetAl
 
 func (c *compassServiceClient) CreateTagTemplate(ctx context.Context, in *CreateTagTemplateRequest, opts ...grpc.CallOption) (*CreateTagTemplateResponse, error) {
 	out := new(CreateTagTemplateResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/CreateTagTemplate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/CreateTagTemplate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -396,7 +396,7 @@ func (c *compassServiceClient) CreateTagTemplate(ctx context.Context, in *Create
 
 func (c *compassServiceClient) GetTagTemplate(ctx context.Context, in *GetTagTemplateRequest, opts ...grpc.CallOption) (*GetTagTemplateResponse, error) {
 	out := new(GetTagTemplateResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetTagTemplate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetTagTemplate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -405,7 +405,7 @@ func (c *compassServiceClient) GetTagTemplate(ctx context.Context, in *GetTagTem
 
 func (c *compassServiceClient) UpdateTagTemplate(ctx context.Context, in *UpdateTagTemplateRequest, opts ...grpc.CallOption) (*UpdateTagTemplateResponse, error) {
 	out := new(UpdateTagTemplateResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UpdateTagTemplate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/UpdateTagTemplate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -414,7 +414,7 @@ func (c *compassServiceClient) UpdateTagTemplate(ctx context.Context, in *Update
 
 func (c *compassServiceClient) DeleteTagTemplate(ctx context.Context, in *DeleteTagTemplateRequest, opts ...grpc.CallOption) (*DeleteTagTemplateResponse, error) {
 	out := new(DeleteTagTemplateResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/DeleteTagTemplate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/DeleteTagTemplate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -423,7 +423,7 @@ func (c *compassServiceClient) DeleteTagTemplate(ctx context.Context, in *Delete
 
 func (c *compassServiceClient) CreateNamespace(ctx context.Context, in *CreateNamespaceRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error) {
 	out := new(CreateNamespaceResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/CreateNamespace", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/CreateNamespace", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -432,7 +432,7 @@ func (c *compassServiceClient) CreateNamespace(ctx context.Context, in *CreateNa
 
 func (c *compassServiceClient) GetNamespace(ctx context.Context, in *GetNamespaceRequest, opts ...grpc.CallOption) (*GetNamespaceResponse, error) {
 	out := new(GetNamespaceResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/GetNamespace", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/GetNamespace", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -441,7 +441,7 @@ func (c *compassServiceClient) GetNamespace(ctx context.Context, in *GetNamespac
 
 func (c *compassServiceClient) UpdateNamespace(ctx context.Context, in *UpdateNamespaceRequest, opts ...grpc.CallOption) (*UpdateNamespaceResponse, error) {
 	out := new(UpdateNamespaceResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/UpdateNamespace", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/UpdateNamespace", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -450,7 +450,7 @@ func (c *compassServiceClient) UpdateNamespace(ctx context.Context, in *UpdateNa
 
 func (c *compassServiceClient) ListNamespaces(ctx context.Context, in *ListNamespacesRequest, opts ...grpc.CallOption) (*ListNamespacesResponse, error) {
 	out := new(ListNamespacesResponse)
-	err := c.cc.Invoke(ctx, "/odpf.compass.v1beta1.CompassService/ListNamespaces", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/raystack.compass.v1beta1.CompassService/ListNamespaces", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -664,7 +664,7 @@ func _CompassService_GetAllDiscussions_Handler(srv interface{}, ctx context.Cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAllDiscussions",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetAllDiscussions",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetAllDiscussions(ctx, req.(*GetAllDiscussionsRequest))
@@ -682,7 +682,7 @@ func _CompassService_CreateDiscussion_Handler(srv interface{}, ctx context.Conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/CreateDiscussion",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/CreateDiscussion",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).CreateDiscussion(ctx, req.(*CreateDiscussionRequest))
@@ -700,7 +700,7 @@ func _CompassService_GetDiscussion_Handler(srv interface{}, ctx context.Context,
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetDiscussion",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetDiscussion",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetDiscussion(ctx, req.(*GetDiscussionRequest))
@@ -718,7 +718,7 @@ func _CompassService_PatchDiscussion_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/PatchDiscussion",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/PatchDiscussion",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).PatchDiscussion(ctx, req.(*PatchDiscussionRequest))
@@ -736,7 +736,7 @@ func _CompassService_CreateComment_Handler(srv interface{}, ctx context.Context,
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/CreateComment",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/CreateComment",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).CreateComment(ctx, req.(*CreateCommentRequest))
@@ -754,7 +754,7 @@ func _CompassService_GetAllComments_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAllComments",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetAllComments",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetAllComments(ctx, req.(*GetAllCommentsRequest))
@@ -772,7 +772,7 @@ func _CompassService_GetComment_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetComment",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetComment",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetComment(ctx, req.(*GetCommentRequest))
@@ -790,7 +790,7 @@ func _CompassService_UpdateComment_Handler(srv interface{}, ctx context.Context,
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/UpdateComment",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/UpdateComment",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).UpdateComment(ctx, req.(*UpdateCommentRequest))
@@ -808,7 +808,7 @@ func _CompassService_DeleteComment_Handler(srv interface{}, ctx context.Context,
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/DeleteComment",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/DeleteComment",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).DeleteComment(ctx, req.(*DeleteCommentRequest))
@@ -826,7 +826,7 @@ func _CompassService_SearchAssets_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/SearchAssets",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/SearchAssets",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).SearchAssets(ctx, req.(*SearchAssetsRequest))
@@ -844,7 +844,7 @@ func _CompassService_SuggestAssets_Handler(srv interface{}, ctx context.Context,
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/SuggestAssets",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/SuggestAssets",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).SuggestAssets(ctx, req.(*SuggestAssetsRequest))
@@ -862,7 +862,7 @@ func _CompassService_GetGraph_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetGraph",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetGraph",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetGraph(ctx, req.(*GetGraphRequest))
@@ -880,7 +880,7 @@ func _CompassService_GetAllTypes_Handler(srv interface{}, ctx context.Context, d
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAllTypes",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetAllTypes",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetAllTypes(ctx, req.(*GetAllTypesRequest))
@@ -898,7 +898,7 @@ func _CompassService_GetAllAssets_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAllAssets",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetAllAssets",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetAllAssets(ctx, req.(*GetAllAssetsRequest))
@@ -916,7 +916,7 @@ func _CompassService_GetAssetByID_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAssetByID",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetAssetByID",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetAssetByID(ctx, req.(*GetAssetByIDRequest))
@@ -934,7 +934,7 @@ func _CompassService_UpsertAsset_Handler(srv interface{}, ctx context.Context, d
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/UpsertAsset",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/UpsertAsset",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).UpsertAsset(ctx, req.(*UpsertAssetRequest))
@@ -952,7 +952,7 @@ func _CompassService_UpsertPatchAsset_Handler(srv interface{}, ctx context.Conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/UpsertPatchAsset",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/UpsertPatchAsset",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).UpsertPatchAsset(ctx, req.(*UpsertPatchAssetRequest))
@@ -970,7 +970,7 @@ func _CompassService_DeleteAsset_Handler(srv interface{}, ctx context.Context, d
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/DeleteAsset",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/DeleteAsset",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).DeleteAsset(ctx, req.(*DeleteAssetRequest))
@@ -988,7 +988,7 @@ func _CompassService_GetAssetStargazers_Handler(srv interface{}, ctx context.Con
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAssetStargazers",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetAssetStargazers",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetAssetStargazers(ctx, req.(*GetAssetStargazersRequest))
@@ -1006,7 +1006,7 @@ func _CompassService_GetAssetVersionHistory_Handler(srv interface{}, ctx context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAssetVersionHistory",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetAssetVersionHistory",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetAssetVersionHistory(ctx, req.(*GetAssetVersionHistoryRequest))
@@ -1024,7 +1024,7 @@ func _CompassService_GetAssetByVersion_Handler(srv interface{}, ctx context.Cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAssetByVersion",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetAssetByVersion",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetAssetByVersion(ctx, req.(*GetAssetByVersionRequest))
@@ -1042,7 +1042,7 @@ func _CompassService_CreateAssetProbe_Handler(srv interface{}, ctx context.Conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/CreateAssetProbe",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/CreateAssetProbe",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).CreateAssetProbe(ctx, req.(*CreateAssetProbeRequest))
@@ -1060,7 +1060,7 @@ func _CompassService_GetUserStarredAssets_Handler(srv interface{}, ctx context.C
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetUserStarredAssets",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetUserStarredAssets",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetUserStarredAssets(ctx, req.(*GetUserStarredAssetsRequest))
@@ -1078,7 +1078,7 @@ func _CompassService_GetMyStarredAssets_Handler(srv interface{}, ctx context.Con
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetMyStarredAssets",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetMyStarredAssets",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetMyStarredAssets(ctx, req.(*GetMyStarredAssetsRequest))
@@ -1096,7 +1096,7 @@ func _CompassService_GetMyStarredAsset_Handler(srv interface{}, ctx context.Cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetMyStarredAsset",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetMyStarredAsset",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetMyStarredAsset(ctx, req.(*GetMyStarredAssetRequest))
@@ -1114,7 +1114,7 @@ func _CompassService_StarAsset_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/StarAsset",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/StarAsset",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).StarAsset(ctx, req.(*StarAssetRequest))
@@ -1132,7 +1132,7 @@ func _CompassService_UnstarAsset_Handler(srv interface{}, ctx context.Context, d
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/UnstarAsset",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/UnstarAsset",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).UnstarAsset(ctx, req.(*UnstarAssetRequest))
@@ -1150,7 +1150,7 @@ func _CompassService_GetMyDiscussions_Handler(srv interface{}, ctx context.Conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetMyDiscussions",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetMyDiscussions",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetMyDiscussions(ctx, req.(*GetMyDiscussionsRequest))
@@ -1168,7 +1168,7 @@ func _CompassService_CreateTagAsset_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/CreateTagAsset",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/CreateTagAsset",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).CreateTagAsset(ctx, req.(*CreateTagAssetRequest))
@@ -1186,7 +1186,7 @@ func _CompassService_GetTagByAssetAndTemplate_Handler(srv interface{}, ctx conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetTagByAssetAndTemplate",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetTagByAssetAndTemplate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetTagByAssetAndTemplate(ctx, req.(*GetTagByAssetAndTemplateRequest))
@@ -1204,7 +1204,7 @@ func _CompassService_UpdateTagAsset_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/UpdateTagAsset",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/UpdateTagAsset",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).UpdateTagAsset(ctx, req.(*UpdateTagAssetRequest))
@@ -1222,7 +1222,7 @@ func _CompassService_DeleteTagAsset_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/DeleteTagAsset",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/DeleteTagAsset",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).DeleteTagAsset(ctx, req.(*DeleteTagAssetRequest))
@@ -1240,7 +1240,7 @@ func _CompassService_GetAllTagsByAsset_Handler(srv interface{}, ctx context.Cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAllTagsByAsset",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetAllTagsByAsset",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetAllTagsByAsset(ctx, req.(*GetAllTagsByAssetRequest))
@@ -1258,7 +1258,7 @@ func _CompassService_GetAllTagTemplates_Handler(srv interface{}, ctx context.Con
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetAllTagTemplates",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetAllTagTemplates",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetAllTagTemplates(ctx, req.(*GetAllTagTemplatesRequest))
@@ -1276,7 +1276,7 @@ func _CompassService_CreateTagTemplate_Handler(srv interface{}, ctx context.Cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/CreateTagTemplate",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/CreateTagTemplate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).CreateTagTemplate(ctx, req.(*CreateTagTemplateRequest))
@@ -1294,7 +1294,7 @@ func _CompassService_GetTagTemplate_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetTagTemplate",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetTagTemplate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetTagTemplate(ctx, req.(*GetTagTemplateRequest))
@@ -1312,7 +1312,7 @@ func _CompassService_UpdateTagTemplate_Handler(srv interface{}, ctx context.Cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/UpdateTagTemplate",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/UpdateTagTemplate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).UpdateTagTemplate(ctx, req.(*UpdateTagTemplateRequest))
@@ -1330,7 +1330,7 @@ func _CompassService_DeleteTagTemplate_Handler(srv interface{}, ctx context.Cont
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/DeleteTagTemplate",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/DeleteTagTemplate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).DeleteTagTemplate(ctx, req.(*DeleteTagTemplateRequest))
@@ -1348,7 +1348,7 @@ func _CompassService_CreateNamespace_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/CreateNamespace",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/CreateNamespace",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).CreateNamespace(ctx, req.(*CreateNamespaceRequest))
@@ -1366,7 +1366,7 @@ func _CompassService_GetNamespace_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/GetNamespace",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/GetNamespace",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).GetNamespace(ctx, req.(*GetNamespaceRequest))
@@ -1384,7 +1384,7 @@ func _CompassService_UpdateNamespace_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/UpdateNamespace",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/UpdateNamespace",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).UpdateNamespace(ctx, req.(*UpdateNamespaceRequest))
@@ -1402,7 +1402,7 @@ func _CompassService_ListNamespaces_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/odpf.compass.v1beta1.CompassService/ListNamespaces",
+		FullMethod: "/raystack.compass.v1beta1.CompassService/ListNamespaces",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CompassServiceServer).ListNamespaces(ctx, req.(*ListNamespacesRequest))
@@ -1414,7 +1414,7 @@ func _CompassService_ListNamespaces_Handler(srv interface{}, ctx context.Context
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var CompassService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "odpf.compass.v1beta1.CompassService",
+	ServiceName: "raystack.compass.v1beta1.CompassService",
 	HandlerType: (*CompassServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -1587,5 +1587,5 @@ var CompassService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "odpf/compass/v1beta1/service.proto",
+	Metadata: "raystack/compass/v1beta1/service.proto",
 }

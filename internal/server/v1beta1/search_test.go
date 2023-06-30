@@ -3,17 +3,17 @@ package handlersv1beta1
 import (
 	"context"
 	"fmt"
-	"github.com/odpf/compass/core/namespace"
-	"github.com/odpf/compass/pkg/grpc_interceptor"
+	"github.com/raystack/compass/core/namespace"
+	"github.com/raystack/compass/pkg/grpc_interceptor"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/user"
-	"github.com/odpf/compass/internal/server/v1beta1/mocks"
-	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
-	"github.com/odpf/salt/log"
+	"github.com/raystack/compass/core/asset"
+	"github.com/raystack/compass/core/user"
+	"github.com/raystack/compass/internal/server/v1beta1/mocks"
+	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
+	"github.com/raystack/salt/log"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -136,7 +136,7 @@ func TestSearch(t *testing.T) {
 						Description: "some description",
 						Service:     "test-service",
 						Labels: map[string]string{
-							"entity":    "odpf",
+							"entity":    "raystack",
 							"landscape": "id",
 						},
 					},
@@ -152,7 +152,7 @@ func TestSearch(t *testing.T) {
 							Service:     "test-service",
 							Type:        "test",
 							Labels: map[string]string{
-								"entity":    "odpf",
+								"entity":    "raystack",
 								"landscape": "id",
 							},
 						},
@@ -191,7 +191,7 @@ func TestSearch(t *testing.T) {
 						Service:     "kafka",
 						Labels: map[string]string{
 							"landscape": "id",
-							"entity":    "odpf",
+							"entity":    "raystack",
 						},
 					}
 

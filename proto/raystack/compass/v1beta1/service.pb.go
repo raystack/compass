@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.28.1
 // 	protoc        (unknown)
-// source: odpf/compass/v1beta1/service.proto
+// source: raystack/compass/v1beta1/service.proto
 
 package compassv1beta1
 
@@ -46,7 +46,7 @@ type GetAllDiscussionsRequest struct {
 func (x *GetAllDiscussionsRequest) Reset() {
 	*x = GetAllDiscussionsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[0]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -59,7 +59,7 @@ func (x *GetAllDiscussionsRequest) String() string {
 func (*GetAllDiscussionsRequest) ProtoMessage() {}
 
 func (x *GetAllDiscussionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[0]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -72,7 +72,7 @@ func (x *GetAllDiscussionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllDiscussionsRequest.ProtoReflect.Descriptor instead.
 func (*GetAllDiscussionsRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{0}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *GetAllDiscussionsRequest) GetType() string {
@@ -156,7 +156,7 @@ type GetAllDiscussionsResponse struct {
 func (x *GetAllDiscussionsResponse) Reset() {
 	*x = GetAllDiscussionsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[1]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -169,7 +169,7 @@ func (x *GetAllDiscussionsResponse) String() string {
 func (*GetAllDiscussionsResponse) ProtoMessage() {}
 
 func (x *GetAllDiscussionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[1]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -182,7 +182,7 @@ func (x *GetAllDiscussionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllDiscussionsResponse.ProtoReflect.Descriptor instead.
 func (*GetAllDiscussionsResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{1}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GetAllDiscussionsResponse) GetData() []*Discussion {
@@ -209,7 +209,7 @@ type CreateDiscussionRequest struct {
 func (x *CreateDiscussionRequest) Reset() {
 	*x = CreateDiscussionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[2]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -222,7 +222,7 @@ func (x *CreateDiscussionRequest) String() string {
 func (*CreateDiscussionRequest) ProtoMessage() {}
 
 func (x *CreateDiscussionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[2]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -235,7 +235,7 @@ func (x *CreateDiscussionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateDiscussionRequest.ProtoReflect.Descriptor instead.
 func (*CreateDiscussionRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{2}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *CreateDiscussionRequest) GetTitle() string {
@@ -298,7 +298,7 @@ type CreateDiscussionResponse struct {
 func (x *CreateDiscussionResponse) Reset() {
 	*x = CreateDiscussionResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[3]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -311,7 +311,7 @@ func (x *CreateDiscussionResponse) String() string {
 func (*CreateDiscussionResponse) ProtoMessage() {}
 
 func (x *CreateDiscussionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[3]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -324,7 +324,7 @@ func (x *CreateDiscussionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateDiscussionResponse.ProtoReflect.Descriptor instead.
 func (*CreateDiscussionResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{3}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *CreateDiscussionResponse) GetId() string {
@@ -345,7 +345,7 @@ type GetDiscussionRequest struct {
 func (x *GetDiscussionRequest) Reset() {
 	*x = GetDiscussionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[4]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -358,7 +358,7 @@ func (x *GetDiscussionRequest) String() string {
 func (*GetDiscussionRequest) ProtoMessage() {}
 
 func (x *GetDiscussionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[4]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -371,7 +371,7 @@ func (x *GetDiscussionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDiscussionRequest.ProtoReflect.Descriptor instead.
 func (*GetDiscussionRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{4}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetDiscussionRequest) GetId() string {
@@ -392,7 +392,7 @@ type GetDiscussionResponse struct {
 func (x *GetDiscussionResponse) Reset() {
 	*x = GetDiscussionResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[5]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -405,7 +405,7 @@ func (x *GetDiscussionResponse) String() string {
 func (*GetDiscussionResponse) ProtoMessage() {}
 
 func (x *GetDiscussionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[5]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -418,7 +418,7 @@ func (x *GetDiscussionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDiscussionResponse.ProtoReflect.Descriptor instead.
 func (*GetDiscussionResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{5}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetDiscussionResponse) GetData() *Discussion {
@@ -446,7 +446,7 @@ type PatchDiscussionRequest struct {
 func (x *PatchDiscussionRequest) Reset() {
 	*x = PatchDiscussionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[6]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -459,7 +459,7 @@ func (x *PatchDiscussionRequest) String() string {
 func (*PatchDiscussionRequest) ProtoMessage() {}
 
 func (x *PatchDiscussionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[6]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -472,7 +472,7 @@ func (x *PatchDiscussionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PatchDiscussionRequest.ProtoReflect.Descriptor instead.
 func (*PatchDiscussionRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{6}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *PatchDiscussionRequest) GetId() string {
@@ -543,7 +543,7 @@ type CreateCommentRequest struct {
 func (x *CreateCommentRequest) Reset() {
 	*x = CreateCommentRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[7]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -556,7 +556,7 @@ func (x *CreateCommentRequest) String() string {
 func (*CreateCommentRequest) ProtoMessage() {}
 
 func (x *CreateCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[7]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -569,7 +569,7 @@ func (x *CreateCommentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCommentRequest.ProtoReflect.Descriptor instead.
 func (*CreateCommentRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{7}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *CreateCommentRequest) GetDiscussionId() string {
@@ -595,7 +595,7 @@ type PatchDiscussionResponse struct {
 func (x *PatchDiscussionResponse) Reset() {
 	*x = PatchDiscussionResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[8]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -608,7 +608,7 @@ func (x *PatchDiscussionResponse) String() string {
 func (*PatchDiscussionResponse) ProtoMessage() {}
 
 func (x *PatchDiscussionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[8]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -621,7 +621,7 @@ func (x *PatchDiscussionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PatchDiscussionResponse.ProtoReflect.Descriptor instead.
 func (*PatchDiscussionResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{8}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{8}
 }
 
 type CreateCommentResponse struct {
@@ -635,7 +635,7 @@ type CreateCommentResponse struct {
 func (x *CreateCommentResponse) Reset() {
 	*x = CreateCommentResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[9]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -648,7 +648,7 @@ func (x *CreateCommentResponse) String() string {
 func (*CreateCommentResponse) ProtoMessage() {}
 
 func (x *CreateCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[9]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -661,7 +661,7 @@ func (x *CreateCommentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCommentResponse.ProtoReflect.Descriptor instead.
 func (*CreateCommentResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{9}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *CreateCommentResponse) GetId() string {
@@ -686,7 +686,7 @@ type GetAllCommentsRequest struct {
 func (x *GetAllCommentsRequest) Reset() {
 	*x = GetAllCommentsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[10]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -699,7 +699,7 @@ func (x *GetAllCommentsRequest) String() string {
 func (*GetAllCommentsRequest) ProtoMessage() {}
 
 func (x *GetAllCommentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[10]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -712,7 +712,7 @@ func (x *GetAllCommentsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllCommentsRequest.ProtoReflect.Descriptor instead.
 func (*GetAllCommentsRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{10}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetAllCommentsRequest) GetDiscussionId() string {
@@ -761,7 +761,7 @@ type GetAllCommentsResponse struct {
 func (x *GetAllCommentsResponse) Reset() {
 	*x = GetAllCommentsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[11]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -774,7 +774,7 @@ func (x *GetAllCommentsResponse) String() string {
 func (*GetAllCommentsResponse) ProtoMessage() {}
 
 func (x *GetAllCommentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[11]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -787,7 +787,7 @@ func (x *GetAllCommentsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllCommentsResponse.ProtoReflect.Descriptor instead.
 func (*GetAllCommentsResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{11}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetAllCommentsResponse) GetData() []*Comment {
@@ -809,7 +809,7 @@ type GetCommentRequest struct {
 func (x *GetCommentRequest) Reset() {
 	*x = GetCommentRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[12]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -822,7 +822,7 @@ func (x *GetCommentRequest) String() string {
 func (*GetCommentRequest) ProtoMessage() {}
 
 func (x *GetCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[12]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -835,7 +835,7 @@ func (x *GetCommentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCommentRequest.ProtoReflect.Descriptor instead.
 func (*GetCommentRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{12}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetCommentRequest) GetDiscussionId() string {
@@ -863,7 +863,7 @@ type GetCommentResponse struct {
 func (x *GetCommentResponse) Reset() {
 	*x = GetCommentResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[13]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -876,7 +876,7 @@ func (x *GetCommentResponse) String() string {
 func (*GetCommentResponse) ProtoMessage() {}
 
 func (x *GetCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[13]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -889,7 +889,7 @@ func (x *GetCommentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCommentResponse.ProtoReflect.Descriptor instead.
 func (*GetCommentResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{13}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *GetCommentResponse) GetData() *Comment {
@@ -912,7 +912,7 @@ type UpdateCommentRequest struct {
 func (x *UpdateCommentRequest) Reset() {
 	*x = UpdateCommentRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[14]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -925,7 +925,7 @@ func (x *UpdateCommentRequest) String() string {
 func (*UpdateCommentRequest) ProtoMessage() {}
 
 func (x *UpdateCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[14]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -938,7 +938,7 @@ func (x *UpdateCommentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateCommentRequest.ProtoReflect.Descriptor instead.
 func (*UpdateCommentRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{14}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *UpdateCommentRequest) GetDiscussionId() string {
@@ -971,7 +971,7 @@ type UpdateCommentResponse struct {
 func (x *UpdateCommentResponse) Reset() {
 	*x = UpdateCommentResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[15]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -984,7 +984,7 @@ func (x *UpdateCommentResponse) String() string {
 func (*UpdateCommentResponse) ProtoMessage() {}
 
 func (x *UpdateCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[15]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -997,7 +997,7 @@ func (x *UpdateCommentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateCommentResponse.ProtoReflect.Descriptor instead.
 func (*UpdateCommentResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{15}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{15}
 }
 
 type DeleteCommentRequest struct {
@@ -1012,7 +1012,7 @@ type DeleteCommentRequest struct {
 func (x *DeleteCommentRequest) Reset() {
 	*x = DeleteCommentRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[16]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1025,7 +1025,7 @@ func (x *DeleteCommentRequest) String() string {
 func (*DeleteCommentRequest) ProtoMessage() {}
 
 func (x *DeleteCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[16]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1038,7 +1038,7 @@ func (x *DeleteCommentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCommentRequest.ProtoReflect.Descriptor instead.
 func (*DeleteCommentRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{16}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *DeleteCommentRequest) GetDiscussionId() string {
@@ -1064,7 +1064,7 @@ type DeleteCommentResponse struct {
 func (x *DeleteCommentResponse) Reset() {
 	*x = DeleteCommentResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[17]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1077,7 +1077,7 @@ func (x *DeleteCommentResponse) String() string {
 func (*DeleteCommentResponse) ProtoMessage() {}
 
 func (x *DeleteCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[17]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1090,7 +1090,7 @@ func (x *DeleteCommentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCommentResponse.ProtoReflect.Descriptor instead.
 func (*DeleteCommentResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{17}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{17}
 }
 
 type SearchAssetsRequest struct {
@@ -1110,7 +1110,7 @@ type SearchAssetsRequest struct {
 func (x *SearchAssetsRequest) Reset() {
 	*x = SearchAssetsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[18]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1123,7 +1123,7 @@ func (x *SearchAssetsRequest) String() string {
 func (*SearchAssetsRequest) ProtoMessage() {}
 
 func (x *SearchAssetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[18]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1136,7 +1136,7 @@ func (x *SearchAssetsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchAssetsRequest.ProtoReflect.Descriptor instead.
 func (*SearchAssetsRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{18}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *SearchAssetsRequest) GetText() string {
@@ -1199,7 +1199,7 @@ type SearchAssetsResponse struct {
 func (x *SearchAssetsResponse) Reset() {
 	*x = SearchAssetsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[19]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1212,7 +1212,7 @@ func (x *SearchAssetsResponse) String() string {
 func (*SearchAssetsResponse) ProtoMessage() {}
 
 func (x *SearchAssetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[19]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1225,7 +1225,7 @@ func (x *SearchAssetsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchAssetsResponse.ProtoReflect.Descriptor instead.
 func (*SearchAssetsResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{19}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *SearchAssetsResponse) GetData() []*Asset {
@@ -1246,7 +1246,7 @@ type SuggestAssetsRequest struct {
 func (x *SuggestAssetsRequest) Reset() {
 	*x = SuggestAssetsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[20]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1259,7 +1259,7 @@ func (x *SuggestAssetsRequest) String() string {
 func (*SuggestAssetsRequest) ProtoMessage() {}
 
 func (x *SuggestAssetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[20]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1272,7 +1272,7 @@ func (x *SuggestAssetsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SuggestAssetsRequest.ProtoReflect.Descriptor instead.
 func (*SuggestAssetsRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{20}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *SuggestAssetsRequest) GetText() string {
@@ -1293,7 +1293,7 @@ type SuggestAssetsResponse struct {
 func (x *SuggestAssetsResponse) Reset() {
 	*x = SuggestAssetsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[21]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1306,7 +1306,7 @@ func (x *SuggestAssetsResponse) String() string {
 func (*SuggestAssetsResponse) ProtoMessage() {}
 
 func (x *SuggestAssetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[21]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1319,7 +1319,7 @@ func (x *SuggestAssetsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SuggestAssetsResponse.ProtoReflect.Descriptor instead.
 func (*SuggestAssetsResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{21}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *SuggestAssetsResponse) GetData() []string {
@@ -1342,7 +1342,7 @@ type GetGraphRequest struct {
 func (x *GetGraphRequest) Reset() {
 	*x = GetGraphRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[22]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1355,7 +1355,7 @@ func (x *GetGraphRequest) String() string {
 func (*GetGraphRequest) ProtoMessage() {}
 
 func (x *GetGraphRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[22]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1368,7 +1368,7 @@ func (x *GetGraphRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGraphRequest.ProtoReflect.Descriptor instead.
 func (*GetGraphRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{22}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *GetGraphRequest) GetUrn() string {
@@ -1407,7 +1407,7 @@ type GetGraphResponse struct {
 func (x *GetGraphResponse) Reset() {
 	*x = GetGraphResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[23]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1420,7 +1420,7 @@ func (x *GetGraphResponse) String() string {
 func (*GetGraphResponse) ProtoMessage() {}
 
 func (x *GetGraphResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[23]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1433,7 +1433,7 @@ func (x *GetGraphResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGraphResponse.ProtoReflect.Descriptor instead.
 func (*GetGraphResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{23}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *GetGraphResponse) GetData() []*LineageEdge {
@@ -1465,7 +1465,7 @@ type GetAllTypesRequest struct {
 func (x *GetAllTypesRequest) Reset() {
 	*x = GetAllTypesRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[24]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1478,7 +1478,7 @@ func (x *GetAllTypesRequest) String() string {
 func (*GetAllTypesRequest) ProtoMessage() {}
 
 func (x *GetAllTypesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[24]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1491,7 +1491,7 @@ func (x *GetAllTypesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllTypesRequest.ProtoReflect.Descriptor instead.
 func (*GetAllTypesRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{24}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *GetAllTypesRequest) GetQ() string {
@@ -1540,7 +1540,7 @@ type GetAllTypesResponse struct {
 func (x *GetAllTypesResponse) Reset() {
 	*x = GetAllTypesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[25]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1553,7 +1553,7 @@ func (x *GetAllTypesResponse) String() string {
 func (*GetAllTypesResponse) ProtoMessage() {}
 
 func (x *GetAllTypesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[25]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1566,7 +1566,7 @@ func (x *GetAllTypesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllTypesResponse.ProtoReflect.Descriptor instead.
 func (*GetAllTypesResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{25}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *GetAllTypesResponse) GetData() []*Type {
@@ -1596,7 +1596,7 @@ type GetAllAssetsRequest struct {
 func (x *GetAllAssetsRequest) Reset() {
 	*x = GetAllAssetsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[26]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1609,7 +1609,7 @@ func (x *GetAllAssetsRequest) String() string {
 func (*GetAllAssetsRequest) ProtoMessage() {}
 
 func (x *GetAllAssetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[26]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1622,7 +1622,7 @@ func (x *GetAllAssetsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllAssetsRequest.ProtoReflect.Descriptor instead.
 func (*GetAllAssetsRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{26}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *GetAllAssetsRequest) GetQ() string {
@@ -1707,7 +1707,7 @@ type GetAllAssetsResponse struct {
 func (x *GetAllAssetsResponse) Reset() {
 	*x = GetAllAssetsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[27]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1720,7 +1720,7 @@ func (x *GetAllAssetsResponse) String() string {
 func (*GetAllAssetsResponse) ProtoMessage() {}
 
 func (x *GetAllAssetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[27]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1733,7 +1733,7 @@ func (x *GetAllAssetsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllAssetsResponse.ProtoReflect.Descriptor instead.
 func (*GetAllAssetsResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{27}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *GetAllAssetsResponse) GetData() []*Asset {
@@ -1761,7 +1761,7 @@ type GetAssetByIDRequest struct {
 func (x *GetAssetByIDRequest) Reset() {
 	*x = GetAssetByIDRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[28]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1774,7 +1774,7 @@ func (x *GetAssetByIDRequest) String() string {
 func (*GetAssetByIDRequest) ProtoMessage() {}
 
 func (x *GetAssetByIDRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[28]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1787,7 +1787,7 @@ func (x *GetAssetByIDRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAssetByIDRequest.ProtoReflect.Descriptor instead.
 func (*GetAssetByIDRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{28}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *GetAssetByIDRequest) GetId() string {
@@ -1808,7 +1808,7 @@ type GetAssetByIDResponse struct {
 func (x *GetAssetByIDResponse) Reset() {
 	*x = GetAssetByIDResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[29]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1821,7 +1821,7 @@ func (x *GetAssetByIDResponse) String() string {
 func (*GetAssetByIDResponse) ProtoMessage() {}
 
 func (x *GetAssetByIDResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[29]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1834,7 +1834,7 @@ func (x *GetAssetByIDResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAssetByIDResponse.ProtoReflect.Descriptor instead.
 func (*GetAssetByIDResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{29}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *GetAssetByIDResponse) GetData() *Asset {
@@ -1857,7 +1857,7 @@ type UpsertAssetRequest struct {
 func (x *UpsertAssetRequest) Reset() {
 	*x = UpsertAssetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[30]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1870,7 +1870,7 @@ func (x *UpsertAssetRequest) String() string {
 func (*UpsertAssetRequest) ProtoMessage() {}
 
 func (x *UpsertAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[30]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1883,7 +1883,7 @@ func (x *UpsertAssetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertAssetRequest.ProtoReflect.Descriptor instead.
 func (*UpsertAssetRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{30}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *UpsertAssetRequest) GetAsset() *UpsertAssetRequest_Asset {
@@ -1918,7 +1918,7 @@ type UpsertAssetResponse struct {
 func (x *UpsertAssetResponse) Reset() {
 	*x = UpsertAssetResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[31]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1931,7 +1931,7 @@ func (x *UpsertAssetResponse) String() string {
 func (*UpsertAssetResponse) ProtoMessage() {}
 
 func (x *UpsertAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[31]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1944,7 +1944,7 @@ func (x *UpsertAssetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertAssetResponse.ProtoReflect.Descriptor instead.
 func (*UpsertAssetResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{31}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *UpsertAssetResponse) GetId() string {
@@ -1972,7 +1972,7 @@ type UpsertPatchAssetRequest struct {
 func (x *UpsertPatchAssetRequest) Reset() {
 	*x = UpsertPatchAssetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[32]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1985,7 +1985,7 @@ func (x *UpsertPatchAssetRequest) String() string {
 func (*UpsertPatchAssetRequest) ProtoMessage() {}
 
 func (x *UpsertPatchAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[32]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1998,7 +1998,7 @@ func (x *UpsertPatchAssetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertPatchAssetRequest.ProtoReflect.Descriptor instead.
 func (*UpsertPatchAssetRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{32}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *UpsertPatchAssetRequest) GetAsset() *UpsertPatchAssetRequest_Asset {
@@ -2040,7 +2040,7 @@ type UpsertPatchAssetResponse struct {
 func (x *UpsertPatchAssetResponse) Reset() {
 	*x = UpsertPatchAssetResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[33]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[33]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2053,7 +2053,7 @@ func (x *UpsertPatchAssetResponse) String() string {
 func (*UpsertPatchAssetResponse) ProtoMessage() {}
 
 func (x *UpsertPatchAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[33]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[33]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2066,7 +2066,7 @@ func (x *UpsertPatchAssetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertPatchAssetResponse.ProtoReflect.Descriptor instead.
 func (*UpsertPatchAssetResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{33}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *UpsertPatchAssetResponse) GetId() string {
@@ -2087,7 +2087,7 @@ type DeleteAssetRequest struct {
 func (x *DeleteAssetRequest) Reset() {
 	*x = DeleteAssetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[34]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2100,7 +2100,7 @@ func (x *DeleteAssetRequest) String() string {
 func (*DeleteAssetRequest) ProtoMessage() {}
 
 func (x *DeleteAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[34]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2113,7 +2113,7 @@ func (x *DeleteAssetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAssetRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAssetRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{34}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *DeleteAssetRequest) GetId() string {
@@ -2132,7 +2132,7 @@ type DeleteAssetResponse struct {
 func (x *DeleteAssetResponse) Reset() {
 	*x = DeleteAssetResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[35]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[35]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2145,7 +2145,7 @@ func (x *DeleteAssetResponse) String() string {
 func (*DeleteAssetResponse) ProtoMessage() {}
 
 func (x *DeleteAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[35]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[35]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2158,7 +2158,7 @@ func (x *DeleteAssetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAssetResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAssetResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{35}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{35}
 }
 
 type GetAssetStargazersRequest struct {
@@ -2174,7 +2174,7 @@ type GetAssetStargazersRequest struct {
 func (x *GetAssetStargazersRequest) Reset() {
 	*x = GetAssetStargazersRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[36]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[36]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2187,7 +2187,7 @@ func (x *GetAssetStargazersRequest) String() string {
 func (*GetAssetStargazersRequest) ProtoMessage() {}
 
 func (x *GetAssetStargazersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[36]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[36]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2200,7 +2200,7 @@ func (x *GetAssetStargazersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAssetStargazersRequest.ProtoReflect.Descriptor instead.
 func (*GetAssetStargazersRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{36}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *GetAssetStargazersRequest) GetId() string {
@@ -2235,7 +2235,7 @@ type GetAssetStargazersResponse struct {
 func (x *GetAssetStargazersResponse) Reset() {
 	*x = GetAssetStargazersResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[37]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[37]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2248,7 +2248,7 @@ func (x *GetAssetStargazersResponse) String() string {
 func (*GetAssetStargazersResponse) ProtoMessage() {}
 
 func (x *GetAssetStargazersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[37]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[37]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2261,7 +2261,7 @@ func (x *GetAssetStargazersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAssetStargazersResponse.ProtoReflect.Descriptor instead.
 func (*GetAssetStargazersResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{37}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *GetAssetStargazersResponse) GetData() []*User {
@@ -2284,7 +2284,7 @@ type GetAssetVersionHistoryRequest struct {
 func (x *GetAssetVersionHistoryRequest) Reset() {
 	*x = GetAssetVersionHistoryRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[38]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2297,7 +2297,7 @@ func (x *GetAssetVersionHistoryRequest) String() string {
 func (*GetAssetVersionHistoryRequest) ProtoMessage() {}
 
 func (x *GetAssetVersionHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[38]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2310,7 +2310,7 @@ func (x *GetAssetVersionHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAssetVersionHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetAssetVersionHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{38}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *GetAssetVersionHistoryRequest) GetId() string {
@@ -2345,7 +2345,7 @@ type GetAssetVersionHistoryResponse struct {
 func (x *GetAssetVersionHistoryResponse) Reset() {
 	*x = GetAssetVersionHistoryResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[39]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[39]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2358,7 +2358,7 @@ func (x *GetAssetVersionHistoryResponse) String() string {
 func (*GetAssetVersionHistoryResponse) ProtoMessage() {}
 
 func (x *GetAssetVersionHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[39]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[39]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2371,7 +2371,7 @@ func (x *GetAssetVersionHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAssetVersionHistoryResponse.ProtoReflect.Descriptor instead.
 func (*GetAssetVersionHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{39}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *GetAssetVersionHistoryResponse) GetData() []*Asset {
@@ -2393,7 +2393,7 @@ type GetAssetByVersionRequest struct {
 func (x *GetAssetByVersionRequest) Reset() {
 	*x = GetAssetByVersionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[40]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[40]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2406,7 +2406,7 @@ func (x *GetAssetByVersionRequest) String() string {
 func (*GetAssetByVersionRequest) ProtoMessage() {}
 
 func (x *GetAssetByVersionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[40]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[40]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2419,7 +2419,7 @@ func (x *GetAssetByVersionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAssetByVersionRequest.ProtoReflect.Descriptor instead.
 func (*GetAssetByVersionRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{40}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *GetAssetByVersionRequest) GetId() string {
@@ -2447,7 +2447,7 @@ type GetAssetByVersionResponse struct {
 func (x *GetAssetByVersionResponse) Reset() {
 	*x = GetAssetByVersionResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[41]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[41]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2460,7 +2460,7 @@ func (x *GetAssetByVersionResponse) String() string {
 func (*GetAssetByVersionResponse) ProtoMessage() {}
 
 func (x *GetAssetByVersionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[41]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[41]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2473,7 +2473,7 @@ func (x *GetAssetByVersionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAssetByVersionResponse.ProtoReflect.Descriptor instead.
 func (*GetAssetByVersionResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{41}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *GetAssetByVersionResponse) GetData() *Asset {
@@ -2495,7 +2495,7 @@ type CreateAssetProbeRequest struct {
 func (x *CreateAssetProbeRequest) Reset() {
 	*x = CreateAssetProbeRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[42]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2508,7 +2508,7 @@ func (x *CreateAssetProbeRequest) String() string {
 func (*CreateAssetProbeRequest) ProtoMessage() {}
 
 func (x *CreateAssetProbeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[42]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2521,7 +2521,7 @@ func (x *CreateAssetProbeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAssetProbeRequest.ProtoReflect.Descriptor instead.
 func (*CreateAssetProbeRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{42}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *CreateAssetProbeRequest) GetAssetUrn() string {
@@ -2549,7 +2549,7 @@ type CreateAssetProbeResponse struct {
 func (x *CreateAssetProbeResponse) Reset() {
 	*x = CreateAssetProbeResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[43]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2562,7 +2562,7 @@ func (x *CreateAssetProbeResponse) String() string {
 func (*CreateAssetProbeResponse) ProtoMessage() {}
 
 func (x *CreateAssetProbeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[43]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2575,7 +2575,7 @@ func (x *CreateAssetProbeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAssetProbeResponse.ProtoReflect.Descriptor instead.
 func (*CreateAssetProbeResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{43}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *CreateAssetProbeResponse) GetId() string {
@@ -2598,7 +2598,7 @@ type GetUserStarredAssetsRequest struct {
 func (x *GetUserStarredAssetsRequest) Reset() {
 	*x = GetUserStarredAssetsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[44]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[44]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2611,7 +2611,7 @@ func (x *GetUserStarredAssetsRequest) String() string {
 func (*GetUserStarredAssetsRequest) ProtoMessage() {}
 
 func (x *GetUserStarredAssetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[44]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[44]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2624,7 +2624,7 @@ func (x *GetUserStarredAssetsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserStarredAssetsRequest.ProtoReflect.Descriptor instead.
 func (*GetUserStarredAssetsRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{44}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *GetUserStarredAssetsRequest) GetUserId() string {
@@ -2659,7 +2659,7 @@ type GetUserStarredAssetsResponse struct {
 func (x *GetUserStarredAssetsResponse) Reset() {
 	*x = GetUserStarredAssetsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[45]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[45]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2672,7 +2672,7 @@ func (x *GetUserStarredAssetsResponse) String() string {
 func (*GetUserStarredAssetsResponse) ProtoMessage() {}
 
 func (x *GetUserStarredAssetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[45]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[45]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2685,7 +2685,7 @@ func (x *GetUserStarredAssetsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserStarredAssetsResponse.ProtoReflect.Descriptor instead.
 func (*GetUserStarredAssetsResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{45}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *GetUserStarredAssetsResponse) GetData() []*Asset {
@@ -2707,7 +2707,7 @@ type GetMyStarredAssetsRequest struct {
 func (x *GetMyStarredAssetsRequest) Reset() {
 	*x = GetMyStarredAssetsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[46]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[46]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2720,7 +2720,7 @@ func (x *GetMyStarredAssetsRequest) String() string {
 func (*GetMyStarredAssetsRequest) ProtoMessage() {}
 
 func (x *GetMyStarredAssetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[46]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[46]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2733,7 +2733,7 @@ func (x *GetMyStarredAssetsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyStarredAssetsRequest.ProtoReflect.Descriptor instead.
 func (*GetMyStarredAssetsRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{46}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *GetMyStarredAssetsRequest) GetSize() uint32 {
@@ -2761,7 +2761,7 @@ type GetMyStarredAssetsResponse struct {
 func (x *GetMyStarredAssetsResponse) Reset() {
 	*x = GetMyStarredAssetsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[47]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[47]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2774,7 +2774,7 @@ func (x *GetMyStarredAssetsResponse) String() string {
 func (*GetMyStarredAssetsResponse) ProtoMessage() {}
 
 func (x *GetMyStarredAssetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[47]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[47]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2787,7 +2787,7 @@ func (x *GetMyStarredAssetsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyStarredAssetsResponse.ProtoReflect.Descriptor instead.
 func (*GetMyStarredAssetsResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{47}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *GetMyStarredAssetsResponse) GetData() []*Asset {
@@ -2808,7 +2808,7 @@ type GetMyStarredAssetRequest struct {
 func (x *GetMyStarredAssetRequest) Reset() {
 	*x = GetMyStarredAssetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[48]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[48]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2821,7 +2821,7 @@ func (x *GetMyStarredAssetRequest) String() string {
 func (*GetMyStarredAssetRequest) ProtoMessage() {}
 
 func (x *GetMyStarredAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[48]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[48]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2834,7 +2834,7 @@ func (x *GetMyStarredAssetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyStarredAssetRequest.ProtoReflect.Descriptor instead.
 func (*GetMyStarredAssetRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{48}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *GetMyStarredAssetRequest) GetAssetId() string {
@@ -2855,7 +2855,7 @@ type GetMyStarredAssetResponse struct {
 func (x *GetMyStarredAssetResponse) Reset() {
 	*x = GetMyStarredAssetResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[49]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[49]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2868,7 +2868,7 @@ func (x *GetMyStarredAssetResponse) String() string {
 func (*GetMyStarredAssetResponse) ProtoMessage() {}
 
 func (x *GetMyStarredAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[49]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[49]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2881,7 +2881,7 @@ func (x *GetMyStarredAssetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyStarredAssetResponse.ProtoReflect.Descriptor instead.
 func (*GetMyStarredAssetResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{49}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *GetMyStarredAssetResponse) GetData() *Asset {
@@ -2902,7 +2902,7 @@ type StarAssetRequest struct {
 func (x *StarAssetRequest) Reset() {
 	*x = StarAssetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[50]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[50]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2915,7 +2915,7 @@ func (x *StarAssetRequest) String() string {
 func (*StarAssetRequest) ProtoMessage() {}
 
 func (x *StarAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[50]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[50]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2928,7 +2928,7 @@ func (x *StarAssetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StarAssetRequest.ProtoReflect.Descriptor instead.
 func (*StarAssetRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{50}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *StarAssetRequest) GetAssetId() string {
@@ -2949,7 +2949,7 @@ type StarAssetResponse struct {
 func (x *StarAssetResponse) Reset() {
 	*x = StarAssetResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[51]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[51]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2962,7 +2962,7 @@ func (x *StarAssetResponse) String() string {
 func (*StarAssetResponse) ProtoMessage() {}
 
 func (x *StarAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[51]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[51]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2975,7 +2975,7 @@ func (x *StarAssetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StarAssetResponse.ProtoReflect.Descriptor instead.
 func (*StarAssetResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{51}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *StarAssetResponse) GetId() string {
@@ -2996,7 +2996,7 @@ type UnstarAssetRequest struct {
 func (x *UnstarAssetRequest) Reset() {
 	*x = UnstarAssetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[52]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[52]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3009,7 +3009,7 @@ func (x *UnstarAssetRequest) String() string {
 func (*UnstarAssetRequest) ProtoMessage() {}
 
 func (x *UnstarAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[52]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[52]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3022,7 +3022,7 @@ func (x *UnstarAssetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnstarAssetRequest.ProtoReflect.Descriptor instead.
 func (*UnstarAssetRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{52}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *UnstarAssetRequest) GetAssetId() string {
@@ -3041,7 +3041,7 @@ type UnstarAssetResponse struct {
 func (x *UnstarAssetResponse) Reset() {
 	*x = UnstarAssetResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[53]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[53]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3054,7 +3054,7 @@ func (x *UnstarAssetResponse) String() string {
 func (*UnstarAssetResponse) ProtoMessage() {}
 
 func (x *UnstarAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[53]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[53]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3067,7 +3067,7 @@ func (x *UnstarAssetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnstarAssetResponse.ProtoReflect.Descriptor instead.
 func (*UnstarAssetResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{53}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{53}
 }
 
 type GetMyDiscussionsRequest struct {
@@ -3089,7 +3089,7 @@ type GetMyDiscussionsRequest struct {
 func (x *GetMyDiscussionsRequest) Reset() {
 	*x = GetMyDiscussionsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[54]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[54]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3102,7 +3102,7 @@ func (x *GetMyDiscussionsRequest) String() string {
 func (*GetMyDiscussionsRequest) ProtoMessage() {}
 
 func (x *GetMyDiscussionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[54]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[54]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3115,7 +3115,7 @@ func (x *GetMyDiscussionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyDiscussionsRequest.ProtoReflect.Descriptor instead.
 func (*GetMyDiscussionsRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{54}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *GetMyDiscussionsRequest) GetFilter() string {
@@ -3192,7 +3192,7 @@ type GetMyDiscussionsResponse struct {
 func (x *GetMyDiscussionsResponse) Reset() {
 	*x = GetMyDiscussionsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[55]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[55]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3205,7 +3205,7 @@ func (x *GetMyDiscussionsResponse) String() string {
 func (*GetMyDiscussionsResponse) ProtoMessage() {}
 
 func (x *GetMyDiscussionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[55]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[55]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3218,7 +3218,7 @@ func (x *GetMyDiscussionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyDiscussionsResponse.ProtoReflect.Descriptor instead.
 func (*GetMyDiscussionsResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{55}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *GetMyDiscussionsResponse) GetData() []*Discussion {
@@ -3243,7 +3243,7 @@ type CreateTagAssetRequest struct {
 func (x *CreateTagAssetRequest) Reset() {
 	*x = CreateTagAssetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[56]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[56]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3256,7 +3256,7 @@ func (x *CreateTagAssetRequest) String() string {
 func (*CreateTagAssetRequest) ProtoMessage() {}
 
 func (x *CreateTagAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[56]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[56]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3269,7 +3269,7 @@ func (x *CreateTagAssetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTagAssetRequest.ProtoReflect.Descriptor instead.
 func (*CreateTagAssetRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{56}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *CreateTagAssetRequest) GetAssetId() string {
@@ -3318,7 +3318,7 @@ type CreateTagAssetResponse struct {
 func (x *CreateTagAssetResponse) Reset() {
 	*x = CreateTagAssetResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[57]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[57]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3331,7 +3331,7 @@ func (x *CreateTagAssetResponse) String() string {
 func (*CreateTagAssetResponse) ProtoMessage() {}
 
 func (x *CreateTagAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[57]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[57]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3344,7 +3344,7 @@ func (x *CreateTagAssetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTagAssetResponse.ProtoReflect.Descriptor instead.
 func (*CreateTagAssetResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{57}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *CreateTagAssetResponse) GetData() *Tag {
@@ -3366,7 +3366,7 @@ type GetTagByAssetAndTemplateRequest struct {
 func (x *GetTagByAssetAndTemplateRequest) Reset() {
 	*x = GetTagByAssetAndTemplateRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[58]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[58]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3379,7 +3379,7 @@ func (x *GetTagByAssetAndTemplateRequest) String() string {
 func (*GetTagByAssetAndTemplateRequest) ProtoMessage() {}
 
 func (x *GetTagByAssetAndTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[58]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[58]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3392,7 +3392,7 @@ func (x *GetTagByAssetAndTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTagByAssetAndTemplateRequest.ProtoReflect.Descriptor instead.
 func (*GetTagByAssetAndTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{58}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *GetTagByAssetAndTemplateRequest) GetAssetId() string {
@@ -3420,7 +3420,7 @@ type GetTagByAssetAndTemplateResponse struct {
 func (x *GetTagByAssetAndTemplateResponse) Reset() {
 	*x = GetTagByAssetAndTemplateResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[59]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[59]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3433,7 +3433,7 @@ func (x *GetTagByAssetAndTemplateResponse) String() string {
 func (*GetTagByAssetAndTemplateResponse) ProtoMessage() {}
 
 func (x *GetTagByAssetAndTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[59]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[59]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3446,7 +3446,7 @@ func (x *GetTagByAssetAndTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTagByAssetAndTemplateResponse.ProtoReflect.Descriptor instead.
 func (*GetTagByAssetAndTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{59}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *GetTagByAssetAndTemplateResponse) GetData() *Tag {
@@ -3471,7 +3471,7 @@ type UpdateTagAssetRequest struct {
 func (x *UpdateTagAssetRequest) Reset() {
 	*x = UpdateTagAssetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[60]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[60]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3484,7 +3484,7 @@ func (x *UpdateTagAssetRequest) String() string {
 func (*UpdateTagAssetRequest) ProtoMessage() {}
 
 func (x *UpdateTagAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[60]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[60]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3497,7 +3497,7 @@ func (x *UpdateTagAssetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTagAssetRequest.ProtoReflect.Descriptor instead.
 func (*UpdateTagAssetRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{60}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *UpdateTagAssetRequest) GetAssetId() string {
@@ -3546,7 +3546,7 @@ type UpdateTagAssetResponse struct {
 func (x *UpdateTagAssetResponse) Reset() {
 	*x = UpdateTagAssetResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[61]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[61]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3559,7 +3559,7 @@ func (x *UpdateTagAssetResponse) String() string {
 func (*UpdateTagAssetResponse) ProtoMessage() {}
 
 func (x *UpdateTagAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[61]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[61]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3572,7 +3572,7 @@ func (x *UpdateTagAssetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTagAssetResponse.ProtoReflect.Descriptor instead.
 func (*UpdateTagAssetResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{61}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *UpdateTagAssetResponse) GetData() *Tag {
@@ -3594,7 +3594,7 @@ type DeleteTagAssetRequest struct {
 func (x *DeleteTagAssetRequest) Reset() {
 	*x = DeleteTagAssetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[62]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[62]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3607,7 +3607,7 @@ func (x *DeleteTagAssetRequest) String() string {
 func (*DeleteTagAssetRequest) ProtoMessage() {}
 
 func (x *DeleteTagAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[62]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[62]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3620,7 +3620,7 @@ func (x *DeleteTagAssetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteTagAssetRequest.ProtoReflect.Descriptor instead.
 func (*DeleteTagAssetRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{62}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *DeleteTagAssetRequest) GetAssetId() string {
@@ -3646,7 +3646,7 @@ type DeleteTagAssetResponse struct {
 func (x *DeleteTagAssetResponse) Reset() {
 	*x = DeleteTagAssetResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[63]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[63]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3659,7 +3659,7 @@ func (x *DeleteTagAssetResponse) String() string {
 func (*DeleteTagAssetResponse) ProtoMessage() {}
 
 func (x *DeleteTagAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[63]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[63]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3672,7 +3672,7 @@ func (x *DeleteTagAssetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteTagAssetResponse.ProtoReflect.Descriptor instead.
 func (*DeleteTagAssetResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{63}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{63}
 }
 
 type GetAllTagsByAssetRequest struct {
@@ -3686,7 +3686,7 @@ type GetAllTagsByAssetRequest struct {
 func (x *GetAllTagsByAssetRequest) Reset() {
 	*x = GetAllTagsByAssetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[64]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[64]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3699,7 +3699,7 @@ func (x *GetAllTagsByAssetRequest) String() string {
 func (*GetAllTagsByAssetRequest) ProtoMessage() {}
 
 func (x *GetAllTagsByAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[64]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[64]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3712,7 +3712,7 @@ func (x *GetAllTagsByAssetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllTagsByAssetRequest.ProtoReflect.Descriptor instead.
 func (*GetAllTagsByAssetRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{64}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *GetAllTagsByAssetRequest) GetAssetId() string {
@@ -3733,7 +3733,7 @@ type GetAllTagsByAssetResponse struct {
 func (x *GetAllTagsByAssetResponse) Reset() {
 	*x = GetAllTagsByAssetResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[65]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[65]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3746,7 +3746,7 @@ func (x *GetAllTagsByAssetResponse) String() string {
 func (*GetAllTagsByAssetResponse) ProtoMessage() {}
 
 func (x *GetAllTagsByAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[65]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[65]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3759,7 +3759,7 @@ func (x *GetAllTagsByAssetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllTagsByAssetResponse.ProtoReflect.Descriptor instead.
 func (*GetAllTagsByAssetResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{65}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *GetAllTagsByAssetResponse) GetData() []*Tag {
@@ -3780,7 +3780,7 @@ type GetAllTagTemplatesRequest struct {
 func (x *GetAllTagTemplatesRequest) Reset() {
 	*x = GetAllTagTemplatesRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[66]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[66]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3793,7 +3793,7 @@ func (x *GetAllTagTemplatesRequest) String() string {
 func (*GetAllTagTemplatesRequest) ProtoMessage() {}
 
 func (x *GetAllTagTemplatesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[66]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[66]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3806,7 +3806,7 @@ func (x *GetAllTagTemplatesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllTagTemplatesRequest.ProtoReflect.Descriptor instead.
 func (*GetAllTagTemplatesRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{66}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *GetAllTagTemplatesRequest) GetUrn() string {
@@ -3827,7 +3827,7 @@ type GetAllTagTemplatesResponse struct {
 func (x *GetAllTagTemplatesResponse) Reset() {
 	*x = GetAllTagTemplatesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[67]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[67]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3840,7 +3840,7 @@ func (x *GetAllTagTemplatesResponse) String() string {
 func (*GetAllTagTemplatesResponse) ProtoMessage() {}
 
 func (x *GetAllTagTemplatesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[67]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[67]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3853,7 +3853,7 @@ func (x *GetAllTagTemplatesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllTagTemplatesResponse.ProtoReflect.Descriptor instead.
 func (*GetAllTagTemplatesResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{67}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{67}
 }
 
 func (x *GetAllTagTemplatesResponse) GetData() []*TagTemplate {
@@ -3877,7 +3877,7 @@ type CreateTagTemplateRequest struct {
 func (x *CreateTagTemplateRequest) Reset() {
 	*x = CreateTagTemplateRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[68]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[68]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3890,7 +3890,7 @@ func (x *CreateTagTemplateRequest) String() string {
 func (*CreateTagTemplateRequest) ProtoMessage() {}
 
 func (x *CreateTagTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[68]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[68]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3903,7 +3903,7 @@ func (x *CreateTagTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTagTemplateRequest.ProtoReflect.Descriptor instead.
 func (*CreateTagTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{68}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{68}
 }
 
 func (x *CreateTagTemplateRequest) GetUrn() string {
@@ -3945,7 +3945,7 @@ type CreateTagTemplateResponse struct {
 func (x *CreateTagTemplateResponse) Reset() {
 	*x = CreateTagTemplateResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[69]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[69]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3958,7 +3958,7 @@ func (x *CreateTagTemplateResponse) String() string {
 func (*CreateTagTemplateResponse) ProtoMessage() {}
 
 func (x *CreateTagTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[69]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[69]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3971,7 +3971,7 @@ func (x *CreateTagTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTagTemplateResponse.ProtoReflect.Descriptor instead.
 func (*CreateTagTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{69}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{69}
 }
 
 func (x *CreateTagTemplateResponse) GetData() *TagTemplate {
@@ -3992,7 +3992,7 @@ type GetTagTemplateRequest struct {
 func (x *GetTagTemplateRequest) Reset() {
 	*x = GetTagTemplateRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[70]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[70]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4005,7 +4005,7 @@ func (x *GetTagTemplateRequest) String() string {
 func (*GetTagTemplateRequest) ProtoMessage() {}
 
 func (x *GetTagTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[70]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[70]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4018,7 +4018,7 @@ func (x *GetTagTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTagTemplateRequest.ProtoReflect.Descriptor instead.
 func (*GetTagTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{70}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{70}
 }
 
 func (x *GetTagTemplateRequest) GetTemplateUrn() string {
@@ -4039,7 +4039,7 @@ type GetTagTemplateResponse struct {
 func (x *GetTagTemplateResponse) Reset() {
 	*x = GetTagTemplateResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[71]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[71]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4052,7 +4052,7 @@ func (x *GetTagTemplateResponse) String() string {
 func (*GetTagTemplateResponse) ProtoMessage() {}
 
 func (x *GetTagTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[71]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[71]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4065,7 +4065,7 @@ func (x *GetTagTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTagTemplateResponse.ProtoReflect.Descriptor instead.
 func (*GetTagTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{71}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{71}
 }
 
 func (x *GetTagTemplateResponse) GetData() *TagTemplate {
@@ -4089,7 +4089,7 @@ type UpdateTagTemplateRequest struct {
 func (x *UpdateTagTemplateRequest) Reset() {
 	*x = UpdateTagTemplateRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[72]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[72]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4102,7 +4102,7 @@ func (x *UpdateTagTemplateRequest) String() string {
 func (*UpdateTagTemplateRequest) ProtoMessage() {}
 
 func (x *UpdateTagTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[72]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[72]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4115,7 +4115,7 @@ func (x *UpdateTagTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTagTemplateRequest.ProtoReflect.Descriptor instead.
 func (*UpdateTagTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{72}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{72}
 }
 
 func (x *UpdateTagTemplateRequest) GetTemplateUrn() string {
@@ -4157,7 +4157,7 @@ type UpdateTagTemplateResponse struct {
 func (x *UpdateTagTemplateResponse) Reset() {
 	*x = UpdateTagTemplateResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[73]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[73]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4170,7 +4170,7 @@ func (x *UpdateTagTemplateResponse) String() string {
 func (*UpdateTagTemplateResponse) ProtoMessage() {}
 
 func (x *UpdateTagTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[73]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[73]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4183,7 +4183,7 @@ func (x *UpdateTagTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTagTemplateResponse.ProtoReflect.Descriptor instead.
 func (*UpdateTagTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{73}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{73}
 }
 
 func (x *UpdateTagTemplateResponse) GetData() *TagTemplate {
@@ -4204,7 +4204,7 @@ type DeleteTagTemplateRequest struct {
 func (x *DeleteTagTemplateRequest) Reset() {
 	*x = DeleteTagTemplateRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[74]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[74]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4217,7 +4217,7 @@ func (x *DeleteTagTemplateRequest) String() string {
 func (*DeleteTagTemplateRequest) ProtoMessage() {}
 
 func (x *DeleteTagTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[74]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[74]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4230,7 +4230,7 @@ func (x *DeleteTagTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteTagTemplateRequest.ProtoReflect.Descriptor instead.
 func (*DeleteTagTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{74}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{74}
 }
 
 func (x *DeleteTagTemplateRequest) GetTemplateUrn() string {
@@ -4249,7 +4249,7 @@ type DeleteTagTemplateResponse struct {
 func (x *DeleteTagTemplateResponse) Reset() {
 	*x = DeleteTagTemplateResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[75]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[75]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4262,7 +4262,7 @@ func (x *DeleteTagTemplateResponse) String() string {
 func (*DeleteTagTemplateResponse) ProtoMessage() {}
 
 func (x *DeleteTagTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[75]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[75]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4275,7 +4275,7 @@ func (x *DeleteTagTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteTagTemplateResponse.ProtoReflect.Descriptor instead.
 func (*DeleteTagTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{75}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{75}
 }
 
 type CreateNamespaceRequest struct {
@@ -4292,7 +4292,7 @@ type CreateNamespaceRequest struct {
 func (x *CreateNamespaceRequest) Reset() {
 	*x = CreateNamespaceRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[76]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[76]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4305,7 +4305,7 @@ func (x *CreateNamespaceRequest) String() string {
 func (*CreateNamespaceRequest) ProtoMessage() {}
 
 func (x *CreateNamespaceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[76]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[76]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4318,7 +4318,7 @@ func (x *CreateNamespaceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateNamespaceRequest.ProtoReflect.Descriptor instead.
 func (*CreateNamespaceRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{76}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{76}
 }
 
 func (x *CreateNamespaceRequest) GetId() string {
@@ -4360,7 +4360,7 @@ type CreateNamespaceResponse struct {
 func (x *CreateNamespaceResponse) Reset() {
 	*x = CreateNamespaceResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[77]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[77]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4373,7 +4373,7 @@ func (x *CreateNamespaceResponse) String() string {
 func (*CreateNamespaceResponse) ProtoMessage() {}
 
 func (x *CreateNamespaceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[77]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[77]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4386,7 +4386,7 @@ func (x *CreateNamespaceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateNamespaceResponse.ProtoReflect.Descriptor instead.
 func (*CreateNamespaceResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{77}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{77}
 }
 
 func (x *CreateNamespaceResponse) GetId() string {
@@ -4408,7 +4408,7 @@ type GetNamespaceRequest struct {
 func (x *GetNamespaceRequest) Reset() {
 	*x = GetNamespaceRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[78]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[78]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4421,7 +4421,7 @@ func (x *GetNamespaceRequest) String() string {
 func (*GetNamespaceRequest) ProtoMessage() {}
 
 func (x *GetNamespaceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[78]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[78]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4434,7 +4434,7 @@ func (x *GetNamespaceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetNamespaceRequest.ProtoReflect.Descriptor instead.
 func (*GetNamespaceRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{78}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{78}
 }
 
 func (x *GetNamespaceRequest) GetUrn() string {
@@ -4455,7 +4455,7 @@ type GetNamespaceResponse struct {
 func (x *GetNamespaceResponse) Reset() {
 	*x = GetNamespaceResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[79]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[79]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4468,7 +4468,7 @@ func (x *GetNamespaceResponse) String() string {
 func (*GetNamespaceResponse) ProtoMessage() {}
 
 func (x *GetNamespaceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[79]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[79]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4481,7 +4481,7 @@ func (x *GetNamespaceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetNamespaceResponse.ProtoReflect.Descriptor instead.
 func (*GetNamespaceResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{79}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{79}
 }
 
 func (x *GetNamespaceResponse) GetNamespace() *Namespace {
@@ -4505,7 +4505,7 @@ type UpdateNamespaceRequest struct {
 func (x *UpdateNamespaceRequest) Reset() {
 	*x = UpdateNamespaceRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[80]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[80]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4518,7 +4518,7 @@ func (x *UpdateNamespaceRequest) String() string {
 func (*UpdateNamespaceRequest) ProtoMessage() {}
 
 func (x *UpdateNamespaceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[80]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[80]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4531,7 +4531,7 @@ func (x *UpdateNamespaceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateNamespaceRequest.ProtoReflect.Descriptor instead.
 func (*UpdateNamespaceRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{80}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{80}
 }
 
 func (x *UpdateNamespaceRequest) GetUrn() string {
@@ -4564,7 +4564,7 @@ type UpdateNamespaceResponse struct {
 func (x *UpdateNamespaceResponse) Reset() {
 	*x = UpdateNamespaceResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[81]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[81]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4577,7 +4577,7 @@ func (x *UpdateNamespaceResponse) String() string {
 func (*UpdateNamespaceResponse) ProtoMessage() {}
 
 func (x *UpdateNamespaceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[81]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[81]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4590,7 +4590,7 @@ func (x *UpdateNamespaceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateNamespaceResponse.ProtoReflect.Descriptor instead.
 func (*UpdateNamespaceResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{81}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{81}
 }
 
 type ListNamespacesRequest struct {
@@ -4602,7 +4602,7 @@ type ListNamespacesRequest struct {
 func (x *ListNamespacesRequest) Reset() {
 	*x = ListNamespacesRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[82]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[82]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4615,7 +4615,7 @@ func (x *ListNamespacesRequest) String() string {
 func (*ListNamespacesRequest) ProtoMessage() {}
 
 func (x *ListNamespacesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[82]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[82]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4628,7 +4628,7 @@ func (x *ListNamespacesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNamespacesRequest.ProtoReflect.Descriptor instead.
 func (*ListNamespacesRequest) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{82}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{82}
 }
 
 type ListNamespacesResponse struct {
@@ -4642,7 +4642,7 @@ type ListNamespacesResponse struct {
 func (x *ListNamespacesResponse) Reset() {
 	*x = ListNamespacesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[83]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[83]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4655,7 +4655,7 @@ func (x *ListNamespacesResponse) String() string {
 func (*ListNamespacesResponse) ProtoMessage() {}
 
 func (x *ListNamespacesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[83]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[83]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4668,7 +4668,7 @@ func (x *ListNamespacesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNamespacesResponse.ProtoReflect.Descriptor instead.
 func (*ListNamespacesResponse) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{83}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{83}
 }
 
 func (x *ListNamespacesResponse) GetNamespaces() []*Namespace {
@@ -4694,7 +4694,7 @@ type User struct {
 func (x *User) Reset() {
 	*x = User{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[84]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[84]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4707,7 +4707,7 @@ func (x *User) String() string {
 func (*User) ProtoMessage() {}
 
 func (x *User) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[84]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[84]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4720,7 +4720,7 @@ func (x *User) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use User.ProtoReflect.Descriptor instead.
 func (*User) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{84}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{84}
 }
 
 func (x *User) GetId() string {
@@ -4779,7 +4779,7 @@ type Change struct {
 func (x *Change) Reset() {
 	*x = Change{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[85]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[85]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4792,7 +4792,7 @@ func (x *Change) String() string {
 func (*Change) ProtoMessage() {}
 
 func (x *Change) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[85]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[85]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4805,7 +4805,7 @@ func (x *Change) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Change.ProtoReflect.Descriptor instead.
 func (*Change) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{85}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{85}
 }
 
 func (x *Change) GetType() string {
@@ -4862,7 +4862,7 @@ type Asset struct {
 func (x *Asset) Reset() {
 	*x = Asset{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[86]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[86]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4875,7 +4875,7 @@ func (x *Asset) String() string {
 func (*Asset) ProtoMessage() {}
 
 func (x *Asset) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[86]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[86]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4888,7 +4888,7 @@ func (x *Asset) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Asset.ProtoReflect.Descriptor instead.
 func (*Asset) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{86}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{86}
 }
 
 func (x *Asset) GetId() string {
@@ -5020,7 +5020,7 @@ type Probe struct {
 func (x *Probe) Reset() {
 	*x = Probe{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[87]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[87]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5033,7 +5033,7 @@ func (x *Probe) String() string {
 func (*Probe) ProtoMessage() {}
 
 func (x *Probe) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[87]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[87]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5046,7 +5046,7 @@ func (x *Probe) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Probe.ProtoReflect.Descriptor instead.
 func (*Probe) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{87}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{87}
 }
 
 func (x *Probe) GetId() string {
@@ -5119,7 +5119,7 @@ type Discussion struct {
 func (x *Discussion) Reset() {
 	*x = Discussion{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[88]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[88]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5132,7 +5132,7 @@ func (x *Discussion) String() string {
 func (*Discussion) ProtoMessage() {}
 
 func (x *Discussion) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[88]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[88]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5145,7 +5145,7 @@ func (x *Discussion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Discussion.ProtoReflect.Descriptor instead.
 func (*Discussion) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{88}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{88}
 }
 
 func (x *Discussion) GetId() string {
@@ -5242,7 +5242,7 @@ type Comment struct {
 func (x *Comment) Reset() {
 	*x = Comment{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[89]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[89]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5255,7 +5255,7 @@ func (x *Comment) String() string {
 func (*Comment) ProtoMessage() {}
 
 func (x *Comment) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[89]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[89]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5268,7 +5268,7 @@ func (x *Comment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Comment.ProtoReflect.Descriptor instead.
 func (*Comment) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{89}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{89}
 }
 
 func (x *Comment) GetId() string {
@@ -5333,7 +5333,7 @@ type LineageEdge struct {
 func (x *LineageEdge) Reset() {
 	*x = LineageEdge{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[90]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[90]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5346,7 +5346,7 @@ func (x *LineageEdge) String() string {
 func (*LineageEdge) ProtoMessage() {}
 
 func (x *LineageEdge) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[90]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[90]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5359,7 +5359,7 @@ func (x *LineageEdge) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LineageEdge.ProtoReflect.Descriptor instead.
 func (*LineageEdge) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{90}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{90}
 }
 
 func (x *LineageEdge) GetSource() string {
@@ -5398,7 +5398,7 @@ type LineageNode struct {
 func (x *LineageNode) Reset() {
 	*x = LineageNode{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[91]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[91]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5411,7 +5411,7 @@ func (x *LineageNode) String() string {
 func (*LineageNode) ProtoMessage() {}
 
 func (x *LineageNode) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[91]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[91]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5424,7 +5424,7 @@ func (x *LineageNode) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LineageNode.ProtoReflect.Descriptor instead.
 func (*LineageNode) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{91}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{91}
 }
 
 func (x *LineageNode) GetUrn() string {
@@ -5465,7 +5465,7 @@ type Tag struct {
 func (x *Tag) Reset() {
 	*x = Tag{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[92]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[92]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5478,7 +5478,7 @@ func (x *Tag) String() string {
 func (*Tag) ProtoMessage() {}
 
 func (x *Tag) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[92]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[92]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5491,7 +5491,7 @@ func (x *Tag) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Tag.ProtoReflect.Descriptor instead.
 func (*Tag) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{92}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{92}
 }
 
 func (x *Tag) GetAssetId() string {
@@ -5549,7 +5549,7 @@ type TagValue struct {
 func (x *TagValue) Reset() {
 	*x = TagValue{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[93]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[93]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5562,7 +5562,7 @@ func (x *TagValue) String() string {
 func (*TagValue) ProtoMessage() {}
 
 func (x *TagValue) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[93]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[93]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5575,7 +5575,7 @@ func (x *TagValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TagValue.ProtoReflect.Descriptor instead.
 func (*TagValue) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{93}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{93}
 }
 
 func (x *TagValue) GetFieldId() uint32 {
@@ -5664,7 +5664,7 @@ type TagTemplate struct {
 func (x *TagTemplate) Reset() {
 	*x = TagTemplate{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[94]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[94]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5677,7 +5677,7 @@ func (x *TagTemplate) String() string {
 func (*TagTemplate) ProtoMessage() {}
 
 func (x *TagTemplate) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[94]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[94]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5690,7 +5690,7 @@ func (x *TagTemplate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TagTemplate.ProtoReflect.Descriptor instead.
 func (*TagTemplate) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{94}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{94}
 }
 
 func (x *TagTemplate) GetUrn() string {
@@ -5754,7 +5754,7 @@ type TagTemplateField struct {
 func (x *TagTemplateField) Reset() {
 	*x = TagTemplateField{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[95]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[95]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5767,7 +5767,7 @@ func (x *TagTemplateField) String() string {
 func (*TagTemplateField) ProtoMessage() {}
 
 func (x *TagTemplateField) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[95]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[95]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5780,7 +5780,7 @@ func (x *TagTemplateField) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TagTemplateField.ProtoReflect.Descriptor instead.
 func (*TagTemplateField) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{95}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{95}
 }
 
 func (x *TagTemplateField) GetId() uint32 {
@@ -5858,7 +5858,7 @@ type Type struct {
 func (x *Type) Reset() {
 	*x = Type{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[96]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[96]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5871,7 +5871,7 @@ func (x *Type) String() string {
 func (*Type) ProtoMessage() {}
 
 func (x *Type) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[96]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[96]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5884,7 +5884,7 @@ func (x *Type) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Type.ProtoReflect.Descriptor instead.
 func (*Type) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{96}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{96}
 }
 
 func (x *Type) GetName() string {
@@ -5915,7 +5915,7 @@ type Namespace struct {
 func (x *Namespace) Reset() {
 	*x = Namespace{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[97]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[97]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5928,7 +5928,7 @@ func (x *Namespace) String() string {
 func (*Namespace) ProtoMessage() {}
 
 func (x *Namespace) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[97]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[97]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5941,7 +5941,7 @@ func (x *Namespace) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Namespace.ProtoReflect.Descriptor instead.
 func (*Namespace) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{97}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{97}
 }
 
 func (x *Namespace) GetId() string {
@@ -5983,7 +5983,7 @@ type GetGraphResponse_ProbesInfo struct {
 func (x *GetGraphResponse_ProbesInfo) Reset() {
 	*x = GetGraphResponse_ProbesInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[100]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[100]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5996,7 +5996,7 @@ func (x *GetGraphResponse_ProbesInfo) String() string {
 func (*GetGraphResponse_ProbesInfo) ProtoMessage() {}
 
 func (x *GetGraphResponse_ProbesInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[100]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[100]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6009,7 +6009,7 @@ func (x *GetGraphResponse_ProbesInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGraphResponse_ProbesInfo.ProtoReflect.Descriptor instead.
 func (*GetGraphResponse_ProbesInfo) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{23, 0}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{23, 0}
 }
 
 func (x *GetGraphResponse_ProbesInfo) GetLatest() *Probe {
@@ -6030,7 +6030,7 @@ type GetGraphResponse_NodeAttributes struct {
 func (x *GetGraphResponse_NodeAttributes) Reset() {
 	*x = GetGraphResponse_NodeAttributes{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[101]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[101]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6043,7 +6043,7 @@ func (x *GetGraphResponse_NodeAttributes) String() string {
 func (*GetGraphResponse_NodeAttributes) ProtoMessage() {}
 
 func (x *GetGraphResponse_NodeAttributes) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[101]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[101]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6056,7 +6056,7 @@ func (x *GetGraphResponse_NodeAttributes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGraphResponse_NodeAttributes.ProtoReflect.Descriptor instead.
 func (*GetGraphResponse_NodeAttributes) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{23, 1}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{23, 1}
 }
 
 func (x *GetGraphResponse_NodeAttributes) GetProbes() *GetGraphResponse_ProbesInfo {
@@ -6085,7 +6085,7 @@ type UpsertAssetRequest_Asset struct {
 func (x *UpsertAssetRequest_Asset) Reset() {
 	*x = UpsertAssetRequest_Asset{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[105]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[105]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6098,7 +6098,7 @@ func (x *UpsertAssetRequest_Asset) String() string {
 func (*UpsertAssetRequest_Asset) ProtoMessage() {}
 
 func (x *UpsertAssetRequest_Asset) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[105]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[105]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6111,7 +6111,7 @@ func (x *UpsertAssetRequest_Asset) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertAssetRequest_Asset.ProtoReflect.Descriptor instead.
 func (*UpsertAssetRequest_Asset) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{30, 0}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{30, 0}
 }
 
 func (x *UpsertAssetRequest_Asset) GetUrn() string {
@@ -6196,7 +6196,7 @@ type UpsertPatchAssetRequest_Asset struct {
 func (x *UpsertPatchAssetRequest_Asset) Reset() {
 	*x = UpsertPatchAssetRequest_Asset{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[107]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[107]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6209,7 +6209,7 @@ func (x *UpsertPatchAssetRequest_Asset) String() string {
 func (*UpsertPatchAssetRequest_Asset) ProtoMessage() {}
 
 func (x *UpsertPatchAssetRequest_Asset) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[107]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[107]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6222,7 +6222,7 @@ func (x *UpsertPatchAssetRequest_Asset) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertPatchAssetRequest_Asset.ProtoReflect.Descriptor instead.
 func (*UpsertPatchAssetRequest_Asset) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{32, 0}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{32, 0}
 }
 
 func (x *UpsertPatchAssetRequest_Asset) GetUrn() string {
@@ -6302,7 +6302,7 @@ type CreateAssetProbeRequest_Probe struct {
 func (x *CreateAssetProbeRequest_Probe) Reset() {
 	*x = CreateAssetProbeRequest_Probe{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[109]
+		mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[109]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6315,7 +6315,7 @@ func (x *CreateAssetProbeRequest_Probe) String() string {
 func (*CreateAssetProbeRequest_Probe) ProtoMessage() {}
 
 func (x *CreateAssetProbeRequest_Probe) ProtoReflect() protoreflect.Message {
-	mi := &file_odpf_compass_v1beta1_service_proto_msgTypes[109]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[109]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6328,7 +6328,7 @@ func (x *CreateAssetProbeRequest_Probe) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAssetProbeRequest_Probe.ProtoReflect.Descriptor instead.
 func (*CreateAssetProbeRequest_Probe) Descriptor() ([]byte, []int) {
-	return file_odpf_compass_v1beta1_service_proto_rawDescGZIP(), []int{42, 0}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{42, 0}
 }
 
 func (x *CreateAssetProbeRequest_Probe) GetStatus() string {
@@ -6359,9 +6359,9 @@ func (x *CreateAssetProbeRequest_Probe) GetTimestamp() *timestamppb.Timestamp {
 	return nil
 }
 
-var File_odpf_compass_v1beta1_service_proto protoreflect.FileDescriptor
+var File_raystack_compass_v1beta1_service_proto protoreflect.FileDescriptor
 
-var file_odpf_compass_v1beta1_service_proto_rawDesc = []byte{
+var file_raystack_compass_v1beta1_service_proto_rawDesc = []byte{
 	0x0a, 0x22, 0x6f, 0x64, 0x70, 0x66, 0x2f, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x73, 0x73, 0x2f, 0x76,
 	0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x12, 0x14, 0x6f, 0x64, 0x70, 0x66, 0x2e, 0x63, 0x6f, 0x6d, 0x70, 0x61,
@@ -8104,310 +8104,310 @@ var file_odpf_compass_v1beta1_service_proto_rawDesc = []byte{
 }
 
 var (
-	file_odpf_compass_v1beta1_service_proto_rawDescOnce sync.Once
-	file_odpf_compass_v1beta1_service_proto_rawDescData = file_odpf_compass_v1beta1_service_proto_rawDesc
+	file_raystack_compass_v1beta1_service_proto_rawDescOnce sync.Once
+	file_raystack_compass_v1beta1_service_proto_rawDescData = file_raystack_compass_v1beta1_service_proto_rawDesc
 )
 
-func file_odpf_compass_v1beta1_service_proto_rawDescGZIP() []byte {
-	file_odpf_compass_v1beta1_service_proto_rawDescOnce.Do(func() {
-		file_odpf_compass_v1beta1_service_proto_rawDescData = protoimpl.X.CompressGZIP(file_odpf_compass_v1beta1_service_proto_rawDescData)
+func file_raystack_compass_v1beta1_service_proto_rawDescGZIP() []byte {
+	file_raystack_compass_v1beta1_service_proto_rawDescOnce.Do(func() {
+		file_raystack_compass_v1beta1_service_proto_rawDescData = protoimpl.X.CompressGZIP(file_raystack_compass_v1beta1_service_proto_rawDescData)
 	})
-	return file_odpf_compass_v1beta1_service_proto_rawDescData
+	return file_raystack_compass_v1beta1_service_proto_rawDescData
 }
 
-var file_odpf_compass_v1beta1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 111)
-var file_odpf_compass_v1beta1_service_proto_goTypes = []interface{}{
-	(*GetAllDiscussionsRequest)(nil),         // 0: odpf.compass.v1beta1.GetAllDiscussionsRequest
-	(*GetAllDiscussionsResponse)(nil),        // 1: odpf.compass.v1beta1.GetAllDiscussionsResponse
-	(*CreateDiscussionRequest)(nil),          // 2: odpf.compass.v1beta1.CreateDiscussionRequest
-	(*CreateDiscussionResponse)(nil),         // 3: odpf.compass.v1beta1.CreateDiscussionResponse
-	(*GetDiscussionRequest)(nil),             // 4: odpf.compass.v1beta1.GetDiscussionRequest
-	(*GetDiscussionResponse)(nil),            // 5: odpf.compass.v1beta1.GetDiscussionResponse
-	(*PatchDiscussionRequest)(nil),           // 6: odpf.compass.v1beta1.PatchDiscussionRequest
-	(*CreateCommentRequest)(nil),             // 7: odpf.compass.v1beta1.CreateCommentRequest
-	(*PatchDiscussionResponse)(nil),          // 8: odpf.compass.v1beta1.PatchDiscussionResponse
-	(*CreateCommentResponse)(nil),            // 9: odpf.compass.v1beta1.CreateCommentResponse
-	(*GetAllCommentsRequest)(nil),            // 10: odpf.compass.v1beta1.GetAllCommentsRequest
-	(*GetAllCommentsResponse)(nil),           // 11: odpf.compass.v1beta1.GetAllCommentsResponse
-	(*GetCommentRequest)(nil),                // 12: odpf.compass.v1beta1.GetCommentRequest
-	(*GetCommentResponse)(nil),               // 13: odpf.compass.v1beta1.GetCommentResponse
-	(*UpdateCommentRequest)(nil),             // 14: odpf.compass.v1beta1.UpdateCommentRequest
-	(*UpdateCommentResponse)(nil),            // 15: odpf.compass.v1beta1.UpdateCommentResponse
-	(*DeleteCommentRequest)(nil),             // 16: odpf.compass.v1beta1.DeleteCommentRequest
-	(*DeleteCommentResponse)(nil),            // 17: odpf.compass.v1beta1.DeleteCommentResponse
-	(*SearchAssetsRequest)(nil),              // 18: odpf.compass.v1beta1.SearchAssetsRequest
-	(*SearchAssetsResponse)(nil),             // 19: odpf.compass.v1beta1.SearchAssetsResponse
-	(*SuggestAssetsRequest)(nil),             // 20: odpf.compass.v1beta1.SuggestAssetsRequest
-	(*SuggestAssetsResponse)(nil),            // 21: odpf.compass.v1beta1.SuggestAssetsResponse
-	(*GetGraphRequest)(nil),                  // 22: odpf.compass.v1beta1.GetGraphRequest
-	(*GetGraphResponse)(nil),                 // 23: odpf.compass.v1beta1.GetGraphResponse
-	(*GetAllTypesRequest)(nil),               // 24: odpf.compass.v1beta1.GetAllTypesRequest
-	(*GetAllTypesResponse)(nil),              // 25: odpf.compass.v1beta1.GetAllTypesResponse
-	(*GetAllAssetsRequest)(nil),              // 26: odpf.compass.v1beta1.GetAllAssetsRequest
-	(*GetAllAssetsResponse)(nil),             // 27: odpf.compass.v1beta1.GetAllAssetsResponse
-	(*GetAssetByIDRequest)(nil),              // 28: odpf.compass.v1beta1.GetAssetByIDRequest
-	(*GetAssetByIDResponse)(nil),             // 29: odpf.compass.v1beta1.GetAssetByIDResponse
-	(*UpsertAssetRequest)(nil),               // 30: odpf.compass.v1beta1.UpsertAssetRequest
-	(*UpsertAssetResponse)(nil),              // 31: odpf.compass.v1beta1.UpsertAssetResponse
-	(*UpsertPatchAssetRequest)(nil),          // 32: odpf.compass.v1beta1.UpsertPatchAssetRequest
-	(*UpsertPatchAssetResponse)(nil),         // 33: odpf.compass.v1beta1.UpsertPatchAssetResponse
-	(*DeleteAssetRequest)(nil),               // 34: odpf.compass.v1beta1.DeleteAssetRequest
-	(*DeleteAssetResponse)(nil),              // 35: odpf.compass.v1beta1.DeleteAssetResponse
-	(*GetAssetStargazersRequest)(nil),        // 36: odpf.compass.v1beta1.GetAssetStargazersRequest
-	(*GetAssetStargazersResponse)(nil),       // 37: odpf.compass.v1beta1.GetAssetStargazersResponse
-	(*GetAssetVersionHistoryRequest)(nil),    // 38: odpf.compass.v1beta1.GetAssetVersionHistoryRequest
-	(*GetAssetVersionHistoryResponse)(nil),   // 39: odpf.compass.v1beta1.GetAssetVersionHistoryResponse
-	(*GetAssetByVersionRequest)(nil),         // 40: odpf.compass.v1beta1.GetAssetByVersionRequest
-	(*GetAssetByVersionResponse)(nil),        // 41: odpf.compass.v1beta1.GetAssetByVersionResponse
-	(*CreateAssetProbeRequest)(nil),          // 42: odpf.compass.v1beta1.CreateAssetProbeRequest
-	(*CreateAssetProbeResponse)(nil),         // 43: odpf.compass.v1beta1.CreateAssetProbeResponse
-	(*GetUserStarredAssetsRequest)(nil),      // 44: odpf.compass.v1beta1.GetUserStarredAssetsRequest
-	(*GetUserStarredAssetsResponse)(nil),     // 45: odpf.compass.v1beta1.GetUserStarredAssetsResponse
-	(*GetMyStarredAssetsRequest)(nil),        // 46: odpf.compass.v1beta1.GetMyStarredAssetsRequest
-	(*GetMyStarredAssetsResponse)(nil),       // 47: odpf.compass.v1beta1.GetMyStarredAssetsResponse
-	(*GetMyStarredAssetRequest)(nil),         // 48: odpf.compass.v1beta1.GetMyStarredAssetRequest
-	(*GetMyStarredAssetResponse)(nil),        // 49: odpf.compass.v1beta1.GetMyStarredAssetResponse
-	(*StarAssetRequest)(nil),                 // 50: odpf.compass.v1beta1.StarAssetRequest
-	(*StarAssetResponse)(nil),                // 51: odpf.compass.v1beta1.StarAssetResponse
-	(*UnstarAssetRequest)(nil),               // 52: odpf.compass.v1beta1.UnstarAssetRequest
-	(*UnstarAssetResponse)(nil),              // 53: odpf.compass.v1beta1.UnstarAssetResponse
-	(*GetMyDiscussionsRequest)(nil),          // 54: odpf.compass.v1beta1.GetMyDiscussionsRequest
-	(*GetMyDiscussionsResponse)(nil),         // 55: odpf.compass.v1beta1.GetMyDiscussionsResponse
-	(*CreateTagAssetRequest)(nil),            // 56: odpf.compass.v1beta1.CreateTagAssetRequest
-	(*CreateTagAssetResponse)(nil),           // 57: odpf.compass.v1beta1.CreateTagAssetResponse
-	(*GetTagByAssetAndTemplateRequest)(nil),  // 58: odpf.compass.v1beta1.GetTagByAssetAndTemplateRequest
-	(*GetTagByAssetAndTemplateResponse)(nil), // 59: odpf.compass.v1beta1.GetTagByAssetAndTemplateResponse
-	(*UpdateTagAssetRequest)(nil),            // 60: odpf.compass.v1beta1.UpdateTagAssetRequest
-	(*UpdateTagAssetResponse)(nil),           // 61: odpf.compass.v1beta1.UpdateTagAssetResponse
-	(*DeleteTagAssetRequest)(nil),            // 62: odpf.compass.v1beta1.DeleteTagAssetRequest
-	(*DeleteTagAssetResponse)(nil),           // 63: odpf.compass.v1beta1.DeleteTagAssetResponse
-	(*GetAllTagsByAssetRequest)(nil),         // 64: odpf.compass.v1beta1.GetAllTagsByAssetRequest
-	(*GetAllTagsByAssetResponse)(nil),        // 65: odpf.compass.v1beta1.GetAllTagsByAssetResponse
-	(*GetAllTagTemplatesRequest)(nil),        // 66: odpf.compass.v1beta1.GetAllTagTemplatesRequest
-	(*GetAllTagTemplatesResponse)(nil),       // 67: odpf.compass.v1beta1.GetAllTagTemplatesResponse
-	(*CreateTagTemplateRequest)(nil),         // 68: odpf.compass.v1beta1.CreateTagTemplateRequest
-	(*CreateTagTemplateResponse)(nil),        // 69: odpf.compass.v1beta1.CreateTagTemplateResponse
-	(*GetTagTemplateRequest)(nil),            // 70: odpf.compass.v1beta1.GetTagTemplateRequest
-	(*GetTagTemplateResponse)(nil),           // 71: odpf.compass.v1beta1.GetTagTemplateResponse
-	(*UpdateTagTemplateRequest)(nil),         // 72: odpf.compass.v1beta1.UpdateTagTemplateRequest
-	(*UpdateTagTemplateResponse)(nil),        // 73: odpf.compass.v1beta1.UpdateTagTemplateResponse
-	(*DeleteTagTemplateRequest)(nil),         // 74: odpf.compass.v1beta1.DeleteTagTemplateRequest
-	(*DeleteTagTemplateResponse)(nil),        // 75: odpf.compass.v1beta1.DeleteTagTemplateResponse
-	(*CreateNamespaceRequest)(nil),           // 76: odpf.compass.v1beta1.CreateNamespaceRequest
-	(*CreateNamespaceResponse)(nil),          // 77: odpf.compass.v1beta1.CreateNamespaceResponse
-	(*GetNamespaceRequest)(nil),              // 78: odpf.compass.v1beta1.GetNamespaceRequest
-	(*GetNamespaceResponse)(nil),             // 79: odpf.compass.v1beta1.GetNamespaceResponse
-	(*UpdateNamespaceRequest)(nil),           // 80: odpf.compass.v1beta1.UpdateNamespaceRequest
-	(*UpdateNamespaceResponse)(nil),          // 81: odpf.compass.v1beta1.UpdateNamespaceResponse
-	(*ListNamespacesRequest)(nil),            // 82: odpf.compass.v1beta1.ListNamespacesRequest
-	(*ListNamespacesResponse)(nil),           // 83: odpf.compass.v1beta1.ListNamespacesResponse
-	(*User)(nil),                             // 84: odpf.compass.v1beta1.User
-	(*Change)(nil),                           // 85: odpf.compass.v1beta1.Change
-	(*Asset)(nil),                            // 86: odpf.compass.v1beta1.Asset
-	(*Probe)(nil),                            // 87: odpf.compass.v1beta1.Probe
-	(*Discussion)(nil),                       // 88: odpf.compass.v1beta1.Discussion
-	(*Comment)(nil),                          // 89: odpf.compass.v1beta1.Comment
-	(*LineageEdge)(nil),                      // 90: odpf.compass.v1beta1.LineageEdge
-	(*LineageNode)(nil),                      // 91: odpf.compass.v1beta1.LineageNode
-	(*Tag)(nil),                              // 92: odpf.compass.v1beta1.Tag
-	(*TagValue)(nil),                         // 93: odpf.compass.v1beta1.TagValue
-	(*TagTemplate)(nil),                      // 94: odpf.compass.v1beta1.TagTemplate
-	(*TagTemplateField)(nil),                 // 95: odpf.compass.v1beta1.TagTemplateField
-	(*Type)(nil),                             // 96: odpf.compass.v1beta1.Type
-	(*Namespace)(nil),                        // 97: odpf.compass.v1beta1.Namespace
-	nil,                                      // 98: odpf.compass.v1beta1.SearchAssetsRequest.FilterEntry
-	nil,                                      // 99: odpf.compass.v1beta1.SearchAssetsRequest.QueryEntry
-	(*GetGraphResponse_ProbesInfo)(nil),      // 100: odpf.compass.v1beta1.GetGraphResponse.ProbesInfo
-	(*GetGraphResponse_NodeAttributes)(nil),  // 101: odpf.compass.v1beta1.GetGraphResponse.NodeAttributes
-	nil,                                      // 102: odpf.compass.v1beta1.GetGraphResponse.NodeAttrsEntry
-	nil,                                      // 103: odpf.compass.v1beta1.GetAllTypesRequest.DataEntry
-	nil,                                      // 104: odpf.compass.v1beta1.GetAllAssetsRequest.DataEntry
-	(*UpsertAssetRequest_Asset)(nil),         // 105: odpf.compass.v1beta1.UpsertAssetRequest.Asset
-	nil,                                      // 106: odpf.compass.v1beta1.UpsertAssetRequest.Asset.LabelsEntry
-	(*UpsertPatchAssetRequest_Asset)(nil),    // 107: odpf.compass.v1beta1.UpsertPatchAssetRequest.Asset
-	nil,                                      // 108: odpf.compass.v1beta1.UpsertPatchAssetRequest.Asset.LabelsEntry
-	(*CreateAssetProbeRequest_Probe)(nil),    // 109: odpf.compass.v1beta1.CreateAssetProbeRequest.Probe
-	nil,                                      // 110: odpf.compass.v1beta1.Asset.LabelsEntry
+var file_raystack_compass_v1beta1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 111)
+var file_raystack_compass_v1beta1_service_proto_goTypes = []interface{}{
+	(*GetAllDiscussionsRequest)(nil),         // 0: raystack.compass.v1beta1.GetAllDiscussionsRequest
+	(*GetAllDiscussionsResponse)(nil),        // 1: raystack.compass.v1beta1.GetAllDiscussionsResponse
+	(*CreateDiscussionRequest)(nil),          // 2: raystack.compass.v1beta1.CreateDiscussionRequest
+	(*CreateDiscussionResponse)(nil),         // 3: raystack.compass.v1beta1.CreateDiscussionResponse
+	(*GetDiscussionRequest)(nil),             // 4: raystack.compass.v1beta1.GetDiscussionRequest
+	(*GetDiscussionResponse)(nil),            // 5: raystack.compass.v1beta1.GetDiscussionResponse
+	(*PatchDiscussionRequest)(nil),           // 6: raystack.compass.v1beta1.PatchDiscussionRequest
+	(*CreateCommentRequest)(nil),             // 7: raystack.compass.v1beta1.CreateCommentRequest
+	(*PatchDiscussionResponse)(nil),          // 8: raystack.compass.v1beta1.PatchDiscussionResponse
+	(*CreateCommentResponse)(nil),            // 9: raystack.compass.v1beta1.CreateCommentResponse
+	(*GetAllCommentsRequest)(nil),            // 10: raystack.compass.v1beta1.GetAllCommentsRequest
+	(*GetAllCommentsResponse)(nil),           // 11: raystack.compass.v1beta1.GetAllCommentsResponse
+	(*GetCommentRequest)(nil),                // 12: raystack.compass.v1beta1.GetCommentRequest
+	(*GetCommentResponse)(nil),               // 13: raystack.compass.v1beta1.GetCommentResponse
+	(*UpdateCommentRequest)(nil),             // 14: raystack.compass.v1beta1.UpdateCommentRequest
+	(*UpdateCommentResponse)(nil),            // 15: raystack.compass.v1beta1.UpdateCommentResponse
+	(*DeleteCommentRequest)(nil),             // 16: raystack.compass.v1beta1.DeleteCommentRequest
+	(*DeleteCommentResponse)(nil),            // 17: raystack.compass.v1beta1.DeleteCommentResponse
+	(*SearchAssetsRequest)(nil),              // 18: raystack.compass.v1beta1.SearchAssetsRequest
+	(*SearchAssetsResponse)(nil),             // 19: raystack.compass.v1beta1.SearchAssetsResponse
+	(*SuggestAssetsRequest)(nil),             // 20: raystack.compass.v1beta1.SuggestAssetsRequest
+	(*SuggestAssetsResponse)(nil),            // 21: raystack.compass.v1beta1.SuggestAssetsResponse
+	(*GetGraphRequest)(nil),                  // 22: raystack.compass.v1beta1.GetGraphRequest
+	(*GetGraphResponse)(nil),                 // 23: raystack.compass.v1beta1.GetGraphResponse
+	(*GetAllTypesRequest)(nil),               // 24: raystack.compass.v1beta1.GetAllTypesRequest
+	(*GetAllTypesResponse)(nil),              // 25: raystack.compass.v1beta1.GetAllTypesResponse
+	(*GetAllAssetsRequest)(nil),              // 26: raystack.compass.v1beta1.GetAllAssetsRequest
+	(*GetAllAssetsResponse)(nil),             // 27: raystack.compass.v1beta1.GetAllAssetsResponse
+	(*GetAssetByIDRequest)(nil),              // 28: raystack.compass.v1beta1.GetAssetByIDRequest
+	(*GetAssetByIDResponse)(nil),             // 29: raystack.compass.v1beta1.GetAssetByIDResponse
+	(*UpsertAssetRequest)(nil),               // 30: raystack.compass.v1beta1.UpsertAssetRequest
+	(*UpsertAssetResponse)(nil),              // 31: raystack.compass.v1beta1.UpsertAssetResponse
+	(*UpsertPatchAssetRequest)(nil),          // 32: raystack.compass.v1beta1.UpsertPatchAssetRequest
+	(*UpsertPatchAssetResponse)(nil),         // 33: raystack.compass.v1beta1.UpsertPatchAssetResponse
+	(*DeleteAssetRequest)(nil),               // 34: raystack.compass.v1beta1.DeleteAssetRequest
+	(*DeleteAssetResponse)(nil),              // 35: raystack.compass.v1beta1.DeleteAssetResponse
+	(*GetAssetStargazersRequest)(nil),        // 36: raystack.compass.v1beta1.GetAssetStargazersRequest
+	(*GetAssetStargazersResponse)(nil),       // 37: raystack.compass.v1beta1.GetAssetStargazersResponse
+	(*GetAssetVersionHistoryRequest)(nil),    // 38: raystack.compass.v1beta1.GetAssetVersionHistoryRequest
+	(*GetAssetVersionHistoryResponse)(nil),   // 39: raystack.compass.v1beta1.GetAssetVersionHistoryResponse
+	(*GetAssetByVersionRequest)(nil),         // 40: raystack.compass.v1beta1.GetAssetByVersionRequest
+	(*GetAssetByVersionResponse)(nil),        // 41: raystack.compass.v1beta1.GetAssetByVersionResponse
+	(*CreateAssetProbeRequest)(nil),          // 42: raystack.compass.v1beta1.CreateAssetProbeRequest
+	(*CreateAssetProbeResponse)(nil),         // 43: raystack.compass.v1beta1.CreateAssetProbeResponse
+	(*GetUserStarredAssetsRequest)(nil),      // 44: raystack.compass.v1beta1.GetUserStarredAssetsRequest
+	(*GetUserStarredAssetsResponse)(nil),     // 45: raystack.compass.v1beta1.GetUserStarredAssetsResponse
+	(*GetMyStarredAssetsRequest)(nil),        // 46: raystack.compass.v1beta1.GetMyStarredAssetsRequest
+	(*GetMyStarredAssetsResponse)(nil),       // 47: raystack.compass.v1beta1.GetMyStarredAssetsResponse
+	(*GetMyStarredAssetRequest)(nil),         // 48: raystack.compass.v1beta1.GetMyStarredAssetRequest
+	(*GetMyStarredAssetResponse)(nil),        // 49: raystack.compass.v1beta1.GetMyStarredAssetResponse
+	(*StarAssetRequest)(nil),                 // 50: raystack.compass.v1beta1.StarAssetRequest
+	(*StarAssetResponse)(nil),                // 51: raystack.compass.v1beta1.StarAssetResponse
+	(*UnstarAssetRequest)(nil),               // 52: raystack.compass.v1beta1.UnstarAssetRequest
+	(*UnstarAssetResponse)(nil),              // 53: raystack.compass.v1beta1.UnstarAssetResponse
+	(*GetMyDiscussionsRequest)(nil),          // 54: raystack.compass.v1beta1.GetMyDiscussionsRequest
+	(*GetMyDiscussionsResponse)(nil),         // 55: raystack.compass.v1beta1.GetMyDiscussionsResponse
+	(*CreateTagAssetRequest)(nil),            // 56: raystack.compass.v1beta1.CreateTagAssetRequest
+	(*CreateTagAssetResponse)(nil),           // 57: raystack.compass.v1beta1.CreateTagAssetResponse
+	(*GetTagByAssetAndTemplateRequest)(nil),  // 58: raystack.compass.v1beta1.GetTagByAssetAndTemplateRequest
+	(*GetTagByAssetAndTemplateResponse)(nil), // 59: raystack.compass.v1beta1.GetTagByAssetAndTemplateResponse
+	(*UpdateTagAssetRequest)(nil),            // 60: raystack.compass.v1beta1.UpdateTagAssetRequest
+	(*UpdateTagAssetResponse)(nil),           // 61: raystack.compass.v1beta1.UpdateTagAssetResponse
+	(*DeleteTagAssetRequest)(nil),            // 62: raystack.compass.v1beta1.DeleteTagAssetRequest
+	(*DeleteTagAssetResponse)(nil),           // 63: raystack.compass.v1beta1.DeleteTagAssetResponse
+	(*GetAllTagsByAssetRequest)(nil),         // 64: raystack.compass.v1beta1.GetAllTagsByAssetRequest
+	(*GetAllTagsByAssetResponse)(nil),        // 65: raystack.compass.v1beta1.GetAllTagsByAssetResponse
+	(*GetAllTagTemplatesRequest)(nil),        // 66: raystack.compass.v1beta1.GetAllTagTemplatesRequest
+	(*GetAllTagTemplatesResponse)(nil),       // 67: raystack.compass.v1beta1.GetAllTagTemplatesResponse
+	(*CreateTagTemplateRequest)(nil),         // 68: raystack.compass.v1beta1.CreateTagTemplateRequest
+	(*CreateTagTemplateResponse)(nil),        // 69: raystack.compass.v1beta1.CreateTagTemplateResponse
+	(*GetTagTemplateRequest)(nil),            // 70: raystack.compass.v1beta1.GetTagTemplateRequest
+	(*GetTagTemplateResponse)(nil),           // 71: raystack.compass.v1beta1.GetTagTemplateResponse
+	(*UpdateTagTemplateRequest)(nil),         // 72: raystack.compass.v1beta1.UpdateTagTemplateRequest
+	(*UpdateTagTemplateResponse)(nil),        // 73: raystack.compass.v1beta1.UpdateTagTemplateResponse
+	(*DeleteTagTemplateRequest)(nil),         // 74: raystack.compass.v1beta1.DeleteTagTemplateRequest
+	(*DeleteTagTemplateResponse)(nil),        // 75: raystack.compass.v1beta1.DeleteTagTemplateResponse
+	(*CreateNamespaceRequest)(nil),           // 76: raystack.compass.v1beta1.CreateNamespaceRequest
+	(*CreateNamespaceResponse)(nil),          // 77: raystack.compass.v1beta1.CreateNamespaceResponse
+	(*GetNamespaceRequest)(nil),              // 78: raystack.compass.v1beta1.GetNamespaceRequest
+	(*GetNamespaceResponse)(nil),             // 79: raystack.compass.v1beta1.GetNamespaceResponse
+	(*UpdateNamespaceRequest)(nil),           // 80: raystack.compass.v1beta1.UpdateNamespaceRequest
+	(*UpdateNamespaceResponse)(nil),          // 81: raystack.compass.v1beta1.UpdateNamespaceResponse
+	(*ListNamespacesRequest)(nil),            // 82: raystack.compass.v1beta1.ListNamespacesRequest
+	(*ListNamespacesResponse)(nil),           // 83: raystack.compass.v1beta1.ListNamespacesResponse
+	(*User)(nil),                             // 84: raystack.compass.v1beta1.User
+	(*Change)(nil),                           // 85: raystack.compass.v1beta1.Change
+	(*Asset)(nil),                            // 86: raystack.compass.v1beta1.Asset
+	(*Probe)(nil),                            // 87: raystack.compass.v1beta1.Probe
+	(*Discussion)(nil),                       // 88: raystack.compass.v1beta1.Discussion
+	(*Comment)(nil),                          // 89: raystack.compass.v1beta1.Comment
+	(*LineageEdge)(nil),                      // 90: raystack.compass.v1beta1.LineageEdge
+	(*LineageNode)(nil),                      // 91: raystack.compass.v1beta1.LineageNode
+	(*Tag)(nil),                              // 92: raystack.compass.v1beta1.Tag
+	(*TagValue)(nil),                         // 93: raystack.compass.v1beta1.TagValue
+	(*TagTemplate)(nil),                      // 94: raystack.compass.v1beta1.TagTemplate
+	(*TagTemplateField)(nil),                 // 95: raystack.compass.v1beta1.TagTemplateField
+	(*Type)(nil),                             // 96: raystack.compass.v1beta1.Type
+	(*Namespace)(nil),                        // 97: raystack.compass.v1beta1.Namespace
+	nil,                                      // 98: raystack.compass.v1beta1.SearchAssetsRequest.FilterEntry
+	nil,                                      // 99: raystack.compass.v1beta1.SearchAssetsRequest.QueryEntry
+	(*GetGraphResponse_ProbesInfo)(nil),      // 100: raystack.compass.v1beta1.GetGraphResponse.ProbesInfo
+	(*GetGraphResponse_NodeAttributes)(nil),  // 101: raystack.compass.v1beta1.GetGraphResponse.NodeAttributes
+	nil,                                      // 102: raystack.compass.v1beta1.GetGraphResponse.NodeAttrsEntry
+	nil,                                      // 103: raystack.compass.v1beta1.GetAllTypesRequest.DataEntry
+	nil,                                      // 104: raystack.compass.v1beta1.GetAllAssetsRequest.DataEntry
+	(*UpsertAssetRequest_Asset)(nil),         // 105: raystack.compass.v1beta1.UpsertAssetRequest.Asset
+	nil,                                      // 106: raystack.compass.v1beta1.UpsertAssetRequest.Asset.LabelsEntry
+	(*UpsertPatchAssetRequest_Asset)(nil),    // 107: raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset
+	nil,                                      // 108: raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.LabelsEntry
+	(*CreateAssetProbeRequest_Probe)(nil),    // 109: raystack.compass.v1beta1.CreateAssetProbeRequest.Probe
+	nil,                                      // 110: raystack.compass.v1beta1.Asset.LabelsEntry
 	(*structpb.Struct)(nil),                  // 111: google.protobuf.Struct
 	(*timestamppb.Timestamp)(nil),            // 112: google.protobuf.Timestamp
 	(*structpb.Value)(nil),                   // 113: google.protobuf.Value
 	(*wrapperspb.StringValue)(nil),           // 114: google.protobuf.StringValue
 }
-var file_odpf_compass_v1beta1_service_proto_depIdxs = []int32{
-	88,  // 0: odpf.compass.v1beta1.GetAllDiscussionsResponse.data:type_name -> odpf.compass.v1beta1.Discussion
-	88,  // 1: odpf.compass.v1beta1.GetDiscussionResponse.data:type_name -> odpf.compass.v1beta1.Discussion
-	89,  // 2: odpf.compass.v1beta1.GetAllCommentsResponse.data:type_name -> odpf.compass.v1beta1.Comment
-	89,  // 3: odpf.compass.v1beta1.GetCommentResponse.data:type_name -> odpf.compass.v1beta1.Comment
-	98,  // 4: odpf.compass.v1beta1.SearchAssetsRequest.filter:type_name -> odpf.compass.v1beta1.SearchAssetsRequest.FilterEntry
-	99,  // 5: odpf.compass.v1beta1.SearchAssetsRequest.query:type_name -> odpf.compass.v1beta1.SearchAssetsRequest.QueryEntry
-	86,  // 6: odpf.compass.v1beta1.SearchAssetsResponse.data:type_name -> odpf.compass.v1beta1.Asset
-	90,  // 7: odpf.compass.v1beta1.GetGraphResponse.data:type_name -> odpf.compass.v1beta1.LineageEdge
-	102, // 8: odpf.compass.v1beta1.GetGraphResponse.node_attrs:type_name -> odpf.compass.v1beta1.GetGraphResponse.NodeAttrsEntry
-	103, // 9: odpf.compass.v1beta1.GetAllTypesRequest.data:type_name -> odpf.compass.v1beta1.GetAllTypesRequest.DataEntry
-	96,  // 10: odpf.compass.v1beta1.GetAllTypesResponse.data:type_name -> odpf.compass.v1beta1.Type
-	104, // 11: odpf.compass.v1beta1.GetAllAssetsRequest.data:type_name -> odpf.compass.v1beta1.GetAllAssetsRequest.DataEntry
-	86,  // 12: odpf.compass.v1beta1.GetAllAssetsResponse.data:type_name -> odpf.compass.v1beta1.Asset
-	86,  // 13: odpf.compass.v1beta1.GetAssetByIDResponse.data:type_name -> odpf.compass.v1beta1.Asset
-	105, // 14: odpf.compass.v1beta1.UpsertAssetRequest.asset:type_name -> odpf.compass.v1beta1.UpsertAssetRequest.Asset
-	91,  // 15: odpf.compass.v1beta1.UpsertAssetRequest.upstreams:type_name -> odpf.compass.v1beta1.LineageNode
-	91,  // 16: odpf.compass.v1beta1.UpsertAssetRequest.downstreams:type_name -> odpf.compass.v1beta1.LineageNode
-	107, // 17: odpf.compass.v1beta1.UpsertPatchAssetRequest.asset:type_name -> odpf.compass.v1beta1.UpsertPatchAssetRequest.Asset
-	91,  // 18: odpf.compass.v1beta1.UpsertPatchAssetRequest.upstreams:type_name -> odpf.compass.v1beta1.LineageNode
-	91,  // 19: odpf.compass.v1beta1.UpsertPatchAssetRequest.downstreams:type_name -> odpf.compass.v1beta1.LineageNode
-	84,  // 20: odpf.compass.v1beta1.GetAssetStargazersResponse.data:type_name -> odpf.compass.v1beta1.User
-	86,  // 21: odpf.compass.v1beta1.GetAssetVersionHistoryResponse.data:type_name -> odpf.compass.v1beta1.Asset
-	86,  // 22: odpf.compass.v1beta1.GetAssetByVersionResponse.data:type_name -> odpf.compass.v1beta1.Asset
-	109, // 23: odpf.compass.v1beta1.CreateAssetProbeRequest.probe:type_name -> odpf.compass.v1beta1.CreateAssetProbeRequest.Probe
-	86,  // 24: odpf.compass.v1beta1.GetUserStarredAssetsResponse.data:type_name -> odpf.compass.v1beta1.Asset
-	86,  // 25: odpf.compass.v1beta1.GetMyStarredAssetsResponse.data:type_name -> odpf.compass.v1beta1.Asset
-	86,  // 26: odpf.compass.v1beta1.GetMyStarredAssetResponse.data:type_name -> odpf.compass.v1beta1.Asset
-	88,  // 27: odpf.compass.v1beta1.GetMyDiscussionsResponse.data:type_name -> odpf.compass.v1beta1.Discussion
-	93,  // 28: odpf.compass.v1beta1.CreateTagAssetRequest.tag_values:type_name -> odpf.compass.v1beta1.TagValue
-	92,  // 29: odpf.compass.v1beta1.CreateTagAssetResponse.data:type_name -> odpf.compass.v1beta1.Tag
-	92,  // 30: odpf.compass.v1beta1.GetTagByAssetAndTemplateResponse.data:type_name -> odpf.compass.v1beta1.Tag
-	93,  // 31: odpf.compass.v1beta1.UpdateTagAssetRequest.tag_values:type_name -> odpf.compass.v1beta1.TagValue
-	92,  // 32: odpf.compass.v1beta1.UpdateTagAssetResponse.data:type_name -> odpf.compass.v1beta1.Tag
-	92,  // 33: odpf.compass.v1beta1.GetAllTagsByAssetResponse.data:type_name -> odpf.compass.v1beta1.Tag
-	94,  // 34: odpf.compass.v1beta1.GetAllTagTemplatesResponse.data:type_name -> odpf.compass.v1beta1.TagTemplate
-	95,  // 35: odpf.compass.v1beta1.CreateTagTemplateRequest.fields:type_name -> odpf.compass.v1beta1.TagTemplateField
-	94,  // 36: odpf.compass.v1beta1.CreateTagTemplateResponse.data:type_name -> odpf.compass.v1beta1.TagTemplate
-	94,  // 37: odpf.compass.v1beta1.GetTagTemplateResponse.data:type_name -> odpf.compass.v1beta1.TagTemplate
-	95,  // 38: odpf.compass.v1beta1.UpdateTagTemplateRequest.fields:type_name -> odpf.compass.v1beta1.TagTemplateField
-	94,  // 39: odpf.compass.v1beta1.UpdateTagTemplateResponse.data:type_name -> odpf.compass.v1beta1.TagTemplate
-	111, // 40: odpf.compass.v1beta1.CreateNamespaceRequest.metadata:type_name -> google.protobuf.Struct
-	97,  // 41: odpf.compass.v1beta1.GetNamespaceResponse.namespace:type_name -> odpf.compass.v1beta1.Namespace
-	111, // 42: odpf.compass.v1beta1.UpdateNamespaceRequest.metadata:type_name -> google.protobuf.Struct
-	97,  // 43: odpf.compass.v1beta1.ListNamespacesResponse.namespaces:type_name -> odpf.compass.v1beta1.Namespace
-	112, // 44: odpf.compass.v1beta1.User.created_at:type_name -> google.protobuf.Timestamp
-	112, // 45: odpf.compass.v1beta1.User.updated_at:type_name -> google.protobuf.Timestamp
-	113, // 46: odpf.compass.v1beta1.Change.from:type_name -> google.protobuf.Value
-	113, // 47: odpf.compass.v1beta1.Change.to:type_name -> google.protobuf.Value
-	111, // 48: odpf.compass.v1beta1.Asset.data:type_name -> google.protobuf.Struct
-	110, // 49: odpf.compass.v1beta1.Asset.labels:type_name -> odpf.compass.v1beta1.Asset.LabelsEntry
-	84,  // 50: odpf.compass.v1beta1.Asset.owners:type_name -> odpf.compass.v1beta1.User
-	84,  // 51: odpf.compass.v1beta1.Asset.updated_by:type_name -> odpf.compass.v1beta1.User
-	85,  // 52: odpf.compass.v1beta1.Asset.changelog:type_name -> odpf.compass.v1beta1.Change
-	112, // 53: odpf.compass.v1beta1.Asset.created_at:type_name -> google.protobuf.Timestamp
-	112, // 54: odpf.compass.v1beta1.Asset.updated_at:type_name -> google.protobuf.Timestamp
-	87,  // 55: odpf.compass.v1beta1.Asset.probes:type_name -> odpf.compass.v1beta1.Probe
-	111, // 56: odpf.compass.v1beta1.Probe.metadata:type_name -> google.protobuf.Struct
-	112, // 57: odpf.compass.v1beta1.Probe.timestamp:type_name -> google.protobuf.Timestamp
-	112, // 58: odpf.compass.v1beta1.Probe.created_at:type_name -> google.protobuf.Timestamp
-	84,  // 59: odpf.compass.v1beta1.Discussion.owner:type_name -> odpf.compass.v1beta1.User
-	112, // 60: odpf.compass.v1beta1.Discussion.created_at:type_name -> google.protobuf.Timestamp
-	112, // 61: odpf.compass.v1beta1.Discussion.updated_at:type_name -> google.protobuf.Timestamp
-	84,  // 62: odpf.compass.v1beta1.Comment.owner:type_name -> odpf.compass.v1beta1.User
-	84,  // 63: odpf.compass.v1beta1.Comment.updated_by:type_name -> odpf.compass.v1beta1.User
-	112, // 64: odpf.compass.v1beta1.Comment.created_at:type_name -> google.protobuf.Timestamp
-	112, // 65: odpf.compass.v1beta1.Comment.updated_at:type_name -> google.protobuf.Timestamp
-	111, // 66: odpf.compass.v1beta1.LineageEdge.prop:type_name -> google.protobuf.Struct
-	93,  // 67: odpf.compass.v1beta1.Tag.tag_values:type_name -> odpf.compass.v1beta1.TagValue
-	113, // 68: odpf.compass.v1beta1.TagValue.field_value:type_name -> google.protobuf.Value
-	112, // 69: odpf.compass.v1beta1.TagValue.created_at:type_name -> google.protobuf.Timestamp
-	112, // 70: odpf.compass.v1beta1.TagValue.updated_at:type_name -> google.protobuf.Timestamp
-	95,  // 71: odpf.compass.v1beta1.TagTemplate.fields:type_name -> odpf.compass.v1beta1.TagTemplateField
-	112, // 72: odpf.compass.v1beta1.TagTemplate.created_at:type_name -> google.protobuf.Timestamp
-	112, // 73: odpf.compass.v1beta1.TagTemplate.updated_at:type_name -> google.protobuf.Timestamp
-	112, // 74: odpf.compass.v1beta1.TagTemplateField.created_at:type_name -> google.protobuf.Timestamp
-	112, // 75: odpf.compass.v1beta1.TagTemplateField.updated_at:type_name -> google.protobuf.Timestamp
-	111, // 76: odpf.compass.v1beta1.Namespace.metadata:type_name -> google.protobuf.Struct
-	87,  // 77: odpf.compass.v1beta1.GetGraphResponse.ProbesInfo.latest:type_name -> odpf.compass.v1beta1.Probe
-	100, // 78: odpf.compass.v1beta1.GetGraphResponse.NodeAttributes.probes:type_name -> odpf.compass.v1beta1.GetGraphResponse.ProbesInfo
-	101, // 79: odpf.compass.v1beta1.GetGraphResponse.NodeAttrsEntry.value:type_name -> odpf.compass.v1beta1.GetGraphResponse.NodeAttributes
-	111, // 80: odpf.compass.v1beta1.UpsertAssetRequest.Asset.data:type_name -> google.protobuf.Struct
-	106, // 81: odpf.compass.v1beta1.UpsertAssetRequest.Asset.labels:type_name -> odpf.compass.v1beta1.UpsertAssetRequest.Asset.LabelsEntry
-	84,  // 82: odpf.compass.v1beta1.UpsertAssetRequest.Asset.owners:type_name -> odpf.compass.v1beta1.User
-	114, // 83: odpf.compass.v1beta1.UpsertPatchAssetRequest.Asset.name:type_name -> google.protobuf.StringValue
-	114, // 84: odpf.compass.v1beta1.UpsertPatchAssetRequest.Asset.description:type_name -> google.protobuf.StringValue
-	111, // 85: odpf.compass.v1beta1.UpsertPatchAssetRequest.Asset.data:type_name -> google.protobuf.Struct
-	108, // 86: odpf.compass.v1beta1.UpsertPatchAssetRequest.Asset.labels:type_name -> odpf.compass.v1beta1.UpsertPatchAssetRequest.Asset.LabelsEntry
-	84,  // 87: odpf.compass.v1beta1.UpsertPatchAssetRequest.Asset.owners:type_name -> odpf.compass.v1beta1.User
-	111, // 88: odpf.compass.v1beta1.CreateAssetProbeRequest.Probe.metadata:type_name -> google.protobuf.Struct
-	112, // 89: odpf.compass.v1beta1.CreateAssetProbeRequest.Probe.timestamp:type_name -> google.protobuf.Timestamp
-	0,   // 90: odpf.compass.v1beta1.CompassService.GetAllDiscussions:input_type -> odpf.compass.v1beta1.GetAllDiscussionsRequest
-	2,   // 91: odpf.compass.v1beta1.CompassService.CreateDiscussion:input_type -> odpf.compass.v1beta1.CreateDiscussionRequest
-	4,   // 92: odpf.compass.v1beta1.CompassService.GetDiscussion:input_type -> odpf.compass.v1beta1.GetDiscussionRequest
-	6,   // 93: odpf.compass.v1beta1.CompassService.PatchDiscussion:input_type -> odpf.compass.v1beta1.PatchDiscussionRequest
-	7,   // 94: odpf.compass.v1beta1.CompassService.CreateComment:input_type -> odpf.compass.v1beta1.CreateCommentRequest
-	10,  // 95: odpf.compass.v1beta1.CompassService.GetAllComments:input_type -> odpf.compass.v1beta1.GetAllCommentsRequest
-	12,  // 96: odpf.compass.v1beta1.CompassService.GetComment:input_type -> odpf.compass.v1beta1.GetCommentRequest
-	14,  // 97: odpf.compass.v1beta1.CompassService.UpdateComment:input_type -> odpf.compass.v1beta1.UpdateCommentRequest
-	16,  // 98: odpf.compass.v1beta1.CompassService.DeleteComment:input_type -> odpf.compass.v1beta1.DeleteCommentRequest
-	18,  // 99: odpf.compass.v1beta1.CompassService.SearchAssets:input_type -> odpf.compass.v1beta1.SearchAssetsRequest
-	20,  // 100: odpf.compass.v1beta1.CompassService.SuggestAssets:input_type -> odpf.compass.v1beta1.SuggestAssetsRequest
-	22,  // 101: odpf.compass.v1beta1.CompassService.GetGraph:input_type -> odpf.compass.v1beta1.GetGraphRequest
-	24,  // 102: odpf.compass.v1beta1.CompassService.GetAllTypes:input_type -> odpf.compass.v1beta1.GetAllTypesRequest
-	26,  // 103: odpf.compass.v1beta1.CompassService.GetAllAssets:input_type -> odpf.compass.v1beta1.GetAllAssetsRequest
-	28,  // 104: odpf.compass.v1beta1.CompassService.GetAssetByID:input_type -> odpf.compass.v1beta1.GetAssetByIDRequest
-	30,  // 105: odpf.compass.v1beta1.CompassService.UpsertAsset:input_type -> odpf.compass.v1beta1.UpsertAssetRequest
-	32,  // 106: odpf.compass.v1beta1.CompassService.UpsertPatchAsset:input_type -> odpf.compass.v1beta1.UpsertPatchAssetRequest
-	34,  // 107: odpf.compass.v1beta1.CompassService.DeleteAsset:input_type -> odpf.compass.v1beta1.DeleteAssetRequest
-	36,  // 108: odpf.compass.v1beta1.CompassService.GetAssetStargazers:input_type -> odpf.compass.v1beta1.GetAssetStargazersRequest
-	38,  // 109: odpf.compass.v1beta1.CompassService.GetAssetVersionHistory:input_type -> odpf.compass.v1beta1.GetAssetVersionHistoryRequest
-	40,  // 110: odpf.compass.v1beta1.CompassService.GetAssetByVersion:input_type -> odpf.compass.v1beta1.GetAssetByVersionRequest
-	42,  // 111: odpf.compass.v1beta1.CompassService.CreateAssetProbe:input_type -> odpf.compass.v1beta1.CreateAssetProbeRequest
-	44,  // 112: odpf.compass.v1beta1.CompassService.GetUserStarredAssets:input_type -> odpf.compass.v1beta1.GetUserStarredAssetsRequest
-	46,  // 113: odpf.compass.v1beta1.CompassService.GetMyStarredAssets:input_type -> odpf.compass.v1beta1.GetMyStarredAssetsRequest
-	48,  // 114: odpf.compass.v1beta1.CompassService.GetMyStarredAsset:input_type -> odpf.compass.v1beta1.GetMyStarredAssetRequest
-	50,  // 115: odpf.compass.v1beta1.CompassService.StarAsset:input_type -> odpf.compass.v1beta1.StarAssetRequest
-	52,  // 116: odpf.compass.v1beta1.CompassService.UnstarAsset:input_type -> odpf.compass.v1beta1.UnstarAssetRequest
-	54,  // 117: odpf.compass.v1beta1.CompassService.GetMyDiscussions:input_type -> odpf.compass.v1beta1.GetMyDiscussionsRequest
-	56,  // 118: odpf.compass.v1beta1.CompassService.CreateTagAsset:input_type -> odpf.compass.v1beta1.CreateTagAssetRequest
-	58,  // 119: odpf.compass.v1beta1.CompassService.GetTagByAssetAndTemplate:input_type -> odpf.compass.v1beta1.GetTagByAssetAndTemplateRequest
-	60,  // 120: odpf.compass.v1beta1.CompassService.UpdateTagAsset:input_type -> odpf.compass.v1beta1.UpdateTagAssetRequest
-	62,  // 121: odpf.compass.v1beta1.CompassService.DeleteTagAsset:input_type -> odpf.compass.v1beta1.DeleteTagAssetRequest
-	64,  // 122: odpf.compass.v1beta1.CompassService.GetAllTagsByAsset:input_type -> odpf.compass.v1beta1.GetAllTagsByAssetRequest
-	66,  // 123: odpf.compass.v1beta1.CompassService.GetAllTagTemplates:input_type -> odpf.compass.v1beta1.GetAllTagTemplatesRequest
-	68,  // 124: odpf.compass.v1beta1.CompassService.CreateTagTemplate:input_type -> odpf.compass.v1beta1.CreateTagTemplateRequest
-	70,  // 125: odpf.compass.v1beta1.CompassService.GetTagTemplate:input_type -> odpf.compass.v1beta1.GetTagTemplateRequest
-	72,  // 126: odpf.compass.v1beta1.CompassService.UpdateTagTemplate:input_type -> odpf.compass.v1beta1.UpdateTagTemplateRequest
-	74,  // 127: odpf.compass.v1beta1.CompassService.DeleteTagTemplate:input_type -> odpf.compass.v1beta1.DeleteTagTemplateRequest
-	76,  // 128: odpf.compass.v1beta1.CompassService.CreateNamespace:input_type -> odpf.compass.v1beta1.CreateNamespaceRequest
-	78,  // 129: odpf.compass.v1beta1.CompassService.GetNamespace:input_type -> odpf.compass.v1beta1.GetNamespaceRequest
-	80,  // 130: odpf.compass.v1beta1.CompassService.UpdateNamespace:input_type -> odpf.compass.v1beta1.UpdateNamespaceRequest
-	82,  // 131: odpf.compass.v1beta1.CompassService.ListNamespaces:input_type -> odpf.compass.v1beta1.ListNamespacesRequest
-	1,   // 132: odpf.compass.v1beta1.CompassService.GetAllDiscussions:output_type -> odpf.compass.v1beta1.GetAllDiscussionsResponse
-	3,   // 133: odpf.compass.v1beta1.CompassService.CreateDiscussion:output_type -> odpf.compass.v1beta1.CreateDiscussionResponse
-	5,   // 134: odpf.compass.v1beta1.CompassService.GetDiscussion:output_type -> odpf.compass.v1beta1.GetDiscussionResponse
-	8,   // 135: odpf.compass.v1beta1.CompassService.PatchDiscussion:output_type -> odpf.compass.v1beta1.PatchDiscussionResponse
-	9,   // 136: odpf.compass.v1beta1.CompassService.CreateComment:output_type -> odpf.compass.v1beta1.CreateCommentResponse
-	11,  // 137: odpf.compass.v1beta1.CompassService.GetAllComments:output_type -> odpf.compass.v1beta1.GetAllCommentsResponse
-	13,  // 138: odpf.compass.v1beta1.CompassService.GetComment:output_type -> odpf.compass.v1beta1.GetCommentResponse
-	15,  // 139: odpf.compass.v1beta1.CompassService.UpdateComment:output_type -> odpf.compass.v1beta1.UpdateCommentResponse
-	17,  // 140: odpf.compass.v1beta1.CompassService.DeleteComment:output_type -> odpf.compass.v1beta1.DeleteCommentResponse
-	19,  // 141: odpf.compass.v1beta1.CompassService.SearchAssets:output_type -> odpf.compass.v1beta1.SearchAssetsResponse
-	21,  // 142: odpf.compass.v1beta1.CompassService.SuggestAssets:output_type -> odpf.compass.v1beta1.SuggestAssetsResponse
-	23,  // 143: odpf.compass.v1beta1.CompassService.GetGraph:output_type -> odpf.compass.v1beta1.GetGraphResponse
-	25,  // 144: odpf.compass.v1beta1.CompassService.GetAllTypes:output_type -> odpf.compass.v1beta1.GetAllTypesResponse
-	27,  // 145: odpf.compass.v1beta1.CompassService.GetAllAssets:output_type -> odpf.compass.v1beta1.GetAllAssetsResponse
-	29,  // 146: odpf.compass.v1beta1.CompassService.GetAssetByID:output_type -> odpf.compass.v1beta1.GetAssetByIDResponse
-	31,  // 147: odpf.compass.v1beta1.CompassService.UpsertAsset:output_type -> odpf.compass.v1beta1.UpsertAssetResponse
-	33,  // 148: odpf.compass.v1beta1.CompassService.UpsertPatchAsset:output_type -> odpf.compass.v1beta1.UpsertPatchAssetResponse
-	35,  // 149: odpf.compass.v1beta1.CompassService.DeleteAsset:output_type -> odpf.compass.v1beta1.DeleteAssetResponse
-	37,  // 150: odpf.compass.v1beta1.CompassService.GetAssetStargazers:output_type -> odpf.compass.v1beta1.GetAssetStargazersResponse
-	39,  // 151: odpf.compass.v1beta1.CompassService.GetAssetVersionHistory:output_type -> odpf.compass.v1beta1.GetAssetVersionHistoryResponse
-	41,  // 152: odpf.compass.v1beta1.CompassService.GetAssetByVersion:output_type -> odpf.compass.v1beta1.GetAssetByVersionResponse
-	43,  // 153: odpf.compass.v1beta1.CompassService.CreateAssetProbe:output_type -> odpf.compass.v1beta1.CreateAssetProbeResponse
-	45,  // 154: odpf.compass.v1beta1.CompassService.GetUserStarredAssets:output_type -> odpf.compass.v1beta1.GetUserStarredAssetsResponse
-	47,  // 155: odpf.compass.v1beta1.CompassService.GetMyStarredAssets:output_type -> odpf.compass.v1beta1.GetMyStarredAssetsResponse
-	49,  // 156: odpf.compass.v1beta1.CompassService.GetMyStarredAsset:output_type -> odpf.compass.v1beta1.GetMyStarredAssetResponse
-	51,  // 157: odpf.compass.v1beta1.CompassService.StarAsset:output_type -> odpf.compass.v1beta1.StarAssetResponse
-	53,  // 158: odpf.compass.v1beta1.CompassService.UnstarAsset:output_type -> odpf.compass.v1beta1.UnstarAssetResponse
-	55,  // 159: odpf.compass.v1beta1.CompassService.GetMyDiscussions:output_type -> odpf.compass.v1beta1.GetMyDiscussionsResponse
-	57,  // 160: odpf.compass.v1beta1.CompassService.CreateTagAsset:output_type -> odpf.compass.v1beta1.CreateTagAssetResponse
-	59,  // 161: odpf.compass.v1beta1.CompassService.GetTagByAssetAndTemplate:output_type -> odpf.compass.v1beta1.GetTagByAssetAndTemplateResponse
-	61,  // 162: odpf.compass.v1beta1.CompassService.UpdateTagAsset:output_type -> odpf.compass.v1beta1.UpdateTagAssetResponse
-	63,  // 163: odpf.compass.v1beta1.CompassService.DeleteTagAsset:output_type -> odpf.compass.v1beta1.DeleteTagAssetResponse
-	65,  // 164: odpf.compass.v1beta1.CompassService.GetAllTagsByAsset:output_type -> odpf.compass.v1beta1.GetAllTagsByAssetResponse
-	67,  // 165: odpf.compass.v1beta1.CompassService.GetAllTagTemplates:output_type -> odpf.compass.v1beta1.GetAllTagTemplatesResponse
-	69,  // 166: odpf.compass.v1beta1.CompassService.CreateTagTemplate:output_type -> odpf.compass.v1beta1.CreateTagTemplateResponse
-	71,  // 167: odpf.compass.v1beta1.CompassService.GetTagTemplate:output_type -> odpf.compass.v1beta1.GetTagTemplateResponse
-	73,  // 168: odpf.compass.v1beta1.CompassService.UpdateTagTemplate:output_type -> odpf.compass.v1beta1.UpdateTagTemplateResponse
-	75,  // 169: odpf.compass.v1beta1.CompassService.DeleteTagTemplate:output_type -> odpf.compass.v1beta1.DeleteTagTemplateResponse
-	77,  // 170: odpf.compass.v1beta1.CompassService.CreateNamespace:output_type -> odpf.compass.v1beta1.CreateNamespaceResponse
-	79,  // 171: odpf.compass.v1beta1.CompassService.GetNamespace:output_type -> odpf.compass.v1beta1.GetNamespaceResponse
-	81,  // 172: odpf.compass.v1beta1.CompassService.UpdateNamespace:output_type -> odpf.compass.v1beta1.UpdateNamespaceResponse
-	83,  // 173: odpf.compass.v1beta1.CompassService.ListNamespaces:output_type -> odpf.compass.v1beta1.ListNamespacesResponse
+var file_raystack_compass_v1beta1_service_proto_depIdxs = []int32{
+	88,  // 0: raystack.compass.v1beta1.GetAllDiscussionsResponse.data:type_name -> raystack.compass.v1beta1.Discussion
+	88,  // 1: raystack.compass.v1beta1.GetDiscussionResponse.data:type_name -> raystack.compass.v1beta1.Discussion
+	89,  // 2: raystack.compass.v1beta1.GetAllCommentsResponse.data:type_name -> raystack.compass.v1beta1.Comment
+	89,  // 3: raystack.compass.v1beta1.GetCommentResponse.data:type_name -> raystack.compass.v1beta1.Comment
+	98,  // 4: raystack.compass.v1beta1.SearchAssetsRequest.filter:type_name -> raystack.compass.v1beta1.SearchAssetsRequest.FilterEntry
+	99,  // 5: raystack.compass.v1beta1.SearchAssetsRequest.query:type_name -> raystack.compass.v1beta1.SearchAssetsRequest.QueryEntry
+	86,  // 6: raystack.compass.v1beta1.SearchAssetsResponse.data:type_name -> raystack.compass.v1beta1.Asset
+	90,  // 7: raystack.compass.v1beta1.GetGraphResponse.data:type_name -> raystack.compass.v1beta1.LineageEdge
+	102, // 8: raystack.compass.v1beta1.GetGraphResponse.node_attrs:type_name -> raystack.compass.v1beta1.GetGraphResponse.NodeAttrsEntry
+	103, // 9: raystack.compass.v1beta1.GetAllTypesRequest.data:type_name -> raystack.compass.v1beta1.GetAllTypesRequest.DataEntry
+	96,  // 10: raystack.compass.v1beta1.GetAllTypesResponse.data:type_name -> raystack.compass.v1beta1.Type
+	104, // 11: raystack.compass.v1beta1.GetAllAssetsRequest.data:type_name -> raystack.compass.v1beta1.GetAllAssetsRequest.DataEntry
+	86,  // 12: raystack.compass.v1beta1.GetAllAssetsResponse.data:type_name -> raystack.compass.v1beta1.Asset
+	86,  // 13: raystack.compass.v1beta1.GetAssetByIDResponse.data:type_name -> raystack.compass.v1beta1.Asset
+	105, // 14: raystack.compass.v1beta1.UpsertAssetRequest.asset:type_name -> raystack.compass.v1beta1.UpsertAssetRequest.Asset
+	91,  // 15: raystack.compass.v1beta1.UpsertAssetRequest.upstreams:type_name -> raystack.compass.v1beta1.LineageNode
+	91,  // 16: raystack.compass.v1beta1.UpsertAssetRequest.downstreams:type_name -> raystack.compass.v1beta1.LineageNode
+	107, // 17: raystack.compass.v1beta1.UpsertPatchAssetRequest.asset:type_name -> raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset
+	91,  // 18: raystack.compass.v1beta1.UpsertPatchAssetRequest.upstreams:type_name -> raystack.compass.v1beta1.LineageNode
+	91,  // 19: raystack.compass.v1beta1.UpsertPatchAssetRequest.downstreams:type_name -> raystack.compass.v1beta1.LineageNode
+	84,  // 20: raystack.compass.v1beta1.GetAssetStargazersResponse.data:type_name -> raystack.compass.v1beta1.User
+	86,  // 21: raystack.compass.v1beta1.GetAssetVersionHistoryResponse.data:type_name -> raystack.compass.v1beta1.Asset
+	86,  // 22: raystack.compass.v1beta1.GetAssetByVersionResponse.data:type_name -> raystack.compass.v1beta1.Asset
+	109, // 23: raystack.compass.v1beta1.CreateAssetProbeRequest.probe:type_name -> raystack.compass.v1beta1.CreateAssetProbeRequest.Probe
+	86,  // 24: raystack.compass.v1beta1.GetUserStarredAssetsResponse.data:type_name -> raystack.compass.v1beta1.Asset
+	86,  // 25: raystack.compass.v1beta1.GetMyStarredAssetsResponse.data:type_name -> raystack.compass.v1beta1.Asset
+	86,  // 26: raystack.compass.v1beta1.GetMyStarredAssetResponse.data:type_name -> raystack.compass.v1beta1.Asset
+	88,  // 27: raystack.compass.v1beta1.GetMyDiscussionsResponse.data:type_name -> raystack.compass.v1beta1.Discussion
+	93,  // 28: raystack.compass.v1beta1.CreateTagAssetRequest.tag_values:type_name -> raystack.compass.v1beta1.TagValue
+	92,  // 29: raystack.compass.v1beta1.CreateTagAssetResponse.data:type_name -> raystack.compass.v1beta1.Tag
+	92,  // 30: raystack.compass.v1beta1.GetTagByAssetAndTemplateResponse.data:type_name -> raystack.compass.v1beta1.Tag
+	93,  // 31: raystack.compass.v1beta1.UpdateTagAssetRequest.tag_values:type_name -> raystack.compass.v1beta1.TagValue
+	92,  // 32: raystack.compass.v1beta1.UpdateTagAssetResponse.data:type_name -> raystack.compass.v1beta1.Tag
+	92,  // 33: raystack.compass.v1beta1.GetAllTagsByAssetResponse.data:type_name -> raystack.compass.v1beta1.Tag
+	94,  // 34: raystack.compass.v1beta1.GetAllTagTemplatesResponse.data:type_name -> raystack.compass.v1beta1.TagTemplate
+	95,  // 35: raystack.compass.v1beta1.CreateTagTemplateRequest.fields:type_name -> raystack.compass.v1beta1.TagTemplateField
+	94,  // 36: raystack.compass.v1beta1.CreateTagTemplateResponse.data:type_name -> raystack.compass.v1beta1.TagTemplate
+	94,  // 37: raystack.compass.v1beta1.GetTagTemplateResponse.data:type_name -> raystack.compass.v1beta1.TagTemplate
+	95,  // 38: raystack.compass.v1beta1.UpdateTagTemplateRequest.fields:type_name -> raystack.compass.v1beta1.TagTemplateField
+	94,  // 39: raystack.compass.v1beta1.UpdateTagTemplateResponse.data:type_name -> raystack.compass.v1beta1.TagTemplate
+	111, // 40: raystack.compass.v1beta1.CreateNamespaceRequest.metadata:type_name -> google.protobuf.Struct
+	97,  // 41: raystack.compass.v1beta1.GetNamespaceResponse.namespace:type_name -> raystack.compass.v1beta1.Namespace
+	111, // 42: raystack.compass.v1beta1.UpdateNamespaceRequest.metadata:type_name -> google.protobuf.Struct
+	97,  // 43: raystack.compass.v1beta1.ListNamespacesResponse.namespaces:type_name -> raystack.compass.v1beta1.Namespace
+	112, // 44: raystack.compass.v1beta1.User.created_at:type_name -> google.protobuf.Timestamp
+	112, // 45: raystack.compass.v1beta1.User.updated_at:type_name -> google.protobuf.Timestamp
+	113, // 46: raystack.compass.v1beta1.Change.from:type_name -> google.protobuf.Value
+	113, // 47: raystack.compass.v1beta1.Change.to:type_name -> google.protobuf.Value
+	111, // 48: raystack.compass.v1beta1.Asset.data:type_name -> google.protobuf.Struct
+	110, // 49: raystack.compass.v1beta1.Asset.labels:type_name -> raystack.compass.v1beta1.Asset.LabelsEntry
+	84,  // 50: raystack.compass.v1beta1.Asset.owners:type_name -> raystack.compass.v1beta1.User
+	84,  // 51: raystack.compass.v1beta1.Asset.updated_by:type_name -> raystack.compass.v1beta1.User
+	85,  // 52: raystack.compass.v1beta1.Asset.changelog:type_name -> raystack.compass.v1beta1.Change
+	112, // 53: raystack.compass.v1beta1.Asset.created_at:type_name -> google.protobuf.Timestamp
+	112, // 54: raystack.compass.v1beta1.Asset.updated_at:type_name -> google.protobuf.Timestamp
+	87,  // 55: raystack.compass.v1beta1.Asset.probes:type_name -> raystack.compass.v1beta1.Probe
+	111, // 56: raystack.compass.v1beta1.Probe.metadata:type_name -> google.protobuf.Struct
+	112, // 57: raystack.compass.v1beta1.Probe.timestamp:type_name -> google.protobuf.Timestamp
+	112, // 58: raystack.compass.v1beta1.Probe.created_at:type_name -> google.protobuf.Timestamp
+	84,  // 59: raystack.compass.v1beta1.Discussion.owner:type_name -> raystack.compass.v1beta1.User
+	112, // 60: raystack.compass.v1beta1.Discussion.created_at:type_name -> google.protobuf.Timestamp
+	112, // 61: raystack.compass.v1beta1.Discussion.updated_at:type_name -> google.protobuf.Timestamp
+	84,  // 62: raystack.compass.v1beta1.Comment.owner:type_name -> raystack.compass.v1beta1.User
+	84,  // 63: raystack.compass.v1beta1.Comment.updated_by:type_name -> raystack.compass.v1beta1.User
+	112, // 64: raystack.compass.v1beta1.Comment.created_at:type_name -> google.protobuf.Timestamp
+	112, // 65: raystack.compass.v1beta1.Comment.updated_at:type_name -> google.protobuf.Timestamp
+	111, // 66: raystack.compass.v1beta1.LineageEdge.prop:type_name -> google.protobuf.Struct
+	93,  // 67: raystack.compass.v1beta1.Tag.tag_values:type_name -> raystack.compass.v1beta1.TagValue
+	113, // 68: raystack.compass.v1beta1.TagValue.field_value:type_name -> google.protobuf.Value
+	112, // 69: raystack.compass.v1beta1.TagValue.created_at:type_name -> google.protobuf.Timestamp
+	112, // 70: raystack.compass.v1beta1.TagValue.updated_at:type_name -> google.protobuf.Timestamp
+	95,  // 71: raystack.compass.v1beta1.TagTemplate.fields:type_name -> raystack.compass.v1beta1.TagTemplateField
+	112, // 72: raystack.compass.v1beta1.TagTemplate.created_at:type_name -> google.protobuf.Timestamp
+	112, // 73: raystack.compass.v1beta1.TagTemplate.updated_at:type_name -> google.protobuf.Timestamp
+	112, // 74: raystack.compass.v1beta1.TagTemplateField.created_at:type_name -> google.protobuf.Timestamp
+	112, // 75: raystack.compass.v1beta1.TagTemplateField.updated_at:type_name -> google.protobuf.Timestamp
+	111, // 76: raystack.compass.v1beta1.Namespace.metadata:type_name -> google.protobuf.Struct
+	87,  // 77: raystack.compass.v1beta1.GetGraphResponse.ProbesInfo.latest:type_name -> raystack.compass.v1beta1.Probe
+	100, // 78: raystack.compass.v1beta1.GetGraphResponse.NodeAttributes.probes:type_name -> raystack.compass.v1beta1.GetGraphResponse.ProbesInfo
+	101, // 79: raystack.compass.v1beta1.GetGraphResponse.NodeAttrsEntry.value:type_name -> raystack.compass.v1beta1.GetGraphResponse.NodeAttributes
+	111, // 80: raystack.compass.v1beta1.UpsertAssetRequest.Asset.data:type_name -> google.protobuf.Struct
+	106, // 81: raystack.compass.v1beta1.UpsertAssetRequest.Asset.labels:type_name -> raystack.compass.v1beta1.UpsertAssetRequest.Asset.LabelsEntry
+	84,  // 82: raystack.compass.v1beta1.UpsertAssetRequest.Asset.owners:type_name -> raystack.compass.v1beta1.User
+	114, // 83: raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.name:type_name -> google.protobuf.StringValue
+	114, // 84: raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.description:type_name -> google.protobuf.StringValue
+	111, // 85: raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.data:type_name -> google.protobuf.Struct
+	108, // 86: raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.labels:type_name -> raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.LabelsEntry
+	84,  // 87: raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.owners:type_name -> raystack.compass.v1beta1.User
+	111, // 88: raystack.compass.v1beta1.CreateAssetProbeRequest.Probe.metadata:type_name -> google.protobuf.Struct
+	112, // 89: raystack.compass.v1beta1.CreateAssetProbeRequest.Probe.timestamp:type_name -> google.protobuf.Timestamp
+	0,   // 90: raystack.compass.v1beta1.CompassService.GetAllDiscussions:input_type -> raystack.compass.v1beta1.GetAllDiscussionsRequest
+	2,   // 91: raystack.compass.v1beta1.CompassService.CreateDiscussion:input_type -> raystack.compass.v1beta1.CreateDiscussionRequest
+	4,   // 92: raystack.compass.v1beta1.CompassService.GetDiscussion:input_type -> raystack.compass.v1beta1.GetDiscussionRequest
+	6,   // 93: raystack.compass.v1beta1.CompassService.PatchDiscussion:input_type -> raystack.compass.v1beta1.PatchDiscussionRequest
+	7,   // 94: raystack.compass.v1beta1.CompassService.CreateComment:input_type -> raystack.compass.v1beta1.CreateCommentRequest
+	10,  // 95: raystack.compass.v1beta1.CompassService.GetAllComments:input_type -> raystack.compass.v1beta1.GetAllCommentsRequest
+	12,  // 96: raystack.compass.v1beta1.CompassService.GetComment:input_type -> raystack.compass.v1beta1.GetCommentRequest
+	14,  // 97: raystack.compass.v1beta1.CompassService.UpdateComment:input_type -> raystack.compass.v1beta1.UpdateCommentRequest
+	16,  // 98: raystack.compass.v1beta1.CompassService.DeleteComment:input_type -> raystack.compass.v1beta1.DeleteCommentRequest
+	18,  // 99: raystack.compass.v1beta1.CompassService.SearchAssets:input_type -> raystack.compass.v1beta1.SearchAssetsRequest
+	20,  // 100: raystack.compass.v1beta1.CompassService.SuggestAssets:input_type -> raystack.compass.v1beta1.SuggestAssetsRequest
+	22,  // 101: raystack.compass.v1beta1.CompassService.GetGraph:input_type -> raystack.compass.v1beta1.GetGraphRequest
+	24,  // 102: raystack.compass.v1beta1.CompassService.GetAllTypes:input_type -> raystack.compass.v1beta1.GetAllTypesRequest
+	26,  // 103: raystack.compass.v1beta1.CompassService.GetAllAssets:input_type -> raystack.compass.v1beta1.GetAllAssetsRequest
+	28,  // 104: raystack.compass.v1beta1.CompassService.GetAssetByID:input_type -> raystack.compass.v1beta1.GetAssetByIDRequest
+	30,  // 105: raystack.compass.v1beta1.CompassService.UpsertAsset:input_type -> raystack.compass.v1beta1.UpsertAssetRequest
+	32,  // 106: raystack.compass.v1beta1.CompassService.UpsertPatchAsset:input_type -> raystack.compass.v1beta1.UpsertPatchAssetRequest
+	34,  // 107: raystack.compass.v1beta1.CompassService.DeleteAsset:input_type -> raystack.compass.v1beta1.DeleteAssetRequest
+	36,  // 108: raystack.compass.v1beta1.CompassService.GetAssetStargazers:input_type -> raystack.compass.v1beta1.GetAssetStargazersRequest
+	38,  // 109: raystack.compass.v1beta1.CompassService.GetAssetVersionHistory:input_type -> raystack.compass.v1beta1.GetAssetVersionHistoryRequest
+	40,  // 110: raystack.compass.v1beta1.CompassService.GetAssetByVersion:input_type -> raystack.compass.v1beta1.GetAssetByVersionRequest
+	42,  // 111: raystack.compass.v1beta1.CompassService.CreateAssetProbe:input_type -> raystack.compass.v1beta1.CreateAssetProbeRequest
+	44,  // 112: raystack.compass.v1beta1.CompassService.GetUserStarredAssets:input_type -> raystack.compass.v1beta1.GetUserStarredAssetsRequest
+	46,  // 113: raystack.compass.v1beta1.CompassService.GetMyStarredAssets:input_type -> raystack.compass.v1beta1.GetMyStarredAssetsRequest
+	48,  // 114: raystack.compass.v1beta1.CompassService.GetMyStarredAsset:input_type -> raystack.compass.v1beta1.GetMyStarredAssetRequest
+	50,  // 115: raystack.compass.v1beta1.CompassService.StarAsset:input_type -> raystack.compass.v1beta1.StarAssetRequest
+	52,  // 116: raystack.compass.v1beta1.CompassService.UnstarAsset:input_type -> raystack.compass.v1beta1.UnstarAssetRequest
+	54,  // 117: raystack.compass.v1beta1.CompassService.GetMyDiscussions:input_type -> raystack.compass.v1beta1.GetMyDiscussionsRequest
+	56,  // 118: raystack.compass.v1beta1.CompassService.CreateTagAsset:input_type -> raystack.compass.v1beta1.CreateTagAssetRequest
+	58,  // 119: raystack.compass.v1beta1.CompassService.GetTagByAssetAndTemplate:input_type -> raystack.compass.v1beta1.GetTagByAssetAndTemplateRequest
+	60,  // 120: raystack.compass.v1beta1.CompassService.UpdateTagAsset:input_type -> raystack.compass.v1beta1.UpdateTagAssetRequest
+	62,  // 121: raystack.compass.v1beta1.CompassService.DeleteTagAsset:input_type -> raystack.compass.v1beta1.DeleteTagAssetRequest
+	64,  // 122: raystack.compass.v1beta1.CompassService.GetAllTagsByAsset:input_type -> raystack.compass.v1beta1.GetAllTagsByAssetRequest
+	66,  // 123: raystack.compass.v1beta1.CompassService.GetAllTagTemplates:input_type -> raystack.compass.v1beta1.GetAllTagTemplatesRequest
+	68,  // 124: raystack.compass.v1beta1.CompassService.CreateTagTemplate:input_type -> raystack.compass.v1beta1.CreateTagTemplateRequest
+	70,  // 125: raystack.compass.v1beta1.CompassService.GetTagTemplate:input_type -> raystack.compass.v1beta1.GetTagTemplateRequest
+	72,  // 126: raystack.compass.v1beta1.CompassService.UpdateTagTemplate:input_type -> raystack.compass.v1beta1.UpdateTagTemplateRequest
+	74,  // 127: raystack.compass.v1beta1.CompassService.DeleteTagTemplate:input_type -> raystack.compass.v1beta1.DeleteTagTemplateRequest
+	76,  // 128: raystack.compass.v1beta1.CompassService.CreateNamespace:input_type -> raystack.compass.v1beta1.CreateNamespaceRequest
+	78,  // 129: raystack.compass.v1beta1.CompassService.GetNamespace:input_type -> raystack.compass.v1beta1.GetNamespaceRequest
+	80,  // 130: raystack.compass.v1beta1.CompassService.UpdateNamespace:input_type -> raystack.compass.v1beta1.UpdateNamespaceRequest
+	82,  // 131: raystack.compass.v1beta1.CompassService.ListNamespaces:input_type -> raystack.compass.v1beta1.ListNamespacesRequest
+	1,   // 132: raystack.compass.v1beta1.CompassService.GetAllDiscussions:output_type -> raystack.compass.v1beta1.GetAllDiscussionsResponse
+	3,   // 133: raystack.compass.v1beta1.CompassService.CreateDiscussion:output_type -> raystack.compass.v1beta1.CreateDiscussionResponse
+	5,   // 134: raystack.compass.v1beta1.CompassService.GetDiscussion:output_type -> raystack.compass.v1beta1.GetDiscussionResponse
+	8,   // 135: raystack.compass.v1beta1.CompassService.PatchDiscussion:output_type -> raystack.compass.v1beta1.PatchDiscussionResponse
+	9,   // 136: raystack.compass.v1beta1.CompassService.CreateComment:output_type -> raystack.compass.v1beta1.CreateCommentResponse
+	11,  // 137: raystack.compass.v1beta1.CompassService.GetAllComments:output_type -> raystack.compass.v1beta1.GetAllCommentsResponse
+	13,  // 138: raystack.compass.v1beta1.CompassService.GetComment:output_type -> raystack.compass.v1beta1.GetCommentResponse
+	15,  // 139: raystack.compass.v1beta1.CompassService.UpdateComment:output_type -> raystack.compass.v1beta1.UpdateCommentResponse
+	17,  // 140: raystack.compass.v1beta1.CompassService.DeleteComment:output_type -> raystack.compass.v1beta1.DeleteCommentResponse
+	19,  // 141: raystack.compass.v1beta1.CompassService.SearchAssets:output_type -> raystack.compass.v1beta1.SearchAssetsResponse
+	21,  // 142: raystack.compass.v1beta1.CompassService.SuggestAssets:output_type -> raystack.compass.v1beta1.SuggestAssetsResponse
+	23,  // 143: raystack.compass.v1beta1.CompassService.GetGraph:output_type -> raystack.compass.v1beta1.GetGraphResponse
+	25,  // 144: raystack.compass.v1beta1.CompassService.GetAllTypes:output_type -> raystack.compass.v1beta1.GetAllTypesResponse
+	27,  // 145: raystack.compass.v1beta1.CompassService.GetAllAssets:output_type -> raystack.compass.v1beta1.GetAllAssetsResponse
+	29,  // 146: raystack.compass.v1beta1.CompassService.GetAssetByID:output_type -> raystack.compass.v1beta1.GetAssetByIDResponse
+	31,  // 147: raystack.compass.v1beta1.CompassService.UpsertAsset:output_type -> raystack.compass.v1beta1.UpsertAssetResponse
+	33,  // 148: raystack.compass.v1beta1.CompassService.UpsertPatchAsset:output_type -> raystack.compass.v1beta1.UpsertPatchAssetResponse
+	35,  // 149: raystack.compass.v1beta1.CompassService.DeleteAsset:output_type -> raystack.compass.v1beta1.DeleteAssetResponse
+	37,  // 150: raystack.compass.v1beta1.CompassService.GetAssetStargazers:output_type -> raystack.compass.v1beta1.GetAssetStargazersResponse
+	39,  // 151: raystack.compass.v1beta1.CompassService.GetAssetVersionHistory:output_type -> raystack.compass.v1beta1.GetAssetVersionHistoryResponse
+	41,  // 152: raystack.compass.v1beta1.CompassService.GetAssetByVersion:output_type -> raystack.compass.v1beta1.GetAssetByVersionResponse
+	43,  // 153: raystack.compass.v1beta1.CompassService.CreateAssetProbe:output_type -> raystack.compass.v1beta1.CreateAssetProbeResponse
+	45,  // 154: raystack.compass.v1beta1.CompassService.GetUserStarredAssets:output_type -> raystack.compass.v1beta1.GetUserStarredAssetsResponse
+	47,  // 155: raystack.compass.v1beta1.CompassService.GetMyStarredAssets:output_type -> raystack.compass.v1beta1.GetMyStarredAssetsResponse
+	49,  // 156: raystack.compass.v1beta1.CompassService.GetMyStarredAsset:output_type -> raystack.compass.v1beta1.GetMyStarredAssetResponse
+	51,  // 157: raystack.compass.v1beta1.CompassService.StarAsset:output_type -> raystack.compass.v1beta1.StarAssetResponse
+	53,  // 158: raystack.compass.v1beta1.CompassService.UnstarAsset:output_type -> raystack.compass.v1beta1.UnstarAssetResponse
+	55,  // 159: raystack.compass.v1beta1.CompassService.GetMyDiscussions:output_type -> raystack.compass.v1beta1.GetMyDiscussionsResponse
+	57,  // 160: raystack.compass.v1beta1.CompassService.CreateTagAsset:output_type -> raystack.compass.v1beta1.CreateTagAssetResponse
+	59,  // 161: raystack.compass.v1beta1.CompassService.GetTagByAssetAndTemplate:output_type -> raystack.compass.v1beta1.GetTagByAssetAndTemplateResponse
+	61,  // 162: raystack.compass.v1beta1.CompassService.UpdateTagAsset:output_type -> raystack.compass.v1beta1.UpdateTagAssetResponse
+	63,  // 163: raystack.compass.v1beta1.CompassService.DeleteTagAsset:output_type -> raystack.compass.v1beta1.DeleteTagAssetResponse
+	65,  // 164: raystack.compass.v1beta1.CompassService.GetAllTagsByAsset:output_type -> raystack.compass.v1beta1.GetAllTagsByAssetResponse
+	67,  // 165: raystack.compass.v1beta1.CompassService.GetAllTagTemplates:output_type -> raystack.compass.v1beta1.GetAllTagTemplatesResponse
+	69,  // 166: raystack.compass.v1beta1.CompassService.CreateTagTemplate:output_type -> raystack.compass.v1beta1.CreateTagTemplateResponse
+	71,  // 167: raystack.compass.v1beta1.CompassService.GetTagTemplate:output_type -> raystack.compass.v1beta1.GetTagTemplateResponse
+	73,  // 168: raystack.compass.v1beta1.CompassService.UpdateTagTemplate:output_type -> raystack.compass.v1beta1.UpdateTagTemplateResponse
+	75,  // 169: raystack.compass.v1beta1.CompassService.DeleteTagTemplate:output_type -> raystack.compass.v1beta1.DeleteTagTemplateResponse
+	77,  // 170: raystack.compass.v1beta1.CompassService.CreateNamespace:output_type -> raystack.compass.v1beta1.CreateNamespaceResponse
+	79,  // 171: raystack.compass.v1beta1.CompassService.GetNamespace:output_type -> raystack.compass.v1beta1.GetNamespaceResponse
+	81,  // 172: raystack.compass.v1beta1.CompassService.UpdateNamespace:output_type -> raystack.compass.v1beta1.UpdateNamespaceResponse
+	83,  // 173: raystack.compass.v1beta1.CompassService.ListNamespaces:output_type -> raystack.compass.v1beta1.ListNamespacesResponse
 	132, // [132:174] is the sub-list for method output_type
 	90,  // [90:132] is the sub-list for method input_type
 	90,  // [90:90] is the sub-list for extension type_name
@@ -8415,13 +8415,13 @@ var file_odpf_compass_v1beta1_service_proto_depIdxs = []int32{
 	0,   // [0:90] is the sub-list for field type_name
 }
 
-func init() { file_odpf_compass_v1beta1_service_proto_init() }
-func file_odpf_compass_v1beta1_service_proto_init() {
-	if File_odpf_compass_v1beta1_service_proto != nil {
+func init() { file_raystack_compass_v1beta1_service_proto_init() }
+func file_raystack_compass_v1beta1_service_proto_init() {
+	if File_raystack_compass_v1beta1_service_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_odpf_compass_v1beta1_service_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAllDiscussionsRequest); i {
 			case 0:
 				return &v.state
@@ -8433,7 +8433,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAllDiscussionsResponse); i {
 			case 0:
 				return &v.state
@@ -8445,7 +8445,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateDiscussionRequest); i {
 			case 0:
 				return &v.state
@@ -8457,7 +8457,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateDiscussionResponse); i {
 			case 0:
 				return &v.state
@@ -8469,7 +8469,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetDiscussionRequest); i {
 			case 0:
 				return &v.state
@@ -8481,7 +8481,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetDiscussionResponse); i {
 			case 0:
 				return &v.state
@@ -8493,7 +8493,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PatchDiscussionRequest); i {
 			case 0:
 				return &v.state
@@ -8505,7 +8505,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateCommentRequest); i {
 			case 0:
 				return &v.state
@@ -8517,7 +8517,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PatchDiscussionResponse); i {
 			case 0:
 				return &v.state
@@ -8529,7 +8529,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateCommentResponse); i {
 			case 0:
 				return &v.state
@@ -8541,7 +8541,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAllCommentsRequest); i {
 			case 0:
 				return &v.state
@@ -8553,7 +8553,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAllCommentsResponse); i {
 			case 0:
 				return &v.state
@@ -8565,7 +8565,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetCommentRequest); i {
 			case 0:
 				return &v.state
@@ -8577,7 +8577,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetCommentResponse); i {
 			case 0:
 				return &v.state
@@ -8589,7 +8589,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateCommentRequest); i {
 			case 0:
 				return &v.state
@@ -8601,7 +8601,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateCommentResponse); i {
 			case 0:
 				return &v.state
@@ -8613,7 +8613,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteCommentRequest); i {
 			case 0:
 				return &v.state
@@ -8625,7 +8625,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteCommentResponse); i {
 			case 0:
 				return &v.state
@@ -8637,7 +8637,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SearchAssetsRequest); i {
 			case 0:
 				return &v.state
@@ -8649,7 +8649,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SearchAssetsResponse); i {
 			case 0:
 				return &v.state
@@ -8661,7 +8661,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SuggestAssetsRequest); i {
 			case 0:
 				return &v.state
@@ -8673,7 +8673,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SuggestAssetsResponse); i {
 			case 0:
 				return &v.state
@@ -8685,7 +8685,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetGraphRequest); i {
 			case 0:
 				return &v.state
@@ -8697,7 +8697,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetGraphResponse); i {
 			case 0:
 				return &v.state
@@ -8709,7 +8709,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAllTypesRequest); i {
 			case 0:
 				return &v.state
@@ -8721,7 +8721,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAllTypesResponse); i {
 			case 0:
 				return &v.state
@@ -8733,7 +8733,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAllAssetsRequest); i {
 			case 0:
 				return &v.state
@@ -8745,7 +8745,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAllAssetsResponse); i {
 			case 0:
 				return &v.state
@@ -8757,7 +8757,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAssetByIDRequest); i {
 			case 0:
 				return &v.state
@@ -8769,7 +8769,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAssetByIDResponse); i {
 			case 0:
 				return &v.state
@@ -8781,7 +8781,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpsertAssetRequest); i {
 			case 0:
 				return &v.state
@@ -8793,7 +8793,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpsertAssetResponse); i {
 			case 0:
 				return &v.state
@@ -8805,7 +8805,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpsertPatchAssetRequest); i {
 			case 0:
 				return &v.state
@@ -8817,7 +8817,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpsertPatchAssetResponse); i {
 			case 0:
 				return &v.state
@@ -8829,7 +8829,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteAssetRequest); i {
 			case 0:
 				return &v.state
@@ -8841,7 +8841,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteAssetResponse); i {
 			case 0:
 				return &v.state
@@ -8853,7 +8853,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAssetStargazersRequest); i {
 			case 0:
 				return &v.state
@@ -8865,7 +8865,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAssetStargazersResponse); i {
 			case 0:
 				return &v.state
@@ -8877,7 +8877,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAssetVersionHistoryRequest); i {
 			case 0:
 				return &v.state
@@ -8889,7 +8889,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAssetVersionHistoryResponse); i {
 			case 0:
 				return &v.state
@@ -8901,7 +8901,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAssetByVersionRequest); i {
 			case 0:
 				return &v.state
@@ -8913,7 +8913,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAssetByVersionResponse); i {
 			case 0:
 				return &v.state
@@ -8925,7 +8925,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateAssetProbeRequest); i {
 			case 0:
 				return &v.state
@@ -8937,7 +8937,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateAssetProbeResponse); i {
 			case 0:
 				return &v.state
@@ -8949,7 +8949,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetUserStarredAssetsRequest); i {
 			case 0:
 				return &v.state
@@ -8961,7 +8961,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetUserStarredAssetsResponse); i {
 			case 0:
 				return &v.state
@@ -8973,7 +8973,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetMyStarredAssetsRequest); i {
 			case 0:
 				return &v.state
@@ -8985,7 +8985,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetMyStarredAssetsResponse); i {
 			case 0:
 				return &v.state
@@ -8997,7 +8997,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetMyStarredAssetRequest); i {
 			case 0:
 				return &v.state
@@ -9009,7 +9009,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetMyStarredAssetResponse); i {
 			case 0:
 				return &v.state
@@ -9021,7 +9021,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*StarAssetRequest); i {
 			case 0:
 				return &v.state
@@ -9033,7 +9033,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*StarAssetResponse); i {
 			case 0:
 				return &v.state
@@ -9045,7 +9045,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UnstarAssetRequest); i {
 			case 0:
 				return &v.state
@@ -9057,7 +9057,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UnstarAssetResponse); i {
 			case 0:
 				return &v.state
@@ -9069,7 +9069,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[54].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[54].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetMyDiscussionsRequest); i {
 			case 0:
 				return &v.state
@@ -9081,7 +9081,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetMyDiscussionsResponse); i {
 			case 0:
 				return &v.state
@@ -9093,7 +9093,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateTagAssetRequest); i {
 			case 0:
 				return &v.state
@@ -9105,7 +9105,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[57].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[57].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateTagAssetResponse); i {
 			case 0:
 				return &v.state
@@ -9117,7 +9117,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[58].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[58].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetTagByAssetAndTemplateRequest); i {
 			case 0:
 				return &v.state
@@ -9129,7 +9129,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[59].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[59].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetTagByAssetAndTemplateResponse); i {
 			case 0:
 				return &v.state
@@ -9141,7 +9141,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateTagAssetRequest); i {
 			case 0:
 				return &v.state
@@ -9153,7 +9153,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[61].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[61].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateTagAssetResponse); i {
 			case 0:
 				return &v.state
@@ -9165,7 +9165,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[62].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[62].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteTagAssetRequest); i {
 			case 0:
 				return &v.state
@@ -9177,7 +9177,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[63].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[63].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteTagAssetResponse); i {
 			case 0:
 				return &v.state
@@ -9189,7 +9189,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[64].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[64].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAllTagsByAssetRequest); i {
 			case 0:
 				return &v.state
@@ -9201,7 +9201,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[65].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[65].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAllTagsByAssetResponse); i {
 			case 0:
 				return &v.state
@@ -9213,7 +9213,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[66].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[66].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAllTagTemplatesRequest); i {
 			case 0:
 				return &v.state
@@ -9225,7 +9225,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[67].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[67].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetAllTagTemplatesResponse); i {
 			case 0:
 				return &v.state
@@ -9237,7 +9237,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[68].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[68].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateTagTemplateRequest); i {
 			case 0:
 				return &v.state
@@ -9249,7 +9249,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[69].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[69].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateTagTemplateResponse); i {
 			case 0:
 				return &v.state
@@ -9261,7 +9261,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[70].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[70].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetTagTemplateRequest); i {
 			case 0:
 				return &v.state
@@ -9273,7 +9273,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[71].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[71].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetTagTemplateResponse); i {
 			case 0:
 				return &v.state
@@ -9285,7 +9285,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[72].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[72].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateTagTemplateRequest); i {
 			case 0:
 				return &v.state
@@ -9297,7 +9297,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[73].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[73].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateTagTemplateResponse); i {
 			case 0:
 				return &v.state
@@ -9309,7 +9309,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[74].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[74].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteTagTemplateRequest); i {
 			case 0:
 				return &v.state
@@ -9321,7 +9321,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[75].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[75].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteTagTemplateResponse); i {
 			case 0:
 				return &v.state
@@ -9333,7 +9333,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[76].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[76].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateNamespaceRequest); i {
 			case 0:
 				return &v.state
@@ -9345,7 +9345,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[77].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[77].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateNamespaceResponse); i {
 			case 0:
 				return &v.state
@@ -9357,7 +9357,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[78].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[78].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetNamespaceRequest); i {
 			case 0:
 				return &v.state
@@ -9369,7 +9369,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[79].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[79].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetNamespaceResponse); i {
 			case 0:
 				return &v.state
@@ -9381,7 +9381,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[80].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[80].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateNamespaceRequest); i {
 			case 0:
 				return &v.state
@@ -9393,7 +9393,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[81].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[81].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateNamespaceResponse); i {
 			case 0:
 				return &v.state
@@ -9405,7 +9405,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[82].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[82].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListNamespacesRequest); i {
 			case 0:
 				return &v.state
@@ -9417,7 +9417,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[83].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[83].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListNamespacesResponse); i {
 			case 0:
 				return &v.state
@@ -9429,7 +9429,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[84].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[84].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*User); i {
 			case 0:
 				return &v.state
@@ -9441,7 +9441,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[85].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[85].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Change); i {
 			case 0:
 				return &v.state
@@ -9453,7 +9453,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[86].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[86].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Asset); i {
 			case 0:
 				return &v.state
@@ -9465,7 +9465,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[87].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[87].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Probe); i {
 			case 0:
 				return &v.state
@@ -9477,7 +9477,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[88].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[88].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Discussion); i {
 			case 0:
 				return &v.state
@@ -9489,7 +9489,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[89].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[89].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Comment); i {
 			case 0:
 				return &v.state
@@ -9501,7 +9501,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[90].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[90].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LineageEdge); i {
 			case 0:
 				return &v.state
@@ -9513,7 +9513,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[91].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[91].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LineageNode); i {
 			case 0:
 				return &v.state
@@ -9525,7 +9525,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[92].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[92].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Tag); i {
 			case 0:
 				return &v.state
@@ -9537,7 +9537,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[93].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[93].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*TagValue); i {
 			case 0:
 				return &v.state
@@ -9549,7 +9549,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[94].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[94].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*TagTemplate); i {
 			case 0:
 				return &v.state
@@ -9561,7 +9561,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[95].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[95].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*TagTemplateField); i {
 			case 0:
 				return &v.state
@@ -9573,7 +9573,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[96].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[96].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Type); i {
 			case 0:
 				return &v.state
@@ -9585,7 +9585,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[97].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[97].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Namespace); i {
 			case 0:
 				return &v.state
@@ -9597,7 +9597,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[100].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[100].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetGraphResponse_ProbesInfo); i {
 			case 0:
 				return &v.state
@@ -9609,7 +9609,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[101].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[101].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetGraphResponse_NodeAttributes); i {
 			case 0:
 				return &v.state
@@ -9621,7 +9621,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[105].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[105].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpsertAssetRequest_Asset); i {
 			case 0:
 				return &v.state
@@ -9633,7 +9633,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[107].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[107].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpsertPatchAssetRequest_Asset); i {
 			case 0:
 				return &v.state
@@ -9645,7 +9645,7 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 				return nil
 			}
 		}
-		file_odpf_compass_v1beta1_service_proto_msgTypes[109].Exporter = func(v interface{}, i int) interface{} {
+		file_raystack_compass_v1beta1_service_proto_msgTypes[109].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateAssetProbeRequest_Probe); i {
 			case 0:
 				return &v.state
@@ -9662,18 +9662,18 @@ func file_odpf_compass_v1beta1_service_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_odpf_compass_v1beta1_service_proto_rawDesc,
+			RawDescriptor: file_raystack_compass_v1beta1_service_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   111,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_odpf_compass_v1beta1_service_proto_goTypes,
-		DependencyIndexes: file_odpf_compass_v1beta1_service_proto_depIdxs,
-		MessageInfos:      file_odpf_compass_v1beta1_service_proto_msgTypes,
+		GoTypes:           file_raystack_compass_v1beta1_service_proto_goTypes,
+		DependencyIndexes: file_raystack_compass_v1beta1_service_proto_depIdxs,
+		MessageInfos:      file_raystack_compass_v1beta1_service_proto_msgTypes,
 	}.Build()
-	File_odpf_compass_v1beta1_service_proto = out.File
-	file_odpf_compass_v1beta1_service_proto_rawDesc = nil
-	file_odpf_compass_v1beta1_service_proto_goTypes = nil
-	file_odpf_compass_v1beta1_service_proto_depIdxs = nil
+	File_raystack_compass_v1beta1_service_proto = out.File
+	file_raystack_compass_v1beta1_service_proto_rawDesc = nil
+	file_raystack_compass_v1beta1_service_proto_goTypes = nil
+	file_raystack_compass_v1beta1_service_proto_depIdxs = nil
 }

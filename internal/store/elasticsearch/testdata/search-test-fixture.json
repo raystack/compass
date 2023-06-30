@@ -1,437 +1,437 @@
 [
-    {
-        "assets": [
+  {
+    "assets": [
+      {
+        "id": "order-topic",
+        "urn": "order-topic",
+        "name": "order-topic",
+        "service": "kafka",
+        "description": "Topic for each submitted order",
+        "data": {
+          "topic_name": "order-topic",
+          "description": "Topic for each submitted order",
+          "company": "raystack",
+          "environment": "integration",
+          "country": "us",
+          "partition": 250
+        },
+        "type": "topic"
+      },
+      {
+        "id": "purchase-topic",
+        "urn": "purchase-topic",
+        "name": "purchase-topic",
+        "service": "kafka",
+        "description": "Topic for each submitted purchase",
+        "data": {
+          "topic_name": "purchase-topic",
+          "description": "Topic for each submitted purchase",
+          "company": "microsoft",
+          "environment": "integration",
+          "country": "id",
+          "partition": 100
+        },
+        "type": "topic"
+      },
+      {
+        "id": "consumer-topic",
+        "urn": "consumer-topic",
+        "name": "consumer-topic",
+        "service": "rabbitmq",
+        "description": "Update on every rabbitmq customer creation/update",
+        "data": {
+          "topic_name": "consumer-topic",
+          "description": "Update on every rabbitmq customer creation/update",
+          "company": "raystack",
+          "environment": "production",
+          "country": "id",
+          "partition": 50
+        },
+        "owners": [
+          {
+            "urn": "owner::topic/1",
+            "role": "user",
+            "email": "john.doe@email.com"
+          }
+        ],
+        "type": "topic"
+      },
+      {
+        "id": "consumer-mq-2",
+        "urn": "consumer-mq-2",
+        "name": "consumer-mq-2",
+        "service": "rabbitmq",
+        "description": "Another rabbitmq topic",
+        "data": {
+          "topic_name": "consumer-mq-2",
+          "description": "Another rabbitmq topic",
+          "company": "raystack",
+          "environment": "production",
+          "country": "id",
+          "partition": 50
+        },
+        "owners": [
+          {
+            "urn": "owner::topic/22",
+            "role": "user",
+            "email": "mary.jane@email.com"
+          }
+        ],
+        "type": "topic"
+      },
+      {
+        "id": "transaction",
+        "urn": "transaction",
+        "name": "transaction",
+        "service": "rabbitmq",
+        "description": "This publishes all the invoices from each of invoice storage where the invoice will be filtered and checked using invoice filterer and invoice checker",
+        "data": {
+          "topic_name": "transaction",
+          "description": "This publishes all the invoices from each of invoice storage where the invoice will be filtered and checked using invoice filterer and invoice checker",
+          "company": "raystack",
+          "environment": "production",
+          "partition": 1
+        },
+        "type": "topic"
+      }
+    ]
+  },
+  {
+    "assets": [
+      {
+        "id": "au2-microsoft-invoice",
+        "urn": "au2-microsoft-invoice",
+        "name": "microsoft-invoice",
+        "service": "postgres",
+        "description": "Transaction records for every microsoft purchase",
+        "data": {
+          "table_id": "au2-microsoft-invoice",
+          "table_name": "microsoft-invoice",
+          "company": "microsoft",
+          "environment": "integration",
+          "country": "us",
+          "description": "Transaction records for every microsoft purchase",
+          "total_rows": 100,
+          "schema": [
             {
-                "id": "order-topic",
-                "urn": "order-topic",
-                "name": "order-topic",
-                "service": "kafka",
-                "description": "Topic for each submitted order",
-                "data": {
-                    "topic_name": "order-topic",
-                    "description": "Topic for each submitted order",
-                    "company": "odpf",
-                    "environment": "integration",
-                    "country": "us",
-                    "partition": 250
-                },
-                "type": "topic"
+              "name": "id"
             },
             {
-                "id": "purchase-topic",
-                "urn": "purchase-topic",
-                "name": "purchase-topic",
-                "service": "kafka",
-                "description": "Topic for each submitted purchase",
-                "data": {
-                    "topic_name": "purchase-topic",
-                    "description": "Topic for each submitted purchase",
-                    "company": "microsoft",
-                    "environment": "integration",
-                    "country": "id",
-                    "partition": 100
-                },
-                "type": "topic"
+              "name": "username",
+              "description": "purchaser username"
             },
             {
-                "id": "consumer-topic",
-                "urn": "consumer-topic",
-                "name": "consumer-topic",
-                "service": "rabbitmq",
-                "description": "Update on every rabbitmq customer creation/update",
-                "data": {
-                    "topic_name": "consumer-topic",
-                    "description": "Update on every rabbitmq customer creation/update",
-                    "company": "odpf",
-                    "environment": "production",
-                    "country": "id",
-                    "partition": 50
-                },
-                "owners": [
-                    {
-                        "urn": "owner::topic/1",
-                        "role": "user",
-                        "email": "john.doe@email.com"
-                    }
-                ],
-                "type": "topic"
-            },
-            {
-                "id": "consumer-mq-2",
-                "urn": "consumer-mq-2",
-                "name": "consumer-mq-2",
-                "service": "rabbitmq",
-                "description": "Another rabbitmq topic",
-                "data": {
-                    "topic_name": "consumer-mq-2",
-                    "description": "Another rabbitmq topic",
-                    "company": "odpf",
-                    "environment": "production",
-                    "country": "id",
-                    "partition": 50
-                },
-                "owners": [
-                    {
-                        "urn": "owner::topic/22",
-                        "role": "user",
-                        "email": "mary.jane@email.com"
-                    }
-                ],
-                "type": "topic"
-            },
-            {
-                "id": "transaction",
-                "urn": "transaction",
-                "name": "transaction",
-                "service": "rabbitmq",
-                "description": "This publishes all the invoices from each of invoice storage where the invoice will be filtered and checked using invoice filterer and invoice checker",
-                "data": {
-                    "topic_name": "transaction",
-                    "description": "This publishes all the invoices from each of invoice storage where the invoice will be filtered and checked using invoice filterer and invoice checker",
-                    "company": "odpf",
-                    "environment": "production",
-                    "partition": 1
-                },
-                "type": "topic"
+              "name": "item_id",
+              "description": "item identifications"
             }
-        ]
-    },
-    {
-        "assets": [
+          ]
+        },
+        "type": "table"
+      },
+      {
+        "id": "us1-apple-invoice",
+        "urn": "us1-apple-invoice",
+        "name": "apple-invoice",
+        "service": "mysql",
+        "description": "Transaction records for every Apple purchase",
+        "data": {
+          "table_id": "us1-apple-invoice",
+          "table_name": "apple-invoice",
+          "company": "apple",
+          "environment": "production",
+          "country": "id",
+          "description": "Transaction records for every Apple purchase",
+          "total_rows": 100,
+          "schema": [
             {
-                "id": "au2-microsoft-invoice",
-                "urn": "au2-microsoft-invoice",
-                "name": "microsoft-invoice",
-                "service": "postgres",
-                "description": "Transaction records for every microsoft purchase",
-                "data": {
-                    "table_id": "au2-microsoft-invoice",
-                    "table_name": "microsoft-invoice",
-                    "company": "microsoft",
-                    "environment": "integration",
-                    "country": "us",
-                    "description": "Transaction records for every microsoft purchase",
-                    "total_rows": 100,
-                    "schema": [
-                        {
-                            "name": "id"
-                        },
-                        {
-                            "name": "username",
-                            "description": "purchaser username"
-                        },
-                        {
-                            "name": "item_id",
-                            "description": "item identifications"
-                        }
-                    ]
-                },
-                "type": "table"
+              "name": "id"
             },
             {
-                "id": "us1-apple-invoice",
-                "urn": "us1-apple-invoice",
-                "name": "apple-invoice",
-                "service": "mysql",
-                "description": "Transaction records for every Apple purchase",
-                "data": {
-                    "table_id": "us1-apple-invoice",
-                    "table_name": "apple-invoice",
-                    "company": "apple",
-                    "environment": "production",
-                    "country": "id",
-                    "description": "Transaction records for every Apple purchase",
-                    "total_rows": 100,
-                    "schema": [
-                        {
-                            "name": "id"
-                        },
-                        {
-                            "name": "user_id",
-                            "description": "purchaser user idenfitication"
-                        },
-                        {
-                            "name": "item_id",
-                            "description": "item identifications"
-                        }
-                    ]
-                },
-                "type": "table"
+              "name": "user_id",
+              "description": "purchaser user idenfitication"
             },
             {
-                "id": "bigquery::gcpproject/dataset/tablename-1",
-                "urn": "bigquery::gcpproject/dataset/tablename-1",
-                "name": "tablename-1",
-                "service": "bigquery",
-                "description": "A sample of table record",
-                "data": {
-                    "preview": {},
-                    "profile": {
-                        "common_join": [
-                            {
-                                "conditions": [
-                                    "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
-                                ],
-                                "count": 1,
-                                "urn": "bigquery::gcpproject/dataset/tablename-mid"
-                            }
-                        ],
-                        "filter_conditions": [
-                            "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
-                        ],
-                        "usage_count": 1
-                    },
-                    "properties": {
-                        "attributes": {
-                            "dataset": "dataset",
-                            "full_qualified_name": "gcpproject:dataset.tablename-1",
-                            "partition_field": "event_timestamp",
-                            "project": "gcpproject",
-                            "type": "TABLE"
-                        },
-                        "labels": {
-                            "owner": "user_1"
-                        }
-                    },
-                    "schema": {
-                        "columns": [
-                            {
-                                "data_type": "STRING",
-                                "is_nullable": true,
-                                "name": "tablename-1-column1",
-                                "properties": {
-                                    "attributes": {
-                                        "mode": "NULLABLE"
-                                    }
-                                }
-                            },
-                            {
-                                "data_type": "STRING",
-                                "is_nullable": true,
-                                "name": "tablename-1-column2",
-                                "properties": {
-                                    "attributes": {
-                                        "mode": "NULLABLE"
-                                    }
-                                }
-                            },
-                            {
-                                "data_type": "BIGNUMERIC",
-                                "is_nullable": true,
-                                "name": "tablename-1-column3",
-                                "properties": {
-                                    "attributes": {
-                                        "mode": "NULLABLE"
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    "resource": {
-                        "name": "tablename-1",
-                        "service": "bigquery",
-                        "urn": "bigquery::gcpproject/dataset/tablename-1"
-                    }
-                },
-                "owners": [
-                    {
-                        "urn": "owner::bq/unique",
-                        "name": "Mrs Unique",
-                        "role": "user",
-                        "email": "mrs.unique@email.com"
-                    }
-                ],
-                "type": "table"
-            },
-            {
-                "id": "bigquery::gcpproject/dataset/tablename-common",
-                "urn": "bigquery::gcpproject/dataset/tablename-common",
-                "name": "tablename-common",
-                "service": "bigquery",
-                "description": "A sample of table record with high usage",
-                "data": {
-                    "preview": {},
-                    "profile": {
-                        "common_join": [
-                            {
-                                "conditions": [
-                                    "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
-                                ],
-                                "count": 1,
-                                "urn": "bigquery::gcpproject/dataset/tablename-mid"
-                            }
-                        ],
-                        "filter_conditions": [
-                            "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
-                        ],
-                        "usage_count": 10
-                    },
-                    "properties": {
-                        "attributes": {
-                            "dataset": "dataset",
-                            "full_qualified_name": "gcpproject:dataset.tablename-common",
-                            "partition_field": "event_timestamp",
-                            "project": "gcpproject",
-                            "type": "TABLE"
-                        },
-                        "labels": {
-                            "owner": "user_1"
-                        }
-                    },
-                    "schema": {
-                        "columns": [
-                            {
-                                "data_type": "STRING",
-                                "is_nullable": true,
-                                "name": "tablename-common-column1",
-                                "properties": {
-                                    "attributes": {
-                                        "mode": "NULLABLE"
-                                    }
-                                }
-                            },
-                            {
-                                "data_type": "STRING",
-                                "is_nullable": true,
-                                "name": "tablename-common-column2",
-                                "properties": {
-                                    "attributes": {
-                                        "mode": "NULLABLE"
-                                    }
-                                }
-                            },
-                            {
-                                "data_type": "BIGNUMERIC",
-                                "is_nullable": true,
-                                "name": "tablename-common-column3",
-                                "properties": {
-                                    "attributes": {
-                                        "mode": "NULLABLE"
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    "resource": {
-                        "name": "tablename-common",
-                        "service": "bigquery",
-                        "urn": "bigquery::gcpproject/dataset/tablename-common"
-                    }
-                },
-                "owners": [
-                    {
-                        "urn": "owner::bq/3",
-                        "name": "Mr.X",
-                        "role": "admin",
-                        "email": "mr.x@email.com"
-                    },
-                    {
-                        "urn": "owner::bq/4",
-                        "name": "Mrs.Y",
-                        "role": "user",
-                        "email": "mr.y@email.com"
-                    }
-                ],
-                "type": "table"
-            },
-            {
-                "id": "bigquery::gcpproject/dataset/tablename-mid",
-                "urn": "bigquery::gcpproject/dataset/tablename-mid",
-                "name": "tablename-mid",
-                "service": "bigquery",
-                "description": "A sample of table record with mid usage",
-                "data": {
-                    "preview": {},
-                    "profile": {
-                        "common_join": [
-                            {
-                                "conditions": [
-                                    "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
-                                ],
-                                "count": 1,
-                                "urn": "bigquery::gcpproject/dataset/tablename-high"
-                            },
-                            {
-                                "conditions": [
-                                    "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
-                                ],
-                                "count": 1,
-                                "urn": "bigquery::gcpproject/dataset/tablename-1"
-                            }
-                        ],
-                        "filter_conditions": [
-                            "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
-                        ],
-                        "usage_count": 5
-                    },
-                    "properties": {
-                        "attributes": {
-                            "dataset": "dataset",
-                            "full_qualified_name": "gcpproject:dataset.tablename-mid",
-                            "partition_field": "event_timestamp",
-                            "project": "gcpproject",
-                            "type": "TABLE"
-                        },
-                        "labels": {
-                            "owner": "user_1"
-                        }
-                    },
-                    "schema": {
-                        "columns": [
-                            {
-                                "data_type": "STRING",
-                                "is_nullable": true,
-                                "name": "tablename-mid-column1",
-                                "properties": {
-                                    "attributes": {
-                                        "mode": "NULLABLE"
-                                    }
-                                }
-                            },
-                            {
-                                "data_type": "STRING",
-                                "is_nullable": true,
-                                "name": "tablename-mid-column2",
-                                "properties": {
-                                    "attributes": {
-                                        "mode": "NULLABLE"
-                                    }
-                                }
-                            },
-                            {
-                                "data_type": "BIGNUMERIC",
-                                "is_nullable": true,
-                                "name": "tablename-mid-column3",
-                                "properties": {
-                                    "attributes": {
-                                        "mode": "NULLABLE"
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    "resource": {
-                        "name": "tablename-mid",
-                        "service": "bigquery",
-                        "urn": "bigquery::gcpproject/dataset/tablename-mid"
-                    }
-                },
-                "owners": [
-                    {
-                        "urn": "owner::bq/1",
-                        "name": "John Smith",
-                        "role": "user",
-                        "email": "john.smith@email.com"
-                    },
-                    {
-                        "urn": "owner::bq/2",
-                        "name": "Paul Smith",
-                        "role": "user",
-                        "email": "paul.smith@email.com"
-                    }
-                ],
-                "type": "table"
+              "name": "item_id",
+              "description": "item identifications"
             }
-        ]
-    }
+          ]
+        },
+        "type": "table"
+      },
+      {
+        "id": "bigquery::gcpproject/dataset/tablename-1",
+        "urn": "bigquery::gcpproject/dataset/tablename-1",
+        "name": "tablename-1",
+        "service": "bigquery",
+        "description": "A sample of table record",
+        "data": {
+          "preview": {},
+          "profile": {
+            "common_join": [
+              {
+                "conditions": [
+                  "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
+                ],
+                "count": 1,
+                "urn": "bigquery::gcpproject/dataset/tablename-mid"
+              }
+            ],
+            "filter_conditions": [
+              "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
+            ],
+            "usage_count": 1
+          },
+          "properties": {
+            "attributes": {
+              "dataset": "dataset",
+              "full_qualified_name": "gcpproject:dataset.tablename-1",
+              "partition_field": "event_timestamp",
+              "project": "gcpproject",
+              "type": "TABLE"
+            },
+            "labels": {
+              "owner": "user_1"
+            }
+          },
+          "schema": {
+            "columns": [
+              {
+                "data_type": "STRING",
+                "is_nullable": true,
+                "name": "tablename-1-column1",
+                "properties": {
+                  "attributes": {
+                    "mode": "NULLABLE"
+                  }
+                }
+              },
+              {
+                "data_type": "STRING",
+                "is_nullable": true,
+                "name": "tablename-1-column2",
+                "properties": {
+                  "attributes": {
+                    "mode": "NULLABLE"
+                  }
+                }
+              },
+              {
+                "data_type": "BIGNUMERIC",
+                "is_nullable": true,
+                "name": "tablename-1-column3",
+                "properties": {
+                  "attributes": {
+                    "mode": "NULLABLE"
+                  }
+                }
+              }
+            ]
+          },
+          "resource": {
+            "name": "tablename-1",
+            "service": "bigquery",
+            "urn": "bigquery::gcpproject/dataset/tablename-1"
+          }
+        },
+        "owners": [
+          {
+            "urn": "owner::bq/unique",
+            "name": "Mrs Unique",
+            "role": "user",
+            "email": "mrs.unique@email.com"
+          }
+        ],
+        "type": "table"
+      },
+      {
+        "id": "bigquery::gcpproject/dataset/tablename-common",
+        "urn": "bigquery::gcpproject/dataset/tablename-common",
+        "name": "tablename-common",
+        "service": "bigquery",
+        "description": "A sample of table record with high usage",
+        "data": {
+          "preview": {},
+          "profile": {
+            "common_join": [
+              {
+                "conditions": [
+                  "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
+                ],
+                "count": 1,
+                "urn": "bigquery::gcpproject/dataset/tablename-mid"
+              }
+            ],
+            "filter_conditions": [
+              "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
+            ],
+            "usage_count": 10
+          },
+          "properties": {
+            "attributes": {
+              "dataset": "dataset",
+              "full_qualified_name": "gcpproject:dataset.tablename-common",
+              "partition_field": "event_timestamp",
+              "project": "gcpproject",
+              "type": "TABLE"
+            },
+            "labels": {
+              "owner": "user_1"
+            }
+          },
+          "schema": {
+            "columns": [
+              {
+                "data_type": "STRING",
+                "is_nullable": true,
+                "name": "tablename-common-column1",
+                "properties": {
+                  "attributes": {
+                    "mode": "NULLABLE"
+                  }
+                }
+              },
+              {
+                "data_type": "STRING",
+                "is_nullable": true,
+                "name": "tablename-common-column2",
+                "properties": {
+                  "attributes": {
+                    "mode": "NULLABLE"
+                  }
+                }
+              },
+              {
+                "data_type": "BIGNUMERIC",
+                "is_nullable": true,
+                "name": "tablename-common-column3",
+                "properties": {
+                  "attributes": {
+                    "mode": "NULLABLE"
+                  }
+                }
+              }
+            ]
+          },
+          "resource": {
+            "name": "tablename-common",
+            "service": "bigquery",
+            "urn": "bigquery::gcpproject/dataset/tablename-common"
+          }
+        },
+        "owners": [
+          {
+            "urn": "owner::bq/3",
+            "name": "Mr.X",
+            "role": "admin",
+            "email": "mr.x@email.com"
+          },
+          {
+            "urn": "owner::bq/4",
+            "name": "Mrs.Y",
+            "role": "user",
+            "email": "mr.y@email.com"
+          }
+        ],
+        "type": "table"
+      },
+      {
+        "id": "bigquery::gcpproject/dataset/tablename-mid",
+        "urn": "bigquery::gcpproject/dataset/tablename-mid",
+        "name": "tablename-mid",
+        "service": "bigquery",
+        "description": "A sample of table record with mid usage",
+        "data": {
+          "preview": {},
+          "profile": {
+            "common_join": [
+              {
+                "conditions": [
+                  "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
+                ],
+                "count": 1,
+                "urn": "bigquery::gcpproject/dataset/tablename-high"
+              },
+              {
+                "conditions": [
+                  "ON target.column_1 = source.column_1 and target.column_3 = source.column_3 and DATE(target.event_timestamp) = DATE(source.event_timestamp)"
+                ],
+                "count": 1,
+                "urn": "bigquery::gcpproject/dataset/tablename-1"
+              }
+            ],
+            "filter_conditions": [
+              "WHERE t.column_5 = 'success' AND t.item_id = \"280481a2-2384-4b81-aa3e-214ac60b31db\" AND event_timestamp >= TIMESTAMP(\"2021-10-29\", \"UTC\") AND event_timestamp < TIMESTAMP(\"2021-11-22T02:01:06Z\")"
+            ],
+            "usage_count": 5
+          },
+          "properties": {
+            "attributes": {
+              "dataset": "dataset",
+              "full_qualified_name": "gcpproject:dataset.tablename-mid",
+              "partition_field": "event_timestamp",
+              "project": "gcpproject",
+              "type": "TABLE"
+            },
+            "labels": {
+              "owner": "user_1"
+            }
+          },
+          "schema": {
+            "columns": [
+              {
+                "data_type": "STRING",
+                "is_nullable": true,
+                "name": "tablename-mid-column1",
+                "properties": {
+                  "attributes": {
+                    "mode": "NULLABLE"
+                  }
+                }
+              },
+              {
+                "data_type": "STRING",
+                "is_nullable": true,
+                "name": "tablename-mid-column2",
+                "properties": {
+                  "attributes": {
+                    "mode": "NULLABLE"
+                  }
+                }
+              },
+              {
+                "data_type": "BIGNUMERIC",
+                "is_nullable": true,
+                "name": "tablename-mid-column3",
+                "properties": {
+                  "attributes": {
+                    "mode": "NULLABLE"
+                  }
+                }
+              }
+            ]
+          },
+          "resource": {
+            "name": "tablename-mid",
+            "service": "bigquery",
+            "urn": "bigquery::gcpproject/dataset/tablename-mid"
+          }
+        },
+        "owners": [
+          {
+            "urn": "owner::bq/1",
+            "name": "John Smith",
+            "role": "user",
+            "email": "john.smith@email.com"
+          },
+          {
+            "urn": "owner::bq/2",
+            "name": "Paul Smith",
+            "role": "user",
+            "email": "paul.smith@email.com"
+          }
+        ],
+        "type": "table"
+      }
+    ]
+  }
 ]

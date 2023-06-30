@@ -3,10 +3,10 @@ package handlersv1beta1
 import (
 	"context"
 	"fmt"
-	"github.com/odpf/compass/pkg/grpc_interceptor"
+	"github.com/raystack/compass/pkg/grpc_interceptor"
 
-	"github.com/odpf/compass/core/asset"
-	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
+	"github.com/raystack/compass/core/asset"
+	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"

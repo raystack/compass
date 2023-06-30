@@ -1,37 +1,13 @@
 project_name: compass
+
 release:
   prerelease: auto
+
 before:
   hooks:
     - go mod tidy
     - make clean
-builds:
-  - id: compass
-    main: ./main.go
-    binary: compass
-    flags: [-a]
-    ldflags:
-      - -X github.com/odpf/compass/cli.Version={{.Tag}}
-      - -X github.com/odpf/compass/cli.BuildCommit={{.FullCommit}}
-      - -X github.com/odpf/compass/cli.BuildDate={{.Date}}
-    goos: [linux, darwin, windows]
-    goarch: [amd64, 386, arm, arm64] # skip goarch 386 and arm due to conflicts with "github.com/blastrain/vitess-sqlparser" library
-    env:
-      - CGO_ENABLED=0
-archives:
-  - replacements:
-      darwin: macos
-      linux: linux
-      windows: windows
-      386: i386
-      amd64: x86_64
-    format_overrides:
-      - goos: windows
-        format: zip
-checksum:
-  name_template: "checksums.txt"
-snapshot:
-  name_template: "{{ .Tag }}-next"
+
 changelog:
   sort: asc
   filters:
@@ -39,43 +15,61 @@ changelog:
       - "^docs:"
       - "^test:"
       - "^build:"
+
+builds:
+  - id: compass
+    main: ./main.go
+    binary: compass
+    flags: [-a]
+    ldflags:
+      - -X github.com/raystack/compass/cli.Version={{.Tag}}
+      - -X github.com/raystack/compass/cli.BuildCommit={{.FullCommit}}
+      - -X github.com/raystack/compass/cli.BuildDate={{.Date}}
+    goos: [linux, darwin, windows]
+    goarch: [amd64, 386, arm, arm64]
+    env:
+      - CGO_ENABLED=0
+
+archives:
+  - id: "archives"
+    format_overrides:
+      - goos: windows
+        format: zip
+
 dockers:
-  - goos: linux
-    goarch: amd64
-    ids:
-      - compass
-    dockerfile: Dockerfile
+  - id: dockerhub
     image_templates:
-      - "docker.io/odpf/{{.ProjectName}}:latest"
-      - "docker.io/odpf/{{.ProjectName}}:{{ .Version }}"
-      - "docker.io/odpf/{{.ProjectName}}:{{ .Version }}-amd64"
+      - "docker.io/raystack/{{.ProjectName}}:latest"
+      - "docker.io/raystack/{{.ProjectName}}:{{ .Version }}"
+      - "docker.io/raystack/{{.ProjectName}}:{{ .Tag }}-amd64"
+
 nfpms:
-  - maintainer: ODPF
-    description: Metadata Discovery and Lineage Service
-    homepage: https://github.com/odpf/compass
+  - maintainer: Raystack
+    description: Data catalog service
+    homepage: https://github.com/raystack/compass
     license: Apache 2.0
     formats:
       - deb
       - rpm
-    replacements:
-      darwin: macOS
-scoop:
-  bucket:
-    owner: odpf
-    name: scoop-bucket
-  homepage: "https://github.com/odpf/compass"
-  description: "Metadata Discovery and Lineage Service"
-  license: Apache 2.0
+      - apk
+
+scoops:
+  - homepage: "https://github.com/raystack/compass"
+    description: "Data catalog service"
+    license: Apache 2.0
+    bucket:
+      owner: raystack
+      name: scoop-bucket
+
 brews:
   - name: compass
-    homepage: "https://github.com/odpf/compass"
-    description: "Metadata Discovery and Lineage Service"
+    homepage: "https://github.com/raystack/compass"
+    description: "Data catalog service"
     tap:
-      owner: odpf
+      owner: raystack
       name: homebrew-tap
     license: "Apache 2.0"
     folder: Formula
-
     dependencies:
       - name: git
     install: |-
