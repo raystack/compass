@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	namespace "github.com/odpf/compass/core/namespace"
+	namespace "github.com/raystack/compass/core/namespace"
 	mock "github.com/stretchr/testify/mock"
 
 	uuid "github.com/google/uuid"

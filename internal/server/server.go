@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/odpf/compass/internal/client"
+	"github.com/raystack/compass/internal/client"
 	"net/http"
 	"strings"
 	"time"
@@ -16,14 +16,14 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/odpf/compass/internal/server/health"
-	handlersv1beta1 "github.com/odpf/compass/internal/server/v1beta1"
-	"github.com/odpf/compass/internal/store/postgres"
-	"github.com/odpf/compass/pkg/grpc_interceptor"
-	"github.com/odpf/compass/pkg/statsd"
-	compassv1beta1 "github.com/odpf/compass/proto/odpf/compass/v1beta1"
-	"github.com/odpf/salt/log"
-	"github.com/odpf/salt/mux"
+	"github.com/raystack/compass/internal/server/health"
+	handlersv1beta1 "github.com/raystack/compass/internal/server/v1beta1"
+	"github.com/raystack/compass/internal/store/postgres"
+	"github.com/raystack/compass/pkg/grpc_interceptor"
+	"github.com/raystack/compass/pkg/statsd"
+	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
+	"github.com/raystack/salt/log"
+	"github.com/raystack/salt/mux"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -49,7 +49,7 @@ func (cfg Config) grpcAddr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.
 type IdentityConfig struct {
 	// User Identity
 	HeaderKeyUserUUID   string `yaml:"headerkey_uuid" mapstructure:"headerkey_uuid" default:"Compass-User-UUID"`
-	HeaderValueUserUUID string `yaml:"headervalue_uuid" mapstructure:"headervalue_uuid" default:"odpf@email.com"`
+	HeaderValueUserUUID string `yaml:"headervalue_uuid" mapstructure:"headervalue_uuid" default:"raystack@email.com"`
 	HeaderKeyUserEmail  string `yaml:"headerkey_email" mapstructure:"headerkey_email" default:"Compass-User-Email"`
 	ProviderDefaultName string `yaml:"provider_default_name" mapstructure:"provider_default_name" default:""`
 }

@@ -9,7 +9,7 @@
       "urn": "c-demo-kafka",
       "title": "demo-kafka",
       "description": "first data description",
-      "entity": "odpf",
+      "entity": "raystack",
       "country": "id"
     }
   },
@@ -23,7 +23,7 @@
       "urn": "e-test-grant2",
       "title": "test_grant2",
       "description": "second data description",
-      "entity": "odpf",
+      "entity": "raystack",
       "country": "th"
     }
   },
@@ -56,7 +56,7 @@
       "urn": "g-jane-kafka-1a",
       "title": "jane-kafka-1a",
       "description": "fourth data description",
-      "entity": "odpf",
+      "entity": "raystack",
       "country": "vn"
     }
   },
@@ -73,7 +73,7 @@
       "urn": "f-john-test-001",
       "title": "john_test_001",
       "description": "fifth data description",
-      "entity": "odpf",
+      "entity": "raystack",
       "country": "id"
     }
   },
@@ -90,7 +90,7 @@
       "urn": "h-test-new-kafka-1-a-b-kafka",
       "title": "test-new-kafka-1-a-b",
       "description": "sixth data description",
-      "entity": "odpf",
+      "entity": "raystack",
       "country": "th"
     }
   },
@@ -107,7 +107,7 @@
       "urn": "i-test-grant",
       "title": "compass_001",
       "description": "seventh data description",
-      "entity": "odpf",
+      "entity": "raystack",
       "country": "th"
     }
   },
@@ -126,7 +126,7 @@
       "urn": "j-xcvcx",
       "title": "xcvcx",
       "description": "eighth data description",
-      "entity": "odpf",
+      "entity": "raystack",
       "country": "vn"
     }
   },
@@ -138,14 +138,12 @@
     "description": "tableau information",
     "data": {
       "properties": {
-        "dependencies": [
-          "test"
-        ]
+        "dependencies": ["test"]
       },
       "urn": "j-xcvcx",
       "title": "xcvcx",
       "description": "ninth data description",
-      "entity": "odpf",
+      "entity": "raystack",
       "country": "vn"
     }
   },
@@ -163,7 +161,7 @@
       "urn": "j-xcvcx",
       "title": "xcvcx",
       "description": "tenth data description",
-      "entity": "odpf",
+      "entity": "raystack",
       "country": "vn"
     }
   },
@@ -175,14 +173,12 @@
     "description": "tableau information",
     "data": {
       "properties": {
-        "dependencies": [
-          "sgrg"
-        ]
+        "dependencies": ["sgrg"]
       },
       "urn": "j-xcvcx",
       "title": "xcvcx",
       "description": "eleventh data description",
-      "entity": "odpf",
+      "entity": "raystack",
       "country": "xn"
     }
   },
@@ -199,7 +195,7 @@
       "urn": "j-xcvcx",
       "title": "xcvcx",
       "description": "twelfth data description",
-      "entity": "odpf",
+      "entity": "raystack",
       "country": "vn"
     }
   }

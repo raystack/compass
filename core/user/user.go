@@ -3,7 +3,7 @@ package user
 //go:generate mockery --name=Repository -r --case underscore --with-expecter --structname UserRepository --filename user_repository.go --output=./mocks
 import (
 	"context"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"time"
 )
 

@@ -34,7 +34,9 @@ Discover why users choose Compass as their main data discovery and lineage servi
 - **Runtime:** Compass can run inside VMs or containers in a fully managed runtime environment like kubernetes.
 
 ## Using Compass
+
 You can manage the data discovery for your resources via Compass in any of the following ways:
+
 ### Compass Command Line Interface
 
 You can use the Compass command line interface to issue commands and to perform the entire data discovery flow. Using the command line can be faster and more convenient than the console. For more information on using the Compass CLI, see the [CLI Reference](./reference/cli.md) page.
@@ -50,4 +52,4 @@ See the [installation](./installation) page to install the Compass CLI. Next, we
 
 After completing the tour, check out the remainder of the documentation in the reference and concepts sections for your specific areas of interest. We've aimed to provide as much documentation as we can for the various components of Compass to give you a full understanding of Compass's surface area.
 
-Finally, follow the project on [GitHub](https://github.com/odpf/compass), and contact us if you'd like to get involved.
+Finally, follow the project on [GitHub](https://github.com/raystack/compass), and contact us if you'd like to get involved.

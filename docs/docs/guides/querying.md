@@ -1,11 +1,12 @@
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-# Querying  metadata
+# Querying metadata
 
 ## Prerequisites
 
 This guide assumes that you have a local instance of compass running and listening on `localhost:8080`. See [Installation](installation.md) guide for information on how to run Compass.
+
 ## Using the Search API
 
 #### We can search for required text in the following ways:
@@ -13,7 +14,7 @@ This guide assumes that you have a local instance of compass running and listeni
 1. Using **`compass search <text>`** CLI command
 2. Calling to **`GET /v1beta1/search`** API with `text` to be searched as query parameter
 
-The API contract is available [here](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
+The API contract is available [here](https://github.com/raystack/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
 
 To demonstrate how to use compass, we’re going to query it for resources that contain the word ‘booking’.
 
@@ -23,13 +24,15 @@ To demonstrate how to use compass, we’re going to query it for resources that 
 ```bash
 $ compass search booking
 ```
+
 </TabItem>
 <TabItem value="HTTP" label="HTTP">
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search?text=booking' \
---header 'Compass-User-UUID:odpf@email.com' 
+--header 'Compass-User-UUID:raystack@email.com'
 ```
+
 </TabItem>
 </Tabs>
 
@@ -82,27 +85,30 @@ Compass decouple identifier from external system with the one that is being used
 
 ### Filter
 
-Compass search supports restricting search results via filter by passing it in query params. Filter query params format is **`filter[{field_key}]={value}`** where **`field_key`** is the field name that we want to restrict and **`value`** is what value that should be matched. Filter can also support nested field by chaining key **`field_key`** with **`.`** \(dot\) such as **`filter[{field_key}.{nested_field_key}]={value}`**. 
+Compass search supports restricting search results via filter by passing it in query params. Filter query params format is **`filter[{field_key}]={value}`** where **`field_key`** is the field name that we want to restrict and **`value`** is what value that should be matched. Filter can also support nested field by chaining key **`field_key`** with **`.`** \(dot\) such as **`filter[{field_key}.{nested_field_key}]={value}`**.
+
 #### We can filter our search in the following ways:
 
 1. Using **`compass search <text> --filter=field_key1:val1`** CLI command
-2. Calling to **`GET /v1beta1/search`** API with **`text`** and **`filter[field_key1]=val1`** as query parameters 
+2. Calling to **`GET /v1beta1/search`** API with **`text`** and **`filter[field_key1]=val1`** as query parameters
 
-For instance, to restrict search results to the ‘id’ landscape for ‘odpf’ organisation, run:
+For instance, to restrict search results to the ‘id’ landscape for ‘raystack’ organisation, run:
 
 <Tabs groupId="cli" >
 <TabItem value="CLI" label="CLI">
 
 ```bash
-$ compass search booking --filter=labels.landscape=id,labels.entity=odpf
+$ compass search booking --filter=labels.landscape=id,labels.entity=raystack
 ```
+
 </TabItem>
 <TabItem value="HTTP" label="HTTP">
 
 ```bash
-$ curl 'http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=id&filter[labels.entity]=odpf' \
---header 'Compass-User-UUID:odpf@email.com'
+$ curl 'http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=id&filter[labels.entity]=raystack' \
+--header 'Compass-User-UUID:raystack@email.com'
 ```
+
 </TabItem>
 </Tabs>
 
@@ -114,23 +120,26 @@ Under the hood, filter's work by checking whether the matching document's contai
 ```bash
 $ compass search booking --filter=labels.landscape=vn,labels.landscape=th
 ```
+
 </TabItem>
 <TabItem value="HTTP" label="HTTP">
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search?text=booking&filter[labels.landscape]=vn&filter[labels.landscape]=th' \
---header 'Compass-User-UUID:odpf@email.com' 
+--header 'Compass-User-UUID:raystack@email.com'
 ```
+
 </TabItem>
 </Tabs>
 
 ### Query
 
 Apart from filters, Compass search API also supports fuzzy restriction in its query params. The difference of filter and query are, filter is for exact match on a specific field in asset while query is for fuzzy match.
+
 #### We can search with custom queries in the following ways:
 
 1. Using **`compass search <text> --query=field_key1:val1`** CLI command
-2. Calling to **`GET /v1beta1/search`** API with **`text`** and **`query[field_key1]=val1`** as query parameters 
+2. Calling to **`GET /v1beta1/search`** API with **`text`** and **`query[field_key1]=val1`** as query parameters
 
 Query format is not different with filter `query[{field_key}]={value}` where `field_key` is the field name that we want to query and `value` is what value that should be fuzzy matched. Query could also support nested field by chaining key `field_key` with `.` \(dot\) such as `query[{field_key}.{nested_field_key}]={value}`. For instance, to search results that has a name `kafka` and belongs to the team `data_engineering`, run:
 
@@ -140,17 +149,20 @@ Query format is not different with filter `query[{field_key}]={value}` where `fi
 ```bash
 $ compass search booking --query=name:kafka,labels.team=data_eng
 ```
+
 </TabItem>
 <TabItem value="HTTP" label="HTTP">
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search?text=booking&query[name]=kafka&query[labels.team]=data_eng' \
---header 'Compass-User-UUID:odpf@email.com' 
+--header 'Compass-User-UUID:raystack@email.com'
 ```
+
 </TabItem>
 </Tabs>
 
 ### Ranking Results
+
 Compass allows user to rank the results based on a numeric field in the asset. It supports nested field by using the `.` \(dot\) to point to the nested field. For instance, to rank the search results based on `usage_count` in `data` field, run:
 
 <Tabs groupId="cli" >
@@ -159,17 +171,20 @@ Compass allows user to rank the results based on a numeric field in the asset. I
 ```bash
 $ compass search booking --rankby=data.usage_count
 ```
+
 </TabItem>
 <TabItem value="HTTP" label="HTTP">
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search?text=booking&rankby=data.usage_count' \
---header 'Compass-User-UUID:odpf@email.com' 
+--header 'Compass-User-UUID:raystack@email.com'
 ```
+
 </TabItem>
 </Tabs>
 
 ### Size
+
 You can also specify the number of maximum results you want compass to return using the **`size`** parameter
 
 <Tabs groupId="cli" >
@@ -178,27 +193,31 @@ You can also specify the number of maximum results you want compass to return us
 ```bash
 $ compass search booking --size=5
 ```
+
 </TabItem>
 <TabItem value="HTTP" label="HTTP">
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search?text=booking&size=5' \
---header 'Compass-User-UUID:odpf@email.com' 
+--header 'Compass-User-UUID:raystack@email.com'
 ```
+
 </TabItem>
 </Tabs>
 
 ## Using the Suggest API
+
 The Suggest API gives a number of suggestion based on asset's name. There are 5 suggestions by default return by this API.
 
-The API contract is available [here](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
+The API contract is available [here](https://github.com/raystack/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
 
 Example of searching assets suggestion that has a name ‘booking’.
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/search/suggest?text=booking' \
---header 'Compass-User-UUID:odpf@email.com' 
+--header 'Compass-User-UUID:raystack@email.com'
 ```
+
 This will return a list of suggestions. Here’s a sample response:
 
 ```bash
@@ -212,27 +231,27 @@ This will return a list of suggestions. Here’s a sample response:
     ]
 }
 ```
+
 ## Using the Get Assets API
+
 The Get Assets API returns assets from Compass' main storage (PostgreSQL) while the Search API returns assets from Elasticsearch. The Get Assets API has several options (filters, size, offset, etc...) in its query params.
 
+| Query Params                                        | Description                    |
+| --------------------------------------------------- | ------------------------------ |
+| `types=topic,table`                                 | filter by types                |
+| `services=kafka,postgres`                           | filter by services             |
+| `data[dataset]=booking&data[project]=p-godata-id`   | filter by field in asset.data  |
+| `q=internal&q_fields=name,urn,description,services` | querying by field              |
+| `sort=created_at`                                   | sort by certain fields         |
+| `direction=desc`                                    | sorting direction (asc / desc) |
 
-|  Query Params | Description |
-|---|---|
-|`types=topic,table`| filter by types |
-|`services=kafka,postgres`| filter by services |
-|`data[dataset]=booking&data[project]=p-godata-id`| filter by field in asset.data |
-|`q=internal&q_fields=name,urn,description,services`| querying by field|
-|`sort=created_at`|sort by certain fields|
-|`direction=desc`|sorting direction (asc / desc)|
-
-
-The API contract is available [here](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
+The API contract is available [here](https://github.com/raystack/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
 
 ## Using the Lineage API
 
 The Lineage API allows the clients to query the data flow relationship between different assets managed by Compass.
 
-See the swagger definition of [Lineage API](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json)) for more information.
+See the swagger definition of [Lineage API](https://github.com/raystack/compass/blob/main/third_party/OpenAPI/compass.swagger.json)) for more information.
 
 Lineage API returns a list of directed edges. For each edge, there are `source` and `target` fields that represent nodes to indicate the direction of the edge. Each edge could have an optional property in the `props` field.
 
@@ -247,50 +266,50 @@ Lineage API returns a list of directed edges. For each edge, there are `source` 
 ```bash
 $ compass lineage data-project:datalake.events
 ```
+
 </TabItem>
 <TabItem value="HTTP" label="HTTP">
 
-
 ```bash
 $ curl 'http://localhost:8080/v1beta1/lineage/data-project%3Adatalake.events' \
---header 'Compass-User-UUID:odpf@email.com' 
+--header 'Compass-User-UUID:raystack@email.com'
 ```
+
 </TabItem>
 </Tabs>
 
 ```json
 {
-    "data": [
-        {
-            "source": {
-                "urn": "data-project:datalake.events",
-                "type": "table",
-                "service": "bigquery",
-            },
-            "target": {
-                "urn": "events-transform-dwh",
-                "type": "csv",
-                "service": "s3",
-            },
-            "props": {}
-        },
-        {
-            "source": {
-                "urn": "events-ingestion",
-                "type": "topic",
-                "service": "beast",
-            },
-            "target": {
-                "urn": "data-project:datalake.events",
-                "type": "table",
-                "service": "bigquery",
-            },
-            "props": {}
-        },
-    ]
+  "data": [
+    {
+      "source": {
+        "urn": "data-project:datalake.events",
+        "type": "table",
+        "service": "bigquery"
+      },
+      "target": {
+        "urn": "events-transform-dwh",
+        "type": "csv",
+        "service": "s3"
+      },
+      "props": {}
+    },
+    {
+      "source": {
+        "urn": "events-ingestion",
+        "type": "topic",
+        "service": "beast"
+      },
+      "target": {
+        "urn": "data-project:datalake.events",
+        "type": "table",
+        "service": "bigquery"
+      },
+      "props": {}
+    }
+  ]
 }
 ```
 
 The lineage is fetched from the perspective of an asset. The response shows it has a list of upstreams and downstreams assets of the requested asset.
 Notice that in the URL, we are using `urn` instead of `id`. The reason is because we use `urn` as a main identifier in our lineage storage. We don't use `id` to store the lineage as a main identifier, because `id` is internally auto generated and in lineage, there might be some assets that we don't store in our Compass' storage yet.
-

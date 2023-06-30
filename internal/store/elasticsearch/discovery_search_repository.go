@@ -9,7 +9,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/odpf/compass/core/asset"
+	"github.com/raystack/compass/core/asset"
 	"github.com/olivere/elastic/v7"
 )
 

@@ -1,7 +1,7 @@
 package asset
 
 import (
-	"github.com/odpf/compass/core/user"
+	"github.com/raystack/compass/core/user"
 	"github.com/peterbourgon/mergemap"
 )
 

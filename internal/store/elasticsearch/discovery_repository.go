@@ -5,11 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"io"
 	"strings"
 
-	"github.com/odpf/compass/core/asset"
+	"github.com/raystack/compass/core/asset"
 )
 
 // DiscoveryRepository implements discovery.Repository

@@ -3,7 +3,7 @@ package asset_test
 import (
 	"testing"
 
-	"github.com/odpf/compass/core/asset"
+	"github.com/raystack/compass/core/asset"
 	"github.com/stretchr/testify/assert"
 )
 

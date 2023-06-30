@@ -4,7 +4,7 @@ import (
 	"context"
 
 	pb_testproto "github.com/grpc-ecosystem/go-grpc-middleware/testing/testproto"
-	"github.com/odpf/compass/core/user"
+	"github.com/raystack/compass/core/user"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

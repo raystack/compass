@@ -3,16 +3,16 @@ package postgres_test
 import (
 	"context"
 	"fmt"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"strconv"
 	"time"
 
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v4/stdlib"
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/user"
-	"github.com/odpf/compass/internal/store/postgres"
-	"github.com/odpf/salt/log"
+	"github.com/raystack/compass/core/asset"
+	"github.com/raystack/compass/core/user"
+	"github.com/raystack/compass/internal/store/postgres"
+	"github.com/raystack/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 )
@@ -195,7 +195,7 @@ func getUser(email string) *user.User {
 
 func createUsers(userRepo user.Repository, ns *namespace.Namespace, num int) (users []user.User, err error) {
 	for i := 0; i < num; i++ {
-		email := fmt.Sprintf("user-test-%d@odpf.io", i+1)
+		email := fmt.Sprintf("user-test-%d@raystack.io", i+1)
 		user1 := user.User{UUID: uuid.NewString(), Email: email, Provider: defaultProviderName}
 		user1.ID, err = userRepo.Create(context.Background(), ns, &user1)
 		if err != nil {

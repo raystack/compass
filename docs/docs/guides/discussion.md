@@ -7,7 +7,7 @@ Discussion is a new feature in Compass. One could create a discussion and all us
 
 ## Create a Discussion
 
-A discussion thread can be created with the Discussion API. The API contract is available [here](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
+A discussion thread can be created with the Discussion API. The API contract is available [here](https://github.com/raystack/compass/blob/main/third_party/OpenAPI/compass.swagger.json).
 
 <Tabs groupId="cli" >
 <TabItem value="CLI" label="CLI">
@@ -23,18 +23,20 @@ $ compass discussion post --body=<filepath to discussion body>
   "type": "openended"
 }
 ```
+
 </TabItem>
 <TabItem value="HTTP" label="HTTP">
 
 ```bash
 $ curl --request POST 'http://localhost:8080/v1beta1/discussions' \
---header 'Compass-User-UUID:odpf@email.com' \
+--header 'Compass-User-UUID:raystack@email.com' \
 --data-raw '{
   "title": "The first discussion",
   "body": "This is the first discussion thread in Compass",
   "type": "openended"
 }'
 ```
+
 </TabItem>
 </Tabs>
 
@@ -48,17 +50,20 @@ The Get Discussions will fetch all discussions in Compass.
 ```bash
 $ compass discussion list
 ```
+
 </TabItem>
 <TabItem value="HTTP" label="HTTP">
 
 ```bash
 $ curl 'http://localhost:8080/v1beta1/discussions' \
---header 'Compass-User-UUID:odpf@email.com'
+--header 'Compass-User-UUID:raystack@email.com'
 ```
+
 </TabItem>
 </Tabs>
 
 The response will be something like
+
 ```javascript
 {
     "data": [
@@ -73,7 +78,7 @@ The response will be something like
             "assignees": [],
             "owner": {
                 "id": "dd9e2e07-a13f-1c2b-07e3-e32cf0f7688c",
-                "email": "odpf@email.com",
+                "email": "raystack@email.com",
                 "provider": "shield"
             },
             "created_at": "elit cillum Duis",
@@ -82,6 +87,7 @@ The response will be something like
     ]
 }
 ```
+
 Notice the state is `open` by default once we create a new discussion. There are also some additional features in discussion where we can label the discussion and assign users and assets to the discussion. These labelling and assinging assets and users could also be done when we are creating a discussion.
 
 ## Patching Discussion
@@ -90,7 +96,7 @@ If we are not labelling and assigning users & assets to the discussion in the cr
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/discussions/1' \
---header 'Compass-User-UUID:odpf@email.com' \
+--header 'Compass-User-UUID:raystack@email.com' \
 --data-raw '{
     "title": "The first discussion (duplicated)",
     "state": "closed"
@@ -100,9 +106,10 @@ $ curl --request PATCH 'http://localhost:8080/v1beta1/discussions/1' \
 We just need to send the fields that we want to patch for a discussion. Some fields have array type, in this case the PATCH will overwrite the fields with the new value.
 
 For example we have this labelled discussion.
+
 ```bash
 $ curl 'http://localhost:8080/v1beta1/discussions' \
---header 'Compass-User-UUID:odpf@email.com'
+--header 'Compass-User-UUID:raystack@email.com'
 
 {
     "data": [
@@ -119,7 +126,7 @@ $ curl 'http://localhost:8080/v1beta1/discussions' \
             ],
             "owner": {
                 "id": "dd9e2e07-a13f-1c2b-07e3-e32cf0f7688c",
-                "email": "odpf@email.com",
+                "email": "raystack@email.com",
                 "provider": "shield"
             },
             "created_at": "elit cillum Duis",
@@ -133,16 +140,17 @@ If we patch the label with the new values.
 
 ```bash
 $ curl --request PATCH 'http://localhost:8080/v1beta1/discussions/1' \
---header 'Compass-User-UUID:odpf@email.com' \
+--header 'Compass-User-UUID:raystack@email.com' \
 --data-raw '{
     "labels": ["new value"]
 }'
 ```
 
 The discussion with id 1 will be updated like this.
+
 ```bash
 $ curl 'http://localhost:8080/v1beta1/discussions' \
---header 'Compass-User-UUID:odpf@email.com'
+--header 'Compass-User-UUID:raystack@email.com'
 
 {
     "data": [
@@ -157,7 +165,7 @@ $ curl 'http://localhost:8080/v1beta1/discussions' \
             ],
             "owner": {
                 "id": "dd9e2e07-a13f-1c2b-07e3-e32cf0f7688c",
-                "email": "odpf@email.com",
+                "email": "raystack@email.com",
                 "provider": "shield"
             },
             "created_at": "elit cillum Duis",
@@ -173,7 +181,7 @@ One could also comment a specific discussion with discussion comment API.
 
 ```bash
 $ curl --request POST 'http://localhost:8080/v1beta1/discussions/1/comments' \
---header 'Compass-User-UUID:odpf@email.com' \
+--header 'Compass-User-UUID:raystack@email.com' \
 --data-raw '{
   "body": "This is the first comment of discussion 1"
 }'
@@ -182,9 +190,10 @@ $ curl --request POST 'http://localhost:8080/v1beta1/discussions/1/comments' \
 ## Getting All My Discussions
 
 Compass integrates discussions with User API so we could fetch all discussions belong to us with this API.
+
 ```bash
 $ curl 'http://localhost:8080/v1beta1/me/discussions' \
---header 'Compass-User-UUID:odpf@email.com'
+--header 'Compass-User-UUID:raystack@email.com'
 
 {
     "data": [
@@ -199,7 +208,7 @@ $ curl 'http://localhost:8080/v1beta1/me/discussions' \
             ],
             "owner": {
                 "id": "dd9e2e07-a13f-1c2b-07e3-e32cf0f7688c",
-                "email": "odpf@email.com",
+                "email": "raystack@email.com",
                 "provider": "shield"
             },
             "created_at": "elit cillum Duis",

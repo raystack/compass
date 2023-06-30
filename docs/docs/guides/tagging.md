@@ -3,13 +3,14 @@
 This doc explains how to tag an asset in Compass with a specific tag.
 
 ## Tag Template
+
 To support reusability of a tag, Compass has a tag template that we need to define first before we apply it to an asset. Tagging an asset means Compass will wire tag template to assets.
 
 Creating a tag's template could be done with Tag Template API.
 
 ```bash
 $ curl --request POST 'localhost:8080/v1beta1/tags/templates' \
---header 'Compass-User-UUID: user@odpf.io' \
+--header 'Compass-User-UUID: user@raystack.io' \
 --data-raw '{
     "urn": "my-first-template",
     "display_name": "My First Template",
@@ -37,9 +38,11 @@ We can verify the tag's template is created by calling GET tag's templates API
 
 ```bash
 $ curl --request GET 'localhost:8080/v1beta1/tags/templates' \
---header 'Compass-User-UUID: user@odpf.io'
+--header 'Compass-User-UUID: user@raystack.io'
 ```
+
 The response will be like this
+
 ```javascript
 {
     "data": [
@@ -76,10 +79,13 @@ The response will be like this
 ```
 
 Now, we already have a template with template urn `my-first-template` that has 2 kind of fields with id `1` and `2`.
+
 ## Tagging an Asset
+
 Once templates exist, we can tag an asset with a template by calling PUT `/v1beta1/tags/assets/{asset_id}` API.
 
 Assuming we have an asset
+
 ```javascript
 {
     "id": "a2c74793-b584-4d20-ba2a-28bdf6b92c08",
@@ -90,7 +96,7 @@ Assuming we have an asset
     "description": "sample description",
     "version": "0.1",
     "updated_by": {
-        "uuid": "user@odpf.io"
+        "uuid": "user@raystack.io"
     },
     "created_at": "2022-05-11T07:03:45.954387Z",
     "updated_at": "2022-05-11T07:03:45.954387Z"
@@ -98,9 +104,10 @@ Assuming we have an asset
 ```
 
 We can tag the asset with template `my-first-template`.
+
 ```bash
 $ curl --request POST 'localhost:8080/v1beta1/tags/assets' \
---header 'Compass-User-UUID: user@odpf.io'
+--header 'Compass-User-UUID: user@raystack.io'
 --data-raw '{
     "asset_id": "a2c74793-b584-4d20-ba2a-28bdf6b92c08",
     "template_urn": "my-first-template",
@@ -118,6 +125,7 @@ $ curl --request POST 'localhost:8080/v1beta1/tags/assets' \
 ```
 
 We will get response showing that the asset is already tagged.
+
 ```javascript
 {
     "data": {
@@ -150,14 +158,15 @@ We will get response showing that the asset is already tagged.
         "template_description": "This is my first template"
     }
 }
-``` 
+```
 
 ## Getting Asset's Tag(s)
+
 We can get all tags belong to an asset by calling GET `/v1beta1/tags/assets/{asset_id}` API.
 
 ```bash
 $ curl --request GET 'localhost:8080/v1beta1/tags/assets/a2c74793-b584-4d20-ba2a-28bdf6b92c08' \
---header 'Compass-User-UUID: user@odpf.io'
+--header 'Compass-User-UUID: user@raystack.io'
 
 {
     "data": [
@@ -192,3 +201,4 @@ $ curl --request GET 'localhost:8080/v1beta1/tags/assets/a2c74793-b584-4d20-ba2a
         }
     ]
 }
+```

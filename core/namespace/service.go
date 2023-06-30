@@ -3,7 +3,7 @@ package namespace
 import (
 	"context"
 	"github.com/google/uuid"
-	"github.com/odpf/salt/log"
+	"github.com/raystack/salt/log"
 )
 
 type Service struct {

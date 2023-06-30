@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 
-	"github.com/odpf/compass/core/tag/validator"
+	"github.com/raystack/compass/core/tag/validator"
 )
 
 // Service is a type that manages business process

@@ -3,7 +3,7 @@ package tag
 //go:generate mockery --name=TagRepository -r --case underscore --with-expecter --structname TagRepository --filename tag_repository.go --output=./mocks
 import (
 	"context"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"time"
 )
 

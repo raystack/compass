@@ -3,8 +3,8 @@ package asset
 //go:generate mockery --name=DiscoveryRepository -r --case underscore --with-expecter --structname DiscoveryRepository --filename discovery_repository.go --output=./mocks
 import (
 	"context"
-	"github.com/odpf/compass/core/namespace"
-	"github.com/odpf/compass/core/validator"
+	"github.com/raystack/compass/core/namespace"
+	"github.com/raystack/compass/core/validator"
 )
 
 type DiscoveryRepository interface {

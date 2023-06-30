@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"testing"
 
-	"github.com/odpf/compass/core/user"
-	"github.com/odpf/compass/core/user/mocks"
-	"github.com/odpf/compass/pkg/statsd"
-	"github.com/odpf/salt/log"
+	"github.com/raystack/compass/core/user"
+	"github.com/raystack/compass/core/user/mocks"
+	"github.com/raystack/compass/pkg/statsd"
+	"github.com/raystack/salt/log"
 	"github.com/stretchr/testify/assert"
 )
 

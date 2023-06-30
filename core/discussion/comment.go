@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/odpf/compass/core/user"
+	"github.com/raystack/compass/core/user"
 )
 
 type Comment struct {

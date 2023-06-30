@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/google/uuid"
-	"github.com/odpf/compass/pkg/grpc_interceptor"
+	"github.com/raystack/compass/pkg/grpc_interceptor"
 	"log"
 	// Register database postgres
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"

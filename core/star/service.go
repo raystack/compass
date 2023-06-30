@@ -2,10 +2,10 @@ package star
 
 import (
 	"context"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 
-	"github.com/odpf/compass/core/asset"
-	"github.com/odpf/compass/core/user"
+	"github.com/raystack/compass/core/asset"
+	"github.com/raystack/compass/core/user"
 )
 
 func NewService(starRepository Repository) *Service {

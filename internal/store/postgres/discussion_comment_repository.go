@@ -6,11 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/odpf/compass/core/discussion"
+	"github.com/raystack/compass/core/discussion"
 )
 
 // CreateComment adds a new comment to a specific discussion

@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/namespace"
+	"github.com/raystack/compass/core/namespace"
 	"time"
 )
 

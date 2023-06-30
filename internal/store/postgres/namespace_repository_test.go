@@ -3,9 +3,9 @@ package postgres_test
 import (
 	"context"
 	"github.com/google/uuid"
-	"github.com/odpf/compass/core/namespace"
-	"github.com/odpf/compass/internal/store/postgres"
-	"github.com/odpf/salt/log"
+	"github.com/raystack/compass/core/namespace"
+	"github.com/raystack/compass/internal/store/postgres"
+	"github.com/raystack/salt/log"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 	"testing"

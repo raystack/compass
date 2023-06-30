@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/lib/pq"
-	"github.com/odpf/compass/core/discussion"
+	"github.com/raystack/compass/core/discussion"
 )
 
 type DiscussionModel struct {

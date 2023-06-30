@@ -1,5 +1,5 @@
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
 
 # Asset
 
@@ -8,17 +8,17 @@ In Compass, we call every metadata that you input as an Asset. All your tables, 
 <Tabs>
 <TabItem value="table" label="Table View">
 
-|  Field | Required | Type   | Description |
-|---|---|---|---|
-|  id | false |  string |  compass' auto-generated uuid |
-|  urn | true | string |  external identifier of the metadata |
-|  type | true | string  |  type of metadata, only supports `table`, `job`, `topic`,`dashboard` |
-|  service | true | string  |  application name where the metadata was coming from e.g. `bigquery`, `postgres` |
-|  name | true | string  |  name of the metadata |
-|  description | false | string  | description of the metadata  |
-|  data | false | json |  dynamic data |
-|  labels | false |json  |  labels of metadata, written in key-value string  |
-|  owners | false | []json | array of json, where each json contains `email` field  |
+| Field       | Required | Type   | Description                                                                     |
+| ----------- | -------- | ------ | ------------------------------------------------------------------------------- |
+| id          | false    | string | compass' auto-generated uuid                                                    |
+| urn         | true     | string | external identifier of the metadata                                             |
+| type        | true     | string | type of metadata, only supports `table`, `job`, `topic`,`dashboard`             |
+| service     | true     | string | application name where the metadata was coming from e.g. `bigquery`, `postgres` |
+| name        | true     | string | name of the metadata                                                            |
+| description | false    | string | description of the metadata                                                     |
+| data        | false    | json   | dynamic data                                                                    |
+| labels      | false    | json   | labels of metadata, written in key-value string                                 |
+| owners      | false    | []json | array of json, where each json contains `email` field                           |
 
 </TabItem>
 <TabItem value="json" label="JSON">
@@ -36,16 +36,16 @@ In Compass, we call every metadata that you input as an Asset. All your tables, 
             "nested_data": {
                 "boolean_data": true
             }
-        }, 
+        },
         "some_data1": "value"
     }
     "labels": {
-        "labelkey1": "labelvalue1", 
+        "labelkey1": "labelvalue1",
         "labelkey2": "labelvalue2"
     },
     "users": [
         {
-            "email": "user@odpf.io"
+            "email": "user@raystack.io"
         }
     ]
 }
@@ -54,8 +54,7 @@ In Compass, we call every metadata that you input as an Asset. All your tables, 
 </TabItem>
 </Tabs>
 
-
-Every asset that is pushed SHOULD have the required fields: `urn`, `type`, `service`, `name`. The value of these fields MUST be string, if present. 
+Every asset that is pushed SHOULD have the required fields: `urn`, `type`, `service`, `name`. The value of these fields MUST be string, if present.
 
 Asset ingestion API (`/v1beta1/assets`) is using HTTP PATCH method. The behavioud would be similar with how PATCH works. It is possible to patch one field only in an asset by sending the updated field to the ingestion API. This also works for the data in dynamic `data` field. The combination of `urn`, `type`, `service` will be the identifier to patch an asset.
 In case the `urn` does not exist, the asset ingestion PATCH API \(/v1beta1/assets\) will create a new asset.
@@ -67,6 +66,7 @@ Lineage is the origin or history of an asset. It represents a series of transfor
 Each asset can have downstream/s and upstream/s. An asset without a single downstream, tells us that it is the end of the lineage, while an asset without a single upstream means that it is a start of a lineage.
 
 This is how a lineage is currently being represented
+
 ```text
 [
     {
@@ -81,7 +81,7 @@ This is how a lineage is currently being represented
             "service": "bigquery"
         },
         "props": nil
-    },    
+    },
     {
         "source": {
             "urn": "topic/order-log",
@@ -99,11 +99,13 @@ This is how a lineage is currently being represented
 ```
 
 ## Asset Versioning
-Compass versions each updated asset ingested via Upsert Patch API. The base version of an asset is `v0.1`. The base version will be given to the newly created asset. If there is any changes in the asset schema, a new version will be created. 
-Up until now, Compass always bump up the minor version if an asset get updated. The version history of an asset could also be fetched via [/v1beta1/assets/{id}/versions](https://github.com/odpf/compass/blob/main/third_party/OpenAPI/compass.swagger.json) API.
+
+Compass versions each updated asset ingested via Upsert Patch API. The base version of an asset is `v0.1`. The base version will be given to the newly created asset. If there is any changes in the asset schema, a new version will be created.
+Up until now, Compass always bump up the minor version if an asset get updated. The version history of an asset could also be fetched via [/v1beta1/assets/{id}/versions](https://github.com/raystack/compass/blob/main/third_party/OpenAPI/compass.swagger.json) API.
 Not only storing the versions of an asset, Compass also stores the changelog between each version. Compass use [r3labs/diff](https://github.com/r3labs/diff) to get the diff between newly ingested asset and the existing asset.
 
 For instance, there is an asset with urn `kafka:booking-log-kafka`
+
 ```text
 {
     "id": "f2bb4e02-12b6-4c9f-aa9d-7d56aaaeb51e",
@@ -119,6 +121,7 @@ For instance, there is an asset with urn `kafka:booking-log-kafka`
 ```
 
 If there is an update to the `environment` in the asset labels, here is the asset version history stored in Compass:
+
 ```text
 {
     "id": "f2bb4e02-12b6-4c9f-aa9d-7d56aaaeb51e",
@@ -142,5 +145,6 @@ If there is an update to the `environment` in the asset labels, here is the asse
 ```
 
 ## Tagging an Asset
+
 Compass allows user to tag a specific asset. To tag a new asset, one needs to create a template of the tag. Tag's template defines a set of fields' tag that are applicable to tag each field in an asset.
 Once a template is created, each field in an asset is possible to be tagged by calling `/v1beta1/tags` API. More detail about [Tagging](../guides/tagging.md).

@@ -1,4 +1,4 @@
-module github.com/odpf/compass
+module github.com/raystack/compass
 
 go 1.18
 
@@ -27,7 +27,7 @@ require (
 	github.com/newrelic/go-agent/v3 v3.15.2
 	github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7 v1.0.1
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.1
-	github.com/odpf/salt v0.2.5-0.20221130085531-51c81815f7d6
+	github.com/raystack/salt v0.2.5-0.20221130085531-51c81815f7d6
 	github.com/olivere/elastic/v7 v7.0.31
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/peterbourgon/mergemap v0.0.1
