@@ -118,7 +118,7 @@ func LoadFromCurrentDir(cfg *Config) error {
 	var opts []config.LoaderOption
 	opts = append(opts,
 		config.WithPath("./"),
-		config.WithFile("compass.yaml"),
+		config.WithFile("config.yaml"),
 		config.WithEnvKeyReplacer(".", "_"),
 		config.WithEnvPrefix("COMPASS"),
 	)
