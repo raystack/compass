@@ -27,4 +27,4 @@ jobs:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           go install github.com/mattn/goveralls@latest
-          goveralls -coverprofile=coverage.txt -service=github
+          goveralls -coverprofile=coverage.out -service=github
