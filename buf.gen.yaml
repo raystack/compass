@@ -1,17 +1,22 @@
 version: v1
 plugins:
-  - name: go
+  - plugin: buf.build/protocolbuffers/go:v1.31.0
     out: proto
     opt: paths=source_relative
-  - name: go-grpc
+  - plugin: buf.build/grpc/go:v1.3.0
     out: proto
     opt: paths=source_relative,require_unimplemented_servers=true
-  - name: grpc-gateway
+  - plugin: buf.build/grpc-ecosystem/gateway:v2.16.0
     out: proto
     opt:
       - paths=source_relative
       - allow_repeated_fields_in_body=true
-  - name: openapiv2
+  - plugin: buf.build/bufbuild/validate-go:v1.0.2
+    out: proto
+    opt:
+      - paths=source_relative
+      - lang=go
+  - plugin: buf.build/grpc-ecosystem/openapiv2:v2.16.0
     out: proto
     opt:
       - allow_repeated_fields_in_body=true
@@ -20,8 +25,3 @@ plugins:
       - merge_file_name=compass
       - openapi_naming_strategy=simple
       - json_names_for_fields=false
-  - remote: buf.build/jirkad/plugins/protoc-gen-validate:v0.6.7
-    out: proto
-    opt:
-      - paths=source_relative
-      - lang=go
