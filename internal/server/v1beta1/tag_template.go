@@ -25,7 +25,7 @@ type TagTemplateService interface {
 
 // GetAllTagTemplates handles template read requests
 func (server *APIServer) GetAllTagTemplates(ctx context.Context, req *compassv1beta1.GetAllTagTemplatesRequest) (*compassv1beta1.GetAllTagTemplatesResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (server *APIServer) GetAllTagTemplates(ctx context.Context, req *compassv1b
 
 // CreateTagTemplate handles template creation requests
 func (server *APIServer) CreateTagTemplate(ctx context.Context, req *compassv1beta1.CreateTagTemplateRequest) (*compassv1beta1.CreateTagTemplateResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (server *APIServer) CreateTagTemplate(ctx context.Context, req *compassv1be
 
 // GetTagTemplate handles template read requests based on URN
 func (server *APIServer) GetTagTemplate(ctx context.Context, req *compassv1beta1.GetTagTemplateRequest) (*compassv1beta1.GetTagTemplateResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (server *APIServer) GetTagTemplate(ctx context.Context, req *compassv1beta1
 }
 
 func (server *APIServer) UpdateTagTemplate(ctx context.Context, req *compassv1beta1.UpdateTagTemplateRequest) (*compassv1beta1.UpdateTagTemplateResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -153,16 +153,16 @@ func (server *APIServer) UpdateTagTemplate(ctx context.Context, req *compassv1be
 
 // DeleteTagTemplate handles template delete request based on URN
 func (server *APIServer) DeleteTagTemplate(ctx context.Context, req *compassv1beta1.DeleteTagTemplateRequest) (*compassv1beta1.DeleteTagTemplateResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	err = server.tagTemplateService.DeleteTemplate(ctx, req.GetTemplateUrn())
-	if errors.As(err, new(tag.TemplateNotFoundError)) {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
 	if err != nil {
+		if errors.As(err, new(tag.TemplateNotFoundError)) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
 		return nil, internalServerError(server.logger, fmt.Sprintf("error deleting a template: %s", err.Error()))
 	}
 	return &compassv1beta1.DeleteTagTemplateResponse{}, nil

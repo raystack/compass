@@ -11,7 +11,7 @@ import (
 )
 
 func (server *APIServer) GetAllTypes(ctx context.Context, req *compassv1beta1.GetAllTypesRequest) (*compassv1beta1.GetAllTypesResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -810,7 +810,12 @@ func TestService_SearchSuggestGroupAssets(t *testing.T) {
 		Setup       func(context.Context, *mocks.DiscoveryRepository)
 	}
 
-	DisErr := asset.DiscoveryError{Err: errors.New("could not find")}
+	disErr := asset.DiscoveryError{
+		Op:    "SearchSuggestGroupAssets",
+		Err:   errors.New("could not find"),
+		ID:    assetID,
+		Index: "index",
+	}
 
 	searchResults := []asset.SearchResult{}
 	groupResults := []asset.GroupResult{}
@@ -819,13 +824,13 @@ func TestService_SearchSuggestGroupAssets(t *testing.T) {
 			Description: `should return error if the GetGraph function return error`,
 			ID:          assetID,
 			Setup: func(ctx context.Context, dr *mocks.DiscoveryRepository) {
-				dr.EXPECT().Search(ctx, asset.SearchConfig{}).Return(searchResults, DisErr)
-				dr.EXPECT().Suggest(ctx, asset.SearchConfig{}).Return([]string{}, DisErr)
-				dr.EXPECT().GroupAssets(ctx, asset.GroupConfig{}).Return(groupResults, DisErr)
+				dr.EXPECT().Search(ctx, asset.SearchConfig{}).Return(searchResults, disErr)
+				dr.EXPECT().Suggest(ctx, asset.SearchConfig{}).Return([]string{}, disErr)
+				dr.EXPECT().GroupAssets(ctx, asset.GroupConfig{}).Return(groupResults, disErr)
 			},
-			ErrSearch:  DisErr,
-			ErrSuggest: DisErr,
-			ErrGroup:   DisErr,
+			ErrSearch:  disErr,
+			ErrSuggest: disErr,
+			ErrGroup:   disErr,
 		},
 		{
 			Description: `should return no error if search, group  and suggest function work`,

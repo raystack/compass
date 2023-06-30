@@ -12,7 +12,7 @@ import (
 )
 
 func (server *APIServer) GetGraph(ctx context.Context, req *compassv1beta1.GetGraphRequest) (*compassv1beta1.GetGraphResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}

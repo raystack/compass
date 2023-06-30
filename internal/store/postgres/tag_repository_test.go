@@ -143,6 +143,23 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 			r.NotZero(value.CreatedAt)
 		}
 	})
+
+	r.Run("should return error if the tag already exist", func() {
+		err := setup(r.ctx, r.client)
+		r.NoError(err)
+
+		domainTemplate := getTemplate()
+		err = r.templateRepository.Create(r.ctx, domainTemplate)
+		r.NoError(err)
+		domainTag := getDomainTag()
+
+		if err := r.repository.Create(r.ctx, &domainTag); err != nil {
+			panic(err)
+		}
+		err = r.repository.Create(r.ctx, &domainTag)
+
+		r.NotNil(err)
+	})
 }
 
 func (r *TagRepositoryTestSuite) TestRead() {

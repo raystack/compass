@@ -36,17 +36,44 @@ func TestGetAllAssets(t *testing.T) {
 		Description  string
 		Request      *compassv1beta1.GetAllAssetsRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.AssetService)
+		Setup        func(context.Context, *mocks.AssetService, *mocks.UserService)
 		PostCheck    func(resp *compassv1beta1.GetAllAssetsResponse) error
 	}
 
 	testCases := []testCase{
 		{
+			Description:  `should return error if user validation in ctx fails`,
+			ExpectStatus: codes.Internal,
+			Request:      &compassv1beta1.GetAllAssetsRequest{},
+			Setup: func(ctx context.Context, as *mocks.AssetService, us *mocks.UserService) {
+				us.EXPECT().ValidateUser(ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return("", errors.New("some-error"))
+			},
+		},
+		{
 			Description:  `should return internal server error if fetching fails`,
 			ExpectStatus: codes.Internal,
 			Request:      &compassv1beta1.GetAllAssetsRequest{},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAllAssets(ctx, asset.Filter{}, false).Return([]asset.Asset{}, 0, errors.New("unknown error"))
+			},
+		},
+		{
+			Description:  `should return invalid argument error if sort field has worng value`,
+			ExpectStatus: codes.InvalidArgument,
+			Request: &compassv1beta1.GetAllAssetsRequest{
+				Types:     "table,topic",
+				Services:  "bigquery,kafka",
+				Sort:      "wrong-sort-type",
+				Direction: "asc",
+				Data: map[string]string{
+					"dataset": "booking",
+					"project": "p-godata-id",
+				},
+				Q:         "internal",
+				QFields:   "name,urn",
+				Size:      30,
+				Offset:    50,
+				WithTotal: false,
 			},
 		},
 		{
@@ -55,7 +82,7 @@ func TestGetAllAssets(t *testing.T) {
 				WithTotal: true,
 			},
 			ExpectStatus: codes.Internal,
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAllAssets(ctx, asset.Filter{}, true).Return([]asset.Asset{}, 0, errors.New("unknown error"))
 			},
 		},
@@ -77,7 +104,7 @@ func TestGetAllAssets(t *testing.T) {
 				WithTotal: false,
 			},
 			ExpectStatus: codes.OK,
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				cfg := asset.Filter{
 					Types:         []asset.Type{"table", "topic"},
 					Services:      []string{"bigquery", "kafka"},
@@ -98,7 +125,7 @@ func TestGetAllAssets(t *testing.T) {
 		{
 			Description:  "should return status OK along with list of assets",
 			ExpectStatus: codes.OK,
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAllAssets(ctx, asset.Filter{}, false).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2", Owners: []user.User{{Email: "dummy@trash.com"}}},
@@ -128,7 +155,7 @@ func TestGetAllAssets(t *testing.T) {
 				Offset:    5,
 				WithTotal: true,
 			},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAllAssets(ctx, asset.Filter{
 					Types:    []asset.Type{"job"},
 					Services: []string{"kafka"},
@@ -165,7 +192,7 @@ func TestGetAllAssets(t *testing.T) {
 			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockAssetSvc)
+				tc.Setup(ctx, mockAssetSvc, mockUserSvc)
 			}
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockAssetSvc.AssertExpectations(t)
@@ -226,36 +253,43 @@ func TestGetAssetByID(t *testing.T) {
 	type testCase struct {
 		Description  string
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.AssetService)
+		Setup        func(context.Context, *mocks.AssetService, *mocks.UserService)
 		PostCheck    func(resp *compassv1beta1.GetAssetByIDResponse) error
 	}
 
 	testCases := []testCase{
 		{
+			Description:  `should return error if user validation in ctx fails`,
+			ExpectStatus: codes.Internal,
+			Setup: func(ctx context.Context, as *mocks.AssetService, us *mocks.UserService) {
+				us.EXPECT().ValidateUser(ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return("", errors.New("some-error"))
+			},
+		},
+		{
 			Description:  `should return invalid argument if asset id is not uuid`,
 			ExpectStatus: codes.InvalidArgument,
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAssetByID(ctx, assetID).Return(asset.Asset{}, asset.InvalidError{AssetID: assetID})
 			},
 		},
 		{
 			Description:  `should return not found if asset doesn't exist`,
 			ExpectStatus: codes.NotFound,
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAssetByID(ctx, assetID).Return(asset.Asset{}, asset.NotFoundError{AssetID: assetID})
 			},
 		},
 		{
 			Description:  `should return internal server error if fetching fails`,
 			ExpectStatus: codes.Internal,
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAssetByID(ctx, assetID).Return(asset.Asset{}, errors.New("unknown error"))
 			},
 		},
 		{
 			Description:  "should return http 200 status along with the asset, if found",
 			ExpectStatus: codes.OK,
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAssetByID(ctx, assetID).Return(ast, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAssetByIDResponse) error {
@@ -299,7 +333,7 @@ func TestGetAssetByID(t *testing.T) {
 			mockUserSvc := mocks.NewUserService(t)
 			mockAssetSvc := mocks.NewAssetService(t)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockAssetSvc)
+				tc.Setup(ctx, mockAssetSvc, mockUserSvc)
 			}
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
@@ -368,11 +402,19 @@ func TestUpsertAsset(t *testing.T) {
 		Description  string
 		Request      *compassv1beta1.UpsertAssetRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.AssetService)
+		Setup        func(context.Context, *mocks.AssetService, *mocks.UserService)
 		PostCheck    func(resp *compassv1beta1.UpsertAssetResponse) error
 	}
 
 	testCases := []testCase{
+		{
+			Description:  `should return error if user validation in ctx fails`,
+			ExpectStatus: codes.Internal,
+			Request:      &compassv1beta1.UpsertAssetRequest{},
+			Setup: func(ctx context.Context, _ *mocks.AssetService, us *mocks.UserService) {
+				us.EXPECT().ValidateUser(ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return("", errors.New("some-error"))
+			},
+		},
 		{
 			Description:  "empty payload will return invalid argument",
 			Request:      &compassv1beta1.UpsertAssetRequest{},
@@ -437,7 +479,7 @@ func TestUpsertAsset(t *testing.T) {
 		},
 		{
 			Description: "should return internal server error when upserting asset service failed",
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				expectedErr := errors.New("unknown error")
 				as.EXPECT().UpsertAsset(
 					ctx,
@@ -451,7 +493,7 @@ func TestUpsertAsset(t *testing.T) {
 		},
 		{
 			Description: "should return OK and asset's ID if the asset is successfully created/updated",
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				ast := asset.Asset{
 					URN:       "test dagger",
 					Type:      asset.TypeTable,
@@ -493,7 +535,7 @@ func TestUpsertAsset(t *testing.T) {
 			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockAssetSvc)
+				tc.Setup(ctx, mockAssetSvc, mockUserSvc)
 			}
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockAssetSvc.AssertExpectations(t)
@@ -559,6 +601,16 @@ func TestUpsertPatchAsset(t *testing.T) {
 				},
 			},
 		}
+		validPayloadWithoutStreams = &compassv1beta1.UpsertPatchAssetRequest{
+			Asset: &compassv1beta1.UpsertPatchAssetRequest_Asset{
+				Urn:     "test dagger",
+				Type:    "table",
+				Name:    wrapperspb.String("new-name"),
+				Service: "kafka",
+				Data:    &structpb.Struct{},
+				Url:     "https://sample-url.com",
+			},
+		}
 		currentAsset = asset.Asset{
 			URN:       "test dagger",
 			Type:      asset.TypeTable,
@@ -569,16 +621,34 @@ func TestUpsertPatchAsset(t *testing.T) {
 			URL:       "https://sample-url-old.com",
 			Owners:    []user.User{{ID: "id", UUID: "1aecb8b3-23a9-4456-8ebd-3aafc746fff8", Email: "email@email.com", Provider: "provider"}},
 		}
+		currentAssetNew = asset.Asset{
+			URN:       "test dagger",
+			Type:      asset.TypeTable,
+			Name:      "new-name", // this value will be updated
+			Service:   "kafka",
+			UpdatedBy: user.User{ID: userID},
+			Data:      map[string]interface{}{},
+			URL:       "https://sample-url.com",
+			Owners:    []user.User{{ID: "id", UUID: "1aecb8b3-23a9-4456-8ebd-3aafc746fff8", Email: "email@email.com", Provider: "provider"}},
+		}
 	)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.UpsertPatchAssetRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.AssetService)
+		Setup        func(context.Context, *mocks.AssetService, *mocks.UserService)
 		PostCheck    func(resp *compassv1beta1.UpsertPatchAssetResponse) error
 	}
 
 	testCases := []testCase{
+		{
+			Description:  `should return error if user validation in ctx fails`,
+			ExpectStatus: codes.Internal,
+			Request:      &compassv1beta1.UpsertPatchAssetRequest{},
+			Setup: func(ctx context.Context, _ *mocks.AssetService, us *mocks.UserService) {
+				us.EXPECT().ValidateUser(ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return("", errors.New("some-error"))
+			},
+		},
 		{
 			Description:  "empty payload will return invalid argument",
 			Request:      &compassv1beta1.UpsertPatchAssetRequest{},
@@ -643,7 +713,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 		},
 		{
 			Description: "should return internal server error when finding asset failed",
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				expectedErr := errors.New("unknown error")
 				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, expectedErr)
 			},
@@ -652,7 +722,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 		},
 		{
 			Description: "should return internal server error when upserting asset service failed",
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				expectedErr := errors.New("unknown error")
 				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
 				as.EXPECT().UpsertAsset(ctx, mock.AnythingOfType("*asset.Asset"), mock.AnythingOfType("[]string"), mock.AnythingOfType("[]string")).Return("1234-5678", expectedErr)
@@ -661,8 +731,26 @@ func TestUpsertPatchAsset(t *testing.T) {
 			ExpectStatus: codes.Internal,
 		},
 		{
+			Description: "should return invalid argument error when upserting asset without lineage failed, with invalid error",
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
+				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAssetNew, nil)
+				as.EXPECT().UpsertAssetWithoutLineage(ctx, &currentAssetNew).Return("", asset.InvalidError{})
+			},
+			Request:      validPayloadWithoutStreams,
+			ExpectStatus: codes.InvalidArgument,
+		},
+		{
+			Description: "should return internal server error when upserting asset without asset failed, with discovery error ",
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
+				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAssetNew, nil)
+				as.EXPECT().UpsertAssetWithoutLineage(ctx, &currentAssetNew).Return("", asset.DiscoveryError{Err: errors.New("discovery error")})
+			},
+			Request:      validPayloadWithoutStreams,
+			ExpectStatus: codes.Internal,
+		},
+		{
 			Description: "should return OK and asset's ID if the asset is successfully created/patched",
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				patchedAsset := asset.Asset{
 					URN:       "test dagger",
 					Type:      asset.TypeTable,
@@ -698,7 +786,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 		},
 		{
 			Description: "without explicit overwrite_lineage, should upsert asset without lineage",
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				patchedAsset := asset.Asset{
 					URN:       "test dagger",
 					Type:      asset.TypeTable,
@@ -743,7 +831,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 		},
 		{
 			Description: "with explicit overwrite_lineage, should upsert asset when lineage is not in the request",
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				patchedAsset := asset.Asset{
 					URN:       "test dagger",
 					Type:      asset.TypeTable,
@@ -796,7 +884,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockAssetSvc)
+				tc.Setup(ctx, mockAssetSvc, mockUserSvc)
 			}
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockAssetSvc.AssertExpectations(t)
@@ -907,11 +995,31 @@ func TestGetAssetStargazers(t *testing.T) {
 		Description  string
 		Request      *compassv1beta1.GetAssetStargazersRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.StarService)
+		Setup        func(context.Context, *mocks.StarService, *mocks.UserService)
 		PostCheck    func(resp *compassv1beta1.GetAssetStargazersResponse) error
 	}
 
 	testCases := []TestCase{
+		{
+			Description:  `should return error if user validation in ctx fails`,
+			ExpectStatus: codes.Internal,
+			Request:      &compassv1beta1.GetAssetStargazersRequest{},
+			Setup: func(ctx context.Context, as *mocks.StarService, us *mocks.UserService) {
+				us.EXPECT().ValidateUser(ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return("", errors.New("some-error"))
+			},
+		},
+		{
+			Description:  "should return invalid argument error if GetStargazers returns invalid error",
+			ExpectStatus: codes.InvalidArgument,
+			Request: &compassv1beta1.GetAssetStargazersRequest{
+				Id:     assetID,
+				Size:   uint32(size),
+				Offset: uint32(offset),
+			},
+			Setup: func(ctx context.Context, ss *mocks.StarService, us *mocks.UserService) {
+				ss.EXPECT().GetStargazers(ctx, defaultStarCfg, assetID).Return(nil, star.InvalidError{})
+			},
+		},
 		{
 			Description:  "should return internal server error if failed to fetch star repository",
 			ExpectStatus: codes.Internal,
@@ -920,7 +1028,7 @@ func TestGetAssetStargazers(t *testing.T) {
 				Size:   uint32(size),
 				Offset: uint32(offset),
 			},
-			Setup: func(ctx context.Context, ss *mocks.StarService) {
+			Setup: func(ctx context.Context, ss *mocks.StarService, us *mocks.UserService) {
 				ss.EXPECT().GetStargazers(ctx, defaultStarCfg, assetID).Return(nil, errors.New("some error"))
 			},
 		},
@@ -932,7 +1040,7 @@ func TestGetAssetStargazers(t *testing.T) {
 				Size:   uint32(size),
 				Offset: uint32(offset),
 			},
-			Setup: func(ctx context.Context, ss *mocks.StarService) {
+			Setup: func(ctx context.Context, ss *mocks.StarService, _ *mocks.UserService) {
 				ss.EXPECT().GetStargazers(ctx, defaultStarCfg, assetID).Return(nil, star.NotFoundError{})
 			},
 		},
@@ -944,7 +1052,7 @@ func TestGetAssetStargazers(t *testing.T) {
 				Size:   uint32(size),
 				Offset: uint32(offset),
 			},
-			Setup: func(ctx context.Context, ss *mocks.StarService) {
+			Setup: func(ctx context.Context, ss *mocks.StarService, _ *mocks.UserService) {
 				ss.EXPECT().GetStargazers(ctx, defaultStarCfg, assetID).Return([]user.User{{ID: "1"}, {ID: "2"}, {ID: "3"}}, nil)
 			},
 		},
@@ -957,7 +1065,7 @@ func TestGetAssetStargazers(t *testing.T) {
 			mockUserSvc := new(mocks.UserService)
 			mockStarSvc := new(mocks.StarService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockStarSvc)
+				tc.Setup(ctx, mockStarSvc, mockUserSvc)
 			}
 			defer mockStarSvc.AssertExpectations(t)
 
@@ -991,18 +1099,26 @@ func TestGetAssetVersionHistory(t *testing.T) {
 		Description  string
 		Request      *compassv1beta1.GetAssetVersionHistoryRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.AssetService)
+		Setup        func(context.Context, *mocks.AssetService, *mocks.UserService)
 		PostCheck    func(resp *compassv1beta1.GetAssetVersionHistoryResponse) error
 	}
 
 	testCases := []TestCase{
+		{
+			Description:  `should return error if user validation in ctx fails`,
+			ExpectStatus: codes.Internal,
+			Request:      &compassv1beta1.GetAssetVersionHistoryRequest{},
+			Setup: func(ctx context.Context, _ *mocks.AssetService, us *mocks.UserService) {
+				us.EXPECT().ValidateUser(ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return("", errors.New("some-error"))
+			},
+		},
 		{
 			Description:  `should return invalid argument if asset id is not uuid`,
 			ExpectStatus: codes.InvalidArgument,
 			Request: &compassv1beta1.GetAssetVersionHistoryRequest{
 				Id: assetID,
 			},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAssetVersionHistory(ctx, asset.Filter{}, assetID).Return([]asset.Asset{}, asset.InvalidError{AssetID: assetID})
 			},
 		},
@@ -1012,8 +1128,18 @@ func TestGetAssetVersionHistory(t *testing.T) {
 			Request: &compassv1beta1.GetAssetVersionHistoryRequest{
 				Id: assetID,
 			},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAssetVersionHistory(ctx, asset.Filter{}, assetID).Return([]asset.Asset{}, errors.New("unknown error"))
+			},
+		},
+		{
+			Description:  "should return not found if asset service return not found error",
+			ExpectStatus: codes.NotFound,
+			Request: &compassv1beta1.GetAssetVersionHistoryRequest{
+				Id: assetID,
+			},
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
+				as.EXPECT().GetAssetVersionHistory(ctx, asset.Filter{}, assetID).Return([]asset.Asset{}, asset.NotFoundError{})
 			},
 		},
 		{
@@ -1024,7 +1150,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 				Offset: 50,
 			},
 			ExpectStatus: codes.OK,
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAssetVersionHistory(ctx, asset.Filter{
 					Size:   30,
 					Offset: 50,
@@ -1037,7 +1163,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 			Request: &compassv1beta1.GetAssetVersionHistoryRequest{
 				Id: assetID,
 			},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAssetVersionHistory(ctx, asset.Filter{}, assetID).Return([]asset.Asset{
 					{ID: "testid-1"},
 					{ID: "testid-2"},
@@ -1069,7 +1195,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockAssetSvc)
+				tc.Setup(ctx, mockAssetSvc, mockUserSvc)
 			}
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockAssetSvc.AssertExpectations(t)
@@ -1110,11 +1236,19 @@ func TestGetAssetByVersion(t *testing.T) {
 		Description  string
 		Request      *compassv1beta1.GetAssetByVersionRequest
 		ExpectStatus codes.Code
-		Setup        func(context.Context, *mocks.AssetService)
+		Setup        func(context.Context, *mocks.AssetService, *mocks.UserService)
 		PostCheck    func(resp *compassv1beta1.GetAssetByVersionResponse) error
 	}
 
 	testCases := []TestCase{
+		{
+			Description:  `should return error if user validation in ctx fails`,
+			ExpectStatus: codes.Internal,
+			Request:      &compassv1beta1.GetAssetByVersionRequest{},
+			Setup: func(ctx context.Context, _ *mocks.AssetService, us *mocks.UserService) {
+				us.EXPECT().ValidateUser(ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return("", errors.New("some-error"))
+			},
+		},
 		{
 			Description: `should return invalid argument if asset id is not uuid`,
 			Request: &compassv1beta1.GetAssetByVersionRequest{
@@ -1122,7 +1256,7 @@ func TestGetAssetByVersion(t *testing.T) {
 				Version: version,
 			},
 			ExpectStatus: codes.InvalidArgument,
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAssetByVersion(ctx, assetID, version).Return(asset.Asset{}, asset.InvalidError{AssetID: assetID})
 			},
 		},
@@ -1133,7 +1267,7 @@ func TestGetAssetByVersion(t *testing.T) {
 				Id:      assetID,
 				Version: version,
 			},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAssetByVersion(ctx, assetID, version).Return(asset.Asset{}, asset.NotFoundError{AssetID: assetID})
 			},
 		},
@@ -1144,7 +1278,7 @@ func TestGetAssetByVersion(t *testing.T) {
 				Id:      assetID,
 				Version: version,
 			},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAssetByVersion(ctx, assetID, version).Return(asset.Asset{}, errors.New("unknown error"))
 			},
 		},
@@ -1155,7 +1289,7 @@ func TestGetAssetByVersion(t *testing.T) {
 				Id:      assetID,
 				Version: version,
 			},
-			Setup: func(ctx context.Context, as *mocks.AssetService) {
+			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				as.EXPECT().GetAssetByVersion(ctx, assetID, version).Return(ast, nil)
 			},
 			PostCheck: func(resp *compassv1beta1.GetAssetByVersionResponse) error {
@@ -1181,7 +1315,7 @@ func TestGetAssetByVersion(t *testing.T) {
 			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockAssetSvc)
+				tc.Setup(ctx, mockAssetSvc, mockUserSvc)
 			}
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockAssetSvc.AssertExpectations(t)

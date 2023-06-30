@@ -17,7 +17,7 @@ import (
 // CreateComment will create a new comment of a discussion
 // field body is mandatory
 func (server *APIServer) CreateComment(ctx context.Context, req *compassv1beta1.CreateCommentRequest) (*compassv1beta1.CreateCommentResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	userID, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (server *APIServer) CreateComment(ctx context.Context, req *compassv1beta1.
 
 // GetAllComments returns all comments of a discussion
 func (server *APIServer) GetAllComments(ctx context.Context, req *compassv1beta1.GetAllCommentsRequest) (*compassv1beta1.GetAllCommentsResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (server *APIServer) GetAllComments(ctx context.Context, req *compassv1beta1
 
 // GetComment returns a comment discussion by id from path
 func (server *APIServer) GetComment(ctx context.Context, req *compassv1beta1.GetCommentRequest) (*compassv1beta1.GetCommentResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (server *APIServer) GetComment(ctx context.Context, req *compassv1beta1.Get
 
 // UpdateComment is an api to update a comment by discussion id
 func (server *APIServer) UpdateComment(ctx context.Context, req *compassv1beta1.UpdateCommentRequest) (*compassv1beta1.UpdateCommentResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	userID, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func (server *APIServer) UpdateComment(ctx context.Context, req *compassv1beta1.
 
 // DeleteComment is an api to delete a comment by discussion id
 func (server *APIServer) DeleteComment(ctx context.Context, req *compassv1beta1.DeleteCommentRequest) (*compassv1beta1.DeleteCommentResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}

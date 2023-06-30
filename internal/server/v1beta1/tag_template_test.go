@@ -194,6 +194,46 @@ func TestCreateTagTemplate(t *testing.T) {
 
 	testCases := []testCase{
 		{
+			Description: `should return invalid argument if urn is empty`,
+			Request: &compassv1beta1.CreateTagTemplateRequest{
+				Urn:         "",
+				DisplayName: sampleTemplatePB.GetDisplayName(),
+				Description: sampleTemplatePB.GetDescription(),
+				Fields:      sampleTemplatePB.GetFields(),
+			},
+			ExpectStatus: codes.InvalidArgument,
+		},
+		{
+			Description: `should return invalid argument if display name is empty`,
+			Request: &compassv1beta1.CreateTagTemplateRequest{
+				Urn:         sampleTemplatePB.GetUrn(),
+				DisplayName: "",
+				Description: sampleTemplatePB.GetDescription(),
+				Fields:      sampleTemplatePB.GetFields(),
+			},
+			ExpectStatus: codes.InvalidArgument,
+		},
+		{
+			Description: `should return invalid argument if description is empty`,
+			Request: &compassv1beta1.CreateTagTemplateRequest{
+				Urn:         sampleTemplatePB.GetUrn(),
+				DisplayName: sampleTemplatePB.GetDisplayName(),
+				Description: "",
+				Fields:      sampleTemplatePB.GetFields(),
+			},
+			ExpectStatus: codes.InvalidArgument,
+		},
+		{
+			Description: `should return invalid argument if fields is nil`,
+			Request: &compassv1beta1.CreateTagTemplateRequest{
+				Urn:         sampleTemplatePB.GetUrn(),
+				DisplayName: sampleTemplatePB.GetDisplayName(),
+				Description: sampleTemplatePB.GetDescription(),
+				Fields:      nil,
+			},
+			ExpectStatus: codes.InvalidArgument,
+		},
+		{
 			Description:  `should return already exist if duplicate template`,
 			Request:      validRequest,
 			ExpectStatus: codes.AlreadyExists,
@@ -289,6 +329,14 @@ func TestGetTagTemplate(t *testing.T) {
 			},
 		},
 		{
+			Description:  `should return internal error if there is error in fetching the template`,
+			Request:      validRequest,
+			ExpectStatus: codes.Internal,
+			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
+				tts.EXPECT().GetTemplate(ctx, sampleTemplate.URN).Return(tag.Template{}, errors.New("some error"))
+			},
+		},
+		{
 			Description:  `should return ok and template if domain template is found`,
 			Request:      validRequest,
 			ExpectStatus: codes.OK,
@@ -368,6 +416,36 @@ func TestUpdateTagTemplate(t *testing.T) {
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().UpdateTemplate(ctx, sampleTemplate.URN, &sampleTemplate).Return(tag.TemplateNotFoundError{URN: sampleTemplate.URN})
 			},
+		},
+		{
+			Description: `should return invalid argument if display name is empty`,
+			Request: &compassv1beta1.UpdateTagTemplateRequest{
+				TemplateUrn: sampleTemplatePB.GetUrn(),
+				DisplayName: "",
+				Description: sampleTemplatePB.GetDescription(),
+				Fields:      sampleTemplatePB.GetFields(),
+			},
+			ExpectStatus: codes.InvalidArgument,
+		},
+		{
+			Description: `should return invalid argument if description is empty`,
+			Request: &compassv1beta1.UpdateTagTemplateRequest{
+				TemplateUrn: sampleTemplatePB.GetUrn(),
+				DisplayName: sampleTemplatePB.GetDisplayName(),
+				Description: "",
+				Fields:      sampleTemplatePB.GetFields(),
+			},
+			ExpectStatus: codes.InvalidArgument,
+		},
+		{
+			Description: `should return invalid argument if fields is empty`,
+			Request: &compassv1beta1.UpdateTagTemplateRequest{
+				TemplateUrn: sampleTemplatePB.GetUrn(),
+				DisplayName: sampleTemplatePB.GetDisplayName(),
+				Description: sampleTemplatePB.GetDescription(),
+				Fields:      nil,
+			},
+			ExpectStatus: codes.InvalidArgument,
 		},
 		{
 			Description:  `should return invalid argument if there is validation error`,
@@ -464,6 +542,14 @@ func TestDeleteTagTemplate(t *testing.T) {
 			ExpectStatus: codes.NotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().DeleteTemplate(ctx, sampleTemplate.URN).Return(tag.TemplateNotFoundError{URN: sampleTemplate.URN})
+			},
+		},
+		{
+			Description:  `should return internal error if there is an error in deleting the template`,
+			Request:      validRequest,
+			ExpectStatus: codes.Internal,
+			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
+				tts.EXPECT().DeleteTemplate(ctx, sampleTemplate.URN).Return(errors.New("internal error"))
 			},
 		},
 		{

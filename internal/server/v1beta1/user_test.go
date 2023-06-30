@@ -454,6 +454,13 @@ func TestUnstarAsset(t *testing.T) {
 			},
 		},
 		{
+			Description:  "should return not found if star repository return not found error",
+			ExpectStatus: codes.NotFound,
+			Setup: func(ctx context.Context, ss *mocks.StarService) {
+				ss.EXPECT().Unstars(ctx, userID, assetID).Return(star.NotFoundError{})
+			},
+		},
+		{
 			Description:  "should return invalid argument if star repository return invalid error",
 			ExpectStatus: codes.InvalidArgument,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {

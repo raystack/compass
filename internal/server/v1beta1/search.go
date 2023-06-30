@@ -12,7 +12,7 @@ import (
 )
 
 func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.SearchAssetsRequest) (*compassv1beta1.SearchAssetsResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.S
 }
 
 func (server *APIServer) GroupAssets(ctx context.Context, req *compassv1beta1.GroupAssetsRequest) (*compassv1beta1.GroupAssetsResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("group assets: %w", err)
 	}
@@ -103,7 +103,7 @@ func (server *APIServer) GroupAssets(ctx context.Context, req *compassv1beta1.Gr
 }
 
 func (server *APIServer) SuggestAssets(ctx context.Context, req *compassv1beta1.SuggestAssetsRequest) (*compassv1beta1.SuggestAssetsResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}

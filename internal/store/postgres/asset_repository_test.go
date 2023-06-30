@@ -226,6 +226,14 @@ func (r *AssetRepositoryTestSuite) TestBuildFilterQuery() {
 func (r *AssetRepositoryTestSuite) TestGetAll() {
 	assets := r.insertRecord()
 
+	r.Run("should return error if SortBy key is invalid", func() {
+		_, err := r.repository.GetAll(r.ctx, asset.Filter{
+			SortBy: "wrong key name",
+		})
+		r.Require().NotNil(err)
+		r.Require().ErrorContains(err, "error getting asset list")
+	})
+
 	r.Run("should return all assets without filtering based on size", func() {
 		expectedSize := 12
 
@@ -786,6 +794,11 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 		r.Len(astOwners, 2)
 	})
 
+	r.Run("should return invalid if invalid uuid is set", func() {
+		_, err := r.repository.GetByVersionWithID(r.ctx, "invalid uuid", "0.5")
+		r.ErrorIs(err, asset.InvalidError{AssetID: "invalid uuid"})
+	})
+
 	r.Run("should return current version of an assets with by version", func() {
 		expected := asset.Asset{
 			ID:          astVersioning.ID,
@@ -938,6 +951,39 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 			clearTimestamps(&assetVersions[i])
 		}
 		r.Equal(expected, assetVersions)
+	})
+
+	r.Run("should return asset count equal to defaultGetMaxSize if Size is set to 0", func() {
+		assetURN := uuid.NewString() + "urn-u-3-version"
+		// v0.1
+		ast := asset.Asset{
+			URN:       assetURN,
+			Type:      "table",
+			Service:   "bigquery",
+			UpdatedBy: r.users[1],
+		}
+		id, err := r.repository.Upsert(r.ctx, &ast)
+		r.Require().NoError(err)
+		r.Require().NotEmpty(id)
+		ast.ID = id
+
+		for i := 2; i < 100; i++ {
+			ast.Description = "new description in v0." + strconv.Itoa(i)
+			id, err = r.repository.Upsert(r.ctx, &ast)
+			r.Require().NoError(err)
+			r.Require().Equal(id, ast.ID)
+		}
+
+		assetVersions, err := r.repository.GetVersionHistory(r.ctx, asset.Filter{Size: 0, Offset: 86}, ast.ID)
+		r.NoError(err)
+		r.Equal(defaultGetMaxSize, len(assetVersions))
+	})
+
+	r.Run("should return error if invalid uuid is passed", func() {
+		assetURN := "invalid uuid"
+		_, err := r.repository.GetVersionHistory(r.ctx, asset.Filter{Size: 3, Offset: 86}, assetURN)
+		r.NotNil(err)
+		r.Equal(asset.InvalidError{AssetID: assetURN}, err)
 	})
 }
 

@@ -22,7 +22,7 @@ type UserService interface {
 }
 
 func (server *APIServer) GetUserStarredAssets(ctx context.Context, req *compassv1beta1.GetUserStarredAssetsRequest) (*compassv1beta1.GetUserStarredAssetsResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (server *APIServer) GetUserStarredAssets(ctx context.Context, req *compassv
 }
 
 func (server *APIServer) GetMyStarredAssets(ctx context.Context, req *compassv1beta1.GetMyStarredAssetsRequest) (*compassv1beta1.GetMyStarredAssetsResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	userID, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func (server *APIServer) GetMyStarredAssets(ctx context.Context, req *compassv1b
 }
 
 func (server *APIServer) GetMyStarredAsset(ctx context.Context, req *compassv1beta1.GetMyStarredAssetRequest) (*compassv1beta1.GetMyStarredAssetResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	userID, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func (server *APIServer) GetMyStarredAsset(ctx context.Context, req *compassv1be
 }
 
 func (server *APIServer) StarAsset(ctx context.Context, req *compassv1beta1.StarAssetRequest) (*compassv1beta1.StarAssetResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	userID, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +151,7 @@ func (server *APIServer) StarAsset(ctx context.Context, req *compassv1beta1.Star
 }
 
 func (server *APIServer) UnstarAsset(ctx context.Context, req *compassv1beta1.UnstarAssetRequest) (*compassv1beta1.UnstarAssetResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	userID, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func (server *APIServer) UnstarAsset(ctx context.Context, req *compassv1beta1.Un
 }
 
 func (server *APIServer) GetMyDiscussions(ctx context.Context, req *compassv1beta1.GetMyDiscussionsRequest) (*compassv1beta1.GetMyDiscussionsResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	userID, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}

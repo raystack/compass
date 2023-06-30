@@ -48,7 +48,7 @@ func NewAPIServer(
 	}
 }
 
-func (server *APIServer) validateUserInCtx(ctx context.Context) (string, error) {
+func (server *APIServer) ValidateUserInCtx(ctx context.Context) (string, error) {
 	usr := user.FromContext(ctx)
 	userID, err := server.userService.ValidateUser(ctx, usr.UUID, usr.Email)
 	if err != nil {

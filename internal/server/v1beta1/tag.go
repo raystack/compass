@@ -32,7 +32,7 @@ type TagService interface {
 
 // GetTagByAssetAndTemplate handles get tag by asset requests
 func (server *APIServer) GetTagByAssetAndTemplate(ctx context.Context, req *compassv1beta1.GetTagByAssetAndTemplateRequest) (*compassv1beta1.GetTagByAssetAndTemplateResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (server *APIServer) GetTagByAssetAndTemplate(ctx context.Context, req *comp
 
 // CreateTagAsset handles tag creation requests
 func (server *APIServer) CreateTagAsset(ctx context.Context, req *compassv1beta1.CreateTagAssetRequest) (*compassv1beta1.CreateTagAssetResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +126,7 @@ func (server *APIServer) CreateTagAsset(ctx context.Context, req *compassv1beta1
 
 // UpdateTagAsset handles tag update requests
 func (server *APIServer) UpdateTagAsset(ctx context.Context, req *compassv1beta1.UpdateTagAssetRequest) (*compassv1beta1.UpdateTagAssetResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +182,7 @@ func (server *APIServer) UpdateTagAsset(ctx context.Context, req *compassv1beta1
 
 // DeleteTagAsset handles delete tag by asset and template requests
 func (server *APIServer) DeleteTagAsset(ctx context.Context, req *compassv1beta1.DeleteTagAssetRequest) (*compassv1beta1.DeleteTagAssetResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +211,7 @@ func (server *APIServer) DeleteTagAsset(ctx context.Context, req *compassv1beta1
 
 // GetAllTagsByAsset handles get all tags by asset requests
 func (server *APIServer) GetAllTagsByAsset(ctx context.Context, req *compassv1beta1.GetAllTagsByAssetRequest) (*compassv1beta1.GetAllTagsByAssetResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}

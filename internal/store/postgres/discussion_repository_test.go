@@ -2,6 +2,7 @@ package postgres_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -350,13 +351,24 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 	testCases := []struct {
 		description    string
 		disc           *discussion.Discussion
-		err            error
+		patchErr       error
+		getErr         error
 		validateResult func(r *DiscussionRepositoryTestSuite, result discussion.Discussion)
 	}{
 		{
+			description: "should return error if discussion id is empty",
+			disc:        &discussion.Discussion{ID: "", Title: "patched title", Body: "patched body"},
+			patchErr:    discussion.ErrInvalidID,
+			getErr:      errors.New("failed fetching discussion with id"),
+			validateResult: func(r *DiscussionRepositoryTestSuite, result discussion.Discussion) {
+				r.Empty(result)
+			},
+		},
+		{
 			description: "should successfully patch title and body",
-			disc:        &discussion.Discussion{ID: "11111", Title: "patched title", Body: "patched body"},
-			err:         nil,
+			disc:        &discussion.Discussion{ID: "11111", Title: "patched title", Body: "patched body", State: "closed", Type: "dashboard"},
+			patchErr:    nil,
+			getErr:      nil,
 			validateResult: func(r *DiscussionRepositoryTestSuite, result discussion.Discussion) {
 				r.Equal("patched title", result.Title)
 				r.Equal("patched body", result.Body)
@@ -365,7 +377,8 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 		{
 			description: "should successfully patch assignees",
 			disc:        &discussion.Discussion{ID: "11111", Assignees: []string{"a", "b", "c"}},
-			err:         nil,
+			patchErr:    nil,
+			getErr:      nil,
 			validateResult: func(r *DiscussionRepositoryTestSuite, result discussion.Discussion) {
 				r.Equal([]string{"a", "b", "c"}, result.Assignees)
 			},
@@ -373,7 +386,8 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 		{
 			description: "should successfully patch assets",
 			disc:        &discussion.Discussion{ID: "11111", Assets: []string{"d", "e", "f"}},
-			err:         nil,
+			patchErr:    nil,
+			getErr:      nil,
 			validateResult: func(r *DiscussionRepositoryTestSuite, result discussion.Discussion) {
 				r.Equal([]string{"d", "e", "f"}, result.Assets)
 			},
@@ -381,7 +395,8 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 		{
 			description: "should successfully patch assets empty",
 			disc:        &discussion.Discussion{ID: "11111", Assets: []string{}},
-			err:         nil,
+			patchErr:    nil,
+			getErr:      nil,
 			validateResult: func(r *DiscussionRepositoryTestSuite, result discussion.Discussion) {
 				r.Equal([]string(nil), result.Assets)
 			},
@@ -389,7 +404,8 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 		{
 			description: "should successfully patch labels empty",
 			disc:        &discussion.Discussion{ID: "11111", Labels: []string{}},
-			err:         nil,
+			patchErr:    nil,
+			getErr:      nil,
 			validateResult: func(r *DiscussionRepositoryTestSuite, result discussion.Discussion) {
 				r.Equal([]string(nil), result.Labels)
 			},
@@ -397,7 +413,8 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 		{
 			description: "should successfully patch assignees empty",
 			disc:        &discussion.Discussion{ID: "11111", Assignees: []string{}},
-			err:         nil,
+			patchErr:    nil,
+			getErr:      nil,
 			validateResult: func(r *DiscussionRepositoryTestSuite, result discussion.Discussion) {
 				r.Equal([]string(nil), result.Assignees)
 			},
@@ -405,7 +422,8 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 		{
 			description: "should return error if discussion id does not exist",
 			disc:        &discussion.Discussion{ID: "999", Assignees: []string{}},
-			err:         discussion.NotFoundError{DiscussionID: "999"},
+			patchErr:    discussion.NotFoundError{DiscussionID: "999"},
+			getErr:      discussion.NotFoundError{DiscussionID: "999"},
 			validateResult: func(r *DiscussionRepositoryTestSuite, result discussion.Discussion) {
 				r.Empty(result)
 			},
@@ -415,10 +433,19 @@ func (r *DiscussionRepositoryTestSuite) TestPatch() {
 	for _, testCase := range testCases {
 		r.Run(testCase.description, func() {
 			err := r.repository.Patch(r.ctx, testCase.disc)
-			r.Equal(testCase.err, err)
+			if testCase.patchErr != nil {
+				r.ErrorContains(err, testCase.patchErr.Error())
+			} else {
+				r.Nil(err)
+			}
 
 			dsc, err := r.repository.Get(r.ctx, testCase.disc.ID)
-			r.Equal(err, testCase.err)
+			if testCase.patchErr != nil {
+				r.ErrorContains(err, testCase.getErr.Error())
+			} else {
+				r.Nil(err)
+			}
+
 			testCase.validateResult(r, dsc)
 		})
 	}

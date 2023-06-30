@@ -32,7 +32,7 @@ type DiscussionService interface {
 // query params sort,direction to sort asc or desc
 // query params size,offset for pagination
 func (server *APIServer) GetAllDiscussions(ctx context.Context, req *compassv1beta1.GetAllDiscussionsRequest) (*compassv1beta1.GetAllDiscussionsResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (server *APIServer) GetAllDiscussions(ctx context.Context, req *compassv1be
 // Create will create a new discussion
 // field title, body, and type are mandatory
 func (server *APIServer) CreateDiscussion(ctx context.Context, req *compassv1beta1.CreateDiscussionRequest) (*compassv1beta1.CreateDiscussionResponse, error) {
-	userID, err := server.validateUserInCtx(ctx)
+	userID, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (server *APIServer) CreateDiscussion(ctx context.Context, req *compassv1bet
 }
 
 func (server *APIServer) GetDiscussion(ctx context.Context, req *compassv1beta1.GetDiscussionRequest) (*compassv1beta1.GetDiscussionResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func (server *APIServer) GetDiscussion(ctx context.Context, req *compassv1beta1.
 // empty array in assets,labels,assignees will be considered
 // and clear all assets,labels,assignees from the discussion
 func (server *APIServer) PatchDiscussion(ctx context.Context, req *compassv1beta1.PatchDiscussionRequest) (*compassv1beta1.PatchDiscussionResponse, error) {
-	_, err := server.validateUserInCtx(ctx)
+	_, err := server.ValidateUserInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -406,6 +406,14 @@ func TestUpdateTagAsset(t *testing.T) {
 			},
 		},
 		{
+			Description:  `should return invalid argument if tag fails validation`,
+			Request:      validRequest,
+			ExpectStatus: codes.InvalidArgument,
+			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
+				ts.EXPECT().UpdateTag(ctx, &sampleTag).Return(tag.ValidationError{Err: errors.New("validation error")})
+			},
+		},
+		{
 			Description:  `should return internal server error if found error during update`,
 			Request:      validRequest,
 			ExpectStatus: codes.Internal,
