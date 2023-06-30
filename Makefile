@@ -1,50 +1,84 @@
 NAME="github.com/raystack/compass"
-VERSION=$(shell git describe --always --tags 2>/dev/null)
-COVERFILE="/tmp/compass.coverprofile"
-PROTON_COMMIT := "eeec3f31b21ee7d00b016fcdcd7070606aa33366"
-.PHONY: all build test clean install proto
+COMMIT := $(shell git rev-parse --short HEAD)
+TAG := "$(shell git rev-list --tags --max-count=1)"
+VERSION := "$(shell git describe --tags ${TAG})-next"
+BUILD_DIR=dist
+PROTON_COMMIT := "ccbf219312db35a934361ebad895cb40145ca235"
 
-all: build
+.PHONY:  all build clean test tidy vet proto setup format generat
 
-build: ## Build the compass binary
-	go build -ldflags "-X ${NAME}/cli.Version=${VERSION}" 
+all: clean test build format lint
 
-clean:  ## Clean the build artifacts
-	rm -rf compass dist/ 
+tidy:
+	@echo "Tidy up go.mod..."
+	@go mod tidy -v
 
-test: ## Run the tests
-	go test -race ./... -coverprofile=coverage.txt
+install:
+	@echo "Installing Guardian to ${GOBIN}..."
+	@go install
 
-test-coverage: test ## Print the code coverage
-	go tool cover -html=coverage.txt -o cover.html
-
-e2e-test: ## Run all e2e tests
-	go test ./test/... --tags=e2e
-
-generate: ## Run all go generate in the code base 
-	go generate ./...
-
-dist:
-	@bash ./scripts/build.sh
+format:
+	@echo "Running go fmt..."
+	@go fmt
 
 lint: ## Lint checker
-	golangci-lint run
-	
-proto: ## Generate the protobuf files
-	@echo " > generating protobuf from raystack/proton"
-	@echo " > [info] make sure correct version of dependencies are installed using 'make install'"
-	@buf generate https://github.com/raystack/proton/archive/${PROTON_COMMIT}.zip#strip_components=1 --template buf.gen.yaml --path raystack/compass -v
-	@echo " > protobuf compilation finished"
+	@echo "Running lint checks using golangci-lint..."
+	@golangci-lint run
 
-install: ## Install required dependencies
-	@echo "> installing dependencies"
+clean: tidy ## Clean the build artifacts
+	@echo "Cleaning up build directories..."
+	@rm -rf $coverage.out ${BUILD_DIR}
+
+test:  ## Run the tests
+	go test ./... -race -coverprofile=coverage.out
+
+e2e: ## Run all e2e tests
+	go test ./test/... --tags=e2e
+
+coverage: test ## Print the code coverage
+	@echo "Generating coverage report..."
+	@go tool cover -html=coverage.out
+
+build: ## Build the compass binary
+	@echo "Building guardian version ${VERSION}..."
+	go build -ldflags "-X ${NAME}/cli.Version=${VERSION}" 
+	@echo "Build complete"
+
+buildr: setup
+	goreleaser --snapshot --skip-publish --rm-dist
+
+
+vet:
+	go vet ./...
+
+download:
+	@go mod download
+
+
+generate: ## Run all go generate in the code base
+	@echo "Running go generate..."
+	go generate ./...
+
+config: ## Generate the sample config file
+	@echo "Initializing sample server config..."
+	@cp config/config.yaml config.yaml
+
+
+proto: ## Generate the protobuf files
+	@echo "Generating protobuf from raystack/proton"
+	@echo " [info] make sure correct version of dependencies are installed using 'make install'"
+	@buf generate https://github.com/raystack/proton/archive/${PROTON_COMMIT}.zip#strip_components=1 --template buf.gen.yaml --path raystack/compass -v
+	@echo "Protobuf compilation finished"
+
+setup: ## Install required dependencies
+	@echo "> Installing dependencies..."
 	go mod tidy
 	go install github.com/vektra/mockery/v2@v2.14.0
-	go get google.golang.org/protobuf/proto@v1.28.0
-	go get google.golang.org/grpc@v1.46.0
+	go install google.golang.org/protobuf/proto@v1.28.0
+	go install google.golang.org/grpc@v1.46.0
 	go install github.com/bufbuild/buf/cmd/buf@v1.4.0
 
-update-swagger-md:
+swagger-md:
 	npx swagger-markdown -i proto/compass.swagger.yaml -o docs/docs/reference/api.md
 
 clean-doc:
