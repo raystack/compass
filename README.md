@@ -1,7 +1,7 @@
 # Compass
 
 ![test workflow](https://github.com/raystack/compass/actions/workflows/test.yml/badge.svg)
-![build workflow](https://github.com/raystack/compass/actions/workflows/build_dev.yml/badge.svg)
+![release workflow](https://github.com/raystack/compass/actions/workflows/release.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/raystack/compass/badge.svg?branch=main)](https://coveralls.io/github/raystack/compass?branch=main)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)
 [![Version](https://img.shields.io/github/v/release/raystack/compass?logo=semantic-release)](Version)
@@ -25,14 +25,14 @@ Discover why users choose Compass as their main data discovery and lineage servi
 
 Explore the following resources to get started with Compass:
 
-- [Guides](https://raystack.github.io/compass/docs/guides) provides guidance on ingesting and querying metadata from Compass.
-- [Concepts](https://raystack.github.io/compass/docs/concepts) describes all important Compass concepts.
-- [Reference](https://raystack.github.io/compass/docs/reference) contains details about configurations, metrics and other aspects of Compass.
-- [Contribute](https://raystack.github.io/compass/docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Compass.
+- [Guides](https://compass-raystack.vercel.app/docs/guides) provides guidance on ingesting and querying metadata from Compass.
+- [Concepts](https://compass-raystack.vercel.app/docs/concepts) describes all important Compass concepts.
+- [Reference](https://compass-raystack.vercel.app/docs/reference) contains details about configurations, metrics and other aspects of Compass.
+- [Contribute](https://compass-raystack.vercel.app/docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Compass.
 
 ## Installation
 
-Install Compass on macOS, Windows, Linux, OpenBSD, FreeBSD, and on any machine. <br/>Refer this for [installations](https://raystack.github.io/compass/docs/installation) and [configurations](https://raystack.github.io/compass/docs/guides/configuration)
+Install Compass on macOS, Windows, Linux, OpenBSD, FreeBSD, and on any machine. <br/>Refer this for [installations](https://compass-raystack.vercel.app/docs/installation) and [configurations](https://compass-raystack.vercel.app/docs/guides/configuration)
 
 #### Binary (Cross-platform)
 
@@ -52,12 +52,6 @@ To upgrade to the latest version:
 
 ```
 brew upgrade compass
-```
-
-Check for installed compass version
-
-```sh
-compass version
 ```
 
 #### Linux
@@ -123,88 +117,11 @@ compass reference
 
 Compass provides a fully-featured GRPC and HTTP API to interact with Compass server. Both APIs adheres to a set of standards that are rigidly followed. Please refer to [proton](https://github.com/raystack/proton/tree/main/raystack/compass/v1beta1) for GRPC API definitions.
 
-<details>
-  <summary>Dependencies:</summary>
-
-- Compass is written in Golang, and requires go version &gt;= 1.16. Please make sure that the go toolchain is available on your machine. See Golang’s [documentation](https://golang.org/) for installation instructions. Alternatively, you can use docker to build Compass as a docker image. More on this in the next section.
-- Compass uses PostgreSQL 13 as its main storage and Elasticsearch v7 as the secondary storage to power the search. In order to run compass locally, you’ll need to have an instance of postgres and elasticsearch running. You can either download them and run it manually, or you can run them inside docker by using `docker-compose` with `docker-compose.yaml` provided in the root of this project.
-- PostgreSQL details and Elasticsearch brokers can alternatively be specified via the environment variable, `ELASTICSEARCH_BROKERS` for elasticsearch and `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` for postgres.
-- If you use Docker to build compass, then configuring networking requires extra steps. Following is one of doing it by running postgres and elasticsearch inside with `docker-compose` first.
-
-- Go to the root of this project and run `docker-compose`.
-
-  ```text
-  docker-compose up
-  ```
-
-- Once postgres and elasticsearch has been ready, we can run Compass by passing in the config of postgres and elasticsearch defined in `docker-compose.yaml` file.
-</details>
-
-## Building Compass
-
-Begin by cloning this repository then you have two ways in which you can build compass
-
-- As a native executable
-- As a docker image
-
-To build compass as a native executable, run `make` inside the cloned repository.
-
-```text
-make
-```
-
-This will create the `compass` binary in the root directory
-
-Building compass' Docker image is just a simple, just run docker build command and optionally name the image
-
-```text
-docker build . -t compass
-```
-
-## Migration
-
-Before serving Compass app, we need to run the migration first. Run this docker command to migrate Compass.
-
-```text
-$ docker run --rm --net compass_storage -p 8080:8080 -e ELASTICSEARCH_BROKERS=http://es:9200 -e DB_HOST=postgres -e DB_PORT=5432 -e DB_NAME=compass -e DB_USER=compass -e DB_PASSWORD=compass_password raystack/compass compass server migrate
-```
-
-If you are using Compass binary, you can run this command.
-
-```text
-./compass -elasticsearch-brokers "http://<broker-host-name>" -db-host "<postgres-host-name>" -db-port 5432 -db-name "<postgres-db-name>" -db-user "<postgres-db-user>" -db-password "<postgres-db-password> server migrate"
-```
-
-## Serving locally
-
-Once the migration has been done, Compass server can be started with this command.
-
-```text
-docker run --net compass_storage -p 8080:8080 -e ELASTICSEARCH_BROKERS=http://es:9200 -e DB_HOST=postgres -e DB_PORT=5432 -e DB_NAME=compass -e DB_USER=compass -e DB_PASSWORD=compass_password raystack/compass compass server start
-```
-
-If you are using Compass binary, you can run this command.
-
-```text
-./compass -elasticsearch-brokers "http://<broker-host-name>" -db-host "<postgres-host-name>" -db-port 5432 -db-name "<postgres-db-name>" -db-user "<postgres-db-user>" -db-password "<postgres-db-password> server start"
-```
-
-## Running tests
-
-Running all unit tests
-
-```
-make test
-```
-
-The tests combine both unit and integration tests, the test suite requires docker to run elasticsearch. In case you wish to test against an existing
-elasticsearch cluster, set the value of `ES_TEST_SERVER_URL` to the URL of the elasticsearch server.
-
 ## Contribute
 
-Development of Compass happens in the open on GitHub, and we are grateful to the community for contributing bugfixes and improvements. Read below to learn how you can take part in improving Compass.
+Development of Compass happens in the open on GitHub, and we are grateful to the community for contributing bugfixes and improvements.
 
-Read our [contributing guide](https://raystack.github.io/compass/docs/contribute/contribution.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Compass.
+Read compass [contribution guide](https://compass-raystack.vercel.app/docs/contribute/contribution.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Compass.
 
 To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/raystack/compass/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started.
 
