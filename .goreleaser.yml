@@ -60,8 +60,10 @@ nfpms:
     formats:
       - deb
       - rpm
-    replacements:
-      darwin: macOS
+    file_name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "darwin" }}macos{{- else }}{{ .Arch }}{{ end }}
 scoop:
   bucket:
     owner: goto
