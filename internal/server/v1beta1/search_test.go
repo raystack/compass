@@ -226,7 +226,7 @@ func TestSearch(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(APIServerDeps{AssetSvc: mockSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			got, err := handler.SearchAssets(ctx, tc.Request)
 			code := status.Code(err)
@@ -323,7 +323,7 @@ func TestSuggest(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(APIServerDeps{AssetSvc: mockSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			got, err := handler.SuggestAssets(ctx, tc.Request)
 			code := status.Code(err)
@@ -495,7 +495,7 @@ func TestGroupAssets(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(APIServerDeps{AssetSvc: mockSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			expected, err := handler.GroupAssets(ctx, tc.Request)
 			code := status.Code(err)

@@ -73,15 +73,16 @@ func Serve(
 	tagTemplateService handlersv1beta1.TagTemplateService,
 	userService handlersv1beta1.UserService,
 ) error {
-	v1beta1Handler := handlersv1beta1.NewAPIServer(
-		logger,
-		assetService,
-		starService,
-		discussionService,
-		tagService,
-		tagTemplateService,
-		userService,
-	)
+	v1beta1Handler := handlersv1beta1.NewAPIServer(handlersv1beta1.APIServerDeps{
+		AssetSvc:       assetService,
+		StarSvc:        starService,
+		DiscussionSvc:  discussionService,
+		TagSvc:         tagService,
+		TagTemplateSvc: tagTemplateService,
+		UserSvc:        userService,
+		Logger:         logger,
+		StatsD:         statsdReporter,
+	})
 
 	healthHandler := health.NewHandler()
 

@@ -61,7 +61,7 @@ func TestValidateUserInCtx(t *testing.T) {
 				tc.Setup(ctx, mockUserSvc)
 			}
 
-			handler := handlersv1beta1.NewAPIServer(logger, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := handlersv1beta1.NewAPIServer(handlersv1beta1.APIServerDeps{StarSvc: mockStarSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			_, err := handler.ValidateUserInCtx(ctx)
 			code := status.Code(err)

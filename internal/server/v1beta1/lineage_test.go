@@ -61,7 +61,7 @@ func TestGetLineageGraph(t *testing.T) {
 			mockSvc.EXPECT().GetLineage(ctx, nodeURN, asset.LineageQuery{Level: level, Direction: direction}).Return(lineage, nil)
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(APIServerDeps{AssetSvc: mockSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			got, err := handler.GetGraph(ctx, &compassv1beta1.GetGraphRequest{
 				Urn:       nodeURN,

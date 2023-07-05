@@ -28,23 +28,27 @@ type APIServer struct {
 
 var errMissingUserInfo = errors.New("missing user information")
 
-func NewAPIServer(
-	logger log.Logger,
-	assetService AssetService,
-	starService StarService,
-	discussionService DiscussionService,
-	tagService TagService,
-	tagTemplateService TagTemplateService,
-	userService UserService,
-) *APIServer {
+type APIServerDeps struct {
+	AssetSvc       AssetService
+	StarSvc        StarService
+	DiscussionSvc  DiscussionService
+	TagSvc         TagService
+	TagTemplateSvc TagTemplateService
+	UserSvc        UserService
+	Logger         log.Logger
+	StatsD         StatsDClient
+}
+
+func NewAPIServer(d APIServerDeps) *APIServer {
 	return &APIServer{
-		assetService:       assetService,
-		starService:        starService,
-		discussionService:  discussionService,
-		tagService:         tagService,
-		tagTemplateService: tagTemplateService,
-		userService:        userService,
-		logger:             logger,
+		assetService:       d.AssetSvc,
+		starService:        d.StarSvc,
+		discussionService:  d.DiscussionSvc,
+		tagService:         d.TagSvc,
+		tagTemplateService: d.TagTemplateSvc,
+		userService:        d.UserSvc,
+		statsDReporter:     d.StatsD,
+		logger:             d.Logger,
 	}
 }
 

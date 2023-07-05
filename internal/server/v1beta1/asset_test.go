@@ -199,7 +199,7 @@ func TestGetAllAssets(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(APIServerDeps{AssetSvc: mockAssetSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			got, err := handler.GetAllAssets(ctx, tc.Request)
 			code := status.Code(err)
@@ -338,7 +338,7 @@ func TestGetAssetByID(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(APIServerDeps{AssetSvc: mockAssetSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			got, err := handler.GetAssetByID(ctx, &compassv1beta1.GetAssetByIDRequest{Id: assetID})
 			code := status.Code(err)
@@ -542,7 +542,7 @@ func TestUpsertAsset(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(APIServerDeps{AssetSvc: mockAssetSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			got, err := handler.UpsertAsset(ctx, tc.Request)
 			code := status.Code(err)
@@ -891,7 +891,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(APIServerDeps{AssetSvc: mockAssetSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			got, err := handler.UpsertPatchAsset(ctx, tc.Request)
 			code := status.Code(err)
@@ -970,7 +970,7 @@ func TestDeleteAsset(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(APIServerDeps{AssetSvc: mockAssetSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			_, err := handler.DeleteAsset(ctx, &compassv1beta1.DeleteAssetRequest{Id: tc.AssetID})
 			code := status.Code(err)
@@ -1071,7 +1071,7 @@ func TestGetAssetStargazers(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(APIServerDeps{StarSvc: mockStarSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			got, err := handler.GetAssetStargazers(ctx, tc.Request)
 			code := status.Code(err)
@@ -1202,7 +1202,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(APIServerDeps{AssetSvc: mockAssetSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			got, err := handler.GetAssetVersionHistory(ctx, tc.Request)
 			code := status.Code(err)
@@ -1322,7 +1322,7 @@ func TestGetAssetByVersion(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(APIServerDeps{AssetSvc: mockAssetSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			got, err := handler.GetAssetByVersion(ctx, tc.Request)
 			code := status.Code(err)
@@ -1495,7 +1495,7 @@ func TestCreateAssetProbe(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(APIServerDeps{AssetSvc: mockAssetSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			got, err := handler.CreateAssetProbe(ctx, tc.Request)
 			code := status.Code(err)

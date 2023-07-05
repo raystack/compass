@@ -111,7 +111,7 @@ func TestGetTypes(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := NewAPIServer(APIServerDeps{AssetSvc: mockSvc, UserSvc: mockUserSvc, Logger: logger})
 
 			got, err := handler.GetAllTypes(ctx, &compassv1beta1.GetAllTypesRequest{})
 			code := status.Code(err)

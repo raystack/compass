@@ -73,6 +73,10 @@
     # problems with the error wrapping scheme introduced in Go 1.13.
     "errorlint",
 
+    # https://github.com/GaijinEntertainment/go-exhaustruct
+    # Checks if all structure fields are initialized
+    "exhaustruct",
+
     # https://github.com/ashanbrown/forbidigo
     # Forbids identifiers.
     "forbidigo",
@@ -167,6 +171,12 @@
     # Such cases aren't reported by default.
     # Default: false
     check-type-assertions = true
+
+  [linters-settings.exhaustruct]
+    # List of regular expressions to match struct packages and names.
+    # If this list is empty, all structs are tested.
+    # Default: []
+    include = ["github\\.com/goto/compass/internal/server/v1beta1\\.APIServerDeps"]
 
   [linters-settings.govet]
     # Report about shadowed variables.
@@ -396,10 +406,6 @@
     linters = ["govet"]
 
   [[issues.exclude-rules]]
-    text = "can be replaced by http\\.Status.*"
-    linters = ["usestdlibvars"]
-
-  [[issues.exclude-rules]]
     path = "cli/.*"
     linters = ["dupl"]
 
@@ -412,6 +418,7 @@
       "lll",
       "gocognit",
       "goconst",
+      "exhaustruct",
     ]
 
   [[issues.exclude-rules]]

@@ -20,5 +20,5 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.52.2
+          version: v1.53.3
           args: --config=".golangci-prod.toml" --new-from-rev=HEAD~1 --max-same-issues=0 --max-issues-per-linter=0
