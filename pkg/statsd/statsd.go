@@ -24,7 +24,8 @@ func Init(logger log.Logger, cfg Config) (*Reporter, error) {
 
 	client, err := std.New(cfg.Address,
 		std.WithNamespace(cfg.Prefix),
-		std.WithoutTelemetry())
+		std.WithoutTelemetry(),
+		std.WithoutOriginDetection())
 	if err != nil {
 		return nil, err
 	}
@@ -38,17 +39,16 @@ func Init(logger log.Logger, cfg Config) (*Reporter, error) {
 // Close closes statsd connection
 func (sd *Reporter) Close() {
 	if sd != nil && sd.client != nil {
-		sd.Close()
+		sd.client.Close()
 	}
 }
 
 // Incr returns a increment counter metric.
 func (sd *Reporter) Incr(name string) *Metric {
 	return &Metric{
-		rate:          sd.config.SamplingRate,
-		logger:        sd.logger,
-		name:          name,
-		withInfluxTag: sd.config.WithInfluxTagFormat,
+		rate:   sd.config.SamplingRate,
+		logger: sd.logger,
+		name:   name,
 		publishFunc: func(name string, tags []string, rate float64) error {
 			if sd == nil || sd.client == nil {
 				return nil
@@ -62,10 +62,9 @@ func (sd *Reporter) Incr(name string) *Metric {
 // Timing returns a timer metric.
 func (sd *Reporter) Timing(name string, value time.Duration) *Metric {
 	return &Metric{
-		rate:          sd.config.SamplingRate,
-		logger:        sd.logger,
-		name:          name,
-		withInfluxTag: sd.config.WithInfluxTagFormat,
+		rate:   sd.config.SamplingRate,
+		logger: sd.logger,
+		name:   name,
 		publishFunc: func(name string, tags []string, rate float64) error {
 			if sd == nil || sd.client == nil {
 				return nil
@@ -79,10 +78,9 @@ func (sd *Reporter) Timing(name string, value time.Duration) *Metric {
 // Gauge creates and returns a new gauge metric.
 func (sd *Reporter) Gauge(name string, value float64) *Metric {
 	return &Metric{
-		rate:          sd.config.SamplingRate,
-		logger:        sd.logger,
-		name:          name,
-		withInfluxTag: sd.config.WithInfluxTagFormat,
+		rate:   sd.config.SamplingRate,
+		logger: sd.logger,
+		name:   name,
 		publishFunc: func(name string, tags []string, rate float64) error {
 			if sd == nil || sd.client == nil {
 				return nil
@@ -96,10 +94,9 @@ func (sd *Reporter) Gauge(name string, value float64) *Metric {
 // Histogram creates and returns a rate & gauge metric.
 func (sd *Reporter) Histogram(name string, value float64) *Metric {
 	return &Metric{
-		rate:          sd.config.SamplingRate,
-		logger:        sd.logger,
-		name:          name,
-		withInfluxTag: sd.config.WithInfluxTagFormat,
+		rate:   sd.config.SamplingRate,
+		logger: sd.logger,
+		name:   name,
 		publishFunc: func(name string, tags []string, rate float64) error {
 			if sd == nil || sd.client == nil {
 				return nil
