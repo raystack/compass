@@ -17,8 +17,8 @@ import (
 	"github.com/goto/compass/core/asset"
 	"github.com/goto/compass/core/user"
 	"github.com/goto/compass/internal/store/postgres"
+	"github.com/goto/compass/internal/testutils"
 	"github.com/goto/salt/log"
-	"github.com/ory/dockertest/v3"
 	"github.com/r3labs/diff/v2"
 	"github.com/stretchr/testify/suite"
 )
@@ -29,8 +29,6 @@ type AssetRepositoryTestSuite struct {
 	suite.Suite
 	ctx        context.Context
 	client     *postgres.Client
-	pool       *dockertest.Pool
-	resource   *dockertest.Resource
 	repository *postgres.AssetRepository
 	userRepo   *postgres.UserRepository
 	users      []user.User
@@ -42,7 +40,7 @@ func (r *AssetRepositoryTestSuite) SetupSuite() {
 	var err error
 
 	logger := log.NewLogrus()
-	r.client, r.pool, r.resource, err = newTestClient(logger)
+	r.client, err = newTestClient(r.T(), logger)
 	if err != nil {
 		r.T().Fatal(err)
 	}
@@ -86,20 +84,8 @@ func (r *AssetRepositoryTestSuite) createUsers(userRepo user.Repository) []user.
 	return users
 }
 
-func (r *AssetRepositoryTestSuite) TearDownSuite() {
-	// Clean tests
-	err := r.client.Close()
-	if err != nil {
-		r.T().Fatal(err)
-	}
-	err = purgeDocker(r.pool, r.resource)
-	if err != nil {
-		r.T().Fatal(err)
-	}
-}
-
 func (r *AssetRepositoryTestSuite) BeforeTest(suiteName, testName string) {
-	err := setup(r.ctx, r.client)
+	err := testutils.RunMigrationsWithClient(r.T(), r.client)
 	r.NoError(err)
 
 	r.users = r.createUsers(r.userRepo)

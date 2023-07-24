@@ -5,11 +5,14 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"embed"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
+	migratepgx "github.com/golang-migrate/migrate/v4/database/pgx"
 	// Register database postgres
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	// Register golang migrate source
@@ -57,8 +60,8 @@ func (c *Client) RunWithinTx(ctx context.Context, f func(tx *sqlx.Tx) error) err
 	return nil
 }
 
-func (c *Client) Migrate(cfg Config) (err error) {
-	m, err := initMigration(cfg)
+func (c *Client) Migrate() (err error) {
+	m, err := initMigration(c.db.DB)
 	if err != nil {
 		return fmt.Errorf("migration failed: %w", err)
 	}
@@ -99,16 +102,22 @@ func NewClient(cfg Config) (*Client, error) {
 	return &Client{db}, nil
 }
 
-func initMigration(cfg Config) (*migrate.Migrate, error) {
+func NewClientWithDB(db *sql.DB) *Client {
+	return &Client{db: sqlx.NewDb(db, "pgx")}
+}
+
+func initMigration(db *sql.DB) (*migrate.Migrate, error) {
 	iofsDriver, err := iofs.New(fs, "migrations")
 	if err != nil {
 		return nil, err
 	}
-	m, err := migrate.NewWithSourceInstance("iofs", iofsDriver, cfg.ConnectionURL().String())
+
+	driver, err := migratepgx.WithInstance(db, &migratepgx.Config{StatementTimeout: 5 * time.Minute})
 	if err != nil {
 		return nil, err
 	}
-	return m, nil
+
+	return migrate.NewWithInstance("iofs", iofsDriver, "pgx4", driver)
 }
 
 func checkPostgresError(err error) error {

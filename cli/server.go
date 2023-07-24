@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/goto/compass/core/asset"
@@ -16,6 +14,7 @@ import (
 	compassserver "github.com/goto/compass/internal/server"
 	esStore "github.com/goto/compass/internal/store/elasticsearch"
 	"github.com/goto/compass/internal/store/postgres"
+	"github.com/goto/compass/internal/workermanager"
 	"github.com/goto/compass/pkg/statsd"
 	"github.com/goto/salt/log"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -57,7 +56,10 @@ func serverStartCommand(cfg *Config) *cobra.Command {
 		Example: "compass server start",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runServer(cfg)
+			if err := runServer(cmd.Context(), cfg); err != nil {
+				return fmt.Errorf("run server: %w", err)
+			}
+			return nil
 		},
 	}
 
@@ -73,20 +75,14 @@ func serverMigrateCommand(cfg *Config) *cobra.Command {
 		`),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx, cancel := signal.NotifyContext(cmd.Context(), syscall.SIGINT, syscall.SIGTERM)
-			defer cancel()
-
-			return runMigrations(ctx, cfg)
+			return runMigrations(cmd.Context(), cfg)
 		},
 	}
 
 	return c
 }
 
-func runServer(config *Config) error {
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
-
+func runServer(ctx context.Context, config *Config) error {
 	logger := initLogger(config.LogLevel)
 	logger.Info("compass starting", "version", Version)
 
@@ -112,11 +108,11 @@ func runServer(config *Config) error {
 	// init tag
 	tagRepository, err := postgres.NewTagRepository(pgClient)
 	if err != nil {
-		return fmt.Errorf("failed to create new tag repository: %w", err)
+		return fmt.Errorf("create new tag repository: %w", err)
 	}
 	tagTemplateRepository, err := postgres.NewTagTemplateRepository(pgClient)
 	if err != nil {
-		return fmt.Errorf("failed to create new tag template repository: %w", err)
+		return fmt.Errorf("create new tag template repository: %w", err)
 	}
 	tagTemplateService := tag.NewTemplateService(tagTemplateRepository)
 	tagService := tag.NewService(tagRepository, tagTemplateService)
@@ -124,32 +120,53 @@ func runServer(config *Config) error {
 	// init user
 	userRepository, err := postgres.NewUserRepository(pgClient)
 	if err != nil {
-		return fmt.Errorf("failed to create new user repository: %w", err)
+		return fmt.Errorf("create new user repository: %w", err)
 	}
 	userService := user.NewService(logger, userRepository, user.ServiceWithStatsDReporter(statsdReporter))
 
 	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0, config.Service.Identity.ProviderDefaultName)
 	if err != nil {
-		return fmt.Errorf("failed to create new asset repository: %w", err)
+		return fmt.Errorf("create new asset repository: %w", err)
 	}
 	discoveryRepository := esStore.NewDiscoveryRepository(esClient, logger)
 	lineageRepository, err := postgres.NewLineageRepository(pgClient)
 	if err != nil {
-		return fmt.Errorf("failed to create new lineage repository: %w", err)
+		return fmt.Errorf("create new lineage repository: %w", err)
 	}
-	assetService := asset.NewService(assetRepository, discoveryRepository, lineageRepository)
+
+	wrkr, err := initAssetWorker(ctx, workermanager.Deps{
+		Config:        config.Worker,
+		DiscoveryRepo: discoveryRepository,
+		Logger:        logger,
+	})
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err := wrkr.Close(); err != nil {
+			logger.Error("Close worker", "err", err)
+		}
+	}()
+
+	assetService := asset.NewService(asset.ServiceDeps{
+		AssetRepo:     assetRepository,
+		DiscoveryRepo: discoveryRepository,
+		LineageRepo:   lineageRepository,
+		Worker:        wrkr,
+	})
 
 	// init discussion
 	discussionRepository, err := postgres.NewDiscussionRepository(pgClient, 0)
 	if err != nil {
-		return fmt.Errorf("failed to create new discussion repository: %w", err)
+		return fmt.Errorf("create new discussion repository: %w", err)
 	}
 	discussionService := discussion.NewService(discussionRepository)
 
 	// init star
 	starRepository, err := postgres.NewStarRepository(pgClient)
 	if err != nil {
-		return fmt.Errorf("failed to create new star repository: %w", err)
+		return fmt.Errorf("create new star repository: %w", err)
 	}
 	starService := star.NewService(starRepository)
 
@@ -180,11 +197,11 @@ func initLogger(logLevel string) *log.Logrus {
 func initElasticsearch(logger log.Logger, config esStore.Config) (*esStore.Client, error) {
 	esClient, err := esStore.NewClient(logger, config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create new elasticsearch client: %w", err)
+		return nil, fmt.Errorf("create new elasticsearch client: %w", err)
 	}
 	got, err := esClient.Init()
 	if err != nil {
-		return nil, fmt.Errorf("failed to establish connection to elasticsearch: %w", err)
+		return nil, fmt.Errorf("establish connection to elasticsearch: %w", err)
 	}
 	logger.Info("connected to elasticsearch", "info", got)
 	return esClient, nil
@@ -217,6 +234,19 @@ func initNewRelicMonitor(config *Config, logger log.Logger) (*newrelic.Applicati
 	return app, nil
 }
 
+func initAssetWorker(ctx context.Context, deps workermanager.Deps) (asset.Worker, error) {
+	if !deps.Config.Enabled {
+		return workermanager.NewInSituWorker(deps), nil
+	}
+
+	mgr, err := workermanager.New(ctx, deps)
+	if err != nil {
+		return nil, err
+	}
+
+	return mgr, nil
+}
+
 func runMigrations(ctx context.Context, config *Config) error {
 	fmt.Println("Preparing migration...")
 
@@ -241,7 +271,7 @@ func migratePostgres(logger log.Logger, config *Config) (err error) {
 		return err
 	}
 
-	err = pgClient.Migrate(config.DB)
+	err = pgClient.Migrate()
 	if err != nil {
 		return fmt.Errorf("problem with migration %w", err)
 	}

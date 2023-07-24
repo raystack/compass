@@ -33,6 +33,17 @@ service:
         max_send_msg_size: 33554432
         max_recv_msg_size: 33554432
 
+worker:
+    enabled: true
+    worker_count: 1
+    poll_interval: 1s
+    pgq:
+        host: localhost
+        port: 5432
+        name: compass
+        username: compass
+        password: compass_password
+
 client:
     host: localhost:8081
     serverheaderkey_uuid: Compass-User-UUID // if ommited, will use value on service.identity.headerkey_uuid

@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/goto/compass/core/tag"
 	"github.com/goto/compass/internal/store/postgres"
+	"github.com/goto/compass/internal/testutils"
 	"github.com/goto/salt/log"
-	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -22,15 +22,13 @@ type TagRepositoryTestSuite struct {
 	client             *postgres.Client
 	repository         *postgres.TagRepository
 	templateRepository *postgres.TagTemplateRepository
-	pool               *dockertest.Pool
-	resource           *dockertest.Resource
 }
 
 func (r *TagRepositoryTestSuite) SetupSuite() {
 	var err error
 
 	logger := log.NewNoop()
-	r.client, r.pool, r.resource, err = newTestClient(logger)
+	r.client, err = newTestClient(r.T(), logger)
 	if err != nil {
 		r.T().Fatal(err)
 	}
@@ -41,18 +39,6 @@ func (r *TagRepositoryTestSuite) SetupSuite() {
 		r.T().Fatal(err)
 	}
 	r.templateRepository, err = postgres.NewTagTemplateRepository(r.client)
-	if err != nil {
-		r.T().Fatal(err)
-	}
-}
-
-func (r *TagRepositoryTestSuite) TearDownSuite() {
-	// Clean tests
-	err := r.client.Close()
-	if err != nil {
-		r.T().Fatal(err)
-	}
-	err = purgeDocker(r.pool, r.resource)
 	if err != nil {
 		r.T().Fatal(err)
 	}
@@ -71,7 +57,7 @@ func (r *TagRepositoryTestSuite) TestNewRepository() {
 
 func (r *TagRepositoryTestSuite) TestCreate() {
 	r.Run("should return error if tag is nil", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		var domainTag *tag.Tag = nil
@@ -84,7 +70,7 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 	})
 
 	r.Run("should return error if template is not found", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 		domain := getDomainTag()
 
@@ -94,7 +80,7 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 	})
 
 	r.Run("should return nil and create tag if no error found", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		domainTemplate := getTemplate()
@@ -128,7 +114,7 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 	})
 
 	r.Run("should return nil and update tag if no error found", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		domainTemplate := getTemplate()
@@ -145,7 +131,7 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 	})
 
 	r.Run("should return error if the tag already exist", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		domainTemplate := getTemplate()
@@ -164,7 +150,7 @@ func (r *TagRepositoryTestSuite) TestCreate() {
 
 func (r *TagRepositoryTestSuite) TestRead() {
 	r.Run("should return error if asset id is empty", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		paramDomainTag := tag.Tag{
@@ -180,7 +166,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 	})
 
 	r.Run("should return empty and nil if no tags found for the specified asset", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		paramDomainTag := tag.Tag{
@@ -193,7 +179,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 	})
 
 	r.Run("should return tags if found for the specified asset", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		domainTemplate := getTemplate()
@@ -214,7 +200,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 	})
 
 	r.Run("should return nil and not found error if no tags found for the specified asset id and template", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		assetID := uuid.NewString()
@@ -240,7 +226,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 	})
 
 	r.Run("should return maximum of one tag for the specified asset id and template", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		assetID := domainAssetID
@@ -270,7 +256,7 @@ func (r *TagRepositoryTestSuite) TestRead() {
 
 func (r *TagRepositoryTestSuite) TestUpdate() {
 	r.Run("should return error if tag is nil", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		var domainTag *tag.Tag = nil
@@ -283,7 +269,7 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 	})
 
 	r.Run("should return error if template is not found", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 		t := getDomainTag()
 
@@ -292,7 +278,7 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 	})
 
 	r.Run("should return nil and update tag if no error found", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		domainTemplate := getTemplate()
@@ -319,7 +305,7 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 	})
 
 	r.Run("should return nil and update tag if no error found", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		domainTemplate := getTemplate()
@@ -341,7 +327,7 @@ func (r *TagRepositoryTestSuite) TestUpdate() {
 
 func (r *TagRepositoryTestSuite) TestDelete() {
 	r.Run("should return error if asset id is empty", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		paramDomainTag := tag.Tag{
@@ -356,7 +342,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 	})
 
 	r.Run("should delete tags related to the asset id and return no error if the asset id has one", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		domainTemplate := getTemplate()
@@ -387,7 +373,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 	})
 
 	r.Run("should return error if template is not found", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		assetID := uuid.NewString()
@@ -402,7 +388,7 @@ func (r *TagRepositoryTestSuite) TestDelete() {
 	})
 
 	r.Run("should delete only the tag for asset id and template and return error if asset id has none", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		assetID := uuid.NewString()

@@ -10,6 +10,7 @@ import (
 	"github.com/goto/compass/internal/server"
 	esStore "github.com/goto/compass/internal/store/elasticsearch"
 	"github.com/goto/compass/internal/store/postgres"
+	"github.com/goto/compass/internal/workermanager"
 	"github.com/goto/compass/pkg/metrics"
 	"github.com/goto/compass/pkg/statsd"
 	"github.com/goto/salt/cmdx"
@@ -93,6 +94,9 @@ type Config struct {
 
 	// Service
 	Service server.Config `mapstructure:"service"`
+
+	// Async worker
+	Worker workermanager.Config `mapstructure:"worker"`
 
 	// Client
 	Client client.Config `mapstructure:"client"`

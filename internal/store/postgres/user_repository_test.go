@@ -8,9 +8,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/goto/compass/core/user"
 	"github.com/goto/compass/internal/store/postgres"
+	"github.com/goto/compass/internal/testutils"
 	"github.com/goto/salt/log"
 	"github.com/jmoiron/sqlx"
-	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -18,8 +18,6 @@ type UserRepositoryTestSuite struct {
 	suite.Suite
 	ctx        context.Context
 	client     *postgres.Client
-	pool       *dockertest.Pool
-	resource   *dockertest.Resource
 	repository *postgres.UserRepository
 }
 
@@ -27,25 +25,13 @@ func (r *UserRepositoryTestSuite) SetupSuite() {
 	var err error
 
 	logger := log.NewNoop()
-	r.client, r.pool, r.resource, err = newTestClient(logger)
+	r.client, err = newTestClient(r.T(), logger)
 	if err != nil {
 		r.T().Fatal(err)
 	}
 
 	r.ctx = context.TODO()
 	r.repository, err = postgres.NewUserRepository(r.client)
-	if err != nil {
-		r.T().Fatal(err)
-	}
-}
-
-func (r *UserRepositoryTestSuite) TearDownSuite() {
-	// Clean tests
-	err := r.client.Close()
-	if err != nil {
-		r.T().Fatal(err)
-	}
-	err = purgeDocker(r.pool, r.resource)
 	if err != nil {
 		r.T().Fatal(err)
 	}
@@ -76,7 +62,7 @@ func (r *UserRepositoryTestSuite) TestCreate() {
 	})
 
 	r.Run("return ErrDuplicateRecord if user is already exist", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		ud := getUser("user@gotocompany.com")
@@ -133,7 +119,7 @@ func (r *UserRepositoryTestSuite) TestCreateWithTx() {
 	})
 
 	r.Run("return ErrDuplicateRecord if user is already exist", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		id, err := r.repository.Create(r.ctx, validUserWithoutUUID)
@@ -159,7 +145,7 @@ func (r *UserRepositoryTestSuite) TestGetBy() {
 		})
 
 		r.Run("return non empty user if email found in DB", func() {
-			err := setup(r.ctx, r.client)
+			err := testutils.RunMigrationsWithClient(r.T(), r.client)
 			r.NoError(err)
 
 			user := getUser("use-getbyemail@gotocompany.com")
@@ -174,7 +160,7 @@ func (r *UserRepositoryTestSuite) TestGetBy() {
 	})
 
 	r.Run("by email with tx, return the user created in the tx", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		u := getUser("use-getbyemail@gotocompany.com")
@@ -202,7 +188,7 @@ func (r *UserRepositoryTestSuite) TestGetBy() {
 		})
 
 		r.Run("return non empty user if email found in DB", func() {
-			err := setup(r.ctx, r.client)
+			err := testutils.RunMigrationsWithClient(r.T(), r.client)
 			r.NoError(err)
 
 			user := getUser("use-getbyuuid@gotocompany.com")
@@ -217,7 +203,7 @@ func (r *UserRepositoryTestSuite) TestGetBy() {
 	})
 
 	r.Run("by UUID with tx, return the user created in the tx", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		u := getUser("use-getbyuuid@gotocompany.com")

@@ -11,13 +11,30 @@ type Service struct {
 	assetRepository     Repository
 	discoveryRepository DiscoveryRepository
 	lineageRepository   LineageRepository
+	worker              Worker
 }
 
-func NewService(assetRepository Repository, discoveryRepository DiscoveryRepository, lineageRepository LineageRepository) *Service {
+//go:generate mockery --name=Worker -r --case underscore --with-expecter --structname Worker --filename worker_mock.go --output=./mocks
+
+type Worker interface {
+	EnqueueIndexAssetJob(ctx context.Context, ast Asset) error
+	EnqueueDeleteAssetJob(ctx context.Context, urn string) error
+	Close() error
+}
+
+type ServiceDeps struct {
+	AssetRepo     Repository
+	DiscoveryRepo DiscoveryRepository
+	LineageRepo   LineageRepository
+	Worker        Worker
+}
+
+func NewService(deps ServiceDeps) *Service {
 	return &Service{
-		assetRepository:     assetRepository,
-		discoveryRepository: discoveryRepository,
-		lineageRepository:   lineageRepository,
+		assetRepository:     deps.AssetRepo,
+		discoveryRepository: deps.DiscoveryRepo,
+		lineageRepository:   deps.LineageRepo,
+		worker:              deps.Worker,
 	}
 }
 
@@ -58,7 +75,7 @@ func (s *Service) UpsertAssetWithoutLineage(ctx context.Context, ast *Asset) (st
 	}
 
 	ast.ID = assetID
-	if err := s.discoveryRepository.Upsert(ctx, *ast); err != nil {
+	if err := s.worker.EnqueueIndexAssetJob(ctx, *ast); err != nil {
 		return "", err
 	}
 
@@ -79,7 +96,7 @@ func (s *Service) DeleteAsset(ctx context.Context, id string) error {
 		return err
 	}
 
-	if err := s.discoveryRepository.DeleteByURN(ctx, id); err != nil {
+	if err := s.worker.EnqueueDeleteAssetJob(ctx, id); err != nil {
 		return err
 	}
 

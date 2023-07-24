@@ -8,16 +8,12 @@ import (
 	"github.com/goto/compass/core/asset"
 	"github.com/goto/compass/internal/store/postgres"
 	"github.com/goto/salt/log"
-	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
 
 type LineageRepositoryTestSuite struct {
 	suite.Suite
 	ctx        context.Context
-	client     *postgres.Client
-	pool       *dockertest.Pool
-	resource   *dockertest.Resource
 	repository *postgres.LineageRepository
 }
 
@@ -25,26 +21,14 @@ func (r *LineageRepositoryTestSuite) SetupSuite() {
 	var err error
 
 	logger := log.NewLogrus()
-	r.client, r.pool, r.resource, err = newTestClient(logger)
+	client, err := newTestClient(r.T(), logger)
 	if err != nil {
 		r.T().Fatal(err)
 	}
 
 	r.ctx = context.TODO()
 
-	r.repository, err = postgres.NewLineageRepository(r.client)
-	if err != nil {
-		r.T().Fatal(err)
-	}
-}
-
-func (r *LineageRepositoryTestSuite) TearDownSuite() {
-	// Clean tests
-	err := r.client.Close()
-	if err != nil {
-		r.T().Fatal(err)
-	}
-	err = purgeDocker(r.pool, r.resource)
+	r.repository, err = postgres.NewLineageRepository(client)
 	if err != nil {
 		r.T().Fatal(err)
 	}

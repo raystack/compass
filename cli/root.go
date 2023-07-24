@@ -50,6 +50,7 @@ func New(cliConfig *Config) *cobra.Command {
 
 	rootCmd.AddCommand(
 		serverCmd(cliConfig),
+		workerCmd(cliConfig),
 		configCommand(cliConfig),
 		assetsCommand(cliConfig),
 		discussionsCommand(cliConfig),

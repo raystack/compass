@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/goto/compass/core/star"
 	"github.com/goto/compass/internal/store/postgres"
+	"github.com/goto/compass/internal/testutils"
 	"github.com/goto/salt/log"
-	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -17,8 +17,6 @@ type StarRepositoryTestSuite struct {
 	suite.Suite
 	ctx             context.Context
 	client          *postgres.Client
-	pool            *dockertest.Pool
-	resource        *dockertest.Resource
 	repository      *postgres.StarRepository
 	userRepository  *postgres.UserRepository
 	assetRepository *postgres.AssetRepository
@@ -28,7 +26,7 @@ func (r *StarRepositoryTestSuite) SetupSuite() {
 	var err error
 
 	logger := log.NewLogrus()
-	r.client, r.pool, r.resource, err = newTestClient(logger)
+	r.client, err = newTestClient(r.T(), logger)
 	if err != nil {
 		r.T().Fatal(err)
 	}
@@ -48,23 +46,11 @@ func (r *StarRepositoryTestSuite) SetupSuite() {
 	}
 }
 
-func (r *StarRepositoryTestSuite) TearDownSuite() {
-	// Clean tests
-	err := r.client.Close()
-	if err != nil {
-		r.T().Fatal(err)
-	}
-	err = purgeDocker(r.pool, r.resource)
-	if err != nil {
-		r.T().Fatal(err)
-	}
-}
-
 func (r *StarRepositoryTestSuite) TestCreate() {
 	ownerEmail := "test-create@gotocompany.com"
 
 	r.Run("return no error if succesfully create star", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		userID, err := createUser(r.userRepository, "user@gotocompany.com")
@@ -104,7 +90,7 @@ func (r *StarRepositoryTestSuite) TestCreate() {
 	})
 
 	r.Run("return ErrDuplicateRecord if starred asset is already exist", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		userID, err := createUser(r.userRepository, "user@gotocompany.com")
@@ -123,7 +109,7 @@ func (r *StarRepositoryTestSuite) TestCreate() {
 	})
 
 	r.Run("return error user not found if user does not exist", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 		uid := uuid.NewString()
 
@@ -160,7 +146,7 @@ func (r *StarRepositoryTestSuite) TestGetStargazers() {
 	})
 
 	r.Run("return list of users that star an asset if get users success", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 		userID1, err := createUser(r.userRepository, "user@gotocompany.com")
 		r.NoError(err)
@@ -193,7 +179,7 @@ func (r *StarRepositoryTestSuite) TestGetStargazers() {
 	})
 
 	r.Run("return limited paginated list of users that star an asset if get users success", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		var assetID string
@@ -244,7 +230,7 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
 	})
 
 	r.Run("return list of starred assets if get by user id success", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		userID1, err := createUser(r.userRepository, "user@gotocompany.com")
@@ -283,7 +269,7 @@ func (r *StarRepositoryTestSuite) TestGetAllAssetsByUserID() {
 	})
 
 	r.Run("return limited paginated list of starred assets if get by user id success", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		userID, err := createUser(r.userRepository, "user@gotocompany.com")
@@ -344,7 +330,7 @@ func (r *StarRepositoryTestSuite) TestGetAssetByUserID() {
 	})
 
 	r.Run("return the starred assets if get user starred asset success", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		userID1, err := createUser(r.userRepository, "user@gotocompany.com")
@@ -407,7 +393,7 @@ func (r *StarRepositoryTestSuite) TestDelete() {
 	})
 
 	r.Run("return nil if successfully unstar an asset", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		userID1, err := createUser(r.userRepository, "user@gotocompany.com")

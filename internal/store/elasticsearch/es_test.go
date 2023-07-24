@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esapi"
 	store "github.com/goto/compass/internal/store/elasticsearch"
 	"github.com/goto/salt/log"
 	"github.com/stretchr/testify/assert"

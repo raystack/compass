@@ -9,6 +9,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/goto/compass/core/asset"
 	"github.com/goto/compass/core/asset/mocks"
+	"github.com/goto/compass/internal/workermanager"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -88,7 +89,11 @@ func TestService_GetAllAssets(t *testing.T) {
 				tc.Setup(ctx, mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
 			}
 
-			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+			svc := asset.NewService(asset.ServiceDeps{
+				AssetRepo:     mockAssetRepo,
+				DiscoveryRepo: mockDiscoveryRepo,
+				LineageRepo:   mockLineageRepo,
+			})
 			got, cnt, err := svc.GetAllAssets(ctx, tc.Filter, tc.WithTotal)
 			if err != nil && errors.Is(tc.Err, err) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
@@ -147,7 +152,7 @@ func TestService_GetTypes(t *testing.T) {
 				tc.Setup(ctx, mockAssetRepo)
 			}
 
-			svc := asset.NewService(mockAssetRepo, nil, nil)
+			svc := asset.NewService(asset.ServiceDeps{AssetRepo: mockAssetRepo})
 			got, err := svc.GetTypes(ctx, tc.Filter)
 			if err != nil && errors.Is(tc.Err, err) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
@@ -224,17 +229,22 @@ func TestService_UpsertAsset(t *testing.T) {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockAssetRepo := mocks.NewAssetRepository(t)
-			mockDiscoveryRepo := mocks.NewDiscoveryRepository(t)
-			mockLineageRepo := mocks.NewLineageRepository(t)
+			assetRepo := mocks.NewAssetRepository(t)
+			discoveryRepo := mocks.NewDiscoveryRepository(t)
+			lineageRepo := mocks.NewLineageRepository(t)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+				tc.Setup(ctx, assetRepo, discoveryRepo, lineageRepo)
 			}
 
-			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+			svc := asset.NewService(asset.ServiceDeps{
+				AssetRepo:     assetRepo,
+				DiscoveryRepo: discoveryRepo,
+				LineageRepo:   lineageRepo,
+				Worker:        workermanager.NewInSituWorker(workermanager.Deps{DiscoveryRepo: discoveryRepo}),
+			})
 			rid, err := svc.UpsertAsset(ctx, tc.Asset, tc.Upstreams, tc.Downstreams)
 			if tc.Err != nil {
-				assert.EqualError(t, err, tc.Err.Error())
+				assert.ErrorContains(t, err, tc.Err.Error())
 				return
 			}
 			assert.NoError(t, err)
@@ -283,16 +293,21 @@ func TestService_UpsertAssetWithoutLineage(t *testing.T) {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockAssetRepo := mocks.NewAssetRepository(t)
-			mockDiscoveryRepo := mocks.NewDiscoveryRepository(t)
+			assetRepo := mocks.NewAssetRepository(t)
+			discoveryRepo := mocks.NewDiscoveryRepository(t)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockAssetRepo, mockDiscoveryRepo)
+				tc.Setup(ctx, assetRepo, discoveryRepo)
 			}
 
-			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mocks.NewLineageRepository(t))
+			svc := asset.NewService(asset.ServiceDeps{
+				AssetRepo:     assetRepo,
+				DiscoveryRepo: discoveryRepo,
+				LineageRepo:   mocks.NewLineageRepository(t),
+				Worker:        workermanager.NewInSituWorker(workermanager.Deps{DiscoveryRepo: discoveryRepo}),
+			})
 			rid, err := svc.UpsertAssetWithoutLineage(ctx, tc.Asset)
 			if tc.Err != nil {
-				assert.EqualError(t, err, tc.Err.Error())
+				assert.ErrorContains(t, err, tc.Err.Error())
 				return
 			}
 			assert.NoError(t, err)
@@ -403,14 +418,19 @@ func TestService_DeleteAsset(t *testing.T) {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockAssetRepo := mocks.NewAssetRepository(t)
-			mockDiscoveryRepo := mocks.NewDiscoveryRepository(t)
-			mockLineageRepo := mocks.NewLineageRepository(t)
+			assetRepo := mocks.NewAssetRepository(t)
+			discoveryRepo := mocks.NewDiscoveryRepository(t)
+			lineageRepo := mocks.NewLineageRepository(t)
 			if tc.Setup != nil {
-				tc.Setup(ctx, mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+				tc.Setup(ctx, assetRepo, discoveryRepo, lineageRepo)
 			}
 
-			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+			svc := asset.NewService(asset.ServiceDeps{
+				AssetRepo:     assetRepo,
+				DiscoveryRepo: discoveryRepo,
+				LineageRepo:   lineageRepo,
+				Worker:        workermanager.NewInSituWorker(workermanager.Deps{DiscoveryRepo: discoveryRepo}),
+			})
 			err := svc.DeleteAsset(ctx, tc.ID)
 			if err != nil && errors.Is(tc.Err, err) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
@@ -528,7 +548,11 @@ func TestService_GetAssetByID(t *testing.T) {
 				tc.Setup(ctx, mockAssetRepo)
 			}
 
-			svc := asset.NewService(mockAssetRepo, mocks.NewDiscoveryRepository(t), mocks.NewLineageRepository(t))
+			svc := asset.NewService(asset.ServiceDeps{
+				AssetRepo:     mockAssetRepo,
+				DiscoveryRepo: mocks.NewDiscoveryRepository(t),
+				LineageRepo:   mocks.NewLineageRepository(t),
+			})
 			actual, err := svc.GetAssetByID(ctx, tc.ID)
 			if tc.Expected != nil {
 				assert.Equal(t, *tc.Expected, actual)
@@ -596,7 +620,11 @@ func TestService_GetAssetByVersion(t *testing.T) {
 				tc.Setup(ctx, mockAssetRepo)
 			}
 
-			svc := asset.NewService(mockAssetRepo, mocks.NewDiscoveryRepository(t), mocks.NewLineageRepository(t))
+			svc := asset.NewService(asset.ServiceDeps{
+				AssetRepo:     mockAssetRepo,
+				DiscoveryRepo: mocks.NewDiscoveryRepository(t),
+				LineageRepo:   mocks.NewLineageRepository(t),
+			})
 			_, err := svc.GetAssetByVersion(ctx, tc.ID, "v0.0.2")
 			if tc.ExpectedErr != nil {
 				assert.EqualError(t, err, tc.ExpectedErr.Error())
@@ -644,7 +672,11 @@ func TestService_GetAssetVersionHistory(t *testing.T) {
 				tc.Setup(ctx, mockAssetRepo)
 			}
 
-			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+			svc := asset.NewService(asset.ServiceDeps{
+				AssetRepo:     mockAssetRepo,
+				DiscoveryRepo: mockDiscoveryRepo,
+				LineageRepo:   mockLineageRepo,
+			})
 			_, err := svc.GetAssetVersionHistory(ctx, asset.Filter{}, tc.ID)
 			if err != nil && errors.Is(tc.Err, err) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
@@ -787,7 +819,11 @@ func TestService_GetLineage(t *testing.T) {
 				tc.Setup(ctx, mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
 			}
 
-			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+			svc := asset.NewService(asset.ServiceDeps{
+				AssetRepo:     mockAssetRepo,
+				DiscoveryRepo: mockDiscoveryRepo,
+				LineageRepo:   mockLineageRepo,
+			})
 			actual, err := svc.GetLineage(ctx, "urn-source-1", asset.LineageQuery{})
 			if tc.Err == nil {
 				assert.NoError(t, err)
@@ -856,7 +892,11 @@ func TestService_SearchSuggestGroupAssets(t *testing.T) {
 				tc.Setup(ctx, mockDiscoveryRepo)
 			}
 
-			svc := asset.NewService(mockAssetRepo, mockDiscoveryRepo, mockLineageRepo)
+			svc := asset.NewService(asset.ServiceDeps{
+				AssetRepo:     mockAssetRepo,
+				DiscoveryRepo: mockDiscoveryRepo,
+				LineageRepo:   mockLineageRepo,
+			})
 			_, err := svc.SearchAssets(ctx, asset.SearchConfig{})
 			if err != nil && !assert.Equal(t, tc.ErrSearch, err) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.ErrSearch)
@@ -887,7 +927,7 @@ func TestService_CreateAssetProbe(t *testing.T) {
 		mockAssetRepo := mocks.NewAssetRepository(t)
 		mockAssetRepo.EXPECT().AddProbe(ctx, assetURN, &probe).Return(nil)
 
-		svc := asset.NewService(mockAssetRepo, nil, nil)
+		svc := asset.NewService(asset.ServiceDeps{AssetRepo: mockAssetRepo})
 		err := svc.AddProbe(ctx, assetURN, &probe)
 		assert.NoError(t, err)
 	})
@@ -898,7 +938,7 @@ func TestService_CreateAssetProbe(t *testing.T) {
 		mockAssetRepo := mocks.NewAssetRepository(t)
 		mockAssetRepo.EXPECT().AddProbe(ctx, assetURN, &probe).Return(expectedErr)
 
-		svc := asset.NewService(mockAssetRepo, nil, nil)
+		svc := asset.NewService(asset.ServiceDeps{AssetRepo: mockAssetRepo})
 		err := svc.AddProbe(ctx, assetURN, &probe)
 		assert.Equal(t, expectedErr, err)
 	})

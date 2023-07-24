@@ -126,7 +126,7 @@ Compass provides a fully-featured GRPC and HTTP API to interact with Compass ser
 <details>
   <summary>Dependencies:</summary>
 
-- Compass is written in Golang, and requires go version &gt;= 1.16. Please make sure that the go toolchain is available on your machine. See Golang’s [documentation](https://golang.org/) for installation instructions. Alternatively, you can use docker to build Compass as a docker image. More on this in the next section.
+- Compass is written in Golang, and requires go version &gt;= 1.20. Please make sure that the go toolchain is available on your machine. See Golang’s [documentation](https://golang.org/) for installation instructions. Alternatively, you can use docker to build Compass as a docker image. More on this in the next section.
 - Compass uses PostgreSQL 13 as its main storage and Elasticsearch v7 as the secondary storage to power the search. In order to run compass locally, you’ll need to have an instance of postgres and elasticsearch running. You can either download them and run it manually, or you can run them inside docker by using `docker-compose` with `docker-compose.yaml` provided in the root of this project.
 - PostgreSQL details and Elasticsearch brokers can alternatively be specified via the environment variable, `ELASTICSEARCH_BROKERS` for elasticsearch and `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` for postgres.
 - If you use Docker to build compass, then configuring networking requires extra steps. Following is one of doing it by running postgres and elasticsearch inside with `docker-compose` first.

@@ -8,8 +8,8 @@ import (
 
 	"github.com/goto/compass/core/tag"
 	"github.com/goto/compass/internal/store/postgres"
+	"github.com/goto/compass/internal/testutils"
 	"github.com/goto/salt/log"
-	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -18,33 +18,19 @@ type TagTemplateRepositoryTestSuite struct {
 	ctx        context.Context
 	client     *postgres.Client
 	repository *postgres.TagTemplateRepository
-	pool       *dockertest.Pool
-	resource   *dockertest.Resource
 }
 
 func (r *TagTemplateRepositoryTestSuite) SetupSuite() {
 	var err error
 
 	logger := log.NewNoop()
-	r.client, r.pool, r.resource, err = newTestClient(logger)
+	r.client, err = newTestClient(r.T(), logger)
 	if err != nil {
 		r.T().Fatal(err)
 	}
 
 	r.ctx = context.TODO()
 	r.repository, err = postgres.NewTagTemplateRepository(r.client)
-	if err != nil {
-		r.T().Fatal(err)
-	}
-}
-
-func (r *TagTemplateRepositoryTestSuite) TearDownSuite() {
-	// Clean tests
-	err := r.client.Close()
-	if err != nil {
-		r.T().Fatal(err)
-	}
-	err = purgeDocker(r.pool, r.resource)
 	if err != nil {
 		r.T().Fatal(err)
 	}
@@ -72,7 +58,7 @@ func (r *TagTemplateRepositoryTestSuite) TestCreate() {
 	})
 
 	r.Run("should return nil and insert new record if no error found", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		template := r.getTemplate()
@@ -94,7 +80,7 @@ func (r *TagTemplateRepositoryTestSuite) TestCreate() {
 	})
 
 	r.Run("should return nil and update template", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		originalTemplate := r.getTemplate()
@@ -113,7 +99,7 @@ func (r *TagTemplateRepositoryTestSuite) TestCreate() {
 	})
 
 	r.Run("should return error if encountered uncovered error", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		template := r.getTemplate()
@@ -129,7 +115,7 @@ func (r *TagTemplateRepositoryTestSuite) TestCreate() {
 
 func (r *TagTemplateRepositoryTestSuite) TestRead() {
 	r.Run("should return empty and no error if no record found", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 		template := r.getTemplate()
 
@@ -140,7 +126,7 @@ func (r *TagTemplateRepositoryTestSuite) TestRead() {
 	})
 
 	r.Run("should return templates and nil if found any", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		template := r.getTemplate()
@@ -159,7 +145,7 @@ func (r *TagTemplateRepositoryTestSuite) TestRead() {
 		r.NoError(actualError)
 	})
 	r.Run("should return template with multiple fields if exist", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		template := r.getTemplate()
@@ -187,7 +173,7 @@ func (r *TagTemplateRepositoryTestSuite) TestRead() {
 
 func (r *TagTemplateRepositoryTestSuite) TestReadAll() {
 	r.Run("should return empty and no error if no record found", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 		actualTemplate, actualError := r.repository.ReadAll(r.ctx)
 
@@ -196,7 +182,7 @@ func (r *TagTemplateRepositoryTestSuite) TestReadAll() {
 	})
 
 	r.Run("should return templates and nil if found any", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		template := r.getTemplate()
@@ -215,7 +201,7 @@ func (r *TagTemplateRepositoryTestSuite) TestReadAll() {
 		r.NoError(actualError)
 	})
 	r.Run("should return template with multiple fields if exist", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		template := r.getTemplate()
@@ -253,7 +239,7 @@ func (r *TagTemplateRepositoryTestSuite) TestUpdate() {
 	})
 
 	r.Run("should return error if record not found", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		template := r.getTemplate()
@@ -264,7 +250,7 @@ func (r *TagTemplateRepositoryTestSuite) TestUpdate() {
 	})
 
 	r.Run("should return nil and updated template if update is success", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		template := r.getTemplate()
@@ -301,7 +287,7 @@ func (r *TagTemplateRepositoryTestSuite) TestUpdate() {
 	})
 
 	r.Run("should return error if trying to update with conflicting existing template", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		template1 := r.getTemplate()
@@ -323,7 +309,7 @@ func (r *TagTemplateRepositoryTestSuite) TestUpdate() {
 	})
 
 	r.Run("should return error if trying to update with unrelated field", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		template := r.getTemplate()
@@ -338,7 +324,7 @@ func (r *TagTemplateRepositoryTestSuite) TestUpdate() {
 	})
 
 	r.Run("should return error if trying to update with duplicated field", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		template := r.getTemplate()
@@ -364,7 +350,7 @@ func (r *TagTemplateRepositoryTestSuite) TestUpdate() {
 
 func (r *TagTemplateRepositoryTestSuite) TestDelete() {
 	r.Run("should return error if record not found", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		template := r.getTemplate()
@@ -374,7 +360,7 @@ func (r *TagTemplateRepositoryTestSuite) TestDelete() {
 	})
 
 	r.Run("should return nil if record is deleted", func() {
-		err := setup(r.ctx, r.client)
+		err := testutils.RunMigrationsWithClient(r.T(), r.client)
 		r.NoError(err)
 
 		template := r.getTemplate()

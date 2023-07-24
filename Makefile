@@ -76,7 +76,7 @@ build: ## Build the compass binary
 # TESTS #############
 
 test: ## Run the tests
-	go test -race ./... -coverprofile=coverage.txt
+	go test -race $(shell go list ./... | grep -v 'testutils\?\|mocks\|proto\|cli') -coverprofile=coverage.txt
 
 test-coverage: test ## Print the code coverage
 	go tool cover -html=coverage.txt -o cover.html

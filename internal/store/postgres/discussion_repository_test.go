@@ -11,7 +11,6 @@ import (
 	"github.com/goto/compass/core/user"
 	"github.com/goto/compass/internal/store/postgres"
 	"github.com/goto/salt/log"
-	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -19,8 +18,6 @@ type DiscussionRepositoryTestSuite struct {
 	suite.Suite
 	ctx        context.Context
 	client     *postgres.Client
-	pool       *dockertest.Pool
-	resource   *dockertest.Resource
 	repository *postgres.DiscussionRepository
 	assetRepo  *postgres.AssetRepository
 	userRepo   *postgres.UserRepository
@@ -32,7 +29,7 @@ func (r *DiscussionRepositoryTestSuite) SetupSuite() {
 	var err error
 
 	logger := log.NewLogrus()
-	r.client, r.pool, r.resource, err = newTestClient(logger)
+	r.client, err = newTestClient(r.T(), logger)
 	if err != nil {
 		r.T().Fatal(err)
 	}
@@ -60,18 +57,6 @@ func (r *DiscussionRepositoryTestSuite) SetupSuite() {
 	}
 
 	r.assets, err = createAssets(r.assetRepo, r.users, asset.Type(asset.TypeTable.String()))
-	if err != nil {
-		r.T().Fatal(err)
-	}
-}
-
-func (r *DiscussionRepositoryTestSuite) TearDownSuite() {
-	// Clean tests
-	err := r.client.Close()
-	if err != nil {
-		r.T().Fatal(err)
-	}
-	err = purgeDocker(r.pool, r.resource)
 	if err != nil {
 		r.T().Fatal(err)
 	}
