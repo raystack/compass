@@ -43,6 +43,7 @@ worker:
         name: compass
         username: compass
         password: compass_password
+    job_manager_port: 8085
 
 client:
     host: localhost:8081

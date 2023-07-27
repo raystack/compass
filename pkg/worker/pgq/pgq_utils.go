@@ -146,3 +146,36 @@ func (*Processor) setupRetry(ctx context.Context, r sq.BaseRunner, job worker.Jo
 	}
 	return nil
 }
+
+func (*Processor) resurrectDeadJobs(ctx context.Context, r sq.BaseRunner, jobIDs []string) error {
+	insert := sq.Insert(jobsTable).
+		Select(
+			sq.Select(
+				"id", "type", "now() as run_at", "payload", "created_at",
+				"updated_at", "attempts_done", "last_attempt_at", "last_error",
+			).
+				From(deadJobsTable).
+				Where(sq.Eq{"id": jobIDs}),
+		)
+	_, err := insert.PlaceholderFormat(sq.Dollar).
+		RunWith(r).
+		ExecContext(ctx)
+	if err != nil {
+		return fmt.Errorf("move dead jobs into jobs table")
+	}
+
+	return nil
+}
+
+func (*Processor) clearDeadJobsWithRunner(ctx context.Context, r sq.BaseRunner, jobIDs []string) error {
+	del := sq.Delete(deadJobsTable).
+		Where(sq.Eq{"id": jobIDs})
+	_, err := del.PlaceholderFormat(sq.Dollar).
+		RunWith(r).
+		ExecContext(ctx)
+	if err != nil {
+		return fmt.Errorf("run delete dead jobs query")
+	}
+
+	return nil
+}

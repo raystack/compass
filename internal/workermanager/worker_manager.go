@@ -2,7 +2,9 @@ package workermanager
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 	"sync/atomic"
 	"time"
 
@@ -12,10 +14,12 @@ import (
 )
 
 type Manager struct {
-	processor     *pgq.Processor
-	registered    atomic.Bool
-	worker        Worker
-	discoveryRepo DiscoveryRepository
+	processor      *pgq.Processor
+	registered     atomic.Bool
+	worker         Worker
+	jobManagerPort int
+	discoveryRepo  DiscoveryRepository
+	logger         log.Logger
 }
 
 //go:generate mockery --name=Worker -r --case underscore --with-expecter --structname Worker --filename worker_mock.go --output=./mocks
@@ -27,10 +31,11 @@ type Worker interface {
 }
 
 type Config struct {
-	Enabled      bool          `mapstructure:"enabled"`
-	WorkerCount  int           `mapstructure:"worker_count" default:"3"`
-	PollInterval time.Duration `mapstructure:"poll_interval" default:"500ms"`
-	PGQ          pgq.Config    `mapstructure:"pgq"`
+	Enabled        bool          `mapstructure:"enabled"`
+	WorkerCount    int           `mapstructure:"worker_count" default:"3"`
+	PollInterval   time.Duration `mapstructure:"poll_interval" default:"500ms"`
+	PGQ            pgq.Config    `mapstructure:"pgq"`
+	JobManagerPort int           `mapstructure:"job_manager_port"`
 }
 
 type Deps struct {
@@ -56,9 +61,11 @@ func New(ctx context.Context, deps Deps) (*Manager, error) {
 	}
 
 	return &Manager{
-		processor:     processor,
-		worker:        w,
-		discoveryRepo: deps.DiscoveryRepo,
+		processor:      processor,
+		worker:         w,
+		jobManagerPort: cfg.JobManagerPort,
+		discoveryRepo:  deps.DiscoveryRepo,
+		logger:         deps.Logger,
 	}, nil
 }
 
@@ -73,6 +80,19 @@ func (m *Manager) Run(ctx context.Context) error {
 	if err := m.register(); err != nil {
 		return fmt.Errorf("run async worker: %w", err)
 	}
+
+	go func() {
+		srv := http.Server{
+			Addr:           fmt.Sprintf(":%d", m.jobManagerPort),
+			Handler:        worker.DeadJobManagementHandler(m.processor),
+			ReadTimeout:    3 * time.Second,
+			WriteTimeout:   10 * time.Second,
+			MaxHeaderBytes: 1 << 20,
+		}
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			m.logger.Error("Worker job manager - listen and serve", "err", err)
+		}
+	}()
 
 	return m.worker.Run(ctx)
 }

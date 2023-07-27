@@ -1,12 +1,14 @@
 package testutils
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -34,4 +36,10 @@ func Marshal(t *testing.T, v interface{}) []byte {
 	require.NoError(t, err)
 
 	return data
+}
+
+type ArgMatcher interface{ Matches(interface{}) bool }
+
+func OfTypeContext() ArgMatcher {
+	return mock.MatchedBy(func(ctx context.Context) bool { return ctx != nil })
 }

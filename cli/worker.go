@@ -31,8 +31,8 @@ func workerCmd(cfg *Config) *cobra.Command {
 func workerStartCommand(cfg *Config) *cobra.Command {
 	c := &cobra.Command{
 		Use:     "start",
-		Short:   "Start server on default port 8080",
-		Example: "compass server start",
+		Short:   "Start worker to start processing jobs and a web server for dead job management on default port 8085",
+		Example: "compass worker start",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := runWorker(cmd.Context(), cfg); err != nil {

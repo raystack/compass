@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Compass - Dead Jobs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style type="text/tailwindcss">
+        .button {
+            @apply border p-2 hover:shadow-md rounded-md hover:bg-blue-400 hover:text-white bg-white
+        }
+
+        p {
+            font-family:monospace;
+        }
+    </style>
+</head>
+<body>
+<main class="flex flex-col items-center gap-2 p-6 bg-[#f5f5f5]">
+    {{if .err_msg }}
+    <p style="color: red">Error: {{.err_msg}}</p>
+    {{end}}
+
+    <div class="flex flex-row gap-4">
+        {{if ge .prev_page 0 }}
+        <a class="button" href="/dead-jobs?size={{.page_size}}&offset={{.prev_page}}">Previous Page</a>
+        {{ end }}
+
+        {{if ge (len .jobs) .page_size}}
+        <a class="button" href="/dead-jobs?size={{.page_size}}&offset={{.next_page}}">Next Page</a>
+        {{end}}
+    </div>
+
+    {{ if .jobs }}
+    <form action="" method="post" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+            {{range .jobs}}
+            <label for="job_{{.ID}}" class="flex bg-white flex-row items-start gap-2 p-2 border rounded-md hover:shadow-md cursor-pointer">
+                <input type="checkbox" name="job_ids" id="job_{{.ID}}" value="{{.ID}}">
+
+                <div class="text-sm">
+                    <p class="text-blue-700">{{.Type}} / {{.ID}}</p>
+                    <p>Last Attempt At: {{.LastAttemptAt.Local.Format "Mon, 02 Jan 2006 15:04:05 MST"}} ({{.AttemptsDone}} attempts)</p>
+                    <p class="text-red-500">Last Error: {{.LastError}}</p>
+
+                    <details class="max-w-[400px]">
+                        <summary>Details</summary>
+
+                        <p>Created At: {{.CreatedAt.Local.Format "Mon, 02 Jan 2006 15:04:05 MST"}}</p>
+                        <p class="border rounded-md p-2 overflow-y-scroll">
+                            {{ printf "%s" .Payload }}
+                        </p>
+                    </details>
+                </div>
+
+            </label>
+            {{end}}
+
+        </div>
+
+        <button class="button" formaction="/resurrect-jobs">Resurrect</button>
+        <button class="button" formaction="/clear-jobs">Clear</button>
+    </form>
+    {{else}}
+    <p>No dead jobs</p>
+    {{end}}
+</main>
+</body>
+</html>

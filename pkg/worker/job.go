@@ -42,7 +42,7 @@ type Job struct {
 
 	// Execution information.
 	AttemptsDone  int       `json:"attempts_done"`
-	Status        JobStatus `json:"status"`
+	Status        JobStatus `json:"-"`
 	LastAttemptAt time.Time `json:"last_attempt_at,omitempty"`
 	LastError     string    `json:"last_error,omitempty"`
 }
