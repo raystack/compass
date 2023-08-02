@@ -1,5 +1,28 @@
 log_level: info
 
+telemetry:
+    # app_name to be used for all telemetry tags (NewRelic & OpenTelemetry).
+    app_name: compass-local
+
+    newrelic:
+        enabled: false
+        licensekey: ____LICENSE_STRING_OF_40_CHARACTERS_____
+
+    open_telemetry:
+        # Setting this to false will disable both traces and metrics.
+        enabled: false
+
+        # Address of the OpenTelemetry Collector gRPC receiver.
+        collector_addr: "localhost:4317"
+
+        # Configures the intervening time between exports for periodically
+        # collected metrics.
+        periodic_read_interval: 15s
+
+        # Probability of a trace being included in the published sample.
+        # 1 means always.
+        trace_sample_probability: 1
+
 statsd:
     enabled: false
     address: 127.0.0.1:8125
@@ -7,7 +30,6 @@ statsd:
 
 newrelic:
     enabled: false
-    appname: compass
     licensekey: ____LICENSE_STRING_OF_40_CHARACTERS_____
 
 elasticsearch:

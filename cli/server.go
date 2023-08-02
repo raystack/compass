@@ -16,8 +16,8 @@ import (
 	"github.com/goto/compass/internal/store/postgres"
 	"github.com/goto/compass/internal/workermanager"
 	"github.com/goto/compass/pkg/statsd"
+	"github.com/goto/compass/pkg/telemetry"
 	"github.com/goto/salt/log"
-	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/spf13/cobra"
 )
 
@@ -82,25 +82,28 @@ func serverMigrateCommand(cfg *Config) *cobra.Command {
 	return c
 }
 
-func runServer(ctx context.Context, config *Config) error {
-	logger := initLogger(config.LogLevel)
+func runServer(ctx context.Context, cfg *Config) error {
+	logger := initLogger(cfg.LogLevel)
 	logger.Info("compass starting", "version", Version)
 
-	nrApp, err := initNewRelicMonitor(config, logger)
-	if err != nil {
-		return err
-	}
-	statsdReporter, err := statsd.Init(logger, config.StatsD)
+	nrApp, cleanUp, err := telemetry.Init(ctx, cfg.Telemetry, logger)
 	if err != nil {
 		return err
 	}
 
-	esClient, err := initElasticsearch(logger, config.Elasticsearch)
+	defer cleanUp()
+
+	statsdReporter, err := statsd.Init(logger, cfg.StatsD)
 	if err != nil {
 		return err
 	}
 
-	pgClient, err := initPostgres(logger, config)
+	esClient, err := initElasticsearch(logger, cfg.Elasticsearch)
+	if err != nil {
+		return err
+	}
+
+	pgClient, err := initPostgres(ctx, logger, cfg)
 	if err != nil {
 		return err
 	}
@@ -124,7 +127,7 @@ func runServer(ctx context.Context, config *Config) error {
 	}
 	userService := user.NewService(logger, userRepository, user.ServiceWithStatsDReporter(statsdReporter))
 
-	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0, config.Service.Identity.ProviderDefaultName)
+	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0, cfg.Service.Identity.ProviderDefaultName)
 	if err != nil {
 		return fmt.Errorf("create new asset repository: %w", err)
 	}
@@ -135,7 +138,7 @@ func runServer(ctx context.Context, config *Config) error {
 	}
 
 	wrkr, err := initAssetWorker(ctx, workermanager.Deps{
-		Config:        config.Worker,
+		Config:        cfg.Worker,
 		DiscoveryRepo: discoveryRepository,
 		Logger:        logger,
 	})
@@ -172,7 +175,7 @@ func runServer(ctx context.Context, config *Config) error {
 
 	return compassserver.Serve(
 		ctx,
-		config.Service,
+		cfg.Service,
 		logger,
 		pgClient,
 		nrApp,
@@ -207,31 +210,14 @@ func initElasticsearch(logger log.Logger, config esStore.Config) (*esStore.Clien
 	return esClient, nil
 }
 
-func initPostgres(logger log.Logger, config *Config) (*postgres.Client, error) {
-	pgClient, err := postgres.NewClient(config.DB)
+func initPostgres(ctx context.Context, logger log.Logger, config *Config) (*postgres.Client, error) {
+	pgClient, err := postgres.NewClient(ctx, config.DB)
 	if err != nil {
 		return nil, fmt.Errorf("error creating postgres client: %w", err)
 	}
 	logger.Info("connected to postgres server", "host", config.DB.Host, "port", config.DB.Port)
 
 	return pgClient, nil
-}
-
-func initNewRelicMonitor(config *Config, logger log.Logger) (*newrelic.Application, error) {
-	if !config.NewRelic.Enabled {
-		logger.Info("New Relic monitoring is disabled.")
-		return nil, nil
-	}
-	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName(config.NewRelic.AppName),
-		newrelic.ConfigLicense(config.NewRelic.LicenseKey),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create New Relic Application: %w", err)
-	}
-	logger.Info("New Relic monitoring is enabled for", "config", config.NewRelic.AppName)
-
-	return app, nil
 }
 
 func initAssetWorker(ctx context.Context, deps workermanager.Deps) (asset.Worker, error) {
@@ -254,7 +240,7 @@ func runMigrations(ctx context.Context, config *Config) error {
 	logger.Info("compass is migrating", "version", Version)
 
 	logger.Info("Migrating Postgres...")
-	if err := migratePostgres(logger, config); err != nil {
+	if err := migratePostgres(ctx, logger, config); err != nil {
 		return err
 	}
 	logger.Info("Migration Postgres done.")
@@ -262,10 +248,10 @@ func runMigrations(ctx context.Context, config *Config) error {
 	return nil
 }
 
-func migratePostgres(logger log.Logger, config *Config) (err error) {
+func migratePostgres(ctx context.Context, logger log.Logger, config *Config) (err error) {
 	logger.Info("Initiating Postgres client...")
 
-	pgClient, err := postgres.NewClient(config.DB)
+	pgClient, err := postgres.NewClient(ctx, config.DB)
 	if err != nil {
 		logger.Error("failed to prepare migration", "error", err)
 		return err

@@ -25,6 +25,8 @@ func run() error {
 		fmt.Println(err)
 	}
 
+	cliConfig.Telemetry.AppVersion = cli.Version
+
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 

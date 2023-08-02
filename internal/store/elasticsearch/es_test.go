@@ -142,7 +142,7 @@ func TestElasticsearch(t *testing.T) {
 				require.NoError(t, err)
 				_, err = esClient.Init()
 				assert.NoError(t, err)
-				err = esClient.CreateIdx(ctx, testCase.Service)
+				err = esClient.CreateIdx(ctx, "", testCase.Service)
 				if testCase.ShouldFail {
 					assert.Error(t, err)
 					return

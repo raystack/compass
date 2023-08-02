@@ -388,6 +388,7 @@ func TestGetTagTemplate(t *testing.T) {
 				UserSvc:        mockUserSvc,
 				Logger:         logger,
 			})
+
 			got, err := handler.GetTagTemplate(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
@@ -524,6 +525,7 @@ func TestUpdateTagTemplate(t *testing.T) {
 				UserSvc:        mockUserSvc,
 				Logger:         logger,
 			})
+
 			got, err := handler.UpdateTagTemplate(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {

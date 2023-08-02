@@ -94,7 +94,10 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 				"create_time": "2023-04-10T22:33:57.897Z",
 			},
 		})
-		assert.EqualError(t, err, "discovery error: IndexDoc: doc ID 'sample-id': index 'bigquery-test': object mapping for [data.create_time] tried to parse field [create_time] as object, but found a concrete value")
+		assert.EqualError(t, err, "discovery error: IndexDoc: doc ID 'sample-id': "+
+			"index 'bigquery-test': "+
+			"elasticsearch code 'mapper_parsing_exception': "+
+			"object mapping for [data.create_time] tried to parse field [create_time] as object, but found a concrete value")
 	})
 
 	t.Run("should insert asset to the correct index by its service", func(t *testing.T) {

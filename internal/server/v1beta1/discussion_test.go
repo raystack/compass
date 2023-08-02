@@ -254,6 +254,7 @@ func TestCreateDiscussion(t *testing.T) {
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(APIServerDeps{DiscussionSvc: mockSvc, UserSvc: mockUserSvc, Logger: logger})
+
 			_, err := handler.CreateDiscussion(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {
@@ -492,6 +493,7 @@ func TestPatchDiscussion(t *testing.T) {
 			mockUserSvc.EXPECT().ValidateUser(ctx, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(APIServerDeps{DiscussionSvc: mockSvc, UserSvc: mockUserSvc, Logger: logger})
+
 			_, err := handler.PatchDiscussion(ctx, tc.Request)
 			code := status.Code(err)
 			if code != tc.ExpectStatus {

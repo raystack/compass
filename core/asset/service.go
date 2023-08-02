@@ -5,6 +5,9 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
 
 type Service struct {
@@ -12,6 +15,8 @@ type Service struct {
 	discoveryRepository DiscoveryRepository
 	lineageRepository   LineageRepository
 	worker              Worker
+
+	assetOpCounter metric.Int64Counter
 }
 
 //go:generate mockery --name=Worker -r --case underscore --with-expecter --structname Worker --filename worker_mock.go --output=./mocks
@@ -30,11 +35,19 @@ type ServiceDeps struct {
 }
 
 func NewService(deps ServiceDeps) *Service {
+	assetOpCounter, err := otel.Meter("github.com/goto/compass/core/asset").
+		Int64Counter("compass.asset.operation")
+	if err != nil {
+		otel.Handle(err)
+	}
+
 	return &Service{
 		assetRepository:     deps.AssetRepo,
 		discoveryRepository: deps.DiscoveryRepo,
 		lineageRepository:   deps.LineageRepo,
 		worker:              deps.Worker,
+
+		assetOpCounter: assetOpCounter,
 	}
 }
 
@@ -82,29 +95,37 @@ func (s *Service) UpsertAssetWithoutLineage(ctx context.Context, ast *Asset) (st
 	return assetID, nil
 }
 
-func (s *Service) DeleteAsset(ctx context.Context, id string) error {
+func (s *Service) DeleteAsset(ctx context.Context, id string) (err error) {
+	defer func() {
+		s.instrumentAssetOp(ctx, "DeleteAsset", id, err)
+	}()
+
+	urn := id
 	if isValidUUID(id) {
 		asset, err := s.assetRepository.GetByID(ctx, id)
 		if err != nil {
 			return err
 		}
 
-		return s.DeleteAsset(ctx, asset.URN)
+		urn = asset.URN
 	}
 
-	if err := s.assetRepository.DeleteByURN(ctx, id); err != nil {
+	if err := s.assetRepository.DeleteByURN(ctx, urn); err != nil {
 		return err
 	}
 
-	if err := s.worker.EnqueueDeleteAssetJob(ctx, id); err != nil {
+	if err := s.worker.EnqueueDeleteAssetJob(ctx, urn); err != nil {
 		return err
 	}
 
-	return s.lineageRepository.DeleteByURN(ctx, id)
+	return s.lineageRepository.DeleteByURN(ctx, urn)
 }
 
-func (s *Service) GetAssetByID(ctx context.Context, id string) (Asset, error) {
-	var ast Asset
+func (s *Service) GetAssetByID(ctx context.Context, id string) (ast Asset, err error) {
+	defer func() {
+		s.instrumentAssetOp(ctx, "GetAssetByID", id, err)
+	}()
+
 	if isValidUUID(id) {
 		var err error
 		ast, err = s.assetRepository.GetByID(ctx, id)
@@ -129,7 +150,11 @@ func (s *Service) GetAssetByID(ctx context.Context, id string) (Asset, error) {
 	return ast, nil
 }
 
-func (s *Service) GetAssetByVersion(ctx context.Context, id, version string) (Asset, error) {
+func (s *Service) GetAssetByVersion(ctx context.Context, id, version string) (ast Asset, err error) {
+	defer func() {
+		s.instrumentAssetOp(ctx, "GetAssetByVersion", id, err)
+	}()
+
 	if isValidUUID(id) {
 		return s.assetRepository.GetByVersionWithID(ctx, id, version)
 	}
@@ -189,6 +214,19 @@ func (s *Service) GroupAssets(ctx context.Context, cfg GroupConfig) (results []G
 
 func (s *Service) SuggestAssets(ctx context.Context, cfg SearchConfig) (suggestions []string, err error) {
 	return s.discoveryRepository.Suggest(ctx, cfg)
+}
+
+func (s *Service) instrumentAssetOp(ctx context.Context, op, id string, err error) {
+	identifier := "URN"
+	if isValidUUID(id) {
+		identifier = "ID"
+	}
+
+	s.assetOpCounter.Add(ctx, 1, metric.WithAttributes(
+		attribute.String("compass.asset_operation", op),
+		attribute.String("asset.identifier", identifier),
+		attribute.Bool("operation.success", err == nil),
+	))
 }
 
 func isValidUUID(u string) bool {

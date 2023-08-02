@@ -16,13 +16,14 @@ import (
 	compassv1beta1 "github.com/goto/compass/proto/gotocompany/compass/v1beta1"
 	"github.com/goto/salt/log"
 	"github.com/goto/salt/mux"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
-	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpclogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpcctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -88,13 +89,14 @@ func Serve(
 
 	// init grpc
 	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
-			grpc_recovery.UnaryServerInterceptor(),
-			grpc_ctxtags.UnaryServerInterceptor(),
-			grpc_logrus.UnaryServerInterceptor(logger.Entry()),
+		grpc.UnaryInterceptor(grpcmiddleware.ChainUnaryServer(
+			grpclogrus.UnaryServerInterceptor(logger.Entry()),
+			otelgrpc.UnaryServerInterceptor(),
 			nrgrpc.UnaryServerInterceptor(nrApp),
 			grpc_interceptor.StatsD(statsdReporter),
 			grpc_interceptor.UserHeaderCtx(config.Identity.HeaderKeyUUID, config.Identity.HeaderKeyEmail),
+			grpcctxtags.UnaryServerInterceptor(),
+			grpcrecovery.UnaryServerInterceptor(),
 		)),
 	)
 	reflection.Register(grpcServer)

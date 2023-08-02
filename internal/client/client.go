@@ -5,6 +5,7 @@ import (
 	"time"
 
 	compassv1beta1 "github.com/goto/compass/proto/gotocompany/compass/v1beta1"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -41,10 +42,12 @@ func SetMetadata(ctx context.Context, cfg Config) context.Context {
 }
 
 func createConnection(ctx context.Context, cfg Config) (*grpc.ClientConn, error) {
-	opts := []grpc.DialOption{
+	return grpc.DialContext(
+		ctx,
+		cfg.Host,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
-	}
-
-	return grpc.DialContext(ctx, cfg.Host, opts...)
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
+		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
+	)
 }

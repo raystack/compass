@@ -6,8 +6,9 @@ import (
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc"
-	esStore "github.com/goto/compass/internal/store/elasticsearch"
+	"github.com/goto/compass/internal/store/elasticsearch"
 	"github.com/goto/compass/internal/workermanager"
+	"github.com/goto/compass/pkg/telemetry"
 	"github.com/spf13/cobra"
 )
 
@@ -53,16 +54,21 @@ func runWorker(ctx context.Context, cfg *Config) error {
 	logger := initLogger(cfg.LogLevel)
 	logger.Info("Compass worker starting", "version", Version)
 
+	_, cleanUp, err := telemetry.Init(ctx, cfg.Telemetry, logger)
+	if err != nil {
+		return err
+	}
+
+	defer cleanUp()
+
 	esClient, err := initElasticsearch(logger, cfg.Elasticsearch)
 	if err != nil {
 		return err
 	}
 
-	discoveryRepo := esStore.NewDiscoveryRepository(esClient, logger)
-
 	mgr, err := workermanager.New(ctx, workermanager.Deps{
 		Config:        cfg.Worker,
-		DiscoveryRepo: discoveryRepo,
+		DiscoveryRepo: elasticsearch.NewDiscoveryRepository(esClient, logger),
 		Logger:        logger,
 	})
 	if err != nil {

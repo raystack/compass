@@ -14,6 +14,8 @@ import (
 	"github.com/goto/compass/pkg/statsd"
 	compassv1beta1 "github.com/goto/compass/proto/gotocompany/compass/v1beta1"
 	"github.com/r3labs/diff/v2"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -359,7 +361,16 @@ func (server *APIServer) upsertAsset(
 	mode string,
 	reqUpstreams,
 	reqDownstreams []*compassv1beta1.LineageNode,
-) (string, error) {
+) (id string, err error) {
+	defer func() {
+		server.assetUpdateCounter.Add(ctx, 1, metric.WithAttributes(
+			attribute.String("compass.update_method", mode),
+			attribute.String("asset.type", (string)(ast.Type)),
+			attribute.String("asset.service", ast.Service),
+			attribute.Bool("operation.success", err == nil),
+		))
+	}()
+
 	if err := server.validateAsset(ast); err != nil {
 		return "", status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -396,8 +407,16 @@ func (server *APIServer) upsertAsset(
 	return assetID, nil
 }
 
-func (server *APIServer) upsertAssetWithoutLineage(ctx context.Context, ast asset.Asset) (string, error) {
+func (server *APIServer) upsertAssetWithoutLineage(ctx context.Context, ast asset.Asset) (id string, err error) {
 	const mode = "asset_upsert_patch_without_lineage"
+	defer func() {
+		server.assetUpdateCounter.Add(ctx, 1, metric.WithAttributes(
+			attribute.String("compass.update_method", mode),
+			attribute.String("asset.type", (string)(ast.Type)),
+			attribute.String("asset.service", ast.Service),
+			attribute.Bool("operation.success", err == nil),
+		))
+	}()
 
 	if err := server.validateAsset(ast); err != nil {
 		return "", status.Error(codes.InvalidArgument, err.Error())

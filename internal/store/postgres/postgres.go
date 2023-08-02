@@ -22,6 +22,9 @@ import (
 	"github.com/jackc/pgerrcode"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx" // register instrumented DB driver
+	"go.nhat.io/otelsql"
+	semconv "go.opentelemetry.io/otel/semconv/v1.20.0"
 )
 
 //go:embed migrations/*.sql
@@ -91,15 +94,32 @@ func (c *Client) Close() error {
 }
 
 // NewClient initializes database connection
-func NewClient(cfg Config) (*Client, error) {
-	db, err := sqlx.Connect("pgx", cfg.ConnectionURL().String())
+func NewClient(ctx context.Context, cfg Config) (*Client, error) {
+	driverName, err := otelsql.Register(
+		"pgx",
+		otelsql.TraceQueryWithoutArgs(),
+		otelsql.TraceRowsClose(),
+		otelsql.TraceRowsAffected(),
+		otelsql.WithSystem(semconv.DBSystemPostgreSQL),
+	)
 	if err != nil {
-		return nil, fmt.Errorf("error creating and connecting DB: %w", err)
+		return nil, fmt.Errorf("register otelsql: %w", err)
 	}
-	if db == nil {
-		return nil, errNilDBClient
+
+	db, err := sql.Open(driverName, cfg.ConnectionURL().String())
+	if err != nil {
+		return nil, fmt.Errorf("open DB connection: %w", err)
 	}
-	return &Client{db}, nil
+
+	if err := db.PingContext(ctx); err != nil {
+		return nil, fmt.Errorf("ping DB: %w", err)
+	}
+
+	if err := otelsql.RecordStats(db); err != nil {
+		return nil, err
+	}
+
+	return &Client{db: sqlx.NewDb(db, "pgx")}, nil
 }
 
 func NewClientWithDB(db *sql.DB) *Client {

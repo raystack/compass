@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/goto/compass/core/asset"
 	"github.com/olivere/elastic/v7"
@@ -24,9 +25,9 @@ const (
 var returnedAssetFieldsResult = []string{"id", "urn", "type", "service", "name", "description", "data", "labels", "created_at", "updated_at"}
 
 // Search the asset store
-func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchConfig) ([]asset.SearchResult, error) {
+func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error) {
 	if strings.TrimSpace(cfg.Text) == "" {
-		return nil, asset.DiscoveryError{Err: errors.New("search text cannot be empty")}
+		return nil, asset.DiscoveryError{Op: "Search", Err: errors.New("search text cannot be empty")}
 	}
 	maxResults := cfg.MaxResults
 	if maxResults <= 0 {
@@ -37,9 +38,19 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 		offset = 0
 	}
 
+	defer func(start time.Time) {
+		const op = "search"
+		repo.cli.instrumentOp(ctx, instrumentParams{
+			op:          op,
+			discoveryOp: "Search",
+			start:       start,
+			err:         err,
+		})
+	}(time.Now())
+
 	query, err := buildQuery(cfg)
 	if err != nil {
-		return nil, asset.DiscoveryError{Err: fmt.Errorf("build query: %w", err)}
+		return nil, asset.DiscoveryError{Op: "Search", Err: fmt.Errorf("build query: %w", err)}
 	}
 
 	search := repo.cli.client.Search
@@ -53,25 +64,40 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 		search.WithContext(ctx),
 	)
 	if err != nil {
-		return nil, asset.DiscoveryError{Err: fmt.Errorf("execute search: %w", err)}
+		return nil, asset.DiscoveryError{Op: "Search", Err: fmt.Errorf("execute search: %w", err)}
 	}
 	if res.IsError() {
-		return nil, asset.DiscoveryError{Err: fmt.Errorf("execute search: %s", errorReasonFromResponse(res))}
+		code, reason := errorCodeAndReason(res)
+		return nil, asset.DiscoveryError{
+			Op:     "Search",
+			ESCode: code,
+			Err:    fmt.Errorf("execute search: %s", reason),
+		}
 	}
 
 	var response searchResponse
 	if err = json.NewDecoder(res.Body).Decode(&response); err != nil {
-		return nil, asset.DiscoveryError{Err: fmt.Errorf("decode search response: %w", err)}
+		return nil, asset.DiscoveryError{Op: "Search", Err: fmt.Errorf("decode search response: %w", err)}
 	}
 
 	return toSearchResults(response.Hits.Hits), nil
 }
 
-func (repo *DiscoveryRepository) GroupAssets(ctx context.Context, cfg asset.GroupConfig) ([]asset.GroupResult, error) {
+func (repo *DiscoveryRepository) GroupAssets(ctx context.Context, cfg asset.GroupConfig) (results []asset.GroupResult, err error) {
 	if len(cfg.GroupBy) == 0 || cfg.GroupBy[0] == "" {
 		err := asset.DiscoveryError{Op: "Group", Err: fmt.Errorf("group by field cannot be empty")}
 		return nil, err
 	}
+
+	defer func(start time.Time) {
+		const op = "search"
+		repo.cli.instrumentOp(ctx, instrumentParams{
+			op:          op,
+			discoveryOp: "GroupAssets",
+			start:       start,
+			err:         err,
+		})
+	}(time.Now())
 
 	queryBody, err := buildGroupQuery(cfg)
 	if err != nil {
@@ -88,31 +114,43 @@ func (repo *DiscoveryRepository) GroupAssets(ctx context.Context, cfg asset.Grou
 		search.WithSize(0),
 	)
 	if err != nil {
-		err = asset.DiscoveryError{Op: "Group", Err: fmt.Errorf("execute group query: %w", err)}
-		return nil, err
+		return nil, asset.DiscoveryError{Op: "Group", Err: fmt.Errorf("execute group query: %w", err)}
 	}
 
 	defer drainBody(res)
 	if res.IsError() {
-		return nil, asset.DiscoveryError{Op: "Group", Err: fmt.Errorf(errorReasonFromResponse(res))}
+		code, reason := errorCodeAndReason(res)
+		return nil, asset.DiscoveryError{
+			Op:     "Group",
+			ESCode: code,
+			Err:    errors.New(reason),
+		}
 	}
 
 	var response groupResponse
-
 	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
-		err = asset.DiscoveryError{Op: "Group", Err: fmt.Errorf("decode group response: %w", err)}
-		return nil, err
+		return nil, asset.DiscoveryError{Op: "Group", Err: fmt.Errorf("decode group response: %w", err)}
 	}
-	results := toGroupResults(response.Aggregations.CompositeAggregations.Buckets)
-	return results, nil
+
+	return toGroupResults(response.Aggregations.CompositeAggregations.Buckets), nil
 }
 
-func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.SearchConfig) ([]string, error) {
+func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.SearchConfig) (results []string, err error) {
 	maxResults := config.MaxResults
 	if maxResults <= 0 {
 		maxResults = defaultMaxResults
 	}
+
+	defer func(start time.Time) {
+		const op = "search"
+		repo.cli.instrumentOp(ctx, instrumentParams{
+			op:          op,
+			discoveryOp: "Suggest",
+			start:       start,
+			err:         err,
+		})
+	}(time.Now())
 
 	query, err := buildSuggestQuery(config)
 	if err != nil {
@@ -131,7 +169,12 @@ func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.Searc
 		return nil, asset.DiscoveryError{Op: "Suggest", Err: fmt.Errorf("execute search: %w", err)}
 	}
 	if res.IsError() {
-		return nil, asset.DiscoveryError{Op: "Suggest", Err: fmt.Errorf("execute search: %s", errorReasonFromResponse(res))}
+		code, reason := errorCodeAndReason(res)
+		return nil, asset.DiscoveryError{
+			Op:     "Suggest",
+			ESCode: code,
+			Err:    fmt.Errorf("execute search: %s", reason),
+		}
 	}
 
 	var response searchResponse
@@ -139,7 +182,7 @@ func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.Searc
 		return nil, asset.DiscoveryError{Op: "Suggest", Err: fmt.Errorf("decode search response: %w", err)}
 	}
 
-	results, err := toSuggestions(response)
+	results, err = toSuggestions(response)
 	if err != nil {
 		return nil, asset.DiscoveryError{Op: "Suggest", Err: fmt.Errorf("map response to suggestion: %w", err)}
 	}

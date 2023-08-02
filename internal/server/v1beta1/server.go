@@ -10,6 +10,8 @@ import (
 	"github.com/goto/compass/core/user"
 	compassv1beta1 "github.com/goto/compass/proto/gotocompany/compass/v1beta1"
 	"github.com/goto/salt/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,6 +26,8 @@ type APIServer struct {
 	userService        UserService
 	logger             log.Logger
 	statsDReporter     StatsDClient
+
+	assetUpdateCounter metric.Int64Counter
 }
 
 var errMissingUserInfo = errors.New("missing user information")
@@ -40,6 +44,12 @@ type APIServerDeps struct {
 }
 
 func NewAPIServer(d APIServerDeps) *APIServer {
+	assetUpdateCounter, err := otel.Meter("github.com/goto/compass/internal/server/v1beta1").
+		Int64Counter("compass.asset.update")
+	if err != nil {
+		otel.Handle(err)
+	}
+
 	return &APIServer{
 		assetService:       d.AssetSvc,
 		starService:        d.StarSvc,
@@ -49,6 +59,8 @@ func NewAPIServer(d APIServerDeps) *APIServer {
 		userService:        d.UserSvc,
 		statsDReporter:     d.StatsD,
 		logger:             d.Logger,
+
+		assetUpdateCounter: assetUpdateCounter,
 	}
 }
 

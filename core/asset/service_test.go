@@ -94,6 +94,7 @@ func TestService_GetAllAssets(t *testing.T) {
 				DiscoveryRepo: mockDiscoveryRepo,
 				LineageRepo:   mockLineageRepo,
 			})
+
 			got, cnt, err := svc.GetAllAssets(ctx, tc.Filter, tc.WithTotal)
 			if err != nil && errors.Is(tc.Err, err) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
@@ -153,6 +154,7 @@ func TestService_GetTypes(t *testing.T) {
 			}
 
 			svc := asset.NewService(asset.ServiceDeps{AssetRepo: mockAssetRepo})
+
 			got, err := svc.GetTypes(ctx, tc.Filter)
 			if err != nil && errors.Is(tc.Err, err) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
@@ -242,6 +244,7 @@ func TestService_UpsertAsset(t *testing.T) {
 				LineageRepo:   lineageRepo,
 				Worker:        workermanager.NewInSituWorker(workermanager.Deps{DiscoveryRepo: discoveryRepo}),
 			})
+
 			rid, err := svc.UpsertAsset(ctx, tc.Asset, tc.Upstreams, tc.Downstreams)
 			if tc.Err != nil {
 				assert.ErrorContains(t, err, tc.Err.Error())
@@ -305,6 +308,7 @@ func TestService_UpsertAssetWithoutLineage(t *testing.T) {
 				LineageRepo:   mocks.NewLineageRepository(t),
 				Worker:        workermanager.NewInSituWorker(workermanager.Deps{DiscoveryRepo: discoveryRepo}),
 			})
+
 			rid, err := svc.UpsertAssetWithoutLineage(ctx, tc.Asset)
 			if tc.Err != nil {
 				assert.ErrorContains(t, err, tc.Err.Error())
@@ -431,6 +435,7 @@ func TestService_DeleteAsset(t *testing.T) {
 				LineageRepo:   lineageRepo,
 				Worker:        workermanager.NewInSituWorker(workermanager.Deps{DiscoveryRepo: discoveryRepo}),
 			})
+
 			err := svc.DeleteAsset(ctx, tc.ID)
 			if err != nil && errors.Is(tc.Err, err) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
@@ -553,6 +558,7 @@ func TestService_GetAssetByID(t *testing.T) {
 				DiscoveryRepo: mocks.NewDiscoveryRepository(t),
 				LineageRepo:   mocks.NewLineageRepository(t),
 			})
+
 			actual, err := svc.GetAssetByID(ctx, tc.ID)
 			if tc.Expected != nil {
 				assert.Equal(t, *tc.Expected, actual)
@@ -625,6 +631,7 @@ func TestService_GetAssetByVersion(t *testing.T) {
 				DiscoveryRepo: mocks.NewDiscoveryRepository(t),
 				LineageRepo:   mocks.NewLineageRepository(t),
 			})
+
 			_, err := svc.GetAssetByVersion(ctx, tc.ID, "v0.0.2")
 			if tc.ExpectedErr != nil {
 				assert.EqualError(t, err, tc.ExpectedErr.Error())
@@ -677,6 +684,7 @@ func TestService_GetAssetVersionHistory(t *testing.T) {
 				DiscoveryRepo: mockDiscoveryRepo,
 				LineageRepo:   mockLineageRepo,
 			})
+
 			_, err := svc.GetAssetVersionHistory(ctx, asset.Filter{}, tc.ID)
 			if err != nil && errors.Is(tc.Err, err) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.Err)
@@ -824,6 +832,7 @@ func TestService_GetLineage(t *testing.T) {
 				DiscoveryRepo: mockDiscoveryRepo,
 				LineageRepo:   mockLineageRepo,
 			})
+
 			actual, err := svc.GetLineage(ctx, "urn-source-1", asset.LineageQuery{})
 			if tc.Err == nil {
 				assert.NoError(t, err)
@@ -897,6 +906,7 @@ func TestService_SearchSuggestGroupAssets(t *testing.T) {
 				DiscoveryRepo: mockDiscoveryRepo,
 				LineageRepo:   mockLineageRepo,
 			})
+
 			_, err := svc.SearchAssets(ctx, asset.SearchConfig{})
 			if err != nil && !assert.Equal(t, tc.ErrSearch, err) {
 				t.Fatalf("got error %v, expected error was %v", err, tc.ErrSearch)
@@ -928,6 +938,7 @@ func TestService_CreateAssetProbe(t *testing.T) {
 		mockAssetRepo.EXPECT().AddProbe(ctx, assetURN, &probe).Return(nil)
 
 		svc := asset.NewService(asset.ServiceDeps{AssetRepo: mockAssetRepo})
+
 		err := svc.AddProbe(ctx, assetURN, &probe)
 		assert.NoError(t, err)
 	})
@@ -939,6 +950,7 @@ func TestService_CreateAssetProbe(t *testing.T) {
 		mockAssetRepo.EXPECT().AddProbe(ctx, assetURN, &probe).Return(expectedErr)
 
 		svc := asset.NewService(asset.ServiceDeps{AssetRepo: mockAssetRepo})
+
 		err := svc.AddProbe(ctx, assetURN, &probe)
 		assert.Equal(t, expectedErr, err)
 	})

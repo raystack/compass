@@ -10,12 +10,14 @@ import (
 	"github.com/goto/compass/pkg/worker"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
-	_ "github.com/jackc/pgx/v4/stdlib" // register driver
+	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx" // register instrumented DB driver
 	"github.com/oklog/ulid/v2"
+	"go.nhat.io/otelsql"
+	semconv "go.opentelemetry.io/otel/semconv/v1.20.0"
 )
 
 const (
-	pgDriverName  = "pgx"
+	pgDriverName  = "nrpgx"
 	jobsTable     = "jobs_queue"
 	deadJobsTable = "dead_jobs"
 )
@@ -28,13 +30,28 @@ type Processor struct {
 // NewProcessor returns a JobProcessor implementation backed by the PostgreSQL
 // instance identified by the provided config.
 func NewProcessor(ctx context.Context, cfg Config) (*Processor, error) {
-	db, err := sql.Open(pgDriverName, cfg.ConnectionString())
+	driverName, err := otelsql.Register(
+		pgDriverName,
+		otelsql.TraceQueryWithoutArgs(),
+		otelsql.TraceRowsClose(),
+		otelsql.TraceRowsAffected(),
+		otelsql.WithSystem(semconv.DBSystemPostgreSQL),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("new pgq processor: %w", err)
+	}
+
+	db, err := sql.Open(driverName, cfg.ConnectionString())
 	if err != nil {
 		return nil, fmt.Errorf("new pgq processor: %w", err)
 	}
 
 	if err := db.PingContext(ctx); err != nil {
 		return nil, fmt.Errorf("new pgq processor: %w", err)
+	}
+
+	if err := otelsql.RecordStats(db); err != nil {
+		return nil, err
 	}
 
 	db.SetMaxOpenConns(cfg.MaxOpenConns)

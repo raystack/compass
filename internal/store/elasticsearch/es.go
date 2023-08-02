@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
@@ -15,6 +16,9 @@ import (
 	"github.com/goto/salt/log"
 	"github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
 	"github.com/olivere/elastic/v7"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
 
 const (
@@ -77,10 +81,11 @@ type groupHits struct {
 
 // extract error reason from an elasticsearch response
 // returns the raw message in case it fails
-func errorReasonFromResponse(res *esapi.Response) string {
+func errorCodeAndReason(res *esapi.Response) (code, reason string) {
 	var (
 		r struct {
 			Error struct {
+				Type   string `json:"type"`
 				Reason string `json:"reason"`
 			} `json:"error"`
 		}
@@ -88,20 +93,29 @@ func errorReasonFromResponse(res *esapi.Response) string {
 	)
 	err := json.NewDecoder(io.TeeReader(res.Body, &cp)).Decode(&r)
 	if err != nil {
-		return fmt.Sprintf("raw response: %s", cp.String())
+		return "unknown", fmt.Sprintf("raw response: %s", cp.String())
 	}
 
-	return r.Error.Reason
+	return r.Error.Type, r.Error.Reason
 }
 
 type Client struct {
 	client *elasticsearch.Client
 	logger log.Logger
+
+	clientLatency metric.Int64Histogram
 }
 
 func NewClient(logger log.Logger, config Config, opts ...ClientOption) (*Client, error) {
+	clientLatency, err := otel.Meter("github.com/goto/compass/internal/store/elasticsearch").
+		Int64Histogram("compass.es.client.duration")
+	if err != nil {
+		otel.Handle(err)
+	}
+
 	c := &Client{
-		logger: logger,
+		logger:        logger,
+		clientLatency: clientLatency,
 	}
 
 	for _, opt := range opts {
@@ -155,7 +169,17 @@ func (c *Client) Init() (string, error) {
 	return fmt.Sprintf("%q (server version %s)", info.ClusterName, info.Version.Number), nil
 }
 
-func (c *Client) CreateIdx(ctx context.Context, indexName string) error {
+func (c *Client) CreateIdx(ctx context.Context, discoveryOp, indexName string) (err error) {
+	defer func(start time.Time) {
+		const op = "create_index"
+		c.instrumentOp(ctx, instrumentParams{
+			op:          op,
+			discoveryOp: discoveryOp,
+			start:       start,
+			err:         err,
+		})
+	}(time.Now())
+
 	indexSettings := buildTypeIndexSettings()
 	res, err := c.client.Indices.Create(
 		indexName,
@@ -163,11 +187,21 @@ func (c *Client) CreateIdx(ctx context.Context, indexName string) error {
 		c.client.Indices.Create.WithContext(ctx),
 	)
 	if err != nil {
-		return fmt.Errorf("create index: '%s': %w", indexName, err)
+		return asset.DiscoveryError{
+			Op:    "CreateIdx",
+			Index: indexName,
+			Err:   fmt.Errorf("create index '%s': %w", indexName, err),
+		}
 	}
 	defer drainBody(res)
 	if res.IsError() {
-		return fmt.Errorf("create index '%s': %s", indexName, errorReasonFromResponse(res))
+		code, reason := errorCodeAndReason(res)
+		return asset.DiscoveryError{
+			Op:     "CreateIdx",
+			Index:  indexName,
+			ESCode: code,
+			Err:    fmt.Errorf("create index '%s': %s", indexName, reason),
+		}
 	}
 	return nil
 }
@@ -177,7 +211,17 @@ func buildTypeIndexSettings() string {
 }
 
 // checks for the existence of an index
-func (c *Client) indexExists(ctx context.Context, name string) (bool, error) {
+func (c *Client) indexExists(ctx context.Context, discoveryOp, name string) (exists bool, err error) {
+	defer func(start time.Time) {
+		const op = "index_exists"
+		c.instrumentOp(ctx, instrumentParams{
+			op:          op,
+			discoveryOp: discoveryOp,
+			start:       start,
+			err:         err,
+		})
+	}(time.Now())
+
 	res, err := c.client.Indices.Exists(
 		[]string{name},
 		c.client.Indices.Exists.WithContext(ctx),
@@ -187,6 +231,32 @@ func (c *Client) indexExists(ctx context.Context, name string) (bool, error) {
 	}
 	defer drainBody(res)
 	return res.StatusCode == 200, nil
+}
+
+type instrumentParams struct {
+	op          string
+	discoveryOp string
+	start       time.Time
+	err         error
+}
+
+func (c *Client) instrumentOp(ctx context.Context, params instrumentParams) {
+	statusCode := "ok"
+	if params.err != nil {
+		statusCode = "unknown"
+		var de asset.DiscoveryError
+		if errors.As(params.err, &de) && de.ESCode != "" {
+			statusCode = de.ESCode
+		}
+	}
+
+	c.clientLatency.Record(
+		ctx, time.Since(params.start).Milliseconds(), metric.WithAttributes(
+			attribute.String("es.operation", params.op),
+			attribute.String("es.status_code", statusCode),
+			attribute.String("compass.discovery_operation", params.discoveryOp),
+		),
+	)
 }
 
 // drainBody drains and closes the response body to avoid the following

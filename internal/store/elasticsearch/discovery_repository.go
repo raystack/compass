@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/goto/compass/core/asset"
 	"github.com/goto/salt/log"
@@ -36,7 +37,7 @@ func (repo *DiscoveryRepository) Upsert(ctx context.Context, ast asset.Asset) er
 		return asset.ErrUnknownType
 	}
 
-	idxExists, err := repo.cli.indexExists(ctx, ast.Service)
+	idxExists, err := repo.cli.indexExists(ctx, "Upsert", ast.Service)
 	if err != nil {
 		return asset.DiscoveryError{
 			Op:    "IndexExists",
@@ -47,7 +48,7 @@ func (repo *DiscoveryRepository) Upsert(ctx context.Context, ast asset.Asset) er
 	}
 
 	if !idxExists {
-		if err := repo.cli.CreateIdx(ctx, ast.Service); err != nil {
+		if err := repo.cli.CreateIdx(ctx, "Upsert", ast.Service); err != nil {
 			return asset.DiscoveryError{
 				Op:    "CreateIndex",
 				ID:    ast.ID,
@@ -56,6 +57,75 @@ func (repo *DiscoveryRepository) Upsert(ctx context.Context, ast asset.Asset) er
 			}
 		}
 	}
+
+	return repo.indexAsset(ctx, ast)
+}
+
+func (repo *DiscoveryRepository) DeleteByID(ctx context.Context, assetID string) error {
+	if assetID == "" {
+		return asset.ErrEmptyID
+	}
+
+	return repo.deleteWithQuery(ctx, "DeleteByID", fmt.Sprintf(`{"query":{"term":{"_id": %q}}}`, assetID))
+}
+
+func (repo *DiscoveryRepository) DeleteByURN(ctx context.Context, assetURN string) error {
+	if assetURN == "" {
+		return asset.ErrEmptyURN
+	}
+
+	return repo.deleteWithQuery(ctx, "DeleteByURN", fmt.Sprintf(`{"query":{"term":{"urn.keyword": %q}}}`, assetURN))
+}
+
+func (repo *DiscoveryRepository) deleteWithQuery(ctx context.Context, discoveryOp, qry string) (err error) {
+	defer func(start time.Time) {
+		const op = "delete_by_query"
+		repo.cli.instrumentOp(ctx, instrumentParams{
+			op:          op,
+			discoveryOp: discoveryOp,
+			start:       start,
+			err:         err,
+		})
+	}(time.Now())
+
+	deleteByQ := repo.cli.client.DeleteByQuery
+	res, err := deleteByQ(
+		[]string{defaultSearchIndex},
+		strings.NewReader(qry),
+		deleteByQ.WithContext(ctx),
+		deleteByQ.WithRefresh(true),
+		deleteByQ.WithIgnoreUnavailable(true),
+	)
+	if err != nil {
+		return asset.DiscoveryError{
+			Op:  "DeleteDoc",
+			Err: fmt.Errorf("query: %s: %w", qry, err),
+		}
+	}
+
+	defer drainBody(res)
+	if res.IsError() {
+		code, reason := errorCodeAndReason(res)
+		return asset.DiscoveryError{
+			Op:     "DeleteDoc",
+			ESCode: code,
+			Err:    fmt.Errorf("query: %s: %s", qry, reason),
+		}
+	}
+
+	return nil
+}
+
+func (repo *DiscoveryRepository) indexAsset(ctx context.Context, ast asset.Asset) (err error) {
+	defer func(start time.Time) {
+		const op = "index"
+		repo.cli.instrumentOp(ctx, instrumentParams{
+			op:          op,
+			discoveryOp: "Upsert",
+			start:       start,
+			err:         err,
+		})
+	}(time.Now())
 
 	body, err := createUpsertBody(ast)
 	if err != nil {
@@ -84,54 +154,13 @@ func (repo *DiscoveryRepository) Upsert(ctx context.Context, ast asset.Asset) er
 	defer drainBody(resp)
 
 	if resp.IsError() {
+		code, reason := errorCodeAndReason(resp)
 		return asset.DiscoveryError{
-			Op:    "IndexDoc",
-			ID:    ast.ID,
-			Index: ast.Service,
-			Err:   errors.New(errorReasonFromResponse(resp)),
-		}
-	}
-
-	return nil
-}
-
-func (repo *DiscoveryRepository) DeleteByID(ctx context.Context, assetID string) error {
-	if assetID == "" {
-		return asset.ErrEmptyID
-	}
-
-	return repo.deleteWithQuery(ctx, fmt.Sprintf(`{"query":{"term":{"_id": "%s"}}}`, assetID))
-}
-
-func (repo *DiscoveryRepository) DeleteByURN(ctx context.Context, assetURN string) error {
-	if assetURN == "" {
-		return asset.ErrEmptyURN
-	}
-
-	return repo.deleteWithQuery(ctx, fmt.Sprintf(`{"query":{"term":{"urn.keyword": "%s"}}}`, assetURN))
-}
-
-func (repo *DiscoveryRepository) deleteWithQuery(ctx context.Context, qry string) error {
-	deleteByQ := repo.cli.client.DeleteByQuery
-	res, err := deleteByQ(
-		[]string{defaultSearchIndex},
-		strings.NewReader(qry),
-		deleteByQ.WithContext(ctx),
-		deleteByQ.WithRefresh(true),
-		deleteByQ.WithIgnoreUnavailable(true),
-	)
-	if err != nil {
-		return asset.DiscoveryError{
-			Op:  "DeleteDoc",
-			Err: fmt.Errorf("query: %s: %w", qry, err),
-		}
-	}
-
-	defer drainBody(res)
-	if res.IsError() {
-		return asset.DiscoveryError{
-			Op:  "DeleteDoc",
-			Err: fmt.Errorf("query: %s: %s", qry, errorReasonFromResponse(res)),
+			Op:     "IndexDoc",
+			ID:     ast.ID,
+			Index:  ast.Service,
+			ESCode: code,
+			Err:    errors.New(reason),
 		}
 	}
 
@@ -140,9 +169,9 @@ func (repo *DiscoveryRepository) deleteWithQuery(ctx context.Context, qry string
 
 func createUpsertBody(ast asset.Asset) (io.Reader, error) {
 	var buf bytes.Buffer
-
 	if err := json.NewEncoder(&buf).Encode(ast); err != nil {
 		return nil, fmt.Errorf("encode asset: %w", err)
 	}
+
 	return &buf, nil
 }

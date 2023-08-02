@@ -38,10 +38,11 @@ func (err InvalidError) Error() string {
 }
 
 type DiscoveryError struct {
-	Op    string
-	ID    string
-	Index string
-	Err   error
+	Op     string
+	ID     string
+	Index  string
+	ESCode string
+	Err    error
 }
 
 func (err DiscoveryError) Error() string {
@@ -55,6 +56,9 @@ func (err DiscoveryError) Error() string {
 	}
 	if err.Index != "" {
 		s.WriteString("index '" + err.Index + "': ")
+	}
+	if err.ESCode != "" {
+		s.WriteString("elasticsearch code '" + err.ESCode + "': ")
 	}
 	s.WriteString(err.Err.Error())
 	return s.String()

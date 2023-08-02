@@ -67,6 +67,7 @@ func (a *AssetModel) toAssetVersion() (asset.Asset, error) {
 		Changelog: clog,
 		UpdatedBy: a.UpdatedBy.toUser(),
 		CreatedAt: a.CreatedAt,
+		UpdatedAt: a.UpdatedAt,
 	}, nil
 }
 

@@ -29,7 +29,7 @@ func newTestClient(t *testing.T, logger log.Logger) (*postgres.Client, error) {
 		return nil, err
 	}
 
-	pgClient, err := postgres.NewClient(postgres.Config{
+	pgClient, err := postgres.NewClient(context.Background(), postgres.Config{
 		Host:     testutils.PGHost,
 		Port:     port,
 		Name:     testutils.PGName,

@@ -11,8 +11,8 @@ import (
 	esStore "github.com/goto/compass/internal/store/elasticsearch"
 	"github.com/goto/compass/internal/store/postgres"
 	"github.com/goto/compass/internal/workermanager"
-	"github.com/goto/compass/pkg/metrics"
 	"github.com/goto/compass/pkg/statsd"
+	"github.com/goto/compass/pkg/telemetry"
 	"github.com/goto/salt/cmdx"
 	"github.com/goto/salt/config"
 	"github.com/spf13/cobra"
@@ -80,11 +80,14 @@ type Config struct {
 	// Log
 	LogLevel string `yaml:"log_level" mapstructure:"log_level" default:"info"`
 
+	// OpenTelemetry and Newrelic
+	Telemetry telemetry.Config `mapstructure:"telemetry"`
+
 	// StatsD
 	StatsD statsd.Config `mapstructure:"statsd"`
 
-	// NewRelic
-	NewRelic metrics.NewRelicConfig `mapstructure:"newrelic"`
+	// Deprecated: Use Config.Telemetry instead
+	NewRelic telemetry.NewRelicConfig `mapstructure:"newrelic"`
 
 	// Elasticsearch
 	Elasticsearch esStore.Config `mapstructure:"elasticsearch"`
@@ -104,10 +107,20 @@ type Config struct {
 
 func LoadConfig() (*Config, error) {
 	var cfg Config
+	defer func() {
+		if cfg.NewRelic != (telemetry.NewRelicConfig{}) && cfg.Telemetry.NewRelic == (telemetry.NewRelicConfig{}) {
+			cfg.Telemetry.NewRelic = cfg.NewRelic
+		}
+	}()
+
 	err := LoadFromCurrentDir(&cfg)
 
 	if errors.As(err, &config.ConfigFileNotFoundError{}) {
-		err := cmdx.SetConfig("compass").Load(&cfg)
+		err := cmdx.SetConfig("compass").
+			Load(&cfg, cmdx.WithLoaderOptions(
+				config.WithEnvKeyReplacer(".", "_"),
+				config.WithEnvPrefix("COMPASS"),
+			))
 		if err != nil {
 			if errors.As(err, &config.ConfigFileNotFoundError{}) {
 				return &cfg, ErrConfigNotFound
