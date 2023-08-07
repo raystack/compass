@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 //go:embed dead_jobs_page.html
@@ -36,13 +38,28 @@ const (
 //   - /clear-jobs: Remove specified dead jobs from dead_jobs table.
 func DeadJobManagementHandler(mgr DeadJobManager) http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc(listDeadJobsPath, deadJobsHandler(mgr))
-	mux.HandleFunc(resurrectJobsPath, jobsTransformerHandler(func(ctx context.Context, jobIDs []string) error {
-		return mgr.Resurrect(ctx, jobIDs)
-	}))
-	mux.HandleFunc(clearJobsPath, jobsTransformerHandler(func(ctx context.Context, jobIDs []string) error {
-		return mgr.ClearDeadJobs(ctx, jobIDs)
-	}))
+	mux.Handle(
+		listDeadJobsPath,
+		otelhttp.NewMiddleware("list_dead_jobs")(
+			otelhttp.WithRouteTag(listDeadJobsPath, deadJobsHandler(mgr)),
+		),
+	)
+	mux.Handle(
+		resurrectJobsPath,
+		otelhttp.NewMiddleware("resurrect_jobs")(
+			otelhttp.WithRouteTag(resurrectJobsPath, jobsTransformerHandler(func(ctx context.Context, jobIDs []string) error {
+				return mgr.Resurrect(ctx, jobIDs)
+			})),
+		),
+	)
+	mux.Handle(
+		clearJobsPath,
+		otelhttp.NewMiddleware("clear_jobs")(
+			otelhttp.WithRouteTag(clearJobsPath, jobsTransformerHandler(func(ctx context.Context, jobIDs []string) error {
+				return mgr.ClearDeadJobs(ctx, jobIDs)
+			})),
+		),
+	)
 	return mux
 }
 

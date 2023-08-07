@@ -475,6 +475,8 @@ github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5Kwzbycv
 github.com/fatih/color v1.13.0 h1:8LOYc1KYPPmyKMuN8QV2DNRWNbLo6LZ0iLs8+mlH53w=
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
 github.com/felixge/httpsnoop v1.0.1/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
+github.com/felixge/httpsnoop v1.0.3 h1:s/nj+GCswXYzN5v2DpNMuMQYe+0DDwt5WVCU6CWBdXk=
+github.com/felixge/httpsnoop v1.0.3/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
 github.com/fogleman/gg v1.2.1-0.20190220221249-0403632d5b90/go.mod h1:R/bRT+9gY/C5z7JzPU0zXsXHKM4/ayA+zqcVNZzPa1k=
 github.com/fogleman/gg v1.3.0/go.mod h1:R/bRT+9gY/C5z7JzPU0zXsXHKM4/ayA+zqcVNZzPa1k=
 github.com/form3tech-oss/jwt-go v3.2.2+incompatible/go.mod h1:pbq4aXjuKjdthFRnoDwaVPLA+WlJuPGy+QneDUgJi2k=
@@ -1419,6 +1421,8 @@ go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.4
 go.opentelemetry.io/contrib/instrumentation/host v0.42.0 h1:/GMlvboQJd4LWxNX/oGYLv06J5a/M/flauLruM/3U2g=
 go.opentelemetry.io/contrib/instrumentation/host v0.42.0/go.mod h1:w6v1mVemRjTTdfejACjf+LgVA6zKtHOWmdAIf3icx7A=
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.20.0/go.mod h1:2AboqHi0CiIZU0qwhtUfCYD1GeUzvvIXWNkhDt7ZMG4=
+go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.1-0.20230731182153-525d6c05bd62 h1:4Eb2RlvDQ9Gpp+qEsdUHa4cEX1NJdv/g9Y4MYprBqcw=
+go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.1-0.20230731182153-525d6c05bd62/go.mod h1:/Q7SZ3KqNy3qTGotS1MKC8lO5z0CFSeacGbjfgMa4sk=
 go.opentelemetry.io/contrib/instrumentation/runtime v0.42.0 h1:EbmAUG9hEAMXyfWEasIt2kmh/WmXUznUksChApTgBGc=
 go.opentelemetry.io/contrib/instrumentation/runtime v0.42.0/go.mod h1:rD9feqRYP24P14t5kmhNMqsqm1jvKmpx2H2rKVw52V8=
 go.opentelemetry.io/contrib/samplers/probability/consistent v0.11.0 h1:K4HJhe01GFkIo9JZ8iX1hMeI5MrkEMggXQM0YJamtEQ=

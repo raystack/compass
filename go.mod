@@ -38,6 +38,7 @@ require (
 	go.nhat.io/otelsql v0.11.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.42.0
 	go.opentelemetry.io/contrib/instrumentation/host v0.42.0
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.1-0.20230731182153-525d6c05bd62
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.42.0
 	go.opentelemetry.io/contrib/samplers/probability/consistent v0.11.0
 	go.opentelemetry.io/otel v1.16.0
@@ -75,6 +76,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
+	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

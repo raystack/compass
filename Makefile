@@ -65,7 +65,7 @@ proto: $(TOOLS_DIR)/buf ## Generate the protobuf files
 	@echo " > protobuf compilation finished"
 
 generate: $(TOOLS_DIR)/mockery ## Run all go generate in the code base
-	go generate ./...
+	PATH="$(TOOLS_DIR):${PATH}" go generate ./...
 
 clean:  ## Clean the build artifacts
 	rm -rf compass dist/

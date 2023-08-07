@@ -10,12 +10,16 @@ import (
 
 	"github.com/goto/compass/pkg/worker"
 	"github.com/goto/compass/pkg/worker/pgq"
+	"github.com/goto/compass/pkg/worker/workermw"
 	"github.com/goto/salt/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
 
 type Manager struct {
 	processor      *pgq.Processor
-	registered     atomic.Bool
+	initDone       atomic.Bool
 	worker         Worker
 	jobManagerPort int
 	discoveryRepo  DiscoveryRepository
@@ -52,7 +56,7 @@ func New(ctx context.Context, deps Deps) (*Manager, error) {
 	}
 
 	w, err := worker.New(
-		processor,
+		workermw.WithJobProcessorInstrumentation()(processor),
 		worker.WithRunConfig(cfg.WorkerCount, cfg.PollInterval),
 		worker.WithLogger(deps.Logger),
 	)
@@ -77,8 +81,8 @@ func NewWithWorker(w Worker, deps Deps) *Manager {
 }
 
 func (m *Manager) Run(ctx context.Context) error {
-	if err := m.register(); err != nil {
-		return fmt.Errorf("run async worker: %w", err)
+	if err := m.init(); err != nil {
+		return fmt.Errorf("run async worker: init: %w", err)
 	}
 
 	go func() {
@@ -97,25 +101,83 @@ func (m *Manager) Run(ctx context.Context) error {
 	return m.worker.Run(ctx)
 }
 
-func (m *Manager) register() error {
-	if m.registered.Load() {
+func (m *Manager) init() error {
+	if m.initDone.Load() {
 		return nil
 	}
+	m.initDone.Store(true)
 
-	for typ, h := range map[string]worker.JobHandler{
+	jobHandlers := map[string]worker.JobHandler{
 		jobIndexAsset:  m.indexAssetHandler(),
 		jobDeleteAsset: m.deleteAssetHandler(),
-	} {
+	}
+	for typ, h := range jobHandlers {
 		if err := m.worker.Register(typ, h); err != nil {
 			return err
 		}
 	}
 
-	m.registered.Store(true)
-
-	return nil
+	return m.registerStatsCallback(keys(jobHandlers))
 }
 
 func (m *Manager) Close() error {
 	return m.processor.Close()
+}
+
+func (m *Manager) registerStatsCallback(jobTypes []string) error {
+	const attrJobType = attribute.Key("job.type")
+
+	meter := otel.Meter("github.com/goto/compass/internal/workermanager")
+	activeJobs, err := meter.Int64ObservableGauge("compass.worker.active_jobs")
+	handleOtelErr(err)
+
+	deadJobs, err := meter.Int64ObservableGauge("compass.worker.dead_jobs")
+	handleOtelErr(err)
+
+	_, err = meter.RegisterCallback(
+		func(ctx context.Context, o metric.Observer) error {
+			stats, err := m.processor.Stats(ctx)
+			if err != nil {
+				return err
+			}
+
+			seen := make(map[string]struct{}, len(jobTypes))
+			for _, st := range stats {
+				seen[st.Type] = struct{}{}
+				attr := metric.WithAttributes(attrJobType.String(st.Type))
+				o.ObserveInt64(activeJobs, (int64)(st.Active), attr)
+				o.ObserveInt64(deadJobs, (int64)(st.Dead), attr)
+			}
+
+			for _, typ := range jobTypes {
+				if _, ok := seen[typ]; ok {
+					continue
+				}
+
+				attr := metric.WithAttributes(attrJobType.String(typ))
+				o.ObserveInt64(activeJobs, 0, attr)
+				o.ObserveInt64(deadJobs, 0, attr)
+			}
+
+			return nil
+		},
+		activeJobs,
+		deadJobs,
+	)
+
+	return err
+}
+
+func keys(handlers map[string]worker.JobHandler) []string {
+	types := make([]string, 0, len(handlers))
+	for typ := range handlers {
+		types = append(types, typ)
+	}
+	return types
+}
+
+func handleOtelErr(err error) {
+	if err != nil {
+		otel.Handle(err)
+	}
 }

@@ -17,6 +17,18 @@ type JobProcessor interface {
 	// Process is also responsible for clearing the job or marking the job as
 	// dead or setting up the retry for the job depending on the job result.
 	Process(ctx context.Context, types []string, fn JobExecutorFunc) error
+
+	// Stats returns the job statistics by job type. It includes the number of
+	// active and dead jobs.
+	Stats(ctx context.Context) ([]JobTypeStats, error)
+}
+
+// JobTypeStats is the statistics for the job type with number of active and
+// dead jobs.
+type JobTypeStats struct {
+	Type   string `json:"type"`
+	Active int    `json:"active"`
+	Dead   int    `json:"dead"`
 }
 
 // JobExecutorFunc is invoked by JobProcessor for ready jobs. It is responsible

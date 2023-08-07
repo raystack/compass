@@ -129,6 +129,39 @@ func (p *Processor) Process(ctx context.Context, types []string, fn worker.JobEx
 	return nil
 }
 
+func (p *Processor) Stats(ctx context.Context) ([]worker.JobTypeStats, error) {
+	const query = "select COALESCE(actv.type, dead.type) as type, " +
+		"	COALESCE(active_job_count, 0) as active_job_count, " +
+		"	COALESCE(dead_job_count, 0) as dead_job_count " +
+		"from (select type, count(id) as active_job_count " +
+		"	from jobs_queue group by type) as actv " +
+		"full join (select type, count(id) as dead_job_count " +
+		"	from dead_jobs group by type) as dead " +
+		"on (actv.type = dead.type) " +
+		"order by 1"
+
+	rows, err := p.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("pgq stats: run query: %w", err)
+	}
+
+	defer rows.Close()
+	var stats []worker.JobTypeStats
+	for rows.Next() {
+		var st worker.JobTypeStats
+		if err := rows.Scan(&st.Type, &st.Active, &st.Dead); err != nil {
+			return nil, fmt.Errorf("pgq stats: scan row: %w", err)
+		}
+
+		stats = append(stats, st)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("pgq stats: scan rows: %w", err)
+	}
+
+	return stats, nil
+}
+
 func (p *Processor) DeadJobs(ctx context.Context, size, offset int) ([]worker.Job, error) {
 	query := sq.Select().
 		From(deadJobsTable).

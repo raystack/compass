@@ -380,6 +380,86 @@ func (s *ProcessorTestSuite) TestProcess() {
 	})
 }
 
+func (s *ProcessorTestSuite) TestStats() {
+	s.Run("WithEmptyTables", func() {
+		err := testutils.RunMigrations(s.T(), s.db)
+		s.Require().NoError(err)
+
+		p, err := pgq.NewProcessor(s.ctx, s.testDBConfig())
+		s.NoError(err)
+
+		stats, err := p.Stats(s.ctx)
+		s.NoError(err)
+		s.Empty(stats)
+	})
+
+	s.Run("WithActiveAndDeadJobs", func() {
+		err := testutils.RunMigrations(s.T(), s.db)
+		s.Require().NoError(err)
+
+		inserts, err := os.ReadFile("testdata/insert_dead_jobs.sql")
+		s.Require().NoError(err)
+
+		_, err = s.db.Exec((string)(inserts))
+		s.Require().NoError(err)
+
+		p, err := pgq.NewProcessor(s.ctx, s.testDBConfig())
+		s.NoError(err)
+
+		jobSpecs := []worker.JobSpec{
+			{Type: "test", Payload: []byte("job1")},
+			{Type: "test", Payload: []byte("job2")},
+			{Type: "test", Payload: []byte("job3")},
+		}
+		var jobs []worker.Job
+		for _, js := range jobSpecs {
+			job, err := worker.NewJob(js)
+			s.Require().NoError(err)
+
+			jobs = append(jobs, job)
+		}
+		err = p.Enqueue(s.ctx, jobs...)
+		s.NoError(err)
+
+		stats, err := p.Stats(s.ctx)
+		s.NoError(err)
+
+		expected := []worker.JobTypeStats{
+			{
+				Type:   "index-asset",
+				Active: 0,
+				Dead:   12,
+			},
+			{
+				Type:   "test",
+				Active: 3,
+				Dead:   0,
+			},
+		}
+		s.Equal(expected, stats)
+
+		err = p.Resurrect(s.ctx, []string{"01H63BPX1D3S98K5GBADE1Q322", "01H63BPVMH6BBQJH776KRJAMH0"})
+		s.NoError(err)
+
+		stats, err = p.Stats(s.ctx)
+		s.NoError(err)
+
+		expected = []worker.JobTypeStats{
+			{
+				Type:   "index-asset",
+				Active: 2,
+				Dead:   10,
+			},
+			{
+				Type:   "test",
+				Active: 3,
+				Dead:   0,
+			},
+		}
+		s.Equal(expected, stats)
+	})
+}
+
 func (s *ProcessorTestSuite) TestDeadJobs() {
 	err := testutils.RunMigrations(s.T(), s.db)
 	s.Require().NoError(err)
