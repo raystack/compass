@@ -38,6 +38,9 @@ const (
 //   - /clear-jobs: Remove specified dead jobs from dead_jobs table.
 func DeadJobManagementHandler(mgr DeadJobManager) http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		writeJSONResponse(w, http.StatusOK, map[string]bool{"success": true})
+	})
 	mux.Handle(
 		listDeadJobsPath,
 		otelhttp.NewMiddleware("list_dead_jobs")(

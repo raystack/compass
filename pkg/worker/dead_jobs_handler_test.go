@@ -37,6 +37,20 @@ func TestDeadJobManagementHandler(t *testing.T) {
 		LastError:     "fail",
 	}
 
+	t.Run("Ping", func(t *testing.T) {
+		mgr := mocks.NewDeadJobManager(t)
+
+		req, _ := http.NewRequestWithContext(ctx, http.MethodGet, "/ping", nil)
+		res := recordResponse(worker.DeadJobManagementHandler(mgr), req)
+		defer res.Body.Close()
+
+		expected := response{
+			Status: http.StatusOK,
+			Body:   `{"success": true}`,
+		}
+		matchResponse(t, expected, res)
+	})
+
 	t.Run("DeadJobsPage", func(t *testing.T) {
 		t.Run("AcceptJSON", func(t *testing.T) {
 			cases := []struct {
