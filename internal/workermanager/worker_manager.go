@@ -35,11 +35,12 @@ type Worker interface {
 }
 
 type Config struct {
-	Enabled        bool          `mapstructure:"enabled"`
-	WorkerCount    int           `mapstructure:"worker_count" default:"3"`
-	PollInterval   time.Duration `mapstructure:"poll_interval" default:"500ms"`
-	PGQ            pgq.Config    `mapstructure:"pgq"`
-	JobManagerPort int           `mapstructure:"job_manager_port"`
+	Enabled           bool          `mapstructure:"enabled"`
+	WorkerCount       int           `mapstructure:"worker_count" default:"3"`
+	PollInterval      time.Duration `mapstructure:"poll_interval" default:"500ms"`
+	ActivePollPercent float64       `mapstructure:"active_poll_percent" default:"20"`
+	PGQ               pgq.Config    `mapstructure:"pgq"`
+	JobManagerPort    int           `mapstructure:"job_manager_port"`
 }
 
 type Deps struct {
@@ -58,6 +59,7 @@ func New(ctx context.Context, deps Deps) (*Manager, error) {
 	w, err := worker.New(
 		workermw.WithJobProcessorInstrumentation()(processor),
 		worker.WithRunConfig(cfg.WorkerCount, cfg.PollInterval),
+		worker.WithActivePollPercent(cfg.ActivePollPercent),
 		worker.WithLogger(deps.Logger),
 	)
 	if err != nil {

@@ -69,7 +69,12 @@ type ExponentialBackoff struct {
 }
 
 func (b *ExponentialBackoff) Backoff(attempt int) time.Duration {
-	duration := b.InitialDelay * time.Duration(math.Pow(b.Multiplier, float64(attempt-1)))
+	limit := (float64)(math.MaxInt64) / (float64)(b.InitialDelay)
+	multiplier := math.Pow(b.Multiplier, (float64)(attempt-1))
+	if multiplier > limit {
+		multiplier = limit
+	}
+	duration := b.InitialDelay * time.Duration(multiplier)
 
 	if b.MaxDelay > 0 && duration > b.MaxDelay {
 		duration = b.MaxDelay

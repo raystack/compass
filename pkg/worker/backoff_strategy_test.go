@@ -199,6 +199,16 @@ func TestExponentialBackoff(t *testing.T) {
 			attempt:  11,
 			expected: time.Second * 15,
 		},
+		7: {
+			b: &ExponentialBackoff{
+				Multiplier:   4,
+				InitialDelay: time.Second * 1,
+				MaxDelay:     time.Second * 10,
+				Jitter:       1,
+			},
+			attempt:  111,
+			expected: time.Second * 15,
+		},
 	}
 	for i, tc := range cases {
 		assert.Equal(t, tc.expected, tc.b.Backoff(tc.attempt), "test[%d]", i)

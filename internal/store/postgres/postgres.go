@@ -20,7 +20,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
-	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx" // register instrumented DB driver
 	"go.nhat.io/otelsql"
@@ -96,11 +95,12 @@ func (c *Client) Close() error {
 // NewClient initializes database connection
 func NewClient(ctx context.Context, cfg Config) (*Client, error) {
 	driverName, err := otelsql.Register(
-		"pgx",
+		"nrpgx",
 		otelsql.TraceQueryWithoutArgs(),
 		otelsql.TraceRowsClose(),
 		otelsql.TraceRowsAffected(),
 		otelsql.WithSystem(semconv.DBSystemPostgreSQL),
+		otelsql.WithInstanceName("default"),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("register otelsql: %w", err)

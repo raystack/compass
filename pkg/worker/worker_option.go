@@ -39,9 +39,17 @@ func WithRunConfig(workers int, pollInterval time.Duration) Option {
 	}
 }
 
+func WithActivePollPercent(pct float64) Option {
+	return func(w *Worker) error {
+		w.activePollPercent = pct
+		return nil
+	}
+}
+
 func withDefaults(opts []Option) []Option {
 	return append([]Option{
 		WithLogger(nil),
 		WithRunConfig(1, 1*time.Second),
+		WithActivePollPercent(20),
 	}, opts...)
 }

@@ -59,6 +59,7 @@ worker:
     enabled: true
     worker_count: 1
     poll_interval: 1s
+    active_poll_percent: 20
     pgq:
         host: localhost
         port: 5432

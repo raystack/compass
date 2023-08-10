@@ -154,7 +154,7 @@ func (s *ProcessorTestSuite) TestProcess() {
 			s.Fail("unexpected job invocation")
 			return job
 		})
-		s.NoError(err)
+		s.ErrorIs(err, worker.ErrNoJob)
 	})
 
 	s.Run("ProcessOnlyGivenTypes", func() {
@@ -168,7 +168,7 @@ func (s *ProcessorTestSuite) TestProcess() {
 			s.Fail("unexpected job invocation")
 			return job
 		})
-		s.NoError(err)
+		s.ErrorIs(err, worker.ErrNoJob)
 	})
 
 	s.Run("ProcessOnlyReadyJobs", func() {
@@ -184,7 +184,7 @@ func (s *ProcessorTestSuite) TestProcess() {
 			s.Fail("unexpected job invocation")
 			return job
 		})
-		s.NoError(err)
+		s.ErrorIs(err, worker.ErrNoJob)
 	})
 
 	s.Run("JobProcessedSuccessfully", func() {
@@ -296,7 +296,7 @@ func (s *ProcessorTestSuite) TestProcess() {
 				s.Fail("unexpected job invocation")
 				return job
 			})
-			s.NoError(err)
+			s.ErrorIs(err, worker.ErrNoJob)
 			return job
 		})
 		s.NoError(err)

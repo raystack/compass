@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"sync"
 	"time"
 
@@ -14,12 +15,14 @@ var (
 	ErrTypeExists  = errors.New("handler for given job type exists")
 	ErrUnknownType = errors.New("job type is invalid")
 	ErrJobExists   = errors.New("job with id exists")
+	ErrNoJob       = errors.New("no job found")
 )
 
 // Worker provides asynchronous job processing using a job processor.
 type Worker struct {
-	workers      int
-	pollInterval time.Duration
+	workers           int
+	pollInterval      time.Duration
+	activePollPercent float64
 
 	processor JobProcessor
 	logger    log.Logger
@@ -87,13 +90,15 @@ func (w *Worker) Run(baseCtx context.Context) error {
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer cancel()
 
+	activePollWorkers := (int)(math.Ceil((float64)(w.workers) * w.activePollPercent / 100))
+
 	var wg sync.WaitGroup
 	wg.Add(w.workers)
 	for i := 0; i < w.workers; i++ {
 		go func(id int) {
 			defer wg.Done()
 
-			w.runWorker(ctx)
+			w.runWorker(ctx, id < activePollWorkers)
 			w.logger.Info("worker exited", "worker_id", id)
 		}(i)
 	}
@@ -103,26 +108,46 @@ func (w *Worker) Run(baseCtx context.Context) error {
 	return cleanupCtxErr(ctx.Err())
 }
 
-func (w *Worker) runWorker(ctx context.Context) {
-	ticker := time.NewTicker(w.pollInterval)
-	defer ticker.Stop()
+func (w *Worker) runWorker(ctx context.Context, activePoll bool) {
+	timer := time.NewTimer(w.pollInterval)
+	defer timer.Stop()
 
+	var backoff BackoffStrategy = ConstBackoff{Delay: w.pollInterval}
+	if !activePoll {
+		backoff = &ExponentialBackoff{
+			Multiplier:   1.6,
+			InitialDelay: w.pollInterval,
+			MaxDelay:     5 * time.Second,
+			Jitter:       0.5,
+		}
+	}
+
+	pollAttempt := 1
 	for {
 		select {
 		case <-ctx.Done():
 			return
 
-		case <-ticker.C:
+		case <-timer.C:
 			types := w.getTypes()
 			if len(types) == 0 {
 				w.logger.Warn("no job-handler registered, skipping processing")
 				continue
 			}
 
-			w.logger.Debug("looking for a job", "types", types)
-			if err := w.processor.Process(ctx, types, w.processJob); err != nil {
-				w.logger.Error("process job failed", "error", err)
+			w.logger.Debug("looking for a job", "types", types, "active_poll", activePoll)
+			switch err := w.processor.Process(ctx, types, w.processJob); {
+			case err != nil && errors.Is(err, ErrNoJob):
+				pollAttempt++
+
+			case err != nil:
+				w.logger.Error("process job failed", "err", err)
+				pollAttempt = 1
+
+			default:
+				pollAttempt = 1
 			}
+			timer.Reset(backoff.Backoff(pollAttempt))
 		}
 	}
 }

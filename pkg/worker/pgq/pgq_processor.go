@@ -36,6 +36,7 @@ func NewProcessor(ctx context.Context, cfg Config) (*Processor, error) {
 		otelsql.TraceRowsClose(),
 		otelsql.TraceRowsAffected(),
 		otelsql.WithSystem(semconv.DBSystemPostgreSQL),
+		otelsql.WithInstanceName("pgq"),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("new pgq processor: %w", err)
@@ -98,7 +99,7 @@ func (p *Processor) Process(ctx context.Context, types []string, fn worker.JobEx
 		job, err := p.pickupJob(ctx, tx, types)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				return nil
+				return fmt.Errorf("pickup job: %w", worker.ErrNoJob)
 			}
 			return fmt.Errorf("pickup job: %w", err)
 		}
