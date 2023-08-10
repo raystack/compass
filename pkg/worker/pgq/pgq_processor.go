@@ -51,7 +51,11 @@ func NewProcessor(ctx context.Context, cfg Config) (*Processor, error) {
 		return nil, fmt.Errorf("new pgq processor: %w", err)
 	}
 
-	if err := otelsql.RecordStats(db); err != nil {
+	if err := otelsql.RecordStats(
+		db,
+		otelsql.WithSystem(semconv.DBSystemPostgreSQL),
+		otelsql.WithInstanceName("pgq"),
+	); err != nil {
 		return nil, err
 	}
 

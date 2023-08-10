@@ -115,7 +115,11 @@ func NewClient(ctx context.Context, cfg Config) (*Client, error) {
 		return nil, fmt.Errorf("ping DB: %w", err)
 	}
 
-	if err := otelsql.RecordStats(db); err != nil {
+	if err := otelsql.RecordStats(
+		db,
+		otelsql.WithSystem(semconv.DBSystemPostgreSQL),
+		otelsql.WithInstanceName("default"),
+	); err != nil {
 		return nil, err
 	}
 
