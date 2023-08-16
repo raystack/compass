@@ -35,7 +35,7 @@ require (
 	github.com/r3labs/diff/v2 v2.15.0
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.8.4
-	go.nhat.io/otelsql v0.11.0
+	go.nhat.io/otelsql v0.11.1
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.42.0
 	go.opentelemetry.io/contrib/instrumentation/host v0.42.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.1-0.20230731182153-525d6c05bd62
@@ -169,5 +169,3 @@ require (
 	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace go.nhat.io/otelsql => github.com/sudo-suhas/otelsql v0.0.0-20230728051805-ac791e37e987
