@@ -121,23 +121,10 @@ func (s *Service) DeleteAsset(ctx context.Context, id string) (err error) {
 	return s.lineageRepository.DeleteByURN(ctx, urn)
 }
 
-func (s *Service) GetAssetByID(ctx context.Context, id string) (ast Asset, err error) {
-	defer func() {
-		s.instrumentAssetOp(ctx, "GetAssetByID", id, err)
-	}()
-
-	if isValidUUID(id) {
-		var err error
-		ast, err = s.assetRepository.GetByID(ctx, id)
-		if err != nil {
-			return Asset{}, fmt.Errorf("get asset by id: %w", err)
-		}
-	} else {
-		var err error
-		ast, err = s.assetRepository.GetByURN(ctx, id)
-		if err != nil {
-			return Asset{}, fmt.Errorf("get asset by urn: %w", err)
-		}
+func (s *Service) GetAssetByID(ctx context.Context, id string) (Asset, error) {
+	ast, err := s.assetByIDWithoutProbes(ctx, "GetAssetByID", id)
+	if err != nil {
+		return Asset{}, err
 	}
 
 	probes, err := s.assetRepository.GetProbes(ctx, ast.URN)
@@ -146,6 +133,32 @@ func (s *Service) GetAssetByID(ctx context.Context, id string) (ast Asset, err e
 	}
 
 	ast.Probes = probes
+
+	return ast, nil
+}
+
+func (s *Service) GetAssetByIDWithoutProbes(ctx context.Context, id string) (Asset, error) {
+	return s.assetByIDWithoutProbes(ctx, "GetAssetByIDWithoutProbes", id)
+}
+
+func (s *Service) assetByIDWithoutProbes(ctx context.Context, op, id string) (ast Asset, err error) {
+	defer func() {
+		s.instrumentAssetOp(ctx, op, id, err)
+	}()
+
+	if isValidUUID(id) {
+		ast, err = s.assetRepository.GetByID(ctx, id)
+		if err != nil {
+			return Asset{}, fmt.Errorf("get asset by id: %w", err)
+		}
+
+		return ast, nil
+	}
+
+	ast, err = s.assetRepository.GetByURN(ctx, id)
+	if err != nil {
+		return Asset{}, fmt.Errorf("get asset by urn: %w", err)
+	}
 
 	return ast, nil
 }

@@ -571,6 +571,115 @@ func TestService_GetAssetByID(t *testing.T) {
 	}
 }
 
+func TestService_GetAssetByIDWithoutProbes(t *testing.T) {
+	assetID := "f742aa61-1100-445c-8d72-355a42e2fb59"
+	urn := "my-test-urn"
+	now := time.Now().UTC()
+	ast := asset.Asset{
+		ID: assetID,
+	}
+
+	testCases := []struct {
+		Description string
+		ID          string
+		Expected    *asset.Asset
+		ExpectedErr error
+		Setup       func(context.Context, *mocks.AssetRepository)
+	}{
+		{
+			Description: `should return error if the repository return error without id`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, asset.NotFoundError{})
+			},
+			ExpectedErr: asset.NotFoundError{},
+		},
+		{
+			Description: `should return error if the repository return error, with id`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, asset.NotFoundError{AssetID: ast.ID})
+			},
+			ExpectedErr: asset.NotFoundError{AssetID: ast.ID},
+		},
+		{
+			Description: `should return error if the repository return error, with invalid id`,
+			ID:          assetID,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{}, asset.InvalidError{AssetID: ast.ID})
+			},
+			ExpectedErr: asset.InvalidError{AssetID: ast.ID},
+		},
+		{
+			Description: `with URN, should return error from repository`,
+			ID:          urn,
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetByURN(ctx, urn).Return(asset.Asset{}, errors.New("the world exploded"))
+			},
+			ExpectedErr: errors.New("the world exploded"),
+		},
+		{
+			Description: `with ID, should return no error if asset is found`,
+			ID:          assetID,
+			Expected: &asset.Asset{
+				ID:        assetID,
+				URN:       urn,
+				CreatedAt: now,
+			},
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetByID(ctx, assetID).Return(asset.Asset{
+					ID:        assetID,
+					URN:       urn,
+					CreatedAt: now,
+				}, nil)
+			},
+			ExpectedErr: nil,
+		},
+		{
+			Description: `with URN, should return no error if asset is found`,
+			ID:          urn,
+			Expected: &asset.Asset{
+				ID:        assetID,
+				URN:       urn,
+				CreatedAt: now,
+			},
+			Setup: func(ctx context.Context, ar *mocks.AssetRepository) {
+				ar.EXPECT().GetByURN(ctx, urn).Return(asset.Asset{
+					ID:        assetID,
+					URN:       urn,
+					CreatedAt: now,
+				}, nil)
+			},
+			ExpectedErr: nil,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Description, func(t *testing.T) {
+			ctx := context.Background()
+
+			mockAssetRepo := mocks.NewAssetRepository(t)
+			if tc.Setup != nil {
+				tc.Setup(ctx, mockAssetRepo)
+			}
+
+			svc := asset.NewService(asset.ServiceDeps{
+				AssetRepo:     mockAssetRepo,
+				DiscoveryRepo: mocks.NewDiscoveryRepository(t),
+				LineageRepo:   mocks.NewLineageRepository(t),
+			})
+
+			actual, err := svc.GetAssetByIDWithoutProbes(ctx, tc.ID)
+			if tc.Expected != nil {
+				assert.Equal(t, *tc.Expected, actual)
+			}
+			if tc.ExpectedErr != nil {
+				assert.ErrorContains(t, err, tc.ExpectedErr.Error())
+				assert.ErrorAs(t, err, &tc.ExpectedErr)
+			}
+		})
+	}
+}
+
 func TestService_GetAssetByVersion(t *testing.T) {
 	assetID := "f742aa61-1100-445c-8d72-355a42e2fb59"
 	urn := "my-test-urn"

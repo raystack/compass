@@ -715,7 +715,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Description: "should return internal server error when finding asset failed",
 			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				expectedErr := errors.New("unknown error")
-				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, expectedErr)
+				as.EXPECT().GetAssetByIDWithoutProbes(ctx, "test dagger").Return(currentAsset, expectedErr)
 			},
 			Request:      validPayload,
 			ExpectStatus: codes.Internal,
@@ -724,7 +724,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 			Description: "should return internal server error when upserting asset service failed",
 			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
 				expectedErr := errors.New("unknown error")
-				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
+				as.EXPECT().GetAssetByIDWithoutProbes(ctx, "test dagger").Return(currentAsset, nil)
 				as.EXPECT().UpsertAsset(ctx, mock.AnythingOfType("*asset.Asset"), mock.AnythingOfType("[]string"), mock.AnythingOfType("[]string")).Return("1234-5678", expectedErr)
 			},
 			Request:      validPayload,
@@ -733,7 +733,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 		{
 			Description: "should return invalid argument error when upserting asset without lineage failed, with invalid error",
 			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
-				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAssetNew, nil)
+				as.EXPECT().GetAssetByIDWithoutProbes(ctx, "test dagger").Return(currentAssetNew, nil)
 				as.EXPECT().UpsertAssetWithoutLineage(ctx, &currentAssetNew).Return("", asset.InvalidError{})
 			},
 			Request:      validPayloadWithoutStreams,
@@ -742,7 +742,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 		{
 			Description: "should return internal server error when upserting asset without asset failed, with discovery error ",
 			Setup: func(ctx context.Context, as *mocks.AssetService, _ *mocks.UserService) {
-				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAssetNew, nil)
+				as.EXPECT().GetAssetByIDWithoutProbes(ctx, "test dagger").Return(currentAssetNew, nil)
 				as.EXPECT().UpsertAssetWithoutLineage(ctx, &currentAssetNew).Return("", asset.DiscoveryError{Err: errors.New("discovery error")})
 			},
 			Request:      validPayloadWithoutStreams,
@@ -767,7 +767,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 				assetWithID := patchedAsset
 				assetWithID.ID = assetID
 
-				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
+				as.EXPECT().GetAssetByIDWithoutProbes(ctx, "test dagger").Return(currentAsset, nil)
 				as.EXPECT().UpsertAsset(ctx, &patchedAsset, upstreams, downstreams).Return(assetWithID.ID, nil).Run(func(ctx context.Context, ast *asset.Asset, upstreams, downstreams []string) {
 					patchedAsset.ID = assetWithID.ID
 				})
@@ -801,7 +801,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 				assetWithID := patchedAsset
 				assetWithID.ID = assetID
 
-				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
+				as.EXPECT().GetAssetByIDWithoutProbes(ctx, "test dagger").Return(currentAsset, nil)
 				as.EXPECT().UpsertAssetWithoutLineage(ctx, &patchedAsset).
 					Return(assetWithID.ID, nil).
 					Run(func(ctx context.Context, ast *asset.Asset) {
@@ -846,7 +846,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 				assetWithID := patchedAsset
 				assetWithID.ID = assetID
 
-				as.EXPECT().GetAssetByID(ctx, "test dagger").Return(currentAsset, nil)
+				as.EXPECT().GetAssetByIDWithoutProbes(ctx, "test dagger").Return(currentAsset, nil)
 				as.EXPECT().UpsertAsset(ctx, &patchedAsset, []string{}, []string{}).
 					Return(assetWithID.ID, nil).
 					Run(func(ctx context.Context, ast *asset.Asset, _, _ []string) {

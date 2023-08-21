@@ -30,6 +30,7 @@ type StatsDClient interface {
 type AssetService interface {
 	GetAllAssets(ctx context.Context, flt asset.Filter, withTotal bool) ([]asset.Asset, uint32, error)
 	GetAssetByID(ctx context.Context, id string) (asset.Asset, error)
+	GetAssetByIDWithoutProbes(ctx context.Context, id string) (asset.Asset, error)
 	GetAssetByVersion(ctx context.Context, id, version string) (asset.Asset, error)
 	GetAssetVersionHistory(ctx context.Context, flt asset.Filter, id string) ([]asset.Asset, error)
 	UpsertAsset(ctx context.Context, ast *asset.Asset, upstreams, downstreams []string) (string, error)
@@ -264,7 +265,7 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1bet
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	ast, err := server.assetService.GetAssetByID(ctx, urn)
+	ast, err := server.assetService.GetAssetByIDWithoutProbes(ctx, urn)
 	if err != nil && !errors.As(err, &asset.NotFoundError{}) {
 		return nil, internalServerError(server.logger, err.Error())
 	}

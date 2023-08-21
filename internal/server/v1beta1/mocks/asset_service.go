@@ -226,6 +226,59 @@ func (_c *AssetService_GetAssetByID_Call) RunAndReturn(run func(context.Context,
 	return _c
 }
 
+// GetAssetByIDWithoutProbes provides a mock function with given fields: ctx, id
+func (_m *AssetService) GetAssetByIDWithoutProbes(ctx context.Context, id string) (asset.Asset, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 asset.Asset
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (asset.Asset, error)); ok {
+		return rf(ctx, id)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) asset.Asset); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Get(0).(asset.Asset)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// AssetService_GetAssetByIDWithoutProbes_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAssetByIDWithoutProbes'
+type AssetService_GetAssetByIDWithoutProbes_Call struct {
+	*mock.Call
+}
+
+// GetAssetByIDWithoutProbes is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *AssetService_Expecter) GetAssetByIDWithoutProbes(ctx interface{}, id interface{}) *AssetService_GetAssetByIDWithoutProbes_Call {
+	return &AssetService_GetAssetByIDWithoutProbes_Call{Call: _e.mock.On("GetAssetByIDWithoutProbes", ctx, id)}
+}
+
+func (_c *AssetService_GetAssetByIDWithoutProbes_Call) Run(run func(ctx context.Context, id string)) *AssetService_GetAssetByIDWithoutProbes_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *AssetService_GetAssetByIDWithoutProbes_Call) Return(_a0 asset.Asset, _a1 error) *AssetService_GetAssetByIDWithoutProbes_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *AssetService_GetAssetByIDWithoutProbes_Call) RunAndReturn(run func(context.Context, string) (asset.Asset, error)) *AssetService_GetAssetByIDWithoutProbes_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetAssetByVersion provides a mock function with given fields: ctx, id, version
 func (_m *AssetService) GetAssetByVersion(ctx context.Context, id string, version string) (asset.Asset, error) {
 	ret := _m.Called(ctx, id, version)
