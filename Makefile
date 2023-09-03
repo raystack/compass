@@ -41,7 +41,7 @@ coverage: test ## Print the code coverage
 
 build: ## Build the compass binary
 	@echo "Building guardian version ${VERSION}..."
-	go build -ldflags "-X ${NAME}/cli.Version=${VERSION}" 
+	CGO_ENABLED=0 go build -ldflags "-X ${NAME}/cli.Version=${VERSION}"
 	@echo "Build complete"
 
 buildr: setup

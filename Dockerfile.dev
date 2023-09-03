@@ -1,0 +1,17 @@
+FROM golang:1.20-alpine3.17 as builder
+RUN apk add make
+WORKDIR /build/
+COPY . .
+RUN make build
+
+FROM alpine:3.17
+
+COPY --from=builder /build/compass /usr/bin/compass
+RUN apk update
+RUN apk add ca-certificates
+
+# glibc compatibility library, since go binaries
+# don't work well with musl libc that alpine uses
+RUN apk add libc6-compat
+
+ENTRYPOINT ["compass"]
