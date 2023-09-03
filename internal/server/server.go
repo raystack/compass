@@ -90,6 +90,8 @@ func Serve(
 
 	// init grpc
 	grpcServer := grpc.NewServer(
+		grpc.MaxRecvMsgSize(config.GRPC.MaxRecvMsgSize),
+		grpc.MaxSendMsgSize(config.GRPC.MaxSendMsgSize),
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 			grpc_recovery.UnaryServerInterceptor(),
 			grpc_ctxtags.UnaryServerInterceptor(),
@@ -160,8 +162,8 @@ func Serve(
 		ctx,
 		mux.WithHTTPTarget(config.addr(), &http.Server{
 			Handler:      gwmux,
-			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 10 * time.Second,
+			ReadTimeout:  60 * time.Second,
+			WriteTimeout: 60 * time.Second,
 			IdleTimeout:  120 * time.Second,
 		}),
 		mux.WithGRPCTarget(config.grpcAddr(), grpcServer),
