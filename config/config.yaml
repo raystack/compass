@@ -28,6 +28,9 @@ service:
         headerkey_uuid: Compass-User-UUID
         headerkey_email: Compass-User-Email
         provider_default_name: shield
+        # namespace_claim_key is used to get the namespace from the jwt token, if not set default is "namespace_id"
+        # used for multi-tenancy
+        namespace_claim_key: project_id
     grpc:
         port: 8081
         max_send_msg_size: 33554432

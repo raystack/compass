@@ -12,7 +12,7 @@ import (
 
 // NamespaceHeaderKey specify what namespace request is targeted for
 // if not provided, default namespace is assumed
-const NamespaceHeaderKey = "x-namespace-id"
+const NamespaceHeaderKey = "x-namespace"
 
 type Config struct {
 	Host                      string `mapstructure:"host" default:"localhost:8081"`

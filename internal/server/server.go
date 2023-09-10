@@ -54,6 +54,8 @@ type IdentityConfig struct {
 	HeaderValueUserUUID string `yaml:"headervalue_uuid" mapstructure:"headervalue_uuid" default:"raystack@email.com"`
 	HeaderKeyUserEmail  string `yaml:"headerkey_email" mapstructure:"headerkey_email" default:"Compass-User-Email"`
 	ProviderDefaultName string `yaml:"provider_default_name" mapstructure:"provider_default_name" default:""`
+
+	NamespaceClaimKey string `yaml:"namespace_claim_key" mapstructure:"namespace_claim_key" default:"namespace_id"`
 }
 
 type GRPCConfig struct {
@@ -100,8 +102,8 @@ func Serve(
 			grpc_logrus.UnaryServerInterceptor(logger.Entry()),
 			nrgrpc.UnaryServerInterceptor(nrApp),
 			grpc_interceptor.StatsD(statsdReporter),
+			grpc_interceptor.NamespaceUnaryInterceptor(namespaceService, config.Identity.NamespaceClaimKey, config.Identity.HeaderKeyUserUUID),
 			grpc_interceptor.UserHeaderCtx(config.Identity.HeaderKeyUserUUID, config.Identity.HeaderKeyUserEmail),
-			grpc_interceptor.NamespaceUnaryInterceptor(namespaceService),
 		)),
 	)
 	reflection.Register(grpcServer)

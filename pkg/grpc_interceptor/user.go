@@ -2,8 +2,6 @@ package grpc_interceptor
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/raystack/compass/core/user"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -18,22 +16,20 @@ func UserHeaderCtx(IdentityHeaderKeyUUID, IdentityHeaderKeyEmail string) grpc.Un
 			userUUID  = ""
 			userEmail = ""
 		)
-		md, ok := metadata.FromIncomingContext(ctx)
-		if !ok {
-			return "", fmt.Errorf("metadata in grpc doesn't exist")
-		}
 
-		metadataValues := md.Get(IdentityHeaderKeyUUID)
-		if len(metadataValues) > 0 {
-			userUUID = metadataValues[0]
-		}
+		if md, ok := metadata.FromIncomingContext(ctx); ok {
+			metadataValues := md.Get(IdentityHeaderKeyUUID)
+			if len(metadataValues) > 0 {
+				userUUID = metadataValues[0]
+			}
 
-		metadataValues = md.Get(IdentityHeaderKeyEmail)
-		if len(metadataValues) > 0 {
-			userEmail = metadataValues[0]
-		}
+			metadataValues = md.Get(IdentityHeaderKeyEmail)
+			if len(metadataValues) > 0 {
+				userEmail = metadataValues[0]
+			}
 
-		newCtx := user.NewContext(ctx, user.User{UUID: userUUID, Email: userEmail})
-		return handler(newCtx, req)
+			ctx = user.NewContext(ctx, user.User{UUID: userUUID, Email: userEmail})
+		}
+		return handler(ctx, req)
 	}
 }
