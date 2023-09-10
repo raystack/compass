@@ -48,7 +48,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA "public" GRANT USAGE ON SEQUENCES TO "compass
 ALTER DEFAULT PRIVILEGES IN SCHEMA "public" GRANT EXECUTE ON FUNCTIONS TO "compass_user";
 ```
 
-A middleware for grpc looks for `x-namespace-id` header to extract tenant id if not found falls back to `default` namespace.
+A middleware for grpc looks for `x-namespace` header to extract tenant id if not found falls back to `default` namespace.
 Same could be passed in a `jwt token` of Authentication Bearer with `namespace_id` as a claim.
 
 ## Search

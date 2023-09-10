@@ -1,7 +1,5 @@
 package grpc_interceptor
 
-//go:generate mockery --name=NamespaceService -r --case underscore --with-expecter --structname NamespaceService --filename namespace_service.go --output=./mocks
-
 import (
 	"context"
 	"github.com/google/uuid"
@@ -9,7 +7,7 @@ import (
 	"google.golang.org/grpc/status"
 	"strings"
 
-	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/internal/client"
 	"google.golang.org/grpc"
@@ -19,6 +17,7 @@ import (
 // NamespaceKey is injected in context with the tenant context
 type NamespaceKey struct{}
 
+//go:generate mockery --name=NamespaceService -r --case underscore --with-expecter --structname NamespaceService --filename namespace_service.go --output=./mocks
 type NamespaceService interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*namespace.Namespace, error)
 	GetByName(ctx context.Context, name string) (*namespace.Namespace, error)
@@ -26,47 +25,54 @@ type NamespaceService interface {
 
 // NamespaceUnaryInterceptor namespace can be passed in jwt token or headers, if none provided
 // it falls back to default
-func NamespaceUnaryInterceptor(service NamespaceService) grpc.UnaryServerInterceptor {
-	return func(
-		ctx context.Context,
-		req interface{},
-		info *grpc.UnaryServerInfo,
-		handler grpc.UnaryHandler,
-	) (interface{}, error) {
-		if md, ok := metadata.FromIncomingContext(ctx); ok {
+func NamespaceUnaryInterceptor(service NamespaceService, namespaceClaimKey, userUUIDHeaderKey string) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		namespaceForRequest := namespace.DefaultNamespace
+		if incomingMD, ok := metadata.FromIncomingContext(ctx); ok {
 			// extract if jwt is set with namespace id
 			// jwt token has higher priority then header
-			bearers := md.Get("Authorization")
-			if len(bearers) > 0 {
+
+			if bearers := incomingMD.Get("Authorization"); len(bearers) > 0 {
 				// Parse the token
 				rawToken := strings.TrimPrefix(bearers[0], "Bearer ")
-				token, err := jwt.ParseSigned(rawToken)
-				if err == nil {
-					claims := make(map[string]string)
-					_ = token.UnsafeClaimsWithoutVerification(&claims)
-					if namespaceID, ok1 := claims["namespace_id"]; ok1 {
-						ns, err := getNamespaceByNameOrID(ctx, service, namespaceID)
-						if err != nil {
-							return nil, err
+				if rawToken != "" {
+					token, err := jwt.ParseInsecure([]byte(rawToken))
+					if err == nil {
+						// check if namespace is passed as claim
+						if namespaceID, okClaim := token.Get(namespaceClaimKey); okClaim {
+							ns, err := getNamespaceByNameOrID(ctx, service, namespaceID.(string))
+							if err != nil {
+								return nil, err
+							}
+							namespaceForRequest = ns
 						}
-						return handler(BuildContextWithNamespace(ctx, ns), req)
+
+						// override the user uuid if passed as claim
+						if userUUID := token.Subject(); userUUID != "" && userUUIDHeaderKey != "" {
+							incomingMD.Set(userUUIDHeaderKey, userUUID)
+							ctx = metadata.NewIncomingContext(ctx, incomingMD)
+						}
 					}
 				}
 			}
 
-			// check if namespace is passed as header
-			namespaceHeaders := md.Get(client.NamespaceHeaderKey)
-			if len(namespaceHeaders) > 0 {
-				ns, err := getNamespaceByNameOrID(ctx, service, strings.TrimSpace(namespaceHeaders[0]))
-				if err != nil {
-					return nil, err
+			// if we have not already found a namespace, check in header
+			if namespaceForRequest.ID == namespace.DefaultNamespace.ID {
+				// check if namespace is passed as header
+				namespaceHeaders := incomingMD.Get(client.NamespaceHeaderKey)
+				if len(namespaceHeaders) > 0 {
+					ns, err := getNamespaceByNameOrID(ctx, service, strings.TrimSpace(namespaceHeaders[0]))
+					if err != nil {
+						return nil, err
+					}
+					namespaceForRequest = ns
 				}
-				return handler(BuildContextWithNamespace(ctx, ns), req)
 			}
 		}
 
 		// fallback to default namespace
-		return handler(BuildContextWithNamespace(ctx, namespace.DefaultNamespace), req)
+		ctx = BuildContextWithNamespace(ctx, namespaceForRequest)
+		return handler(ctx, req)
 	}
 }
 

@@ -114,7 +114,7 @@ func TestNamespaceUnaryInterceptor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mocks(tt.args.ctx, tt.args.service)
 
-			interceptor := grpc_interceptor.NamespaceUnaryInterceptor(tt.args.service)
+			interceptor := grpc_interceptor.NamespaceUnaryInterceptor(tt.args.service, "namespace_id", "")
 			_, err := interceptor(tt.args.ctx, nil, nil, func(ctx context.Context, req interface{}) (interface{}, error) {
 				got := grpc_interceptor.FetchNamespaceFromContext(ctx)
 				if !reflect.DeepEqual(got, tt.want.ns) {
