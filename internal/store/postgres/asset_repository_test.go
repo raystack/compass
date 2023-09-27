@@ -963,6 +963,8 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			r.Equal(asset.BaseVersion, ast.Version)
 			r.NoError(err)
 			r.NotEmpty(id)
+			r.NotEmpty(ast.CreatedAt)
+			r.NotEmpty(ast.UpdatedAt)
 			ast.ID = id
 
 			assetInDB, err := r.repository.GetByID(r.ctx, ast.ID)
@@ -975,6 +977,7 @@ func (r *AssetRepositoryTestSuite) TestUpsert() {
 			ast2.Description = "create a new version" // to force fetch from asset_versions.
 			_, err = r.repository.Upsert(r.ctx, r.ns, &ast2)
 			r.NoError(err)
+			r.Greater(ast2.UpdatedAt.UnixNano(), ast.UpdatedAt.UnixNano())
 			assetv1, err := r.repository.GetByVersionWithID(r.ctx, ast.ID, asset.BaseVersion)
 			r.NoError(err)
 			r.Equal("0.1", assetv1.Version)

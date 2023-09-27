@@ -476,9 +476,11 @@ func (r *AssetRepository) deleteWithPredicate(ctx context.Context, pred sq.Eq) (
 
 func (r *AssetRepository) insert(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset) (id string, err error) {
 	err = r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
+		ast.CreatedAt = time.Now()
+		ast.UpdatedAt = ast.CreatedAt
 		query, args, err := sq.Insert("assets").
-			Columns("urn", "namespace_id", "type", "service", "name", "description", "data", "url", "labels", "updated_by", "version").
-			Values(ast.URN, ns.ID, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.URL, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion).
+			Columns("urn", "namespace_id", "type", "service", "name", "description", "data", "url", "labels", "created_at", "updated_by", "updated_at", "version").
+			Values(ast.URN, ns.ID, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.URL, ast.Labels, ast.CreatedAt, ast.UpdatedBy.ID, ast.UpdatedAt, asset.BaseVersion).
 			Suffix("RETURNING \"id\"").
 			PlaceholderFormat(sq.Dollar).
 			ToSql()
@@ -532,6 +534,7 @@ func (r *AssetRepository) update(ctx context.Context, ns *namespace.Namespace, a
 		}
 		newAsset.Version = newVersion
 		newAsset.ID = oldAsset.ID
+		newAsset.UpdatedAt = time.Now()
 
 		query, args, err := r.buildSQL(sq.Update("assets").
 			Set("urn", newAsset.URN).
@@ -542,7 +545,7 @@ func (r *AssetRepository) update(ctx context.Context, ns *namespace.Namespace, a
 			Set("data", newAsset.Data).
 			Set("url", newAsset.URL).
 			Set("labels", newAsset.Labels).
-			Set("updated_at", time.Now()).
+			Set("updated_at", newAsset.UpdatedAt).
 			Set("updated_by", newAsset.UpdatedBy.ID).
 			Set("version", newAsset.Version).
 			Where(sq.Eq{"id": assetID}).Where(sq.Eq{"namespace_id": ns.ID}))
