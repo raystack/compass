@@ -3,16 +3,17 @@ package postgres_test
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/pkg/grpc_interceptor"
-	"testing"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/ory/dockertest/v3"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/internal/store/postgres"
 	"github.com/raystack/salt/log"
-	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -181,6 +182,27 @@ func (r *UserRepositoryTestSuite) TestGetBy() {
 		})
 	})
 
+	r.Run("by email with tx, return the user created in the tx", func() {
+		err := setup(r.ctx, r.client)
+		r.NoError(err)
+
+		u := getUser("use-getbyemail@raystck.com")
+		err = r.client.RunWithinTx(r.ctx, func(tx *sqlx.Tx) error {
+			id, err := r.repository.CreateWithTx(r.ctx, tx, r.ns, u)
+			r.NoError(err)
+
+			_, err = r.repository.GetByEmail(r.ctx, u.Email)
+			r.ErrorAs(err, new(user.NotFoundError))
+
+			u, err := r.repository.GetByEmailWithTx(r.ctx, tx, u.Email)
+			r.NoError(err)
+			r.Equal(id, u.ID)
+
+			return nil
+		})
+		r.NoError(err)
+	})
+
 	r.Run("by uuid", func() {
 		r.Run("return empty string and ErrNotFound if uuid not found in DB", func() {
 			usr, err := r.repository.GetByUUID(r.ctx, "random")
@@ -201,6 +223,27 @@ func (r *UserRepositoryTestSuite) TestGetBy() {
 			r.NoError(err)
 			r.NotEmpty(usr)
 		})
+	})
+
+	r.Run("by UUID with tx, return the user created in the tx", func() {
+		err := setup(r.ctx, r.client)
+		r.NoError(err)
+
+		u := getUser("use-getbyuuid@raystack.com")
+		err = r.client.RunWithinTx(r.ctx, func(tx *sqlx.Tx) error {
+			id, err := r.repository.CreateWithTx(r.ctx, tx, r.ns, u)
+			r.NoError(err)
+
+			_, err = r.repository.GetByUUID(r.ctx, u.UUID)
+			r.ErrorAs(err, new(user.NotFoundError))
+
+			u, err := r.repository.GetByUUIDWithTx(r.ctx, tx, u.UUID)
+			r.NoError(err)
+			r.Equal(id, u.ID)
+
+			return nil
+		})
+		r.NoError(err)
 	})
 
 }

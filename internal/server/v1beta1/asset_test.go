@@ -4,21 +4,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
 	"reflect"
 	"testing"
 	"time"
 
+	"github.com/raystack/compass/core/namespace"
+	"github.com/raystack/compass/pkg/grpc_interceptor"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+	"github.com/r3labs/diff/v2"
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/core/star"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/internal/server/v1beta1/mocks"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
 	"github.com/raystack/salt/log"
-	"github.com/r3labs/diff/v2"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -364,8 +365,13 @@ func TestUpsertAsset(t *testing.T) {
 				Service: "kafka",
 				Data:    &structpb.Struct{},
 				Url:     "https://sample-url.com",
-				Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "", Email: "email@email.com", Provider: "provider"}},
-			},
+				Owners: []*compassv1beta1.User{
+					{Id: "id", Uuid: "1aecb8b3-23a9-4456-8ebd-3aafc746fff8", Email: "email@email.com", Provider: "provider"},
+					// the following users should get de-duplicated.
+					{Id: "id"},
+					{Uuid: "1aecb8b3-23a9-4456-8ebd-3aafc746fff8"},
+					{Email: "email@email.com"},
+				}},
 			Upstreams: []*compassv1beta1.LineageNode{
 				{
 					Urn:     "upstream-1",
@@ -498,7 +504,7 @@ func TestUpsertAsset(t *testing.T) {
 					UpdatedBy: user.User{ID: userID},
 					Data:      map[string]interface{}{},
 					URL:       "https://sample-url.com",
-					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
+					Owners:    []user.User{{ID: "id", UUID: "1aecb8b3-23a9-4456-8ebd-3aafc746fff8", Email: "email@email.com", Provider: "provider"}},
 				}
 				upstreams := []string{"upstream-1"}
 				downstreams := []string{"downstream-1", "downstream-2"}
@@ -576,7 +582,13 @@ func TestUpsertPatchAsset(t *testing.T) {
 				Service: "kafka",
 				Data:    &structpb.Struct{},
 				Url:     "https://sample-url.com",
-				Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "", Email: "email@email.com", Provider: "provider"}},
+				Owners: []*compassv1beta1.User{
+					{Id: "id", Uuid: "1aecb8b3-23a9-4456-8ebd-3aafc746fff8", Email: "email@email.com", Provider: "provider"},
+					// the following users should get de-duplicated.
+					{Id: "id"},
+					{Uuid: "1aecb8b3-23a9-4456-8ebd-3aafc746fff8"},
+					{Email: "email@email.com"},
+				},
 			},
 			Upstreams: []*compassv1beta1.LineageNode{
 				{
@@ -606,7 +618,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 			UpdatedBy: user.User{ID: userID},
 			Data:      map[string]interface{}{},
 			URL:       "https://sample-url-old.com",
-			Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
+			Owners:    []user.User{{ID: "id", UUID: "1aecb8b3-23a9-4456-8ebd-3aafc746fff8", Email: "email@email.com", Provider: "provider"}},
 		}
 	)
 	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
@@ -724,7 +736,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 					UpdatedBy: user.User{ID: userID},
 					Data:      map[string]interface{}{},
 					URL:       "https://sample-url.com",
-					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
+					Owners:    []user.User{{ID: "id", UUID: "1aecb8b3-23a9-4456-8ebd-3aafc746fff8", Email: "email@email.com", Provider: "provider"}},
 				}
 				upstreams := []string{"upstream-1"}
 				downstreams := []string{"downstream-1", "downstream-2"}
@@ -761,7 +773,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 					UpdatedBy: user.User{ID: userID},
 					Data:      map[string]interface{}{},
 					URL:       "https://sample-url-old.com",
-					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
+					Owners:    []user.User{{ID: "id", UUID: "1aecb8b3-23a9-4456-8ebd-3aafc746fff8", Email: "email@email.com", Provider: "provider"}},
 				}
 
 				assetWithID := patchedAsset
@@ -781,7 +793,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 					Name:    wrapperspb.String("new-name"),
 					Service: "kafka",
 					Data:    &structpb.Struct{},
-					Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "", Email: "email@email.com", Provider: "provider"}},
+					Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "1aecb8b3-23a9-4456-8ebd-3aafc746fff8", Email: "email@email.com", Provider: "provider"}},
 				},
 			},
 			ExpectStatus: codes.OK,
@@ -807,7 +819,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 					UpdatedBy: user.User{ID: userID},
 					Data:      map[string]interface{}{},
 					URL:       "https://sample-url-old.com",
-					Owners:    []user.User{{ID: "id", UUID: "", Email: "email@email.com", Provider: "provider"}},
+					Owners:    []user.User{{ID: "id", UUID: "1aecb8b3-23a9-4456-8ebd-3aafc746fff8", Email: "email@email.com", Provider: "provider"}},
 				}
 
 				assetWithID := patchedAsset
@@ -827,7 +839,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 					Name:    wrapperspb.String("new-name"),
 					Service: "kafka",
 					Data:    &structpb.Struct{},
-					Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "", Email: "email@email.com", Provider: "provider"}},
+					Owners:  []*compassv1beta1.User{{Id: "id", Uuid: "1aecb8b3-23a9-4456-8ebd-3aafc746fff8", Email: "email@email.com", Provider: "provider"}},
 				},
 				OverwriteLineage: true,
 			},

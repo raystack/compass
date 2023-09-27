@@ -6,15 +6,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/raystack/compass/core/namespace"
 	"strings"
 	"time"
 
+	"github.com/raystack/compass/core/namespace"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
+	"github.com/r3labs/diff/v2"
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/core/user"
-	"github.com/r3labs/diff/v2"
 )
 
 // AssetRepository is a type that manages user operation to the primary database
@@ -721,32 +722,47 @@ func (r *AssetRepository) compareOwners(current, newOwners []user.User) (toInser
 }
 
 func (r *AssetRepository) createOrFetchUsers(ctx context.Context, tx *sqlx.Tx, ns *namespace.Namespace, users []user.User) ([]user.User, error) {
+	ids := make(map[string]struct{}, len(users))
 	var results []user.User
 	for _, u := range users {
+		if u.ID != "" {
+			if _, ok := ids[u.ID]; ok {
+				continue
+			}
+			ids[u.ID] = struct{}{}
+			results = append(results, u)
+			continue
+		}
+
 		var (
 			userID      string
 			fetchedUser user.User
 			err         error
 		)
 		if u.UUID != "" {
-			fetchedUser, err = r.userRepo.GetByUUID(ctx, u.UUID)
+			fetchedUser, err = r.userRepo.GetByUUIDWithTx(ctx, tx, u.UUID)
 		} else {
-			fetchedUser, err = r.userRepo.GetByEmail(ctx, u.Email)
+			fetchedUser, err = r.userRepo.GetByEmailWithTx(ctx, tx, u.Email)
 		}
-		if err == nil {
-			userID = fetchedUser.ID
-		}
-		if errors.As(err, &user.NotFoundError{}) {
+		switch {
+		case errors.As(err, &user.NotFoundError{}):
 			u.Provider = r.defaultUserProvider
 			userID, err = r.userRepo.CreateWithTx(ctx, tx, ns, &u)
 			if err != nil {
 				return nil, fmt.Errorf("error creating owner: %w", err)
 			}
-		}
-		if err != nil {
+
+		case err != nil:
 			return nil, fmt.Errorf("error getting owner's ID: %w", err)
+
+		case err == nil:
+			userID = fetchedUser.ID
 		}
 
+		if _, ok := ids[userID]; ok {
+			continue
+		}
+		ids[userID] = struct{}{}
 		u.ID = userID
 		results = append(results, u)
 	}
