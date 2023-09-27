@@ -196,7 +196,7 @@ func (r *AssetRepository) GetVersionHistory(ctx context.Context, flt asset.Filte
 
 	builder := r.getAssetVersionSQL().
 		Where(sq.Eq{"a.asset_id": id}).
-		OrderBy("version DESC").
+		OrderBy("string_to_array(version, '.')::int[] DESC").
 		Limit(uint64(size)).
 		Offset(uint64(flt.Offset))
 	query, args, err := r.buildSQL(builder)

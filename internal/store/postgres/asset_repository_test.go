@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -788,51 +789,69 @@ func (r *AssetRepositoryTestSuite) TestVersions() {
 	r.Require().Equal(id, astVersioning.ID)
 
 	r.Run("should return 3 last versions of an assets if there are exist", func() {
+		assetURN := uuid.NewString() + "urn-u-3-version"
+		// v0.1
+		ast := asset.Asset{
+			URN:       assetURN,
+			Type:      "table",
+			Service:   "bigquery",
+			UpdatedBy: r.users[1],
+		}
+		id, err := r.repository.Upsert(r.ctx, r.ns, &ast)
+		r.Require().NoError(err)
+		r.Require().NotEmpty(id)
+		ast.ID = id
 
-		expectedAssetVersions := []asset.Asset{
+		for i := 2; i < 100; i++ {
+			ast.Description = "new description in v0." + strconv.Itoa(i)
+			id, err = r.repository.Upsert(r.ctx, r.ns, &ast)
+			r.Require().NoError(err)
+			r.Require().Equal(id, ast.ID)
+		}
+
+		expected := []asset.Asset{
 			{
-				ID:      astVersioning.ID,
+				ID:      ast.ID,
 				URN:     assetURN,
 				Type:    "table",
 				Service: "bigquery",
-				Version: "0.5",
+				Version: "0.13",
 				Changelog: diff.Changelog{
-					diff.Change{Type: "create", Path: []string{"labels", "key1"}, From: interface{}(nil), To: "value1"},
+					diff.Change{Type: "update", Path: []string{"description"}, From: "new description in v0.12", To: "new description in v0.13"},
 				},
 				UpdatedBy: r.users[1],
 			},
 			{
-				ID:      astVersioning.ID,
+				ID:      ast.ID,
 				URN:     assetURN,
 				Type:    "table",
 				Service: "bigquery",
-				Version: "0.4",
+				Version: "0.12",
 				Changelog: diff.Changelog{
-					diff.Change{Type: "create", Path: []string{"data", "data1"}, From: interface{}(nil), To: float64(12345)},
+					diff.Change{Type: "update", Path: []string{"description"}, From: "new description in v0.11", To: "new description in v0.12"},
 				},
 				UpdatedBy: r.users[1],
 			},
 			{
-				ID:      astVersioning.ID,
+				ID:      ast.ID,
 				URN:     assetURN,
 				Type:    "table",
 				Service: "bigquery",
-				Version: "0.3",
+				Version: "0.11",
 				Changelog: diff.Changelog{
-					diff.Change{Type: "create", Path: []string{"owners", "0", "email"}, From: interface{}(nil), To: "user@raystack.io"},
-					diff.Change{Type: "create", Path: []string{"owners", "1", "email"}, From: interface{}(nil), To: "meteor@raystack.io"},
+					diff.Change{Type: "update", Path: []string{"description"}, From: "new description in v0.10", To: "new description in v0.11"},
 				},
 				UpdatedBy: r.users[1],
 			},
 		}
 
-		assetVersions, err := r.repository.GetVersionHistory(r.ctx, asset.Filter{Size: 3}, astVersioning.ID)
+		assetVersions, err := r.repository.GetVersionHistory(r.ctx, asset.Filter{Size: 3, Offset: 86}, ast.ID)
 		r.NoError(err)
 		// making updatedby user time empty to make ast comparable
 		for i := 0; i < len(assetVersions); i++ {
 			clearTimestamps(&assetVersions[i])
 		}
-		r.Equal(expectedAssetVersions, assetVersions)
+		r.Equal(expected, assetVersions)
 	})
 
 	r.Run("should return current version of an assets", func() {
