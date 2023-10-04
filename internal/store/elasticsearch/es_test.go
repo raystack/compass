@@ -128,6 +128,50 @@ func TestElasticsearch(t *testing.T) {
 					return nil
 				},
 			},
+			{
+				Title:   "created index should be able to correctly identify stemmed tokens",
+				Service: daggerService,
+				Validate: func(esClient *store.Client, cli *elasticsearch.Client, indexName string) error {
+					textToAnalyze := "walking"
+					analyzerPath := fmt.Sprintf("/%s/_analyze", indexName)
+					analyzerPayload := fmt.Sprintf(`{"analyzer": "my_analyzer", "text": %q}`, textToAnalyze)
+
+					//nolint:noctx
+					req, err := http.NewRequest(http.MethodPost, analyzerPath, strings.NewReader(analyzerPayload))
+					if err != nil {
+						return fmt.Errorf("error creating analyzer request: %w", err)
+					}
+					req.Header.Add("content-type", "application/json")
+
+					res, err := cli.Perform(req)
+					if err != nil {
+						return fmt.Errorf("invoke analyzer: %w", err)
+					}
+					defer res.Body.Close()
+					if res.StatusCode != http.StatusOK {
+						return fmt.Errorf("elasticsearch returned non-200 response: %d", res.StatusCode)
+					}
+					var response struct {
+						Tokens []struct {
+							Token string `json:"token"`
+						} `json:"tokens"`
+					}
+					err = json.NewDecoder(res.Body).Decode(&response)
+					if err != nil {
+						return fmt.Errorf("error decoding response: %w", err)
+					}
+					expectTokens := []string{"walk"}
+					analyzedTokens := []string{}
+					for _, tok := range response.Tokens {
+						analyzedTokens = append(analyzedTokens, tok.Token)
+					}
+
+					if reflect.DeepEqual(expectTokens, analyzedTokens) == false {
+						return fmt.Errorf("expected analyzer to tokenize %q as %v, was %v", textToAnalyze, expectTokens, analyzedTokens)
+					}
+					return nil
+				},
+			},
 		}
 
 		for _, testCase := range testCases {

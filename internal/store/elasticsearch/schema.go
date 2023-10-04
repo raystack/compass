@@ -15,9 +15,15 @@ var indexSettingsTemplate = `{
 				"my_analyzer": {
 					"type": "custom",
 					"tokenizer": "my_tokenizer",
-					"filter": ["lowercase"]
+					"filter": ["lowercase", "english_stemmer"]
 				}
 			},
+			"filter": {
+				"english_stemmer": {
+					"type": "stemmer",
+					"name": "english"
+ 				}
+ 			},
 			"tokenizer": {
 			  "my_tokenizer": {
 				"type": "pattern",
