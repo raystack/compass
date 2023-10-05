@@ -58,6 +58,7 @@ func TestSearcherSearch(t *testing.T) {
 			Type    string
 			AssetID string
 			Data    map[string]interface{}
+			Service string
 		}
 		type searchTest struct {
 			Description    string
@@ -68,9 +69,37 @@ func TestSearcherSearch(t *testing.T) {
 
 		tests := []searchTest{
 			{
-				Description: "should fetch assets which has text in any of its fields",
+				Description: "should fetch assets with fields mentioned in included fields",
+				Config: asset.SearchConfig{
+					Text:          "topic",
+					IncludeFields: []string{"id", "data.company", "type"},
+				},
+				Expected: []expectedRow{
+					{Type: "topic", AssetID: "consumer-topic", Data: map[string]interface{}{"company": "gotocompany"}},
+					{Type: "topic", AssetID: "order-topic", Data: map[string]interface{}{"company": "gotocompany"}},
+					{Type: "topic", AssetID: "purchase-topic", Data: map[string]interface{}{"company": "microsoft"}},
+					{Type: "topic", AssetID: "consumer-mq-2", Data: map[string]interface{}{"company": "gotocompany"}},
+					{Type: "topic", AssetID: "transaction", Data: map[string]interface{}{"company": "gotocompany"}},
+				},
+			},
+			{
+				Description: "should fetch assets with default fields if included fields is empty",
 				Config: asset.SearchConfig{
 					Text: "topic",
+				},
+				Expected: []expectedRow{
+					{Type: "topic", AssetID: "consumer-topic", Service: "rabbitmq", Data: map[string]interface{}{"company": "gotocompany", "country": "id", "description": "Update on every rabbitmq customer creation/update", "environment": "production", "partition": float64(50), "topic_name": "consumer-topic"}},
+					{Type: "topic", AssetID: "order-topic", Service: "kafka", Data: map[string]interface{}{"company": "gotocompany", "country": "us", "description": "Topic for each submitted order", "environment": "integration", "malformed": "2023-05-23T04:35:42Z", "partition": float64(250), "topic_name": "order-topic"}},
+					{Type: "topic", AssetID: "purchase-topic", Service: "kafka", Data: map[string]interface{}{"company": "microsoft", "country": "id", "description": "Topic for each submitted purchase", "environment": "integration", "malformed": "", "partition": float64(100), "topic_name": "purchase-topic"}},
+					{Type: "topic", AssetID: "consumer-mq-2", Service: "rabbitmq", Data: map[string]interface{}{"company": "gotocompany", "country": "id", "description": "Another rabbitmq topic", "environment": "production", "partition": float64(50), "topic_name": "consumer-mq-2"}},
+					{Type: "topic", AssetID: "transaction", Service: "rabbitmq", Data: map[string]interface{}{"company": "gotocompany", "description": "This publishes all the invoices from each of invoice storage where the invoice will be filtered and checked using invoice filterer and invoice checker", "environment": "production", "partition": float64(1), "topic_name": "transaction"}},
+				},
+			},
+			{
+				Description: "should fetch assets which has text in any of its fields",
+				Config: asset.SearchConfig{
+					Text:          "topic",
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{
 					{Type: "topic", AssetID: "consumer-topic"},
@@ -83,7 +112,8 @@ func TestSearcherSearch(t *testing.T) {
 			{
 				Description: "should enable fuzzy search",
 				Config: asset.SearchConfig{
-					Text: "tpic",
+					Text:          "tpic",
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{
 					{Type: "topic", AssetID: "consumer-topic"},
@@ -96,15 +126,17 @@ func TestSearcherSearch(t *testing.T) {
 			{
 				Description: "should disable fuzzy search",
 				Config: asset.SearchConfig{
-					Text:  "tpic",
-					Flags: asset.SearchFlags{DisableFuzzy: true},
+					Text:          "tpic",
+					Flags:         asset.SearchFlags{DisableFuzzy: true},
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{},
 			},
 			{
 				Description: "should put more weight on id fields",
 				Config: asset.SearchConfig{
-					Text: "invoice",
+					Text:          "invoice",
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{
 					{Type: "table", AssetID: "us1-apple-invoice"},
@@ -119,6 +151,7 @@ func TestSearcherSearch(t *testing.T) {
 					Filters: map[string][]string{
 						"service": {"rabbitmq", "postgres"},
 					},
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{
 					{Type: "table", AssetID: "au2-microsoft-invoice"},
@@ -132,6 +165,7 @@ func TestSearcherSearch(t *testing.T) {
 					Filters: map[string][]string{
 						"data.company": {"gotocompany"},
 					},
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{
 					{Type: "topic", AssetID: "consumer-topic"},
@@ -149,6 +183,7 @@ func TestSearcherSearch(t *testing.T) {
 						"data.environment": {"production"},
 						"data.company":     {"gotocompany"},
 					},
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{
 					{Type: "topic", AssetID: "consumer-topic"},
@@ -162,6 +197,7 @@ func TestSearcherSearch(t *testing.T) {
 					Filters: map[string][]string{
 						"owners.email": {"john.doe@email.com"},
 					},
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{
 					{Type: "topic", AssetID: "consumer-topic"},
@@ -170,8 +206,9 @@ func TestSearcherSearch(t *testing.T) {
 			{
 				Description: "should return a descendingly sorted based on usage count in search results if rank by usage in the config",
 				Config: asset.SearchConfig{
-					Text:   "bigquery",
-					RankBy: "data.profile.usage_count",
+					Text:          "bigquery",
+					RankBy:        "data.profile.usage_count",
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
@@ -190,6 +227,7 @@ func TestSearcherSearch(t *testing.T) {
 						"description":  "rabbitmq",
 						"owners.email": "john.doe",
 					},
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{
 					{Type: "topic", AssetID: "consumer-topic"},
@@ -198,9 +236,10 @@ func TestSearcherSearch(t *testing.T) {
 			{
 				Description: "should return 5 records with offset of 0",
 				Config: asset.SearchConfig{
-					Text:       "topic",
-					Offset:     0,
-					MaxResults: 5,
+					Text:          "topic",
+					Offset:        0,
+					MaxResults:    5,
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{
 					{Type: "topic", AssetID: "consumer-topic"},
@@ -213,9 +252,10 @@ func TestSearcherSearch(t *testing.T) {
 			{
 				Description: "should return 4 records with offset of 1",
 				Config: asset.SearchConfig{
-					Text:       "topic",
-					Offset:     1,
-					MaxResults: 5,
+					Text:          "topic",
+					Offset:        1,
+					MaxResults:    5,
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{
 					// {Type: "topic", AssetID: "consumer-topic"},
@@ -232,6 +272,7 @@ func TestSearcherSearch(t *testing.T) {
 					Queries: map[string]string{
 						"data.schema.columns.name": "common",
 					},
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
@@ -241,8 +282,9 @@ func TestSearcherSearch(t *testing.T) {
 			{
 				Description: "should return 'bigquery::gcpproject/dataset/tablename-abc-common-test' resource on top if searched for text 'tablename-abc-common-test'",
 				Config: asset.SearchConfig{
-					Text:   "tablename-abc-common-test",
-					RankBy: "data.profile.usage_count",
+					Text:          "tablename-abc-common-test",
+					RankBy:        "data.profile.usage_count",
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
@@ -261,6 +303,7 @@ func TestSearcherSearch(t *testing.T) {
 					Flags: asset.SearchFlags{
 						EnableHighlight: true,
 					},
+					IncludeFields: []string{"type", "id"},
 				},
 
 				Expected: []expectedRow{
@@ -284,8 +327,9 @@ func TestSearcherSearch(t *testing.T) {
 				Description: "should return 'bigquery::gcpproject/dataset/tablename-abc-common-test' resource on top if " +
 					"searched for text 'abc-test' as it has both the keywords searched",
 				Config: asset.SearchConfig{
-					Text:   "abc-test",
-					RankBy: "data.profile.usage_count",
+					Text:          "abc-test",
+					RankBy:        "data.profile.usage_count",
+					IncludeFields: []string{"type", "id"},
 				},
 				Expected: []expectedRow{
 					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
@@ -302,6 +346,8 @@ func TestSearcherSearch(t *testing.T) {
 				for i, res := range test.Expected {
 					assert.Equal(t, res.Type, results[i].Type)
 					assert.Equal(t, res.AssetID, results[i].ID)
+					assert.Equal(t, res.Data, results[i].Data)
+					assert.Equal(t, res.Service, results[i].Service)
 					if test.Config.Flags.EnableHighlight {
 						assert.Equal(t, res.Data["_highlight"], results[i].Data["_highlight"])
 					}

@@ -70,6 +70,9 @@ type SearchConfig struct {
 	// Offset parameter defines the offset from the first result you want to fetch
 	// Note that MaxResults + Offset can not be more than the `index.max_result_window` index setting in ES cluster, which defaults to 10,000
 	Offset int
+
+	// IncludeFields specifies the fields to return in response
+	IncludeFields []string
 }
 
 // SearchResult represents an item/result in a list of search results

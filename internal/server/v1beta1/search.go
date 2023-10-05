@@ -23,13 +23,14 @@ func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.S
 	}
 
 	cfg := asset.SearchConfig{
-		Text:       text,
-		MaxResults: int(req.GetSize()),
-		Filters:    filterConfigFromValues(req.GetFilter()),
-		RankBy:     req.GetRankby(),
-		Queries:    req.GetQuery(),
-		Flags:      getSearchFlagsFromFlags(req.GetFlags()),
-		Offset:     int(req.GetOffset()),
+		Text:          text,
+		MaxResults:    int(req.GetSize()),
+		Filters:       filterConfigFromValues(req.GetFilter()),
+		RankBy:        req.GetRankby(),
+		Queries:       req.GetQuery(),
+		Flags:         getSearchFlagsFromFlags(req.GetFlags()),
+		Offset:        int(req.GetOffset()),
+		IncludeFields: req.GetIncludeFields(),
 	}
 
 	results, err := server.assetService.SearchAssets(ctx, cfg)

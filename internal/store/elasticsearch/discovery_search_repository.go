@@ -22,13 +22,13 @@ const (
 	suggesterName                      = "name-phrase-suggest"
 )
 
-var returnedAssetFieldsResult = []string{"id", "urn", "type", "service", "name", "description", "data", "labels", "created_at", "updated_at"}
-
 // Search the asset store
 func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error) {
 	if strings.TrimSpace(cfg.Text) == "" {
 		return nil, asset.DiscoveryError{Op: "Search", Err: errors.New("search text cannot be empty")}
 	}
+	var returnedAssetFieldsResult []string
+
 	maxResults := cfg.MaxResults
 	if maxResults <= 0 {
 		maxResults = defaultMaxResults
@@ -36,6 +36,15 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 	offset := cfg.Offset
 	if offset < 0 {
 		offset = 0
+	}
+
+	if len(cfg.IncludeFields) == 0 {
+		returnedAssetFieldsResult = []string{
+			"id", "urn", "type", "service", "name", "description", "data", "labels",
+			"created_at", "updated_at",
+		}
+	} else {
+		returnedAssetFieldsResult = cfg.IncludeFields
 	}
 
 	defer func(start time.Time) {
@@ -350,6 +359,7 @@ func toSearchResults(hits []searchHit) []asset.SearchResult {
 				"_highlight": hit.HighLight,
 			}
 		}
+
 		results[i] = asset.SearchResult{
 			Type:        r.Type.String(),
 			ID:          id,
