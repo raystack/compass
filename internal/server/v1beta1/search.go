@@ -18,9 +18,6 @@ func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.S
 	}
 
 	text := strings.TrimSpace(req.GetText())
-	if text == "" {
-		return nil, status.Error(codes.InvalidArgument, "'text' must be specified")
-	}
 
 	cfg := asset.SearchConfig{
 		Text:          text,

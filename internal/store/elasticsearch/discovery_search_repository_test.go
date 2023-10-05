@@ -21,23 +21,6 @@ type searchTestData struct {
 
 func TestSearcherSearch(t *testing.T) {
 	ctx := context.TODO()
-	t.Run("should return an error if search string is empty", func(t *testing.T) {
-		cli, err := esTestServer.NewClient()
-		require.NoError(t, err)
-		esClient, err := store.NewClient(
-			log.NewNoop(),
-			store.Config{},
-			store.WithClient(cli),
-		)
-		require.NoError(t, err)
-
-		repo := store.NewDiscoveryRepository(esClient, log.NewNoop())
-		_, err = repo.Search(ctx, asset.SearchConfig{
-			Text: "",
-		})
-
-		assert.Error(t, err)
-	})
 
 	t.Run("fixtures", func(t *testing.T) {
 		cli, err := esTestServer.NewClient()
@@ -93,6 +76,39 @@ func TestSearcherSearch(t *testing.T) {
 					{Type: "topic", AssetID: "purchase-topic", Service: "kafka", Data: map[string]interface{}{"company": "microsoft", "country": "id", "description": "Topic for each submitted purchase", "environment": "integration", "malformed": "", "partition": float64(100), "topic_name": "purchase-topic"}},
 					{Type: "topic", AssetID: "consumer-mq-2", Service: "rabbitmq", Data: map[string]interface{}{"company": "gotocompany", "country": "id", "description": "Another rabbitmq topic", "environment": "production", "partition": float64(50), "topic_name": "consumer-mq-2"}},
 					{Type: "topic", AssetID: "transaction", Service: "rabbitmq", Data: map[string]interface{}{"company": "gotocompany", "description": "This publishes all the invoices from each of invoice storage where the invoice will be filtered and checked using invoice filterer and invoice checker", "environment": "production", "partition": float64(1), "topic_name": "transaction"}},
+				},
+			},
+			{
+				Description: "should fetch assets with empty text",
+				Config: asset.SearchConfig{
+					Text:          "",
+					IncludeFields: []string{"id", "type"},
+					Filters:       map[string][]string{"service": {"bigquery"}},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-mid"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/abc-tablename-mid"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/test"},
+				},
+			},
+			{
+				Description: "should fetch assets with empty text and rank by",
+				Config: asset.SearchConfig{
+					Text:          "",
+					RankBy:        "data.profile.usage_count",
+					IncludeFields: []string{"id", "type"},
+					Filters:       map[string][]string{"service": {"bigquery"}},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-mid"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/abc-tablename-mid"},
 				},
 			},
 			{

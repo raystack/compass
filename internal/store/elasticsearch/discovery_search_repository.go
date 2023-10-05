@@ -24,11 +24,7 @@ const (
 
 // Search the asset store
 func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error) {
-	if strings.TrimSpace(cfg.Text) == "" {
-		return nil, asset.DiscoveryError{Op: "Search", Err: errors.New("search text cannot be empty")}
-	}
 	var returnedAssetFieldsResult []string
-
 	maxResults := cfg.MaxResults
 	if maxResults <= 0 {
 		maxResults = defaultMaxResults
@@ -242,6 +238,10 @@ func buildSuggestQuery(cfg asset.SearchConfig) (io.Reader, error) {
 }
 
 func buildTextQuery(q *elastic.BoolQuery, cfg asset.SearchConfig) {
+	if strings.TrimSpace(cfg.Text) == "" {
+		q.Should(elastic.NewMatchAllQuery())
+	}
+
 	boostedFields := []string{"urn^10", "name^5"}
 	q.Should(
 		// Phrase query cannot have `FUZZINESS`
@@ -314,12 +314,13 @@ func buildFilterExistsQueries(q *elastic.BoolQuery, fields []string) {
 
 func buildFunctionScoreQuery(query elastic.Query, rankBy, text string) elastic.Query {
 	// Added exact match term query here so that exact match gets higher priority.
-	fsQuery := elastic.NewFunctionScoreQuery().
-		Add(
+	fsQuery := elastic.NewFunctionScoreQuery()
+	if text != "" {
+		fsQuery.Add(
 			elastic.NewTermQuery("name.keyword", text),
 			elastic.NewWeightFactorFunction(2),
 		)
-
+	}
 	if rankBy != "" {
 		fsQuery.AddScoreFunc(
 			elastic.NewFieldValueFactorFunction().

@@ -35,11 +35,6 @@ func TestSearch(t *testing.T) {
 
 	testCases := []testCase{
 		{
-			Description:  "should return invalid argument if 'text' parameter is empty or missing",
-			ExpectStatus: codes.InvalidArgument,
-			Request:      &compassv1beta1.SearchAssetsRequest{},
-		},
-		{
 			Description: "should report internal server if asset searcher fails",
 			Request: &compassv1beta1.SearchAssetsRequest{
 				Text: "test",
