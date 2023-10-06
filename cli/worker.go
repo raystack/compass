@@ -68,7 +68,7 @@ func runWorker(ctx context.Context, cfg *Config) error {
 
 	mgr, err := workermanager.New(ctx, workermanager.Deps{
 		Config:        cfg.Worker,
-		DiscoveryRepo: elasticsearch.NewDiscoveryRepository(esClient, logger),
+		DiscoveryRepo: elasticsearch.NewDiscoveryRepository(esClient, logger, cfg.Elasticsearch.RequestTimeout),
 		Logger:        logger,
 	})
 	if err != nil {

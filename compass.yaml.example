@@ -34,6 +34,7 @@ newrelic:
 
 elasticsearch:
     brokers: http://localhost:9200
+    request_timeout: 10s
 
 db:
     host: localhost
@@ -46,6 +47,7 @@ db:
 service:
     host: localhost
     port: 8080
+    request_timeout: 10s
     identity:
         headerkey_uuid: Compass-User-UUID
         headerkey_email: Compass-User-Email
@@ -54,6 +56,7 @@ service:
         port: 8081
         max_send_msg_size: 33554432
         max_recv_msg_size: 33554432
+        request_timeout: 5s
 
 worker:
     enabled: true

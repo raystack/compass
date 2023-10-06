@@ -18,14 +18,16 @@ import (
 // DiscoveryRepository implements discovery.Repository
 // with elasticsearch as the backing store.
 type DiscoveryRepository struct {
-	cli    *Client
-	logger log.Logger
+	cli            *Client
+	logger         log.Logger
+	requestTimeout time.Duration
 }
 
-func NewDiscoveryRepository(cli *Client, logger log.Logger) *DiscoveryRepository {
+func NewDiscoveryRepository(cli *Client, logger log.Logger, requestTimeout time.Duration) *DiscoveryRepository {
 	return &DiscoveryRepository{
-		cli:    cli,
-		logger: logger,
+		cli:            cli,
+		logger:         logger,
+		requestTimeout: requestTimeout,
 	}
 }
 
