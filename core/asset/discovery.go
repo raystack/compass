@@ -43,6 +43,8 @@ type SearchFlags struct {
 
 	// DisableFuzzy disables fuzziness on search
 	DisableFuzzy bool
+
+	IsColumnSearch bool
 }
 
 // SearchConfig represents a search query along

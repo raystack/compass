@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/goto/compass/core/asset"
@@ -131,7 +132,7 @@ func runServer(ctx context.Context, cfg *Config) error {
 	if err != nil {
 		return fmt.Errorf("create new asset repository: %w", err)
 	}
-	discoveryRepository := esStore.NewDiscoveryRepository(esClient, logger, cfg.Elasticsearch.RequestTimeout)
+	discoveryRepository := esStore.NewDiscoveryRepository(esClient, logger, cfg.Elasticsearch.RequestTimeout, strings.Split(cfg.ColSearchExclusionKeywords, ","))
 	lineageRepository, err := postgres.NewLineageRepository(pgClient)
 	if err != nil {
 		return fmt.Errorf("create new lineage repository: %w", err)

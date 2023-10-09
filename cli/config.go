@@ -103,6 +103,9 @@ type Config struct {
 
 	// Client
 	Client client.Config `mapstructure:"client"`
+
+	// Column search excluded keyword list
+	ColSearchExclusionKeywords string `yaml:"col_search_excluded_keywords" mapstructure:"col_search_excluded_keywords"`
 }
 
 func LoadConfig() (*Config, error) {

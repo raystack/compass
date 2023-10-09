@@ -53,7 +53,7 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 		})
 	}(time.Now())
 
-	query, err := buildQuery(cfg)
+	query, err := repo.buildQuery(cfg)
 	if err != nil {
 		return nil, asset.DiscoveryError{Op: "Search", Err: fmt.Errorf("build query: %w", err)}
 	}
@@ -197,17 +197,109 @@ func (repo *DiscoveryRepository) Suggest(ctx context.Context, config asset.Searc
 	return results, nil
 }
 
-func buildQuery(cfg asset.SearchConfig) (io.Reader, error) {
+func (repo *DiscoveryRepository) buildColumnQuery(query *elastic.BoolQuery, cfg asset.SearchConfig, field string) *elastic.Highlight {
+	matchString := cfg.Text
+	for _, exclusionStr := range repo.columnSearchExclusionList {
+		exclusionStr = strings.TrimSpace(exclusionStr)
+		if strings.Contains(matchString, exclusionStr) {
+			matchString = strings.ReplaceAll(matchString, fmt.Sprintf("_%s", exclusionStr), "")
+			matchString = strings.ReplaceAll(matchString, fmt.Sprintf(" %s", exclusionStr), "")
+			matchString = strings.ReplaceAll(matchString, fmt.Sprintf("-%s", exclusionStr), "")
+		}
+	}
+
+	if matchString == "" {
+		matchString = cfg.Text
+	}
+
+	queries := make([]elastic.Query, 0)
+	termQuery := elastic.NewTermQuery(
+		fmt.Sprintf("%s.keyword", field),
+		cfg.Text,
+	).Boost(20)
+
+	descriptionTermQuery := elastic.NewTermQuery(
+		fmt.Sprintf("%s.keyword", "data.columns.description"),
+		cfg.Text,
+	)
+	phraseQuery := elastic.NewMultiMatchQuery(
+		cfg.Text,
+		[]string{
+			"data.columns.name^10",
+			"data.columns.description",
+		}...,
+	).Type("phrase")
+
+	matchQuery := elastic.NewMultiMatchQuery(
+		matchString,
+		[]string{
+			"data.columns.name^5",
+			"data.columns.description",
+		}...,
+	)
+
+	andMatchQuery := elastic.NewMultiMatchQuery(
+		matchString,
+		[]string{
+			"data.columns.name^5",
+			"data.columns.description",
+		}...,
+	).Operator("and")
+
+	multiMatchQueries := []*elastic.MultiMatchQuery{matchQuery, andMatchQuery}
+	queries = append(queries, termQuery, descriptionTermQuery, phraseQuery)
+	query.Should(queries...)
+	highlightQuery := make([]elastic.Query, 0)
+	highlightQuery = append(highlightQuery, queries...)
+	for _, q := range multiMatchQueries {
+		if !cfg.Flags.DisableFuzzy {
+			updatedQuery := q.Fuzziness("AUTO")
+			highlightQuery = append(highlightQuery, updatedQuery)
+		}
+		query.Should(q)
+	}
+
+	if cfg.Flags.EnableHighlight {
+		return elastic.NewHighlight().
+			Order("score").
+			Field("data.columns.name").
+			Field("data.columns.description").
+			HighlightQuery(
+				elastic.NewBoolQuery().
+					Should(highlightQuery...),
+			)
+	}
+
+	return nil
+}
+
+func (repo *DiscoveryRepository) buildQuery(cfg asset.SearchConfig) (io.Reader, error) {
 	boolQuery := elastic.NewBoolQuery()
-	buildTextQuery(boolQuery, cfg)
+	var highlightQuery *elastic.Highlight
+	field := ""
+
+	// if the search text is empty, do a match all query and return results
+	if strings.TrimSpace(cfg.Text) == "" {
+		boolQuery.Should(elastic.NewMatchAllQuery())
+		highlightQuery = buildHighlightQuery(cfg)
+	} else {
+		if cfg.Flags.IsColumnSearch {
+			field = "data.columns.name"
+			highlightQuery = repo.buildColumnQuery(boolQuery, cfg, field)
+		} else {
+			field = "name"
+			buildTextQuery(boolQuery, cfg)
+			highlightQuery = buildHighlightQuery(cfg)
+		}
+	}
+
 	buildFilterTermQueries(boolQuery, cfg.Filters)
 	buildMustMatchQueries(boolQuery, cfg)
-	query := buildFunctionScoreQuery(boolQuery, cfg.RankBy, cfg.Text)
-	highlight := buildHighlightQuery(cfg)
+	query := buildFunctionScoreQuery(boolQuery, cfg.RankBy, cfg.Text, field)
 
 	body, err := elastic.NewSearchRequest().
 		Query(query).
-		Highlight(highlight).
+		Highlight(highlightQuery).
 		MinScore(defaultMinScore).
 		Body()
 	if err != nil {
@@ -240,10 +332,6 @@ func buildSuggestQuery(cfg asset.SearchConfig) (io.Reader, error) {
 }
 
 func buildTextQuery(q *elastic.BoolQuery, cfg asset.SearchConfig) {
-	if strings.TrimSpace(cfg.Text) == "" {
-		q.Should(elastic.NewMatchAllQuery())
-	}
-
 	boostedFields := []string{"urn^10", "name^5"}
 	q.Should(
 		// Phrase query cannot have `FUZZINESS`
@@ -314,12 +402,12 @@ func buildFilterExistsQueries(q *elastic.BoolQuery, fields []string) {
 	}
 }
 
-func buildFunctionScoreQuery(query elastic.Query, rankBy, text string) elastic.Query {
+func buildFunctionScoreQuery(query elastic.Query, rankBy, text, field string) elastic.Query {
 	// Added exact match term query here so that exact match gets higher priority.
 	fsQuery := elastic.NewFunctionScoreQuery()
 	if text != "" {
 		fsQuery.Add(
-			elastic.NewTermQuery("name.keyword", text),
+			elastic.NewTermQuery(fmt.Sprintf("%s.keyword", field), text),
 			elastic.NewWeightFactorFunction(2),
 		)
 	}

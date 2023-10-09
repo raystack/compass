@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/goto/compass/internal/store/elasticsearch"
@@ -67,9 +68,10 @@ func runWorker(ctx context.Context, cfg *Config) error {
 	}
 
 	mgr, err := workermanager.New(ctx, workermanager.Deps{
-		Config:        cfg.Worker,
-		DiscoveryRepo: elasticsearch.NewDiscoveryRepository(esClient, logger, cfg.Elasticsearch.RequestTimeout),
-		Logger:        logger,
+		Config: cfg.Worker,
+		DiscoveryRepo: elasticsearch.NewDiscoveryRepository(esClient, logger, cfg.Elasticsearch.RequestTimeout,
+			strings.Split(cfg.ColSearchExclusionKeywords, ",")),
+		Logger: logger,
 	})
 	if err != nil {
 		return err

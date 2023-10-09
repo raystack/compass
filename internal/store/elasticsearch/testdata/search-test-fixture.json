@@ -114,7 +114,7 @@
                     "country": "us",
                     "description": "Transaction records for every microsoft purchase",
                     "total_rows": 100,
-                    "schema": [
+                    "columns": [
                         {
                             "name": "id"
                         },
@@ -144,7 +144,7 @@
                     "country": "id",
                     "description": "Transaction records for every Apple purchase",
                     "total_rows": 100,
-                    "schema": [
+                    "columns": [
                         {
                             "name": "id"
                         },
@@ -195,8 +195,7 @@
                             "owner": "user_1"
                         }
                     },
-                    "schema": {
-                        "columns": [
+                    "columns": [
                             {
                                 "data_type": "STRING",
                                 "is_nullable": true,
@@ -227,8 +226,7 @@
                                     }
                                 }
                             }
-                        ]
-                    },
+                        ],
                     "resource": {
                         "name": "tablename-1",
                         "service": "bigquery",
@@ -280,8 +278,7 @@
                             "owner": "user_1"
                         }
                     },
-                    "schema": {
-                        "columns": [
+                    "columns": [
                             {
                                 "data_type": "STRING",
                                 "is_nullable": true,
@@ -312,8 +309,7 @@
                                     }
                                 }
                             }
-                        ]
-                    },
+                        ],
                     "resource": {
                         "name": "tablename-common",
                         "service": "bigquery",
@@ -371,8 +367,7 @@
                             "owner": "user_1"
                         }
                     },
-                    "schema": {
-                        "columns": [
+                    "columns": [
                             {
                                 "data_type": "STRING",
                                 "is_nullable": true,
@@ -403,8 +398,8 @@
                                     }
                                 }
                             }
-                        ]
-                    },
+                        ],
+
                     "resource": {
                         "name": "tablename-common-test",
                         "service": "bigquery",
@@ -469,8 +464,7 @@
                             "owner": "user_1"
                         }
                     },
-                    "schema": {
-                        "columns": [
+                    "columns": [
                             {
                                 "data_type": "STRING",
                                 "is_nullable": true,
@@ -501,8 +495,7 @@
                                     }
                                 }
                             }
-                        ]
-                    },
+                        ],
                     "resource": {
                         "name": "tablename-mid",
                         "service": "bigquery",
@@ -560,8 +553,7 @@
                             "owner": "user_1"
                         }
                     },
-                    "schema": {
-                        "columns": [
+                    "columns": [
                             {
                                 "data_type": "STRING",
                                 "is_nullable": true,
@@ -592,8 +584,7 @@
                                     }
                                 }
                             }
-                        ]
-                    },
+                        ],
                     "resource": {
                         "name": "abc-mid-test",
                         "service": "bigquery",
@@ -658,8 +649,7 @@
                             "owner": "user_1"
                         }
                     },
-                    "schema": {
-                        "columns": [
+                    "columns": [
                             {
                                 "data_type": "STRING",
                                 "is_nullable": true,
@@ -690,8 +680,7 @@
                                     }
                                 }
                             }
-                        ]
-                    },
+                        ],
                     "resource": {
                         "name": "tablename-mid",
                         "service": "bigquery",

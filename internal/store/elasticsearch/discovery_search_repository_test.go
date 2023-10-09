@@ -35,9 +35,7 @@ func TestSearcherSearch(t *testing.T) {
 
 		err = loadTestFixture(cli, esClient, "./testdata/search-test-fixture.json")
 		require.NoError(t, err)
-
-		repo := store.NewDiscoveryRepository(esClient, log.NewNoop(), time.Second*10)
-
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop(), time.Second*10, []string{"number", "id"})
 		type expectedRow struct {
 			Type    string
 			AssetID string
@@ -287,7 +285,7 @@ func TestSearcherSearch(t *testing.T) {
 				Config: asset.SearchConfig{
 					Text: "tablename",
 					Queries: map[string]string{
-						"data.schema.columns.name": "common",
+						"data.columns.name": "common",
 					},
 					IncludeFields: []string{"type", "id"},
 				},
@@ -355,7 +353,304 @@ func TestSearcherSearch(t *testing.T) {
 				},
 			},
 		}
-		for _, test := range tests {
+
+		columnTests := []searchTest{
+			{
+				Description: "should fetch assets with fields mentioned in included fields for column search",
+				Config: asset.SearchConfig{
+					Text:          "username",
+					IncludeFields: []string{"id", "data.company", "type"},
+					Flags: asset.SearchFlags{
+						IsColumnSearch: true,
+					},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "au2-microsoft-invoice", Data: map[string]interface{}{"company": "microsoft"}},
+				},
+			},
+			{
+				Description: "should fetch assets with default fields if included fields is empty",
+				Config: asset.SearchConfig{
+					Text: "username",
+					Flags: asset.SearchFlags{
+						IsColumnSearch: true,
+					},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "au2-microsoft-invoice", Service: "postgres", Data: map[string]interface{}{
+						"columns": []interface{}{map[string]interface{}{"name": "id"}, map[string]interface{}{"description": "purchaser username", "name": "username"}, map[string]interface{}{"description": "item identifications", "name": "item_id"}}, "company": "microsoft", "country": "us", "description": "Transaction records for every microsoft purchase", "environment": "integration", "table_id": "au2-microsoft-invoice", "table_name": "microsoft-invoice", "total_rows": float64(100),
+					}},
+				},
+			},
+			{
+				Description: "should fetch assets with empty text",
+				Config: asset.SearchConfig{
+					Text:          "",
+					IncludeFields: []string{"id", "type"},
+					Filters:       map[string][]string{"service": {"bigquery"}},
+					Flags: asset.SearchFlags{
+						IsColumnSearch: true,
+					},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-mid"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/abc-tablename-mid"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/test"},
+				},
+			},
+			{
+				Description: "should fetch assets with empty text and rank by",
+				Config: asset.SearchConfig{
+					Text:          "",
+					RankBy:        "data.profile.usage_count",
+					IncludeFields: []string{"id", "type"},
+					Filters:       map[string][]string{"service": {"bigquery"}},
+					Flags: asset.SearchFlags{
+						IsColumnSearch: true,
+					},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-mid"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/abc-tablename-mid"},
+				},
+			},
+			{
+				Description: "should fetch assets which has text in either column name or description",
+				Config: asset.SearchConfig{
+					Text:          "purchaser",
+					IncludeFields: []string{"type", "id"},
+					Flags: asset.SearchFlags{
+						IsColumnSearch: true,
+					},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "us1-apple-invoice"},
+					{Type: "table", AssetID: "au2-microsoft-invoice"},
+				},
+			},
+			{
+				Description: "should enable fuzzy search",
+				Config: asset.SearchConfig{
+					Text:          "uername",
+					IncludeFields: []string{"type", "id"},
+					Flags:         asset.SearchFlags{IsColumnSearch: true},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "au2-microsoft-invoice"},
+				},
+			},
+			{
+				Description: "should disable fuzzy search",
+				Config: asset.SearchConfig{
+					Text:          "uername",
+					Flags:         asset.SearchFlags{DisableFuzzy: true, IsColumnSearch: true},
+					IncludeFields: []string{"type", "id"},
+				},
+				Expected: []expectedRow{},
+			},
+			{
+				Description: "should put more weight on column name field",
+				Config: asset.SearchConfig{
+					Text:          "abc",
+					IncludeFields: []string{"type", "id"},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/abc-tablename-mid"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
+				},
+			},
+			{
+				Description: "should filter by service if given",
+				Config: asset.SearchConfig{
+					Text: "purchaser",
+					Filters: map[string][]string{
+						"service": {"postgres"},
+					},
+					IncludeFields: []string{"type", "id"},
+					Flags:         asset.SearchFlags{IsColumnSearch: true},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "au2-microsoft-invoice"},
+				},
+			},
+			{
+				Description: "should match documents based on filter criteria",
+				Config: asset.SearchConfig{
+					Text: "purchaser",
+					Filters: map[string][]string{
+						"data.company": {"apple"},
+					},
+					IncludeFields: []string{"type", "id"},
+					Flags:         asset.SearchFlags{IsColumnSearch: true},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "us1-apple-invoice"},
+				},
+			},
+			{
+				Description: "should return a descendingly sorted based on usage count in search results if rank by usage in the config",
+				Config: asset.SearchConfig{
+					Text:          "column3",
+					RankBy:        "data.profile.usage_count",
+					IncludeFields: []string{"type", "id"},
+					Flags:         asset.SearchFlags{IsColumnSearch: true},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-mid"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/abc-tablename-mid"},
+				},
+			},
+			{
+				Description: "should return 5 records with offset of 0",
+				Config: asset.SearchConfig{
+					Text:          "column3",
+					Offset:        0,
+					MaxResults:    5,
+					IncludeFields: []string{"type", "id"},
+					RankBy:        "data.profile.usage_count",
+					Flags:         asset.SearchFlags{IsColumnSearch: true},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-mid"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
+				},
+			},
+			{
+				Description: "should return 4 records with offset of 2",
+				Config: asset.SearchConfig{
+					Text:          "column3",
+					Offset:        2,
+					MaxResults:    5,
+					IncludeFields: []string{"type", "id"},
+					RankBy:        "data.profile.usage_count",
+					Flags:         asset.SearchFlags{IsColumnSearch: true},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/abc-tablename-mid"},
+				},
+			},
+			{
+				Description: "should return 'bigquery::gcpproject/dataset/test' resource on top if search by column name 'tablename-common-column2",
+				Config: asset.SearchConfig{
+					Text:          "test-column3",
+					IncludeFields: []string{"type", "id"},
+					Flags:         asset.SearchFlags{IsColumnSearch: true},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-abc-common-test"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-1"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-common"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/tablename-mid"},
+					{Type: "table", AssetID: "bigquery::gcpproject/dataset/abc-tablename-mid"},
+				},
+			},
+			{
+				Description: "should return 'au2-microsoft-invoice' as it has column name same as text inspite of being part of excluded col search keywords",
+				Config: asset.SearchConfig{
+					Text:          "item_id",
+					IncludeFields: []string{"type", "id"},
+					Flags:         asset.SearchFlags{IsColumnSearch: true},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "us1-apple-invoice"},
+					{Type: "table", AssetID: "au2-microsoft-invoice"},
+				},
+			},
+			{
+				Description: "should return results if text matches column description",
+				Config: asset.SearchConfig{
+					Text:          "identifications",
+					IncludeFields: []string{"type", "id"},
+					Flags:         asset.SearchFlags{IsColumnSearch: true},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "us1-apple-invoice"},
+					{Type: "table", AssetID: "au2-microsoft-invoice"},
+				},
+			},
+			{
+				Description: "should return 'us1-apple-invoice' on top as it matches the column description exactly",
+				Config: asset.SearchConfig{
+					Text:          "purchaser user idenfitication",
+					IncludeFields: []string{"type", "id"},
+					Flags:         asset.SearchFlags{IsColumnSearch: true},
+				},
+				Expected: []expectedRow{
+					{Type: "table", AssetID: "us1-apple-invoice"},
+					{Type: "table", AssetID: "au2-microsoft-invoice"},
+				},
+			},
+			{
+				Description: "should return highlighted text in resource if searched highlight text is enabled.",
+				Config: asset.SearchConfig{
+					Text:   "identification",
+					RankBy: "data.profile.usage_count",
+					Flags: asset.SearchFlags{
+						EnableHighlight: true,
+						IsColumnSearch:  true,
+					},
+					IncludeFields: []string{"type", "id", "data.columns"},
+				},
+
+				Expected: []expectedRow{
+					{
+						Type:    "table",
+						AssetID: "us1-apple-invoice",
+						Data: map[string]interface{}{
+							"_highlight": map[string]interface{}{
+								"data.columns.description": []interface{}{
+									"item <em>identifications</em>",
+									"purchaser user <em>idenfitication</em>",
+								},
+							},
+							"columns": []interface{}{
+								map[string]interface{}{"name": "id"},
+								map[string]interface{}{"description": "purchaser user idenfitication", "name": "user_id"},
+								map[string]interface{}{"description": "item identifications", "name": "item_id"},
+							},
+						},
+					},
+					{
+						Type:    "table",
+						AssetID: "au2-microsoft-invoice",
+						Data: map[string]interface{}{
+							"_highlight": map[string]interface{}{
+								"data.columns.description": []interface{}{
+									"item <em>identifications</em>",
+								},
+							},
+							"columns": []interface{}{
+								map[string]interface{}{"name": "id"},
+								map[string]interface{}{"description": "purchaser username", "name": "username"},
+								map[string]interface{}{"description": "item identifications", "name": "item_id"},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		allTests := append(tests, columnTests...)
+
+		for _, test := range allTests {
 			t.Run(test.Description, func(t *testing.T) {
 				results, err := repo.Search(ctx, test.Config)
 				require.NoError(t, err)
@@ -388,7 +683,7 @@ func TestSearcherSuggest(t *testing.T) {
 	err = loadTestFixture(cli, esClient, "./testdata/suggest-test-fixture.json")
 	require.NoError(t, err)
 
-	repo := store.NewDiscoveryRepository(esClient, log.NewNoop(), time.Second*10)
+	repo := store.NewDiscoveryRepository(esClient, log.NewNoop(), time.Second*10, []string{"number", "id"})
 
 	t.Run("fixtures", func(t *testing.T) {
 		testCases := []struct {
@@ -425,7 +720,7 @@ func loadTestFixture(cli *elasticsearch.Client, esClient *store.Client, filePath
 
 	ctx := context.TODO()
 	for _, testdata := range data {
-		repo := store.NewDiscoveryRepository(esClient, log.NewNoop(), time.Second*10)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop(), time.Second*10, []string{"number", "id"})
 		for _, ast := range testdata.Assets {
 			if err := repo.Upsert(ctx, ast); err != nil {
 				return err
@@ -453,7 +748,7 @@ func TestGroupAssets(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(esClient, log.NewNoop(), time.Second*10)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop(), time.Second*10, []string{"number", "id"})
 		_, err = repo.GroupAssets(ctx, asset.GroupConfig{
 			GroupBy: []string{""},
 		})
@@ -474,7 +769,7 @@ func TestGroupAssets(t *testing.T) {
 		err = loadTestFixture(cli, esClient, "./testdata/search-test-fixture.json")
 		require.NoError(t, err)
 
-		repo := store.NewDiscoveryRepository(esClient, log.NewNoop(), time.Second*10)
+		repo := store.NewDiscoveryRepository(esClient, log.NewNoop(), time.Second*10, []string{"number", "id"})
 
 		type groupTest struct {
 			Description string

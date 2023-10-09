@@ -140,5 +140,6 @@ func getSearchFlagsFromFlags(inputFlags *compassv1beta1.SearchFlags) asset.Searc
 	return asset.SearchFlags{
 		EnableHighlight: inputFlags.GetEnableHighlight(),
 		DisableFuzzy:    inputFlags.GetDisableFuzzy(),
+		IsColumnSearch:  inputFlags.GetIsColumnSearch(),
 	}
 }

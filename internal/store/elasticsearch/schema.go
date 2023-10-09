@@ -9,6 +9,12 @@ var indexSettingsTemplate = `{
 		%q: {}
 	},
 	"settings": {
+		"similarity": {
+			"my_bm25_without_length_normalization": {
+				"type": "BM25",
+				"b": "0"
+			}
+		},
 		"index.mapping.ignore_malformed": true,
 		"analysis": {
 			"analyzer": {
