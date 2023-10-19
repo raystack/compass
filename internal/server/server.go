@@ -12,7 +12,6 @@ import (
 	handlersv1beta1 "github.com/goto/compass/internal/server/v1beta1"
 	"github.com/goto/compass/internal/store/postgres"
 	"github.com/goto/compass/pkg/grpc_interceptor"
-	"github.com/goto/compass/pkg/statsd"
 	compassv1beta1 "github.com/goto/compass/proto/gotocompany/compass/v1beta1"
 	"github.com/goto/salt/log"
 	"github.com/goto/salt/mux"
@@ -67,7 +66,6 @@ func Serve(
 	logger *log.Logrus,
 	pgClient *postgres.Client,
 	nrApp *newrelic.Application,
-	statsdReporter *statsd.Reporter,
 	assetService handlersv1beta1.AssetService,
 	starService handlersv1beta1.StarService,
 	discussionService handlersv1beta1.DiscussionService,
@@ -83,7 +81,6 @@ func Serve(
 		TagTemplateSvc: tagTemplateService,
 		UserSvc:        userService,
 		Logger:         logger,
-		StatsD:         statsdReporter,
 	})
 
 	healthHandler := health.NewHandler()
@@ -94,7 +91,6 @@ func Serve(
 			grpclogrus.UnaryServerInterceptor(logger.Entry()),
 			otelgrpc.UnaryServerInterceptor(),
 			nrgrpc.UnaryServerInterceptor(nrApp),
-			grpc_interceptor.StatsD(statsdReporter),
 			grpc_interceptor.UserHeaderCtx(config.Identity.HeaderKeyUUID, config.Identity.HeaderKeyEmail),
 			grpcctxtags.UnaryServerInterceptor(),
 			grpcrecovery.UnaryServerInterceptor(),

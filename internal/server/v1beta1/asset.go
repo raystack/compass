@@ -11,7 +11,6 @@ import (
 	"github.com/goto/compass/core/asset"
 	"github.com/goto/compass/core/star"
 	"github.com/goto/compass/core/user"
-	"github.com/goto/compass/pkg/statsd"
 	compassv1beta1 "github.com/goto/compass/proto/gotocompany/compass/v1beta1"
 	"github.com/r3labs/diff/v2"
 	"go.opentelemetry.io/otel/attribute"
@@ -21,11 +20,6 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
-
-//go:generate mockery --name=StatsDClient -r --case underscore --with-expecter --structname StatsDClient --filename statsd_monitor.go --output=./mocks
-type StatsDClient interface {
-	Incr(name string) *statsd.Metric
-}
 
 type AssetService interface {
 	GetAllAssets(ctx context.Context, flt asset.Filter, withTotal bool) ([]asset.Asset, uint32, error)
@@ -304,12 +298,6 @@ func (server *APIServer) DeleteAsset(ctx context.Context, req *compassv1beta1.De
 		if errors.As(err, new(asset.NotFoundError)) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
-		if errors.As(err, new(asset.DiscoveryError)) {
-			server.sendStatsDCounterMetric("discovery_error",
-				map[string]string{
-					"method": "delete",
-				})
-		}
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
@@ -390,20 +378,9 @@ func (server *APIServer) upsertAsset(
 		switch {
 		case errors.As(err, new(asset.InvalidError)):
 			return "", status.Error(codes.InvalidArgument, err.Error())
-
-		case errors.As(err, new(asset.DiscoveryError)):
-			server.sendStatsDCounterMetric("discovery_error", map[string]string{
-				"method": mode,
-			})
 		}
 		return "", internalServerError(server.logger, err.Error())
 	}
-
-	server.sendStatsDCounterMetric(mode,
-		map[string]string{
-			"type":    ast.Type.String(),
-			"service": ast.Service,
-		})
 
 	return assetID, nil
 }
@@ -428,21 +405,11 @@ func (server *APIServer) upsertAssetWithoutLineage(ctx context.Context, ast asse
 		switch {
 		case errors.As(err, new(asset.InvalidError)):
 			return "", status.Error(codes.InvalidArgument, err.Error())
-
-		case errors.As(err, new(asset.DiscoveryError)):
-			server.sendStatsDCounterMetric("discovery_error",
-				map[string]string{
-					"method": mode,
-				})
 		}
 
 		return "", internalServerError(server.logger, err.Error())
 	}
 
-	server.sendStatsDCounterMetric(mode, map[string]string{
-		"type":    ast.Type.String(),
-		"service": ast.Service,
-	})
 	return assetID, nil
 }
 

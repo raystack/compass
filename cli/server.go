@@ -16,7 +16,6 @@ import (
 	esStore "github.com/goto/compass/internal/store/elasticsearch"
 	"github.com/goto/compass/internal/store/postgres"
 	"github.com/goto/compass/internal/workermanager"
-	"github.com/goto/compass/pkg/statsd"
 	"github.com/goto/compass/pkg/telemetry"
 	"github.com/goto/salt/log"
 	"github.com/spf13/cobra"
@@ -94,11 +93,6 @@ func runServer(ctx context.Context, cfg *Config) error {
 
 	defer cleanUp()
 
-	statsdReporter, err := statsd.Init(logger, cfg.StatsD)
-	if err != nil {
-		return err
-	}
-
 	esClient, err := initElasticsearch(logger, cfg.Elasticsearch)
 	if err != nil {
 		return err
@@ -126,7 +120,7 @@ func runServer(ctx context.Context, cfg *Config) error {
 	if err != nil {
 		return fmt.Errorf("create new user repository: %w", err)
 	}
-	userService := user.NewService(logger, userRepository, user.ServiceWithStatsDReporter(statsdReporter))
+	userService := user.NewService(logger, userRepository)
 
 	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0, cfg.Service.Identity.ProviderDefaultName)
 	if err != nil {
@@ -180,7 +174,6 @@ func runServer(ctx context.Context, cfg *Config) error {
 		logger,
 		pgClient,
 		nrApp,
-		statsdReporter,
 		assetService,
 		starService,
 		discussionService,

@@ -7,7 +7,6 @@ import (
 
 	"github.com/goto/compass/core/user"
 	"github.com/goto/compass/core/user/mocks"
-	"github.com/goto/compass/pkg/statsd"
 	"github.com/goto/salt/log"
 	"github.com/stretchr/testify/assert"
 )
@@ -92,12 +91,4 @@ func TestValidateUser(t *testing.T) {
 			assert.Equal(t, tc.ExpectErr, err)
 		})
 	}
-}
-
-func TestServiceWithStatsDResporter(t *testing.T) {
-	t.Run("should create statsDReport for a service", func(t *testing.T) {
-		usr := &user.Service{}
-		s := user.ServiceWithStatsDReporter(&statsd.Reporter{})
-		s(usr)
-	})
 }

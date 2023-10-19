@@ -74,26 +74,6 @@ Compass's required variables to start using it.
 
 Variables for metrics gathering.
 
-### `STATSD_ADDRESS`
-
-* Example value: `127.0.0.1:8125`
-* Type: `optional`
-* statsd client to send metrics to.
-
-### `STATSD_PREFIX`
-
-* Example value: `discovery`
-* Type: `optional`
-* Default: `compassApi`
-* Prefix for statsd metrics names.
-
-### `STATSD_ENABLED`
-
-* Example value: `true`
-* Type: `required`
-* Default: `false`
-* Enable publishing application metrics to statsd.
-
 ### `NEW_RELIC_APP_NAME`
 
 * Example value: `compass-integration`

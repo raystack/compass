@@ -11,7 +11,6 @@ import (
 	esStore "github.com/goto/compass/internal/store/elasticsearch"
 	"github.com/goto/compass/internal/store/postgres"
 	"github.com/goto/compass/internal/workermanager"
-	"github.com/goto/compass/pkg/statsd"
 	"github.com/goto/compass/pkg/telemetry"
 	"github.com/goto/salt/cmdx"
 	"github.com/goto/salt/config"
@@ -82,9 +81,6 @@ type Config struct {
 
 	// OpenTelemetry and Newrelic
 	Telemetry telemetry.Config `mapstructure:"telemetry"`
-
-	// StatsD
-	StatsD statsd.Config `mapstructure:"statsd"`
 
 	// Deprecated: Use Config.Telemetry instead
 	NewRelic telemetry.NewRelicConfig `mapstructure:"newrelic"`

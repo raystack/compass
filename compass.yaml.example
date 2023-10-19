@@ -23,11 +23,6 @@ telemetry:
         # 1 means always.
         trace_sample_probability: 1
 
-statsd:
-    enabled: false
-    address: 127.0.0.1:8125
-    prefix: compass
-
 newrelic:
     enabled: false
     licensekey: ____LICENSE_STRING_OF_40_CHARACTERS_____
