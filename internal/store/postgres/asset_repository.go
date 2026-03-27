@@ -195,7 +195,7 @@ func (r *AssetRepository) GetVersionHistory(ctx context.Context, flt asset.Filte
 
 	builder := r.getAssetVersionSQL().
 		Where(sq.Eq{"a.asset_id": id}).
-		OrderBy("version DESC").
+		OrderBy("string_to_array(version, '.')::int[] DESC").
 		Limit(uint64(size)).
 		Offset(uint64(flt.Offset))
 	query, args, err := r.buildSQL(builder)
@@ -549,9 +549,11 @@ func (r *AssetRepository) deleteWithPredicate(ctx context.Context, pred sq.Eq) (
 func (r *AssetRepository) insert(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset) (id string, err error) {
 	err = r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
 		now := time.Now().UTC()
+		ast.CreatedAt = now
+		ast.UpdatedAt = now
 		query, args, err := sq.Insert("assets").
-			Columns("urn", "namespace_id", "type", "service", "name", "description", "data", "url", "labels", "updated_by", "version", "refreshed_at").
-			Values(ast.URN, ns.ID, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.URL, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion, now).
+			Columns("urn", "namespace_id", "type", "service", "name", "description", "data", "url", "labels", "updated_by", "version", "created_at", "updated_at", "refreshed_at").
+			Values(ast.URN, ns.ID, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.URL, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion, now, now, now).
 			Suffix("RETURNING \"id\"").
 			PlaceholderFormat(sq.Dollar).
 			ToSql()
@@ -605,8 +607,10 @@ func (r *AssetRepository) update(ctx context.Context, ns *namespace.Namespace, a
 		}
 		newAsset.Version = newVersion
 		newAsset.ID = oldAsset.ID
+		newAsset.CreatedAt = oldAsset.CreatedAt
 
 		now := time.Now().UTC()
+		newAsset.UpdatedAt = now
 		query, args, err := r.buildSQL(sq.Update("assets").
 			Set("urn", newAsset.URN).
 			Set("type", newAsset.Type).
@@ -616,7 +620,7 @@ func (r *AssetRepository) update(ctx context.Context, ns *namespace.Namespace, a
 			Set("data", newAsset.Data).
 			Set("url", newAsset.URL).
 			Set("labels", newAsset.Labels).
-			Set("updated_at", now).
+			Set("updated_at", newAsset.UpdatedAt).
 			Set("refreshed_at", now).
 			Set("is_deleted", false).
 			Set("updated_by", newAsset.UpdatedBy.ID).
@@ -799,6 +803,7 @@ func (r *AssetRepository) compareOwners(current, newOwners []user.User) (toInser
 
 func (r *AssetRepository) createOrFetchUsers(ctx context.Context, tx *sqlx.Tx, ns *namespace.Namespace, users []user.User) ([]user.User, error) {
 	var results []user.User
+	seen := make(map[string]bool)
 	for _, u := range users {
 		var (
 			userID      string
@@ -823,6 +828,12 @@ func (r *AssetRepository) createOrFetchUsers(ctx context.Context, tx *sqlx.Tx, n
 		if err != nil {
 			return nil, fmt.Errorf("error getting owner's ID: %w", err)
 		}
+
+		// deduplicate owners by resolved user ID
+		if seen[userID] {
+			continue
+		}
+		seen[userID] = true
 
 		u.ID = userID
 		results = append(results, u)
