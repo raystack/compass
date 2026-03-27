@@ -1,18 +1,12 @@
 ARG GO_VERSION=1.25
-FROM golang:${GO_VERSION}-alpine3.21 as builder
+FROM golang:${GO_VERSION}-alpine3.21 AS builder
 RUN apk add make
 WORKDIR /build/
 COPY . .
 RUN make build
 
 FROM alpine:3.21
-
 COPY --from=builder /build/compass /usr/bin/compass
-RUN apk update
-RUN apk add ca-certificates
-
-# glibc compatibility library, since go binaries
-# don't work well with musl libc that alpine uses
-RUN apk add libc6-compat
+RUN apk update && apk add --no-cache ca-certificates libc6-compat && rm -rf /var/cache/apk/*
 
 ENTRYPOINT ["compass"]

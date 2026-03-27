@@ -1,8 +1,16 @@
+.git
+.github
 .idea
 .vscode
 .DS_Store
 .env
+.claude
 compass
 config.yaml
 compass.yaml
 temp/
+docs/
+test/
+*.md
+coverage.out
+dist/
