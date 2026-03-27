@@ -1,6 +1,3 @@
-//go:build go1.16
-// +build go1.16
-
 package postgres
 
 import (
@@ -9,19 +6,20 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"log"
+
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/google/uuid"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jmoiron/sqlx"
 	"github.com/raystack/compass/pkg/grpc_interceptor"
-	"log"
+
 	// Register database postgres
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	// Register golang migrate source
 	"github.com/golang-migrate/migrate/v4/source/iofs"
-
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgerrcode"
-	_ "github.com/jackc/pgx/v4/stdlib"
-	"github.com/jmoiron/sqlx"
 )
 
 //go:embed migrations/*.sql
