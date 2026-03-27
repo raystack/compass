@@ -93,6 +93,28 @@ func (s *Service) DeleteAsset(ctx context.Context, ns *namespace.Namespace, id s
 	return s.lineageRepository.DeleteByURN(ctx, id)
 }
 
+// SoftDeleteAsset marks an asset as deleted without removing it
+func (s *Service) SoftDeleteAsset(ctx context.Context, ns *namespace.Namespace, id string) error {
+	var urn string
+	var err error
+
+	if isValidUUID(id) {
+		urn, err = s.assetRepository.SoftDeleteByID(ctx, id)
+	} else {
+		urn = id
+		_, err = s.assetRepository.SoftDeleteByURN(ctx, id)
+	}
+	if err != nil {
+		return err
+	}
+
+	if err := s.discoveryRepository.SoftDeleteByURN(ctx, ns, urn); err != nil {
+		return fmt.Errorf("error soft deleting asset in discovery: %w", err)
+	}
+
+	return nil
+}
+
 func (s *Service) GetAssetByID(ctx context.Context, id string) (ast Asset, err error) {
 	if isValidUUID(id) {
 		if ast, err = s.assetRepository.GetByID(ctx, id); err != nil {

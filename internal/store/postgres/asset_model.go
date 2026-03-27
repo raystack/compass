@@ -14,20 +14,22 @@ import (
 )
 
 type AssetModel struct {
-	ID          string    `db:"id"`
-	NamespaceID string    `db:"namespace_id"`
-	URN         string    `db:"urn"`
-	Type        string    `db:"type"`
-	Name        string    `db:"name"`
-	Service     string    `db:"service"`
-	Description string    `db:"description"`
-	Data        JSONMap   `db:"data"`
-	URL         string    `db:"url"`
-	Labels      JSONMap   `db:"labels"`
-	Version     string    `db:"version"`
-	UpdatedBy   UserModel `db:"updated_by"`
-	CreatedAt   time.Time `db:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at"`
+	ID          string     `db:"id"`
+	NamespaceID string     `db:"namespace_id"`
+	URN         string     `db:"urn"`
+	Type        string     `db:"type"`
+	Name        string     `db:"name"`
+	Service     string     `db:"service"`
+	Description string     `db:"description"`
+	Data        JSONMap    `db:"data"`
+	URL         string     `db:"url"`
+	Labels      JSONMap    `db:"labels"`
+	Version     string     `db:"version"`
+	IsDeleted   bool       `db:"is_deleted"`
+	UpdatedBy   UserModel  `db:"updated_by"`
+	CreatedAt   time.Time  `db:"created_at"`
+	UpdatedAt   time.Time  `db:"updated_at"`
+	RefreshedAt *time.Time `db:"refreshed_at"`
 	// version specific information
 	Changelog types.JSONText `db:"changelog"`
 	Owners    types.JSONText `db:"owners"`
@@ -45,10 +47,12 @@ func (a *AssetModel) toAsset(owners []user.User) asset.Asset {
 		URL:         a.URL,
 		Labels:      a.buildLabels(),
 		Owners:      owners,
+		IsDeleted:   a.IsDeleted,
 		Version:     a.Version,
 		UpdatedBy:   a.UpdatedBy.toUser(),
 		CreatedAt:   a.CreatedAt,
 		UpdatedAt:   a.UpdatedAt,
+		RefreshedAt: a.RefreshedAt,
 	}
 }
 

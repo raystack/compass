@@ -267,6 +267,18 @@ func (_c *DiscoveryRepository_Upsert_Call) RunAndReturn(run func(context.Context
 	return _c
 }
 
+// SoftDeleteByURN provides a mock function with given fields: ctx, ns, assetURN
+func (_m *DiscoveryRepository) SoftDeleteByURN(ctx context.Context, ns *namespace.Namespace, assetURN string) error {
+	ret := _m.Called(ctx, ns, assetURN)
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string) error); ok {
+		r0 = rf(ctx, ns, assetURN)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
 type mockConstructorTestingTNewDiscoveryRepository interface {
 	mock.TestingT
 	Cleanup(func())

@@ -11,6 +11,7 @@ type DiscoveryRepository interface {
 	Upsert(ctx context.Context, ns *namespace.Namespace, ast *Asset) error
 	DeleteByID(ctx context.Context, ns *namespace.Namespace, assetID string) error
 	DeleteByURN(ctx context.Context, ns *namespace.Namespace, assetURN string) error
+	SoftDeleteByURN(ctx context.Context, ns *namespace.Namespace, assetURN string) error
 	Search(ctx context.Context, cfg SearchConfig) (results []SearchResult, err error)
 	Suggest(ctx context.Context, cfg SearchConfig) (suggestions []string, err error)
 }
