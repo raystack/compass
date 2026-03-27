@@ -99,6 +99,42 @@ func (repo *DiscoveryRepository) DeleteByURN(ctx context.Context, ns *namespace.
 	return repo.deleteWithQuery(ctx, strings.NewReader(fmt.Sprintf(`{"query":{"term":{"urn.keyword": "%s"}}}`, assetURN)))
 }
 
+// SoftDeleteByURN marks an asset as deleted in the ES index using UpdateByQuery
+func (repo *DiscoveryRepository) SoftDeleteByURN(ctx context.Context, ns *namespace.Namespace, assetURN string) error {
+	if assetURN == "" {
+		return asset.ErrEmptyURN
+	}
+
+	body := fmt.Sprintf(`{
+		"script": {
+			"source": "ctx._source.is_deleted = true",
+			"lang": "painless"
+		},
+		"query": {
+			"term": {
+				"urn.keyword": "%s"
+			}
+		}
+	}`, assetURN)
+
+	res, err := repo.cli.client.UpdateByQuery(
+		[]string{defaultSearchIndexAlias},
+		repo.cli.client.UpdateByQuery.WithBody(strings.NewReader(body)),
+		repo.cli.client.UpdateByQuery.WithContext(ctx),
+		repo.cli.client.UpdateByQuery.WithRefresh(true),
+		repo.cli.client.UpdateByQuery.WithIgnoreUnavailable(true),
+	)
+	if err != nil {
+		return asset.DiscoveryError{Err: fmt.Errorf("error soft deleting asset: %w", err)}
+	}
+	defer res.Body.Close()
+	if res.IsError() {
+		return asset.DiscoveryError{Err: fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))}
+	}
+
+	return nil
+}
+
 func (repo *DiscoveryRepository) deleteWithQuery(ctx context.Context, qry io.Reader) error {
 	res, err := repo.cli.client.DeleteByQuery(
 		[]string{defaultSearchIndexAlias},

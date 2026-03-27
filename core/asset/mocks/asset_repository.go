@@ -753,6 +753,81 @@ func (_c *AssetRepository_Upsert_Call) RunAndReturn(run func(context.Context, *n
 	return _c
 }
 
+// SoftDeleteByID provides a mock function with given fields: ctx, id
+func (_m *AssetRepository) SoftDeleteByID(ctx context.Context, id string) (string, error) {
+	ret := _m.Called(ctx, id)
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (string, error)); ok {
+		return rf(ctx, id)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// SoftDeleteByURN provides a mock function with given fields: ctx, urn
+func (_m *AssetRepository) SoftDeleteByURN(ctx context.Context, urn string) (string, error) {
+	ret := _m.Called(ctx, urn)
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (string, error)); ok {
+		return rf(ctx, urn)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
+		r0 = rf(ctx, urn)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, urn)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GetCountByIsDeleted provides a mock function with given fields: ctx, isDeleted
+func (_m *AssetRepository) GetCountByIsDeleted(ctx context.Context, isDeleted bool) (int, error) {
+	ret := _m.Called(ctx, isDeleted)
+	var r0 int
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, bool) (int, error)); ok {
+		return rf(ctx, isDeleted)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, bool) int); ok {
+		r0 = rf(ctx, isDeleted)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+	if rf, ok := ret.Get(1).(func(context.Context, bool) error); ok {
+		r1 = rf(ctx, isDeleted)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// HardDeleteByURNs provides a mock function with given fields: ctx, urns
+func (_m *AssetRepository) HardDeleteByURNs(ctx context.Context, urns []string) error {
+	ret := _m.Called(ctx, urns)
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, []string) error); ok {
+		r0 = rf(ctx, urns)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
 type mockConstructorTestingTNewAssetRepository interface {
 	mock.TestingT
 	Cleanup(func())

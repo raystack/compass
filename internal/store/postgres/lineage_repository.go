@@ -73,6 +73,31 @@ func (repo *LineageRepository) DeleteByURN(ctx context.Context, urn string) erro
 	return nil
 }
 
+// DeleteByURNs removes lineage edges for multiple URNs
+func (repo *LineageRepository) DeleteByURNs(ctx context.Context, urns []string) error {
+	if len(urns) == 0 {
+		return nil
+	}
+
+	orClauses := make([]string, 0, len(urns))
+	for _, urn := range urns {
+		orClauses = append(orClauses, fmt.Sprintf("source='%s' or target='%s'", urn, urn))
+	}
+	whereClause := strings.Join(orClauses, " or ")
+
+	deleteQuery, _, err := sq.Delete("lineage_graph").Where(whereClause).ToSql()
+	if err != nil {
+		return fmt.Errorf("error building delete query: %w", err)
+	}
+
+	_, err = repo.client.ExecContext(ctx, deleteQuery)
+	if err != nil {
+		return fmt.Errorf("error deleting lineage by URNs: %w", err)
+	}
+
+	return nil
+}
+
 // Upsert insert or delete connections of a given node by comparing them with current state
 func (repo *LineageRepository) Upsert(ctx context.Context, ns *namespace.Namespace, urn string, upstreams, downstreams []string) error {
 	currentGraph, err := repo.getDirectLineage(ctx, urn)

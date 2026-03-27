@@ -357,6 +357,79 @@ func (r *AssetRepository) DeleteByURN(ctx context.Context, urn string) error {
 	return nil
 }
 
+// SoftDeleteByID marks an asset as deleted by its ID
+func (r *AssetRepository) SoftDeleteByID(ctx context.Context, id string) (string, error) {
+	if !isValidUUID(id) {
+		return "", asset.InvalidError{AssetID: id}
+	}
+
+	return r.softDeleteWithPredicate(ctx, sq.Eq{"id": id, "is_deleted": false})
+}
+
+// SoftDeleteByURN marks an asset as deleted by its URN
+func (r *AssetRepository) SoftDeleteByURN(ctx context.Context, urn string) (string, error) {
+	return r.softDeleteWithPredicate(ctx, sq.Eq{"urn": urn, "is_deleted": false})
+}
+
+func (r *AssetRepository) softDeleteWithPredicate(ctx context.Context, pred sq.Eq) (string, error) {
+	now := time.Now().UTC()
+	query, args, err := r.buildSQL(sq.Update("assets").
+		Set("is_deleted", true).
+		Set("updated_at", now).
+		Set("refreshed_at", now).
+		Where(pred).
+		Suffix("RETURNING urn"))
+	if err != nil {
+		return "", fmt.Errorf("error building query: %w", err)
+	}
+
+	var urn string
+	err = r.client.QueryFn(ctx, func(conn *sqlx.Conn) error {
+		return conn.QueryRowxContext(ctx, query, args...).Scan(&urn)
+	})
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", asset.ErrAssetAlreadyDeleted
+	}
+	if err != nil {
+		return "", fmt.Errorf("error soft deleting asset: %w", err)
+	}
+
+	return urn, nil
+}
+
+// GetCountByIsDeleted returns count of assets by deletion status
+func (r *AssetRepository) GetCountByIsDeleted(ctx context.Context, isDeleted bool) (int, error) {
+	var total int
+	query, args, err := r.buildSQL(sq.Select("count(1)").From("assets").Where(sq.Eq{"is_deleted": isDeleted}))
+	if err != nil {
+		return 0, fmt.Errorf("error building count query: %w", err)
+	}
+	err = r.client.GetContext(ctx, &total, query, args...)
+	if err != nil {
+		return 0, fmt.Errorf("error counting assets: %w", err)
+	}
+	return total, nil
+}
+
+// HardDeleteByURNs permanently removes assets by their URNs
+func (r *AssetRepository) HardDeleteByURNs(ctx context.Context, urns []string) error {
+	if len(urns) == 0 {
+		return nil
+	}
+
+	query, args, err := r.buildSQL(sq.Delete("assets").Where(sq.Eq{"urn": urns}))
+	if err != nil {
+		return fmt.Errorf("error building query: %w", err)
+	}
+
+	_, err = r.client.ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("error hard deleting assets: %w", err)
+	}
+
+	return nil
+}
+
 func (r *AssetRepository) AddProbe(ctx context.Context, ns *namespace.Namespace, assetURN string, probe *asset.Probe) error {
 	probe.AssetURN = assetURN
 	probe.CreatedAt = time.Now().UTC()
@@ -475,9 +548,10 @@ func (r *AssetRepository) deleteWithPredicate(ctx context.Context, pred sq.Eq) (
 
 func (r *AssetRepository) insert(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset) (id string, err error) {
 	err = r.client.RunWithinTx(ctx, func(tx *sqlx.Tx) error {
+		now := time.Now().UTC()
 		query, args, err := sq.Insert("assets").
-			Columns("urn", "namespace_id", "type", "service", "name", "description", "data", "url", "labels", "updated_by", "version").
-			Values(ast.URN, ns.ID, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.URL, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion).
+			Columns("urn", "namespace_id", "type", "service", "name", "description", "data", "url", "labels", "updated_by", "version", "refreshed_at").
+			Values(ast.URN, ns.ID, ast.Type, ast.Service, ast.Name, ast.Description, ast.Data, ast.URL, ast.Labels, ast.UpdatedBy.ID, asset.BaseVersion, now).
 			Suffix("RETURNING \"id\"").
 			PlaceholderFormat(sq.Dollar).
 			ToSql()
@@ -532,6 +606,7 @@ func (r *AssetRepository) update(ctx context.Context, ns *namespace.Namespace, a
 		newAsset.Version = newVersion
 		newAsset.ID = oldAsset.ID
 
+		now := time.Now().UTC()
 		query, args, err := r.buildSQL(sq.Update("assets").
 			Set("urn", newAsset.URN).
 			Set("type", newAsset.Type).
@@ -541,7 +616,9 @@ func (r *AssetRepository) update(ctx context.Context, ns *namespace.Namespace, a
 			Set("data", newAsset.Data).
 			Set("url", newAsset.URL).
 			Set("labels", newAsset.Labels).
-			Set("updated_at", time.Now()).
+			Set("updated_at", now).
+			Set("refreshed_at", now).
+			Set("is_deleted", false).
 			Set("updated_by", newAsset.UpdatedBy.ID).
 			Set("version", newAsset.Version).
 			Where(sq.Eq{"id": assetID}).Where(sq.Eq{"namespace_id": ns.ID}))
@@ -809,8 +886,10 @@ func (r *AssetRepository) getAssetSQL() sq.SelectBuilder {
 		COALESCE(a.url, '') as url,
 		a.labels as labels,
 		a.version as version,
+		COALESCE(a.is_deleted, false) as is_deleted,
 		a.created_at as created_at,
 		a.updated_at as updated_at,
+		a.refreshed_at as refreshed_at,
 		u.id as "updated_by.id",
 		u.uuid as "updated_by.uuid",
 		u.email as "updated_by.email",

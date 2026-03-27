@@ -3,11 +3,12 @@ package asset
 //go:generate mockery --name=Repository -r --case underscore --with-expecter --structname AssetRepository --filename asset_repository.go --output=./mocks
 import (
 	"context"
-	"github.com/raystack/compass/core/namespace"
+	"fmt"
 	"time"
 
-	"github.com/raystack/compass/core/user"
 	"github.com/r3labs/diff/v2"
+	"github.com/raystack/compass/core/namespace"
+	"github.com/raystack/compass/core/user"
 )
 
 type Repository interface {
@@ -22,6 +23,10 @@ type Repository interface {
 	Upsert(ctx context.Context, ns *namespace.Namespace, ast *Asset) (string, error)
 	DeleteByID(ctx context.Context, id string) error
 	DeleteByURN(ctx context.Context, urn string) error
+	SoftDeleteByID(ctx context.Context, id string) (string, error)
+	SoftDeleteByURN(ctx context.Context, urn string) (string, error)
+	GetCountByIsDeleted(ctx context.Context, isDeleted bool) (int, error)
+	HardDeleteByURNs(ctx context.Context, urns []string) error
 	AddProbe(ctx context.Context, ns *namespace.Namespace, assetURN string, probe *Probe) error
 	GetProbes(ctx context.Context, assetURN string) ([]Probe, error)
 	GetProbesWithFilter(ctx context.Context, flt ProbesFilter) (map[string][]Probe, error)
@@ -39,13 +44,17 @@ type Asset struct {
 	URL         string                 `json:"url" diff:"url"`
 	Labels      map[string]string      `json:"labels" diff:"labels"`
 	Owners      []user.User            `json:"owners,omitempty" diff:"owners"`
+	IsDeleted   bool                   `json:"is_deleted" diff:"is_deleted"`
 	CreatedAt   time.Time              `json:"created_at" diff:"-"`
 	UpdatedAt   time.Time              `json:"updated_at" diff:"-"`
+	RefreshedAt *time.Time             `json:"refreshed_at,omitempty" diff:"-"`
 	Version     string                 `json:"version" diff:"-"`
 	UpdatedBy   user.User              `json:"updated_by" diff:"-"`
 	Changelog   diff.Changelog         `json:"changelog,omitempty" diff:"-"`
 	Probes      []Probe                `json:"probes,omitempty"`
 }
+
+var ErrAssetAlreadyDeleted = fmt.Errorf("asset already deleted")
 
 // Diff returns nil changelog with nil error if equal
 // returns wrapped r3labs/diff Changelog struct with nil error if not equal

@@ -165,6 +165,18 @@ func (_c *LineageRepository_Upsert_Call) RunAndReturn(run func(context.Context, 
 	return _c
 }
 
+// DeleteByURNs provides a mock function with given fields: ctx, urns
+func (_m *LineageRepository) DeleteByURNs(ctx context.Context, urns []string) error {
+	ret := _m.Called(ctx, urns)
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, []string) error); ok {
+		r0 = rf(ctx, urns)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
 type mockConstructorTestingTNewLineageRepository interface {
 	mock.TestingT
 	Cleanup(func())

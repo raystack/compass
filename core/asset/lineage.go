@@ -32,6 +32,7 @@ type LineageRepository interface {
 	GetGraph(ctx context.Context, urn string, query LineageQuery) (LineageGraph, error)
 	Upsert(ctx context.Context, ns *namespace.Namespace, urn string, upstreams, downstreams []string) error
 	DeleteByURN(ctx context.Context, urn string) error
+	DeleteByURNs(ctx context.Context, urns []string) error
 }
 
 type LineageGraph []LineageEdge
