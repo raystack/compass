@@ -3,10 +3,10 @@ package handlersv1beta1
 import (
 	"context"
 	"fmt"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
 	"strings"
 
 	"github.com/raystack/compass/core/asset"
+	"github.com/raystack/compass/pkg/grpc_interceptor"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,18 +21,15 @@ func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.S
 		return nil, err
 	}
 
-	text := strings.TrimSpace(req.GetText())
-	if text == "" {
-		return nil, status.Error(codes.InvalidArgument, "'text' must be specified")
-	}
-
 	cfg := asset.SearchConfig{
-		Text:       text,
-		MaxResults: int(req.GetSize()),
-		Filters:    filterConfigFromValues(req.GetFilter()),
-		RankBy:     req.GetRankby(),
-		Queries:    req.GetQuery(),
-		Namespace:  ns,
+		Text:          strings.TrimSpace(req.GetText()),
+		MaxResults:    int(req.GetSize()),
+		Offset:        int(req.GetOffset()),
+		Filters:       filterConfigFromValues(req.GetFilter()),
+		RankBy:        req.GetRankby(),
+		Queries:       req.GetQuery(),
+		IncludeFields: req.GetIncludeFields(),
+		Namespace:     ns,
 	}
 
 	results, err := server.assetService.SearchAssets(ctx, cfg)

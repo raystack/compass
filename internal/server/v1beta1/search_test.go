@@ -43,10 +43,16 @@ func TestSearch(t *testing.T) {
 
 	var testCases = []testCase{
 		{
-			Description:  "should return invalid argument if 'text' parameter is empty or missing",
-			ExpectStatus: codes.InvalidArgument,
+			Description:  "should allow empty text search",
+			ExpectStatus: codes.OK,
 			Request:      &compassv1beta1.SearchAssetsRequest{},
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
+				cfg := asset.SearchConfig{
+					Filters:   make(map[string][]string),
+					Queries:   map[string]string(nil),
+					Namespace: ns,
+				}
+				as.EXPECT().SearchAssets(ctx, cfg).Return([]asset.SearchResult{}, nil)
 			},
 		},
 		{

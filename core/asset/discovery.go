@@ -19,11 +19,18 @@ type DiscoveryRepository interface {
 // criteria for operations involving asset search
 type SearchFilter = map[string][]string
 
+// SearchFlags contains flags that modify search behavior
+type SearchFlags struct {
+	DisableFuzzy    bool
+	EnableHighlight bool
+	IsColumnSearch  bool
+}
+
 // SearchConfig represents a search query along
 // with any corresponding filter(s)
 type SearchConfig struct {
 	// Text to search for
-	Text string `validate:"required"`
+	Text string
 
 	// Filters specifies document level values to look for.
 	// Multiple values can be specified for a single key
@@ -32,11 +39,20 @@ type SearchConfig struct {
 	// Number of relevant results to return
 	MaxResults int
 
+	// Offset is the offset for search results, used for pagination
+	Offset int
+
 	// RankBy is a param to rank based on a specific parameter
 	RankBy string
 
 	// Queries is a param to search a resource based on asset's fields
 	Queries map[string]string
+
+	// IncludeFields specifies which fields to include in search results
+	IncludeFields []string
+
+	// Flags contains optional search flags
+	Flags SearchFlags
 
 	// Namespace under which assets are partitioned. *Required*
 	Namespace *namespace.Namespace `validate:"required"`

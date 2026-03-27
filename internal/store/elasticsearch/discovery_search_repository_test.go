@@ -28,27 +28,6 @@ func TestSearcherSearch(t *testing.T) {
 		Metadata: nil,
 	}
 
-	t.Run("should return an error if search string is empty", func(t *testing.T) {
-		cli, err := esTestServer.NewClient()
-		require.NoError(t, err)
-		esClient, err := store.NewClient(
-			log.NewNoop(),
-			store.Config{},
-			store.WithClient(cli),
-		)
-		require.NoError(t, err)
-
-		repo := store.NewDiscoveryRepository(esClient)
-		err = repo.CreateNamespace(ctx, ns)
-		assert.NoError(t, err)
-
-		_, err = repo.Search(ctx, asset.SearchConfig{
-			Text: "",
-		})
-
-		assert.Error(t, err)
-	})
-
 	t.Run("fixtures", func(t *testing.T) {
 		cli, err := esTestServer.NewClient()
 		require.NoError(t, err)
