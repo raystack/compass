@@ -10,10 +10,7 @@ import (
 	"time"
 
 	"github.com/gorilla/handlers"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
-	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -23,8 +20,8 @@ import (
 	"github.com/raystack/compass/internal/store/postgres"
 	"github.com/raystack/compass/pkg/grpc_interceptor"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"github.com/raystack/salt/log"
-	"github.com/raystack/salt/mux"
+	log "github.com/raystack/salt/observability/logger"
+	"github.com/raystack/salt/server/mux"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	_ "google.golang.org/grpc/encoding/gzip" // Install the gzip compressor
@@ -95,15 +92,13 @@ func Serve(
 	grpcServer := grpc.NewServer(
 		grpc.MaxRecvMsgSize(config.GRPC.MaxRecvMsgSize),
 		grpc.MaxSendMsgSize(config.GRPC.MaxSendMsgSize),
-		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
-			grpc_recovery.UnaryServerInterceptor(),
-			grpc_ctxtags.UnaryServerInterceptor(),
-			grpc_logrus.UnaryServerInterceptor(logger.Entry()),
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+		grpc.ChainUnaryInterceptor(
+			recovery.UnaryServerInterceptor(),
 			nrgrpc.UnaryServerInterceptor(nrApp),
-			otelgrpc.UnaryServerInterceptor(),
 			grpc_interceptor.NamespaceUnaryInterceptor(namespaceService, config.Identity.NamespaceClaimKey, config.Identity.HeaderKeyUserUUID),
 			grpc_interceptor.UserHeaderCtx(config.Identity.HeaderKeyUserUUID, config.Identity.HeaderKeyUserEmail),
-		)),
+		),
 	)
 	reflection.Register(grpcServer)
 
@@ -111,13 +106,9 @@ func Serve(
 	grpc_health_v1.RegisterHealthServer(grpcServer, healthHandler)
 
 	// init http proxy
-	grpcDialCtx, grpcDialCancel := context.WithTimeout(ctx, time.Second*5)
-	defer grpcDialCancel()
-
 	headerMatcher := makeHeaderMatcher(config)
 
-	grpcConn, err := grpc.DialContext(
-		grpcDialCtx,
+	grpcConn, err := grpc.NewClient(
 		config.grpcAddr(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultCallOptions(
