@@ -9,7 +9,6 @@ import (
 
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/core/user/mocks"
-	"github.com/raystack/compass/pkg/statsd"
 	"github.com/raystack/salt/log"
 	"github.com/stretchr/testify/assert"
 )
@@ -102,10 +101,3 @@ func TestValidateUser(t *testing.T) {
 	}
 }
 
-func TestServiceWithStatsDResporter(t *testing.T) {
-	t.Run("should create statsDReport for a service", func(t *testing.T) {
-		usr := &user.Service{}
-		s := user.ServiceWithStatsDReporter(&statsd.Reporter{})
-		s(usr)
-	})
-}

@@ -21,7 +21,6 @@ import (
 	handlersv1beta1 "github.com/raystack/compass/internal/server/v1beta1"
 	"github.com/raystack/compass/internal/store/postgres"
 	"github.com/raystack/compass/pkg/grpc_interceptor"
-	"github.com/raystack/compass/pkg/statsd"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
 	"github.com/raystack/salt/log"
 	"github.com/raystack/salt/mux"
@@ -70,7 +69,6 @@ func Serve(
 	logger *log.Logrus,
 	pgClient *postgres.Client,
 	nrApp *newrelic.Application,
-	statsdReporter *statsd.Reporter,
 	namespaceService handlersv1beta1.NamespaceService,
 	assetService handlersv1beta1.AssetService,
 	starService handlersv1beta1.StarService,
@@ -101,7 +99,6 @@ func Serve(
 			grpc_ctxtags.UnaryServerInterceptor(),
 			grpc_logrus.UnaryServerInterceptor(logger.Entry()),
 			nrgrpc.UnaryServerInterceptor(nrApp),
-			grpc_interceptor.StatsD(statsdReporter),
 			grpc_interceptor.NamespaceUnaryInterceptor(namespaceService, config.Identity.NamespaceClaimKey, config.Identity.HeaderKeyUserUUID),
 			grpc_interceptor.UserHeaderCtx(config.Identity.HeaderKeyUserUUID, config.Identity.HeaderKeyUserEmail),
 		)),

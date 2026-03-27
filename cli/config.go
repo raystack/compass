@@ -11,7 +11,6 @@ import (
 	esStore "github.com/raystack/compass/internal/store/elasticsearch"
 	"github.com/raystack/compass/internal/store/postgres"
 	"github.com/raystack/compass/pkg/metrics"
-	"github.com/raystack/compass/pkg/statsd"
 	"github.com/raystack/salt/cmdx"
 	"github.com/raystack/salt/config"
 	"github.com/spf13/cobra"
@@ -78,9 +77,6 @@ func configListCommand(cfg *Config) *cobra.Command {
 type Config struct {
 	// Log
 	LogLevel string `yaml:"log_level" mapstructure:"log_level" default:"info"`
-
-	// StatsD
-	StatsD statsd.Config `mapstructure:"statsd"`
 
 	// NewRelic
 	NewRelic metrics.NewRelicConfig `mapstructure:"newrelic"`
