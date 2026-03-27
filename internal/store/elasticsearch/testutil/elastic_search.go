@@ -147,12 +147,16 @@ func (srv *ElasticsearchTestServer) purge(cli *elasticsearch.Client) (err error)
 			err = fmt.Errorf("purge: %w", err)
 		}
 	}()
-	req, err := http.NewRequest("DELETE", "/*", nil)
+
+	// Use a pattern that excludes system indices (dot-prefixed) which
+	// ES 8.x protects from deletion, causing a 400 error with "DELETE /*".
+	req, err := http.NewRequest("DELETE", "/*,-.*", nil)
 	if err != nil {
 		return
 	}
 	q := req.URL.Query()
-	q.Set("expand_wildcards", "all")
+	q.Set("expand_wildcards", "open,closed")
+	q.Set("ignore_unavailable", "true")
 	req.URL.RawQuery = q.Encode()
 	res, err := cli.Perform(req)
 	if err != nil {
