@@ -40,8 +40,6 @@ jobs:
         with:
           go-version-file: "go.mod"
           cache: true
-      - name: Install dependencies
-        run: sudo apt-get install build-essential
       - name: Run Test
         run: make test
       - name: Install goveralls and send coverage
