@@ -100,15 +100,15 @@ func (d Discussion) ValidateConstraint() error {
 		return ErrInvalidState
 	}
 
-	if d.Assignees != nil && len(d.Assignees) > MAX_ARRAY_FIELD_NUM {
+	if len(d.Assignees) > MAX_ARRAY_FIELD_NUM {
 		return fmt.Errorf("assignees cannot be more than %d", MAX_ARRAY_FIELD_NUM)
 	}
 
-	if d.Assets != nil && len(d.Assets) > MAX_ARRAY_FIELD_NUM {
+	if len(d.Assets) > MAX_ARRAY_FIELD_NUM {
 		return fmt.Errorf("assets cannot be more than %d", MAX_ARRAY_FIELD_NUM)
 	}
 
-	if d.Labels != nil && len(d.Labels) > MAX_ARRAY_FIELD_NUM {
+	if len(d.Labels) > MAX_ARRAY_FIELD_NUM {
 		return fmt.Errorf("labels cannot be more than %d", MAX_ARRAY_FIELD_NUM)
 	}
 	return nil

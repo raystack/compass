@@ -237,7 +237,7 @@ func (server *APIServer) buildGetDiscussionsFilter(req *compassv1beta1.GetMyDisc
 	}
 
 	if len(strings.TrimSpace(filterQuery)) > 0 {
-		if !(filterQuery == "created" || filterQuery == "all") {
+		if filterQuery != "created" && filterQuery != "all" {
 			filterQuery = "assigned" // default value
 		}
 	}

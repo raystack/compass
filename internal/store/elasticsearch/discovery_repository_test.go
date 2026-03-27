@@ -108,7 +108,7 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		err = repo.Upsert(ctx, ns, ast)
 		assert.NoError(t, err)
 
-		res, err := cli.API.Get(indexAlias, ast.ID)
+		res, err := cli.Get(indexAlias, ast.ID)
 		require.NoError(t, err)
 		require.False(t, res.IsError())
 
@@ -162,7 +162,7 @@ func TestDiscoveryRepositoryUpsert(t *testing.T) {
 		err = repo.Upsert(ctx, ns, newAsset)
 		assert.NoError(t, err)
 
-		res, err := cli.API.Get(indexAlias, existingAsset.ID)
+		res, err := cli.Get(indexAlias, existingAsset.ID)
 		require.NoError(t, err)
 		require.False(t, res.IsError())
 
