@@ -46,10 +46,7 @@ func SetMetadata(ctx context.Context, cfg Config, namespaceID string) context.Co
 }
 
 func createConnection(ctx context.Context, cfg Config) (*grpc.ClientConn, error) {
-	opts := []grpc.DialOption{
+	return grpc.NewClient(cfg.Host,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
-	}
-
-	return grpc.DialContext(ctx, cfg.Host, opts...)
+	)
 }
