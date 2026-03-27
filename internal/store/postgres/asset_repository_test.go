@@ -1829,11 +1829,13 @@ func (r *AssetRepositoryTestSuite) assertAsset(expectedAsset *asset.Asset, actua
 	// sanitize time to make the assets comparable
 	expectedAsset.CreatedAt = time.Time{}
 	expectedAsset.UpdatedAt = time.Time{}
+	expectedAsset.RefreshedAt = nil
 	expectedAsset.UpdatedBy.CreatedAt = time.Time{}
 	expectedAsset.UpdatedBy.UpdatedAt = time.Time{}
 
 	actualAsset.CreatedAt = time.Time{}
 	actualAsset.UpdatedAt = time.Time{}
+	actualAsset.RefreshedAt = nil
 	actualAsset.UpdatedBy.CreatedAt = time.Time{}
 	actualAsset.UpdatedBy.UpdatedAt = time.Time{}
 
@@ -1845,6 +1847,7 @@ func clearTimestamps(ast *asset.Asset) {
 	ast.UpdatedBy.UpdatedAt = time.Time{}
 	ast.CreatedAt = time.Time{}
 	ast.UpdatedAt = time.Time{}
+	ast.RefreshedAt = nil
 }
 
 func (r *AssetRepositoryTestSuite) assertProbe(t *testing.T, expected asset.Probe, actual asset.Probe) bool {

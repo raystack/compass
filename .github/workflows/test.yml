@@ -10,7 +10,11 @@ jobs:
         ports:
           - 9200:9200
         env:
-          ES_TEST_SERVER_URL: "http://elasticsearch:9200"
+          discovery.type: single-node
+          xpack.security.enabled: "false"
+          ES_JAVA_OPTS: "-Xms128m -Xmx128m"
+    env:
+      ES_TEST_SERVER_URL: "http://localhost:9200"
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
