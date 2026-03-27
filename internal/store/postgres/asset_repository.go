@@ -465,7 +465,7 @@ func (r *AssetRepository) GetProbes(ctx context.Context, assetURN string) ([]ass
 	query, args, err := sq.Select(
 		"id", "asset_urn", "status", "status_reason", "metadata", "timestamp", "created_at",
 	).From("asset_probes").
-		OrderBy("timestamp DESC").
+		OrderBy("timestamp DESC", "created_at DESC", "id DESC").
 		Where(sq.Eq{"asset_urn": assetURN}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

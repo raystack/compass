@@ -1409,12 +1409,14 @@ func (r *AssetRepositoryTestSuite) TestGetProbes() {
 		p2 := asset.Probe{
 			Status:       "FAILED",
 			StatusReason: "sample error",
+			Timestamp:    time.Now().UTC().Add(2 * time.Minute),
 			Metadata: map[string]interface{}{
 				"bar": "foo",
 			},
 		}
 		p3 := asset.Probe{
-			Status: "RUNNING",
+			Status:    "RUNNING",
+			Timestamp: time.Now().UTC().Add(1 * time.Minute),
 		}
 
 		_, err := r.repository.Upsert(r.ctx, r.ns, &ast)
