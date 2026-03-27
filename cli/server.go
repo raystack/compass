@@ -18,7 +18,6 @@ import (
 	compassserver "github.com/raystack/compass/internal/server"
 	esStore "github.com/raystack/compass/internal/store/elasticsearch"
 	"github.com/raystack/compass/internal/store/postgres"
-	"github.com/raystack/compass/pkg/statsd"
 	"github.com/raystack/salt/log"
 	"github.com/spf13/cobra"
 )
@@ -100,10 +99,6 @@ func runServer(config *Config) error {
 	if err != nil {
 		return err
 	}
-	statsdReporter, err := statsd.Init(logger, config.StatsD)
-	if err != nil {
-		return err
-	}
 
 	esClient, err := initElasticsearch(logger, config.Elasticsearch)
 	if err != nil {
@@ -132,7 +127,7 @@ func runServer(config *Config) error {
 	if err != nil {
 		return fmt.Errorf("failed to create new user repository: %w", err)
 	}
-	userService := user.NewService(logger, userRepository, user.ServiceWithStatsDReporter(statsdReporter))
+	userService := user.NewService(logger, userRepository)
 
 	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0, config.Service.Identity.ProviderDefaultName)
 	if err != nil {
@@ -168,7 +163,6 @@ func runServer(config *Config) error {
 		logger,
 		pgClient,
 		nrApp,
-		statsdReporter,
 		namespaceService,
 		assetService,
 		starService,
