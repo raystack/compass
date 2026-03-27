@@ -9,7 +9,7 @@ import (
 
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/core/user/mocks"
-	"github.com/raystack/salt/log"
+	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/assert"
 )
 

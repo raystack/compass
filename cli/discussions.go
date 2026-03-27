@@ -7,8 +7,7 @@ import (
 
 	"github.com/raystack/compass/internal/client"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"github.com/raystack/salt/printer"
-	"github.com/raystack/salt/term"
+	"github.com/raystack/salt/cli/printer"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -75,9 +74,9 @@ func listAllDiscussionsCommand(cfg *Config) *cobra.Command {
 				}
 				printer.Table(os.Stdout, report)
 
-				fmt.Println(term.Cyanf("To view all the data in JSON format, use flag `-o json`"))
+				fmt.Println(printer.Cyanf("To view all the data in JSON format, use flag `-o json`"))
 			} else {
-				fmt.Println(term.Bluef(prettyPrint(res.GetData())))
+				fmt.Println(printer.Bluef("%s", prettyPrint(res.GetData())))
 			}
 
 			return nil
@@ -119,7 +118,7 @@ func viewDiscussionByIDCommand(cfg *Config) *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println(term.Bluef(prettyPrint(res.GetData())))
+			fmt.Println(printer.Bluef("%s", prettyPrint(res.GetData())))
 			return nil
 		},
 	}
@@ -173,7 +172,7 @@ func postDiscussionCommand(cfg *Config) *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println("ID: \t", term.Greenf(res.Id))
+			fmt.Println("ID: \t", printer.Greenf("%s", res.Id))
 			return nil
 		},
 	}

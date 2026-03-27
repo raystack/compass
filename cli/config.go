@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
@@ -12,7 +11,6 @@ import (
 	"github.com/raystack/compass/internal/store/postgres"
 	"github.com/raystack/compass/pkg/metrics"
 	"github.com/raystack/compass/pkg/telemetry"
-	"github.com/raystack/salt/cmdx"
 	"github.com/raystack/salt/config"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -46,13 +44,13 @@ func configInitCommand() *cobra.Command {
 			"group": "core",
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg := cmdx.SetConfig("compass")
+			loader := config.NewLoader(config.WithAppConfig("compass"))
 
-			if err := cfg.Init(&Config{}); err != nil {
+			if err := loader.Init(&Config{}); err != nil {
 				return err
 			}
 
-			fmt.Printf("config created: %v\n", cfg.File())
+			fmt.Println("config created")
 			return nil
 		},
 	}
@@ -100,35 +98,26 @@ type Config struct {
 
 func LoadConfig() (*Config, error) {
 	var cfg Config
-	err := LoadFromCurrentDir(&cfg)
 
-	if errors.As(err, &config.ConfigFileNotFoundError{}) {
-		err := cmdx.SetConfig("compass").Load(&cfg)
-		if err != nil {
-			if errors.As(err, &config.ConfigFileNotFoundError{}) {
-				return &cfg, ErrConfigNotFound
-			}
-			return &cfg, err
+	// Try loading from current directory first
+	err := LoadFromCurrentDir(&cfg)
+	if err != nil {
+		// Fall back to app config directory
+		loader := config.NewLoader(config.WithAppConfig("compass"))
+		if loadErr := loader.Load(&cfg); loadErr != nil {
+			return &cfg, ErrConfigNotFound
 		}
 	}
 	return &cfg, nil
 }
 
 func LoadFromCurrentDir(cfg *Config) error {
-	var opts []config.LoaderOption
-	opts = append(opts,
-		config.WithPath("./"),
-		config.WithFile("config.yaml"),
-		config.WithEnvKeyReplacer(".", "_"),
+	return config.NewLoader(
+		config.WithFile("./config.yaml"),
 		config.WithEnvPrefix("COMPASS"),
-	)
-
-	return config.NewLoader(opts...).Load(cfg)
+	).Load(cfg)
 }
 
 func LoadConfigFromFlag(cfgFile string, cfg *Config) error {
-	var opts []config.LoaderOption
-	opts = append(opts, config.WithFile(cfgFile))
-
-	return config.NewLoader(opts...).Load(cfg)
+	return config.NewLoader(config.WithFile(cfgFile)).Load(cfg)
 }

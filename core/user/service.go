@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/salt/log"
+	log "github.com/raystack/salt/observability/logger"
 )
 
 // Service is a type of service that manages business process

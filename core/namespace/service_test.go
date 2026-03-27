@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/namespace/mocks"
-	"github.com/raystack/salt/log"
+	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
