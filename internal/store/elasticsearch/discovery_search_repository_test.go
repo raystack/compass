@@ -10,7 +10,7 @@ import (
 
 	"github.com/raystack/compass/core/asset"
 	store "github.com/raystack/compass/internal/store/elasticsearch"
-	"github.com/raystack/salt/log"
+	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

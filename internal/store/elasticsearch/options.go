@@ -1,6 +1,6 @@
 package elasticsearch
 
-import "github.com/elastic/go-elasticsearch/v7"
+import "github.com/elastic/go-elasticsearch/v8"
 
 type ClientOption func(*Client)
 

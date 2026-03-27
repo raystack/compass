@@ -6,16 +6,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/elastic/go-elasticsearch/v7/esapi"
+	"io"
+	"strings"
+
+	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/google/uuid"
 	"github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7"
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/salt/log"
-	"github.com/olivere/elastic/v7"
-	"io"
-	"strings"
+	log "github.com/raystack/salt/observability/logger"
 )
 
 const (
@@ -67,10 +67,22 @@ var (
 	}
 )
 
+// totalHits represents the total hits from an ES search response
+type totalHits struct {
+	Value    int64  `json:"value"`
+	Relation string `json:"relation"`
+}
+
+// suggestionOption represents a single suggestion option from ES
+type suggestionOption struct {
+	Text  string  `json:"text"`
+	Score float64 `json:"_score"`
+}
+
 type searchHit struct {
-	Index     string                          `json:"_index"`
-	Source    asset.Asset                     `json:"_source"`
-	HighLight map[string][]string             `json:"highlight"`
+	Index     string              `json:"_index"`
+	Source    asset.Asset         `json:"_source"`
+	HighLight map[string][]string `json:"highlight"`
 }
 
 type aggregationBucket struct {
@@ -81,14 +93,14 @@ type aggregationBucket struct {
 type searchResponse struct {
 	ScrollID string `json:"_scroll_id"`
 	Hits     struct {
-		Total elastic.TotalHits `json:"total"`
-		Hits  []searchHit       `json:"hits"`
+		Total totalHits   `json:"total"`
+		Hits  []searchHit `json:"hits"`
 	} `json:"hits"`
 	Suggest map[string][]struct {
-		Text    string                           `json:"text"`
-		Offset  int                              `json:"offset"`
-		Length  float32                          `json:"length"`
-		Options []elastic.SearchSuggestionOption `json:"options"`
+		Text    string             `json:"text"`
+		Offset  int                `json:"offset"`
+		Length  float32            `json:"length"`
+		Options []suggestionOption `json:"options"`
 	} `json:"suggest"`
 	Aggregations struct {
 		AggregationName struct {
@@ -245,8 +257,6 @@ func BuildIndexNameFromNamespace(ns *namespace.Namespace) string {
 func buildRouteFromNamespace(ns *namespace.Namespace) Route {
 	return Route{
 		Index: BuildIndexNameFromNamespace(ns),
-		// instead of id, we could use namespace name as well for read/write key
-		// not sure which will work better
 		ReadKey:   ns.ID.String(),
 		WriteKey:  ns.ID.String(),
 		FilterKey: ns.ID.String(),

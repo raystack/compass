@@ -7,7 +7,6 @@ import (
 	"io"
 	"strings"
 
-	"github.com/olivere/elastic/v7"
 	"github.com/raystack/compass/core/asset"
 )
 
@@ -112,29 +111,28 @@ func (repo *DiscoveryRepository) Suggest(ctx context.Context, cfg asset.SearchCo
 }
 
 func (repo *DiscoveryRepository) buildQuery(ctx context.Context, cfg asset.SearchConfig) (io.Reader, error) {
-	boolQuery := elastic.NewBoolQuery()
+	boolQ := newBoolQuery()
 
-	repo.buildTextQuery(boolQuery, cfg)
-	repo.buildFilterTermQueries(boolQuery, cfg.Filters)
-	repo.buildMustMatchQueries(boolQuery, cfg)
+	buildTextQuery(boolQ, cfg)
+	buildFilterTermQueries(boolQ, cfg.Filters)
+	buildMustMatchQueries(boolQ, cfg)
 
-	query := repo.buildFunctionScoreQuery(boolQuery, cfg)
-	highlight := repo.buildHighlightQuery(cfg)
+	query := buildFunctionScoreQuery(boolQ, cfg)
 
-	searchSource := elastic.NewSearchSource().
-		Query(query).
-		MinScore(defaultMinScore)
-
-	if highlight != nil {
-		searchSource = searchSource.Highlight(highlight)
+	searchBody := map[string]interface{}{
+		"query":     query,
+		"min_score": defaultMinScore,
 	}
 
-	src, err := searchSource.Source()
-	if err != nil {
-		return nil, err
+	if cfg.Flags.EnableHighlight {
+		searchBody["highlight"] = map[string]interface{}{
+			"fields": map[string]interface{}{
+				"*": map[string]interface{}{},
+			},
+		}
 	}
 
-	payload, err := json.Marshal(src)
+	payload, err := json.Marshal(searchBody)
 	if err != nil {
 		return nil, err
 	}
@@ -143,30 +141,60 @@ func (repo *DiscoveryRepository) buildQuery(ctx context.Context, cfg asset.Searc
 }
 
 func (repo *DiscoveryRepository) buildSuggestQuery(ctx context.Context, cfg asset.SearchConfig) (io.Reader, error) {
-	suggester := elastic.NewCompletionSuggester(suggesterName).
-		Field("name.suggest").
-		SkipDuplicates(true).
-		Size(5).
-		Text(cfg.Text)
-	src, err := elastic.NewSearchSource().
-		Suggester(suggester).
-		Source()
-	if err != nil {
-		return nil, fmt.Errorf("error building search source %w", err)
+	searchBody := map[string]interface{}{
+		"suggest": map[string]interface{}{
+			suggesterName: map[string]interface{}{
+				"prefix": cfg.Text,
+				"completion": map[string]interface{}{
+					"field":           "name.suggest",
+					"skip_duplicates": true,
+					"size":            5,
+				},
+			},
+		},
 	}
 
-	payload, err := json.Marshal(src)
+	payload, err := json.Marshal(searchBody)
 	if err != nil {
 		return nil, fmt.Errorf("error building reader %w", err)
 	}
 
-	return strings.NewReader(string(payload)), err
+	return strings.NewReader(string(payload)), nil
 }
 
-func (repo *DiscoveryRepository) buildTextQuery(boolQuery *elastic.BoolQuery, cfg asset.SearchConfig) {
+// boolQuery is a JSON map builder for ES bool queries
+type boolQuery struct {
+	should             []interface{}
+	filter             []interface{}
+	must               []interface{}
+	minimumShouldMatch string
+}
+
+func newBoolQuery() *boolQuery {
+	return &boolQuery{}
+}
+
+func (q *boolQuery) toMap() map[string]interface{} {
+	m := map[string]interface{}{}
+	if len(q.should) > 0 {
+		m["should"] = q.should
+	}
+	if len(q.filter) > 0 {
+		m["filter"] = q.filter
+	}
+	if len(q.must) > 0 {
+		m["must"] = q.must
+	}
+	if q.minimumShouldMatch != "" {
+		m["minimum_should_match"] = q.minimumShouldMatch
+	}
+	return map[string]interface{}{"bool": m}
+}
+
+func buildTextQuery(boolQ *boolQuery, cfg asset.SearchConfig) {
 	text := strings.TrimSpace(cfg.Text)
 	if text == "" {
-		boolQuery.Should(elastic.NewMatchAllQuery())
+		boolQ.should = append(boolQ.should, map[string]interface{}{"match_all": map[string]interface{}{}})
 		return
 	}
 
@@ -176,54 +204,74 @@ func (repo *DiscoveryRepository) buildTextQuery(boolQuery *elastic.BoolQuery, cf
 	}
 
 	// Phrase match for highest relevance
-	boolQuery.Should(
-		elastic.NewMultiMatchQuery(text, boostedFields...).
-			Type("phrase"),
-	)
+	boolQ.should = append(boolQ.should, map[string]interface{}{
+		"multi_match": map[string]interface{}{
+			"query":  text,
+			"fields": boostedFields,
+			"type":   "phrase",
+		},
+	})
 
-	// Multi match with AND operator — all terms must match
-	boolQuery.Should(
-		elastic.NewMultiMatchQuery(text, boostedFields...).
-			Operator("and"),
-	)
+	// Multi match with AND operator
+	boolQ.should = append(boolQ.should, map[string]interface{}{
+		"multi_match": map[string]interface{}{
+			"query":    text,
+			"fields":   boostedFields,
+			"operator": "and",
+		},
+	})
 
-	// Standard multi match without fuzziness
-	boolQuery.Should(
-		elastic.NewMultiMatchQuery(text, boostedFields...),
-	)
+	// Standard multi match
+	boolQ.should = append(boolQ.should, map[string]interface{}{
+		"multi_match": map[string]interface{}{
+			"query":  text,
+			"fields": boostedFields,
+		},
+	})
 
 	if !cfg.Flags.DisableFuzzy {
 		// Fuzzy match on boosted fields
-		boolQuery.Should(
-			elastic.NewMultiMatchQuery(text, boostedFields...).
-				Fuzziness("AUTO"),
-		)
+		boolQ.should = append(boolQ.should, map[string]interface{}{
+			"multi_match": map[string]interface{}{
+				"query":     text,
+				"fields":    boostedFields,
+				"fuzziness": "AUTO",
+			},
+		})
 
 		// Fuzzy match on all fields
-		boolQuery.Should(
-			elastic.NewMultiMatchQuery(text).
-				Fuzziness("AUTO"),
-		)
+		boolQ.should = append(boolQ.should, map[string]interface{}{
+			"multi_match": map[string]interface{}{
+				"query":     text,
+				"fuzziness": "AUTO",
+			},
+		})
 	}
 
-	boolQuery.MinimumShouldMatch("1")
+	boolQ.minimumShouldMatch = "1"
 }
 
-func (repo *DiscoveryRepository) buildMustMatchQueries(boolQuery *elastic.BoolQuery, cfg asset.SearchConfig) {
+func buildMustMatchQueries(boolQ *boolQuery, cfg asset.SearchConfig) {
 	if len(cfg.Queries) == 0 {
 		return
 	}
 
 	for field, value := range cfg.Queries {
-		matchQuery := elastic.NewMatchQuery(field, value)
-		if !cfg.Flags.DisableFuzzy {
-			matchQuery = matchQuery.Fuzziness("AUTO")
+		matchQ := map[string]interface{}{
+			"query": value,
 		}
-		boolQuery.Must(matchQuery)
+		if !cfg.Flags.DisableFuzzy {
+			matchQ["fuzziness"] = "AUTO"
+		}
+		boolQ.must = append(boolQ.must, map[string]interface{}{
+			"match": map[string]interface{}{
+				field: matchQ,
+			},
+		})
 	}
 }
 
-func (repo *DiscoveryRepository) buildFilterTermQueries(boolQuery *elastic.BoolQuery, filters map[string][]string) {
+func buildFilterTermQueries(boolQ *boolQuery, filters map[string][]string) {
 	if len(filters) == 0 {
 		return
 	}
@@ -233,55 +281,60 @@ func (repo *DiscoveryRepository) buildFilterTermQueries(boolQuery *elastic.BoolQ
 			continue
 		}
 
-		key := fmt.Sprintf("%s.keyword", key)
+		keywordKey := fmt.Sprintf("%s.keyword", key)
 		if len(rawValues) == 1 {
-			boolQuery.Filter(elastic.NewTermQuery(key, rawValues[0]))
+			boolQ.filter = append(boolQ.filter, map[string]interface{}{
+				"term": map[string]interface{}{
+					keywordKey: rawValues[0],
+				},
+			})
 		} else {
-			var values []interface{}
-			for _, rawVal := range rawValues {
-				values = append(values, rawVal)
-			}
-			boolQuery.Filter(elastic.NewTermsQuery(key, values...))
+			boolQ.filter = append(boolQ.filter, map[string]interface{}{
+				"terms": map[string]interface{}{
+					keywordKey: rawValues,
+				},
+			})
 		}
 	}
 }
 
-func (repo *DiscoveryRepository) buildFunctionScoreQuery(query elastic.Query, cfg asset.SearchConfig) elastic.Query {
+func buildFunctionScoreQuery(boolQ *boolQuery, cfg asset.SearchConfig) interface{} {
 	text := strings.TrimSpace(cfg.Text)
 
-	// Add exact match boost directly as a should clause with high boost
+	// Add exact match boost
 	if text != "" {
-		if bq, ok := query.(*elastic.BoolQuery); ok {
-			bq.Should(
-				elastic.NewTermQuery("name.keyword", text).Boost(100),
-			)
-		}
+		boolQ.should = append(boolQ.should, map[string]interface{}{
+			"term": map[string]interface{}{
+				"name.keyword": map[string]interface{}{
+					"value": text,
+					"boost": 100,
+				},
+			},
+		})
 	}
+
+	queryMap := boolQ.toMap()
 
 	if cfg.RankBy == "" {
-		return query
+		return queryMap
 	}
 
-	factorFunc := elastic.NewFieldValueFactorFunction().
-		Field(cfg.RankBy).
-		Modifier("log1p").
-		Missing(1.0).
-		Weight(1.0)
-
-	fsQuery := elastic.NewFunctionScoreQuery().
-		ScoreMode(defaultFunctionScoreQueryScoreMode).
-		AddScoreFunc(factorFunc).
-		Query(query)
-
-	return fsQuery
-}
-
-func (repo *DiscoveryRepository) buildHighlightQuery(cfg asset.SearchConfig) *elastic.Highlight {
-	if !cfg.Flags.EnableHighlight {
-		return nil
+	return map[string]interface{}{
+		"function_score": map[string]interface{}{
+			"query":      queryMap,
+			"score_mode": defaultFunctionScoreQueryScoreMode,
+			"functions": []interface{}{
+				map[string]interface{}{
+					"field_value_factor": map[string]interface{}{
+						"field":    cfg.RankBy,
+						"modifier": "log1p",
+						"missing":  1.0,
+					},
+					"weight": 1.0,
+				},
+			},
+		},
 	}
-
-	return elastic.NewHighlight().Field("*")
 }
 
 func (repo *DiscoveryRepository) toSearchResults(hits []searchHit) []asset.SearchResult {
@@ -357,24 +410,24 @@ func (repo *DiscoveryRepository) GroupAssets(ctx context.Context, cfg asset.Grou
 	}
 
 	// Build filter query
-	boolQuery := elastic.NewBoolQuery()
-	// Ensure group-by fields exist
+	boolQ := newBoolQuery()
 	for _, field := range cfg.GroupBy {
-		boolQuery.Filter(elastic.NewExistsQuery(fmt.Sprintf("%s.keyword", field)))
+		boolQ.filter = append(boolQ.filter, map[string]interface{}{
+			"exists": map[string]interface{}{
+				"field": fmt.Sprintf("%s.keyword", field),
+			},
+		})
 	}
-	repo.buildFilterTermQueries(boolQuery, cfg.Filters)
+	buildFilterTermQueries(boolQ, cfg.Filters)
 
 	includedFields := defaultIncludedFields
 	if len(cfg.IncludeFields) > 0 {
 		includedFields = cfg.IncludeFields
 	}
 
-	// Build the aggregation query manually as JSON
 	payload := map[string]interface{}{
-		"size": 0,
-		"query": map[string]interface{}{
-			"bool": map[string]interface{}{},
-		},
+		"size":  0,
+		"query": boolQ.toMap(),
 		"aggs": map[string]interface{}{
 			"group_result": map[string]interface{}{
 				"composite": map[string]interface{}{
@@ -384,21 +437,14 @@ func (repo *DiscoveryRepository) GroupAssets(ctx context.Context, cfg asset.Grou
 				"aggs": map[string]interface{}{
 					"top_assets": map[string]interface{}{
 						"top_hits": map[string]interface{}{
-							"size":     size,
-							"_source":  includedFields,
+							"size":    size,
+							"_source": includedFields,
 						},
 					},
 				},
 			},
 		},
 	}
-
-	// Use the bool query
-	boolSrc, err := boolQuery.Source()
-	if err != nil {
-		return nil, asset.DiscoveryError{Err: fmt.Errorf("error building query: %w", err)}
-	}
-	payload["query"] = boolSrc
 
 	body, err := json.Marshal(payload)
 	if err != nil {
