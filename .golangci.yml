@@ -1,0 +1,21 @@
+version: "2"
+linters:
+  enable:
+    - errcheck
+    - staticcheck
+  settings:
+    errcheck:
+      exclude-functions:
+        - (io.Closer).Close
+        - (*database/sql.Conn).Close
+        - (*github.com/jmoiron/sqlx.Conn).Close
+        - (*google.golang.org/grpc.ClientConn).Close
+        - (github.com/ory/dockertest/v3.Resource).Close
+  exclusions:
+    rules:
+      - linters:
+          - errcheck
+        text: '\.Close'
+      - linters:
+          - staticcheck
+        text: 'QF1008'
