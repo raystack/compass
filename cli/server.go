@@ -18,6 +18,7 @@ import (
 	compassserver "github.com/raystack/compass/internal/server"
 	esStore "github.com/raystack/compass/internal/store/elasticsearch"
 	"github.com/raystack/compass/internal/store/postgres"
+	"github.com/raystack/compass/pkg/telemetry"
 	"github.com/raystack/salt/log"
 	"github.com/spf13/cobra"
 )
@@ -99,6 +100,12 @@ func runServer(config *Config) error {
 	if err != nil {
 		return err
 	}
+
+	otelCleanup, err := telemetry.Init(ctx, config.Telemetry, logger)
+	if err != nil {
+		return fmt.Errorf("failed to initialize telemetry: %w", err)
+	}
+	defer otelCleanup()
 
 	esClient, err := initElasticsearch(logger, config.Elasticsearch)
 	if err != nil {

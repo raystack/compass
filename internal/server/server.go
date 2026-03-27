@@ -17,6 +17,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"github.com/raystack/compass/internal/server/health"
 	handlersv1beta1 "github.com/raystack/compass/internal/server/v1beta1"
 	"github.com/raystack/compass/internal/store/postgres"
@@ -99,6 +100,7 @@ func Serve(
 			grpc_ctxtags.UnaryServerInterceptor(),
 			grpc_logrus.UnaryServerInterceptor(logger.Entry()),
 			nrgrpc.UnaryServerInterceptor(nrApp),
+			otelgrpc.UnaryServerInterceptor(),
 			grpc_interceptor.NamespaceUnaryInterceptor(namespaceService, config.Identity.NamespaceClaimKey, config.Identity.HeaderKeyUserUUID),
 			grpc_interceptor.UserHeaderCtx(config.Identity.HeaderKeyUserUUID, config.Identity.HeaderKeyUserEmail),
 		)),

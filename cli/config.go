@@ -11,6 +11,7 @@ import (
 	esStore "github.com/raystack/compass/internal/store/elasticsearch"
 	"github.com/raystack/compass/internal/store/postgres"
 	"github.com/raystack/compass/pkg/metrics"
+	"github.com/raystack/compass/pkg/telemetry"
 	"github.com/raystack/salt/cmdx"
 	"github.com/raystack/salt/config"
 	"github.com/spf13/cobra"
@@ -80,6 +81,9 @@ type Config struct {
 
 	// NewRelic
 	NewRelic metrics.NewRelicConfig `mapstructure:"newrelic"`
+
+	// Telemetry
+	Telemetry telemetry.Config `mapstructure:"telemetry"`
 
 	// Elasticsearch
 	Elasticsearch esStore.Config `mapstructure:"elasticsearch"`
