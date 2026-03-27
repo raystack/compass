@@ -156,6 +156,10 @@ func (m JSONMap) Value() (driver.Value, error) {
 }
 
 func (m *JSONMap) Scan(value interface{}) error {
+	if value == nil {
+		*m = JSONMap{}
+		return nil
+	}
 	var ba []byte
 	switch v := value.(type) {
 	case []byte:

@@ -1,5 +1,13 @@
 name: Test
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
 
 jobs:
   test:
@@ -13,6 +21,11 @@ jobs:
           discovery.type: single-node
           xpack.security.enabled: "false"
           ES_JAVA_OPTS: "-Xms128m -Xmx128m"
+        options: >-
+          --health-cmd "curl -f http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     env:
       ES_TEST_SERVER_URL: "http://localhost:9200"
     steps:
@@ -20,10 +33,9 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
+          cache: true
       - name: Install dependencies
         run: sudo apt-get install build-essential
-      - name: Install packages
-        run: go mod tidy
       - name: Run Test
         run: make test
       - name: Install goveralls and send coverage

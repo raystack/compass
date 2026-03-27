@@ -25,7 +25,7 @@ lint: ## Lint checker
 	@echo "Running lint checks using golangci-lint..."
 	@golangci-lint run
 
-clean: tidy ## Clean the build artifacts
+clean: ## Clean the build artifacts
 	@echo "Cleaning up build directories..."
 	@rm -rf $coverage.out ${BUILD_DIR}
 
