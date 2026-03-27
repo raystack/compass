@@ -75,12 +75,12 @@ func TestSearchConfig_Validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "fail validation if text is empty",
+			name: "should not fail validation if text is empty but namespace is present",
 			fields: fields{
 				Text:      "",
 				Namespace: &namespace.Namespace{},
 			},
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name: "should not fail validation if all required fields are non empty",

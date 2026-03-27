@@ -1,16 +1,14 @@
 package elasticsearch
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"strings"
 
-	"github.com/raystack/compass/core/asset"
 	"github.com/olivere/elastic/v7"
+	"github.com/raystack/compass/core/asset"
 )
 
 const (
@@ -20,20 +18,27 @@ const (
 	suggesterName                      = "name-phrase-suggest"
 )
 
-var returnedAssetFieldsResult = []string{"id", "namespace_id", "urn", "type", "service", "name", "description", "data", "labels", "created_at", "updated_at"}
+var defaultIncludedFields = []string{"id", "namespace_id", "urn", "type", "service", "name", "description", "data", "labels", "created_at", "updated_at"}
 
 // Search the asset store
 func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchConfig) ([]asset.SearchResult, error) {
-	if strings.TrimSpace(cfg.Text) == "" {
-		return nil, asset.DiscoveryError{Err: errors.New("search text cannot be empty")}
-	}
 	if cfg.Namespace == nil {
-		return nil, asset.DiscoveryError{Err: errors.New("namespace cannot be empty")}
+		return nil, asset.DiscoveryError{Err: fmt.Errorf("namespace cannot be empty")}
 	}
 	maxResults := cfg.MaxResults
 	if maxResults <= 0 {
 		maxResults = defaultMaxResults
 	}
+	offset := cfg.Offset
+	if offset < 0 {
+		offset = 0
+	}
+
+	includedFields := defaultIncludedFields
+	if len(cfg.IncludeFields) > 0 {
+		includedFields = cfg.IncludeFields
+	}
+
 	query, err := repo.buildQuery(ctx, cfg)
 	if err != nil {
 		return nil, asset.DiscoveryError{Err: fmt.Errorf("error building query %w", err)}
@@ -43,8 +48,9 @@ func (repo *DiscoveryRepository) Search(ctx context.Context, cfg asset.SearchCon
 		repo.cli.client.Search.WithBody(query),
 		repo.cli.client.Search.WithIndex(BuildAliasNameFromNamespace(cfg.Namespace)),
 		repo.cli.client.Search.WithSize(maxResults),
+		repo.cli.client.Search.WithFrom(offset),
 		repo.cli.client.Search.WithIgnoreUnavailable(true),
-		repo.cli.client.Search.WithSourceIncludes(returnedAssetFieldsResult...),
+		repo.cli.client.Search.WithSourceIncludes(includedFields...),
 		repo.cli.client.Search.WithContext(ctx),
 	)
 	if err != nil {
@@ -106,24 +112,34 @@ func (repo *DiscoveryRepository) Suggest(ctx context.Context, cfg asset.SearchCo
 }
 
 func (repo *DiscoveryRepository) buildQuery(ctx context.Context, cfg asset.SearchConfig) (io.Reader, error) {
-	var query elastic.Query
+	boolQuery := elastic.NewBoolQuery()
 
-	query = repo.buildTextQuery(ctx, cfg.Text)
-	query = repo.buildFilterTermQueries(query, cfg.Filters)
-	query = repo.buildFilterMatchQueries(ctx, query, cfg.Queries)
-	query = repo.buildFunctionScoreQuery(query, cfg.RankBy)
+	repo.buildTextQuery(boolQuery, cfg)
+	repo.buildFilterTermQueries(boolQuery, cfg.Filters)
+	repo.buildMustMatchQueries(boolQuery, cfg)
 
-	src, err := query.Source()
+	query := repo.buildFunctionScoreQuery(boolQuery, cfg)
+	highlight := repo.buildHighlightQuery(cfg)
+
+	searchSource := elastic.NewSearchSource().
+		Query(query).
+		MinScore(defaultMinScore)
+
+	if highlight != nil {
+		searchSource = searchSource.Highlight(highlight)
+	}
+
+	src, err := searchSource.Source()
 	if err != nil {
 		return nil, err
 	}
 
-	payload := new(bytes.Buffer)
-	q := &searchQuery{
-		MinScore: defaultMinScore,
-		Query:    src,
+	payload, err := json.Marshal(src)
+	if err != nil {
+		return nil, err
 	}
-	return payload, json.NewEncoder(payload).Encode(q)
+
+	return strings.NewReader(string(payload)), nil
 }
 
 func (repo *DiscoveryRepository) buildSuggestQuery(ctx context.Context, cfg asset.SearchConfig) (io.Reader, error) {
@@ -139,97 +155,115 @@ func (repo *DiscoveryRepository) buildSuggestQuery(ctx context.Context, cfg asse
 		return nil, fmt.Errorf("error building search source %w", err)
 	}
 
-	payload := new(bytes.Buffer)
-	err = json.NewEncoder(payload).Encode(src)
+	payload, err := json.Marshal(src)
 	if err != nil {
-		return payload, fmt.Errorf("error building reader %w", err)
+		return nil, fmt.Errorf("error building reader %w", err)
 	}
 
-	return payload, err
+	return strings.NewReader(string(payload)), err
 }
 
-func (repo *DiscoveryRepository) buildTextQuery(ctx context.Context, text string) elastic.Query {
+func (repo *DiscoveryRepository) buildTextQuery(boolQuery *elastic.BoolQuery, cfg asset.SearchConfig) {
+	text := strings.TrimSpace(cfg.Text)
+	if text == "" {
+		boolQuery.Should(elastic.NewMatchAllQuery())
+		return
+	}
+
 	boostedFields := []string{
 		"urn^10",
 		"name^5",
 	}
 
-	return elastic.NewBoolQuery().
-		Should(
-			elastic.
-				NewMultiMatchQuery(
-					text,
-					boostedFields...,
-				),
-			elastic.
-				NewMultiMatchQuery(
-					text,
-					boostedFields...,
-				).
-				Fuzziness("AUTO"),
-			elastic.
-				NewMultiMatchQuery(
-					text,
-				).
+	// Phrase match for highest relevance
+	boolQuery.Should(
+		elastic.NewMultiMatchQuery(text, boostedFields...).
+			Type("phrase"),
+	)
+
+	// Multi match with AND operator — all terms must match
+	boolQuery.Should(
+		elastic.NewMultiMatchQuery(text, boostedFields...).
+			Operator("and"),
+	)
+
+	// Standard multi match without fuzziness
+	boolQuery.Should(
+		elastic.NewMultiMatchQuery(text, boostedFields...),
+	)
+
+	if !cfg.Flags.DisableFuzzy {
+		// Fuzzy match on boosted fields
+		boolQuery.Should(
+			elastic.NewMultiMatchQuery(text, boostedFields...).
 				Fuzziness("AUTO"),
 		)
-}
 
-func (repo *DiscoveryRepository) buildFilterMatchQueries(ctx context.Context, query elastic.Query, queries map[string]string) elastic.Query {
-	if len(queries) == 0 {
-		return query
+		// Fuzzy match on all fields
+		boolQuery.Should(
+			elastic.NewMultiMatchQuery(text).
+				Fuzziness("AUTO"),
+		)
 	}
 
-	esQueries := []elastic.Query{}
-	for field, value := range queries {
-		esQueries = append(esQueries,
-			elastic.
-				NewMatchQuery(field, value).
-				Fuzziness("AUTO"))
-	}
-
-	return elastic.NewBoolQuery().
-		Should(query).
-		Filter(esQueries...)
+	boolQuery.MinimumShouldMatch("1")
 }
 
-func (repo *DiscoveryRepository) buildFilterTermQueries(query elastic.Query, filters map[string][]string) elastic.Query {
+func (repo *DiscoveryRepository) buildMustMatchQueries(boolQuery *elastic.BoolQuery, cfg asset.SearchConfig) {
+	if len(cfg.Queries) == 0 {
+		return
+	}
+
+	for field, value := range cfg.Queries {
+		matchQuery := elastic.NewMatchQuery(field, value)
+		if !cfg.Flags.DisableFuzzy {
+			matchQuery = matchQuery.Fuzziness("AUTO")
+		}
+		boolQuery.Must(matchQuery)
+	}
+}
+
+func (repo *DiscoveryRepository) buildFilterTermQueries(boolQuery *elastic.BoolQuery, filters map[string][]string) {
 	if len(filters) == 0 {
-		return query
+		return
 	}
 
-	var filterQueries []elastic.Query
 	for key, rawValues := range filters {
 		if len(rawValues) < 1 {
 			continue
 		}
 
-		var values []interface{}
-		for _, rawVal := range rawValues {
-			values = append(values, rawVal)
-		}
-
 		key := fmt.Sprintf("%s.keyword", key)
-		filterQueries = append(
-			filterQueries,
-			elastic.NewTermsQuery(key, values...),
-		)
+		if len(rawValues) == 1 {
+			boolQuery.Filter(elastic.NewTermQuery(key, rawValues[0]))
+		} else {
+			var values []interface{}
+			for _, rawVal := range rawValues {
+				values = append(values, rawVal)
+			}
+			boolQuery.Filter(elastic.NewTermsQuery(key, values...))
+		}
 	}
-
-	newQuery := elastic.NewBoolQuery().
-		Should(query).
-		Filter(filterQueries...)
-
-	return newQuery
 }
 
-func (repo *DiscoveryRepository) buildFunctionScoreQuery(query elastic.Query, rankBy string) elastic.Query {
-	if rankBy == "" {
+func (repo *DiscoveryRepository) buildFunctionScoreQuery(query elastic.Query, cfg asset.SearchConfig) elastic.Query {
+	text := strings.TrimSpace(cfg.Text)
+
+	// Add exact match boost directly as a should clause with high boost
+	if text != "" {
+		if bq, ok := query.(*elastic.BoolQuery); ok {
+			bq.Should(
+				elastic.NewTermQuery("name.keyword", text).Boost(100),
+			)
+		}
+	}
+
+	if cfg.RankBy == "" {
 		return query
 	}
 
 	factorFunc := elastic.NewFieldValueFactorFunction().
-		Field(rankBy).
+		Field(cfg.RankBy).
 		Modifier("log1p").
 		Missing(1.0).
 		Weight(1.0)
@@ -242,15 +276,32 @@ func (repo *DiscoveryRepository) buildFunctionScoreQuery(query elastic.Query, ra
 	return fsQuery
 }
 
+func (repo *DiscoveryRepository) buildHighlightQuery(cfg asset.SearchConfig) *elastic.Highlight {
+	if !cfg.Flags.EnableHighlight {
+		return nil
+	}
+
+	return elastic.NewHighlight().Field("*")
+}
+
 func (repo *DiscoveryRepository) toSearchResults(hits []searchHit) []asset.SearchResult {
-	results := []asset.SearchResult{}
-	for _, hit := range hits {
+	results := make([]asset.SearchResult, len(hits))
+	for i, hit := range hits {
 		r := hit.Source
 		id := r.ID
 		if id == "" { // this is for backward compatibility for asset without ID
 			id = r.URN
 		}
-		results = append(results, asset.SearchResult{
+
+		data := r.Data
+		if len(hit.HighLight) > 0 {
+			if data == nil {
+				data = make(map[string]interface{})
+			}
+			data["_highlight"] = hit.HighLight
+		}
+
+		results[i] = asset.SearchResult{
 			Type:        r.Type.String(),
 			ID:          id,
 			URN:         r.URN,
@@ -258,8 +309,8 @@ func (repo *DiscoveryRepository) toSearchResults(hits []searchHit) []asset.Searc
 			Title:       r.Name,
 			Service:     r.Service,
 			Labels:      r.Labels,
-			Data:        r.Data,
-		})
+			Data:        data,
+		}
 	}
 	return results
 }
@@ -267,7 +318,7 @@ func (repo *DiscoveryRepository) toSearchResults(hits []searchHit) []asset.Searc
 func (repo *DiscoveryRepository) toSuggestions(response searchResponse) (results []string, err error) {
 	suggests, exists := response.Suggest[suggesterName]
 	if !exists {
-		err = errors.New("suggester key does not exist")
+		err = fmt.Errorf("suggester key does not exist")
 		return
 	}
 	results = []string{}

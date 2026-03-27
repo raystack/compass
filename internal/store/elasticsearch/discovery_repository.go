@@ -101,10 +101,11 @@ func (repo *DiscoveryRepository) DeleteByURN(ctx context.Context, ns *namespace.
 
 func (repo *DiscoveryRepository) deleteWithQuery(ctx context.Context, qry io.Reader) error {
 	res, err := repo.cli.client.DeleteByQuery(
-		[]string{"_all"},
+		[]string{defaultSearchIndexAlias},
 		qry,
 		repo.cli.client.DeleteByQuery.WithContext(ctx),
 		repo.cli.client.DeleteByQuery.WithRefresh(true),
+		repo.cli.client.DeleteByQuery.WithIgnoreUnavailable(true),
 	)
 	if err != nil {
 		return asset.DiscoveryError{Err: fmt.Errorf("error deleting asset: %w", err)}

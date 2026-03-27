@@ -37,7 +37,10 @@ const (
 )
 
 type Config struct {
-	Brokers string `mapstructure:"brokers" default:"http://localhost:9200"`
+	Brokers        string `mapstructure:"brokers" default:"http://localhost:9200"`
+	Username       string `mapstructure:"username"`
+	Password       string `mapstructure:"password"`
+	RequestTimeout int    `mapstructure:"request_timeout" default:"10"`
 }
 
 type Route struct {
@@ -64,17 +67,10 @@ var (
 	}
 )
 
-// used as a utility for generating request payload
-// since github.com/olivere/elastic generates the
-// <Q> in {"query": <Q>}
-type searchQuery struct {
-	Query    interface{} `json:"query"`
-	MinScore float32     `json:"min_score"`
-}
-
 type searchHit struct {
-	Index  string      `json:"_index"`
-	Source asset.Asset `json:"_source"`
+	Index     string                          `json:"_index"`
+	Source    asset.Asset                     `json:"_source"`
+	HighLight map[string][]string             `json:"highlight"`
 }
 
 type aggregationBucket struct {
@@ -141,19 +137,20 @@ func NewClient(logger log.Logger, config Config, opts ...ClientOption) (*Client,
 	}
 
 	brokers := strings.Split(config.Brokers, ",")
-	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
+	esCfg := elasticsearch.Config{
 		Addresses: brokers,
 		Transport: nrelasticsearch.NewRoundTripper(nil),
-		//uncomment below code to debug request and response to elasticsearch
-		//Logger: &estransport.ColorLogger{
-		//	Output:             os.Stdout,
-		//	EnableRequestBody:  true,
-		//	EnableResponseBody: true,
-		//},
 		// Retry on 429 TooManyRequests statuses as well
 		RetryOnStatus: []int{502, 503, 504, 429},
 		MaxRetries:    3,
-	})
+	}
+	if config.Username != "" {
+		esCfg.Username = config.Username
+	}
+	if config.Password != "" {
+		esCfg.Password = config.Password
+	}
+	esClient, err := elasticsearch.NewClient(esCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +196,12 @@ func (c *Client) CreateIndex(ctx context.Context, name string, shardCount int) e
 	}
 	defer res.Body.Close()
 	if res.IsError() {
-		return fmt.Errorf("error creating index %q: %s", name, errorReasonFromResponse(res))
+		reason := errorReasonFromResponse(res)
+		// Ignore "resource_already_exists_exception" which can happen due to race conditions
+		if strings.Contains(reason, "resource_already_exists_exception") {
+			return nil
+		}
+		return fmt.Errorf("error creating index %q: %s", name, reason)
 	}
 	return nil
 }

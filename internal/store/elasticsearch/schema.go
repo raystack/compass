@@ -10,14 +10,21 @@ var indexSettingsTemplate = `{
 	},
 	"settings": {
 		"index": {
-            "number_of_shards": %d
+            "number_of_shards": %d,
+            "mapping.ignore_malformed": true
         },
 		"analysis": {
 			"analyzer": {
 				"my_analyzer": {
 					"type": "custom",
 					"tokenizer": "my_tokenizer",
-					"filter": ["lowercase"]
+					"filter": ["lowercase", "english_stemmer"]
+				}
+			},
+			"filter": {
+				"english_stemmer": {
+					"type": "stemmer",
+					"language": "English"
 				}
 			},
 			"tokenizer": {
