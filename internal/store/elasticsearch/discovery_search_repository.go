@@ -330,3 +330,152 @@ func (repo *DiscoveryRepository) toSuggestions(response searchResponse) (results
 
 	return
 }
+
+const defaultGroupsSize = 10
+
+// GroupAssets groups assets by specified fields using ES composite aggregation
+func (repo *DiscoveryRepository) GroupAssets(ctx context.Context, cfg asset.GroupConfig) ([]asset.GroupResult, error) {
+	if cfg.Namespace == nil {
+		return nil, asset.DiscoveryError{Err: fmt.Errorf("namespace cannot be empty")}
+	}
+
+	size := cfg.Size
+	if size <= 0 {
+		size = defaultGroupsSize
+	}
+
+	// Build composite aggregation sources from group-by fields
+	sources := make([]map[string]interface{}, 0, len(cfg.GroupBy))
+	for _, field := range cfg.GroupBy {
+		sources = append(sources, map[string]interface{}{
+			field: map[string]interface{}{
+				"terms": map[string]interface{}{
+					"field": fmt.Sprintf("%s.keyword", field),
+				},
+			},
+		})
+	}
+
+	// Build filter query
+	boolQuery := elastic.NewBoolQuery()
+	// Ensure group-by fields exist
+	for _, field := range cfg.GroupBy {
+		boolQuery.Filter(elastic.NewExistsQuery(fmt.Sprintf("%s.keyword", field)))
+	}
+	repo.buildFilterTermQueries(boolQuery, cfg.Filters)
+
+	includedFields := defaultIncludedFields
+	if len(cfg.IncludeFields) > 0 {
+		includedFields = cfg.IncludeFields
+	}
+
+	// Build the aggregation query manually as JSON
+	payload := map[string]interface{}{
+		"size": 0,
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{},
+		},
+		"aggs": map[string]interface{}{
+			"group_result": map[string]interface{}{
+				"composite": map[string]interface{}{
+					"size":    size,
+					"sources": sources,
+				},
+				"aggs": map[string]interface{}{
+					"top_assets": map[string]interface{}{
+						"top_hits": map[string]interface{}{
+							"size":     size,
+							"_source":  includedFields,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// Use the bool query
+	boolSrc, err := boolQuery.Source()
+	if err != nil {
+		return nil, asset.DiscoveryError{Err: fmt.Errorf("error building query: %w", err)}
+	}
+	payload["query"] = boolSrc
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return nil, asset.DiscoveryError{Err: fmt.Errorf("error encoding query: %w", err)}
+	}
+
+	res, err := repo.cli.client.Search(
+		repo.cli.client.Search.WithBody(strings.NewReader(string(body))),
+		repo.cli.client.Search.WithIndex(BuildAliasNameFromNamespace(cfg.Namespace)),
+		repo.cli.client.Search.WithIgnoreUnavailable(true),
+		repo.cli.client.Search.WithContext(ctx),
+	)
+	if err != nil {
+		return nil, asset.DiscoveryError{Err: fmt.Errorf("error executing group query: %w", err)}
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return nil, asset.DiscoveryError{Err: fmt.Errorf("error response from elasticsearch: %s", errorReasonFromResponse(res))}
+	}
+
+	var response groupResponse
+	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+		return nil, asset.DiscoveryError{Err: fmt.Errorf("error decoding group response: %w", err)}
+	}
+
+	return repo.toGroupResults(response, cfg.GroupBy), nil
+}
+
+type groupResponse struct {
+	Aggregations struct {
+		GroupResult struct {
+			Buckets []groupBucket `json:"buckets"`
+		} `json:"group_result"`
+	} `json:"aggregations"`
+}
+
+type groupBucket struct {
+	Key       map[string]string `json:"key"`
+	DocCount  int               `json:"doc_count"`
+	TopAssets struct {
+		Hits struct {
+			Hits []searchHit `json:"hits"`
+		} `json:"hits"`
+	} `json:"top_assets"`
+}
+
+func (repo *DiscoveryRepository) toGroupResults(response groupResponse, groupBy []string) []asset.GroupResult {
+	var results []asset.GroupResult
+	for _, bucket := range response.Aggregations.GroupResult.Buckets {
+		var fields []asset.GroupField
+		for _, key := range groupBy {
+			fields = append(fields, asset.GroupField{
+				Key:   key,
+				Value: bucket.Key[key],
+			})
+		}
+
+		var assets []asset.Asset
+		for _, hit := range bucket.TopAssets.Hits.Hits {
+			r := hit.Source
+			assets = append(assets, asset.Asset{
+				ID:          r.ID,
+				URN:         r.URN,
+				Type:        r.Type,
+				Name:        r.Name,
+				Service:     r.Service,
+				Description: r.Description,
+				Data:        r.Data,
+				Labels:      r.Labels,
+			})
+		}
+
+		results = append(results, asset.GroupResult{
+			Fields: fields,
+			Assets: assets,
+		})
+	}
+	return results
+}

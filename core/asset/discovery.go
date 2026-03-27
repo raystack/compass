@@ -14,6 +14,28 @@ type DiscoveryRepository interface {
 	SoftDeleteByURN(ctx context.Context, ns *namespace.Namespace, assetURN string) error
 	Search(ctx context.Context, cfg SearchConfig) (results []SearchResult, err error)
 	Suggest(ctx context.Context, cfg SearchConfig) (suggestions []string, err error)
+	GroupAssets(ctx context.Context, cfg GroupConfig) ([]GroupResult, error)
+}
+
+// GroupConfig represents configuration for grouping assets
+type GroupConfig struct {
+	GroupBy       []string
+	Filters       SearchFilter
+	IncludeFields []string
+	Size          int
+	Namespace     *namespace.Namespace
+}
+
+// GroupResult represents a single group of assets
+type GroupResult struct {
+	Fields []GroupField
+	Assets []Asset
+}
+
+// GroupField represents a key-value pair identifying a group
+type GroupField struct {
+	Key   string
+	Value string
 }
 
 // SearchFilter is a filter intended to be used as a search
