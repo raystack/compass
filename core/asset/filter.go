@@ -16,6 +16,7 @@ type Filter struct {
 	QueryFields   []string
 	Query         string
 	Data          map[string][]string
+	IsDeleted     *bool
 }
 
 func (f *Filter) Validate() error {
@@ -32,6 +33,7 @@ type filterBuilder struct {
 	offset        int
 	sortBy        string
 	sortDirection string
+	isDeleted     *bool
 }
 
 func NewFilterBuilder() *filterBuilder {
@@ -83,6 +85,11 @@ func (fb *filterBuilder) SortDirection(sortDirection string) *filterBuilder {
 	return fb
 }
 
+func (fb *filterBuilder) IsDeleted(isDeleted bool) *filterBuilder {
+	fb.isDeleted = &isDeleted
+	return fb
+}
+
 func (fb *filterBuilder) Build() (Filter, error) {
 	flt := Filter{
 		Size:          fb.size,
@@ -90,6 +97,7 @@ func (fb *filterBuilder) Build() (Filter, error) {
 		SortBy:        fb.sortBy,
 		SortDirection: fb.sortDirection,
 		Query:         fb.q,
+		IsDeleted:     fb.isDeleted,
 	}
 
 	if len(fb.data) != 0 {

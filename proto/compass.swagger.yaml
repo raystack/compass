@@ -19,33 +19,33 @@ paths:
   /v1beta1/assets:
     get:
       summary: Get list of assets
-      description: "Returns list of assets, optionally filtered by types, services, sorting, fields in asset.data and querying fields "
+      description: 'Returns list of assets, optionally filtered by types, services, sorting, fields in asset.data and querying fields '
       operationId: CompassService_GetAllAssets
       responses:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetAllAssetsResponse"
+            $ref: '#/definitions/GetAllAssetsResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: q
           description: filter by specific query
@@ -73,7 +73,12 @@ paths:
           required: false
           type: string
         - name: direction
-          description: "sorting direction can either be asc or desc "
+          description: 'sorting direction can either be asc or desc '
+          in: query
+          required: false
+          type: string
+        - name: data[string]
+          description: This is a request variable of the map type. The query format is "map_name[key]=value", e.g. If the map name is Age, the key type is string, and the value type is integer, the query parameter is expressed as Age["bob"]=18
           in: query
           required: false
           type: string
@@ -94,6 +99,11 @@ paths:
           in: query
           required: false
           type: boolean
+        - name: is_deleted
+          description: filter assets by deletion status
+          in: query
+          required: false
+          type: boolean
       tags:
         - Asset
     put:
@@ -104,33 +114,33 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/UpsertAssetResponse"
+            $ref: '#/definitions/UpsertAssetResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: body
           in: body
           required: true
           schema:
-            $ref: "#/definitions/UpsertAssetRequest"
+            $ref: '#/definitions/UpsertAssetRequest'
       tags:
         - Asset
     patch:
@@ -141,33 +151,33 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/UpsertPatchAssetResponse"
+            $ref: '#/definitions/UpsertPatchAssetResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: body
           in: body
           required: true
           schema:
-            $ref: "#/definitions/UpsertPatchAssetRequest"
+            $ref: '#/definitions/UpsertPatchAssetRequest'
       tags:
         - Asset
   /v1beta1/assets/{asset_urn}/probes:
@@ -179,27 +189,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/CreateAssetProbeResponse"
+            $ref: '#/definitions/CreateAssetProbeResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: asset_urn
           in: path
@@ -209,7 +219,7 @@ paths:
           in: body
           required: true
           schema:
-            $ref: "#/definitions/CreateAssetProbeRequest.Probe"
+            $ref: '#/definitions/CreateAssetProbeRequest.Probe'
       tags:
         - Asset
   /v1beta1/assets/{id}:
@@ -221,27 +231,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetAssetByIDResponse"
+            $ref: '#/definitions/GetAssetByIDResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: id
           in: path
@@ -257,27 +267,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/DeleteAssetResponse"
+            $ref: '#/definitions/DeleteAssetResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: id
           in: path
@@ -294,27 +304,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetAssetStargazersResponse"
+            $ref: '#/definitions/GetAssetStargazersResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: id
           in: path
@@ -341,27 +351,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetAssetVersionHistoryResponse"
+            $ref: '#/definitions/GetAssetVersionHistoryResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: id
           in: path
@@ -388,27 +398,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetAssetByVersionResponse"
+            $ref: '#/definitions/GetAssetByVersionResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: id
           in: path
@@ -428,27 +438,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetAllDiscussionsResponse"
+            $ref: '#/definitions/GetAllDiscussionsResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: type
           in: query
@@ -501,34 +511,34 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/CreateDiscussionResponse"
+            $ref: '#/definitions/CreateDiscussionResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: body
           description: Request to be sent to create a discussion
           in: body
           required: true
           schema:
-            $ref: "#/definitions/CreateDiscussionRequest"
+            $ref: '#/definitions/CreateDiscussionRequest'
       tags:
         - Discussion
   /v1beta1/discussions/{discussion_id}/comments:
@@ -539,27 +549,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetAllCommentsResponse"
+            $ref: '#/definitions/GetAllCommentsResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: discussion_id
           in: path
@@ -593,27 +603,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/CreateCommentResponse"
+            $ref: '#/definitions/CreateCommentResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: discussion_id
           in: path
@@ -638,27 +648,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetCommentResponse"
+            $ref: '#/definitions/GetCommentResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: discussion_id
           in: path
@@ -678,27 +688,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/DeleteCommentResponse"
+            $ref: '#/definitions/DeleteCommentResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: discussion_id
           in: path
@@ -718,27 +728,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/UpdateCommentResponse"
+            $ref: '#/definitions/UpdateCommentResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: discussion_id
           in: path
@@ -767,27 +777,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetDiscussionResponse"
+            $ref: '#/definitions/GetDiscussionResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: id
           in: path
@@ -802,27 +812,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/PatchDiscussionResponse"
+            $ref: '#/definitions/PatchDiscussionResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: id
           in: path
@@ -834,6 +844,18 @@ paths:
           schema:
             type: object
             properties:
+              title:
+                type: string
+              body:
+                type: string
+              type:
+                type: string
+              state:
+                type: string
+              labels:
+                type: array
+                items:
+                  type: string
               assets:
                 type: array
                 items:
@@ -842,20 +864,67 @@ paths:
                 type: array
                 items:
                   type: string
-              body:
-                type: string
-              labels:
-                type: array
-                items:
-                  type: string
-              state:
-                type: string
-              title:
-                type: string
-              type:
-                type: string
       tags:
         - Discussion
+  /v1beta1/groupassets:
+    get:
+      summary: Group assets
+      description: API for grouping assets by specified fields with filtering support.
+      operationId: CompassService_GroupAssets
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/GroupAssetsResponse'
+        "400":
+          description: Returned when the data that user input is wrong.
+          schema:
+            $ref: '#/definitions/Status'
+        "404":
+          description: Returned when the resource does not exist.
+          schema:
+            $ref: '#/definitions/Status'
+        "409":
+          description: Returned when the resource already exist.
+          schema:
+            $ref: '#/definitions/Status'
+        "500":
+          description: Returned when theres is something wrong on the server side.
+          schema:
+            $ref: '#/definitions/Status'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/Status'
+      parameters:
+        - name: groupby
+          in: query
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: filter[string]
+          description: This is a request variable of the map type. The query format is "map_name[key]=value", e.g. If the map name is Age, the key type is string, and the value type is integer, the query parameter is expressed as Age["bob"]=18
+          in: query
+          required: false
+          type: string
+        - name: include_fields
+          in: query
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: size
+          description: number of results per group to return
+          in: query
+          required: false
+          type: integer
+          format: int64
+      tags:
+        - Search
+        - Asset
   /v1beta1/lineage/{urn}:
     get:
       summary: Get Lineage Graph
@@ -865,27 +934,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetGraphResponse"
+            $ref: '#/definitions/GetGraphResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: urn
           in: path
@@ -901,6 +970,16 @@ paths:
           in: query
           required: false
           type: string
+        - name: with_attributes
+          description: if set to false, node attributes (probes) will not be returned
+          in: query
+          required: false
+          type: boolean
+        - name: include_deleted
+          description: if true, include soft deleted assets in the lineage graph result
+          in: query
+          required: false
+          type: boolean
       tags:
         - Lineage
         - Asset
@@ -913,27 +992,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetMyDiscussionsResponse"
+            $ref: '#/definitions/GetMyDiscussionsResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: filter
           in: query
@@ -985,27 +1064,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetMyStarredAssetsResponse"
+            $ref: '#/definitions/GetMyStarredAssetsResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: size
           in: query
@@ -1029,27 +1108,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetMyStarredAssetResponse"
+            $ref: '#/definitions/GetMyStarredAssetResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: asset_id
           in: path
@@ -1066,27 +1145,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/UnstarAssetResponse"
+            $ref: '#/definitions/UnstarAssetResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: asset_id
           in: path
@@ -1103,27 +1182,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/StarAssetResponse"
+            $ref: '#/definitions/StarAssetResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: asset_id
           in: path
@@ -1141,27 +1220,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/ListNamespacesResponse"
+            $ref: '#/definitions/ListNamespacesResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       tags:
         - Namespace
     post:
@@ -1172,33 +1251,33 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/CreateNamespaceResponse"
+            $ref: '#/definitions/CreateNamespaceResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: body
           in: body
           required: true
           schema:
-            $ref: "#/definitions/CreateNamespaceRequest"
+            $ref: '#/definitions/CreateNamespaceRequest'
       tags:
         - Namespace
   /v1beta1/namespaces/{urn}:
@@ -1210,27 +1289,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetNamespaceResponse"
+            $ref: '#/definitions/GetNamespaceResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: urn
           description: set either id or name
@@ -1247,27 +1326,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/UpdateNamespaceResponse"
+            $ref: '#/definitions/UpdateNamespaceResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: urn
           description: set either id or name
@@ -1280,11 +1359,11 @@ paths:
           schema:
             type: object
             properties:
+              state:
+                type: string
               metadata:
                 type: object
                 description: key value pairs as metadata for the namespace
-              state:
-                type: string
       tags:
         - Namespace
   /v1beta1/search:
@@ -1296,27 +1375,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/SearchAssetsResponse"
+            $ref: '#/definitions/SearchAssetsResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: text
           description: text to search for (fuzzy)
@@ -1334,6 +1413,16 @@ paths:
           required: false
           type: integer
           format: int64
+        - name: filter[string]
+          description: This is a request variable of the map type. The query format is "map_name[key]=value", e.g. If the map name is Age, the key type is string, and the value type is integer, the query parameter is expressed as Age["bob"]=18
+          in: query
+          required: false
+          type: string
+        - name: query[string]
+          description: This is a request variable of the map type. The query format is "map_name[key]=value", e.g. If the map name is Age, the key type is string, and the value type is integer, the query parameter is expressed as Age["bob"]=18
+          in: query
+          required: false
+          type: string
         - name: include_fields
           in: query
           required: false
@@ -1347,6 +1436,18 @@ paths:
           required: false
           type: integer
           format: int64
+        - name: flags.is_column_search
+          in: query
+          required: false
+          type: boolean
+        - name: flags.disable_fuzzy
+          in: query
+          required: false
+          type: boolean
+        - name: flags.enable_highlight
+          in: query
+          required: false
+          type: boolean
       tags:
         - Search
         - Asset
@@ -1359,27 +1460,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/SuggestAssetsResponse"
+            $ref: '#/definitions/SuggestAssetsResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: text
           description: text to search for suggestions
@@ -1398,34 +1499,34 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/CreateTagAssetResponse"
+            $ref: '#/definitions/CreateTagAssetResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: body
           description: Request to be sent to create a tag
           in: body
           required: true
           schema:
-            $ref: "#/definitions/CreateTagAssetRequest"
+            $ref: '#/definitions/CreateTagAssetRequest'
       tags:
         - Tag
   /v1beta1/tags/assets/{asset_id}:
@@ -1437,27 +1538,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetAllTagsByAssetResponse"
+            $ref: '#/definitions/GetAllTagsByAssetResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: asset_id
           in: path
@@ -1474,27 +1575,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetTagByAssetAndTemplateResponse"
+            $ref: '#/definitions/GetTagByAssetAndTemplateResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: asset_id
           in: path
@@ -1514,27 +1615,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/DeleteTagAssetResponse"
+            $ref: '#/definitions/DeleteTagAssetResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: asset_id
           in: path
@@ -1554,29 +1655,30 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/UpdateTagAssetResponse"
+            $ref: '#/definitions/UpdateTagAssetResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: asset_id
+          description: required
           in: path
           required: true
           type: string
@@ -1593,10 +1695,12 @@ paths:
               tag_values:
                 type: array
                 items:
-                  $ref: "#/definitions/TagValue"
-              template_description:
-                type: string
+                  type: object
+                  $ref: '#/definitions/TagValue'
+                title: required
               template_display_name:
+                type: string
+              template_description:
                 type: string
             description: Request to be sent to update an asset tag
             title: UpdateTagAssetRequest
@@ -1613,27 +1717,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetAllTagTemplatesResponse"
+            $ref: '#/definitions/GetAllTagTemplatesResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: urn
           in: query
@@ -1649,34 +1753,34 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/CreateTagTemplateResponse"
+            $ref: '#/definitions/CreateTagTemplateResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: body
           description: Request to be sent to create a tag's template
           in: body
           required: true
           schema:
-            $ref: "#/definitions/CreateTagTemplateRequest"
+            $ref: '#/definitions/CreateTagTemplateRequest'
       tags:
         - Tag
   /v1beta1/tags/templates/{template_urn}:
@@ -1688,27 +1792,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetTagTemplateResponse"
+            $ref: '#/definitions/GetTagTemplateResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: template_urn
           in: path
@@ -1724,27 +1828,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/DeleteTagTemplateResponse"
+            $ref: '#/definitions/DeleteTagTemplateResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: template_urn
           in: path
@@ -1760,27 +1864,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/UpdateTagTemplateResponse"
+            $ref: '#/definitions/UpdateTagTemplateResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: template_urn
           in: path
@@ -1792,14 +1896,18 @@ paths:
           schema:
             type: object
             properties:
-              description:
-                type: string
               display_name:
                 type: string
+                title: required
+              description:
+                type: string
+                title: required
               fields:
                 type: array
                 items:
-                  $ref: "#/definitions/TagTemplateField"
+                  type: object
+                  $ref: '#/definitions/TagTemplateField'
+                title: required
             description: Request to be sent to update a tag's template
             title: UpdateTagTemplateRequest
             required:
@@ -1817,27 +1925,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetAllTypesResponse"
+            $ref: '#/definitions/GetAllTypesResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: q
           description: filter by specific query
@@ -1859,6 +1967,11 @@ paths:
           in: query
           required: false
           type: string
+        - name: data[string]
+          description: This is a request variable of the map type. The query format is "map_name[key]=value", e.g. If the map name is Age, the key type is string, and the value type is integer, the query parameter is expressed as Age["bob"]=18
+          in: query
+          required: false
+          type: string
       tags:
         - Type
   /v1beta1/users/{user_id}/starred:
@@ -1870,27 +1983,27 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: "#/definitions/GetUserStarredAssetsResponse"
+            $ref: '#/definitions/GetUserStarredAssetsResponse'
         "400":
           description: Returned when the data that user input is wrong.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "404":
           description: Returned when the resource does not exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "409":
           description: Returned when the resource already exist.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         "500":
           description: Returned when theres is something wrong on the server side.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
         default:
           description: An unexpected error response.
           schema:
-            $ref: "#/definitions/Status"
+            $ref: '#/definitions/Status'
       parameters:
         - name: user_id
           in: path
@@ -1913,53 +2026,69 @@ definitions:
   Any:
     type: object
     properties:
-      "@type":
+      '@type':
         type: string
     additionalProperties: {}
+  AssetGroup:
+    type: object
+    properties:
+      group_fields:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/GroupField'
+      assets:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1beta1.Asset'
   Change:
     type: object
     properties:
-      from: {}
+      type:
+        type: string
       path:
         type: array
         items:
           type: string
+      from: {}
       to: {}
-      type:
-        type: string
     title: Change
   Comment:
     type: object
     properties:
+      id:
+        type: string
+      discussion_id:
+        type: string
       body:
         type: string
+      owner:
+        $ref: '#/definitions/User'
+      updated_by:
+        $ref: '#/definitions/User'
       created_at:
         type: string
         format: date-time
-      discussion_id:
-        type: string
-      id:
-        type: string
-      owner:
-        $ref: "#/definitions/User"
       updated_at:
         type: string
         format: date-time
-      updated_by:
-        $ref: "#/definitions/User"
     title: Comment
   CreateAssetProbeRequest.Probe:
     type: object
     properties:
-      metadata:
-        type: object
       status:
         type: string
       status_reason:
         type: string
+      metadata:
+        type: object
       timestamp:
         type: string
         format: date-time
+      id:
+        type: string
+        description: optional probe ID, if not provided will be auto-generated
     required:
       - status
   CreateAssetProbeResponse:
@@ -1975,6 +2104,18 @@ definitions:
   CreateDiscussionRequest:
     type: object
     properties:
+      title:
+        type: string
+      body:
+        type: string
+      type:
+        type: string
+      state:
+        type: string
+      labels:
+        type: array
+        items:
+          type: string
       assets:
         type: array
         items:
@@ -1983,18 +2124,6 @@ definitions:
         type: array
         items:
           type: string
-      body:
-        type: string
-      labels:
-        type: array
-        items:
-          type: string
-      state:
-        type: string
-      title:
-        type: string
-      type:
-        type: string
     description: Request to be sent to create a discussion
     required:
       - title
@@ -2010,13 +2139,13 @@ definitions:
       id:
         type: string
         description: optional, if not specified will be auto generated
-      metadata:
-        type: object
-        description: key value pairs as metadata for the namespace
       name:
         type: string
       state:
         type: string
+      metadata:
+        type: object
+        description: key value pairs as metadata for the namespace
   CreateNamespaceResponse:
     type: object
     properties:
@@ -2027,15 +2156,19 @@ definitions:
     properties:
       asset_id:
         type: string
+        title: required
+      template_urn:
+        type: string
+        title: required
       tag_values:
         type: array
         items:
-          $ref: "#/definitions/TagValue"
-      template_description:
-        type: string
+          type: object
+          $ref: '#/definitions/TagValue'
+        title: required
       template_display_name:
         type: string
-      template_urn:
+      template_description:
         type: string
     description: Request to be sent to create a tag
     title: CreateTagAssetRequest
@@ -2047,20 +2180,25 @@ definitions:
     type: object
     properties:
       data:
-        $ref: "#/definitions/v1beta1.Tag"
+        $ref: '#/definitions/v1beta1.Tag'
   CreateTagTemplateRequest:
     type: object
     properties:
-      description:
+      urn:
         type: string
+        title: required
       display_name:
         type: string
+        title: required
+      description:
+        type: string
+        title: required
       fields:
         type: array
         items:
-          $ref: "#/definitions/TagTemplateField"
-      urn:
-        type: string
+          type: object
+          $ref: '#/definitions/TagTemplateField'
+        title: required
     description: Request to be sent to create a tag's template
     title: CreateTagTemplateRequest
     required:
@@ -2072,7 +2210,7 @@ definitions:
     type: object
     properties:
       data:
-        $ref: "#/definitions/TagTemplate"
+        $ref: '#/definitions/TagTemplate'
   DeleteAssetResponse:
     type: object
   DeleteCommentResponse:
@@ -2084,6 +2222,20 @@ definitions:
   Discussion:
     type: object
     properties:
+      id:
+        type: string
+      title:
+        type: string
+      body:
+        type: string
+      type:
+        type: string
+      state:
+        type: string
+      labels:
+        type: array
+        items:
+          type: string
       assets:
         type: array
         items:
@@ -2092,25 +2244,11 @@ definitions:
         type: array
         items:
           type: string
-      body:
-        type: string
+      owner:
+        $ref: '#/definitions/User'
       created_at:
         type: string
         format: date-time
-      id:
-        type: string
-      labels:
-        type: array
-        items:
-          type: string
-      owner:
-        $ref: "#/definitions/User"
-      state:
-        type: string
-      title:
-        type: string
-      type:
-        type: string
       updated_at:
         type: string
         format: date-time
@@ -2121,7 +2259,8 @@ definitions:
       data:
         type: array
         items:
-          $ref: "#/definitions/v1beta1.Asset"
+          type: object
+          $ref: '#/definitions/v1beta1.Asset'
       total:
         type: integer
         format: int64
@@ -2131,81 +2270,89 @@ definitions:
       data:
         type: array
         items:
-          $ref: "#/definitions/Comment"
+          type: object
+          $ref: '#/definitions/Comment'
   GetAllDiscussionsResponse:
     type: object
     properties:
       data:
         type: array
         items:
-          $ref: "#/definitions/Discussion"
+          type: object
+          $ref: '#/definitions/Discussion'
   GetAllTagTemplatesResponse:
     type: object
     properties:
       data:
         type: array
         items:
-          $ref: "#/definitions/TagTemplate"
+          type: object
+          $ref: '#/definitions/TagTemplate'
   GetAllTagsByAssetResponse:
     type: object
     properties:
       data:
         type: array
         items:
-          $ref: "#/definitions/v1beta1.Tag"
+          type: object
+          $ref: '#/definitions/v1beta1.Tag'
   GetAllTypesResponse:
     type: object
     properties:
       data:
         type: array
         items:
-          $ref: "#/definitions/v1beta1.Type"
+          type: object
+          $ref: '#/definitions/v1beta1.Type'
   GetAssetByIDResponse:
     type: object
     properties:
       data:
-        $ref: "#/definitions/v1beta1.Asset"
+        $ref: '#/definitions/v1beta1.Asset'
   GetAssetByVersionResponse:
     type: object
     properties:
       data:
-        $ref: "#/definitions/v1beta1.Asset"
+        $ref: '#/definitions/v1beta1.Asset'
   GetAssetStargazersResponse:
     type: object
     properties:
       data:
         type: array
         items:
-          $ref: "#/definitions/User"
+          type: object
+          $ref: '#/definitions/User'
   GetAssetVersionHistoryResponse:
     type: object
     properties:
       data:
         type: array
         items:
-          $ref: "#/definitions/v1beta1.Asset"
+          type: object
+          $ref: '#/definitions/v1beta1.Asset'
   GetCommentResponse:
     type: object
     properties:
       data:
-        $ref: "#/definitions/Comment"
+        $ref: '#/definitions/Comment'
   GetDiscussionResponse:
     type: object
     properties:
       data:
-        $ref: "#/definitions/Discussion"
+        $ref: '#/definitions/Discussion'
   GetGraphResponse:
     type: object
     properties:
       data:
         type: array
         items:
-          $ref: "#/definitions/LineageEdge"
+          type: object
+          $ref: '#/definitions/LineageEdge'
         description: Edges in the graph.
       node_attrs:
         type: object
         additionalProperties:
-          $ref: "#/definitions/NodeAttributes"
+          $ref: '#/definitions/NodeAttributes'
         description: |-
           Key is the asset URN. Node attributes, if present, will be returned for
           source and target nodes in the LineageEdge.
@@ -2215,59 +2362,77 @@ definitions:
       data:
         type: array
         items:
-          $ref: "#/definitions/Discussion"
+          type: object
+          $ref: '#/definitions/Discussion'
   GetMyStarredAssetResponse:
     type: object
     properties:
       data:
-        $ref: "#/definitions/v1beta1.Asset"
+        $ref: '#/definitions/v1beta1.Asset'
   GetMyStarredAssetsResponse:
     type: object
     properties:
       data:
         type: array
         items:
-          $ref: "#/definitions/v1beta1.Asset"
+          type: object
+          $ref: '#/definitions/v1beta1.Asset'
   GetNamespaceResponse:
     type: object
     properties:
       namespace:
-        $ref: "#/definitions/Namespace"
+        $ref: '#/definitions/Namespace'
   GetTagByAssetAndTemplateResponse:
     type: object
     properties:
       data:
-        $ref: "#/definitions/v1beta1.Tag"
+        $ref: '#/definitions/v1beta1.Tag'
   GetTagTemplateResponse:
     type: object
     properties:
       data:
-        $ref: "#/definitions/TagTemplate"
+        $ref: '#/definitions/TagTemplate'
   GetUserStarredAssetsResponse:
     type: object
     properties:
       data:
         type: array
         items:
-          $ref: "#/definitions/v1beta1.Asset"
+          type: object
+          $ref: '#/definitions/v1beta1.Asset'
+  GroupAssetsResponse:
+    type: object
+    properties:
+      asset_groups:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/AssetGroup'
+  GroupField:
+    type: object
+    properties:
+      group_key:
+        type: string
+      group_value:
+        type: string
   LineageEdge:
     type: object
     properties:
-      prop:
-        type: object
       source:
         type: string
       target:
         type: string
+      prop:
+        type: object
     title: LineageEdge
   LineageNode:
     type: object
     properties:
-      service:
+      urn:
         type: string
       type:
         type: string
-      urn:
+      service:
         type: string
     title: LineageNode
   ListNamespacesResponse:
@@ -2276,24 +2441,25 @@ definitions:
       namespaces:
         type: array
         items:
-          $ref: "#/definitions/Namespace"
+          type: object
+          $ref: '#/definitions/Namespace'
   Namespace:
     type: object
     properties:
       id:
         type: string
-      metadata:
-        type: object
-        description: key value pairs as metadata for the namespace
       name:
         type: string
       state:
         type: string
+      metadata:
+        type: object
+        description: key value pairs as metadata for the namespace
   NodeAttributes:
     type: object
     properties:
       probes:
-        $ref: "#/definitions/ProbesInfo"
+        $ref: '#/definitions/ProbesInfo'
   NullValue:
     type: string
     enum:
@@ -2303,7 +2469,7 @@ definitions:
       `NullValue` is a singleton enumeration to represent the null value for the
       `Value` type union.
 
-       The JSON representation for `NullValue` is JSON `null`.
+      The JSON representation for `NullValue` is JSON `null`.
 
        - NULL_VALUE: Null value.
   PatchDiscussionResponse:
@@ -2312,14 +2478,24 @@ definitions:
     type: object
     properties:
       latest:
-        $ref: "#/definitions/v1beta1.Probe"
+        $ref: '#/definitions/v1beta1.Probe'
   SearchAssetsResponse:
     type: object
     properties:
       data:
         type: array
         items:
-          $ref: "#/definitions/v1beta1.Asset"
+          type: object
+          $ref: '#/definitions/v1beta1.Asset'
+  SearchFlags:
+    type: object
+    properties:
+      is_column_search:
+        type: boolean
+      disable_fuzzy:
+        type: boolean
+      enable_highlight:
+        type: boolean
   StarAssetResponse:
     type: object
     properties:
@@ -2331,12 +2507,13 @@ definitions:
       code:
         type: integer
         format: int32
+      message:
+        type: string
       details:
         type: array
         items:
-          $ref: "#/definitions/Any"
-      message:
-        type: string
+          type: object
+          $ref: '#/definitions/Any'
   SuggestAssetsResponse:
     type: object
     properties:
@@ -2347,74 +2524,75 @@ definitions:
   TagTemplate:
     type: object
     properties:
-      created_at:
-        type: string
-        format: date-time
-      description:
+      urn:
         type: string
       display_name:
+        type: string
+      description:
         type: string
       fields:
         type: array
         items:
-          $ref: "#/definitions/TagTemplateField"
+          type: object
+          $ref: '#/definitions/TagTemplateField'
+      created_at:
+        type: string
+        format: date-time
       updated_at:
         type: string
         format: date-time
-      urn:
-        type: string
     title: TagTemplate
   TagTemplateField:
     type: object
     properties:
-      created_at:
-        type: string
-        format: date-time
-      data_type:
-        type: string
-      description:
-        type: string
-      display_name:
-        type: string
       id:
         type: integer
         format: int64
+      urn:
+        type: string
+      display_name:
+        type: string
+      description:
+        type: string
+      data_type:
+        type: string
       options:
         type: array
         items:
           type: string
       required:
         type: boolean
+      created_at:
+        type: string
+        format: date-time
       updated_at:
         type: string
         format: date-time
-      urn:
-        type: string
     title: TagTemplateField
   TagValue:
     type: object
     properties:
-      created_at:
-        type: string
-        format: date-time
-      field_data_type:
-        type: string
-      field_description:
-        type: string
-      field_display_name:
-        type: string
       field_id:
         type: integer
         format: int64
+      field_value: {}
+      field_urn:
+        type: string
+      field_display_name:
+        type: string
+      field_description:
+        type: string
+      field_data_type:
+        type: string
       field_options:
         type: array
         items:
           type: string
       field_required:
         type: boolean
-      field_urn:
+      created_at:
         type: string
-      field_value: {}
+        format: date-time
       updated_at:
         type: string
         format: date-time
@@ -2429,52 +2607,58 @@ definitions:
     type: object
     properties:
       data:
-        $ref: "#/definitions/v1beta1.Tag"
+        $ref: '#/definitions/v1beta1.Tag'
   UpdateTagTemplateResponse:
     type: object
     properties:
       data:
-        $ref: "#/definitions/TagTemplate"
+        $ref: '#/definitions/TagTemplate'
   UpsertAssetRequest:
     type: object
     properties:
       asset:
-        $ref: "#/definitions/UpsertAssetRequest.Asset"
-      downstreams:
-        type: array
-        items:
-          $ref: "#/definitions/LineageNode"
+        $ref: '#/definitions/UpsertAssetRequest.Asset'
       upstreams:
         type: array
         items:
-          $ref: "#/definitions/LineageNode"
+          type: object
+          $ref: '#/definitions/LineageNode'
+      downstreams:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/LineageNode'
+      update_only:
+        type: boolean
+        description: if true, only update existing assets, do not create new ones
   UpsertAssetRequest.Asset:
     type: object
     properties:
+      urn:
+        type: string
+      type:
+        type: string
+      name:
+        type: string
+      service:
+        type: string
+      description:
+        type: string
       data:
         type: object
         description: dynamic data of an asset
-      description:
-        type: string
       labels:
         type: object
         additionalProperties:
           type: string
         description: labels of an asset
-      name:
-        type: string
       owners:
         type: array
         items:
-          $ref: "#/definitions/User"
+          type: object
+          $ref: '#/definitions/User'
         description: list of owners of the asset
-      service:
-        type: string
-      type:
-        type: string
       url:
-        type: string
-      urn:
         type: string
   UpsertAssetResponse:
     type: object
@@ -2485,11 +2669,17 @@ definitions:
     type: object
     properties:
       asset:
-        $ref: "#/definitions/UpsertPatchAssetRequest.Asset"
+        $ref: '#/definitions/UpsertPatchAssetRequest.Asset'
+      upstreams:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/LineageNode'
       downstreams:
         type: array
         items:
-          $ref: "#/definitions/LineageNode"
+          type: object
+          $ref: '#/definitions/LineageNode'
       overwrite_lineage:
         type: boolean
         description: |-
@@ -2497,39 +2687,39 @@ definitions:
           overwritten with the upstreams and downstreams specified in the request.
           Currently, it is only applicable when both upstreams and downstreams are
           empty/not specified.
-      upstreams:
-        type: array
-        items:
-          $ref: "#/definitions/LineageNode"
+      update_only:
+        type: boolean
+        description: if true, only update existing assets, do not create new ones
   UpsertPatchAssetRequest.Asset:
     type: object
     properties:
-      data:
-        type: object
-        description: dynamic data of an asset
+      urn:
+        type: string
+      type:
+        type: string
+      name:
+        type: string
+        description: name of an asset
+      service:
+        type: string
       description:
         type: string
         description: description of an asset
+      data:
+        type: object
+        description: dynamic data of an asset
       labels:
         type: object
         additionalProperties:
           type: string
         description: labels of an asset
-      name:
-        type: string
-        description: name of an asset
       owners:
         type: array
         items:
-          $ref: "#/definitions/User"
+          type: object
+          $ref: '#/definitions/User'
         description: list of owners of the asset
-      service:
-        type: string
-      type:
-        type: string
       url:
-        type: string
-      urn:
         type: string
   UpsertPatchAssetResponse:
     type: object
@@ -2539,84 +2729,89 @@ definitions:
   User:
     type: object
     properties:
-      created_at:
-        type: string
-        format: date-time
-      email:
-        type: string
       id:
+        type: string
+      uuid:
+        type: string
+      email:
         type: string
       provider:
         type: string
+      created_at:
+        type: string
+        format: date-time
       updated_at:
         type: string
         format: date-time
-      uuid:
-        type: string
     title: User
   v1beta1.Asset:
     type: object
     properties:
-      changelog:
-        type: array
-        items:
-          $ref: "#/definitions/Change"
-      created_at:
-        type: string
-        format: date-time
-      data:
-        type: object
-      description:
-        type: string
       id:
         type: string
+      urn:
+        type: string
+      type:
+        type: string
+      service:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      data:
+        type: object
       labels:
         type: object
         additionalProperties:
           type: string
-      name:
-        type: string
       owners:
         type: array
         items:
-          $ref: "#/definitions/User"
-      probes:
+          type: object
+          $ref: '#/definitions/User'
+      version:
+        type: string
+      updated_by:
+        $ref: '#/definitions/User'
+      changelog:
         type: array
         items:
-          $ref: "#/definitions/v1beta1.Probe"
-      service:
+          type: object
+          $ref: '#/definitions/Change'
+      created_at:
         type: string
-      type:
-        type: string
+        format: date-time
       updated_at:
         type: string
         format: date-time
-      updated_by:
-        $ref: "#/definitions/User"
       url:
         type: string
-      urn:
-        type: string
-      version:
-        type: string
+      probes:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1beta1.Probe'
+      is_deleted:
+        type: boolean
     title: Asset
   v1beta1.Probe:
     type: object
     properties:
-      asset_urn:
-        type: string
-      created_at:
-        type: string
-        format: date-time
       id:
         type: string
-      metadata:
-        type: object
+      asset_urn:
+        type: string
       status:
         type: string
       status_reason:
         type: string
+      metadata:
+        type: object
       timestamp:
+        type: string
+        format: date-time
+      created_at:
         type: string
         format: date-time
     title: Probe
@@ -2625,25 +2820,26 @@ definitions:
     properties:
       asset_id:
         type: string
+      template_urn:
+        type: string
       tag_values:
         type: array
         items:
-          $ref: "#/definitions/TagValue"
-      template_description:
-        type: string
+          type: object
+          $ref: '#/definitions/TagValue'
       template_display_name:
         type: string
-      template_urn:
+      template_description:
         type: string
     title: Tag
   v1beta1.Type:
     type: object
     properties:
+      name:
+        type: string
       count:
         type: integer
         format: int64
-      name:
-        type: string
 externalDocs:
   description: More about Compass
   url: https://raystack.gitbook.io/compass/

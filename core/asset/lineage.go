@@ -26,6 +26,7 @@ type LineageQuery struct {
 	Level          int
 	Direction      LineageDirection
 	WithAttributes bool
+	IncludeDeleted bool
 }
 
 //go:generate mockery --name=LineageRepository -r --case underscore --with-expecter --structname=LineageRepository --filename=lineage_repository.go --output=./mocks

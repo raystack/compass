@@ -12,7 +12,6 @@ import (
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/core/star"
 	"github.com/raystack/compass/core/user"
-	"github.com/raystack/compass/pkg/statsd"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
 	"github.com/r3labs/diff/v2"
 	"google.golang.org/grpc/codes"
@@ -20,11 +19,6 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
-
-//go:generate mockery --name=StatsDClient -r --case underscore --with-expecter --structname StatsDClient --filename statsd_monitor.go --output=./mocks
-type StatsDClient interface {
-	Incr(name string) *statsd.Metric
-}
 
 type AssetService interface {
 	GetAllAssets(ctx context.Context, flt asset.Filter, withTotal bool) ([]asset.Asset, uint32, error)
@@ -54,7 +48,7 @@ func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.G
 		return nil, err
 	}
 
-	flt, err := asset.NewFilterBuilder().
+	fb := asset.NewFilterBuilder().
 		Types(req.GetTypes()).
 		Services(req.GetServices()).
 		Q(req.GetQ()).
@@ -63,8 +57,11 @@ func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.G
 		Offset(int(req.GetOffset())).
 		SortBy(req.GetSort()).
 		SortDirection(req.GetDirection()).
-		Data(req.GetData()).
-		Build()
+		Data(req.GetData())
+	if req.GetIsDeleted() {
+		fb = fb.IsDeleted(true)
+	}
+	flt, err := fb.Build()
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
 	}
@@ -260,6 +257,9 @@ func (server *APIServer) UpsertAsset(ctx context.Context, req *compassv1beta1.Up
 		req.GetDownstreams(),
 	)
 	if err != nil {
+		if req.GetUpdateOnly() && errors.As(err, new(asset.NotFoundError)) {
+			return &compassv1beta1.UpsertAssetResponse{Id: ""}, nil
+		}
 		return nil, err
 	}
 
@@ -290,8 +290,14 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *compassv1bet
 	}
 
 	ast, err := server.assetService.GetAssetByID(ctx, urn)
-	if err != nil && !errors.As(err, &asset.NotFoundError{}) {
-		return nil, internalServerError(server.logger, err.Error())
+	if err != nil {
+		if errors.As(err, &asset.NotFoundError{}) {
+			if req.GetUpdateOnly() {
+				return &compassv1beta1.UpsertPatchAssetResponse{Id: ""}, nil
+			}
+		} else {
+			return nil, internalServerError(server.logger, err.Error())
+		}
 	}
 
 	patchAssetMap := decodePatchAssetToMap(baseAsset)
@@ -331,12 +337,6 @@ func (server *APIServer) DeleteAsset(ctx context.Context, req *compassv1beta1.De
 		}
 		if errors.As(err, new(asset.NotFoundError)) {
 			return nil, status.Error(codes.NotFound, err.Error())
-		}
-		if errors.As(err, new(asset.DiscoveryError)) {
-			server.sendStatsDCounterMetric("discovery_error",
-				map[string]string{
-					"method": "delete",
-				})
 		}
 		return nil, internalServerError(server.logger, err.Error())
 	}
@@ -404,20 +404,8 @@ func (server *APIServer) upsertAsset(
 	if errors.As(err, new(asset.InvalidError)) {
 		return "", status.Error(codes.InvalidArgument, err.Error())
 	} else if err != nil {
-		if errors.As(err, new(asset.DiscoveryError)) {
-			server.sendStatsDCounterMetric("discovery_error",
-				map[string]string{
-					"method": mode,
-				})
-		}
 		return "", internalServerError(server.logger, err.Error())
 	}
-
-	server.sendStatsDCounterMetric(mode,
-		map[string]string{
-			"type":    ast.Type.String(),
-			"service": ast.Service,
-		})
 
 	return
 }
@@ -431,24 +419,12 @@ func (server *APIServer) upsertAssetWithoutLineage(ctx context.Context, ns *name
 
 	assetID, err := server.assetService.UpsertAssetWithoutLineage(ctx, ns, &ast)
 	if err != nil {
-		switch {
-		case errors.As(err, new(asset.InvalidError)):
+		if errors.As(err, new(asset.InvalidError)) {
 			return "", status.Error(codes.InvalidArgument, err.Error())
-
-		case errors.As(err, new(asset.DiscoveryError)):
-			server.sendStatsDCounterMetric("discovery_error",
-				map[string]string{
-					"method": mode,
-				})
 		}
-
 		return "", internalServerError(server.logger, err.Error())
 	}
 
-	server.sendStatsDCounterMetric(mode, map[string]string{
-		"type":    ast.Type.String(),
-		"service": ast.Service,
-	})
 	return assetID, nil
 }
 
@@ -629,6 +605,7 @@ func assetToProto(a asset.Asset, withChangelog bool) (assetPB *compassv1beta1.As
 		CreatedAt:   createdAtPB,
 		UpdatedAt:   updatedAtPB,
 		Probes:      probes,
+		IsDeleted:   a.IsDeleted,
 	}
 	return
 }

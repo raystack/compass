@@ -28,11 +28,15 @@ func (server *APIServer) GetGraph(ctx context.Context, req *compassv1beta1.GetGr
 
 	// Default to true for backward compatibility
 	withAttributes := true
+	if req.WithAttributes != nil {
+		withAttributes = *req.WithAttributes
+	}
 
 	lineage, err := server.assetService.GetLineage(ctx, req.GetUrn(), asset.LineageQuery{
 		Level:          int(req.GetLevel()),
 		Direction:      direction,
 		WithAttributes: withAttributes,
+		IncludeDeleted: req.GetIncludeDeleted(),
 	})
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())

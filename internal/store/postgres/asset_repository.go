@@ -940,6 +940,10 @@ func (r *AssetRepository) getAssetVersionSQL() sq.SelectBuilder {
 
 // BuildFilterQuery retrieves the sql query based on applied filter in the queryString
 func (r *AssetRepository) BuildFilterQuery(builder sq.SelectBuilder, flt asset.Filter) sq.SelectBuilder {
+	if flt.IsDeleted != nil {
+		builder = builder.Where(sq.Eq{"is_deleted": *flt.IsDeleted})
+	}
+
 	if len(flt.Types) > 0 {
 		builder = builder.Where(sq.Eq{"type": flt.Types})
 	}

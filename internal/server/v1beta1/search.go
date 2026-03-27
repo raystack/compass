@@ -29,6 +29,7 @@ func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.S
 		RankBy:        req.GetRankby(),
 		Queries:       req.GetQuery(),
 		IncludeFields: req.GetIncludeFields(),
+		Flags:         getSearchFlagsFromProto(req.GetFlags()),
 		Namespace:     ns,
 	}
 
@@ -77,6 +78,17 @@ func (server *APIServer) SuggestAssets(ctx context.Context, req *compassv1beta1.
 	return &compassv1beta1.SuggestAssetsResponse{
 		Data: suggestions,
 	}, nil
+}
+
+func getSearchFlagsFromProto(flags *compassv1beta1.SearchFlags) asset.SearchFlags {
+	if flags == nil {
+		return asset.SearchFlags{}
+	}
+	return asset.SearchFlags{
+		DisableFuzzy:    flags.GetDisableFuzzy(),
+		EnableHighlight: flags.GetEnableHighlight(),
+		IsColumnSearch:  flags.GetIsColumnSearch(),
+	}
 }
 
 func filterConfigFromValues(fltMap map[string]string) map[string][]string {
