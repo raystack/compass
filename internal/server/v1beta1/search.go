@@ -80,6 +80,60 @@ func (server *APIServer) SuggestAssets(ctx context.Context, req *compassv1beta1.
 	}, nil
 }
 
+func (server *APIServer) GroupAssets(ctx context.Context, req *compassv1beta1.GroupAssetsRequest) (*compassv1beta1.GroupAssetsResponse, error) {
+	if err := req.ValidateAll(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	}
+	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
+		return nil, err
+	}
+
+	if len(req.GetGroupby()) == 0 {
+		return nil, status.Error(codes.InvalidArgument, "groupby must be specified")
+	}
+
+	cfg := asset.GroupConfig{
+		GroupBy:       req.GetGroupby(),
+		Filters:       filterConfigFromValues(req.GetFilter()),
+		IncludeFields: req.GetIncludeFields(),
+		Size:          int(req.GetSize()),
+		Namespace:     ns,
+	}
+
+	results, err := server.assetService.GroupAssets(ctx, cfg)
+	if err != nil {
+		return nil, internalServerError(server.logger, fmt.Sprintf("error grouping assets: %s", err.Error()))
+	}
+
+	var groups []*compassv1beta1.AssetGroup
+	for _, gr := range results {
+		var fields []*compassv1beta1.GroupField
+		for _, f := range gr.Fields {
+			fields = append(fields, &compassv1beta1.GroupField{
+				GroupKey:   f.Key,
+				GroupValue: f.Value,
+			})
+		}
+		var assets []*compassv1beta1.Asset
+		for _, a := range gr.Assets {
+			ap, err := assetToProto(a, false)
+			if err != nil {
+				return nil, internalServerError(server.logger, fmt.Sprintf("error converting asset to proto: %s", err.Error()))
+			}
+			assets = append(assets, ap)
+		}
+		groups = append(groups, &compassv1beta1.AssetGroup{
+			GroupFields: fields,
+			Assets:      assets,
+		})
+	}
+
+	return &compassv1beta1.GroupAssetsResponse{
+		AssetGroups: groups,
+	}, nil
+}
+
 func getSearchFlagsFromProto(flags *compassv1beta1.SearchFlags) asset.SearchFlags {
 	if flags == nil {
 		return asset.SearchFlags{}

@@ -36,6 +36,8 @@ type AssetService interface {
 	SuggestAssets(ctx context.Context, cfg asset.SearchConfig) (suggestions []string, err error)
 
 	AddProbe(ctx context.Context, ns *namespace.Namespace, assetURN string, probe *asset.Probe) error
+
+	GroupAssets(ctx context.Context, cfg asset.GroupConfig) ([]asset.GroupResult, error)
 }
 
 func (server *APIServer) GetAllAssets(ctx context.Context, req *compassv1beta1.GetAllAssetsRequest) (*compassv1beta1.GetAllAssetsResponse, error) {

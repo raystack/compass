@@ -669,6 +669,29 @@ func (_c *AssetService_UpsertAssetWithoutLineage_Call) RunAndReturn(run func(con
 	return _c
 }
 
+// GroupAssets provides a mock function with given fields: ctx, cfg
+func (_m *AssetService) GroupAssets(ctx context.Context, cfg asset.GroupConfig) ([]asset.GroupResult, error) {
+	ret := _m.Called(ctx, cfg)
+	var r0 []asset.GroupResult
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, asset.GroupConfig) ([]asset.GroupResult, error)); ok {
+		return rf(ctx, cfg)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, asset.GroupConfig) []asset.GroupResult); ok {
+		r0 = rf(ctx, cfg)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]asset.GroupResult)
+		}
+	}
+	if rf, ok := ret.Get(1).(func(context.Context, asset.GroupConfig) error); ok {
+		r1 = rf(ctx, cfg)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
 type mockConstructorTestingTNewAssetService interface {
 	mock.TestingT
 	Cleanup(func())
