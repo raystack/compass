@@ -413,8 +413,6 @@ func (server *APIServer) upsertAsset(
 }
 
 func (server *APIServer) upsertAssetWithoutLineage(ctx context.Context, ns *namespace.Namespace, ast asset.Asset) (string, error) {
-	const mode = "asset_upsert_patch_without_lineage"
-
 	if err := server.validateAsset(ast); err != nil {
 		return "", status.Error(codes.InvalidArgument, err.Error())
 	}
