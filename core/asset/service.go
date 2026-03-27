@@ -158,6 +158,12 @@ func (s *Service) GetLineage(ctx context.Context, urn string, query LineageQuery
 		return Lineage{}, fmt.Errorf("get lineage: get graph edges: %w", err)
 	}
 
+	if !query.WithAttributes {
+		return Lineage{
+			Edges: edges,
+		}, nil
+	}
+
 	urns := newUniqueStrings(len(edges))
 	urns.add(urn)
 	for _, edge := range edges {
