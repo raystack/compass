@@ -25,7 +25,6 @@ type APIServer struct {
 	tagTemplateService TagTemplateService
 	userService        UserService
 	logger             log.Logger
-	statsDReporter     StatsDClient
 }
 
 var (
@@ -70,16 +69,6 @@ func (server *APIServer) validateUserInCtx(ctx context.Context, ns *namespace.Na
 		return "", status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
 	}
 	return userID, nil
-}
-
-func (server *APIServer) sendStatsDCounterMetric(metricName string, kvTags map[string]string) {
-	if server.statsDReporter != nil {
-		metric := server.statsDReporter.Incr(metricName)
-		for k, v := range kvTags {
-			metric.Tag(k, v)
-		}
-		metric.Publish()
-	}
 }
 
 func internalServerError(logger log.Logger, msg string) error {
