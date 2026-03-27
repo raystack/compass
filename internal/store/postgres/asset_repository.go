@@ -14,7 +14,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/core/user"
-	"github.com/r3labs/diff/v2"
+	"github.com/r3labs/diff/v3"
 )
 
 // AssetRepository is a type that manages user operation to the primary database
