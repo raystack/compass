@@ -30,7 +30,7 @@ var (
 		"--tmpfs", "/opt/elasticsearch/volatile/logs:rw",
 		"--tmpfs", "/tmp:rw",
 		"--ulimit", "memlock=-1:-1",
-		"docker.elastic.co/elasticsearch/elasticsearch:7.17.6",
+		"docker.elastic.co/elasticsearch/elasticsearch:8.17.1",
 	}
 	// "9200/tcp" refers to the default container port where elasticsearch server runs
 	esHostQuery = `{{index .NetworkSettings.Ports "9200/tcp" 0 "HostIp"}}:{{index .NetworkSettings.Ports "9200/tcp" 0 "HostPort"}}`
@@ -147,10 +147,13 @@ func (srv *ElasticsearchTestServer) purge(cli *elasticsearch.Client) (err error)
 			err = fmt.Errorf("purge: %w", err)
 		}
 	}()
-	req, err := http.NewRequest("DELETE", "/_all", nil)
+	req, err := http.NewRequest("DELETE", "/*", nil)
 	if err != nil {
 		return
 	}
+	q := req.URL.Query()
+	q.Set("expand_wildcards", "all")
+	req.URL.RawQuery = q.Encode()
 	res, err := cli.Perform(req)
 	if err != nil {
 		return err
