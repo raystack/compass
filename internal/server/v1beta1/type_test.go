@@ -93,6 +93,18 @@ func TestGetTypes(t *testing.T) {
 							Name:  "model",
 							Count: 0,
 						},
+						{
+							Name:  "query",
+							Count: 0,
+						},
+						{
+							Name:  "metric",
+							Count: 0,
+						},
+						{
+							Name:  "experiment",
+							Count: 0,
+						},
 					},
 				}
 
