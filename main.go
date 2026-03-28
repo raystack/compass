@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 
+	"connectrpc.com/connect"
 	"github.com/raystack/compass/cli"
-	"google.golang.org/grpc/status"
 )
 
 const (
@@ -43,8 +44,8 @@ func main() {
 }
 
 func printError(err error) {
-	if s, ok := status.FromError(err); ok {
-		fmt.Fprintf(os.Stderr, "Code: %s Error: %s\n", s.Code(), s.Message())
+	if connectErr := new(connect.Error); errors.As(err, &connectErr) {
+		fmt.Fprintf(os.Stderr, "Code: %s Error: %s\n", connectErr.Code(), connectErr.Message())
 		return
 	}
 	fmt.Fprintln(os.Stderr, err)

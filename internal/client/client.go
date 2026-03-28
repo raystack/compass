@@ -37,7 +37,7 @@ func Create(ctx context.Context, cfg Config) (*Client, error) {
 	connectClient := compassv1beta1connect.NewCompassServiceClient(
 		httpClient,
 		baseURL,
-		connect.WithGRPC(), // Use gRPC protocol for compatibility
+		connect.WithProtoJSON(), // Use Connect protocol with JSON encoding
 	)
 
 	return &Client{
