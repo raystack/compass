@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
+	"github.com/raystack/compass/pkg/server/interceptor"
 	"testing"
 	"time"
 
@@ -40,7 +40,7 @@ func (r *TagTemplateRepositoryTestSuite) SetupSuite() {
 		State:    namespace.SharedState,
 		Metadata: nil,
 	}
-	r.ctx = grpc_interceptor.BuildContextWithNamespace(context.Background(), r.ns)
+	r.ctx = interceptor.BuildContextWithNamespace(context.Background(), r.ns)
 	r.repository, err = postgres.NewTagTemplateRepository(r.client)
 	if err != nil {
 		r.T().Fatal(err)

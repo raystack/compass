@@ -2,20 +2,21 @@ package handlersv1beta1
 
 import (
 	"context"
-	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
 	"testing"
 	"time"
 
+	"connectrpc.com/connect"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/raystack/compass/core/asset"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/internal/server/v1beta1/mocks"
+	"github.com/raystack/compass/pkg/server/interceptor"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
 	log "github.com/raystack/salt/observability/logger"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -33,7 +34,7 @@ func TestGetLineageGraph(t *testing.T) {
 		}
 	)
 	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+	ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 	t.Run("get Lineage", func(t *testing.T) {
 		t.Run("should return a graph containing the requested resource, along with it's related resources", func(t *testing.T) {
 			logger := log.NewNoop()
@@ -74,14 +75,13 @@ func TestGetLineageGraph(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
-			got, err := handler.GetGraph(ctx, &compassv1beta1.GetGraphRequest{
+			got, err := handler.GetGraph(ctx, connect.NewRequest(&compassv1beta1.GetGraphRequest{
 				Urn:       nodeURN,
 				Level:     uint32(level),
 				Direction: string(direction),
-			})
-			code := status.Code(err)
-			if code != codes.OK {
-				t.Errorf("expected handler to return Code %s, returned Code %s instead", codes.OK, code.String())
+			}))
+			if err != nil {
+				t.Errorf("expected no error but got: %v", err)
 				return
 			}
 
@@ -113,8 +113,8 @@ func TestGetLineageGraph(t *testing.T) {
 					},
 				},
 			}
-			if diff := cmp.Diff(got, expected, protocmp.Transform()); diff != "" {
-				t.Errorf("expected: %+v\ngot: %+v\ndiff: %s\n", expected, got, diff)
+			if diff := cmp.Diff(got.Msg, expected, protocmp.Transform()); diff != "" {
+				t.Errorf("expected: %+v\ngot: %+v\ndiff: %s\n", expected, got.Msg, diff)
 			}
 		})
 

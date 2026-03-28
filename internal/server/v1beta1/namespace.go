@@ -4,11 +4,11 @@ package handlersv1beta1
 
 import (
 	"context"
+
+	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/raystack/compass/core/namespace"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -20,97 +20,97 @@ type NamespaceService interface {
 	List(ctx context.Context) ([]*namespace.Namespace, error)
 }
 
-func (server *APIServer) ListNamespaces(ctx context.Context, req *compassv1beta1.ListNamespacesRequest) (*compassv1beta1.ListNamespacesResponse, error) {
+func (server *APIServer) ListNamespaces(ctx context.Context, req *connect.Request[compassv1beta1.ListNamespacesRequest]) (*connect.Response[compassv1beta1.ListNamespacesResponse], error) {
 	namespaces, err := server.namespaceService.List(ctx)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	var protoNamespaces []*compassv1beta1.Namespace
 	for _, ns := range namespaces {
 		protoNamespace, err := namespaceToProto(ns)
 		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
+			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 		protoNamespaces = append(protoNamespaces, protoNamespace)
 	}
-	return &compassv1beta1.ListNamespacesResponse{
+	return connect.NewResponse(&compassv1beta1.ListNamespacesResponse{
 		Namespaces: protoNamespaces,
-	}, nil
+	}), nil
 }
 
-func (server *APIServer) GetNamespace(ctx context.Context, req *compassv1beta1.GetNamespaceRequest) (*compassv1beta1.GetNamespaceResponse, error) {
+func (server *APIServer) GetNamespace(ctx context.Context, req *connect.Request[compassv1beta1.GetNamespaceRequest]) (*connect.Response[compassv1beta1.GetNamespaceResponse], error) {
 	var ns *namespace.Namespace
-	if nsID, err := uuid.Parse(req.GetUrn()); err == nil {
+	if nsID, err := uuid.Parse(req.Msg.GetUrn()); err == nil {
 		if ns, err = server.namespaceService.GetByID(ctx, nsID); err != nil {
-			return nil, status.Error(codes.NotFound, err.Error())
+			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 	} else {
-		if ns, err = server.namespaceService.GetByName(ctx, req.GetUrn()); err != nil {
-			return nil, status.Error(codes.NotFound, err.Error())
+		if ns, err = server.namespaceService.GetByName(ctx, req.Msg.GetUrn()); err != nil {
+			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 	}
 
 	protoNamespace, err := namespaceToProto(ns)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return &compassv1beta1.GetNamespaceResponse{
+	return connect.NewResponse(&compassv1beta1.GetNamespaceResponse{
 		Namespace: protoNamespace,
-	}, nil
+	}), nil
 }
 
-func (server *APIServer) CreateNamespace(ctx context.Context, req *compassv1beta1.CreateNamespaceRequest) (*compassv1beta1.CreateNamespaceResponse, error) {
-	if err := req.Validate(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+func (server *APIServer) CreateNamespace(ctx context.Context, req *connect.Request[compassv1beta1.CreateNamespaceRequest]) (*connect.Response[compassv1beta1.CreateNamespaceResponse], error) {
+	if err := req.Msg.Validate(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
 	var metadata map[string]interface{}
-	if req.GetMetadata() != nil {
-		metadata = req.GetMetadata().AsMap()
+	if req.Msg.GetMetadata() != nil {
+		metadata = req.Msg.GetMetadata().AsMap()
 	}
 	namespaceID := uuid.New()
-	if id, err := uuid.Parse(req.GetId()); err == nil {
+	if id, err := uuid.Parse(req.Msg.GetId()); err == nil {
 		namespaceID = id
 	}
 	ns := &namespace.Namespace{
 		ID:       namespaceID,
-		Name:     req.GetName(),
-		State:    namespace.State(req.GetState()),
+		Name:     req.Msg.GetName(),
+		State:    namespace.State(req.Msg.GetState()),
 		Metadata: metadata,
 	}
 	nsID, err := server.namespaceService.Create(ctx, ns)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return &compassv1beta1.CreateNamespaceResponse{
+	return connect.NewResponse(&compassv1beta1.CreateNamespaceResponse{
 		Id: nsID,
-	}, nil
+	}), nil
 }
 
-func (server *APIServer) UpdateNamespace(ctx context.Context, req *compassv1beta1.UpdateNamespaceRequest) (*compassv1beta1.UpdateNamespaceResponse, error) {
+func (server *APIServer) UpdateNamespace(ctx context.Context, req *connect.Request[compassv1beta1.UpdateNamespaceRequest]) (*connect.Response[compassv1beta1.UpdateNamespaceResponse], error) {
 	var nsID uuid.UUID
 	var nsName string
-	if id, err := uuid.Parse(req.GetUrn()); err == nil {
+	if id, err := uuid.Parse(req.Msg.GetUrn()); err == nil {
 		nsID = id
 	} else {
-		nsName = req.GetUrn()
+		nsName = req.Msg.GetUrn()
 	}
 
 	var metadata map[string]interface{}
-	if req.GetMetadata() != nil {
-		metadata = req.GetMetadata().AsMap()
+	if req.Msg.GetMetadata() != nil {
+		metadata = req.Msg.GetMetadata().AsMap()
 	}
 	ns := &namespace.Namespace{
 		ID:       nsID,
 		Name:     nsName,
-		State:    namespace.State(req.GetState()),
+		State:    namespace.State(req.Msg.GetState()),
 		Metadata: metadata,
 	}
 
 	if err := server.namespaceService.Update(ctx, ns); err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return &compassv1beta1.UpdateNamespaceResponse{}, nil
+	return connect.NewResponse(&compassv1beta1.UpdateNamespaceResponse{}), nil
 }
 
 func namespaceToProto(ns *namespace.Namespace) (*compassv1beta1.Namespace, error) {

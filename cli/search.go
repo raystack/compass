@@ -2,9 +2,9 @@ package cli
 
 import (
 	"fmt"
-	"github.com/raystack/compass/core/namespace"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/internal/client"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
 	"github.com/raystack/salt/cli/printer"
@@ -30,19 +30,19 @@ func searchCommand(cfg *Config) *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
-			if err != nil {
-				return err
-			}
-			defer cancel()
-
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
-			res, err := clnt.SearchAssets(ctx, makeSearchAssetRequest(namespaceID, args[0], filter, query, rankBy, size))
+			clnt, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
 
-			fmt.Println(printer.Bluef("%s", prettyPrint(res.GetData())))
+			searchReq := makeSearchAssetRequest(namespaceID, args[0], filter, query, rankBy, size)
+			req := client.NewRequest(cfg.Client, namespaceID, searchReq)
+			res, err := clnt.SearchAssets(cmd.Context(), req)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(printer.Bluef("%s", prettyPrint(res.Msg.GetData())))
 
 			return nil
 		},

@@ -1,26 +1,16 @@
-version: v1
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: go_package_prefix
+      value: github.com/raystack/compass/proto
 plugins:
-  - plugin: buf.build/protocolbuffers/go:v1.31.0
+  - remote: buf.build/protocolbuffers/go:v1.31.0
     out: proto
     opt: paths=source_relative
-  - plugin: buf.build/grpc/go:v1.3.0
+  - remote: buf.build/bufbuild/validate-go:v1.0.2
     out: proto
-    opt: paths=source_relative,require_unimplemented_servers=true
-  - plugin: buf.build/grpc-ecosystem/gateway:v2.16.0
+    opt: paths=source_relative
+  - remote: buf.build/connectrpc/go:v1.18.1
     out: proto
-    opt:
-      - paths=source_relative
-      - allow_repeated_fields_in_body=true
-  - plugin: buf.build/bufbuild/validate-go:v1.0.2
-    out: proto
-    opt:
-      - paths=source_relative
-  - plugin: buf.build/grpc-ecosystem/openapiv2:v2.16.0
-    out: proto
-    opt:
-      - allow_repeated_fields_in_body=true
-      - output_format=yaml
-      - allow_merge=true
-      - merge_file_name=compass
-      - openapi_naming_strategy=simple
-      - json_names_for_fields=false
+    opt: paths=source_relative

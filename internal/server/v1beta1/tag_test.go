@@ -4,21 +4,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
 	"reflect"
 	"testing"
 	"time"
 
+	"connectrpc.com/connect"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/tag"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/internal/server/v1beta1/mocks"
+	"github.com/raystack/compass/pkg/server/interceptor"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
 	log "github.com/raystack/salt/observability/logger"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -93,11 +94,11 @@ func TestGetTagByAssetAndTemplate(t *testing.T) {
 		}
 	)
 	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+	ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.GetTagByAssetAndTemplateRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.TagService, *mocks.TagTemplateService)
 		PostCheck    func(resp *compassv1beta1.GetTagByAssetAndTemplateResponse) error
 	}
@@ -109,7 +110,7 @@ func TestGetTagByAssetAndTemplate(t *testing.T) {
 				AssetId:     "",
 				TemplateUrn: "sample-template",
 			},
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 		},
 		{
 			Description: `should return invalid argument if template urn is empty`,
@@ -117,7 +118,7 @@ func TestGetTagByAssetAndTemplate(t *testing.T) {
 				AssetId:     assetID,
 				TemplateUrn: "",
 			},
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 		},
 		{
 			Description: `should return not found if template does not exist`,
@@ -125,7 +126,7 @@ func TestGetTagByAssetAndTemplate(t *testing.T) {
 				AssetId:     assetID,
 				TemplateUrn: sampleTemplate.URN,
 			},
-			ExpectStatus: codes.NotFound,
+			ExpectStatus: connect.CodeNotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().FindTagByAssetIDAndTemplateURN(ctx, assetID, sampleTemplate.URN).Return(tag.Tag{}, tag.TemplateNotFoundError{URN: sampleTemplate.URN})
 			},
@@ -136,7 +137,7 @@ func TestGetTagByAssetAndTemplate(t *testing.T) {
 				AssetId:     assetID,
 				TemplateUrn: sampleTemplate.URN,
 			},
-			ExpectStatus: codes.NotFound,
+			ExpectStatus: connect.CodeNotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().FindTagByAssetIDAndTemplateURN(ctx, assetID, sampleTemplate.URN).Return(tag.Tag{}, tag.NotFoundError{
 					AssetID:  assetID,
@@ -150,7 +151,7 @@ func TestGetTagByAssetAndTemplate(t *testing.T) {
 				AssetId:     assetID,
 				TemplateUrn: sampleTemplate.URN,
 			},
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().FindTagByAssetIDAndTemplateURN(ctx, assetID, sampleTemplate.URN).Return(tag.Tag{}, errors.New("unexpected error"))
 			},
@@ -161,7 +162,7 @@ func TestGetTagByAssetAndTemplate(t *testing.T) {
 				AssetId:     assetID,
 				TemplateUrn: sampleTemplate.URN,
 			},
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().FindTagByAssetIDAndTemplateURN(ctx, assetID, sampleTemplate.URN).Return(sampleTag, nil)
 			},
@@ -212,14 +213,21 @@ func TestGetTagByAssetAndTemplate(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
-			got, err := handler.GetTagByAssetAndTemplate(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.GetTagByAssetAndTemplate(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}
@@ -247,11 +255,11 @@ func TestCreateTagAsset(t *testing.T) {
 		}
 	)
 	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+	ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.CreateTagAssetRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.TagService, *mocks.TagTemplateService)
 		PostCheck    func(resp *compassv1beta1.CreateTagAssetResponse) error
 	}
@@ -264,7 +272,7 @@ func TestCreateTagAsset(t *testing.T) {
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 				TagValues:   sampleTagPB.TagValues,
 			},
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 		},
 		{
 			Description: `should return invalid argument if template urn is empty`,
@@ -273,7 +281,7 @@ func TestCreateTagAsset(t *testing.T) {
 				TemplateUrn: "",
 				TagValues:   sampleTagPB.TagValues,
 			},
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 		},
 		{
 			Description: `should return invalid argument if tag values is empty`,
@@ -281,12 +289,12 @@ func TestCreateTagAsset(t *testing.T) {
 				AssetId:     assetID,
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 			},
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 		},
 		{
 			Description:  `should return not found if template does not exist`,
 			Request:      validRequest,
-			ExpectStatus: codes.NotFound,
+			ExpectStatus: connect.CodeNotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().CreateTag(ctx, ns, &sampleTag).Return(tag.TemplateNotFoundError{URN: sampleTemplate.URN})
 			},
@@ -294,7 +302,7 @@ func TestCreateTagAsset(t *testing.T) {
 		{
 			Description:  `should return invalid argument if there is validation error`,
 			Request:      validRequest,
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().CreateTag(ctx, ns, &sampleTag).Return(tag.ValidationError{Err: errors.New("validation error")})
 			},
@@ -302,7 +310,7 @@ func TestCreateTagAsset(t *testing.T) {
 		{
 			Description:  `should return internal server error if found error during insert`,
 			Request:      validRequest,
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().CreateTag(ctx, ns, &sampleTag).Return(errors.New("unexpected error during insert"))
 			},
@@ -310,7 +318,7 @@ func TestCreateTagAsset(t *testing.T) {
 		{
 			Description:  `should return already exist if found duplicated asset during insert`,
 			Request:      validRequest,
-			ExpectStatus: codes.AlreadyExists,
+			ExpectStatus: connect.CodeAlreadyExists,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().CreateTag(ctx, ns, &sampleTag).Return(tag.DuplicateError{})
 			},
@@ -318,7 +326,7 @@ func TestCreateTagAsset(t *testing.T) {
 		{
 			Description:  `should return ok and domain is inserted if found no error`,
 			Request:      validRequest,
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().CreateTag(ctx, ns, &sampleTag).Return(nil)
 			},
@@ -353,14 +361,21 @@ func TestCreateTagAsset(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
-			got, err := handler.CreateTagAsset(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.CreateTagAsset(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}
@@ -388,11 +403,11 @@ func TestUpdateTagAsset(t *testing.T) {
 		}
 	)
 	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+	ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.UpdateTagAssetRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.TagService, *mocks.TagTemplateService)
 		PostCheck    func(resp *compassv1beta1.UpdateTagAssetResponse) error
 	}
@@ -405,7 +420,7 @@ func TestUpdateTagAsset(t *testing.T) {
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 				TagValues:   sampleTagPB.TagValues,
 			},
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 		},
 		{
 			Description: `should return invalid argument if template urn is empty`,
@@ -414,7 +429,7 @@ func TestUpdateTagAsset(t *testing.T) {
 				TemplateUrn: "",
 				TagValues:   sampleTagPB.TagValues,
 			},
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 		},
 		{
 			Description: `should return invalid argument if tag values is empty`,
@@ -422,12 +437,12 @@ func TestUpdateTagAsset(t *testing.T) {
 				AssetId:     assetID,
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 			},
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 		},
 		{
 			Description:  `should return not found if tag could not be found`,
 			Request:      validRequest,
-			ExpectStatus: codes.NotFound,
+			ExpectStatus: connect.CodeNotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().UpdateTag(ctx, &sampleTag).Return(tag.NotFoundError{})
 			},
@@ -435,7 +450,7 @@ func TestUpdateTagAsset(t *testing.T) {
 		{
 			Description:  `should return internal server error if found error during update`,
 			Request:      validRequest,
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().UpdateTag(ctx, &sampleTag).Return(errors.New("unexpected error during update"))
 			},
@@ -443,7 +458,7 @@ func TestUpdateTagAsset(t *testing.T) {
 		{
 			Description:  `should return ok and domain is updated if found no error`,
 			Request:      validRequest,
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().UpdateTag(ctx, &sampleTag).Return(nil)
 			},
@@ -478,14 +493,21 @@ func TestUpdateTagAsset(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
-			got, err := handler.UpdateTagAsset(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.UpdateTagAsset(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}
@@ -506,11 +528,11 @@ func TestDeleteTagAsset(t *testing.T) {
 		}
 	)
 	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+	ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.DeleteTagAssetRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.TagService, *mocks.TagTemplateService)
 	}
 
@@ -521,7 +543,7 @@ func TestDeleteTagAsset(t *testing.T) {
 				AssetId:     "",
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 			},
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 		},
 		{
 			Description: `should return invalid argument if template urn is empty`,
@@ -529,7 +551,7 @@ func TestDeleteTagAsset(t *testing.T) {
 				AssetId:     assetID,
 				TemplateUrn: "",
 			},
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 		},
 		{
 			Description: `should return not found if template does not exist`,
@@ -537,7 +559,7 @@ func TestDeleteTagAsset(t *testing.T) {
 				AssetId:     assetID,
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 			},
-			ExpectStatus: codes.NotFound,
+			ExpectStatus: connect.CodeNotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().DeleteTag(ctx, assetID, sampleTagPB.TemplateUrn).Return(tag.TemplateNotFoundError{})
 			},
@@ -548,7 +570,7 @@ func TestDeleteTagAsset(t *testing.T) {
 				AssetId:     assetID,
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 			},
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().DeleteTag(ctx, assetID, sampleTagPB.TemplateUrn).Return(errors.New("unexpected error"))
 			},
@@ -559,7 +581,7 @@ func TestDeleteTagAsset(t *testing.T) {
 				AssetId:     assetID,
 				TemplateUrn: sampleTagPB.GetTemplateUrn(),
 			},
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().DeleteTag(ctx, assetID, sampleTagPB.TemplateUrn).Return(nil)
 			},
@@ -584,11 +606,18 @@ func TestDeleteTagAsset(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
-			_, err := handler.DeleteTagAsset(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			_, err := handler.DeleteTagAsset(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 		})
 	}
@@ -609,11 +638,11 @@ func TestGetAllTagsByAsset(t *testing.T) {
 		}
 	)
 	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+	ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.GetAllTagsByAssetRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.TagService, *mocks.TagTemplateService)
 		PostCheck    func(resp *compassv1beta1.GetAllTagsByAssetResponse) error
 	}
@@ -624,12 +653,12 @@ func TestGetAllTagsByAsset(t *testing.T) {
 			Request: &compassv1beta1.GetAllTagsByAssetRequest{
 				AssetId: "",
 			},
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 		},
 		{
 			Description:  `should return internal server error if found unexpected error`,
 			Request:      validRequest,
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().GetTagsByAssetID(ctx, sampleTagPB.AssetId).Return(nil, errors.New("unexpected error"))
 			},
@@ -637,7 +666,7 @@ func TestGetAllTagsByAsset(t *testing.T) {
 		{
 			Description:  `should return ok and tags for the specified asset`,
 			Request:      validRequest,
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				ts.EXPECT().GetTagsByAssetID(ctx, sampleTagPB.AssetId).Return([]tag.Tag{sampleTag}, nil)
 			},
@@ -672,14 +701,21 @@ func TestGetAllTagsByAsset(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
-			got, err := handler.GetAllTagsByAsset(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.GetAllTagsByAsset(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}

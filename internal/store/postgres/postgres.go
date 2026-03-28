@@ -14,7 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
+	"github.com/raystack/compass/pkg/server/interceptor"
 
 	// Register database postgres
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -262,5 +262,5 @@ func isValidUUID(u string) bool {
 }
 
 func namespaceFromContext(ctx context.Context) uuid.UUID {
-	return grpc_interceptor.FetchNamespaceFromContext(ctx).ID
+	return interceptor.FetchNamespaceFromContext(ctx).ID
 }

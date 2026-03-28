@@ -2,9 +2,9 @@ package cli
 
 import (
 	"fmt"
-	"github.com/raystack/compass/core/namespace"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/internal/client"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
 	"github.com/raystack/salt/cli/printer"
@@ -28,22 +28,20 @@ func lineageCommand(cfg *Config) *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
+			clnt, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
-			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
-
-			res, err := clnt.GetGraph(ctx, &compassv1beta1.GetGraphRequest{
+			req := client.NewRequest(cfg.Client, namespaceID, &compassv1beta1.GetGraphRequest{
 				Urn: args[0],
 			})
+			res, err := clnt.GetGraph(cmd.Context(), req)
 			if err != nil {
 				return err
 			}
 
-			fmt.Println(printer.Bluef("%s", prettyPrint(res.GetData())))
+			fmt.Println(printer.Bluef("%s", prettyPrint(res.Msg.GetData())))
 
 			return nil
 		},

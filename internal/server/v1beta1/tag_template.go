@@ -5,14 +5,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
 	"time"
 
+	"connectrpc.com/connect"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/tag"
+	"github.com/raystack/compass/pkg/server/interceptor"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -26,16 +25,16 @@ type TagTemplateService interface {
 }
 
 // GetAllTagTemplates handles template read requests
-func (server *APIServer) GetAllTagTemplates(ctx context.Context, req *compassv1beta1.GetAllTagTemplatesRequest) (*compassv1beta1.GetAllTagTemplatesResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) GetAllTagTemplates(ctx context.Context, req *connect.Request[compassv1beta1.GetAllTagTemplatesRequest]) (*connect.Response[compassv1beta1.GetAllTagTemplatesResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
-	listOfDomainTemplate, err := server.tagTemplateService.GetTemplates(ctx, req.GetUrn())
+	listOfDomainTemplate, err := server.tagTemplateService.GetTemplates(ctx, req.Msg.GetUrn())
 	if err != nil {
 		return nil, internalServerError(server.logger, fmt.Sprintf("error finding templates: %s", err.Error()))
 	}
@@ -45,144 +44,144 @@ func (server *APIServer) GetAllTagTemplates(ctx context.Context, req *compassv1b
 		templatesPB = append(templatesPB, tagTemplateToProto(template))
 	}
 
-	return &compassv1beta1.GetAllTagTemplatesResponse{
+	return connect.NewResponse(&compassv1beta1.GetAllTagTemplatesResponse{
 		Data: templatesPB,
-	}, nil
+	}), nil
 }
 
 // CreateTagTemplate handles template creation requests
-func (server *APIServer) CreateTagTemplate(ctx context.Context, req *compassv1beta1.CreateTagTemplateRequest) (*compassv1beta1.CreateTagTemplateResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) CreateTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.CreateTagTemplateRequest]) (*connect.Response[compassv1beta1.CreateTagTemplateResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
-	if req.GetUrn() == "" {
-		return nil, status.Error(codes.InvalidArgument, "empty urn")
+	if req.Msg.GetUrn() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("empty urn"))
 	}
-	if req.GetDisplayName() == "" {
-		return nil, status.Error(codes.InvalidArgument, "empty display name")
+	if req.Msg.GetDisplayName() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("empty display name"))
 	}
-	if req.GetDescription() == "" {
-		return nil, status.Error(codes.InvalidArgument, "empty description")
+	if req.Msg.GetDescription() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("empty description"))
 	}
-	if req.GetFields() == nil {
-		return nil, status.Error(codes.InvalidArgument, "empty fields")
+	if req.Msg.GetFields() == nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("empty fields"))
 	}
 
 	var templateFields []tag.Field
-	for _, fPB := range req.GetFields() {
+	for _, fPB := range req.Msg.GetFields() {
 		templateFields = append(templateFields, tagTemplateFieldFromProto(fPB))
 	}
 
 	template := tag.Template{
-		URN:         req.GetUrn(),
-		DisplayName: req.GetDisplayName(),
-		Description: req.GetDescription(),
+		URN:         req.Msg.GetUrn(),
+		DisplayName: req.Msg.GetDisplayName(),
+		Description: req.Msg.GetDescription(),
 		Fields:      templateFields,
 	}
 	err := server.tagTemplateService.CreateTemplate(ctx, ns, &template)
 	if errors.As(err, new(tag.DuplicateTemplateError)) {
-		return nil, status.Error(codes.AlreadyExists, err.Error())
+		return nil, connect.NewError(connect.CodeAlreadyExists, err)
 	}
 	if err != nil {
 		return nil, internalServerError(server.logger, fmt.Sprintf("error creating tag template: %s", err.Error()))
 	}
 
-	return &compassv1beta1.CreateTagTemplateResponse{
+	return connect.NewResponse(&compassv1beta1.CreateTagTemplateResponse{
 		Data: tagTemplateToProto(template),
-	}, nil
+	}), nil
 }
 
 // GetTagTemplate handles template read requests based on URN
-func (server *APIServer) GetTagTemplate(ctx context.Context, req *compassv1beta1.GetTagTemplateRequest) (*compassv1beta1.GetTagTemplateResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) GetTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.GetTagTemplateRequest]) (*connect.Response[compassv1beta1.GetTagTemplateResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
-	domainTemplate, err := server.tagTemplateService.GetTemplate(ctx, req.GetTemplateUrn())
+	domainTemplate, err := server.tagTemplateService.GetTemplate(ctx, req.Msg.GetTemplateUrn())
 	if err != nil {
 		if errors.As(err, new(tag.TemplateNotFoundError)) {
-			return nil, status.Error(codes.NotFound, err.Error())
+			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, internalServerError(server.logger, fmt.Sprintf("error finding a template: %s", err.Error()))
 	}
 
-	return &compassv1beta1.GetTagTemplateResponse{
+	return connect.NewResponse(&compassv1beta1.GetTagTemplateResponse{
 		Data: tagTemplateToProto(domainTemplate),
-	}, nil
+	}), nil
 }
 
-func (server *APIServer) UpdateTagTemplate(ctx context.Context, req *compassv1beta1.UpdateTagTemplateRequest) (*compassv1beta1.UpdateTagTemplateResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) UpdateTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.UpdateTagTemplateRequest]) (*connect.Response[compassv1beta1.UpdateTagTemplateResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
-	if req.GetDisplayName() == "" {
-		return nil, status.Error(codes.InvalidArgument, "empty display name")
+	if req.Msg.GetDisplayName() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("empty display name"))
 	}
-	if req.GetDescription() == "" {
-		return nil, status.Error(codes.InvalidArgument, "empty description")
+	if req.Msg.GetDescription() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("empty description"))
 	}
-	if req.GetFields() == nil {
-		return nil, status.Error(codes.InvalidArgument, "empty fields")
+	if req.Msg.GetFields() == nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("empty fields"))
 	}
 
 	var templateFields []tag.Field
-	for _, fPB := range req.GetFields() {
+	for _, fPB := range req.Msg.GetFields() {
 		templateFields = append(templateFields, tagTemplateFieldFromProto(fPB))
 	}
 
 	template := tag.Template{
-		URN:         req.GetTemplateUrn(),
-		DisplayName: req.GetDisplayName(),
-		Description: req.GetDescription(),
+		URN:         req.Msg.GetTemplateUrn(),
+		DisplayName: req.Msg.GetDisplayName(),
+		Description: req.Msg.GetDescription(),
 		Fields:      templateFields,
 	}
-	if err := server.tagTemplateService.UpdateTemplate(ctx, ns, req.TemplateUrn, &template); err != nil {
+	if err := server.tagTemplateService.UpdateTemplate(ctx, ns, req.Msg.TemplateUrn, &template); err != nil {
 		if errors.As(err, new(tag.TemplateNotFoundError)) {
-			return nil, status.Error(codes.NotFound, err.Error())
+			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		if errors.As(err, new(tag.ValidationError)) {
-			return nil, status.Error(codes.InvalidArgument, err.Error())
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 		return nil, internalServerError(server.logger, fmt.Sprintf("error updating template: %s", err.Error()))
 	}
 
-	return &compassv1beta1.UpdateTagTemplateResponse{
+	return connect.NewResponse(&compassv1beta1.UpdateTagTemplateResponse{
 		Data: tagTemplateToProto(template),
-	}, nil
+	}), nil
 }
 
 // DeleteTagTemplate handles template delete request based on URN
-func (server *APIServer) DeleteTagTemplate(ctx context.Context, req *compassv1beta1.DeleteTagTemplateRequest) (*compassv1beta1.DeleteTagTemplateResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) DeleteTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.DeleteTagTemplateRequest]) (*connect.Response[compassv1beta1.DeleteTagTemplateResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
-	err := server.tagTemplateService.DeleteTemplate(ctx, req.GetTemplateUrn())
+	err := server.tagTemplateService.DeleteTemplate(ctx, req.Msg.GetTemplateUrn())
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
 		return nil, internalServerError(server.logger, fmt.Sprintf("error deleting a template: %s", err.Error()))
 	}
-	return &compassv1beta1.DeleteTagTemplateResponse{}, nil
+	return connect.NewResponse(&compassv1beta1.DeleteTagTemplateResponse{}), nil
 }
 
 // tagTemplateToProto convert domain to protobuf

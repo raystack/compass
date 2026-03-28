@@ -4,19 +4,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
 	"testing"
 
+	"connectrpc.com/connect"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/raystack/compass/core/asset"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/internal/server/v1beta1/mocks"
+	"github.com/raystack/compass/pkg/server/interceptor"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
 	log "github.com/raystack/salt/observability/logger"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
@@ -32,7 +33,7 @@ func TestGetTypes(t *testing.T) {
 	)
 	type testCase struct {
 		Description  string
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(tc *testCase, ctx context.Context, as *mocks.AssetService)
 		PostCheck    func(resp *compassv1beta1.GetAllTypesResponse) error
 	}
@@ -40,21 +41,21 @@ func TestGetTypes(t *testing.T) {
 	var testCases = []testCase{
 		{
 			Description:  "should return internal server error if failing to fetch types",
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
 				as.EXPECT().GetTypes(ctx, asset.Filter{}).Return(map[asset.Type]int{}, errors.New("failed to fetch type"))
 			},
 		},
 		{
 			Description:  "should return internal server error if failing to fetch counts",
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
 				as.EXPECT().GetTypes(ctx, asset.Filter{}).Return(map[asset.Type]int{}, errors.New("failed to fetch assets count"))
 			},
 		},
 		{
 			Description:  "should return all valid types with its asset count",
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(tc *testCase, ctx context.Context, as *mocks.AssetService) {
 				as.EXPECT().GetTypes(ctx, asset.Filter{}).Return(map[asset.Type]int{
 					asset.Type("table"): 10,
@@ -118,7 +119,7 @@ func TestGetTypes(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-			ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+			ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 
 			mockSvc := new(mocks.AssetService)
 			logger := log.NewNoop()
@@ -129,14 +130,21 @@ func TestGetTypes(t *testing.T) {
 
 			handler := NewAPIServer(logger, nil, mockSvc, nil, nil, nil, nil, nil)
 
-			got, err := handler.GetAllTypes(ctx, &compassv1beta1.GetAllTypesRequest{})
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.GetAllTypes(ctx, connect.NewRequest(&compassv1beta1.GetAllTypesRequest{}))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}

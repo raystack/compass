@@ -4,21 +4,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
 	"reflect"
 	"testing"
 	"time"
 
+	"connectrpc.com/connect"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/tag"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/internal/server/v1beta1/mocks"
+	"github.com/raystack/compass/pkg/server/interceptor"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
 	log "github.com/raystack/salt/observability/logger"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -85,11 +86,11 @@ func TestGetAllTagTemplates(t *testing.T) {
 		}
 	)
 	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+	ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.GetAllTagTemplatesRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.TagService, *mocks.TagTemplateService)
 		PostCheck    func(resp *compassv1beta1.GetAllTagTemplatesResponse) error
 	}
@@ -100,7 +101,7 @@ func TestGetAllTagTemplates(t *testing.T) {
 			Request: &compassv1beta1.GetAllTagTemplatesRequest{
 				Urn: sampleTemplate.URN,
 			},
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return(nil, errors.New("unexpected error"))
 			},
@@ -110,7 +111,7 @@ func TestGetAllTagTemplates(t *testing.T) {
 			Request: &compassv1beta1.GetAllTagTemplatesRequest{
 				Urn: sampleTemplate.URN,
 			},
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().GetTemplates(ctx, sampleTemplate.URN).Return([]tag.Template{sampleTemplate}, nil)
 			},
@@ -129,7 +130,7 @@ func TestGetAllTagTemplates(t *testing.T) {
 		}, {
 			Description:  `should return all templates if no urn query params`,
 			Request:      &compassv1beta1.GetAllTagTemplatesRequest{},
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().GetTemplates(ctx, "").Return([]tag.Template{sampleTemplate}, nil)
 			},
@@ -166,14 +167,21 @@ func TestGetAllTagTemplates(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
-			got, err := handler.GetAllTagTemplates(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.GetAllTagTemplates(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}
@@ -200,11 +208,11 @@ func TestCreateTagTemplate(t *testing.T) {
 		}
 	)
 	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+	ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.CreateTagTemplateRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.TagService, *mocks.TagTemplateService)
 		PostCheck    func(resp *compassv1beta1.CreateTagTemplateResponse) error
 	}
@@ -213,7 +221,7 @@ func TestCreateTagTemplate(t *testing.T) {
 		{
 			Description:  `should return already exist if duplicate template`,
 			Request:      validRequest,
-			ExpectStatus: codes.AlreadyExists,
+			ExpectStatus: connect.CodeAlreadyExists,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().CreateTemplate(ctx, ns, &sampleTemplate).Return(tag.DuplicateTemplateError{URN: sampleTemplate.URN})
 			},
@@ -221,7 +229,7 @@ func TestCreateTagTemplate(t *testing.T) {
 		{
 			Description:  `should return internal server error if found error during insert`,
 			Request:      validRequest,
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().CreateTemplate(ctx, ns, &sampleTemplate).Return(errors.New("unexpected error during insert"))
 			},
@@ -229,7 +237,7 @@ func TestCreateTagTemplate(t *testing.T) {
 		{
 			Description:  `should return ok and domain is inserted if found no error`,
 			Request:      validRequest,
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().CreateTemplate(ctx, ns, &sampleTemplate).Return(nil)
 			},
@@ -263,14 +271,21 @@ func TestCreateTagTemplate(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
-			got, err := handler.CreateTagTemplate(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.CreateTagTemplate(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}
@@ -294,11 +309,11 @@ func TestGetTagTemplate(t *testing.T) {
 		}
 	)
 	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+	ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.GetTagTemplateRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.TagService, *mocks.TagTemplateService)
 		PostCheck    func(resp *compassv1beta1.GetTagTemplateResponse) error
 	}
@@ -307,7 +322,7 @@ func TestGetTagTemplate(t *testing.T) {
 		{
 			Description:  `should return not found if template is not found`,
 			Request:      validRequest,
-			ExpectStatus: codes.NotFound,
+			ExpectStatus: connect.CodeNotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().GetTemplate(ctx, sampleTemplate.URN).Return(tag.Template{}, tag.TemplateNotFoundError{URN: sampleTemplate.URN})
 			},
@@ -315,7 +330,7 @@ func TestGetTagTemplate(t *testing.T) {
 		{
 			Description:  `should return ok and template if domain template is found`,
 			Request:      validRequest,
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().GetTemplate(ctx, sampleTemplate.URN).Return(sampleTemplate, nil)
 			},
@@ -349,14 +364,21 @@ func TestGetTagTemplate(t *testing.T) {
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
-			got, err := handler.GetTagTemplate(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.GetTagTemplate(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}
@@ -383,11 +405,11 @@ func TestUpdateTagTemplate(t *testing.T) {
 		}
 	)
 	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+	ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.UpdateTagTemplateRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.TagService, *mocks.TagTemplateService)
 		PostCheck    func(resp *compassv1beta1.UpdateTagTemplateResponse) error
 	}
@@ -396,7 +418,7 @@ func TestUpdateTagTemplate(t *testing.T) {
 		{
 			Description:  `should return not found if template is not found`,
 			Request:      validRequest,
-			ExpectStatus: codes.NotFound,
+			ExpectStatus: connect.CodeNotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().UpdateTemplate(ctx, ns, sampleTemplate.URN, &sampleTemplate).Return(tag.TemplateNotFoundError{URN: sampleTemplate.URN})
 			},
@@ -404,7 +426,7 @@ func TestUpdateTagTemplate(t *testing.T) {
 		{
 			Description:  `should return invalid argument if there is validation error`,
 			Request:      validRequest,
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().UpdateTemplate(ctx, ns, sampleTemplate.URN, &sampleTemplate).Return(tag.ValidationError{Err: errors.New("validation error")})
 			},
@@ -412,7 +434,7 @@ func TestUpdateTagTemplate(t *testing.T) {
 		{
 			Description:  `should return internal server error if encountered error during update`,
 			Request:      validRequest,
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().UpdateTemplate(ctx, ns, sampleTemplate.URN, &sampleTemplate).Return(errors.New("unexpected error"))
 			},
@@ -420,7 +442,7 @@ func TestUpdateTagTemplate(t *testing.T) {
 		{
 			Description:  `should return status ok and its message if successfully updated`,
 			Request:      validRequest,
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().UpdateTemplate(ctx, ns, sampleTemplate.URN, &sampleTemplate).Run(func(ctx context.Context, ns *namespace.Namespace, templateURN string, template *tag.Template) {
 					template.UpdatedAt = time.Now()
@@ -458,14 +480,21 @@ func TestUpdateTagTemplate(t *testing.T) {
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
-			got, err := handler.UpdateTagTemplate(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.UpdateTagTemplate(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}
@@ -489,11 +518,11 @@ func TestDeleteTagTemplate(t *testing.T) {
 		}
 	)
 	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+	ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.DeleteTagTemplateRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.TagService, *mocks.TagTemplateService)
 	}
 
@@ -501,7 +530,7 @@ func TestDeleteTagTemplate(t *testing.T) {
 		{
 			Description:  `should return not found if template is not found`,
 			Request:      validRequest,
-			ExpectStatus: codes.NotFound,
+			ExpectStatus: connect.CodeNotFound,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().DeleteTemplate(ctx, sampleTemplate.URN).Return(tag.TemplateNotFoundError{URN: sampleTemplate.URN})
 			},
@@ -509,7 +538,7 @@ func TestDeleteTagTemplate(t *testing.T) {
 		{
 			Description:  `should return status ok and template if domain template is found`,
 			Request:      validRequest,
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ts *mocks.TagService, tts *mocks.TagTemplateService) {
 				tts.EXPECT().DeleteTemplate(ctx, sampleTemplate.URN).Return(nil)
 			},
@@ -533,11 +562,18 @@ func TestDeleteTagTemplate(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
-			_, err := handler.DeleteTagTemplate(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			_, err := handler.DeleteTagTemplate(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 		})
 	}

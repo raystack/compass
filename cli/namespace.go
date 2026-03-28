@@ -3,15 +3,14 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"github.com/raystack/compass/core/namespace"
 	"os"
 	"strings"
 
+	"github.com/MakeNowJust/heredoc"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/internal/client"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
 	"github.com/raystack/salt/cli/printer"
-
-	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 )
 
@@ -53,14 +52,13 @@ func listNamespacesCommand(cfg *Config) *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			cl, cancel, err := client.Create(cmd.Context(), cfg.Client)
+			cl, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
-			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client, "")
-			res, err := cl.ListNamespaces(ctx, &compassv1beta1.ListNamespacesRequest{})
+			req := client.NewRequest(cfg.Client, "", &compassv1beta1.ListNamespacesRequest{})
+			res, err := cl.ListNamespaces(cmd.Context(), req)
 			if err != nil {
 				return err
 			}
@@ -69,7 +67,7 @@ func listNamespacesCommand(cfg *Config) *cobra.Command {
 				var report [][]string
 				report = append(report, []string{"ID", "NAME", "STATE"})
 				index := 1
-				for _, i := range res.GetNamespaces() {
+				for _, i := range res.Msg.GetNamespaces() {
 					report = append(report, []string{i.GetId(), i.GetName(), i.GetState()})
 					index++
 				}
@@ -77,7 +75,7 @@ func listNamespacesCommand(cfg *Config) *cobra.Command {
 
 				fmt.Println(printer.Cyanf("To view all the data in JSON format, use flag `-o json`"))
 			} else {
-				fmt.Println(printer.Bluef("%s", prettyPrint(res.GetNamespaces())))
+				fmt.Println(printer.Bluef("%s", prettyPrint(res.Msg.GetNamespaces())))
 			}
 			return nil
 		},
@@ -101,23 +99,22 @@ func getNamespaceCommand(cfg *Config) *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			cl, cancel, err := client.Create(cmd.Context(), cfg.Client)
+			cl, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
-			defer cancel()
 
 			urn := args[0]
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client, "")
-			res, err := cl.GetNamespace(ctx, &compassv1beta1.GetNamespaceRequest{
+			req := client.NewRequest(cfg.Client, "", &compassv1beta1.GetNamespaceRequest{
 				Urn: urn,
 			})
+			res, err := cl.GetNamespace(cmd.Context(), req)
 			if err != nil {
 				return err
 			}
 			spinner.Stop()
 
-			fmt.Println(printer.Bluef("%s", prettyPrint(res.GetNamespace())))
+			fmt.Println(printer.Bluef("%s", prettyPrint(res.Msg.GetNamespace())))
 			return nil
 		},
 	}
@@ -143,24 +140,22 @@ func createNamespaceCommand(cfg *Config) *cobra.Command {
 				return errors.New("namespace length should be of at least 3 character, without space and special characters")
 			}
 
-			cl, cancel, err := client.Create(cmd.Context(), cfg.Client)
+			cl, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
-			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client, "")
-			res, err := cl.CreateNamespace(ctx, &compassv1beta1.CreateNamespaceRequest{
+			req := client.NewRequest(cfg.Client, "", &compassv1beta1.CreateNamespaceRequest{
 				Name:  name,
 				State: state,
 			})
-
+			res, err := cl.CreateNamespace(cmd.Context(), req)
 			if err != nil {
 				return err
 			}
 			spinner.Stop()
 
-			fmt.Println("ID: \t", printer.Greenf("%s", res.Id))
+			fmt.Println("ID: \t", printer.Greenf("%s", res.Msg.Id))
 			return nil
 		},
 	}

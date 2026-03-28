@@ -4,18 +4,18 @@ package handlersv1beta1
 import (
 	"context"
 	"errors"
-	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
+	"fmt"
 	"strings"
 	"time"
 
+	"connectrpc.com/connect"
 	"github.com/raystack/compass/core/discussion"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/star"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/core/validator"
+	"github.com/raystack/compass/pkg/server/interceptor"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -23,27 +23,27 @@ type UserService interface {
 	ValidateUser(ctx context.Context, ns *namespace.Namespace, uuid, email string) (string, error)
 }
 
-func (server *APIServer) GetUserStarredAssets(ctx context.Context, req *compassv1beta1.GetUserStarredAssetsRequest) (*compassv1beta1.GetUserStarredAssetsResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) GetUserStarredAssets(ctx context.Context, req *connect.Request[compassv1beta1.GetUserStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetUserStarredAssetsResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
 	starFilter := star.Filter{
-		Size:   int(req.GetSize()),
-		Offset: int(req.GetOffset()),
+		Size:   int(req.Msg.GetSize()),
+		Offset: int(req.Msg.GetOffset()),
 	}
 
-	starredAssets, err := server.starService.GetStarredAssetsByUserID(ctx, starFilter, req.GetUserId())
+	starredAssets, err := server.starService.GetStarredAssetsByUserID(ctx, starFilter, req.Msg.GetUserId())
 
 	if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	if errors.As(err, new(star.NotFoundError)) {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())
@@ -58,33 +58,33 @@ func (server *APIServer) GetUserStarredAssets(ctx context.Context, req *compassv
 		starredAssetsPB = append(starredAssetsPB, astPB)
 	}
 
-	return &compassv1beta1.GetUserStarredAssetsResponse{
+	return connect.NewResponse(&compassv1beta1.GetUserStarredAssetsResponse{
 		Data: starredAssetsPB,
-	}, nil
+	}), nil
 }
 
-func (server *APIServer) GetMyStarredAssets(ctx context.Context, req *compassv1beta1.GetMyStarredAssetsRequest) (*compassv1beta1.GetMyStarredAssetsResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) GetMyStarredAssets(ctx context.Context, req *connect.Request[compassv1beta1.GetMyStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetsResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
 	}
 
 	starFilter := star.Filter{
-		Size:   int(req.GetSize()),
-		Offset: int(req.GetOffset()),
+		Size:   int(req.Msg.GetSize()),
+		Offset: int(req.Msg.GetOffset()),
 	}
 
 	starredAssets, err := server.starService.GetStarredAssetsByUserID(ctx, starFilter, userID)
 
 	if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	if errors.As(err, new(star.NotFoundError)) {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())
@@ -99,27 +99,27 @@ func (server *APIServer) GetMyStarredAssets(ctx context.Context, req *compassv1b
 		starredAssetsPB = append(starredAssetsPB, astPB)
 	}
 
-	return &compassv1beta1.GetMyStarredAssetsResponse{
+	return connect.NewResponse(&compassv1beta1.GetMyStarredAssetsResponse{
 		Data: starredAssetsPB,
-	}, nil
+	}), nil
 }
 
-func (server *APIServer) GetMyStarredAsset(ctx context.Context, req *compassv1beta1.GetMyStarredAssetRequest) (*compassv1beta1.GetMyStarredAssetResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) GetMyStarredAsset(ctx context.Context, req *connect.Request[compassv1beta1.GetMyStarredAssetRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
 	}
 
-	ast, err := server.starService.GetStarredAssetByUserID(ctx, userID, req.GetAssetId())
+	ast, err := server.starService.GetStarredAssetByUserID(ctx, userID, req.Msg.GetAssetId())
 	if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	if errors.As(err, new(star.NotFoundError)) {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())
@@ -130,80 +130,80 @@ func (server *APIServer) GetMyStarredAsset(ctx context.Context, req *compassv1be
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	return &compassv1beta1.GetMyStarredAssetResponse{
+	return connect.NewResponse(&compassv1beta1.GetMyStarredAssetResponse{
 		Data: astPB,
-	}, nil
+	}), nil
 }
 
-func (server *APIServer) StarAsset(ctx context.Context, req *compassv1beta1.StarAssetRequest) (*compassv1beta1.StarAssetResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) StarAsset(ctx context.Context, req *connect.Request[compassv1beta1.StarAssetRequest]) (*connect.Response[compassv1beta1.StarAssetResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
 	}
 
-	starID, err := server.starService.Stars(ctx, ns, userID, req.GetAssetId())
+	starID, err := server.starService.Stars(ctx, ns, userID, req.Msg.GetAssetId())
 	if err != nil {
 		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
-			return nil, status.Error(codes.InvalidArgument, err.Error())
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 		if errors.As(err, new(star.UserNotFoundError)) {
-			return nil, status.Error(codes.InvalidArgument, err.Error())
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 		if errors.As(err, new(star.DuplicateRecordError)) {
 			// idempotent
-			return &compassv1beta1.StarAssetResponse{
+			return connect.NewResponse(&compassv1beta1.StarAssetResponse{
 				Id: starID,
-			}, nil
+			}), nil
 		}
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	return &compassv1beta1.StarAssetResponse{
+	return connect.NewResponse(&compassv1beta1.StarAssetResponse{
 		Id: starID,
-	}, nil
+	}), nil
 }
 
-func (server *APIServer) UnstarAsset(ctx context.Context, req *compassv1beta1.UnstarAssetRequest) (*compassv1beta1.UnstarAssetResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) UnstarAsset(ctx context.Context, req *connect.Request[compassv1beta1.UnstarAssetRequest]) (*connect.Response[compassv1beta1.UnstarAssetResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
 	}
 
-	err = server.starService.Unstars(ctx, userID, req.GetAssetId())
+	err = server.starService.Unstars(ctx, userID, req.Msg.GetAssetId())
 	if err != nil {
 		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
-			return nil, status.Error(codes.InvalidArgument, err.Error())
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 		if errors.As(err, new(star.NotFoundError)) {
-			return nil, status.Error(codes.NotFound, err.Error())
+			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	return &compassv1beta1.UnstarAssetResponse{}, nil
+	return connect.NewResponse(&compassv1beta1.UnstarAssetResponse{}), nil
 }
 
-func (server *APIServer) GetMyDiscussions(ctx context.Context, req *compassv1beta1.GetMyDiscussionsRequest) (*compassv1beta1.GetMyDiscussionsResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) GetMyDiscussions(ctx context.Context, req *connect.Request[compassv1beta1.GetMyDiscussionsRequest]) (*connect.Response[compassv1beta1.GetMyDiscussionsResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
 	}
 
-	flt, err := server.buildGetDiscussionsFilter(req, userID)
+	flt, err := server.buildGetDiscussionsFilter(req.Msg, userID)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
 	dscs, err := server.discussionService.GetDiscussions(ctx, flt)
@@ -216,9 +216,9 @@ func (server *APIServer) GetMyDiscussions(ctx context.Context, req *compassv1bet
 		dscsPB = append(dscsPB, discussionToProto(dsc))
 	}
 
-	return &compassv1beta1.GetMyDiscussionsResponse{
+	return connect.NewResponse(&compassv1beta1.GetMyDiscussionsResponse{
 		Data: dscsPB,
-	}, nil
+	}), nil
 }
 
 func (server *APIServer) buildGetDiscussionsFilter(req *compassv1beta1.GetMyDiscussionsRequest, userID string) (discussion.Filter, error) {

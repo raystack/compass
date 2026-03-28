@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
+	"github.com/raystack/compass/pkg/server/interceptor"
 	"testing"
 
 	"github.com/google/uuid"
@@ -42,7 +42,7 @@ func (r *StarRepositoryTestSuite) SetupSuite() {
 		r.T().Fatal(err)
 	}
 
-	r.ctx = grpc_interceptor.BuildContextWithNamespace(context.Background(), r.ns)
+	r.ctx = interceptor.BuildContextWithNamespace(context.Background(), r.ns)
 	r.repository, err = postgres.NewStarRepository(r.client)
 	if err != nil {
 		r.T().Fatal(err)

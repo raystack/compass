@@ -5,14 +5,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
 	"time"
 
+	"connectrpc.com/connect"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/tag"
+	"github.com/raystack/compass/pkg/server/interceptor"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -33,11 +32,11 @@ type TagService interface {
 }
 
 // GetTagByAssetAndTemplate handles get tag by asset requests
-func (server *APIServer) GetTagByAssetAndTemplate(ctx context.Context, req *compassv1beta1.GetTagByAssetAndTemplateRequest) (*compassv1beta1.GetTagByAssetAndTemplateResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) GetTagByAssetAndTemplate(ctx context.Context, req *connect.Request[compassv1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[compassv1beta1.GetTagByAssetAndTemplateResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
@@ -46,17 +45,17 @@ func (server *APIServer) GetTagByAssetAndTemplate(ctx context.Context, req *comp
 		return nil, internalServerError(server.logger, errNilTagService.Error())
 	}
 
-	if req.GetAssetId() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyAssetID.Error())
+	if req.Msg.GetAssetId() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errEmptyAssetID)
 	}
-	if req.GetTemplateUrn() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyTemplateURN.Error())
+	if req.Msg.GetTemplateUrn() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errEmptyTemplateURN)
 	}
 
-	tg, err := server.tagService.FindTagByAssetIDAndTemplateURN(ctx, req.GetAssetId(), req.GetTemplateUrn())
+	tg, err := server.tagService.FindTagByAssetIDAndTemplateURN(ctx, req.Msg.GetAssetId(), req.Msg.GetTemplateUrn())
 	if err != nil {
 		if errors.As(err, new(tag.NotFoundError)) || errors.As(err, new(tag.TemplateNotFoundError)) {
-			return nil, status.Error(codes.NotFound, err.Error())
+			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, internalServerError(server.logger, fmt.Sprintf("error finding a tag with asset and template: %s", err.Error()))
 	}
@@ -66,17 +65,17 @@ func (server *APIServer) GetTagByAssetAndTemplate(ctx context.Context, req *comp
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	return &compassv1beta1.GetTagByAssetAndTemplateResponse{
+	return connect.NewResponse(&compassv1beta1.GetTagByAssetAndTemplateResponse{
 		Data: tagPB,
-	}, nil
+	}), nil
 }
 
 // CreateTagAsset handles tag creation requests
-func (server *APIServer) CreateTagAsset(ctx context.Context, req *compassv1beta1.CreateTagAssetRequest) (*compassv1beta1.CreateTagAssetResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) CreateTagAsset(ctx context.Context, req *connect.Request[compassv1beta1.CreateTagAssetRequest]) (*connect.Response[compassv1beta1.CreateTagAssetResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
@@ -85,43 +84,41 @@ func (server *APIServer) CreateTagAsset(ctx context.Context, req *compassv1beta1
 		return nil, internalServerError(server.logger, errNilTagService.Error())
 	}
 
-	if req.GetAssetId() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyAssetID.Error())
+	if req.Msg.GetAssetId() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errEmptyAssetID)
 	}
-	if req.GetTemplateUrn() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyTemplateURN.Error())
+	if req.Msg.GetTemplateUrn() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errEmptyTemplateURN)
 	}
-	if req.GetTagValues() == nil {
-		return nil, status.Error(codes.InvalidArgument, "empty tag values")
+	if req.Msg.GetTagValues() == nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("empty tag values"))
 	}
 
 	var tagValues []tag.TagValue
-	for _, tvPB := range req.GetTagValues() {
+	for _, tvPB := range req.Msg.GetTagValues() {
 		tagValues = append(tagValues, tagValueFromProto(tvPB))
 	}
 
 	tagDomain := tag.Tag{
-		AssetID:             req.GetAssetId(),
-		TemplateURN:         req.GetTemplateUrn(),
+		AssetID:             req.Msg.GetAssetId(),
+		TemplateURN:         req.Msg.GetTemplateUrn(),
 		TagValues:           tagValues,
-		TemplateDisplayName: req.GetTemplateDisplayName(),
-		TemplateDescription: req.GetTemplateDescription(),
+		TemplateDisplayName: req.Msg.GetTemplateDisplayName(),
+		TemplateDescription: req.Msg.GetTemplateDescription(),
 	}
 
 	err := server.tagService.CreateTag(ctx, ns, &tagDomain)
 	if errors.As(err, new(tag.DuplicateError)) {
-		return nil, status.Error(codes.AlreadyExists, err.Error())
-
+		return nil, connect.NewError(connect.CodeAlreadyExists, err)
 	}
 	if errors.As(err, new(tag.TemplateNotFoundError)) {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if errors.As(err, new(tag.ValidationError)) {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	if err != nil {
 		return nil, internalServerError(server.logger, fmt.Sprintf("error creating tag: %s", err.Error()))
-
 	}
 
 	tagPB, err := tagToProto(tagDomain)
@@ -129,17 +126,17 @@ func (server *APIServer) CreateTagAsset(ctx context.Context, req *compassv1beta1
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	return &compassv1beta1.CreateTagAssetResponse{
+	return connect.NewResponse(&compassv1beta1.CreateTagAssetResponse{
 		Data: tagPB,
-	}, nil
+	}), nil
 }
 
 // UpdateTagAsset handles tag update requests
-func (server *APIServer) UpdateTagAsset(ctx context.Context, req *compassv1beta1.UpdateTagAssetRequest) (*compassv1beta1.UpdateTagAssetResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) UpdateTagAsset(ctx context.Context, req *connect.Request[compassv1beta1.UpdateTagAssetRequest]) (*connect.Response[compassv1beta1.UpdateTagAssetResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
@@ -148,37 +145,37 @@ func (server *APIServer) UpdateTagAsset(ctx context.Context, req *compassv1beta1
 		return nil, internalServerError(server.logger, errNilTagService.Error())
 	}
 
-	if req.GetAssetId() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyAssetID.Error())
+	if req.Msg.GetAssetId() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errEmptyAssetID)
 	}
-	if req.GetTemplateUrn() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyTemplateURN.Error())
+	if req.Msg.GetTemplateUrn() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errEmptyTemplateURN)
 	}
 
-	if req.GetTagValues() == nil {
-		return nil, status.Error(codes.InvalidArgument, "empty tag values")
+	if req.Msg.GetTagValues() == nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("empty tag values"))
 	}
 
 	var tagValues []tag.TagValue
-	for _, tvPB := range req.GetTagValues() {
+	for _, tvPB := range req.Msg.GetTagValues() {
 		tagValues = append(tagValues, tagValueFromProto(tvPB))
 	}
 
 	tagDomain := tag.Tag{
-		AssetID:             req.GetAssetId(),
-		TemplateURN:         req.GetTemplateUrn(),
+		AssetID:             req.Msg.GetAssetId(),
+		TemplateURN:         req.Msg.GetTemplateUrn(),
 		TagValues:           tagValues,
-		TemplateDisplayName: req.GetTemplateDisplayName(),
-		TemplateDescription: req.GetTemplateDescription(),
+		TemplateDisplayName: req.Msg.GetTemplateDisplayName(),
+		TemplateDescription: req.Msg.GetTemplateDescription(),
 	}
 
 	err := server.tagService.UpdateTag(ctx, &tagDomain)
 	if err != nil {
 		if errors.As(err, new(tag.NotFoundError)) || errors.As(err, new(tag.TemplateNotFoundError)) {
-			return nil, status.Error(codes.NotFound, err.Error())
+			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		if errors.As(err, new(tag.ValidationError)) {
-			return nil, status.Error(codes.InvalidArgument, err.Error())
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 		return nil, internalServerError(server.logger, fmt.Sprintf("error updating an asset's tag: %s", err.Error()))
 	}
@@ -188,17 +185,17 @@ func (server *APIServer) UpdateTagAsset(ctx context.Context, req *compassv1beta1
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	return &compassv1beta1.UpdateTagAssetResponse{
+	return connect.NewResponse(&compassv1beta1.UpdateTagAssetResponse{
 		Data: tagPB,
-	}, nil
+	}), nil
 }
 
 // DeleteTagAsset handles delete tag by asset and template requests
-func (server *APIServer) DeleteTagAsset(ctx context.Context, req *compassv1beta1.DeleteTagAssetRequest) (*compassv1beta1.DeleteTagAssetResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) DeleteTagAsset(ctx context.Context, req *connect.Request[compassv1beta1.DeleteTagAssetRequest]) (*connect.Response[compassv1beta1.DeleteTagAssetResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
@@ -207,30 +204,30 @@ func (server *APIServer) DeleteTagAsset(ctx context.Context, req *compassv1beta1
 		return nil, internalServerError(server.logger, errNilTagService.Error())
 	}
 
-	if req.GetAssetId() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyAssetID.Error())
+	if req.Msg.GetAssetId() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errEmptyAssetID)
 	}
-	if req.GetTemplateUrn() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyTemplateURN.Error())
+	if req.Msg.GetTemplateUrn() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errEmptyTemplateURN)
 	}
 
-	err := server.tagService.DeleteTag(ctx, req.GetAssetId(), req.GetTemplateUrn())
+	err := server.tagService.DeleteTag(ctx, req.Msg.GetAssetId(), req.Msg.GetTemplateUrn())
 	if err != nil {
 		if errors.As(err, new(tag.TemplateNotFoundError)) || errors.As(err, new(tag.NotFoundError)) {
-			return nil, status.Error(codes.NotFound, err.Error())
+			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, internalServerError(server.logger, fmt.Sprintf("error deleting a tag: %s", err.Error()))
 	}
 
-	return &compassv1beta1.DeleteTagAssetResponse{}, nil
+	return connect.NewResponse(&compassv1beta1.DeleteTagAssetResponse{}), nil
 }
 
 // GetAllTagsByAsset handles get all tags by asset requests
-func (server *APIServer) GetAllTagsByAsset(ctx context.Context, req *compassv1beta1.GetAllTagsByAssetRequest) (*compassv1beta1.GetAllTagsByAssetResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) GetAllTagsByAsset(ctx context.Context, req *connect.Request[compassv1beta1.GetAllTagsByAssetRequest]) (*connect.Response[compassv1beta1.GetAllTagsByAssetResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
@@ -239,11 +236,11 @@ func (server *APIServer) GetAllTagsByAsset(ctx context.Context, req *compassv1be
 		return nil, internalServerError(server.logger, errNilTagService.Error())
 	}
 
-	if req.GetAssetId() == "" {
-		return nil, status.Error(codes.InvalidArgument, errEmptyAssetID.Error())
+	if req.Msg.GetAssetId() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errEmptyAssetID)
 	}
 
-	tags, err := server.tagService.GetTagsByAssetID(ctx, req.GetAssetId())
+	tags, err := server.tagService.GetTagsByAssetID(ctx, req.Msg.GetAssetId())
 	if err != nil {
 		return nil, internalServerError(server.logger, fmt.Sprintf("error getting asset tags: %s", err.Error()))
 	}
@@ -257,9 +254,9 @@ func (server *APIServer) GetAllTagsByAsset(ctx context.Context, req *compassv1be
 		tagsPB = append(tagsPB, tgPB)
 	}
 
-	return &compassv1beta1.GetAllTagsByAssetResponse{
+	return connect.NewResponse(&compassv1beta1.GetAllTagsByAssetResponse{
 		Data: tagsPB,
-	}, nil
+	}), nil
 }
 
 // tagToProto convert domain to protobuf

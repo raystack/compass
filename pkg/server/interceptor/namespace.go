@@ -1,17 +1,14 @@
-package grpc_interceptor
+package interceptor
 
 import (
 	"context"
-	"github.com/google/uuid"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"strings"
 
+	"connectrpc.com/connect"
+	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/internal/client"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
 )
 
 // NamespaceKey is injected in context with the tenant context
@@ -23,22 +20,23 @@ type NamespaceService interface {
 	GetByName(ctx context.Context, name string) (*namespace.Namespace, error)
 }
 
-// NamespaceUnaryInterceptor namespace can be passed in jwt token or headers, if none provided
-// it falls back to default
-func NamespaceUnaryInterceptor(service NamespaceService, namespaceClaimKey, userUUIDHeaderKey string) grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		namespaceForRequest := namespace.DefaultNamespace
-		if incomingMD, ok := metadata.FromIncomingContext(ctx); ok {
-			// extract if jwt is set with namespace id
-			// jwt token has higher priority then header
+// Namespace returns a new unary interceptor that extracts namespace from:
+// 1. JWT token (priority 1) - uses namespaceClaimKey
+// 2. x-namespace header (priority 2)
+// 3. Defaults to DefaultNamespace
+func Namespace(service NamespaceService, namespaceClaimKey, userUUIDHeaderKey string) connect.UnaryInterceptorFunc {
+	return func(next connect.UnaryFunc) connect.UnaryFunc {
+		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
+			namespaceForRequest := namespace.DefaultNamespace
 
-			if bearers := incomingMD.Get("Authorization"); len(bearers) > 0 {
-				// Parse the token
-				rawToken := strings.TrimPrefix(bearers[0], "Bearer ")
+			// Extract if jwt is set with namespace id
+			// jwt token has higher priority than header
+			if authorization := req.Header().Get("Authorization"); authorization != "" {
+				rawToken := strings.TrimPrefix(authorization, "Bearer ")
 				if rawToken != "" {
 					token, err := jwt.ParseInsecure([]byte(rawToken))
 					if err == nil {
-						// check if namespace is passed as claim
+						// Check if namespace is passed as claim
 						if namespaceID, okClaim := token.Get(namespaceClaimKey); okClaim {
 							ns, err := getNamespaceByNameOrID(ctx, service, namespaceID.(string))
 							if err != nil {
@@ -47,32 +45,31 @@ func NamespaceUnaryInterceptor(service NamespaceService, namespaceClaimKey, user
 							namespaceForRequest = ns
 						}
 
-						// override the user uuid if passed as claim
+						// Override the user uuid if passed as claim
 						if userUUID := token.Subject(); userUUID != "" && userUUIDHeaderKey != "" {
-							incomingMD.Set(userUUIDHeaderKey, userUUID)
-							ctx = metadata.NewIncomingContext(ctx, incomingMD)
+							req.Header().Set(userUUIDHeaderKey, userUUID)
 						}
 					}
 				}
 			}
 
-			// if we have not already found a namespace, check in header
+			// If we have not already found a namespace, check in header
 			if namespaceForRequest.ID == namespace.DefaultNamespace.ID {
-				// check if namespace is passed as header
-				namespaceHeaders := incomingMD.Get(client.NamespaceHeaderKey)
-				if len(namespaceHeaders) > 0 {
-					ns, err := getNamespaceByNameOrID(ctx, service, strings.TrimSpace(namespaceHeaders[0]))
+				// Check if namespace is passed as header
+				namespaceHeader := req.Header().Get(client.NamespaceHeaderKey)
+				if namespaceHeader != "" {
+					ns, err := getNamespaceByNameOrID(ctx, service, strings.TrimSpace(namespaceHeader))
 					if err != nil {
 						return nil, err
 					}
 					namespaceForRequest = ns
 				}
 			}
-		}
 
-		// fallback to default namespace
-		ctx = BuildContextWithNamespace(ctx, namespaceForRequest)
-		return handler(ctx, req)
+			// Build context with namespace
+			ctx = BuildContextWithNamespace(ctx, namespaceForRequest)
+			return next(ctx, req)
+		}
 	}
 }
 
@@ -80,23 +77,24 @@ func getNamespaceByNameOrID(ctx context.Context, service NamespaceService, urn s
 	var ns *namespace.Namespace
 	nsID, err := uuid.Parse(urn)
 	if err != nil {
-		// if fail to parse a valid uuid, must be a name
+		// If fail to parse a valid uuid, must be a name
 		if ns, err = service.GetByName(ctx, urn); err != nil {
-			return nil, status.Error(codes.NotFound, err.Error())
+			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 	} else {
 		if ns, err = service.GetByID(ctx, nsID); err != nil {
-			return nil, status.Error(codes.NotFound, err.Error())
+			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 	}
 	return ns, nil
 }
 
+// BuildContextWithNamespace stores the namespace in context.
 func BuildContextWithNamespace(ctx context.Context, ns *namespace.Namespace) context.Context {
 	return context.WithValue(ctx, NamespaceKey{}, ns)
 }
 
-// FetchNamespaceFromContext if not found, fallback to default
+// FetchNamespaceFromContext retrieves namespace from context, returns default if not found.
 func FetchNamespaceFromContext(ctx context.Context) *namespace.Namespace {
 	if ns, ok := ctx.Value(NamespaceKey{}).(*namespace.Namespace); ok && ns != nil {
 		return ns

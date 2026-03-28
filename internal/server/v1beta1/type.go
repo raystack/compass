@@ -3,26 +3,26 @@ package handlersv1beta1
 import (
 	"context"
 	"fmt"
+
+	"connectrpc.com/connect"
 	"github.com/raystack/compass/core/asset"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-func (server *APIServer) GetAllTypes(ctx context.Context, req *compassv1beta1.GetAllTypesRequest) (*compassv1beta1.GetAllTypesResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) GetAllTypes(ctx context.Context, req *connect.Request[compassv1beta1.GetAllTypesRequest]) (*connect.Response[compassv1beta1.GetAllTypesResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
 
 	flt, err := asset.NewFilterBuilder().
-		Types(req.GetTypes()).
-		Services(req.GetServices()).
-		Q(req.GetQ()).
-		QFields(req.GetQFields()).
-		Data(req.GetData()).
+		Types(req.Msg.GetTypes()).
+		Services(req.Msg.GetServices()).
+		Q(req.Msg.GetQ()).
+		QFields(req.Msg.GetQFields()).
+		Data(req.Msg.GetData()).
 		Build()
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
 
 	typesNameMap, err := server.assetService.GetTypes(ctx, flt)
@@ -39,7 +39,7 @@ func (server *APIServer) GetAllTypes(ctx context.Context, req *compassv1beta1.Ge
 		})
 	}
 
-	return &compassv1beta1.GetAllTypesResponse{
+	return connect.NewResponse(&compassv1beta1.GetAllTypesResponse{
 		Data: results,
-	}, nil
+	}), nil
 }
