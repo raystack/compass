@@ -1,3 +1,5 @@
+version: 2
+
 project_name: compass
 
 release:
@@ -58,7 +60,7 @@ scoops:
   - homepage: "https://github.com/raystack/compass"
     description: "Data catalog service"
     license: Apache 2.0
-    bucket:
+    repository:
       owner: raystack
       name: scoop-bucket
 
@@ -66,11 +68,11 @@ brews:
   - name: compass
     homepage: "https://github.com/raystack/compass"
     description: "Data catalog service"
-    tap:
+    repository:
       owner: raystack
       name: homebrew-tap
     license: "Apache 2.0"
-    folder: Formula
+    directory: Formula
     install: |-
       bin.install "compass"
     commit_author:
