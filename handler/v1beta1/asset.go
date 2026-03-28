@@ -1,0 +1,720 @@
+package handlersv1beta1
+
+//go:generate mockery --name=AssetService -r --case underscore --with-expecter --structname AssetService --filename asset_service.go --output=./mocks
+import (
+	"context"
+	"errors"
+	"fmt"
+	"time"
+
+	"connectrpc.com/connect"
+	"github.com/r3labs/diff/v3"
+	"github.com/raystack/compass/core/asset"
+	"github.com/raystack/compass/core/namespace"
+	"github.com/raystack/compass/core/star"
+	"github.com/raystack/compass/core/user"
+	"github.com/raystack/compass/internal/middleware"
+	compassv1beta1 "github.com/raystack/compass/proto/gen/raystack/compass/v1beta1"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+type AssetService interface {
+	GetAllAssets(ctx context.Context, flt asset.Filter, withTotal bool) ([]asset.Asset, uint32, error)
+	GetAssetByID(ctx context.Context, id string) (asset.Asset, error)
+	GetAssetByVersion(ctx context.Context, id string, version string) (asset.Asset, error)
+	GetAssetVersionHistory(ctx context.Context, flt asset.Filter, id string) ([]asset.Asset, error)
+	UpsertAsset(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset, upstreams, downstreams []string) (string, error)
+	UpsertAssetWithoutLineage(ctx context.Context, ns *namespace.Namespace, ast *asset.Asset) (string, error)
+	DeleteAsset(ctx context.Context, ns *namespace.Namespace, id string) error
+
+	GetLineage(ctx context.Context, urn string, query asset.LineageQuery) (asset.Lineage, error)
+	GetTypes(ctx context.Context, flt asset.Filter) (map[asset.Type]int, error)
+
+	SearchAssets(ctx context.Context, cfg asset.SearchConfig) (results []asset.SearchResult, err error)
+	SuggestAssets(ctx context.Context, cfg asset.SearchConfig) (suggestions []string, err error)
+
+	AddProbe(ctx context.Context, ns *namespace.Namespace, assetURN string, probe *asset.Probe) error
+
+	GroupAssets(ctx context.Context, cfg asset.GroupConfig) ([]asset.GroupResult, error)
+}
+
+func (server *APIServer) GetAllAssets(ctx context.Context, req *connect.Request[compassv1beta1.GetAllAssetsRequest]) (*connect.Response[compassv1beta1.GetAllAssetsResponse], error) {
+
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
+		return nil, err
+	}
+
+	fb := asset.NewFilterBuilder().
+		Types(req.Msg.GetTypes()).
+		Services(req.Msg.GetServices()).
+		Q(req.Msg.GetQ()).
+		QFields(req.Msg.GetQFields()).
+		Size(int(req.Msg.GetSize())).
+		Offset(int(req.Msg.GetOffset())).
+		SortBy(req.Msg.GetSort()).
+		SortDirection(req.Msg.GetDirection()).
+		Data(req.Msg.GetData())
+	if req.Msg.GetIsDeleted() {
+		fb = fb.IsDeleted(true)
+	}
+	flt, err := fb.Build()
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New(bodyParserErrorMsg(err)))
+	}
+
+	assets, totalCount, err := server.assetService.GetAllAssets(ctx, flt, req.Msg.GetWithTotal())
+	if err != nil {
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	var assetsProto []*compassv1beta1.Asset
+	for _, a := range assets {
+		ap, err := assetToProto(a, false)
+		if err != nil {
+			return nil, internalServerError(server.logger, err.Error())
+		}
+		assetsProto = append(assetsProto, ap)
+	}
+
+	response := &compassv1beta1.GetAllAssetsResponse{
+		Data: assetsProto,
+	}
+
+	if req.Msg.GetWithTotal() {
+		response.Total = totalCount
+	}
+
+	return connect.NewResponse(response), nil
+}
+
+func (server *APIServer) GetAssetByID(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetByIDRequest]) (*connect.Response[compassv1beta1.GetAssetByIDResponse], error) {
+
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
+		return nil, err
+	}
+
+	ast, err := server.assetService.GetAssetByID(ctx, req.Msg.GetId())
+	if err != nil {
+		if errors.As(err, new(asset.InvalidError)) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+		if errors.As(err, new(asset.NotFoundError)) {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	astProto, err := assetToProto(ast, false)
+	if err != nil {
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	return connect.NewResponse(&compassv1beta1.GetAssetByIDResponse{
+		Data: astProto,
+	}), nil
+}
+
+func (server *APIServer) GetAssetStargazers(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetStargazersRequest]) (*connect.Response[compassv1beta1.GetAssetStargazersResponse], error) {
+
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
+		return nil, err
+	}
+
+	users, err := server.starService.GetStargazers(ctx, star.Filter{
+		Size:   int(req.Msg.GetSize()),
+		Offset: int(req.Msg.GetOffset()),
+	}, req.Msg.GetId())
+	if err != nil {
+		if errors.Is(err, star.ErrEmptyUserID) || errors.Is(err, star.ErrEmptyAssetID) || errors.As(err, new(star.InvalidError)) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+		if errors.As(err, new(star.NotFoundError)) {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	usersPB := []*compassv1beta1.User{}
+	for _, us := range users {
+		usersPB = append(usersPB, userToProto(us))
+	}
+
+	return connect.NewResponse(&compassv1beta1.GetAssetStargazersResponse{
+		Data: usersPB,
+	}), nil
+}
+
+func (server *APIServer) GetAssetVersionHistory(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[compassv1beta1.GetAssetVersionHistoryResponse], error) {
+
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
+		return nil, err
+	}
+
+	assetVersions, err := server.assetService.GetAssetVersionHistory(ctx, asset.Filter{
+		Size:   int(req.Msg.GetSize()),
+		Offset: int(req.Msg.GetOffset()),
+	}, req.Msg.GetId())
+	if err != nil {
+		if errors.As(err, new(asset.InvalidError)) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+		if errors.As(err, new(asset.NotFoundError)) {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	assetsPB := []*compassv1beta1.Asset{}
+	for _, av := range assetVersions {
+		avPB, err := assetToProto(av, true)
+		if err != nil {
+			return nil, internalServerError(server.logger, err.Error())
+		}
+		assetsPB = append(assetsPB, avPB)
+	}
+
+	return connect.NewResponse(&compassv1beta1.GetAssetVersionHistoryResponse{
+		Data: assetsPB,
+	}), nil
+}
+
+func (server *APIServer) GetAssetByVersion(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetByVersionRequest]) (*connect.Response[compassv1beta1.GetAssetByVersionResponse], error) {
+
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
+		return nil, err
+	}
+
+	if _, err := asset.ParseVersion(req.Msg.GetVersion()); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	ast, err := server.assetService.GetAssetByVersion(ctx, req.Msg.GetId(), req.Msg.GetVersion())
+	if err != nil {
+		if errors.As(err, new(asset.InvalidError)) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+		if errors.As(err, new(asset.NotFoundError)) {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	assetPB, err := assetToProto(ast, true)
+	if err != nil {
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	return connect.NewResponse(&compassv1beta1.GetAssetByVersionResponse{
+		Data: assetPB,
+	}), nil
+}
+
+func (server *APIServer) UpsertAsset(ctx context.Context, req *connect.Request[compassv1beta1.UpsertAssetRequest]) (*connect.Response[compassv1beta1.UpsertAssetResponse], error) {
+
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
+	if err != nil {
+		return nil, err
+	}
+
+	baseAsset := req.Msg.GetAsset()
+	if baseAsset == nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("asset cannot be empty"))
+	}
+
+	ast := server.buildAsset(baseAsset)
+	ast.UpdatedBy.ID = userID
+
+	assetID, err := server.upsertAsset(
+		ctx,
+		ns,
+		ast,
+		"asset_upsert",
+		req.Msg.GetUpstreams(),
+		req.Msg.GetDownstreams(),
+	)
+	if err != nil {
+		if req.Msg.GetUpdateOnly() && errors.As(err, new(asset.NotFoundError)) {
+			return connect.NewResponse(&compassv1beta1.UpsertAssetResponse{Id: ""}), nil
+		}
+		return nil, err
+	}
+
+	return connect.NewResponse(&compassv1beta1.UpsertAssetResponse{
+		Id: assetID,
+	}), nil
+}
+
+func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *connect.Request[compassv1beta1.UpsertPatchAssetRequest]) (*connect.Response[compassv1beta1.UpsertPatchAssetResponse], error) {
+
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
+	if err != nil {
+		return nil, err
+	}
+
+	baseAsset := req.Msg.GetAsset()
+	if baseAsset == nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("asset cannot be empty"))
+	}
+
+	urn, err := server.validatePatchAsset(baseAsset)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	ast, err := server.assetService.GetAssetByID(ctx, urn)
+	if err != nil {
+		if errors.As(err, &asset.NotFoundError{}) {
+			if req.Msg.GetUpdateOnly() {
+				return connect.NewResponse(&compassv1beta1.UpsertPatchAssetResponse{Id: ""}), nil
+			}
+		} else {
+			return nil, internalServerError(server.logger, err.Error())
+		}
+	}
+
+	patchAssetMap := decodePatchAssetToMap(baseAsset)
+	ast.Patch(patchAssetMap)
+	ast.UpdatedBy.ID = userID
+
+	var assetID string
+	if len(req.Msg.Upstreams) != 0 || len(req.Msg.Downstreams) != 0 || req.Msg.OverwriteLineage {
+		assetID, err = server.upsertAsset(
+			ctx, ns, ast, "asset_upsert_patch", req.Msg.GetUpstreams(), req.Msg.GetDownstreams(),
+		)
+	} else {
+		assetID, err = server.upsertAssetWithoutLineage(ctx, ns, ast)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return connect.NewResponse(&compassv1beta1.UpsertPatchAssetResponse{
+		Id: assetID,
+	}), nil
+}
+
+func (server *APIServer) DeleteAsset(ctx context.Context, req *connect.Request[compassv1beta1.DeleteAssetRequest]) (*connect.Response[compassv1beta1.DeleteAssetResponse], error) {
+
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
+		return nil, err
+	}
+
+	if err := server.assetService.DeleteAsset(ctx, ns, req.Msg.GetId()); err != nil {
+		if errors.As(err, new(asset.InvalidError)) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+		if errors.As(err, new(asset.NotFoundError)) {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	return connect.NewResponse(&compassv1beta1.DeleteAssetResponse{}), nil
+}
+
+func (server *APIServer) CreateAssetProbe(ctx context.Context, req *connect.Request[compassv1beta1.CreateAssetProbeRequest]) (*connect.Response[compassv1beta1.CreateAssetProbeResponse], error) {
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
+		return nil, err
+	}
+
+
+	if req.Msg.Probe.Status == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("status is required"))
+	}
+	if !req.Msg.Probe.Timestamp.IsValid() {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("timestamp is required"))
+	}
+
+	probe := asset.Probe{
+		Status:       req.Msg.Probe.Status,
+		StatusReason: req.Msg.Probe.StatusReason,
+		Metadata:     req.Msg.Probe.Metadata.AsMap(),
+		Timestamp:    req.Msg.Probe.Timestamp.AsTime(),
+	}
+	if err := server.assetService.AddProbe(ctx, ns, req.Msg.AssetUrn, &probe); err != nil {
+		if errors.As(err, &asset.NotFoundError{}) {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	return connect.NewResponse(&compassv1beta1.CreateAssetProbeResponse{
+		Id: probe.ID,
+	}), nil
+}
+
+func (server *APIServer) upsertAsset(
+	ctx context.Context,
+	ns *namespace.Namespace,
+	ast asset.Asset,
+	mode string,
+	reqUpstreams,
+	reqDownstreams []*compassv1beta1.LineageNode,
+) (assetID string, err error) {
+	if err := server.validateAsset(ast); err != nil {
+		return "", connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	upstreams := make([]string, 0, len(reqUpstreams))
+	for _, pb := range reqUpstreams {
+		upstreams = append(upstreams, pb.Urn)
+	}
+	downstreams := make([]string, 0, len(reqDownstreams))
+	for _, pb := range reqDownstreams {
+		downstreams = append(downstreams, pb.Urn)
+	}
+
+	assetID, err = server.assetService.UpsertAsset(ctx, ns, &ast, upstreams, downstreams)
+	if errors.As(err, new(asset.InvalidError)) {
+		return "", connect.NewError(connect.CodeInvalidArgument, err)
+	} else if err != nil {
+		return "", internalServerError(server.logger, err.Error())
+	}
+
+	return
+}
+
+func (server *APIServer) upsertAssetWithoutLineage(ctx context.Context, ns *namespace.Namespace, ast asset.Asset) (string, error) {
+	if err := server.validateAsset(ast); err != nil {
+		return "", connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	assetID, err := server.assetService.UpsertAssetWithoutLineage(ctx, ns, &ast)
+	if err != nil {
+		if errors.As(err, new(asset.InvalidError)) {
+			return "", connect.NewError(connect.CodeInvalidArgument, err)
+		}
+		return "", internalServerError(server.logger, err.Error())
+	}
+
+	return assetID, nil
+}
+
+func (server *APIServer) buildAsset(baseAsset *compassv1beta1.UpsertAssetRequest_Asset) asset.Asset {
+	ast := asset.Asset{
+		URN:         baseAsset.GetUrn(),
+		Service:     baseAsset.GetService(),
+		Type:        asset.Type(baseAsset.GetType()),
+		Name:        baseAsset.GetName(),
+		Description: baseAsset.GetDescription(),
+		Data:        baseAsset.GetData().AsMap(),
+		URL:         baseAsset.Url,
+		Labels:      baseAsset.GetLabels(),
+	}
+
+	var owners []user.User
+	for _, owner := range baseAsset.GetOwners() {
+		owners = append(owners, user.User{
+			ID:       owner.Id,
+			UUID:     owner.Uuid,
+			Email:    owner.Email,
+			Provider: owner.Provider,
+		})
+	}
+	ast.Owners = owners
+
+	return ast
+}
+
+func (server *APIServer) validateAsset(ast asset.Asset) error {
+	if ast.URN == "" {
+		return fmt.Errorf("urn is required")
+	}
+	if ast.Type == "" {
+		return fmt.Errorf("type is required")
+	}
+	if !ast.Type.IsValid() {
+		return fmt.Errorf("type is invalid")
+	}
+	if ast.Name == "" {
+		return fmt.Errorf("name is required")
+	}
+	if ast.Data == nil {
+		return fmt.Errorf("data is required")
+	}
+	if ast.Service == "" {
+		return fmt.Errorf("service is required")
+	}
+
+	return nil
+}
+
+func (server *APIServer) validatePatchAsset(ast *compassv1beta1.UpsertPatchAssetRequest_Asset) (urn string, err error) {
+	if urn = ast.GetUrn(); urn == "" {
+		return "", fmt.Errorf("urn is required and can't be empty")
+	}
+
+	typ := ast.GetType()
+	if typ == "" {
+		return "", fmt.Errorf("type is required and can't be empty")
+	}
+
+	if !asset.Type(typ).IsValid() {
+		return "", fmt.Errorf("type is invalid")
+	}
+
+	if service := ast.GetService(); service == "" {
+		return "", fmt.Errorf("service is required and can't be empty")
+	}
+
+	return urn, nil
+}
+
+func decodePatchAssetToMap(pb *compassv1beta1.UpsertPatchAssetRequest_Asset) map[string]interface{} {
+	if pb == nil {
+		return nil
+	}
+	m := map[string]interface{}{}
+	m["urn"] = pb.GetUrn()
+	m["type"] = pb.GetType()
+	m["service"] = pb.GetService()
+	if pb.GetName() != nil {
+		m["name"] = pb.GetName().Value
+	}
+	if pb.GetDescription() != nil {
+		m["description"] = pb.GetDescription().Value
+	}
+	if pb.GetData() != nil {
+		m["data"] = pb.GetData().AsMap()
+	}
+	if len(pb.Url) > 0 {
+		m["url"] = pb.Url
+	}
+	if pb.GetLabels() != nil {
+		m["labels"] = pb.GetLabels()
+	}
+	if len(pb.GetOwners()) > 0 {
+		ownersMap := []map[string]interface{}{}
+		ownersPB := pb.GetOwners()
+		for _, ownerPB := range ownersPB {
+			ownerMap := map[string]interface{}{}
+			if ownerPB.GetId() != "" {
+				ownerMap["id"] = ownerPB.GetId()
+			}
+			if ownerPB.GetUuid() != "" {
+				ownerMap["uuid"] = ownerPB.GetUuid()
+			}
+			if ownerPB.GetEmail() != "" {
+				ownerMap["email"] = ownerPB.GetEmail()
+			}
+			if ownerPB.GetProvider() != "" {
+				ownerMap["provider"] = ownerPB.GetProvider()
+			}
+			ownersMap = append(ownersMap, ownerMap)
+		}
+		m["owners"] = ownersMap
+	}
+
+	return m
+}
+
+// assetToProto transforms struct to proto
+func assetToProto(a asset.Asset, withChangelog bool) (assetPB *compassv1beta1.Asset, err error) {
+	var data *structpb.Struct
+	if len(a.Data) > 0 {
+		data, err = structpb.NewStruct(a.Data)
+		if err != nil {
+			return
+		}
+	}
+
+	owners := []*compassv1beta1.User{}
+	for _, o := range a.Owners {
+		owners = append(owners, userToProto(o))
+	}
+
+	var changelogProto []*compassv1beta1.Change
+	if withChangelog {
+		changelogProto, err = changelogToProto(a.Changelog)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var createdAtPB *timestamppb.Timestamp
+	if !a.CreatedAt.IsZero() {
+		createdAtPB = timestamppb.New(a.CreatedAt)
+	}
+
+	var updatedAtPB *timestamppb.Timestamp
+	if !a.UpdatedAt.IsZero() {
+		updatedAtPB = timestamppb.New(a.UpdatedAt)
+	}
+
+	var probes []*compassv1beta1.Probe
+	for _, probe := range a.Probes {
+		probeProto, err := probeToProto(probe)
+		if err != nil {
+			return assetPB, fmt.Errorf("error converting probe to proto: %w", err)
+		}
+		probes = append(probes, probeProto)
+	}
+
+	assetPB = &compassv1beta1.Asset{
+		Id:          a.ID,
+		Urn:         a.URN,
+		Type:        string(a.Type),
+		Service:     a.Service,
+		Name:        a.Name,
+		Description: a.Description,
+		Data:        data,
+		Url:         a.URL,
+		Labels:      a.Labels,
+		Owners:      owners,
+		Version:     a.Version,
+		UpdatedBy:   userToProto(a.UpdatedBy),
+		Changelog:   changelogProto,
+		CreatedAt:   createdAtPB,
+		UpdatedAt:   updatedAtPB,
+		Probes:      probes,
+		IsDeleted:   a.IsDeleted,
+	}
+	return
+}
+
+// probeToProto transforms asset.Probe struct to proto
+func probeToProto(probe asset.Probe) (*compassv1beta1.Probe, error) {
+	res := &compassv1beta1.Probe{
+		Id:           probe.ID,
+		AssetUrn:     probe.AssetURN,
+		Status:       probe.Status,
+		StatusReason: probe.StatusReason,
+		Timestamp:    timestamppb.New(probe.Timestamp),
+		CreatedAt:    timestamppb.New(probe.CreatedAt),
+	}
+
+	if probe.Metadata != nil {
+		m, err := structpb.NewStruct(probe.Metadata)
+		if err != nil {
+			return nil, fmt.Errorf("error creating probe metadata: %w", err)
+		}
+
+		res.Metadata = m
+	}
+
+	return res, nil
+}
+
+// changelogToProto transforms changelog struct to proto
+func changelogToProto(cl diff.Changelog) ([]*compassv1beta1.Change, error) {
+	if len(cl) == 0 {
+		return nil, nil
+	}
+	var protoChanges []*compassv1beta1.Change
+	for _, ch := range cl {
+		chProto, err := diffChangeToProto(ch)
+		if err != nil {
+			return nil, err
+		}
+
+		protoChanges = append(protoChanges, chProto)
+	}
+	return protoChanges, nil
+}
+
+func diffChangeToProto(dc diff.Change) (*compassv1beta1.Change, error) {
+	from, err := structpb.NewValue(dc.From)
+	if err != nil {
+		return nil, err
+	}
+	to, err := structpb.NewValue(dc.To)
+	if err != nil {
+		return nil, err
+	}
+
+	return &compassv1beta1.Change{
+		Type: dc.Type,
+		Path: dc.Path,
+		From: from,
+		To:   to,
+	}, nil
+}
+
+// assetFromProto transforms proto to struct
+// changelog is not populated by user, it should always be processed and coming from the server
+func assetFromProto(pb *compassv1beta1.Asset) asset.Asset {
+	var assetOwners []user.User
+	for _, op := range pb.GetOwners() {
+		if op == nil {
+			continue
+		}
+		assetOwners = append(assetOwners, userFromProto(op))
+	}
+
+	var dataValue map[string]interface{}
+	if pb.GetData() != nil {
+		dataValue = pb.GetData().AsMap()
+	}
+
+	var createdAt time.Time
+	if pb.GetCreatedAt() != nil {
+		createdAt = pb.GetCreatedAt().AsTime()
+	}
+
+	var updatedAt time.Time
+	if pb.GetUpdatedAt() != nil {
+		updatedAt = pb.GetUpdatedAt().AsTime()
+	}
+
+	var updatedBy user.User
+	if pb.GetUpdatedBy() != nil {
+		updatedBy = userFromProto(pb.GetUpdatedBy())
+	}
+
+	var clog diff.Changelog
+	if len(pb.GetChangelog()) > 0 {
+		for _, cg := range pb.GetChangelog() {
+			if cg == nil {
+				continue
+			}
+			clog = append(clog, diffChangeFromProto(cg))
+		}
+	}
+
+	return asset.Asset{
+		ID:          pb.GetId(),
+		URN:         pb.GetUrn(),
+		Type:        asset.Type(pb.GetType()),
+		Service:     pb.GetService(),
+		Name:        pb.GetName(),
+		Description: pb.GetDescription(),
+		Data:        dataValue,
+		Labels:      pb.GetLabels(),
+		Owners:      assetOwners,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+		Version:     pb.GetVersion(),
+		Changelog:   clog,
+		UpdatedBy:   updatedBy,
+	}
+}
+
+// diffChangeFromProto converts Change proto to diff.Change
+func diffChangeFromProto(pb *compassv1beta1.Change) diff.Change {
+	var fromItf interface{}
+	if pb.GetFrom() != nil {
+		fromItf = pb.GetFrom().AsInterface()
+	}
+
+	var toItf interface{}
+	if pb.GetTo() != nil {
+		toItf = pb.GetTo().AsInterface()
+	}
+
+	return diff.Change{
+		Type: pb.GetType(),
+		Path: pb.GetPath(),
+		From: fromItf,
+		To:   toItf,
+	}
+}

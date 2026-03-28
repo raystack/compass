@@ -5,15 +5,16 @@ go 1.25.0
 toolchain go1.26.1
 
 require (
-	connectrpc.com/connect v1.18.1
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.9-20250912141014-52f32327d4b0.1
+	connectrpc.com/connect v1.19.0
+	connectrpc.com/cors v0.1.0
 	connectrpc.com/grpcreflect v1.2.0
 	connectrpc.com/otelconnect v0.7.1
-	github.com/DataDog/datadog-go/v5 v5.8.3
+	connectrpc.com/validate v0.6.0
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/elastic/go-elasticsearch/v8 v8.17.1
-	github.com/envoyproxy/protoc-gen-validate v1.3.0
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.30.1
@@ -21,18 +22,17 @@ require (
 	github.com/golang-module/carbon/v2 v2.6.9
 	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
-	github.com/gorilla/handlers v1.5.2
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0
 	github.com/jackc/pgerrcode v0.0.0-20250907135507-afb5586c32a6
 	github.com/jackc/pgx/v5 v5.9.1
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lestrrat-go/jwx/v2 v2.1.6
 	github.com/lib/pq v1.12.0
-	github.com/newrelic/go-agent/v3 v3.42.0
-	github.com/newrelic/go-agent/v3/integrations/nrelasticsearch-v7 v1.0.3
 	github.com/ory/dockertest/v3 v3.12.0
 	github.com/peterbourgon/mergemap v0.0.1
 	github.com/r3labs/diff/v3 v3.0.2
 	github.com/raystack/salt v0.7.0
+	github.com/rs/cors v1.11.1
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	go.opentelemetry.io/otel v1.42.0
@@ -41,6 +41,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.42.0
 	go.opentelemetry.io/otel/sdk/metric v1.42.0
 	golang.org/x/net v0.51.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20260209200024-4cfbd4190f57
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v2 v2.4.0
 	gotest.tools v2.2.0+incompatible
@@ -121,21 +122,22 @@ require (
 )
 
 require (
+	buf.build/go/protovalidate v1.0.0 // indirect
+	cel.dev/expr v0.25.1 // indirect
 	dario.cat/mergo v1.0.0 // indirect
+	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dromara/carbon/v2 v2.6.9 // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.6.1 // indirect
-	github.com/elastic/go-elasticsearch/v7 v7.17.10 // indirect
-	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-playground/validator v9.31.0+incompatible // indirect
 	github.com/go-viper/mapstructure/v2 v2.1.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0 // indirect
+	github.com/google/cel-go v0.26.1 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
@@ -147,6 +149,7 @@ require (
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/viper v1.19.0 // indirect
+	github.com/stoewer/go-strcase v1.3.1 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
@@ -160,9 +163,8 @@ require (
 	go.uber.org/zap v1.21.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
-	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
+	golang.org/x/exp v0.0.0-20250911091902-df9299821621 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260209200024-4cfbd4190f57 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260226221140-a57be14db171 // indirect
 	google.golang.org/grpc v1.79.2 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

@@ -1,0 +1,35 @@
+package config
+
+import "fmt"
+
+type ServerConfig struct {
+	Host    string `mapstructure:"host" default:"0.0.0.0"`
+	Port    int    `mapstructure:"port" default:"8080"`
+	BaseUrl string `mapstructure:"baseurl" default:"localhost:8080"`
+
+	// User Identity
+	Identity IdentityConfig `mapstructure:"identity"`
+
+	// CORS
+	CORS CORSConfig `mapstructure:"cors"`
+
+	// Message size limits (for compatibility)
+	MaxRecvMsgSize int `yaml:"max_recv_msg_size" mapstructure:"max_recv_msg_size" default:"33554432"`
+	MaxSendMsgSize int `yaml:"max_send_msg_size" mapstructure:"max_send_msg_size" default:"33554432"`
+}
+
+type CORSConfig struct {
+	AllowedOrigins []string `yaml:"allowed_origins" mapstructure:"allowed_origins" default:"[*]"`
+}
+
+func (cfg ServerConfig) Addr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.Port) }
+
+type IdentityConfig struct {
+	// User Identity
+	HeaderKeyUserUUID   string `yaml:"headerkey_uuid" mapstructure:"headerkey_uuid" default:"Compass-User-UUID"`
+	HeaderValueUserUUID string `yaml:"headervalue_uuid" mapstructure:"headervalue_uuid" default:"raystack@email.com"`
+	HeaderKeyUserEmail  string `yaml:"headerkey_email" mapstructure:"headerkey_email" default:"Compass-User-Email"`
+	ProviderDefaultName string `yaml:"provider_default_name" mapstructure:"provider_default_name" default:""`
+
+	NamespaceClaimKey string `yaml:"namespace_claim_key" mapstructure:"namespace_claim_key" default:"namespace_id"`
+}

@@ -237,17 +237,11 @@ app:
   config:
     COMPASS_SERVICE_PORT: 8080
     # COMPASS_SERVICE_HOST: 0.0.0.0
-    # COMPASS_STATSD_ENABLED: false
-    # COMPASS_STATSD_PREFIX: compass
-    # COMPASS_NEWRELIC_ENABLED: false
-    # COMPASS_NEWRELIC_APPNAME: compass
     # COMPASS_LOG_LEVEL: info
 
   secretConfig:
     {}
     # COMPASS_ELASTICSEARCH_BROKERS: ~
-    # COMPASS_STATSD_ADDRESS: ~
-    # COMPASS_NEWRELIC_LICENSEKEY: ~
     # COMPASS_DB_HOST: ~
     # COMPASS_DB_PORT: 5432
     # COMPASS_DB_NAME: ~
@@ -284,8 +278,6 @@ If everything goes ok, you should see something like this:
 ```bash
 time="2022-04-27T09:18:08Z" level=info msg="compass starting" version=v0.2.0
 time="2022-04-27T09:18:08Z" level=info msg="connected to elasticsearch cluster" config="\"docker-cluster\" (server version 7.6.1)"
-time="2022-04-27T09:18:08Z" level=info msg="New Relic monitoring is disabled."
-time="2022-04-27T09:18:08Z" level=info msg="statsd metrics monitoring is disabled."
 time="2022-04-27T09:18:08Z" level=info msg="connected to postgres server" host=postgres port=5432
 time="2022-04-27T09:18:08Z" level=info msg="server started"
 ```

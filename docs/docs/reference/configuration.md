@@ -72,39 +72,32 @@ Compass's required variables to start using it.
 
 ## Telemetry
 
-Variables for metrics gathering.
+Variables for metrics gathering. Compass uses OpenTelemetry for traces and metrics.
 
-### `STATSD_ADDRESS`
+### `TELEMETRY_SERVICENAME`
 
-* Example value: `127.0.0.1:8125`
-* Type: `optional`
-* statsd client to send metrics to.
-
-### `STATSD_PREFIX`
-
-* Example value: `discovery`
-* Type: `optional`
-* Default: `compassApi`
-* Prefix for statsd metrics names.
-
-### `STATSD_ENABLED`
-
-* Example value: `true`
-* Type: `required`
-* Default: `false`
-* Enable publishing application metrics to statsd.
-
-### `NEW_RELIC_APP_NAME`
-
-* Example value: `compass-integration`
+* Example value: `compass`
 * Type: `optional`
 * Default: `compass`
-* New Relic application name.
+* Service name reported to the OpenTelemetry collector.
 
-### `NEW_RELIC_LICENSE_KEY`
+### `TELEMETRY_OPENTELEMETRY_ENABLED`
 
-* Example value: `mf9d13c838u252252c43ji47q1u4ynzpDDDDTSPQ`
+* Example value: `true`
 * Type: `optional`
-* Default: `""`
-* New Relic license key. Empty value would disable newrelic monitoring.
+* Default: `false`
+* Enable OpenTelemetry traces and metrics.
+
+### `TELEMETRY_OPENTELEMETRY_COLLECTORADDR`
+
+* Example value: `localhost:4317`
+* Type: `required` (when enabled)
+* gRPC address of the OpenTelemetry collector.
+
+### `TELEMETRY_OPENTELEMETRY_TRACESAMPLEPROBABILITY`
+
+* Example value: `0.1`
+* Type: `optional`
+* Default: `1.0`
+* Trace sampling probability (0.0 to 1.0).
 
