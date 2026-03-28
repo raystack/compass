@@ -15,7 +15,7 @@ services:
   postgres:
     image: postgres:13
     ports:
-      - 5432:5432
+      - 5433:5432
     environment:
       POSTGRES_USER: compass
       POSTGRES_PASSWORD: compass_password

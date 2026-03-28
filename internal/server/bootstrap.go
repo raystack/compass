@@ -15,6 +15,7 @@ import (
 	"github.com/raystack/compass/core/tag"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/internal/config"
+	compassmcp "github.com/raystack/compass/internal/mcp"
 	"github.com/raystack/compass/internal/telemetry"
 	esStore "github.com/raystack/compass/store/elasticsearch"
 	"github.com/raystack/compass/store/postgres"
@@ -115,9 +116,13 @@ func Start(ctx context.Context, cfg *config.Config, version string) error {
 	// init namespace
 	namespaceService := namespace.NewService(postgres.NewNamespaceRepository(pgClient), discoveryRepository)
 
+	// init MCP server
+	mcpServer := compassmcp.New(assetService, namespace.DefaultNamespace)
+
 	return Serve(
 		ctx,
 		cfg.Service,
+		mcpServer,
 		namespaceService,
 		assetService,
 		starService,

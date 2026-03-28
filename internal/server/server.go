@@ -16,6 +16,7 @@ import (
 	"github.com/raystack/compass/gen/raystack/compass/v1beta1/compassv1beta1connect"
 	"github.com/raystack/compass/handler"
 	"github.com/raystack/compass/internal/config"
+	compassmcp "github.com/raystack/compass/internal/mcp"
 	"github.com/raystack/compass/internal/middleware"
 	"github.com/rs/cors"
 	"golang.org/x/net/http2"
@@ -25,6 +26,7 @@ import (
 func Serve(
 	ctx context.Context,
 	cfg config.ServerConfig,
+	mcpServer *compassmcp.Server,
 	namespaceService handler.NamespaceService,
 	assetService handler.AssetService,
 	starService handler.StarService,
@@ -87,6 +89,12 @@ func Serve(
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("pong"))
 	})
+
+	// MCP server for AI agent tool access
+	if mcpServer != nil {
+		mux.Handle("/mcp", mcpServer.Handler())
+		logger.InfoContext(ctx, "MCP server enabled at /mcp")
+	}
 
 	// CORS middleware
 	corsHandler := cors.New(cors.Options{
