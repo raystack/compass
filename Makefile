@@ -49,7 +49,7 @@ generate: ## Run go generate
 	@go generate ./...
 
 config: ## Generate sample config file
-	@cp config/config.yaml config.yaml
+	@cp internal/config/config.example.yaml config.yaml
 
 proto: ## Generate protobuf files
 	@rm -rf proto/
