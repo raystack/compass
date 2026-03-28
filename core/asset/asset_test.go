@@ -310,10 +310,12 @@ func TestAssetPatch(t *testing.T) {
 				Name:        "new-name",
 				URL:         "https://sample-url.com",
 				Labels: map[string]string{
+					"foo":  "bar",
 					"bar":  "foo",
 					"bar2": "foo2",
 				},
 				Owners: []user.User{
+					{Email: "old@example.com"},
 					{Email: "new@example.com"},
 					{Email: "new2@example.com"},
 				},
@@ -359,10 +361,12 @@ func TestAssetPatch(t *testing.T) {
 				Name:        "new-name",
 				URL:         "https://sample-url.com",
 				Labels: map[string]string{
+					"foo":  "bar",
 					"bar":  "foo",
 					"bar2": "foo2",
 				},
 				Owners: []user.User{
+					{Email: "old@example.com"},
 					{Email: "new@example.com"},
 					{Email: "new2@example.com"},
 				},
@@ -397,6 +401,12 @@ func TestAssetPatch(t *testing.T) {
 				Service:     "firehose",
 				Description: "new-description",
 				Name:        "new-name",
+				Labels: map[string]string{
+					"foo": "bar",
+				},
+				Owners: []user.User{
+					{Email: "old@example.com"},
+				},
 			},
 		},
 		{

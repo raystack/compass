@@ -60,12 +60,16 @@ func (r *DiscussionRepository) GetAllComments(ctx context.Context, did string, f
 		return nil, fmt.Errorf("error building query: %w", err)
 	}
 
-	cmts := []discussion.Comment{}
-	err = r.client.SelectContext(ctx, &cmts, query, args...)
+	var models []CommentModel
+	err = r.client.SelectContext(ctx, &models, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("error getting list of comments: %w", err)
 	}
 
+	cmts := make([]discussion.Comment, 0, len(models))
+	for _, m := range models {
+		cmts = append(cmts, m.toComment())
+	}
 	return cmts, nil
 }
 
@@ -82,16 +86,16 @@ func (r *DiscussionRepository) GetComment(ctx context.Context, cid string, did s
 		return discussion.Comment{}, fmt.Errorf("error building query: %w", err)
 	}
 
-	cmt := discussion.Comment{}
-	err = r.client.GetContext(ctx, &cmt, query, args...)
+	var model CommentModel
+	err = r.client.GetContext(ctx, &model, query, args...)
 	if errors.Is(err, sql.ErrNoRows) {
 		return discussion.Comment{}, discussion.NotFoundError{CommentID: cid, DiscussionID: did}
 	}
 	if err != nil {
-		return discussion.Comment{}, fmt.Errorf("error getting list of comments: %w", err)
+		return discussion.Comment{}, fmt.Errorf("error getting comment: %w", err)
 	}
 
-	return cmt, nil
+	return model.toComment(), nil
 }
 
 // Update updates a comment

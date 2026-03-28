@@ -1,8 +1,8 @@
 package asset
 
 import (
-	"github.com/raystack/compass/core/user"
 	"github.com/peterbourgon/mergemap"
+	"github.com/raystack/compass/core/user"
 )
 
 // patch appends asset with data from map. It mutates the asset itself.
@@ -16,16 +16,78 @@ func patchAsset(a *Asset, patchData map[string]interface{}) {
 
 	labels, exists := patchData["labels"]
 	if exists {
-		a.Labels = buildLabels(labels)
+		a.Labels = mergeLabels(a.Labels, buildLabels(labels))
 	}
 	owners, exists := patchData["owners"]
 	if exists {
-		a.Owners = buildOwners(owners)
+		a.Owners = mergeOwners(a.Owners, buildOwners(owners))
 	}
 	data, exists := patchData["data"]
 	if exists {
 		patchAssetData(a, data)
 	}
+}
+
+// mergeLabels merges new labels into existing ones. New values override existing keys.
+func mergeLabels(existing, patch map[string]string) map[string]string {
+	if existing == nil {
+		return patch
+	}
+	if patch == nil {
+		return existing
+	}
+	for k, v := range patch {
+		existing[k] = v
+	}
+	return existing
+}
+
+// mergeOwners merges new owners into existing ones, deduplicating by email or uuid.
+func mergeOwners(existing, patch []user.User) []user.User {
+	if existing == nil {
+		return patch
+	}
+	if patch == nil {
+		return existing
+	}
+
+	seen := make(map[string]int) // key -> index in result
+	result := make([]user.User, len(existing))
+	copy(result, existing)
+
+	for i, o := range result {
+		if key := ownerKey(o); key != "" {
+			seen[key] = i
+		}
+	}
+
+	for _, o := range patch {
+		key := ownerKey(o)
+		if key == "" {
+			result = append(result, o)
+			continue
+		}
+		if idx, exists := seen[key]; exists {
+			// update existing owner in-place
+			result[idx] = o
+		} else {
+			seen[key] = len(result)
+			result = append(result, o)
+		}
+	}
+
+	return result
+}
+
+// ownerKey returns a deduplication key for an owner (email preferred, then uuid).
+func ownerKey(o user.User) string {
+	if o.Email != "" {
+		return "email:" + o.Email
+	}
+	if o.UUID != "" {
+		return "uuid:" + o.UUID
+	}
+	return ""
 }
 
 // buildLabels builds labels from interface{}
