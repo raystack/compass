@@ -34,17 +34,18 @@ archives:
   - id: "archives"
     format_overrides:
       - goos: windows
-        format: zip
+        formats: [zip]
 
-dockers:
-  - id: dockerhub
+dockers_v2:
+  - images:
+      - "docker.io/raystack/{{.ProjectName}}"
+    tags:
+      - "latest"
+      - "{{ .Version }}"
+      - "{{ .Tag }}-amd64"
     dockerfile: Dockerfile
     build_flag_templates:
       - "--target=release"
-    image_templates:
-      - "docker.io/raystack/{{.ProjectName}}:latest"
-      - "docker.io/raystack/{{.ProjectName}}:{{ .Version }}"
-      - "docker.io/raystack/{{.ProjectName}}:{{ .Tag }}-amd64"
 
 nfpms:
   - maintainer: Raystack
@@ -64,7 +65,7 @@ scoops:
       owner: raystack
       name: scoop-bucket
 
-brews:
+homebrew_casks:
   - name: compass
     homepage: "https://github.com/raystack/compass"
     description: "Data catalog service"
@@ -72,7 +73,7 @@ brews:
       owner: raystack
       name: homebrew-tap
     license: "Apache 2.0"
-    directory: Formula
+    directory: Casks
     install: |-
       bin.install "compass"
     commit_author:
