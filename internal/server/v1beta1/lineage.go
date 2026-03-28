@@ -8,7 +8,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/pkg/server/interceptor"
-	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
+	compassv1beta1 "github.com/raystack/compass/proto/compassv1beta1"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 

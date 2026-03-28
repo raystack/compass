@@ -18,7 +18,7 @@ import (
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/internal/server/v1beta1/mocks"
 	"github.com/raystack/compass/pkg/server/interceptor"
-	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
+	compassv1beta1 "github.com/raystack/compass/proto/compassv1beta1"
 	log "github.com/raystack/salt/observability/logger"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"

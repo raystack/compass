@@ -2,15 +2,16 @@ version: v2
 managed:
   enabled: true
   override:
-    - file_option: go_package_prefix
-      value: github.com/raystack/compass/proto
+    - file_option: go_package
+      path: raystack/compass/v1beta1/service.proto
+      value: github.com/raystack/compass/proto/compassv1beta1
 plugins:
   - remote: buf.build/protocolbuffers/go:v1.31.0
     out: proto
-    opt: paths=source_relative
+    opt: module=github.com/raystack/compass/proto
   - remote: buf.build/bufbuild/validate-go:v1.0.2
     out: proto
-    opt: paths=source_relative
+    opt: module=github.com/raystack/compass/proto
   - remote: buf.build/connectrpc/go:v1.18.1
     out: proto
-    opt: paths=source_relative
+    opt: module=github.com/raystack/compass/proto

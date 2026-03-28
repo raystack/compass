@@ -13,6 +13,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/elastic/go-elasticsearch/v8 v8.17.1
+	github.com/envoyproxy/protoc-gen-validate v1.3.0
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.30.1

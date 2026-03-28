@@ -8,7 +8,7 @@ import (
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	v1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
+	compassv1beta1 "github.com/raystack/compass/proto/compassv1beta1"
 	http "net/http"
 	strings "strings"
 )
@@ -166,53 +166,53 @@ const (
 // CompassServiceClient is a client for the raystack.compass.v1beta1.CompassService service.
 type CompassServiceClient interface {
 	// Domain: Discussion
-	GetAllDiscussions(context.Context, *connect.Request[v1beta1.GetAllDiscussionsRequest]) (*connect.Response[v1beta1.GetAllDiscussionsResponse], error)
-	CreateDiscussion(context.Context, *connect.Request[v1beta1.CreateDiscussionRequest]) (*connect.Response[v1beta1.CreateDiscussionResponse], error)
-	GetDiscussion(context.Context, *connect.Request[v1beta1.GetDiscussionRequest]) (*connect.Response[v1beta1.GetDiscussionResponse], error)
-	PatchDiscussion(context.Context, *connect.Request[v1beta1.PatchDiscussionRequest]) (*connect.Response[v1beta1.PatchDiscussionResponse], error)
-	CreateComment(context.Context, *connect.Request[v1beta1.CreateCommentRequest]) (*connect.Response[v1beta1.CreateCommentResponse], error)
-	GetAllComments(context.Context, *connect.Request[v1beta1.GetAllCommentsRequest]) (*connect.Response[v1beta1.GetAllCommentsResponse], error)
-	GetComment(context.Context, *connect.Request[v1beta1.GetCommentRequest]) (*connect.Response[v1beta1.GetCommentResponse], error)
-	UpdateComment(context.Context, *connect.Request[v1beta1.UpdateCommentRequest]) (*connect.Response[v1beta1.UpdateCommentResponse], error)
-	DeleteComment(context.Context, *connect.Request[v1beta1.DeleteCommentRequest]) (*connect.Response[v1beta1.DeleteCommentResponse], error)
+	GetAllDiscussions(context.Context, *connect.Request[compassv1beta1.GetAllDiscussionsRequest]) (*connect.Response[compassv1beta1.GetAllDiscussionsResponse], error)
+	CreateDiscussion(context.Context, *connect.Request[compassv1beta1.CreateDiscussionRequest]) (*connect.Response[compassv1beta1.CreateDiscussionResponse], error)
+	GetDiscussion(context.Context, *connect.Request[compassv1beta1.GetDiscussionRequest]) (*connect.Response[compassv1beta1.GetDiscussionResponse], error)
+	PatchDiscussion(context.Context, *connect.Request[compassv1beta1.PatchDiscussionRequest]) (*connect.Response[compassv1beta1.PatchDiscussionResponse], error)
+	CreateComment(context.Context, *connect.Request[compassv1beta1.CreateCommentRequest]) (*connect.Response[compassv1beta1.CreateCommentResponse], error)
+	GetAllComments(context.Context, *connect.Request[compassv1beta1.GetAllCommentsRequest]) (*connect.Response[compassv1beta1.GetAllCommentsResponse], error)
+	GetComment(context.Context, *connect.Request[compassv1beta1.GetCommentRequest]) (*connect.Response[compassv1beta1.GetCommentResponse], error)
+	UpdateComment(context.Context, *connect.Request[compassv1beta1.UpdateCommentRequest]) (*connect.Response[compassv1beta1.UpdateCommentResponse], error)
+	DeleteComment(context.Context, *connect.Request[compassv1beta1.DeleteCommentRequest]) (*connect.Response[compassv1beta1.DeleteCommentResponse], error)
 	// Domain: Asset
-	SearchAssets(context.Context, *connect.Request[v1beta1.SearchAssetsRequest]) (*connect.Response[v1beta1.SearchAssetsResponse], error)
-	SuggestAssets(context.Context, *connect.Request[v1beta1.SuggestAssetsRequest]) (*connect.Response[v1beta1.SuggestAssetsResponse], error)
-	GroupAssets(context.Context, *connect.Request[v1beta1.GroupAssetsRequest]) (*connect.Response[v1beta1.GroupAssetsResponse], error)
-	GetGraph(context.Context, *connect.Request[v1beta1.GetGraphRequest]) (*connect.Response[v1beta1.GetGraphResponse], error)
-	GetAllTypes(context.Context, *connect.Request[v1beta1.GetAllTypesRequest]) (*connect.Response[v1beta1.GetAllTypesResponse], error)
-	GetAllAssets(context.Context, *connect.Request[v1beta1.GetAllAssetsRequest]) (*connect.Response[v1beta1.GetAllAssetsResponse], error)
-	GetAssetByID(context.Context, *connect.Request[v1beta1.GetAssetByIDRequest]) (*connect.Response[v1beta1.GetAssetByIDResponse], error)
-	UpsertAsset(context.Context, *connect.Request[v1beta1.UpsertAssetRequest]) (*connect.Response[v1beta1.UpsertAssetResponse], error)
-	UpsertPatchAsset(context.Context, *connect.Request[v1beta1.UpsertPatchAssetRequest]) (*connect.Response[v1beta1.UpsertPatchAssetResponse], error)
-	DeleteAsset(context.Context, *connect.Request[v1beta1.DeleteAssetRequest]) (*connect.Response[v1beta1.DeleteAssetResponse], error)
-	GetAssetStargazers(context.Context, *connect.Request[v1beta1.GetAssetStargazersRequest]) (*connect.Response[v1beta1.GetAssetStargazersResponse], error)
-	GetAssetVersionHistory(context.Context, *connect.Request[v1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[v1beta1.GetAssetVersionHistoryResponse], error)
-	GetAssetByVersion(context.Context, *connect.Request[v1beta1.GetAssetByVersionRequest]) (*connect.Response[v1beta1.GetAssetByVersionResponse], error)
-	CreateAssetProbe(context.Context, *connect.Request[v1beta1.CreateAssetProbeRequest]) (*connect.Response[v1beta1.CreateAssetProbeResponse], error)
+	SearchAssets(context.Context, *connect.Request[compassv1beta1.SearchAssetsRequest]) (*connect.Response[compassv1beta1.SearchAssetsResponse], error)
+	SuggestAssets(context.Context, *connect.Request[compassv1beta1.SuggestAssetsRequest]) (*connect.Response[compassv1beta1.SuggestAssetsResponse], error)
+	GroupAssets(context.Context, *connect.Request[compassv1beta1.GroupAssetsRequest]) (*connect.Response[compassv1beta1.GroupAssetsResponse], error)
+	GetGraph(context.Context, *connect.Request[compassv1beta1.GetGraphRequest]) (*connect.Response[compassv1beta1.GetGraphResponse], error)
+	GetAllTypes(context.Context, *connect.Request[compassv1beta1.GetAllTypesRequest]) (*connect.Response[compassv1beta1.GetAllTypesResponse], error)
+	GetAllAssets(context.Context, *connect.Request[compassv1beta1.GetAllAssetsRequest]) (*connect.Response[compassv1beta1.GetAllAssetsResponse], error)
+	GetAssetByID(context.Context, *connect.Request[compassv1beta1.GetAssetByIDRequest]) (*connect.Response[compassv1beta1.GetAssetByIDResponse], error)
+	UpsertAsset(context.Context, *connect.Request[compassv1beta1.UpsertAssetRequest]) (*connect.Response[compassv1beta1.UpsertAssetResponse], error)
+	UpsertPatchAsset(context.Context, *connect.Request[compassv1beta1.UpsertPatchAssetRequest]) (*connect.Response[compassv1beta1.UpsertPatchAssetResponse], error)
+	DeleteAsset(context.Context, *connect.Request[compassv1beta1.DeleteAssetRequest]) (*connect.Response[compassv1beta1.DeleteAssetResponse], error)
+	GetAssetStargazers(context.Context, *connect.Request[compassv1beta1.GetAssetStargazersRequest]) (*connect.Response[compassv1beta1.GetAssetStargazersResponse], error)
+	GetAssetVersionHistory(context.Context, *connect.Request[compassv1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[compassv1beta1.GetAssetVersionHistoryResponse], error)
+	GetAssetByVersion(context.Context, *connect.Request[compassv1beta1.GetAssetByVersionRequest]) (*connect.Response[compassv1beta1.GetAssetByVersionResponse], error)
+	CreateAssetProbe(context.Context, *connect.Request[compassv1beta1.CreateAssetProbeRequest]) (*connect.Response[compassv1beta1.CreateAssetProbeResponse], error)
 	// Domain: User * Star
-	GetUserStarredAssets(context.Context, *connect.Request[v1beta1.GetUserStarredAssetsRequest]) (*connect.Response[v1beta1.GetUserStarredAssetsResponse], error)
-	GetMyStarredAssets(context.Context, *connect.Request[v1beta1.GetMyStarredAssetsRequest]) (*connect.Response[v1beta1.GetMyStarredAssetsResponse], error)
-	GetMyStarredAsset(context.Context, *connect.Request[v1beta1.GetMyStarredAssetRequest]) (*connect.Response[v1beta1.GetMyStarredAssetResponse], error)
-	StarAsset(context.Context, *connect.Request[v1beta1.StarAssetRequest]) (*connect.Response[v1beta1.StarAssetResponse], error)
-	UnstarAsset(context.Context, *connect.Request[v1beta1.UnstarAssetRequest]) (*connect.Response[v1beta1.UnstarAssetResponse], error)
-	GetMyDiscussions(context.Context, *connect.Request[v1beta1.GetMyDiscussionsRequest]) (*connect.Response[v1beta1.GetMyDiscussionsResponse], error)
+	GetUserStarredAssets(context.Context, *connect.Request[compassv1beta1.GetUserStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetUserStarredAssetsResponse], error)
+	GetMyStarredAssets(context.Context, *connect.Request[compassv1beta1.GetMyStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetsResponse], error)
+	GetMyStarredAsset(context.Context, *connect.Request[compassv1beta1.GetMyStarredAssetRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetResponse], error)
+	StarAsset(context.Context, *connect.Request[compassv1beta1.StarAssetRequest]) (*connect.Response[compassv1beta1.StarAssetResponse], error)
+	UnstarAsset(context.Context, *connect.Request[compassv1beta1.UnstarAssetRequest]) (*connect.Response[compassv1beta1.UnstarAssetResponse], error)
+	GetMyDiscussions(context.Context, *connect.Request[compassv1beta1.GetMyDiscussionsRequest]) (*connect.Response[compassv1beta1.GetMyDiscussionsResponse], error)
 	// Domain: Tag Templates
-	CreateTagAsset(context.Context, *connect.Request[v1beta1.CreateTagAssetRequest]) (*connect.Response[v1beta1.CreateTagAssetResponse], error)
-	GetTagByAssetAndTemplate(context.Context, *connect.Request[v1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[v1beta1.GetTagByAssetAndTemplateResponse], error)
-	UpdateTagAsset(context.Context, *connect.Request[v1beta1.UpdateTagAssetRequest]) (*connect.Response[v1beta1.UpdateTagAssetResponse], error)
-	DeleteTagAsset(context.Context, *connect.Request[v1beta1.DeleteTagAssetRequest]) (*connect.Response[v1beta1.DeleteTagAssetResponse], error)
-	GetAllTagsByAsset(context.Context, *connect.Request[v1beta1.GetAllTagsByAssetRequest]) (*connect.Response[v1beta1.GetAllTagsByAssetResponse], error)
-	GetAllTagTemplates(context.Context, *connect.Request[v1beta1.GetAllTagTemplatesRequest]) (*connect.Response[v1beta1.GetAllTagTemplatesResponse], error)
-	CreateTagTemplate(context.Context, *connect.Request[v1beta1.CreateTagTemplateRequest]) (*connect.Response[v1beta1.CreateTagTemplateResponse], error)
-	GetTagTemplate(context.Context, *connect.Request[v1beta1.GetTagTemplateRequest]) (*connect.Response[v1beta1.GetTagTemplateResponse], error)
-	UpdateTagTemplate(context.Context, *connect.Request[v1beta1.UpdateTagTemplateRequest]) (*connect.Response[v1beta1.UpdateTagTemplateResponse], error)
-	DeleteTagTemplate(context.Context, *connect.Request[v1beta1.DeleteTagTemplateRequest]) (*connect.Response[v1beta1.DeleteTagTemplateResponse], error)
+	CreateTagAsset(context.Context, *connect.Request[compassv1beta1.CreateTagAssetRequest]) (*connect.Response[compassv1beta1.CreateTagAssetResponse], error)
+	GetTagByAssetAndTemplate(context.Context, *connect.Request[compassv1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[compassv1beta1.GetTagByAssetAndTemplateResponse], error)
+	UpdateTagAsset(context.Context, *connect.Request[compassv1beta1.UpdateTagAssetRequest]) (*connect.Response[compassv1beta1.UpdateTagAssetResponse], error)
+	DeleteTagAsset(context.Context, *connect.Request[compassv1beta1.DeleteTagAssetRequest]) (*connect.Response[compassv1beta1.DeleteTagAssetResponse], error)
+	GetAllTagsByAsset(context.Context, *connect.Request[compassv1beta1.GetAllTagsByAssetRequest]) (*connect.Response[compassv1beta1.GetAllTagsByAssetResponse], error)
+	GetAllTagTemplates(context.Context, *connect.Request[compassv1beta1.GetAllTagTemplatesRequest]) (*connect.Response[compassv1beta1.GetAllTagTemplatesResponse], error)
+	CreateTagTemplate(context.Context, *connect.Request[compassv1beta1.CreateTagTemplateRequest]) (*connect.Response[compassv1beta1.CreateTagTemplateResponse], error)
+	GetTagTemplate(context.Context, *connect.Request[compassv1beta1.GetTagTemplateRequest]) (*connect.Response[compassv1beta1.GetTagTemplateResponse], error)
+	UpdateTagTemplate(context.Context, *connect.Request[compassv1beta1.UpdateTagTemplateRequest]) (*connect.Response[compassv1beta1.UpdateTagTemplateResponse], error)
+	DeleteTagTemplate(context.Context, *connect.Request[compassv1beta1.DeleteTagTemplateRequest]) (*connect.Response[compassv1beta1.DeleteTagTemplateResponse], error)
 	// Domain: Namespace
-	CreateNamespace(context.Context, *connect.Request[v1beta1.CreateNamespaceRequest]) (*connect.Response[v1beta1.CreateNamespaceResponse], error)
-	GetNamespace(context.Context, *connect.Request[v1beta1.GetNamespaceRequest]) (*connect.Response[v1beta1.GetNamespaceResponse], error)
-	UpdateNamespace(context.Context, *connect.Request[v1beta1.UpdateNamespaceRequest]) (*connect.Response[v1beta1.UpdateNamespaceResponse], error)
-	ListNamespaces(context.Context, *connect.Request[v1beta1.ListNamespacesRequest]) (*connect.Response[v1beta1.ListNamespacesResponse], error)
+	CreateNamespace(context.Context, *connect.Request[compassv1beta1.CreateNamespaceRequest]) (*connect.Response[compassv1beta1.CreateNamespaceResponse], error)
+	GetNamespace(context.Context, *connect.Request[compassv1beta1.GetNamespaceRequest]) (*connect.Response[compassv1beta1.GetNamespaceResponse], error)
+	UpdateNamespace(context.Context, *connect.Request[compassv1beta1.UpdateNamespaceRequest]) (*connect.Response[compassv1beta1.UpdateNamespaceResponse], error)
+	ListNamespaces(context.Context, *connect.Request[compassv1beta1.ListNamespacesRequest]) (*connect.Response[compassv1beta1.ListNamespacesResponse], error)
 }
 
 // NewCompassServiceClient constructs a client for the raystack.compass.v1beta1.CompassService
@@ -224,261 +224,261 @@ type CompassServiceClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewCompassServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) CompassServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
-	compassServiceMethods := v1beta1.File_raystack_compass_v1beta1_service_proto.Services().ByName("CompassService").Methods()
+	compassServiceMethods := compassv1beta1.File_raystack_compass_v1beta1_service_proto.Services().ByName("CompassService").Methods()
 	return &compassServiceClient{
-		getAllDiscussions: connect.NewClient[v1beta1.GetAllDiscussionsRequest, v1beta1.GetAllDiscussionsResponse](
+		getAllDiscussions: connect.NewClient[compassv1beta1.GetAllDiscussionsRequest, compassv1beta1.GetAllDiscussionsResponse](
 			httpClient,
 			baseURL+CompassServiceGetAllDiscussionsProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetAllDiscussions")),
 			connect.WithClientOptions(opts...),
 		),
-		createDiscussion: connect.NewClient[v1beta1.CreateDiscussionRequest, v1beta1.CreateDiscussionResponse](
+		createDiscussion: connect.NewClient[compassv1beta1.CreateDiscussionRequest, compassv1beta1.CreateDiscussionResponse](
 			httpClient,
 			baseURL+CompassServiceCreateDiscussionProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("CreateDiscussion")),
 			connect.WithClientOptions(opts...),
 		),
-		getDiscussion: connect.NewClient[v1beta1.GetDiscussionRequest, v1beta1.GetDiscussionResponse](
+		getDiscussion: connect.NewClient[compassv1beta1.GetDiscussionRequest, compassv1beta1.GetDiscussionResponse](
 			httpClient,
 			baseURL+CompassServiceGetDiscussionProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetDiscussion")),
 			connect.WithClientOptions(opts...),
 		),
-		patchDiscussion: connect.NewClient[v1beta1.PatchDiscussionRequest, v1beta1.PatchDiscussionResponse](
+		patchDiscussion: connect.NewClient[compassv1beta1.PatchDiscussionRequest, compassv1beta1.PatchDiscussionResponse](
 			httpClient,
 			baseURL+CompassServicePatchDiscussionProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("PatchDiscussion")),
 			connect.WithClientOptions(opts...),
 		),
-		createComment: connect.NewClient[v1beta1.CreateCommentRequest, v1beta1.CreateCommentResponse](
+		createComment: connect.NewClient[compassv1beta1.CreateCommentRequest, compassv1beta1.CreateCommentResponse](
 			httpClient,
 			baseURL+CompassServiceCreateCommentProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("CreateComment")),
 			connect.WithClientOptions(opts...),
 		),
-		getAllComments: connect.NewClient[v1beta1.GetAllCommentsRequest, v1beta1.GetAllCommentsResponse](
+		getAllComments: connect.NewClient[compassv1beta1.GetAllCommentsRequest, compassv1beta1.GetAllCommentsResponse](
 			httpClient,
 			baseURL+CompassServiceGetAllCommentsProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetAllComments")),
 			connect.WithClientOptions(opts...),
 		),
-		getComment: connect.NewClient[v1beta1.GetCommentRequest, v1beta1.GetCommentResponse](
+		getComment: connect.NewClient[compassv1beta1.GetCommentRequest, compassv1beta1.GetCommentResponse](
 			httpClient,
 			baseURL+CompassServiceGetCommentProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetComment")),
 			connect.WithClientOptions(opts...),
 		),
-		updateComment: connect.NewClient[v1beta1.UpdateCommentRequest, v1beta1.UpdateCommentResponse](
+		updateComment: connect.NewClient[compassv1beta1.UpdateCommentRequest, compassv1beta1.UpdateCommentResponse](
 			httpClient,
 			baseURL+CompassServiceUpdateCommentProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("UpdateComment")),
 			connect.WithClientOptions(opts...),
 		),
-		deleteComment: connect.NewClient[v1beta1.DeleteCommentRequest, v1beta1.DeleteCommentResponse](
+		deleteComment: connect.NewClient[compassv1beta1.DeleteCommentRequest, compassv1beta1.DeleteCommentResponse](
 			httpClient,
 			baseURL+CompassServiceDeleteCommentProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("DeleteComment")),
 			connect.WithClientOptions(opts...),
 		),
-		searchAssets: connect.NewClient[v1beta1.SearchAssetsRequest, v1beta1.SearchAssetsResponse](
+		searchAssets: connect.NewClient[compassv1beta1.SearchAssetsRequest, compassv1beta1.SearchAssetsResponse](
 			httpClient,
 			baseURL+CompassServiceSearchAssetsProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("SearchAssets")),
 			connect.WithClientOptions(opts...),
 		),
-		suggestAssets: connect.NewClient[v1beta1.SuggestAssetsRequest, v1beta1.SuggestAssetsResponse](
+		suggestAssets: connect.NewClient[compassv1beta1.SuggestAssetsRequest, compassv1beta1.SuggestAssetsResponse](
 			httpClient,
 			baseURL+CompassServiceSuggestAssetsProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("SuggestAssets")),
 			connect.WithClientOptions(opts...),
 		),
-		groupAssets: connect.NewClient[v1beta1.GroupAssetsRequest, v1beta1.GroupAssetsResponse](
+		groupAssets: connect.NewClient[compassv1beta1.GroupAssetsRequest, compassv1beta1.GroupAssetsResponse](
 			httpClient,
 			baseURL+CompassServiceGroupAssetsProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GroupAssets")),
 			connect.WithClientOptions(opts...),
 		),
-		getGraph: connect.NewClient[v1beta1.GetGraphRequest, v1beta1.GetGraphResponse](
+		getGraph: connect.NewClient[compassv1beta1.GetGraphRequest, compassv1beta1.GetGraphResponse](
 			httpClient,
 			baseURL+CompassServiceGetGraphProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetGraph")),
 			connect.WithClientOptions(opts...),
 		),
-		getAllTypes: connect.NewClient[v1beta1.GetAllTypesRequest, v1beta1.GetAllTypesResponse](
+		getAllTypes: connect.NewClient[compassv1beta1.GetAllTypesRequest, compassv1beta1.GetAllTypesResponse](
 			httpClient,
 			baseURL+CompassServiceGetAllTypesProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetAllTypes")),
 			connect.WithClientOptions(opts...),
 		),
-		getAllAssets: connect.NewClient[v1beta1.GetAllAssetsRequest, v1beta1.GetAllAssetsResponse](
+		getAllAssets: connect.NewClient[compassv1beta1.GetAllAssetsRequest, compassv1beta1.GetAllAssetsResponse](
 			httpClient,
 			baseURL+CompassServiceGetAllAssetsProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetAllAssets")),
 			connect.WithClientOptions(opts...),
 		),
-		getAssetByID: connect.NewClient[v1beta1.GetAssetByIDRequest, v1beta1.GetAssetByIDResponse](
+		getAssetByID: connect.NewClient[compassv1beta1.GetAssetByIDRequest, compassv1beta1.GetAssetByIDResponse](
 			httpClient,
 			baseURL+CompassServiceGetAssetByIDProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetAssetByID")),
 			connect.WithClientOptions(opts...),
 		),
-		upsertAsset: connect.NewClient[v1beta1.UpsertAssetRequest, v1beta1.UpsertAssetResponse](
+		upsertAsset: connect.NewClient[compassv1beta1.UpsertAssetRequest, compassv1beta1.UpsertAssetResponse](
 			httpClient,
 			baseURL+CompassServiceUpsertAssetProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("UpsertAsset")),
 			connect.WithClientOptions(opts...),
 		),
-		upsertPatchAsset: connect.NewClient[v1beta1.UpsertPatchAssetRequest, v1beta1.UpsertPatchAssetResponse](
+		upsertPatchAsset: connect.NewClient[compassv1beta1.UpsertPatchAssetRequest, compassv1beta1.UpsertPatchAssetResponse](
 			httpClient,
 			baseURL+CompassServiceUpsertPatchAssetProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("UpsertPatchAsset")),
 			connect.WithClientOptions(opts...),
 		),
-		deleteAsset: connect.NewClient[v1beta1.DeleteAssetRequest, v1beta1.DeleteAssetResponse](
+		deleteAsset: connect.NewClient[compassv1beta1.DeleteAssetRequest, compassv1beta1.DeleteAssetResponse](
 			httpClient,
 			baseURL+CompassServiceDeleteAssetProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("DeleteAsset")),
 			connect.WithClientOptions(opts...),
 		),
-		getAssetStargazers: connect.NewClient[v1beta1.GetAssetStargazersRequest, v1beta1.GetAssetStargazersResponse](
+		getAssetStargazers: connect.NewClient[compassv1beta1.GetAssetStargazersRequest, compassv1beta1.GetAssetStargazersResponse](
 			httpClient,
 			baseURL+CompassServiceGetAssetStargazersProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetAssetStargazers")),
 			connect.WithClientOptions(opts...),
 		),
-		getAssetVersionHistory: connect.NewClient[v1beta1.GetAssetVersionHistoryRequest, v1beta1.GetAssetVersionHistoryResponse](
+		getAssetVersionHistory: connect.NewClient[compassv1beta1.GetAssetVersionHistoryRequest, compassv1beta1.GetAssetVersionHistoryResponse](
 			httpClient,
 			baseURL+CompassServiceGetAssetVersionHistoryProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetAssetVersionHistory")),
 			connect.WithClientOptions(opts...),
 		),
-		getAssetByVersion: connect.NewClient[v1beta1.GetAssetByVersionRequest, v1beta1.GetAssetByVersionResponse](
+		getAssetByVersion: connect.NewClient[compassv1beta1.GetAssetByVersionRequest, compassv1beta1.GetAssetByVersionResponse](
 			httpClient,
 			baseURL+CompassServiceGetAssetByVersionProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetAssetByVersion")),
 			connect.WithClientOptions(opts...),
 		),
-		createAssetProbe: connect.NewClient[v1beta1.CreateAssetProbeRequest, v1beta1.CreateAssetProbeResponse](
+		createAssetProbe: connect.NewClient[compassv1beta1.CreateAssetProbeRequest, compassv1beta1.CreateAssetProbeResponse](
 			httpClient,
 			baseURL+CompassServiceCreateAssetProbeProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("CreateAssetProbe")),
 			connect.WithClientOptions(opts...),
 		),
-		getUserStarredAssets: connect.NewClient[v1beta1.GetUserStarredAssetsRequest, v1beta1.GetUserStarredAssetsResponse](
+		getUserStarredAssets: connect.NewClient[compassv1beta1.GetUserStarredAssetsRequest, compassv1beta1.GetUserStarredAssetsResponse](
 			httpClient,
 			baseURL+CompassServiceGetUserStarredAssetsProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetUserStarredAssets")),
 			connect.WithClientOptions(opts...),
 		),
-		getMyStarredAssets: connect.NewClient[v1beta1.GetMyStarredAssetsRequest, v1beta1.GetMyStarredAssetsResponse](
+		getMyStarredAssets: connect.NewClient[compassv1beta1.GetMyStarredAssetsRequest, compassv1beta1.GetMyStarredAssetsResponse](
 			httpClient,
 			baseURL+CompassServiceGetMyStarredAssetsProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetMyStarredAssets")),
 			connect.WithClientOptions(opts...),
 		),
-		getMyStarredAsset: connect.NewClient[v1beta1.GetMyStarredAssetRequest, v1beta1.GetMyStarredAssetResponse](
+		getMyStarredAsset: connect.NewClient[compassv1beta1.GetMyStarredAssetRequest, compassv1beta1.GetMyStarredAssetResponse](
 			httpClient,
 			baseURL+CompassServiceGetMyStarredAssetProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetMyStarredAsset")),
 			connect.WithClientOptions(opts...),
 		),
-		starAsset: connect.NewClient[v1beta1.StarAssetRequest, v1beta1.StarAssetResponse](
+		starAsset: connect.NewClient[compassv1beta1.StarAssetRequest, compassv1beta1.StarAssetResponse](
 			httpClient,
 			baseURL+CompassServiceStarAssetProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("StarAsset")),
 			connect.WithClientOptions(opts...),
 		),
-		unstarAsset: connect.NewClient[v1beta1.UnstarAssetRequest, v1beta1.UnstarAssetResponse](
+		unstarAsset: connect.NewClient[compassv1beta1.UnstarAssetRequest, compassv1beta1.UnstarAssetResponse](
 			httpClient,
 			baseURL+CompassServiceUnstarAssetProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("UnstarAsset")),
 			connect.WithClientOptions(opts...),
 		),
-		getMyDiscussions: connect.NewClient[v1beta1.GetMyDiscussionsRequest, v1beta1.GetMyDiscussionsResponse](
+		getMyDiscussions: connect.NewClient[compassv1beta1.GetMyDiscussionsRequest, compassv1beta1.GetMyDiscussionsResponse](
 			httpClient,
 			baseURL+CompassServiceGetMyDiscussionsProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetMyDiscussions")),
 			connect.WithClientOptions(opts...),
 		),
-		createTagAsset: connect.NewClient[v1beta1.CreateTagAssetRequest, v1beta1.CreateTagAssetResponse](
+		createTagAsset: connect.NewClient[compassv1beta1.CreateTagAssetRequest, compassv1beta1.CreateTagAssetResponse](
 			httpClient,
 			baseURL+CompassServiceCreateTagAssetProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("CreateTagAsset")),
 			connect.WithClientOptions(opts...),
 		),
-		getTagByAssetAndTemplate: connect.NewClient[v1beta1.GetTagByAssetAndTemplateRequest, v1beta1.GetTagByAssetAndTemplateResponse](
+		getTagByAssetAndTemplate: connect.NewClient[compassv1beta1.GetTagByAssetAndTemplateRequest, compassv1beta1.GetTagByAssetAndTemplateResponse](
 			httpClient,
 			baseURL+CompassServiceGetTagByAssetAndTemplateProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetTagByAssetAndTemplate")),
 			connect.WithClientOptions(opts...),
 		),
-		updateTagAsset: connect.NewClient[v1beta1.UpdateTagAssetRequest, v1beta1.UpdateTagAssetResponse](
+		updateTagAsset: connect.NewClient[compassv1beta1.UpdateTagAssetRequest, compassv1beta1.UpdateTagAssetResponse](
 			httpClient,
 			baseURL+CompassServiceUpdateTagAssetProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("UpdateTagAsset")),
 			connect.WithClientOptions(opts...),
 		),
-		deleteTagAsset: connect.NewClient[v1beta1.DeleteTagAssetRequest, v1beta1.DeleteTagAssetResponse](
+		deleteTagAsset: connect.NewClient[compassv1beta1.DeleteTagAssetRequest, compassv1beta1.DeleteTagAssetResponse](
 			httpClient,
 			baseURL+CompassServiceDeleteTagAssetProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("DeleteTagAsset")),
 			connect.WithClientOptions(opts...),
 		),
-		getAllTagsByAsset: connect.NewClient[v1beta1.GetAllTagsByAssetRequest, v1beta1.GetAllTagsByAssetResponse](
+		getAllTagsByAsset: connect.NewClient[compassv1beta1.GetAllTagsByAssetRequest, compassv1beta1.GetAllTagsByAssetResponse](
 			httpClient,
 			baseURL+CompassServiceGetAllTagsByAssetProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetAllTagsByAsset")),
 			connect.WithClientOptions(opts...),
 		),
-		getAllTagTemplates: connect.NewClient[v1beta1.GetAllTagTemplatesRequest, v1beta1.GetAllTagTemplatesResponse](
+		getAllTagTemplates: connect.NewClient[compassv1beta1.GetAllTagTemplatesRequest, compassv1beta1.GetAllTagTemplatesResponse](
 			httpClient,
 			baseURL+CompassServiceGetAllTagTemplatesProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetAllTagTemplates")),
 			connect.WithClientOptions(opts...),
 		),
-		createTagTemplate: connect.NewClient[v1beta1.CreateTagTemplateRequest, v1beta1.CreateTagTemplateResponse](
+		createTagTemplate: connect.NewClient[compassv1beta1.CreateTagTemplateRequest, compassv1beta1.CreateTagTemplateResponse](
 			httpClient,
 			baseURL+CompassServiceCreateTagTemplateProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("CreateTagTemplate")),
 			connect.WithClientOptions(opts...),
 		),
-		getTagTemplate: connect.NewClient[v1beta1.GetTagTemplateRequest, v1beta1.GetTagTemplateResponse](
+		getTagTemplate: connect.NewClient[compassv1beta1.GetTagTemplateRequest, compassv1beta1.GetTagTemplateResponse](
 			httpClient,
 			baseURL+CompassServiceGetTagTemplateProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetTagTemplate")),
 			connect.WithClientOptions(opts...),
 		),
-		updateTagTemplate: connect.NewClient[v1beta1.UpdateTagTemplateRequest, v1beta1.UpdateTagTemplateResponse](
+		updateTagTemplate: connect.NewClient[compassv1beta1.UpdateTagTemplateRequest, compassv1beta1.UpdateTagTemplateResponse](
 			httpClient,
 			baseURL+CompassServiceUpdateTagTemplateProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("UpdateTagTemplate")),
 			connect.WithClientOptions(opts...),
 		),
-		deleteTagTemplate: connect.NewClient[v1beta1.DeleteTagTemplateRequest, v1beta1.DeleteTagTemplateResponse](
+		deleteTagTemplate: connect.NewClient[compassv1beta1.DeleteTagTemplateRequest, compassv1beta1.DeleteTagTemplateResponse](
 			httpClient,
 			baseURL+CompassServiceDeleteTagTemplateProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("DeleteTagTemplate")),
 			connect.WithClientOptions(opts...),
 		),
-		createNamespace: connect.NewClient[v1beta1.CreateNamespaceRequest, v1beta1.CreateNamespaceResponse](
+		createNamespace: connect.NewClient[compassv1beta1.CreateNamespaceRequest, compassv1beta1.CreateNamespaceResponse](
 			httpClient,
 			baseURL+CompassServiceCreateNamespaceProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("CreateNamespace")),
 			connect.WithClientOptions(opts...),
 		),
-		getNamespace: connect.NewClient[v1beta1.GetNamespaceRequest, v1beta1.GetNamespaceResponse](
+		getNamespace: connect.NewClient[compassv1beta1.GetNamespaceRequest, compassv1beta1.GetNamespaceResponse](
 			httpClient,
 			baseURL+CompassServiceGetNamespaceProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("GetNamespace")),
 			connect.WithClientOptions(opts...),
 		),
-		updateNamespace: connect.NewClient[v1beta1.UpdateNamespaceRequest, v1beta1.UpdateNamespaceResponse](
+		updateNamespace: connect.NewClient[compassv1beta1.UpdateNamespaceRequest, compassv1beta1.UpdateNamespaceResponse](
 			httpClient,
 			baseURL+CompassServiceUpdateNamespaceProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("UpdateNamespace")),
 			connect.WithClientOptions(opts...),
 		),
-		listNamespaces: connect.NewClient[v1beta1.ListNamespacesRequest, v1beta1.ListNamespacesResponse](
+		listNamespaces: connect.NewClient[compassv1beta1.ListNamespacesRequest, compassv1beta1.ListNamespacesResponse](
 			httpClient,
 			baseURL+CompassServiceListNamespacesProcedure,
 			connect.WithSchema(compassServiceMethods.ByName("ListNamespaces")),
@@ -489,263 +489,263 @@ func NewCompassServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 
 // compassServiceClient implements CompassServiceClient.
 type compassServiceClient struct {
-	getAllDiscussions        *connect.Client[v1beta1.GetAllDiscussionsRequest, v1beta1.GetAllDiscussionsResponse]
-	createDiscussion         *connect.Client[v1beta1.CreateDiscussionRequest, v1beta1.CreateDiscussionResponse]
-	getDiscussion            *connect.Client[v1beta1.GetDiscussionRequest, v1beta1.GetDiscussionResponse]
-	patchDiscussion          *connect.Client[v1beta1.PatchDiscussionRequest, v1beta1.PatchDiscussionResponse]
-	createComment            *connect.Client[v1beta1.CreateCommentRequest, v1beta1.CreateCommentResponse]
-	getAllComments           *connect.Client[v1beta1.GetAllCommentsRequest, v1beta1.GetAllCommentsResponse]
-	getComment               *connect.Client[v1beta1.GetCommentRequest, v1beta1.GetCommentResponse]
-	updateComment            *connect.Client[v1beta1.UpdateCommentRequest, v1beta1.UpdateCommentResponse]
-	deleteComment            *connect.Client[v1beta1.DeleteCommentRequest, v1beta1.DeleteCommentResponse]
-	searchAssets             *connect.Client[v1beta1.SearchAssetsRequest, v1beta1.SearchAssetsResponse]
-	suggestAssets            *connect.Client[v1beta1.SuggestAssetsRequest, v1beta1.SuggestAssetsResponse]
-	groupAssets              *connect.Client[v1beta1.GroupAssetsRequest, v1beta1.GroupAssetsResponse]
-	getGraph                 *connect.Client[v1beta1.GetGraphRequest, v1beta1.GetGraphResponse]
-	getAllTypes              *connect.Client[v1beta1.GetAllTypesRequest, v1beta1.GetAllTypesResponse]
-	getAllAssets             *connect.Client[v1beta1.GetAllAssetsRequest, v1beta1.GetAllAssetsResponse]
-	getAssetByID             *connect.Client[v1beta1.GetAssetByIDRequest, v1beta1.GetAssetByIDResponse]
-	upsertAsset              *connect.Client[v1beta1.UpsertAssetRequest, v1beta1.UpsertAssetResponse]
-	upsertPatchAsset         *connect.Client[v1beta1.UpsertPatchAssetRequest, v1beta1.UpsertPatchAssetResponse]
-	deleteAsset              *connect.Client[v1beta1.DeleteAssetRequest, v1beta1.DeleteAssetResponse]
-	getAssetStargazers       *connect.Client[v1beta1.GetAssetStargazersRequest, v1beta1.GetAssetStargazersResponse]
-	getAssetVersionHistory   *connect.Client[v1beta1.GetAssetVersionHistoryRequest, v1beta1.GetAssetVersionHistoryResponse]
-	getAssetByVersion        *connect.Client[v1beta1.GetAssetByVersionRequest, v1beta1.GetAssetByVersionResponse]
-	createAssetProbe         *connect.Client[v1beta1.CreateAssetProbeRequest, v1beta1.CreateAssetProbeResponse]
-	getUserStarredAssets     *connect.Client[v1beta1.GetUserStarredAssetsRequest, v1beta1.GetUserStarredAssetsResponse]
-	getMyStarredAssets       *connect.Client[v1beta1.GetMyStarredAssetsRequest, v1beta1.GetMyStarredAssetsResponse]
-	getMyStarredAsset        *connect.Client[v1beta1.GetMyStarredAssetRequest, v1beta1.GetMyStarredAssetResponse]
-	starAsset                *connect.Client[v1beta1.StarAssetRequest, v1beta1.StarAssetResponse]
-	unstarAsset              *connect.Client[v1beta1.UnstarAssetRequest, v1beta1.UnstarAssetResponse]
-	getMyDiscussions         *connect.Client[v1beta1.GetMyDiscussionsRequest, v1beta1.GetMyDiscussionsResponse]
-	createTagAsset           *connect.Client[v1beta1.CreateTagAssetRequest, v1beta1.CreateTagAssetResponse]
-	getTagByAssetAndTemplate *connect.Client[v1beta1.GetTagByAssetAndTemplateRequest, v1beta1.GetTagByAssetAndTemplateResponse]
-	updateTagAsset           *connect.Client[v1beta1.UpdateTagAssetRequest, v1beta1.UpdateTagAssetResponse]
-	deleteTagAsset           *connect.Client[v1beta1.DeleteTagAssetRequest, v1beta1.DeleteTagAssetResponse]
-	getAllTagsByAsset        *connect.Client[v1beta1.GetAllTagsByAssetRequest, v1beta1.GetAllTagsByAssetResponse]
-	getAllTagTemplates       *connect.Client[v1beta1.GetAllTagTemplatesRequest, v1beta1.GetAllTagTemplatesResponse]
-	createTagTemplate        *connect.Client[v1beta1.CreateTagTemplateRequest, v1beta1.CreateTagTemplateResponse]
-	getTagTemplate           *connect.Client[v1beta1.GetTagTemplateRequest, v1beta1.GetTagTemplateResponse]
-	updateTagTemplate        *connect.Client[v1beta1.UpdateTagTemplateRequest, v1beta1.UpdateTagTemplateResponse]
-	deleteTagTemplate        *connect.Client[v1beta1.DeleteTagTemplateRequest, v1beta1.DeleteTagTemplateResponse]
-	createNamespace          *connect.Client[v1beta1.CreateNamespaceRequest, v1beta1.CreateNamespaceResponse]
-	getNamespace             *connect.Client[v1beta1.GetNamespaceRequest, v1beta1.GetNamespaceResponse]
-	updateNamespace          *connect.Client[v1beta1.UpdateNamespaceRequest, v1beta1.UpdateNamespaceResponse]
-	listNamespaces           *connect.Client[v1beta1.ListNamespacesRequest, v1beta1.ListNamespacesResponse]
+	getAllDiscussions        *connect.Client[compassv1beta1.GetAllDiscussionsRequest, compassv1beta1.GetAllDiscussionsResponse]
+	createDiscussion         *connect.Client[compassv1beta1.CreateDiscussionRequest, compassv1beta1.CreateDiscussionResponse]
+	getDiscussion            *connect.Client[compassv1beta1.GetDiscussionRequest, compassv1beta1.GetDiscussionResponse]
+	patchDiscussion          *connect.Client[compassv1beta1.PatchDiscussionRequest, compassv1beta1.PatchDiscussionResponse]
+	createComment            *connect.Client[compassv1beta1.CreateCommentRequest, compassv1beta1.CreateCommentResponse]
+	getAllComments           *connect.Client[compassv1beta1.GetAllCommentsRequest, compassv1beta1.GetAllCommentsResponse]
+	getComment               *connect.Client[compassv1beta1.GetCommentRequest, compassv1beta1.GetCommentResponse]
+	updateComment            *connect.Client[compassv1beta1.UpdateCommentRequest, compassv1beta1.UpdateCommentResponse]
+	deleteComment            *connect.Client[compassv1beta1.DeleteCommentRequest, compassv1beta1.DeleteCommentResponse]
+	searchAssets             *connect.Client[compassv1beta1.SearchAssetsRequest, compassv1beta1.SearchAssetsResponse]
+	suggestAssets            *connect.Client[compassv1beta1.SuggestAssetsRequest, compassv1beta1.SuggestAssetsResponse]
+	groupAssets              *connect.Client[compassv1beta1.GroupAssetsRequest, compassv1beta1.GroupAssetsResponse]
+	getGraph                 *connect.Client[compassv1beta1.GetGraphRequest, compassv1beta1.GetGraphResponse]
+	getAllTypes              *connect.Client[compassv1beta1.GetAllTypesRequest, compassv1beta1.GetAllTypesResponse]
+	getAllAssets             *connect.Client[compassv1beta1.GetAllAssetsRequest, compassv1beta1.GetAllAssetsResponse]
+	getAssetByID             *connect.Client[compassv1beta1.GetAssetByIDRequest, compassv1beta1.GetAssetByIDResponse]
+	upsertAsset              *connect.Client[compassv1beta1.UpsertAssetRequest, compassv1beta1.UpsertAssetResponse]
+	upsertPatchAsset         *connect.Client[compassv1beta1.UpsertPatchAssetRequest, compassv1beta1.UpsertPatchAssetResponse]
+	deleteAsset              *connect.Client[compassv1beta1.DeleteAssetRequest, compassv1beta1.DeleteAssetResponse]
+	getAssetStargazers       *connect.Client[compassv1beta1.GetAssetStargazersRequest, compassv1beta1.GetAssetStargazersResponse]
+	getAssetVersionHistory   *connect.Client[compassv1beta1.GetAssetVersionHistoryRequest, compassv1beta1.GetAssetVersionHistoryResponse]
+	getAssetByVersion        *connect.Client[compassv1beta1.GetAssetByVersionRequest, compassv1beta1.GetAssetByVersionResponse]
+	createAssetProbe         *connect.Client[compassv1beta1.CreateAssetProbeRequest, compassv1beta1.CreateAssetProbeResponse]
+	getUserStarredAssets     *connect.Client[compassv1beta1.GetUserStarredAssetsRequest, compassv1beta1.GetUserStarredAssetsResponse]
+	getMyStarredAssets       *connect.Client[compassv1beta1.GetMyStarredAssetsRequest, compassv1beta1.GetMyStarredAssetsResponse]
+	getMyStarredAsset        *connect.Client[compassv1beta1.GetMyStarredAssetRequest, compassv1beta1.GetMyStarredAssetResponse]
+	starAsset                *connect.Client[compassv1beta1.StarAssetRequest, compassv1beta1.StarAssetResponse]
+	unstarAsset              *connect.Client[compassv1beta1.UnstarAssetRequest, compassv1beta1.UnstarAssetResponse]
+	getMyDiscussions         *connect.Client[compassv1beta1.GetMyDiscussionsRequest, compassv1beta1.GetMyDiscussionsResponse]
+	createTagAsset           *connect.Client[compassv1beta1.CreateTagAssetRequest, compassv1beta1.CreateTagAssetResponse]
+	getTagByAssetAndTemplate *connect.Client[compassv1beta1.GetTagByAssetAndTemplateRequest, compassv1beta1.GetTagByAssetAndTemplateResponse]
+	updateTagAsset           *connect.Client[compassv1beta1.UpdateTagAssetRequest, compassv1beta1.UpdateTagAssetResponse]
+	deleteTagAsset           *connect.Client[compassv1beta1.DeleteTagAssetRequest, compassv1beta1.DeleteTagAssetResponse]
+	getAllTagsByAsset        *connect.Client[compassv1beta1.GetAllTagsByAssetRequest, compassv1beta1.GetAllTagsByAssetResponse]
+	getAllTagTemplates       *connect.Client[compassv1beta1.GetAllTagTemplatesRequest, compassv1beta1.GetAllTagTemplatesResponse]
+	createTagTemplate        *connect.Client[compassv1beta1.CreateTagTemplateRequest, compassv1beta1.CreateTagTemplateResponse]
+	getTagTemplate           *connect.Client[compassv1beta1.GetTagTemplateRequest, compassv1beta1.GetTagTemplateResponse]
+	updateTagTemplate        *connect.Client[compassv1beta1.UpdateTagTemplateRequest, compassv1beta1.UpdateTagTemplateResponse]
+	deleteTagTemplate        *connect.Client[compassv1beta1.DeleteTagTemplateRequest, compassv1beta1.DeleteTagTemplateResponse]
+	createNamespace          *connect.Client[compassv1beta1.CreateNamespaceRequest, compassv1beta1.CreateNamespaceResponse]
+	getNamespace             *connect.Client[compassv1beta1.GetNamespaceRequest, compassv1beta1.GetNamespaceResponse]
+	updateNamespace          *connect.Client[compassv1beta1.UpdateNamespaceRequest, compassv1beta1.UpdateNamespaceResponse]
+	listNamespaces           *connect.Client[compassv1beta1.ListNamespacesRequest, compassv1beta1.ListNamespacesResponse]
 }
 
 // GetAllDiscussions calls raystack.compass.v1beta1.CompassService.GetAllDiscussions.
-func (c *compassServiceClient) GetAllDiscussions(ctx context.Context, req *connect.Request[v1beta1.GetAllDiscussionsRequest]) (*connect.Response[v1beta1.GetAllDiscussionsResponse], error) {
+func (c *compassServiceClient) GetAllDiscussions(ctx context.Context, req *connect.Request[compassv1beta1.GetAllDiscussionsRequest]) (*connect.Response[compassv1beta1.GetAllDiscussionsResponse], error) {
 	return c.getAllDiscussions.CallUnary(ctx, req)
 }
 
 // CreateDiscussion calls raystack.compass.v1beta1.CompassService.CreateDiscussion.
-func (c *compassServiceClient) CreateDiscussion(ctx context.Context, req *connect.Request[v1beta1.CreateDiscussionRequest]) (*connect.Response[v1beta1.CreateDiscussionResponse], error) {
+func (c *compassServiceClient) CreateDiscussion(ctx context.Context, req *connect.Request[compassv1beta1.CreateDiscussionRequest]) (*connect.Response[compassv1beta1.CreateDiscussionResponse], error) {
 	return c.createDiscussion.CallUnary(ctx, req)
 }
 
 // GetDiscussion calls raystack.compass.v1beta1.CompassService.GetDiscussion.
-func (c *compassServiceClient) GetDiscussion(ctx context.Context, req *connect.Request[v1beta1.GetDiscussionRequest]) (*connect.Response[v1beta1.GetDiscussionResponse], error) {
+func (c *compassServiceClient) GetDiscussion(ctx context.Context, req *connect.Request[compassv1beta1.GetDiscussionRequest]) (*connect.Response[compassv1beta1.GetDiscussionResponse], error) {
 	return c.getDiscussion.CallUnary(ctx, req)
 }
 
 // PatchDiscussion calls raystack.compass.v1beta1.CompassService.PatchDiscussion.
-func (c *compassServiceClient) PatchDiscussion(ctx context.Context, req *connect.Request[v1beta1.PatchDiscussionRequest]) (*connect.Response[v1beta1.PatchDiscussionResponse], error) {
+func (c *compassServiceClient) PatchDiscussion(ctx context.Context, req *connect.Request[compassv1beta1.PatchDiscussionRequest]) (*connect.Response[compassv1beta1.PatchDiscussionResponse], error) {
 	return c.patchDiscussion.CallUnary(ctx, req)
 }
 
 // CreateComment calls raystack.compass.v1beta1.CompassService.CreateComment.
-func (c *compassServiceClient) CreateComment(ctx context.Context, req *connect.Request[v1beta1.CreateCommentRequest]) (*connect.Response[v1beta1.CreateCommentResponse], error) {
+func (c *compassServiceClient) CreateComment(ctx context.Context, req *connect.Request[compassv1beta1.CreateCommentRequest]) (*connect.Response[compassv1beta1.CreateCommentResponse], error) {
 	return c.createComment.CallUnary(ctx, req)
 }
 
 // GetAllComments calls raystack.compass.v1beta1.CompassService.GetAllComments.
-func (c *compassServiceClient) GetAllComments(ctx context.Context, req *connect.Request[v1beta1.GetAllCommentsRequest]) (*connect.Response[v1beta1.GetAllCommentsResponse], error) {
+func (c *compassServiceClient) GetAllComments(ctx context.Context, req *connect.Request[compassv1beta1.GetAllCommentsRequest]) (*connect.Response[compassv1beta1.GetAllCommentsResponse], error) {
 	return c.getAllComments.CallUnary(ctx, req)
 }
 
 // GetComment calls raystack.compass.v1beta1.CompassService.GetComment.
-func (c *compassServiceClient) GetComment(ctx context.Context, req *connect.Request[v1beta1.GetCommentRequest]) (*connect.Response[v1beta1.GetCommentResponse], error) {
+func (c *compassServiceClient) GetComment(ctx context.Context, req *connect.Request[compassv1beta1.GetCommentRequest]) (*connect.Response[compassv1beta1.GetCommentResponse], error) {
 	return c.getComment.CallUnary(ctx, req)
 }
 
 // UpdateComment calls raystack.compass.v1beta1.CompassService.UpdateComment.
-func (c *compassServiceClient) UpdateComment(ctx context.Context, req *connect.Request[v1beta1.UpdateCommentRequest]) (*connect.Response[v1beta1.UpdateCommentResponse], error) {
+func (c *compassServiceClient) UpdateComment(ctx context.Context, req *connect.Request[compassv1beta1.UpdateCommentRequest]) (*connect.Response[compassv1beta1.UpdateCommentResponse], error) {
 	return c.updateComment.CallUnary(ctx, req)
 }
 
 // DeleteComment calls raystack.compass.v1beta1.CompassService.DeleteComment.
-func (c *compassServiceClient) DeleteComment(ctx context.Context, req *connect.Request[v1beta1.DeleteCommentRequest]) (*connect.Response[v1beta1.DeleteCommentResponse], error) {
+func (c *compassServiceClient) DeleteComment(ctx context.Context, req *connect.Request[compassv1beta1.DeleteCommentRequest]) (*connect.Response[compassv1beta1.DeleteCommentResponse], error) {
 	return c.deleteComment.CallUnary(ctx, req)
 }
 
 // SearchAssets calls raystack.compass.v1beta1.CompassService.SearchAssets.
-func (c *compassServiceClient) SearchAssets(ctx context.Context, req *connect.Request[v1beta1.SearchAssetsRequest]) (*connect.Response[v1beta1.SearchAssetsResponse], error) {
+func (c *compassServiceClient) SearchAssets(ctx context.Context, req *connect.Request[compassv1beta1.SearchAssetsRequest]) (*connect.Response[compassv1beta1.SearchAssetsResponse], error) {
 	return c.searchAssets.CallUnary(ctx, req)
 }
 
 // SuggestAssets calls raystack.compass.v1beta1.CompassService.SuggestAssets.
-func (c *compassServiceClient) SuggestAssets(ctx context.Context, req *connect.Request[v1beta1.SuggestAssetsRequest]) (*connect.Response[v1beta1.SuggestAssetsResponse], error) {
+func (c *compassServiceClient) SuggestAssets(ctx context.Context, req *connect.Request[compassv1beta1.SuggestAssetsRequest]) (*connect.Response[compassv1beta1.SuggestAssetsResponse], error) {
 	return c.suggestAssets.CallUnary(ctx, req)
 }
 
 // GroupAssets calls raystack.compass.v1beta1.CompassService.GroupAssets.
-func (c *compassServiceClient) GroupAssets(ctx context.Context, req *connect.Request[v1beta1.GroupAssetsRequest]) (*connect.Response[v1beta1.GroupAssetsResponse], error) {
+func (c *compassServiceClient) GroupAssets(ctx context.Context, req *connect.Request[compassv1beta1.GroupAssetsRequest]) (*connect.Response[compassv1beta1.GroupAssetsResponse], error) {
 	return c.groupAssets.CallUnary(ctx, req)
 }
 
 // GetGraph calls raystack.compass.v1beta1.CompassService.GetGraph.
-func (c *compassServiceClient) GetGraph(ctx context.Context, req *connect.Request[v1beta1.GetGraphRequest]) (*connect.Response[v1beta1.GetGraphResponse], error) {
+func (c *compassServiceClient) GetGraph(ctx context.Context, req *connect.Request[compassv1beta1.GetGraphRequest]) (*connect.Response[compassv1beta1.GetGraphResponse], error) {
 	return c.getGraph.CallUnary(ctx, req)
 }
 
 // GetAllTypes calls raystack.compass.v1beta1.CompassService.GetAllTypes.
-func (c *compassServiceClient) GetAllTypes(ctx context.Context, req *connect.Request[v1beta1.GetAllTypesRequest]) (*connect.Response[v1beta1.GetAllTypesResponse], error) {
+func (c *compassServiceClient) GetAllTypes(ctx context.Context, req *connect.Request[compassv1beta1.GetAllTypesRequest]) (*connect.Response[compassv1beta1.GetAllTypesResponse], error) {
 	return c.getAllTypes.CallUnary(ctx, req)
 }
 
 // GetAllAssets calls raystack.compass.v1beta1.CompassService.GetAllAssets.
-func (c *compassServiceClient) GetAllAssets(ctx context.Context, req *connect.Request[v1beta1.GetAllAssetsRequest]) (*connect.Response[v1beta1.GetAllAssetsResponse], error) {
+func (c *compassServiceClient) GetAllAssets(ctx context.Context, req *connect.Request[compassv1beta1.GetAllAssetsRequest]) (*connect.Response[compassv1beta1.GetAllAssetsResponse], error) {
 	return c.getAllAssets.CallUnary(ctx, req)
 }
 
 // GetAssetByID calls raystack.compass.v1beta1.CompassService.GetAssetByID.
-func (c *compassServiceClient) GetAssetByID(ctx context.Context, req *connect.Request[v1beta1.GetAssetByIDRequest]) (*connect.Response[v1beta1.GetAssetByIDResponse], error) {
+func (c *compassServiceClient) GetAssetByID(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetByIDRequest]) (*connect.Response[compassv1beta1.GetAssetByIDResponse], error) {
 	return c.getAssetByID.CallUnary(ctx, req)
 }
 
 // UpsertAsset calls raystack.compass.v1beta1.CompassService.UpsertAsset.
-func (c *compassServiceClient) UpsertAsset(ctx context.Context, req *connect.Request[v1beta1.UpsertAssetRequest]) (*connect.Response[v1beta1.UpsertAssetResponse], error) {
+func (c *compassServiceClient) UpsertAsset(ctx context.Context, req *connect.Request[compassv1beta1.UpsertAssetRequest]) (*connect.Response[compassv1beta1.UpsertAssetResponse], error) {
 	return c.upsertAsset.CallUnary(ctx, req)
 }
 
 // UpsertPatchAsset calls raystack.compass.v1beta1.CompassService.UpsertPatchAsset.
-func (c *compassServiceClient) UpsertPatchAsset(ctx context.Context, req *connect.Request[v1beta1.UpsertPatchAssetRequest]) (*connect.Response[v1beta1.UpsertPatchAssetResponse], error) {
+func (c *compassServiceClient) UpsertPatchAsset(ctx context.Context, req *connect.Request[compassv1beta1.UpsertPatchAssetRequest]) (*connect.Response[compassv1beta1.UpsertPatchAssetResponse], error) {
 	return c.upsertPatchAsset.CallUnary(ctx, req)
 }
 
 // DeleteAsset calls raystack.compass.v1beta1.CompassService.DeleteAsset.
-func (c *compassServiceClient) DeleteAsset(ctx context.Context, req *connect.Request[v1beta1.DeleteAssetRequest]) (*connect.Response[v1beta1.DeleteAssetResponse], error) {
+func (c *compassServiceClient) DeleteAsset(ctx context.Context, req *connect.Request[compassv1beta1.DeleteAssetRequest]) (*connect.Response[compassv1beta1.DeleteAssetResponse], error) {
 	return c.deleteAsset.CallUnary(ctx, req)
 }
 
 // GetAssetStargazers calls raystack.compass.v1beta1.CompassService.GetAssetStargazers.
-func (c *compassServiceClient) GetAssetStargazers(ctx context.Context, req *connect.Request[v1beta1.GetAssetStargazersRequest]) (*connect.Response[v1beta1.GetAssetStargazersResponse], error) {
+func (c *compassServiceClient) GetAssetStargazers(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetStargazersRequest]) (*connect.Response[compassv1beta1.GetAssetStargazersResponse], error) {
 	return c.getAssetStargazers.CallUnary(ctx, req)
 }
 
 // GetAssetVersionHistory calls raystack.compass.v1beta1.CompassService.GetAssetVersionHistory.
-func (c *compassServiceClient) GetAssetVersionHistory(ctx context.Context, req *connect.Request[v1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[v1beta1.GetAssetVersionHistoryResponse], error) {
+func (c *compassServiceClient) GetAssetVersionHistory(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[compassv1beta1.GetAssetVersionHistoryResponse], error) {
 	return c.getAssetVersionHistory.CallUnary(ctx, req)
 }
 
 // GetAssetByVersion calls raystack.compass.v1beta1.CompassService.GetAssetByVersion.
-func (c *compassServiceClient) GetAssetByVersion(ctx context.Context, req *connect.Request[v1beta1.GetAssetByVersionRequest]) (*connect.Response[v1beta1.GetAssetByVersionResponse], error) {
+func (c *compassServiceClient) GetAssetByVersion(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetByVersionRequest]) (*connect.Response[compassv1beta1.GetAssetByVersionResponse], error) {
 	return c.getAssetByVersion.CallUnary(ctx, req)
 }
 
 // CreateAssetProbe calls raystack.compass.v1beta1.CompassService.CreateAssetProbe.
-func (c *compassServiceClient) CreateAssetProbe(ctx context.Context, req *connect.Request[v1beta1.CreateAssetProbeRequest]) (*connect.Response[v1beta1.CreateAssetProbeResponse], error) {
+func (c *compassServiceClient) CreateAssetProbe(ctx context.Context, req *connect.Request[compassv1beta1.CreateAssetProbeRequest]) (*connect.Response[compassv1beta1.CreateAssetProbeResponse], error) {
 	return c.createAssetProbe.CallUnary(ctx, req)
 }
 
 // GetUserStarredAssets calls raystack.compass.v1beta1.CompassService.GetUserStarredAssets.
-func (c *compassServiceClient) GetUserStarredAssets(ctx context.Context, req *connect.Request[v1beta1.GetUserStarredAssetsRequest]) (*connect.Response[v1beta1.GetUserStarredAssetsResponse], error) {
+func (c *compassServiceClient) GetUserStarredAssets(ctx context.Context, req *connect.Request[compassv1beta1.GetUserStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetUserStarredAssetsResponse], error) {
 	return c.getUserStarredAssets.CallUnary(ctx, req)
 }
 
 // GetMyStarredAssets calls raystack.compass.v1beta1.CompassService.GetMyStarredAssets.
-func (c *compassServiceClient) GetMyStarredAssets(ctx context.Context, req *connect.Request[v1beta1.GetMyStarredAssetsRequest]) (*connect.Response[v1beta1.GetMyStarredAssetsResponse], error) {
+func (c *compassServiceClient) GetMyStarredAssets(ctx context.Context, req *connect.Request[compassv1beta1.GetMyStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetsResponse], error) {
 	return c.getMyStarredAssets.CallUnary(ctx, req)
 }
 
 // GetMyStarredAsset calls raystack.compass.v1beta1.CompassService.GetMyStarredAsset.
-func (c *compassServiceClient) GetMyStarredAsset(ctx context.Context, req *connect.Request[v1beta1.GetMyStarredAssetRequest]) (*connect.Response[v1beta1.GetMyStarredAssetResponse], error) {
+func (c *compassServiceClient) GetMyStarredAsset(ctx context.Context, req *connect.Request[compassv1beta1.GetMyStarredAssetRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetResponse], error) {
 	return c.getMyStarredAsset.CallUnary(ctx, req)
 }
 
 // StarAsset calls raystack.compass.v1beta1.CompassService.StarAsset.
-func (c *compassServiceClient) StarAsset(ctx context.Context, req *connect.Request[v1beta1.StarAssetRequest]) (*connect.Response[v1beta1.StarAssetResponse], error) {
+func (c *compassServiceClient) StarAsset(ctx context.Context, req *connect.Request[compassv1beta1.StarAssetRequest]) (*connect.Response[compassv1beta1.StarAssetResponse], error) {
 	return c.starAsset.CallUnary(ctx, req)
 }
 
 // UnstarAsset calls raystack.compass.v1beta1.CompassService.UnstarAsset.
-func (c *compassServiceClient) UnstarAsset(ctx context.Context, req *connect.Request[v1beta1.UnstarAssetRequest]) (*connect.Response[v1beta1.UnstarAssetResponse], error) {
+func (c *compassServiceClient) UnstarAsset(ctx context.Context, req *connect.Request[compassv1beta1.UnstarAssetRequest]) (*connect.Response[compassv1beta1.UnstarAssetResponse], error) {
 	return c.unstarAsset.CallUnary(ctx, req)
 }
 
 // GetMyDiscussions calls raystack.compass.v1beta1.CompassService.GetMyDiscussions.
-func (c *compassServiceClient) GetMyDiscussions(ctx context.Context, req *connect.Request[v1beta1.GetMyDiscussionsRequest]) (*connect.Response[v1beta1.GetMyDiscussionsResponse], error) {
+func (c *compassServiceClient) GetMyDiscussions(ctx context.Context, req *connect.Request[compassv1beta1.GetMyDiscussionsRequest]) (*connect.Response[compassv1beta1.GetMyDiscussionsResponse], error) {
 	return c.getMyDiscussions.CallUnary(ctx, req)
 }
 
 // CreateTagAsset calls raystack.compass.v1beta1.CompassService.CreateTagAsset.
-func (c *compassServiceClient) CreateTagAsset(ctx context.Context, req *connect.Request[v1beta1.CreateTagAssetRequest]) (*connect.Response[v1beta1.CreateTagAssetResponse], error) {
+func (c *compassServiceClient) CreateTagAsset(ctx context.Context, req *connect.Request[compassv1beta1.CreateTagAssetRequest]) (*connect.Response[compassv1beta1.CreateTagAssetResponse], error) {
 	return c.createTagAsset.CallUnary(ctx, req)
 }
 
 // GetTagByAssetAndTemplate calls raystack.compass.v1beta1.CompassService.GetTagByAssetAndTemplate.
-func (c *compassServiceClient) GetTagByAssetAndTemplate(ctx context.Context, req *connect.Request[v1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[v1beta1.GetTagByAssetAndTemplateResponse], error) {
+func (c *compassServiceClient) GetTagByAssetAndTemplate(ctx context.Context, req *connect.Request[compassv1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[compassv1beta1.GetTagByAssetAndTemplateResponse], error) {
 	return c.getTagByAssetAndTemplate.CallUnary(ctx, req)
 }
 
 // UpdateTagAsset calls raystack.compass.v1beta1.CompassService.UpdateTagAsset.
-func (c *compassServiceClient) UpdateTagAsset(ctx context.Context, req *connect.Request[v1beta1.UpdateTagAssetRequest]) (*connect.Response[v1beta1.UpdateTagAssetResponse], error) {
+func (c *compassServiceClient) UpdateTagAsset(ctx context.Context, req *connect.Request[compassv1beta1.UpdateTagAssetRequest]) (*connect.Response[compassv1beta1.UpdateTagAssetResponse], error) {
 	return c.updateTagAsset.CallUnary(ctx, req)
 }
 
 // DeleteTagAsset calls raystack.compass.v1beta1.CompassService.DeleteTagAsset.
-func (c *compassServiceClient) DeleteTagAsset(ctx context.Context, req *connect.Request[v1beta1.DeleteTagAssetRequest]) (*connect.Response[v1beta1.DeleteTagAssetResponse], error) {
+func (c *compassServiceClient) DeleteTagAsset(ctx context.Context, req *connect.Request[compassv1beta1.DeleteTagAssetRequest]) (*connect.Response[compassv1beta1.DeleteTagAssetResponse], error) {
 	return c.deleteTagAsset.CallUnary(ctx, req)
 }
 
 // GetAllTagsByAsset calls raystack.compass.v1beta1.CompassService.GetAllTagsByAsset.
-func (c *compassServiceClient) GetAllTagsByAsset(ctx context.Context, req *connect.Request[v1beta1.GetAllTagsByAssetRequest]) (*connect.Response[v1beta1.GetAllTagsByAssetResponse], error) {
+func (c *compassServiceClient) GetAllTagsByAsset(ctx context.Context, req *connect.Request[compassv1beta1.GetAllTagsByAssetRequest]) (*connect.Response[compassv1beta1.GetAllTagsByAssetResponse], error) {
 	return c.getAllTagsByAsset.CallUnary(ctx, req)
 }
 
 // GetAllTagTemplates calls raystack.compass.v1beta1.CompassService.GetAllTagTemplates.
-func (c *compassServiceClient) GetAllTagTemplates(ctx context.Context, req *connect.Request[v1beta1.GetAllTagTemplatesRequest]) (*connect.Response[v1beta1.GetAllTagTemplatesResponse], error) {
+func (c *compassServiceClient) GetAllTagTemplates(ctx context.Context, req *connect.Request[compassv1beta1.GetAllTagTemplatesRequest]) (*connect.Response[compassv1beta1.GetAllTagTemplatesResponse], error) {
 	return c.getAllTagTemplates.CallUnary(ctx, req)
 }
 
 // CreateTagTemplate calls raystack.compass.v1beta1.CompassService.CreateTagTemplate.
-func (c *compassServiceClient) CreateTagTemplate(ctx context.Context, req *connect.Request[v1beta1.CreateTagTemplateRequest]) (*connect.Response[v1beta1.CreateTagTemplateResponse], error) {
+func (c *compassServiceClient) CreateTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.CreateTagTemplateRequest]) (*connect.Response[compassv1beta1.CreateTagTemplateResponse], error) {
 	return c.createTagTemplate.CallUnary(ctx, req)
 }
 
 // GetTagTemplate calls raystack.compass.v1beta1.CompassService.GetTagTemplate.
-func (c *compassServiceClient) GetTagTemplate(ctx context.Context, req *connect.Request[v1beta1.GetTagTemplateRequest]) (*connect.Response[v1beta1.GetTagTemplateResponse], error) {
+func (c *compassServiceClient) GetTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.GetTagTemplateRequest]) (*connect.Response[compassv1beta1.GetTagTemplateResponse], error) {
 	return c.getTagTemplate.CallUnary(ctx, req)
 }
 
 // UpdateTagTemplate calls raystack.compass.v1beta1.CompassService.UpdateTagTemplate.
-func (c *compassServiceClient) UpdateTagTemplate(ctx context.Context, req *connect.Request[v1beta1.UpdateTagTemplateRequest]) (*connect.Response[v1beta1.UpdateTagTemplateResponse], error) {
+func (c *compassServiceClient) UpdateTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.UpdateTagTemplateRequest]) (*connect.Response[compassv1beta1.UpdateTagTemplateResponse], error) {
 	return c.updateTagTemplate.CallUnary(ctx, req)
 }
 
 // DeleteTagTemplate calls raystack.compass.v1beta1.CompassService.DeleteTagTemplate.
-func (c *compassServiceClient) DeleteTagTemplate(ctx context.Context, req *connect.Request[v1beta1.DeleteTagTemplateRequest]) (*connect.Response[v1beta1.DeleteTagTemplateResponse], error) {
+func (c *compassServiceClient) DeleteTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.DeleteTagTemplateRequest]) (*connect.Response[compassv1beta1.DeleteTagTemplateResponse], error) {
 	return c.deleteTagTemplate.CallUnary(ctx, req)
 }
 
 // CreateNamespace calls raystack.compass.v1beta1.CompassService.CreateNamespace.
-func (c *compassServiceClient) CreateNamespace(ctx context.Context, req *connect.Request[v1beta1.CreateNamespaceRequest]) (*connect.Response[v1beta1.CreateNamespaceResponse], error) {
+func (c *compassServiceClient) CreateNamespace(ctx context.Context, req *connect.Request[compassv1beta1.CreateNamespaceRequest]) (*connect.Response[compassv1beta1.CreateNamespaceResponse], error) {
 	return c.createNamespace.CallUnary(ctx, req)
 }
 
 // GetNamespace calls raystack.compass.v1beta1.CompassService.GetNamespace.
-func (c *compassServiceClient) GetNamespace(ctx context.Context, req *connect.Request[v1beta1.GetNamespaceRequest]) (*connect.Response[v1beta1.GetNamespaceResponse], error) {
+func (c *compassServiceClient) GetNamespace(ctx context.Context, req *connect.Request[compassv1beta1.GetNamespaceRequest]) (*connect.Response[compassv1beta1.GetNamespaceResponse], error) {
 	return c.getNamespace.CallUnary(ctx, req)
 }
 
 // UpdateNamespace calls raystack.compass.v1beta1.CompassService.UpdateNamespace.
-func (c *compassServiceClient) UpdateNamespace(ctx context.Context, req *connect.Request[v1beta1.UpdateNamespaceRequest]) (*connect.Response[v1beta1.UpdateNamespaceResponse], error) {
+func (c *compassServiceClient) UpdateNamespace(ctx context.Context, req *connect.Request[compassv1beta1.UpdateNamespaceRequest]) (*connect.Response[compassv1beta1.UpdateNamespaceResponse], error) {
 	return c.updateNamespace.CallUnary(ctx, req)
 }
 
 // ListNamespaces calls raystack.compass.v1beta1.CompassService.ListNamespaces.
-func (c *compassServiceClient) ListNamespaces(ctx context.Context, req *connect.Request[v1beta1.ListNamespacesRequest]) (*connect.Response[v1beta1.ListNamespacesResponse], error) {
+func (c *compassServiceClient) ListNamespaces(ctx context.Context, req *connect.Request[compassv1beta1.ListNamespacesRequest]) (*connect.Response[compassv1beta1.ListNamespacesResponse], error) {
 	return c.listNamespaces.CallUnary(ctx, req)
 }
 
@@ -753,53 +753,53 @@ func (c *compassServiceClient) ListNamespaces(ctx context.Context, req *connect.
 // service.
 type CompassServiceHandler interface {
 	// Domain: Discussion
-	GetAllDiscussions(context.Context, *connect.Request[v1beta1.GetAllDiscussionsRequest]) (*connect.Response[v1beta1.GetAllDiscussionsResponse], error)
-	CreateDiscussion(context.Context, *connect.Request[v1beta1.CreateDiscussionRequest]) (*connect.Response[v1beta1.CreateDiscussionResponse], error)
-	GetDiscussion(context.Context, *connect.Request[v1beta1.GetDiscussionRequest]) (*connect.Response[v1beta1.GetDiscussionResponse], error)
-	PatchDiscussion(context.Context, *connect.Request[v1beta1.PatchDiscussionRequest]) (*connect.Response[v1beta1.PatchDiscussionResponse], error)
-	CreateComment(context.Context, *connect.Request[v1beta1.CreateCommentRequest]) (*connect.Response[v1beta1.CreateCommentResponse], error)
-	GetAllComments(context.Context, *connect.Request[v1beta1.GetAllCommentsRequest]) (*connect.Response[v1beta1.GetAllCommentsResponse], error)
-	GetComment(context.Context, *connect.Request[v1beta1.GetCommentRequest]) (*connect.Response[v1beta1.GetCommentResponse], error)
-	UpdateComment(context.Context, *connect.Request[v1beta1.UpdateCommentRequest]) (*connect.Response[v1beta1.UpdateCommentResponse], error)
-	DeleteComment(context.Context, *connect.Request[v1beta1.DeleteCommentRequest]) (*connect.Response[v1beta1.DeleteCommentResponse], error)
+	GetAllDiscussions(context.Context, *connect.Request[compassv1beta1.GetAllDiscussionsRequest]) (*connect.Response[compassv1beta1.GetAllDiscussionsResponse], error)
+	CreateDiscussion(context.Context, *connect.Request[compassv1beta1.CreateDiscussionRequest]) (*connect.Response[compassv1beta1.CreateDiscussionResponse], error)
+	GetDiscussion(context.Context, *connect.Request[compassv1beta1.GetDiscussionRequest]) (*connect.Response[compassv1beta1.GetDiscussionResponse], error)
+	PatchDiscussion(context.Context, *connect.Request[compassv1beta1.PatchDiscussionRequest]) (*connect.Response[compassv1beta1.PatchDiscussionResponse], error)
+	CreateComment(context.Context, *connect.Request[compassv1beta1.CreateCommentRequest]) (*connect.Response[compassv1beta1.CreateCommentResponse], error)
+	GetAllComments(context.Context, *connect.Request[compassv1beta1.GetAllCommentsRequest]) (*connect.Response[compassv1beta1.GetAllCommentsResponse], error)
+	GetComment(context.Context, *connect.Request[compassv1beta1.GetCommentRequest]) (*connect.Response[compassv1beta1.GetCommentResponse], error)
+	UpdateComment(context.Context, *connect.Request[compassv1beta1.UpdateCommentRequest]) (*connect.Response[compassv1beta1.UpdateCommentResponse], error)
+	DeleteComment(context.Context, *connect.Request[compassv1beta1.DeleteCommentRequest]) (*connect.Response[compassv1beta1.DeleteCommentResponse], error)
 	// Domain: Asset
-	SearchAssets(context.Context, *connect.Request[v1beta1.SearchAssetsRequest]) (*connect.Response[v1beta1.SearchAssetsResponse], error)
-	SuggestAssets(context.Context, *connect.Request[v1beta1.SuggestAssetsRequest]) (*connect.Response[v1beta1.SuggestAssetsResponse], error)
-	GroupAssets(context.Context, *connect.Request[v1beta1.GroupAssetsRequest]) (*connect.Response[v1beta1.GroupAssetsResponse], error)
-	GetGraph(context.Context, *connect.Request[v1beta1.GetGraphRequest]) (*connect.Response[v1beta1.GetGraphResponse], error)
-	GetAllTypes(context.Context, *connect.Request[v1beta1.GetAllTypesRequest]) (*connect.Response[v1beta1.GetAllTypesResponse], error)
-	GetAllAssets(context.Context, *connect.Request[v1beta1.GetAllAssetsRequest]) (*connect.Response[v1beta1.GetAllAssetsResponse], error)
-	GetAssetByID(context.Context, *connect.Request[v1beta1.GetAssetByIDRequest]) (*connect.Response[v1beta1.GetAssetByIDResponse], error)
-	UpsertAsset(context.Context, *connect.Request[v1beta1.UpsertAssetRequest]) (*connect.Response[v1beta1.UpsertAssetResponse], error)
-	UpsertPatchAsset(context.Context, *connect.Request[v1beta1.UpsertPatchAssetRequest]) (*connect.Response[v1beta1.UpsertPatchAssetResponse], error)
-	DeleteAsset(context.Context, *connect.Request[v1beta1.DeleteAssetRequest]) (*connect.Response[v1beta1.DeleteAssetResponse], error)
-	GetAssetStargazers(context.Context, *connect.Request[v1beta1.GetAssetStargazersRequest]) (*connect.Response[v1beta1.GetAssetStargazersResponse], error)
-	GetAssetVersionHistory(context.Context, *connect.Request[v1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[v1beta1.GetAssetVersionHistoryResponse], error)
-	GetAssetByVersion(context.Context, *connect.Request[v1beta1.GetAssetByVersionRequest]) (*connect.Response[v1beta1.GetAssetByVersionResponse], error)
-	CreateAssetProbe(context.Context, *connect.Request[v1beta1.CreateAssetProbeRequest]) (*connect.Response[v1beta1.CreateAssetProbeResponse], error)
+	SearchAssets(context.Context, *connect.Request[compassv1beta1.SearchAssetsRequest]) (*connect.Response[compassv1beta1.SearchAssetsResponse], error)
+	SuggestAssets(context.Context, *connect.Request[compassv1beta1.SuggestAssetsRequest]) (*connect.Response[compassv1beta1.SuggestAssetsResponse], error)
+	GroupAssets(context.Context, *connect.Request[compassv1beta1.GroupAssetsRequest]) (*connect.Response[compassv1beta1.GroupAssetsResponse], error)
+	GetGraph(context.Context, *connect.Request[compassv1beta1.GetGraphRequest]) (*connect.Response[compassv1beta1.GetGraphResponse], error)
+	GetAllTypes(context.Context, *connect.Request[compassv1beta1.GetAllTypesRequest]) (*connect.Response[compassv1beta1.GetAllTypesResponse], error)
+	GetAllAssets(context.Context, *connect.Request[compassv1beta1.GetAllAssetsRequest]) (*connect.Response[compassv1beta1.GetAllAssetsResponse], error)
+	GetAssetByID(context.Context, *connect.Request[compassv1beta1.GetAssetByIDRequest]) (*connect.Response[compassv1beta1.GetAssetByIDResponse], error)
+	UpsertAsset(context.Context, *connect.Request[compassv1beta1.UpsertAssetRequest]) (*connect.Response[compassv1beta1.UpsertAssetResponse], error)
+	UpsertPatchAsset(context.Context, *connect.Request[compassv1beta1.UpsertPatchAssetRequest]) (*connect.Response[compassv1beta1.UpsertPatchAssetResponse], error)
+	DeleteAsset(context.Context, *connect.Request[compassv1beta1.DeleteAssetRequest]) (*connect.Response[compassv1beta1.DeleteAssetResponse], error)
+	GetAssetStargazers(context.Context, *connect.Request[compassv1beta1.GetAssetStargazersRequest]) (*connect.Response[compassv1beta1.GetAssetStargazersResponse], error)
+	GetAssetVersionHistory(context.Context, *connect.Request[compassv1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[compassv1beta1.GetAssetVersionHistoryResponse], error)
+	GetAssetByVersion(context.Context, *connect.Request[compassv1beta1.GetAssetByVersionRequest]) (*connect.Response[compassv1beta1.GetAssetByVersionResponse], error)
+	CreateAssetProbe(context.Context, *connect.Request[compassv1beta1.CreateAssetProbeRequest]) (*connect.Response[compassv1beta1.CreateAssetProbeResponse], error)
 	// Domain: User * Star
-	GetUserStarredAssets(context.Context, *connect.Request[v1beta1.GetUserStarredAssetsRequest]) (*connect.Response[v1beta1.GetUserStarredAssetsResponse], error)
-	GetMyStarredAssets(context.Context, *connect.Request[v1beta1.GetMyStarredAssetsRequest]) (*connect.Response[v1beta1.GetMyStarredAssetsResponse], error)
-	GetMyStarredAsset(context.Context, *connect.Request[v1beta1.GetMyStarredAssetRequest]) (*connect.Response[v1beta1.GetMyStarredAssetResponse], error)
-	StarAsset(context.Context, *connect.Request[v1beta1.StarAssetRequest]) (*connect.Response[v1beta1.StarAssetResponse], error)
-	UnstarAsset(context.Context, *connect.Request[v1beta1.UnstarAssetRequest]) (*connect.Response[v1beta1.UnstarAssetResponse], error)
-	GetMyDiscussions(context.Context, *connect.Request[v1beta1.GetMyDiscussionsRequest]) (*connect.Response[v1beta1.GetMyDiscussionsResponse], error)
+	GetUserStarredAssets(context.Context, *connect.Request[compassv1beta1.GetUserStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetUserStarredAssetsResponse], error)
+	GetMyStarredAssets(context.Context, *connect.Request[compassv1beta1.GetMyStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetsResponse], error)
+	GetMyStarredAsset(context.Context, *connect.Request[compassv1beta1.GetMyStarredAssetRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetResponse], error)
+	StarAsset(context.Context, *connect.Request[compassv1beta1.StarAssetRequest]) (*connect.Response[compassv1beta1.StarAssetResponse], error)
+	UnstarAsset(context.Context, *connect.Request[compassv1beta1.UnstarAssetRequest]) (*connect.Response[compassv1beta1.UnstarAssetResponse], error)
+	GetMyDiscussions(context.Context, *connect.Request[compassv1beta1.GetMyDiscussionsRequest]) (*connect.Response[compassv1beta1.GetMyDiscussionsResponse], error)
 	// Domain: Tag Templates
-	CreateTagAsset(context.Context, *connect.Request[v1beta1.CreateTagAssetRequest]) (*connect.Response[v1beta1.CreateTagAssetResponse], error)
-	GetTagByAssetAndTemplate(context.Context, *connect.Request[v1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[v1beta1.GetTagByAssetAndTemplateResponse], error)
-	UpdateTagAsset(context.Context, *connect.Request[v1beta1.UpdateTagAssetRequest]) (*connect.Response[v1beta1.UpdateTagAssetResponse], error)
-	DeleteTagAsset(context.Context, *connect.Request[v1beta1.DeleteTagAssetRequest]) (*connect.Response[v1beta1.DeleteTagAssetResponse], error)
-	GetAllTagsByAsset(context.Context, *connect.Request[v1beta1.GetAllTagsByAssetRequest]) (*connect.Response[v1beta1.GetAllTagsByAssetResponse], error)
-	GetAllTagTemplates(context.Context, *connect.Request[v1beta1.GetAllTagTemplatesRequest]) (*connect.Response[v1beta1.GetAllTagTemplatesResponse], error)
-	CreateTagTemplate(context.Context, *connect.Request[v1beta1.CreateTagTemplateRequest]) (*connect.Response[v1beta1.CreateTagTemplateResponse], error)
-	GetTagTemplate(context.Context, *connect.Request[v1beta1.GetTagTemplateRequest]) (*connect.Response[v1beta1.GetTagTemplateResponse], error)
-	UpdateTagTemplate(context.Context, *connect.Request[v1beta1.UpdateTagTemplateRequest]) (*connect.Response[v1beta1.UpdateTagTemplateResponse], error)
-	DeleteTagTemplate(context.Context, *connect.Request[v1beta1.DeleteTagTemplateRequest]) (*connect.Response[v1beta1.DeleteTagTemplateResponse], error)
+	CreateTagAsset(context.Context, *connect.Request[compassv1beta1.CreateTagAssetRequest]) (*connect.Response[compassv1beta1.CreateTagAssetResponse], error)
+	GetTagByAssetAndTemplate(context.Context, *connect.Request[compassv1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[compassv1beta1.GetTagByAssetAndTemplateResponse], error)
+	UpdateTagAsset(context.Context, *connect.Request[compassv1beta1.UpdateTagAssetRequest]) (*connect.Response[compassv1beta1.UpdateTagAssetResponse], error)
+	DeleteTagAsset(context.Context, *connect.Request[compassv1beta1.DeleteTagAssetRequest]) (*connect.Response[compassv1beta1.DeleteTagAssetResponse], error)
+	GetAllTagsByAsset(context.Context, *connect.Request[compassv1beta1.GetAllTagsByAssetRequest]) (*connect.Response[compassv1beta1.GetAllTagsByAssetResponse], error)
+	GetAllTagTemplates(context.Context, *connect.Request[compassv1beta1.GetAllTagTemplatesRequest]) (*connect.Response[compassv1beta1.GetAllTagTemplatesResponse], error)
+	CreateTagTemplate(context.Context, *connect.Request[compassv1beta1.CreateTagTemplateRequest]) (*connect.Response[compassv1beta1.CreateTagTemplateResponse], error)
+	GetTagTemplate(context.Context, *connect.Request[compassv1beta1.GetTagTemplateRequest]) (*connect.Response[compassv1beta1.GetTagTemplateResponse], error)
+	UpdateTagTemplate(context.Context, *connect.Request[compassv1beta1.UpdateTagTemplateRequest]) (*connect.Response[compassv1beta1.UpdateTagTemplateResponse], error)
+	DeleteTagTemplate(context.Context, *connect.Request[compassv1beta1.DeleteTagTemplateRequest]) (*connect.Response[compassv1beta1.DeleteTagTemplateResponse], error)
 	// Domain: Namespace
-	CreateNamespace(context.Context, *connect.Request[v1beta1.CreateNamespaceRequest]) (*connect.Response[v1beta1.CreateNamespaceResponse], error)
-	GetNamespace(context.Context, *connect.Request[v1beta1.GetNamespaceRequest]) (*connect.Response[v1beta1.GetNamespaceResponse], error)
-	UpdateNamespace(context.Context, *connect.Request[v1beta1.UpdateNamespaceRequest]) (*connect.Response[v1beta1.UpdateNamespaceResponse], error)
-	ListNamespaces(context.Context, *connect.Request[v1beta1.ListNamespacesRequest]) (*connect.Response[v1beta1.ListNamespacesResponse], error)
+	CreateNamespace(context.Context, *connect.Request[compassv1beta1.CreateNamespaceRequest]) (*connect.Response[compassv1beta1.CreateNamespaceResponse], error)
+	GetNamespace(context.Context, *connect.Request[compassv1beta1.GetNamespaceRequest]) (*connect.Response[compassv1beta1.GetNamespaceResponse], error)
+	UpdateNamespace(context.Context, *connect.Request[compassv1beta1.UpdateNamespaceRequest]) (*connect.Response[compassv1beta1.UpdateNamespaceResponse], error)
+	ListNamespaces(context.Context, *connect.Request[compassv1beta1.ListNamespacesRequest]) (*connect.Response[compassv1beta1.ListNamespacesResponse], error)
 }
 
 // NewCompassServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -808,7 +808,7 @@ type CompassServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewCompassServiceHandler(svc CompassServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	compassServiceMethods := v1beta1.File_raystack_compass_v1beta1_service_proto.Services().ByName("CompassService").Methods()
+	compassServiceMethods := compassv1beta1.File_raystack_compass_v1beta1_service_proto.Services().ByName("CompassService").Methods()
 	compassServiceGetAllDiscussionsHandler := connect.NewUnaryHandler(
 		CompassServiceGetAllDiscussionsProcedure,
 		svc.GetAllDiscussions,
@@ -1164,174 +1164,174 @@ func NewCompassServiceHandler(svc CompassServiceHandler, opts ...connect.Handler
 // UnimplementedCompassServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedCompassServiceHandler struct{}
 
-func (UnimplementedCompassServiceHandler) GetAllDiscussions(context.Context, *connect.Request[v1beta1.GetAllDiscussionsRequest]) (*connect.Response[v1beta1.GetAllDiscussionsResponse], error) {
+func (UnimplementedCompassServiceHandler) GetAllDiscussions(context.Context, *connect.Request[compassv1beta1.GetAllDiscussionsRequest]) (*connect.Response[compassv1beta1.GetAllDiscussionsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAllDiscussions is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) CreateDiscussion(context.Context, *connect.Request[v1beta1.CreateDiscussionRequest]) (*connect.Response[v1beta1.CreateDiscussionResponse], error) {
+func (UnimplementedCompassServiceHandler) CreateDiscussion(context.Context, *connect.Request[compassv1beta1.CreateDiscussionRequest]) (*connect.Response[compassv1beta1.CreateDiscussionResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.CreateDiscussion is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetDiscussion(context.Context, *connect.Request[v1beta1.GetDiscussionRequest]) (*connect.Response[v1beta1.GetDiscussionResponse], error) {
+func (UnimplementedCompassServiceHandler) GetDiscussion(context.Context, *connect.Request[compassv1beta1.GetDiscussionRequest]) (*connect.Response[compassv1beta1.GetDiscussionResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetDiscussion is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) PatchDiscussion(context.Context, *connect.Request[v1beta1.PatchDiscussionRequest]) (*connect.Response[v1beta1.PatchDiscussionResponse], error) {
+func (UnimplementedCompassServiceHandler) PatchDiscussion(context.Context, *connect.Request[compassv1beta1.PatchDiscussionRequest]) (*connect.Response[compassv1beta1.PatchDiscussionResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.PatchDiscussion is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) CreateComment(context.Context, *connect.Request[v1beta1.CreateCommentRequest]) (*connect.Response[v1beta1.CreateCommentResponse], error) {
+func (UnimplementedCompassServiceHandler) CreateComment(context.Context, *connect.Request[compassv1beta1.CreateCommentRequest]) (*connect.Response[compassv1beta1.CreateCommentResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.CreateComment is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetAllComments(context.Context, *connect.Request[v1beta1.GetAllCommentsRequest]) (*connect.Response[v1beta1.GetAllCommentsResponse], error) {
+func (UnimplementedCompassServiceHandler) GetAllComments(context.Context, *connect.Request[compassv1beta1.GetAllCommentsRequest]) (*connect.Response[compassv1beta1.GetAllCommentsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAllComments is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetComment(context.Context, *connect.Request[v1beta1.GetCommentRequest]) (*connect.Response[v1beta1.GetCommentResponse], error) {
+func (UnimplementedCompassServiceHandler) GetComment(context.Context, *connect.Request[compassv1beta1.GetCommentRequest]) (*connect.Response[compassv1beta1.GetCommentResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetComment is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) UpdateComment(context.Context, *connect.Request[v1beta1.UpdateCommentRequest]) (*connect.Response[v1beta1.UpdateCommentResponse], error) {
+func (UnimplementedCompassServiceHandler) UpdateComment(context.Context, *connect.Request[compassv1beta1.UpdateCommentRequest]) (*connect.Response[compassv1beta1.UpdateCommentResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpdateComment is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) DeleteComment(context.Context, *connect.Request[v1beta1.DeleteCommentRequest]) (*connect.Response[v1beta1.DeleteCommentResponse], error) {
+func (UnimplementedCompassServiceHandler) DeleteComment(context.Context, *connect.Request[compassv1beta1.DeleteCommentRequest]) (*connect.Response[compassv1beta1.DeleteCommentResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.DeleteComment is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) SearchAssets(context.Context, *connect.Request[v1beta1.SearchAssetsRequest]) (*connect.Response[v1beta1.SearchAssetsResponse], error) {
+func (UnimplementedCompassServiceHandler) SearchAssets(context.Context, *connect.Request[compassv1beta1.SearchAssetsRequest]) (*connect.Response[compassv1beta1.SearchAssetsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.SearchAssets is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) SuggestAssets(context.Context, *connect.Request[v1beta1.SuggestAssetsRequest]) (*connect.Response[v1beta1.SuggestAssetsResponse], error) {
+func (UnimplementedCompassServiceHandler) SuggestAssets(context.Context, *connect.Request[compassv1beta1.SuggestAssetsRequest]) (*connect.Response[compassv1beta1.SuggestAssetsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.SuggestAssets is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GroupAssets(context.Context, *connect.Request[v1beta1.GroupAssetsRequest]) (*connect.Response[v1beta1.GroupAssetsResponse], error) {
+func (UnimplementedCompassServiceHandler) GroupAssets(context.Context, *connect.Request[compassv1beta1.GroupAssetsRequest]) (*connect.Response[compassv1beta1.GroupAssetsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GroupAssets is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetGraph(context.Context, *connect.Request[v1beta1.GetGraphRequest]) (*connect.Response[v1beta1.GetGraphResponse], error) {
+func (UnimplementedCompassServiceHandler) GetGraph(context.Context, *connect.Request[compassv1beta1.GetGraphRequest]) (*connect.Response[compassv1beta1.GetGraphResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetGraph is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetAllTypes(context.Context, *connect.Request[v1beta1.GetAllTypesRequest]) (*connect.Response[v1beta1.GetAllTypesResponse], error) {
+func (UnimplementedCompassServiceHandler) GetAllTypes(context.Context, *connect.Request[compassv1beta1.GetAllTypesRequest]) (*connect.Response[compassv1beta1.GetAllTypesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAllTypes is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetAllAssets(context.Context, *connect.Request[v1beta1.GetAllAssetsRequest]) (*connect.Response[v1beta1.GetAllAssetsResponse], error) {
+func (UnimplementedCompassServiceHandler) GetAllAssets(context.Context, *connect.Request[compassv1beta1.GetAllAssetsRequest]) (*connect.Response[compassv1beta1.GetAllAssetsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAllAssets is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetAssetByID(context.Context, *connect.Request[v1beta1.GetAssetByIDRequest]) (*connect.Response[v1beta1.GetAssetByIDResponse], error) {
+func (UnimplementedCompassServiceHandler) GetAssetByID(context.Context, *connect.Request[compassv1beta1.GetAssetByIDRequest]) (*connect.Response[compassv1beta1.GetAssetByIDResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAssetByID is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) UpsertAsset(context.Context, *connect.Request[v1beta1.UpsertAssetRequest]) (*connect.Response[v1beta1.UpsertAssetResponse], error) {
+func (UnimplementedCompassServiceHandler) UpsertAsset(context.Context, *connect.Request[compassv1beta1.UpsertAssetRequest]) (*connect.Response[compassv1beta1.UpsertAssetResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpsertAsset is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) UpsertPatchAsset(context.Context, *connect.Request[v1beta1.UpsertPatchAssetRequest]) (*connect.Response[v1beta1.UpsertPatchAssetResponse], error) {
+func (UnimplementedCompassServiceHandler) UpsertPatchAsset(context.Context, *connect.Request[compassv1beta1.UpsertPatchAssetRequest]) (*connect.Response[compassv1beta1.UpsertPatchAssetResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpsertPatchAsset is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) DeleteAsset(context.Context, *connect.Request[v1beta1.DeleteAssetRequest]) (*connect.Response[v1beta1.DeleteAssetResponse], error) {
+func (UnimplementedCompassServiceHandler) DeleteAsset(context.Context, *connect.Request[compassv1beta1.DeleteAssetRequest]) (*connect.Response[compassv1beta1.DeleteAssetResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.DeleteAsset is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetAssetStargazers(context.Context, *connect.Request[v1beta1.GetAssetStargazersRequest]) (*connect.Response[v1beta1.GetAssetStargazersResponse], error) {
+func (UnimplementedCompassServiceHandler) GetAssetStargazers(context.Context, *connect.Request[compassv1beta1.GetAssetStargazersRequest]) (*connect.Response[compassv1beta1.GetAssetStargazersResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAssetStargazers is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetAssetVersionHistory(context.Context, *connect.Request[v1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[v1beta1.GetAssetVersionHistoryResponse], error) {
+func (UnimplementedCompassServiceHandler) GetAssetVersionHistory(context.Context, *connect.Request[compassv1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[compassv1beta1.GetAssetVersionHistoryResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAssetVersionHistory is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetAssetByVersion(context.Context, *connect.Request[v1beta1.GetAssetByVersionRequest]) (*connect.Response[v1beta1.GetAssetByVersionResponse], error) {
+func (UnimplementedCompassServiceHandler) GetAssetByVersion(context.Context, *connect.Request[compassv1beta1.GetAssetByVersionRequest]) (*connect.Response[compassv1beta1.GetAssetByVersionResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAssetByVersion is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) CreateAssetProbe(context.Context, *connect.Request[v1beta1.CreateAssetProbeRequest]) (*connect.Response[v1beta1.CreateAssetProbeResponse], error) {
+func (UnimplementedCompassServiceHandler) CreateAssetProbe(context.Context, *connect.Request[compassv1beta1.CreateAssetProbeRequest]) (*connect.Response[compassv1beta1.CreateAssetProbeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.CreateAssetProbe is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetUserStarredAssets(context.Context, *connect.Request[v1beta1.GetUserStarredAssetsRequest]) (*connect.Response[v1beta1.GetUserStarredAssetsResponse], error) {
+func (UnimplementedCompassServiceHandler) GetUserStarredAssets(context.Context, *connect.Request[compassv1beta1.GetUserStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetUserStarredAssetsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetUserStarredAssets is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetMyStarredAssets(context.Context, *connect.Request[v1beta1.GetMyStarredAssetsRequest]) (*connect.Response[v1beta1.GetMyStarredAssetsResponse], error) {
+func (UnimplementedCompassServiceHandler) GetMyStarredAssets(context.Context, *connect.Request[compassv1beta1.GetMyStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetMyStarredAssets is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetMyStarredAsset(context.Context, *connect.Request[v1beta1.GetMyStarredAssetRequest]) (*connect.Response[v1beta1.GetMyStarredAssetResponse], error) {
+func (UnimplementedCompassServiceHandler) GetMyStarredAsset(context.Context, *connect.Request[compassv1beta1.GetMyStarredAssetRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetMyStarredAsset is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) StarAsset(context.Context, *connect.Request[v1beta1.StarAssetRequest]) (*connect.Response[v1beta1.StarAssetResponse], error) {
+func (UnimplementedCompassServiceHandler) StarAsset(context.Context, *connect.Request[compassv1beta1.StarAssetRequest]) (*connect.Response[compassv1beta1.StarAssetResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.StarAsset is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) UnstarAsset(context.Context, *connect.Request[v1beta1.UnstarAssetRequest]) (*connect.Response[v1beta1.UnstarAssetResponse], error) {
+func (UnimplementedCompassServiceHandler) UnstarAsset(context.Context, *connect.Request[compassv1beta1.UnstarAssetRequest]) (*connect.Response[compassv1beta1.UnstarAssetResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UnstarAsset is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetMyDiscussions(context.Context, *connect.Request[v1beta1.GetMyDiscussionsRequest]) (*connect.Response[v1beta1.GetMyDiscussionsResponse], error) {
+func (UnimplementedCompassServiceHandler) GetMyDiscussions(context.Context, *connect.Request[compassv1beta1.GetMyDiscussionsRequest]) (*connect.Response[compassv1beta1.GetMyDiscussionsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetMyDiscussions is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) CreateTagAsset(context.Context, *connect.Request[v1beta1.CreateTagAssetRequest]) (*connect.Response[v1beta1.CreateTagAssetResponse], error) {
+func (UnimplementedCompassServiceHandler) CreateTagAsset(context.Context, *connect.Request[compassv1beta1.CreateTagAssetRequest]) (*connect.Response[compassv1beta1.CreateTagAssetResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.CreateTagAsset is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetTagByAssetAndTemplate(context.Context, *connect.Request[v1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[v1beta1.GetTagByAssetAndTemplateResponse], error) {
+func (UnimplementedCompassServiceHandler) GetTagByAssetAndTemplate(context.Context, *connect.Request[compassv1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[compassv1beta1.GetTagByAssetAndTemplateResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetTagByAssetAndTemplate is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) UpdateTagAsset(context.Context, *connect.Request[v1beta1.UpdateTagAssetRequest]) (*connect.Response[v1beta1.UpdateTagAssetResponse], error) {
+func (UnimplementedCompassServiceHandler) UpdateTagAsset(context.Context, *connect.Request[compassv1beta1.UpdateTagAssetRequest]) (*connect.Response[compassv1beta1.UpdateTagAssetResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpdateTagAsset is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) DeleteTagAsset(context.Context, *connect.Request[v1beta1.DeleteTagAssetRequest]) (*connect.Response[v1beta1.DeleteTagAssetResponse], error) {
+func (UnimplementedCompassServiceHandler) DeleteTagAsset(context.Context, *connect.Request[compassv1beta1.DeleteTagAssetRequest]) (*connect.Response[compassv1beta1.DeleteTagAssetResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.DeleteTagAsset is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetAllTagsByAsset(context.Context, *connect.Request[v1beta1.GetAllTagsByAssetRequest]) (*connect.Response[v1beta1.GetAllTagsByAssetResponse], error) {
+func (UnimplementedCompassServiceHandler) GetAllTagsByAsset(context.Context, *connect.Request[compassv1beta1.GetAllTagsByAssetRequest]) (*connect.Response[compassv1beta1.GetAllTagsByAssetResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAllTagsByAsset is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetAllTagTemplates(context.Context, *connect.Request[v1beta1.GetAllTagTemplatesRequest]) (*connect.Response[v1beta1.GetAllTagTemplatesResponse], error) {
+func (UnimplementedCompassServiceHandler) GetAllTagTemplates(context.Context, *connect.Request[compassv1beta1.GetAllTagTemplatesRequest]) (*connect.Response[compassv1beta1.GetAllTagTemplatesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAllTagTemplates is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) CreateTagTemplate(context.Context, *connect.Request[v1beta1.CreateTagTemplateRequest]) (*connect.Response[v1beta1.CreateTagTemplateResponse], error) {
+func (UnimplementedCompassServiceHandler) CreateTagTemplate(context.Context, *connect.Request[compassv1beta1.CreateTagTemplateRequest]) (*connect.Response[compassv1beta1.CreateTagTemplateResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.CreateTagTemplate is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetTagTemplate(context.Context, *connect.Request[v1beta1.GetTagTemplateRequest]) (*connect.Response[v1beta1.GetTagTemplateResponse], error) {
+func (UnimplementedCompassServiceHandler) GetTagTemplate(context.Context, *connect.Request[compassv1beta1.GetTagTemplateRequest]) (*connect.Response[compassv1beta1.GetTagTemplateResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetTagTemplate is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) UpdateTagTemplate(context.Context, *connect.Request[v1beta1.UpdateTagTemplateRequest]) (*connect.Response[v1beta1.UpdateTagTemplateResponse], error) {
+func (UnimplementedCompassServiceHandler) UpdateTagTemplate(context.Context, *connect.Request[compassv1beta1.UpdateTagTemplateRequest]) (*connect.Response[compassv1beta1.UpdateTagTemplateResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpdateTagTemplate is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) DeleteTagTemplate(context.Context, *connect.Request[v1beta1.DeleteTagTemplateRequest]) (*connect.Response[v1beta1.DeleteTagTemplateResponse], error) {
+func (UnimplementedCompassServiceHandler) DeleteTagTemplate(context.Context, *connect.Request[compassv1beta1.DeleteTagTemplateRequest]) (*connect.Response[compassv1beta1.DeleteTagTemplateResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.DeleteTagTemplate is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) CreateNamespace(context.Context, *connect.Request[v1beta1.CreateNamespaceRequest]) (*connect.Response[v1beta1.CreateNamespaceResponse], error) {
+func (UnimplementedCompassServiceHandler) CreateNamespace(context.Context, *connect.Request[compassv1beta1.CreateNamespaceRequest]) (*connect.Response[compassv1beta1.CreateNamespaceResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.CreateNamespace is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetNamespace(context.Context, *connect.Request[v1beta1.GetNamespaceRequest]) (*connect.Response[v1beta1.GetNamespaceResponse], error) {
+func (UnimplementedCompassServiceHandler) GetNamespace(context.Context, *connect.Request[compassv1beta1.GetNamespaceRequest]) (*connect.Response[compassv1beta1.GetNamespaceResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetNamespace is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) UpdateNamespace(context.Context, *connect.Request[v1beta1.UpdateNamespaceRequest]) (*connect.Response[v1beta1.UpdateNamespaceResponse], error) {
+func (UnimplementedCompassServiceHandler) UpdateNamespace(context.Context, *connect.Request[compassv1beta1.UpdateNamespaceRequest]) (*connect.Response[compassv1beta1.UpdateNamespaceResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpdateNamespace is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) ListNamespaces(context.Context, *connect.Request[v1beta1.ListNamespacesRequest]) (*connect.Response[v1beta1.ListNamespacesResponse], error) {
+func (UnimplementedCompassServiceHandler) ListNamespaces(context.Context, *connect.Request[compassv1beta1.ListNamespacesRequest]) (*connect.Response[compassv1beta1.ListNamespacesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.ListNamespaces is not implemented"))
 }

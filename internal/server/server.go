@@ -15,7 +15,7 @@ import (
 	handlersv1beta1 "github.com/raystack/compass/internal/server/v1beta1"
 	"github.com/raystack/compass/internal/store/postgres"
 	"github.com/raystack/compass/pkg/server/interceptor"
-	"github.com/raystack/compass/proto/raystack/compass/v1beta1/compassv1beta1connect"
+	"github.com/raystack/compass/proto/compassv1beta1/compassv1beta1connect"
 	log "github.com/raystack/salt/observability/logger"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"

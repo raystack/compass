@@ -13,7 +13,7 @@ import (
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/internal/server/v1beta1/mocks"
-	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
+	compassv1beta1 "github.com/raystack/compass/proto/compassv1beta1"
 	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/mock"
 	
