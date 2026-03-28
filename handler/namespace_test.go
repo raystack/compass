@@ -10,7 +10,7 @@ import (
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/handler/mocks"
-	compassv1beta1 "github.com/raystack/compass/proto/gen/raystack/compass/v1beta1"
+	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
 	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

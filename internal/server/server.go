@@ -16,7 +16,7 @@ import (
 	"github.com/rs/cors"
 	"github.com/raystack/compass/handler"
 	"github.com/raystack/compass/internal/middleware"
-	"github.com/raystack/compass/proto/gen/raystack/compass/v1beta1/compassv1beta1connect"
+	"github.com/raystack/compass/gen/raystack/compass/v1beta1/compassv1beta1connect"
 	log "github.com/raystack/salt/observability/logger"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"

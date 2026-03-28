@@ -11,7 +11,7 @@ import (
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/tag"
 	"github.com/raystack/compass/internal/middleware"
-	compassv1beta1 "github.com/raystack/compass/proto/gen/raystack/compass/v1beta1"
+	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

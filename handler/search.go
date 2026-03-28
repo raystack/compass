@@ -8,7 +8,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/internal/middleware"
-	compassv1beta1 "github.com/raystack/compass/proto/gen/raystack/compass/v1beta1"
+	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
 )
 
 func (server *APIServer) SearchAssets(ctx context.Context, req *connect.Request[compassv1beta1.SearchAssetsRequest]) (*connect.Response[compassv1beta1.SearchAssetsResponse], error) {

@@ -6933,8 +6933,8 @@ const file_raystack_compass_v1beta1_service_proto_rawDesc = "" +
 	"\x0fCreateNamespace\x120.raystack.compass.v1beta1.CreateNamespaceRequest\x1a1.raystack.compass.v1beta1.CreateNamespaceResponse\"\x00\x12o\n" +
 	"\fGetNamespace\x12-.raystack.compass.v1beta1.GetNamespaceRequest\x1a..raystack.compass.v1beta1.GetNamespaceResponse\"\x00\x12x\n" +
 	"\x0fUpdateNamespace\x120.raystack.compass.v1beta1.UpdateNamespaceRequest\x1a1.raystack.compass.v1beta1.UpdateNamespaceResponse\"\x00\x12u\n" +
-	"\x0eListNamespaces\x12/.raystack.compass.v1beta1.ListNamespacesRequest\x1a0.raystack.compass.v1beta1.ListNamespacesResponse\"\x00B\xfd\x01\n" +
-	"\x1ccom.raystack.compass.v1beta1B\fServiceProtoP\x01ZMgithub.com/raystack/compass/proto/gen/raystack/compass/v1beta1;compassv1beta1\xa2\x02\x03RCX\xaa\x02\x18Raystack.Compass.V1beta1\xca\x02\x18Raystack\\Compass\\V1beta1\xe2\x02$Raystack\\Compass\\V1beta1\\GPBMetadata\xea\x02\x1aRaystack::Compass::V1beta1b\x06proto3"
+	"\x0eListNamespaces\x12/.raystack.compass.v1beta1.ListNamespacesRequest\x1a0.raystack.compass.v1beta1.ListNamespacesResponse\"\x00B\xf7\x01\n" +
+	"\x1ccom.raystack.compass.v1beta1B\fServiceProtoP\x01ZGgithub.com/raystack/compass/gen/raystack/compass/v1beta1;compassv1beta1\xa2\x02\x03RCX\xaa\x02\x18Raystack.Compass.V1beta1\xca\x02\x18Raystack\\Compass\\V1beta1\xe2\x02$Raystack\\Compass\\V1beta1\\GPBMetadata\xea\x02\x1aRaystack::Compass::V1beta1b\x06proto3"
 
 var (
 	file_raystack_compass_v1beta1_service_proto_rawDescOnce sync.Once

@@ -8,7 +8,7 @@ import (
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	v1beta1 "github.com/raystack/compass/proto/gen/raystack/compass/v1beta1"
+	v1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
 	http "net/http"
 	strings "strings"
 )

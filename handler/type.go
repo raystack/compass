@@ -6,7 +6,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/raystack/compass/core/asset"
-	compassv1beta1 "github.com/raystack/compass/proto/gen/raystack/compass/v1beta1"
+	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
 )
 
 func (server *APIServer) GetAllTypes(ctx context.Context, req *connect.Request[compassv1beta1.GetAllTypesRequest]) (*connect.Response[compassv1beta1.GetAllTypesResponse], error) {

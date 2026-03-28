@@ -9,7 +9,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/raystack/compass/core/namespace"
-	compassv1beta1 "github.com/raystack/compass/proto/gen/raystack/compass/v1beta1"
+	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
