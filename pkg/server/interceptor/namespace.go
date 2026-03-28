@@ -2,6 +2,7 @@ package interceptor
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"connectrpc.com/connect"
@@ -75,16 +76,19 @@ func Namespace(service NamespaceService, namespaceClaimKey, userUUIDHeaderKey st
 
 func getNamespaceByNameOrID(ctx context.Context, service NamespaceService, urn string) (*namespace.Namespace, error) {
 	var ns *namespace.Namespace
-	nsID, err := uuid.Parse(urn)
-	if err != nil {
+	var err error
+	nsID, parseErr := uuid.Parse(urn)
+	if parseErr != nil {
 		// If fail to parse a valid uuid, must be a name
-		if ns, err = service.GetByName(ctx, urn); err != nil {
-			return nil, connect.NewError(connect.CodeNotFound, err)
-		}
+		ns, err = service.GetByName(ctx, urn)
 	} else {
-		if ns, err = service.GetByID(ctx, nsID); err != nil {
+		ns, err = service.GetByID(ctx, nsID)
+	}
+	if err != nil {
+		if errors.Is(err, namespace.ErrNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return ns, nil
 }

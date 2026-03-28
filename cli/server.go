@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/raystack/compass/core/namespace"
 	"os"
@@ -256,7 +257,7 @@ func runMigrations(ctx context.Context, config *Config) error {
 	nsService := namespace.NewService(logger,
 		postgres.NewNamespaceRepository(pgClient),
 		esStore.NewDiscoveryRepository(esClient))
-	if _, err = nsService.GetByID(ctx, namespace.DefaultNamespace.ID); err == postgres.ErrNamespaceNotFound {
+	if _, err = nsService.GetByID(ctx, namespace.DefaultNamespace.ID); errors.Is(err, namespace.ErrNotFound) {
 		// create default
 		if _, err := nsService.MigrateDefault(ctx); err != nil {
 			return fmt.Errorf("problem with migration %w", err)

@@ -4,9 +4,12 @@ package namespace
 //go:generate mockery --name=DiscoveryRepository -r --case underscore --with-expecter --structname NamespaceDiscoveryRepository --filename discovery_repository.go --output=./mocks
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 )
+
+var ErrNotFound = errors.New("namespace not found")
 
 var (
 	// DefaultNamespace is used for compass single tenant applications

@@ -81,7 +81,7 @@ func Serve(
 		otelInterceptor,
 		interceptor.Recovery(),
 		interceptor.Logger(logger),
-		interceptor.ErrorResponse(),
+		interceptor.ErrorResponse(logger),
 		interceptor.Namespace(namespaceService, config.Identity.NamespaceClaimKey, config.Identity.HeaderKeyUserUUID),
 		interceptor.UserHeaderCtx(config.Identity.HeaderKeyUserUUID, config.Identity.HeaderKeyUserEmail),
 	)

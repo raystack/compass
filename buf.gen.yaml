@@ -6,7 +6,7 @@ managed:
       path: raystack/compass/v1beta1/service.proto
       value: github.com/raystack/compass/proto/compassv1beta1
 plugins:
-  - remote: buf.build/protocolbuffers/go:v1.31.0
+  - remote: buf.build/protocolbuffers/go:v1.36.11
     out: proto
     opt: module=github.com/raystack/compass/proto
   - remote: buf.build/bufbuild/validate-go:v1.0.2
