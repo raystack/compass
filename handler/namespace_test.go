@@ -11,7 +11,6 @@ import (
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/handler/mocks"
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
-	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	
@@ -62,7 +61,6 @@ func TestHandler_ListNamespaces(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
@@ -71,7 +69,7 @@ func TestHandler_ListNamespaces(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.ListNamespaces(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -151,7 +149,6 @@ func TestHandler_GetNamespaces(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
@@ -160,7 +157,7 @@ func TestHandler_GetNamespaces(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetNamespace(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -243,7 +240,6 @@ func TestHandler_CreateNamespaces(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
@@ -252,7 +248,7 @@ func TestHandler_CreateNamespaces(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.CreateNamespace(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -319,7 +315,6 @@ func TestHandler_UpdateNamespaces(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
 			if tc.Setup != nil {
@@ -328,7 +323,7 @@ func TestHandler_UpdateNamespaces(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.UpdateNamespace(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {

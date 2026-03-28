@@ -3,9 +3,9 @@ package telemetry
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
-	log "github.com/raystack/salt/observability/logger"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -17,9 +17,11 @@ import (
 
 // Init initializes OpenTelemetry with the given configuration.
 // Returns a cleanup function that should be called on shutdown.
-func Init(ctx context.Context, cfg Config, logger log.Logger) (func(), error) {
+func Init(ctx context.Context, cfg Config) (func(), error) {
+	logger := slog.Default().With("component", "telemetry")
+
 	if !cfg.OpenTelemetry.Enabled {
-		logger.Info("OpenTelemetry is disabled")
+		logger.InfoContext(ctx, "OpenTelemetry is disabled")
 		return func() {}, nil
 	}
 
@@ -74,17 +76,17 @@ func Init(ctx context.Context, cfg Config, logger log.Logger) (func(), error) {
 	)
 	otel.SetMeterProvider(meterProvider)
 
-	logger.Info("OpenTelemetry initialized", "collector", cfg.OpenTelemetry.CollectorAddr)
+	logger.InfoContext(ctx, "OpenTelemetry initialized", "collector", cfg.OpenTelemetry.CollectorAddr)
 
 	cleanup := func() {
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		if err := tracerProvider.Shutdown(shutdownCtx); err != nil {
-			logger.Error("error shutting down tracer provider", "err", err)
+			logger.ErrorContext(shutdownCtx, "error shutting down tracer provider", "error", err)
 		}
 		if err := meterProvider.Shutdown(shutdownCtx); err != nil {
-			logger.Error("error shutting down meter provider", "err", err)
+			logger.ErrorContext(shutdownCtx, "error shutting down meter provider", "error", err)
 		}
 	}
 

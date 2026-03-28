@@ -31,14 +31,14 @@ func (server *Handler) SearchAssets(ctx context.Context, req *connect.Request[co
 
 	results, err := server.assetService.SearchAssets(ctx, cfg)
 	if err != nil {
-		return nil, internalServerError(server.logger, fmt.Sprintf("error searching asset: %s", err.Error()))
+		return nil, internalServerError(ctx, "error searching asset", err)
 	}
 
 	assetsPB := []*compassv1beta1.Asset{}
 	for _, sr := range results {
 		assetPB, err := assetToProto(sr.ToAsset(), false)
 		if err != nil {
-			return nil, internalServerError(server.logger, fmt.Sprintf("error converting assets to proto: %s", err.Error()))
+			return nil, internalServerError(ctx, "error converting assets to proto", err)
 		}
 		assetsPB = append(assetsPB, assetPB)
 	}
@@ -65,7 +65,7 @@ func (server *Handler) SuggestAssets(ctx context.Context, req *connect.Request[c
 	}
 	suggestions, err := server.assetService.SuggestAssets(ctx, cfg)
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.SuggestAssetsResponse{
@@ -93,7 +93,7 @@ func (server *Handler) GroupAssets(ctx context.Context, req *connect.Request[com
 
 	results, err := server.assetService.GroupAssets(ctx, cfg)
 	if err != nil {
-		return nil, internalServerError(server.logger, fmt.Sprintf("error grouping assets: %s", err.Error()))
+		return nil, internalServerError(ctx, "error grouping assets", err)
 	}
 
 	var groups []*compassv1beta1.AssetGroup
@@ -109,7 +109,7 @@ func (server *Handler) GroupAssets(ctx context.Context, req *connect.Request[com
 		for _, a := range gr.Assets {
 			ap, err := assetToProto(a, false)
 			if err != nil {
-				return nil, internalServerError(server.logger, fmt.Sprintf("error converting asset to proto: %s", err.Error()))
+				return nil, internalServerError(ctx, "error converting asset to proto", err)
 			}
 			assets = append(assets, ap)
 		}

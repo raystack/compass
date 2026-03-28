@@ -15,7 +15,6 @@ import (
 	"github.com/raystack/compass/handler/mocks"
 	"github.com/raystack/compass/internal/middleware"
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
-	log "github.com/raystack/salt/observability/logger"
 	
 	
 	"google.golang.org/protobuf/testing/protocmp"
@@ -122,13 +121,12 @@ func TestGetTypes(t *testing.T) {
 			ctx = middleware.BuildContextWithNamespace(ctx, ns)
 
 			mockSvc := new(mocks.AssetService)
-			logger := log.NewNoop()
 			defer mockSvc.AssertExpectations(t)
 			tc.Setup(&tc, ctx, mockSvc)
 
 			defer mockSvc.AssertExpectations(t)
 
-			handler := New(logger, nil, mockSvc, nil, nil, nil, nil, nil)
+			handler := New(nil, mockSvc, nil, nil, nil, nil, nil)
 
 			got, err := handler.GetAllTypes(ctx, connect.NewRequest(&compassv1beta1.GetAllTypesRequest{}))
 			if tc.ExpectStatus == 0 {

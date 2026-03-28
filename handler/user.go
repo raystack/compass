@@ -42,14 +42,14 @@ func (server *Handler) GetUserStarredAssets(ctx context.Context, req *connect.Re
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	var starredAssetsPB []*compassv1beta1.Asset
 	for _, ast := range starredAssets {
 		astPB, err := assetToProto(ast, false)
 		if err != nil {
-			return nil, internalServerError(server.logger, err.Error())
+			return nil, internalServerError(ctx, "internal error", err)
 		}
 		starredAssetsPB = append(starredAssetsPB, astPB)
 	}
@@ -80,14 +80,14 @@ func (server *Handler) GetMyStarredAssets(ctx context.Context, req *connect.Requ
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	var starredAssetsPB []*compassv1beta1.Asset
 	for _, ast := range starredAssets {
 		astPB, err := assetToProto(ast, false)
 		if err != nil {
-			return nil, internalServerError(server.logger, err.Error())
+			return nil, internalServerError(ctx, "internal error", err)
 		}
 		starredAssetsPB = append(starredAssetsPB, astPB)
 	}
@@ -112,12 +112,12 @@ func (server *Handler) GetMyStarredAsset(ctx context.Context, req *connect.Reque
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	astPB, err := assetToProto(ast, false)
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.GetMyStarredAssetResponse{
@@ -146,7 +146,7 @@ func (server *Handler) StarAsset(ctx context.Context, req *connect.Request[compa
 				Id: starID,
 			}), nil
 		}
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.StarAssetResponse{
@@ -169,7 +169,7 @@ func (server *Handler) UnstarAsset(ctx context.Context, req *connect.Request[com
 		if errors.As(err, new(star.NotFoundError)) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.UnstarAssetResponse{}), nil
@@ -189,7 +189,7 @@ func (server *Handler) GetMyDiscussions(ctx context.Context, req *connect.Reques
 
 	dscs, err := server.discussionService.GetDiscussions(ctx, flt)
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	var dscsPB []*compassv1beta1.Discussion

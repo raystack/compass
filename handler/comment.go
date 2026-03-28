@@ -43,7 +43,7 @@ func (server *Handler) CreateComment(ctx context.Context, req *connect.Request[c
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.CreateCommentResponse{Id: id}), nil
@@ -66,7 +66,7 @@ func (server *Handler) GetAllComments(ctx context.Context, req *connect.Request[
 
 	cmts, err := server.discussionService.GetComments(ctx, req.Msg.DiscussionId, flt)
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	commentsProto := []*compassv1beta1.Comment{}
@@ -96,7 +96,7 @@ func (server *Handler) GetComment(ctx context.Context, req *connect.Request[comp
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.GetCommentResponse{Data: commentToProto(cmt)}), nil
@@ -134,7 +134,7 @@ func (server *Handler) UpdateComment(ctx context.Context, req *connect.Request[c
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.UpdateCommentResponse{}), nil
@@ -159,7 +159,7 @@ func (server *Handler) DeleteComment(ctx context.Context, req *connect.Request[c
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.DeleteCommentResponse{}), nil

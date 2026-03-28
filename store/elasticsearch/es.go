@@ -14,7 +14,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/core/namespace"
-	log "github.com/raystack/salt/observability/logger"
 )
 
 const (
@@ -131,13 +130,10 @@ func errorReasonFromResponse(res *esapi.Response) string {
 
 type Client struct {
 	client *elasticsearch.Client
-	logger log.Logger
 }
 
-func NewClient(logger log.Logger, config Config, opts ...ClientOption) (*Client, error) {
-	c := &Client{
-		logger: logger,
-	}
+func NewClient(config Config, opts ...ClientOption) (*Client, error) {
+	c := &Client{}
 
 	for _, opt := range opts {
 		opt(c)

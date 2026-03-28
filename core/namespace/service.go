@@ -3,18 +3,15 @@ package namespace
 import (
 	"context"
 	"github.com/google/uuid"
-	log "github.com/raystack/salt/observability/logger"
 )
 
 type Service struct {
 	storageRepo   StorageRepository
 	discoveryRepo DiscoveryRepository
-	logger        log.Logger
 }
 
-func NewService(logger log.Logger, storageRepo StorageRepository, discoveryRepo DiscoveryRepository) *Service {
+func NewService(storageRepo StorageRepository, discoveryRepo DiscoveryRepository) *Service {
 	return &Service{
-		logger:        logger,
 		storageRepo:   storageRepo,
 		discoveryRepo: discoveryRepo,
 	}

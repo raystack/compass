@@ -7,12 +7,13 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/internal/client"
+	"github.com/raystack/compass/internal/config"
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
 	"github.com/raystack/salt/cli/printer"
 	"github.com/spf13/cobra"
 )
 
-func discussionsCommand(cfg *Config) *cobra.Command {
+func discussionsCommand(cfg *config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "discussion",
 		Aliases: []string{"discussions"},
@@ -36,7 +37,7 @@ func discussionsCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func listAllDiscussionsCommand(cfg *Config) *cobra.Command {
+func listAllDiscussionsCommand(cfg *config.Config) *cobra.Command {
 	var json string
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -86,7 +87,7 @@ func listAllDiscussionsCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func viewDiscussionByIDCommand(cfg *Config) *cobra.Command {
+func viewDiscussionByIDCommand(cfg *config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "view <id>",
 		Short: "view discussion for the given ID",
@@ -123,7 +124,7 @@ func viewDiscussionByIDCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func postDiscussionCommand(cfg *Config) *cobra.Command {
+func postDiscussionCommand(cfg *config.Config) *cobra.Command {
 	var filePath string
 
 	cmd := &cobra.Command{

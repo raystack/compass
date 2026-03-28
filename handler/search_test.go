@@ -14,7 +14,6 @@ import (
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/handler/mocks"
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
-	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/mock"
 	
 	
@@ -219,7 +218,6 @@ func TestSearch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.AssetService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -232,7 +230,7 @@ func TestSearch(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.SearchAssets(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -337,7 +335,6 @@ func TestSuggest(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.AssetService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -350,7 +347,7 @@ func TestSuggest(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.SuggestAssets(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {

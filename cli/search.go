@@ -6,12 +6,13 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/internal/client"
+	"github.com/raystack/compass/internal/config"
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
 	"github.com/raystack/salt/cli/printer"
 	"github.com/spf13/cobra"
 )
 
-func searchCommand(cfg *Config) *cobra.Command {
+func searchCommand(cfg *config.Config) *cobra.Command {
 	var filter, query, rankBy string
 	var size uint32
 	cmd := &cobra.Command{

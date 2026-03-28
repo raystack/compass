@@ -17,7 +17,6 @@ import (
 	"github.com/raystack/compass/handler/mocks"
 	"github.com/raystack/compass/internal/middleware"
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
-	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/mock"
 	
 	
@@ -108,7 +107,6 @@ func TestCreateComment(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -121,7 +119,7 @@ func TestCreateComment(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.CreateComment(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -254,7 +252,6 @@ func TestGetAllComments(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -267,7 +264,7 @@ func TestGetAllComments(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAllComments(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -404,7 +401,6 @@ func TestGetComment(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -417,7 +413,7 @@ func TestGetComment(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetComment(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -567,7 +563,6 @@ func TestUpdateComment(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -579,7 +574,7 @@ func TestUpdateComment(t *testing.T) {
 			defer mockSvc.AssertExpectations(t)
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
-			handler := New(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			_, err := handler.UpdateComment(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -690,7 +685,6 @@ func TestDeleteComment(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -703,7 +697,7 @@ func TestDeleteComment(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			_, err := handler.DeleteComment(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {

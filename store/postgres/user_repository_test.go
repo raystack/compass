@@ -11,7 +11,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/store/postgres"
-	log "github.com/raystack/salt/observability/logger"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
@@ -29,8 +28,7 @@ type UserRepositoryTestSuite struct {
 func (r *UserRepositoryTestSuite) SetupSuite() {
 	var err error
 
-	logger := log.NewNoop()
-	r.client, r.pool, r.resource, err = newTestClient(logger)
+	r.client, r.pool, r.resource, err = newTestClient()
 	if err != nil {
 		r.T().Fatal(err)
 	}

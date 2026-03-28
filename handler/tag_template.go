@@ -33,7 +33,7 @@ func (server *Handler) GetAllTagTemplates(ctx context.Context, req *connect.Requ
 
 	listOfDomainTemplate, err := server.tagTemplateService.GetTemplates(ctx, req.Msg.GetUrn())
 	if err != nil {
-		return nil, internalServerError(server.logger, fmt.Sprintf("error finding templates: %s", err.Error()))
+		return nil, internalServerError(ctx, "error finding templates", err)
 	}
 
 	var templatesPB []*compassv1beta1.TagTemplate
@@ -82,7 +82,7 @@ func (server *Handler) CreateTagTemplate(ctx context.Context, req *connect.Reque
 		return nil, connect.NewError(connect.CodeAlreadyExists, err)
 	}
 	if err != nil {
-		return nil, internalServerError(server.logger, fmt.Sprintf("error creating tag template: %s", err.Error()))
+		return nil, internalServerError(ctx, "error creating tag template", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.CreateTagTemplateResponse{
@@ -102,7 +102,7 @@ func (server *Handler) GetTagTemplate(ctx context.Context, req *connect.Request[
 		if errors.As(err, new(tag.TemplateNotFoundError)) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
-		return nil, internalServerError(server.logger, fmt.Sprintf("error finding a template: %s", err.Error()))
+		return nil, internalServerError(ctx, "error finding a template", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.GetTagTemplateResponse{
@@ -144,7 +144,7 @@ func (server *Handler) UpdateTagTemplate(ctx context.Context, req *connect.Reque
 		if errors.As(err, new(tag.ValidationError)) {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
-		return nil, internalServerError(server.logger, fmt.Sprintf("error updating template: %s", err.Error()))
+		return nil, internalServerError(ctx, "error updating template", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.UpdateTagTemplateResponse{
@@ -164,7 +164,7 @@ func (server *Handler) DeleteTagTemplate(ctx context.Context, req *connect.Reque
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
-		return nil, internalServerError(server.logger, fmt.Sprintf("error deleting a template: %s", err.Error()))
+		return nil, internalServerError(ctx, "error deleting a template", err)
 	}
 	return connect.NewResponse(&compassv1beta1.DeleteTagTemplateResponse{}), nil
 }

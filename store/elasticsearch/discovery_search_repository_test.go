@@ -10,7 +10,6 @@ import (
 
 	"github.com/raystack/compass/core/asset"
 	store "github.com/raystack/compass/store/elasticsearch"
-	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -32,7 +31,6 @@ func TestSearcherSearch(t *testing.T) {
 		cli, err := esTestServer.NewClient()
 		require.NoError(t, err)
 		esClient, err := store.NewClient(
-			log.NewNoop(),
 			store.Config{},
 			store.WithClient(cli),
 		)
@@ -224,7 +222,6 @@ func TestSearcherSuggest(t *testing.T) {
 	cli, err := esTestServer.NewClient()
 	require.NoError(t, err)
 	esClient, err := store.NewClient(
-		log.NewNoop(),
 		store.Config{},
 		store.WithClient(cli),
 	)

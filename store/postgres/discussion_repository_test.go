@@ -12,7 +12,6 @@ import (
 	"github.com/raystack/compass/core/discussion"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/store/postgres"
-	log "github.com/raystack/salt/observability/logger"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
@@ -41,8 +40,7 @@ func (r *DiscussionRepositoryTestSuite) SetupSuite() {
 	}
 	r.ctx = middleware.BuildContextWithNamespace(context.Background(), r.ns)
 
-	logger := log.NewLogrus()
-	r.client, r.pool, r.resource, err = newTestClient(logger)
+	r.client, r.pool, r.resource, err = newTestClient()
 	if err != nil {
 		r.T().Fatal(err)
 	}

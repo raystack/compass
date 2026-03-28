@@ -1,7 +1,25 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
 
+	"github.com/raystack/compass/internal/client"
+	"github.com/raystack/compass/internal/telemetry"
+	esStore "github.com/raystack/compass/store/elasticsearch"
+	"github.com/raystack/compass/store/postgres"
+)
+
+// Config is the root configuration for the compass application.
+type Config struct {
+	LogLevel      string           `yaml:"log_level" mapstructure:"log_level" default:"info"`
+	Telemetry     telemetry.Config `mapstructure:"telemetry"`
+	Elasticsearch esStore.Config   `mapstructure:"elasticsearch"`
+	DB            postgres.Config  `mapstructure:"db"`
+	Service       ServerConfig     `mapstructure:"service"`
+	Client        client.Config    `mapstructure:"client"`
+}
+
+// ServerConfig holds HTTP server configuration.
 type ServerConfig struct {
 	Host    string `mapstructure:"host" default:"0.0.0.0"`
 	Port    int    `mapstructure:"port" default:"8080"`
@@ -25,7 +43,6 @@ type CORSConfig struct {
 func (cfg ServerConfig) Addr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.Port) }
 
 type IdentityConfig struct {
-	// User Identity
 	HeaderKeyUserUUID   string `yaml:"headerkey_uuid" mapstructure:"headerkey_uuid" default:"Compass-User-UUID"`
 	HeaderValueUserUUID string `yaml:"headervalue_uuid" mapstructure:"headervalue_uuid" default:"raystack@email.com"`
 	HeaderKeyUserEmail  string `yaml:"headerkey_email" mapstructure:"headerkey_email" default:"Compass-User-Email"`

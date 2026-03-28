@@ -17,7 +17,6 @@ import (
 	"github.com/raystack/compass/handler/mocks"
 	"github.com/raystack/compass/internal/middleware"
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
-	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	
@@ -122,7 +121,6 @@ func TestGetAllDiscussions(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -135,7 +133,7 @@ func TestGetAllDiscussions(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAllDiscussions(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -266,7 +264,6 @@ func TestCreateDiscussion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -279,7 +276,7 @@ func TestCreateDiscussion(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 			_, err := handler.CreateDiscussion(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
 				if err != nil {
@@ -380,7 +377,6 @@ func TestGetDiscussion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -392,7 +388,7 @@ func TestGetDiscussion(t *testing.T) {
 			defer mockSvc.AssertExpectations(t)
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
-			handler := New(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetDiscussion(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -532,7 +528,6 @@ func TestPatchDiscussion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockSvc := new(mocks.DiscussionService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -545,7 +540,7 @@ func TestPatchDiscussion(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 			_, err := handler.PatchDiscussion(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
 				if err != nil {

@@ -2,7 +2,9 @@ package cli
 
 import (
 	"github.com/MakeNowJust/heredoc"
+	"github.com/raystack/compass/internal/config"
 	"github.com/raystack/salt/cli/commander"
+	saltconfig "github.com/raystack/salt/config"
 	"github.com/spf13/cobra"
 )
 
@@ -14,10 +16,10 @@ var (
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		Example: heredoc.Doc(`
-	$ compass asset
-	$ compass discussion
-	$ compass search
-	$ compass server
+			$ compass asset
+			$ compass discussion
+			$ compass search
+			$ compass server
 	`),
 		Annotations: map[string]string{
 			"group": "core",
@@ -34,7 +36,7 @@ var (
 	namespaceID string
 )
 
-func New(cliConfig *Config) *cobra.Command {
+func New(cliConfig *config.Config) *cobra.Command {
 	if cliConfig.Client.ServerHeaderKeyUserUUID == "" {
 		// defaulting to server defined key
 		cliConfig.Client.ServerHeaderKeyUserUUID = cliConfig.Service.Identity.HeaderKeyUserUUID
@@ -43,8 +45,7 @@ func New(cliConfig *Config) *cobra.Command {
 	rootCmd.PersistentPreRunE = func(subCmd *cobra.Command, args []string) error {
 		cfgFile, _ := subCmd.Flags().GetString(configFlag)
 		if cfgFile != "" {
-			err := LoadConfigFromFlag(cfgFile, cliConfig)
-			if err != nil {
+			if err := saltconfig.NewLoader(saltconfig.WithFile(cfgFile)).Load(cliConfig); err != nil {
 				return err
 			}
 		}

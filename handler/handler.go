@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"connectrpc.com/connect"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/user"
-	log "github.com/raystack/salt/observability/logger"
 )
 
 type Handler struct {
@@ -21,7 +21,6 @@ type Handler struct {
 	tagService         TagService
 	tagTemplateService TagTemplateService
 	userService        UserService
-	logger             log.Logger
 }
 
 var (
@@ -29,7 +28,6 @@ var (
 )
 
 func New(
-	logger log.Logger,
 	namespaceService NamespaceService,
 	assetService AssetService,
 	starService StarService,
@@ -46,7 +44,6 @@ func New(
 		tagService:         tagService,
 		tagTemplateService: tagTemplateService,
 		userService:        userService,
-		logger:             logger,
 	}
 }
 
@@ -60,7 +57,7 @@ func (server *Handler) validateUserInCtx(ctx context.Context, ns *namespace.Name
 		if errors.As(err, &user.DuplicateRecordError{UUID: usr.UUID, Email: usr.Email}) {
 			return "", connect.NewError(connect.CodeAlreadyExists, err)
 		}
-		return "", internalServerError(server.logger, err.Error())
+		return "", internalServerError(ctx, "error validating user", err)
 	}
 	if userID == "" {
 		return "", connect.NewError(connect.CodeInvalidArgument, errMissingUserInfo)
@@ -68,10 +65,10 @@ func (server *Handler) validateUserInCtx(ctx context.Context, ns *namespace.Name
 	return userID, nil
 }
 
-func internalServerError(logger log.Logger, msg string) error {
+func internalServerError(ctx context.Context, msg string, err error) error {
 	ref := time.Now().Unix()
 
-	logger.Error(msg, "ref", ref)
+	slog.ErrorContext(ctx, msg, "error", err, "ref", ref)
 	return connect.NewError(connect.CodeInternal, fmt.Errorf(
 		"%s - ref (%d)",
 		http.StatusText(http.StatusInternalServerError),

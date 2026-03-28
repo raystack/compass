@@ -7,6 +7,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/internal/client"
+	"github.com/raystack/compass/internal/config"
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
 	"github.com/raystack/salt/cli/printer"
 	"github.com/spf13/cobra"
@@ -17,7 +18,7 @@ const (
 	pageOffset = 0
 )
 
-func assetsCommand(cfg *Config) *cobra.Command {
+func assetsCommand(cfg *config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "asset",
 		Aliases: []string{"assets"},
@@ -57,7 +58,7 @@ func assetsCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func listAllAssetsCommand(cfg *Config) *cobra.Command {
+func listAllAssetsCommand(cfg *config.Config) *cobra.Command {
 	var types, services, q, qFields, sort, sort_dir, output string
 	var data map[string]string
 	var size, page uint32
@@ -128,7 +129,7 @@ func listAllAssetsCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func viewAssetByIDCommand(cfg *Config) *cobra.Command {
+func viewAssetByIDCommand(cfg *config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "view <urn>",
 		Short: "view asset for the given ID or URN",
@@ -166,7 +167,7 @@ func viewAssetByIDCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func editAssetCommand(cfg *Config) *cobra.Command {
+func editAssetCommand(cfg *config.Config) *cobra.Command {
 	var filePath string
 	cmd := &cobra.Command{
 		Use:   "edit",
@@ -214,7 +215,7 @@ func editAssetCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func deleteAssetByIDCommand(cfg *Config) *cobra.Command {
+func deleteAssetByIDCommand(cfg *config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete <id>",
 		Short: "delete asset with the given ID",
@@ -250,7 +251,7 @@ func deleteAssetByIDCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func listAllTypesCommand(cfg *Config) *cobra.Command {
+func listAllTypesCommand(cfg *config.Config) *cobra.Command {
 	var types, services, q, qFields string
 	var data map[string]string
 
@@ -305,7 +306,7 @@ func listAllTypesCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func listAssetStargazerCommand(cfg *Config) *cobra.Command {
+func listAssetStargazerCommand(cfg *config.Config) *cobra.Command {
 	var size, page uint32
 	cmd := &cobra.Command{
 		Use:   "stargazers <id>",
@@ -344,7 +345,7 @@ func listAssetStargazerCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func starAssetCommand(cfg *Config) *cobra.Command {
+func starAssetCommand(cfg *config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "star <id>",
 		Short: "star an asset by id for current user",
@@ -379,7 +380,7 @@ func starAssetCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func unstarAssetCommand(cfg *Config) *cobra.Command {
+func unstarAssetCommand(cfg *config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "unstar <id>",
 		Short: "unstar an asset by id for current user",
@@ -415,7 +416,7 @@ func unstarAssetCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func starredAssetCommand(cfg *Config) *cobra.Command {
+func starredAssetCommand(cfg *config.Config) *cobra.Command {
 	var size, page uint32
 	var output string
 
@@ -467,7 +468,7 @@ func starredAssetCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func versionHistoryAssetCommand(cfg *Config) *cobra.Command {
+func versionHistoryAssetCommand(cfg *config.Config) *cobra.Command {
 	var size, page uint32
 	cmd := &cobra.Command{
 		Use:   "versionhistory <id>",
@@ -509,7 +510,7 @@ func versionHistoryAssetCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func viewAssetByVersionCommand(cfg *Config) *cobra.Command {
+func viewAssetByVersionCommand(cfg *config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version <urn> <version>",
 		Short: "get asset's previous version by urn or id and version number",

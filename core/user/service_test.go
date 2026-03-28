@@ -9,7 +9,6 @@ import (
 
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/core/user/mocks"
-	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -85,14 +84,13 @@ func TestValidateUser(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := context.TODO()
-			logger := log.NewNoop()
 			mockUserRepo := new(mocks.UserRepository)
 
 			if tc.Setup != nil {
 				tc.Setup(ctx, tc.UUID, tc.Email, mockUserRepo)
 			}
 
-			userSvc := user.NewService(logger, mockUserRepo)
+			userSvc := user.NewService(mockUserRepo)
 
 			_, err := userSvc.ValidateUser(ctx, ns, tc.UUID, tc.Email)
 

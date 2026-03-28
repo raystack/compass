@@ -2,37 +2,36 @@ package middleware
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"connectrpc.com/connect"
-	log "github.com/raystack/salt/observability/logger"
 )
 
 // Logger returns a new unary interceptor that logs request details.
-func Logger(logger log.Logger) connect.UnaryInterceptorFunc {
+func Logger() connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
 			start := time.Now()
-			procedure := req.Spec().Procedure
 
 			resp, err := next(ctx, req)
 
 			duration := time.Since(start)
-			fields := []interface{}{
-				"procedure", procedure,
-				"duration_ms", duration.Milliseconds(),
-				"peer_addr", req.Peer().Addr,
+			attrs := []slog.Attr{
+				slog.String("procedure", req.Spec().Procedure),
+				slog.Duration("duration", duration),
+				slog.String("peer_addr", req.Peer().Addr),
 			}
 
 			if err != nil {
-				fields = append(fields, "error", err.Error())
+				attrs = append(attrs, slog.Any("error", err))
 				connectErr, ok := err.(*connect.Error)
 				if ok {
-					fields = append(fields, "code", connectErr.Code().String())
+					attrs = append(attrs, slog.String("code", connectErr.Code().String()))
 				}
-				logger.Error("request failed", fields...)
+				slog.LogAttrs(ctx, slog.LevelError, "request failed", attrs...)
 			} else {
-				logger.Debug("request completed", fields...)
+				slog.LogAttrs(ctx, slog.LevelDebug, "request completed", attrs...)
 			}
 
 			return resp, err

@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/namespace/mocks"
-	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -50,7 +49,6 @@ func TestService_Create(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			logger := log.NewNoop()
 			mockStorageRepo := new(mocks.NamespaceStorageRepository)
 			mockDiscoveryRepo := new(mocks.NamespaceDiscoveryRepository)
 			if tc.Setup != nil {
@@ -59,7 +57,7 @@ func TestService_Create(t *testing.T) {
 			defer mockStorageRepo.AssertExpectations(t)
 			defer mockDiscoveryRepo.AssertExpectations(t)
 
-			service := namespace.NewService(logger, mockStorageRepo, mockDiscoveryRepo)
+			service := namespace.NewService(mockStorageRepo, mockDiscoveryRepo)
 			got, err := service.Create(ctx, tc.Request.ns)
 			if !tc.ExpectErr && err != nil {
 				t.Errorf("expected handler to not return err but got %s", err.Error())
@@ -169,7 +167,6 @@ func TestService_Update(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			logger := log.NewNoop()
 			mockStorageRepo := new(mocks.NamespaceStorageRepository)
 			mockDiscoveryRepo := new(mocks.NamespaceDiscoveryRepository)
 			if tc.Setup != nil {
@@ -178,7 +175,7 @@ func TestService_Update(t *testing.T) {
 			defer mockStorageRepo.AssertExpectations(t)
 			defer mockDiscoveryRepo.AssertExpectations(t)
 
-			service := namespace.NewService(logger, mockStorageRepo, mockDiscoveryRepo)
+			service := namespace.NewService(mockStorageRepo, mockDiscoveryRepo)
 			err := service.Update(ctx, tc.Request.ns)
 			if !tc.ExpectErr && err != nil {
 				t.Errorf("expected handler to not return err but got %s", err.Error())

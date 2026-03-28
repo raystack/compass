@@ -12,7 +12,6 @@ import (
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/elastic/go-elasticsearch/v8"
 	store "github.com/raystack/compass/store/elasticsearch"
-	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -133,7 +132,6 @@ func TestElasticsearch(t *testing.T) {
 				cli, err := esTestServer.NewClient()
 				require.NoError(t, err)
 				esClient, err := store.NewClient(
-					log.NewNoop(),
 					store.Config{},
 					store.WithClient(cli),
 				)

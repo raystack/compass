@@ -19,7 +19,6 @@ import (
 	"github.com/raystack/compass/handler/mocks"
 	"github.com/raystack/compass/internal/middleware"
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
-	log "github.com/raystack/salt/observability/logger"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -109,7 +108,6 @@ func TestGetUserStarredAssets(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			ctx = middleware.BuildContextWithNamespace(ctx, ns)
 
-			logger := log.NewNoop()
 
 			mockUserSvc := new(mocks.UserService)
 			mockStarSvc := new(mocks.StarService)
@@ -123,7 +121,7 @@ func TestGetUserStarredAssets(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetUserStarredAssets(ctx, connect.NewRequest(&compassv1beta1.GetUserStarredAssetsRequest{
 				UserId: userID,
@@ -237,7 +235,6 @@ func TestGetMyStarredAssets(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			ctx = middleware.BuildContextWithNamespace(ctx, ns)
 
-			logger := log.NewNoop()
 
 			mockUserSvc := new(mocks.UserService)
 			mockStarSvc := new(mocks.StarService)
@@ -251,7 +248,7 @@ func TestGetMyStarredAssets(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetMyStarredAssets(ctx, connect.NewRequest(&compassv1beta1.GetMyStarredAssetsRequest{
 				Offset: uint32(offset),
@@ -355,7 +352,6 @@ func TestGetMyStarredAsset(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			ctx = middleware.BuildContextWithNamespace(ctx, ns)
 
-			logger := log.NewNoop()
 
 			mockUserSvc := new(mocks.UserService)
 			mockStarSvc := new(mocks.StarService)
@@ -369,7 +365,7 @@ func TestGetMyStarredAsset(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetMyStarredAsset(ctx, connect.NewRequest(&compassv1beta1.GetMyStarredAssetRequest{
 				AssetId: assetID,
@@ -463,7 +459,6 @@ func TestStarAsset(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			ctx = middleware.BuildContextWithNamespace(ctx, ns)
 
-			logger := log.NewNoop()
 
 			mockUserSvc := new(mocks.UserService)
 			mockStarSvc := new(mocks.StarService)
@@ -477,7 +472,7 @@ func TestStarAsset(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			_, err := handler.StarAsset(ctx, connect.NewRequest(&compassv1beta1.StarAssetRequest{
 				AssetId: assetID,
@@ -551,7 +546,6 @@ func TestUnstarAsset(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			ctx = middleware.BuildContextWithNamespace(ctx, ns)
 
-			logger := log.NewNoop()
 
 			mockUserSvc := new(mocks.UserService)
 			mockStarSvc := new(mocks.StarService)
@@ -565,7 +559,7 @@ func TestUnstarAsset(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			_, err := handler.UnstarAsset(ctx, connect.NewRequest(&compassv1beta1.UnstarAssetRequest{
 				AssetId: assetID,
@@ -720,7 +714,6 @@ func TestGetMyDiscussions(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
 			ctx = middleware.BuildContextWithNamespace(ctx, ns)
 
-			logger := log.NewNoop()
 
 			mockUserSvc := new(mocks.UserService)
 			mockDiscussionSvc := new(mocks.DiscussionService)
@@ -734,7 +727,7 @@ func TestGetMyDiscussions(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, mockDiscussionSvc, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, mockDiscussionSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetMyDiscussions(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {

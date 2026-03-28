@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/raystack/compass/core/tag"
 	"github.com/raystack/compass/store/postgres"
-	log "github.com/raystack/salt/observability/logger"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
@@ -32,8 +31,7 @@ type TagRepositoryTestSuite struct {
 func (r *TagRepositoryTestSuite) SetupSuite() {
 	var err error
 
-	logger := log.NewNoop()
-	r.client, r.pool, r.resource, err = newTestClient(logger)
+	r.client, r.pool, r.resource, err = newTestClient()
 	if err != nil {
 		r.T().Fatal(err)
 	}

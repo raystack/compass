@@ -39,7 +39,7 @@ func (server *Handler) GetTagByAssetAndTemplate(ctx context.Context, req *connec
 	}
 
 	if server.tagService == nil {
-		return nil, internalServerError(server.logger, errNilTagService.Error())
+		return nil, internalServerError(ctx, "nil tag service", errNilTagService)
 	}
 
 	if req.Msg.GetAssetId() == "" {
@@ -54,12 +54,12 @@ func (server *Handler) GetTagByAssetAndTemplate(ctx context.Context, req *connec
 		if errors.As(err, new(tag.NotFoundError)) || errors.As(err, new(tag.TemplateNotFoundError)) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
-		return nil, internalServerError(server.logger, fmt.Sprintf("error finding a tag with asset and template: %s", err.Error()))
+		return nil, internalServerError(ctx, "error finding a tag with asset and template", err)
 	}
 
 	tagPB, err := tagToProto(tg)
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.GetTagByAssetAndTemplateResponse{
@@ -75,7 +75,7 @@ func (server *Handler) CreateTagAsset(ctx context.Context, req *connect.Request[
 	}
 
 	if server.tagService == nil {
-		return nil, internalServerError(server.logger, errNilTagService.Error())
+		return nil, internalServerError(ctx, "nil tag service", errNilTagService)
 	}
 
 	if req.Msg.GetAssetId() == "" {
@@ -112,12 +112,12 @@ func (server *Handler) CreateTagAsset(ctx context.Context, req *connect.Request[
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	if err != nil {
-		return nil, internalServerError(server.logger, fmt.Sprintf("error creating tag: %s", err.Error()))
+		return nil, internalServerError(ctx, "error creating tag", err)
 	}
 
 	tagPB, err := tagToProto(tagDomain)
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.CreateTagAssetResponse{
@@ -133,7 +133,7 @@ func (server *Handler) UpdateTagAsset(ctx context.Context, req *connect.Request[
 	}
 
 	if server.tagService == nil {
-		return nil, internalServerError(server.logger, errNilTagService.Error())
+		return nil, internalServerError(ctx, "nil tag service", errNilTagService)
 	}
 
 	if req.Msg.GetAssetId() == "" {
@@ -168,12 +168,12 @@ func (server *Handler) UpdateTagAsset(ctx context.Context, req *connect.Request[
 		if errors.As(err, new(tag.ValidationError)) {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
-		return nil, internalServerError(server.logger, fmt.Sprintf("error updating an asset's tag: %s", err.Error()))
+		return nil, internalServerError(ctx, "error updating an asset's tag", err)
 	}
 
 	tagPB, err := tagToProto(tagDomain)
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.UpdateTagAssetResponse{
@@ -189,7 +189,7 @@ func (server *Handler) DeleteTagAsset(ctx context.Context, req *connect.Request[
 	}
 
 	if server.tagService == nil {
-		return nil, internalServerError(server.logger, errNilTagService.Error())
+		return nil, internalServerError(ctx, "nil tag service", errNilTagService)
 	}
 
 	if req.Msg.GetAssetId() == "" {
@@ -204,7 +204,7 @@ func (server *Handler) DeleteTagAsset(ctx context.Context, req *connect.Request[
 		if errors.As(err, new(tag.TemplateNotFoundError)) || errors.As(err, new(tag.NotFoundError)) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
-		return nil, internalServerError(server.logger, fmt.Sprintf("error deleting a tag: %s", err.Error()))
+		return nil, internalServerError(ctx, "error deleting a tag", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.DeleteTagAssetResponse{}), nil
@@ -218,7 +218,7 @@ func (server *Handler) GetAllTagsByAsset(ctx context.Context, req *connect.Reque
 	}
 
 	if server.tagService == nil {
-		return nil, internalServerError(server.logger, errNilTagService.Error())
+		return nil, internalServerError(ctx, "nil tag service", errNilTagService)
 	}
 
 	if req.Msg.GetAssetId() == "" {
@@ -227,14 +227,14 @@ func (server *Handler) GetAllTagsByAsset(ctx context.Context, req *connect.Reque
 
 	tags, err := server.tagService.GetTagsByAssetID(ctx, req.Msg.GetAssetId())
 	if err != nil {
-		return nil, internalServerError(server.logger, fmt.Sprintf("error getting asset tags: %s", err.Error()))
+		return nil, internalServerError(ctx, "error getting asset tags", err)
 	}
 
 	var tagsPB []*compassv1beta1.Tag
 	for _, tg := range tags {
 		tgPB, err := tagToProto(tg)
 		if err != nil {
-			return nil, internalServerError(server.logger, err.Error())
+			return nil, internalServerError(ctx, "internal error", err)
 		}
 		tagsPB = append(tagsPB, tgPB)
 	}

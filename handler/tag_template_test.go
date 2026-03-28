@@ -17,7 +17,6 @@ import (
 	"github.com/raystack/compass/handler/mocks"
 	"github.com/raystack/compass/internal/middleware"
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
-	log "github.com/raystack/salt/observability/logger"
 	
 	
 	"google.golang.org/protobuf/testing/protocmp"
@@ -150,7 +149,6 @@ func TestGetAllTagTemplates(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
@@ -165,7 +163,7 @@ func TestGetAllTagTemplates(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.GetAllTagTemplates(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -255,7 +253,6 @@ func TestCreateTagTemplate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
@@ -269,7 +266,7 @@ func TestCreateTagTemplate(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.CreateTagTemplate(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -348,7 +345,6 @@ func TestGetTagTemplate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
@@ -363,7 +359,7 @@ func TestGetTagTemplate(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 			got, err := handler.GetTagTemplate(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
 				if err != nil {
@@ -464,7 +460,6 @@ func TestUpdateTagTemplate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
@@ -479,7 +474,7 @@ func TestUpdateTagTemplate(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 			got, err := handler.UpdateTagTemplate(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
 				if err != nil {
@@ -546,7 +541,6 @@ func TestDeleteTagTemplate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockTagSvc := new(mocks.TagService)
 			mockTemplateSvc := new(mocks.TagTemplateService)
@@ -560,7 +554,7 @@ func TestDeleteTagTemplate(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			_, err := handler.DeleteTagTemplate(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {

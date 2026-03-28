@@ -21,7 +21,6 @@ import (
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/store/postgres"
-	log "github.com/raystack/salt/observability/logger"
 	"github.com/ory/dockertest/v3"
 	"github.com/r3labs/diff/v3"
 	"github.com/stretchr/testify/suite"
@@ -49,8 +48,7 @@ type AssetRepositoryTestSuite struct {
 func (r *AssetRepositoryTestSuite) SetupSuite() {
 	var err error
 
-	logger := log.NewLogrus()
-	r.client, r.pool, r.resource, err = newTestClient(logger)
+	r.client, r.pool, r.resource, err = newTestClient()
 	if err != nil {
 		r.T().Fatal(err)
 	}

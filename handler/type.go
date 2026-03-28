@@ -24,7 +24,7 @@ func (server *Handler) GetAllTypes(ctx context.Context, req *connect.Request[com
 
 	typesNameMap, err := server.assetService.GetTypes(ctx, flt)
 	if err != nil {
-		return nil, internalServerError(server.logger, fmt.Sprintf("error fetching types: %s", err.Error()))
+		return nil, internalServerError(ctx, "error fetching types", err)
 	}
 
 	results := []*compassv1beta1.Type{}

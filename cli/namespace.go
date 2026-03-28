@@ -9,12 +9,13 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/internal/client"
+	"github.com/raystack/compass/internal/config"
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
 	"github.com/raystack/salt/cli/printer"
 	"github.com/spf13/cobra"
 )
 
-func namespacesCommand(cfg *Config) *cobra.Command {
+func namespacesCommand(cfg *config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "namespace",
 		Aliases: []string{"ns"},
@@ -37,7 +38,7 @@ func namespacesCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func listNamespacesCommand(cfg *Config) *cobra.Command {
+func listNamespacesCommand(cfg *config.Config) *cobra.Command {
 	var json string
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -84,7 +85,7 @@ func listNamespacesCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func getNamespaceCommand(cfg *Config) *cobra.Command {
+func getNamespaceCommand(cfg *config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "view <id>",
 		Short: "view namespace for the given uuid or name",
@@ -122,7 +123,7 @@ func getNamespaceCommand(cfg *Config) *cobra.Command {
 	return cmd
 }
 
-func createNamespaceCommand(cfg *Config) *cobra.Command {
+func createNamespaceCommand(cfg *config.Config) *cobra.Command {
 	var name, state string
 	cmd := &cobra.Command{
 		Use:   "create",

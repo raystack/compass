@@ -11,6 +11,8 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/raystack/compass/cli"
+	"github.com/raystack/compass/internal/config"
+	saltconfig "github.com/raystack/salt/config"
 )
 
 const (
@@ -19,14 +21,14 @@ const (
 )
 
 func main() {
-	cliConfig, err := cli.LoadConfig()
+	cfg, err := loadConfig()
 	if err != nil {
 		fmt.Println(err)
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	if cmd, err := cli.New(cliConfig).ExecuteContextC(ctx); err != nil {
+	if cmd, err := cli.New(cfg).ExecuteContextC(ctx); err != nil {
 		printError(err)
 
 		msg := err.Error()
@@ -41,6 +43,22 @@ func main() {
 		}
 		os.Exit(exitError)
 	}
+}
+
+func loadConfig() (*config.Config, error) {
+	var cfg config.Config
+
+	err := saltconfig.NewLoader(
+		saltconfig.WithFile("./config.yaml"),
+		saltconfig.WithEnvPrefix("COMPASS"),
+	).Load(&cfg)
+	if err != nil {
+		loader := saltconfig.NewLoader(saltconfig.WithAppConfig("compass"))
+		if loadErr := loader.Load(&cfg); loadErr != nil {
+			return &cfg, fmt.Errorf("config not found: run \"compass config init\" to create one")
+		}
+	}
+	return &cfg, nil
 }
 
 func printError(err error) {

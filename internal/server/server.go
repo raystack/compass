@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -12,12 +13,11 @@ import (
 	"connectrpc.com/grpcreflect"
 	"connectrpc.com/otelconnect"
 	"connectrpc.com/validate"
-	"github.com/raystack/compass/internal/config"
-	"github.com/rs/cors"
-	"github.com/raystack/compass/handler"
-	"github.com/raystack/compass/internal/middleware"
 	"github.com/raystack/compass/gen/raystack/compass/v1beta1/compassv1beta1connect"
-	log "github.com/raystack/salt/observability/logger"
+	"github.com/raystack/compass/handler"
+	"github.com/raystack/compass/internal/config"
+	"github.com/raystack/compass/internal/middleware"
+	"github.com/rs/cors"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )
@@ -25,7 +25,6 @@ import (
 func Serve(
 	ctx context.Context,
 	cfg config.ServerConfig,
-	logger *log.Logrus,
 	namespaceService handler.NamespaceService,
 	assetService handler.AssetService,
 	starService handler.StarService,
@@ -34,8 +33,9 @@ func Serve(
 	tagTemplateService handler.TagTemplateService,
 	userService handler.UserService,
 ) error {
+	logger := slog.Default().With("component", "server")
+
 	v1beta1Handler := handler.New(
-		logger,
 		namespaceService,
 		assetService,
 		starService,
@@ -56,9 +56,9 @@ func Serve(
 	interceptors := connect.WithInterceptors(
 		otelInterceptor,
 		middleware.Recovery(),
-		middleware.Logger(logger),
+		middleware.Logger(),
 		validateInterceptor,
-		middleware.ErrorResponse(logger),
+		middleware.ErrorResponse(),
 		middleware.Namespace(namespaceService, cfg.Identity.NamespaceClaimKey, cfg.Identity.HeaderKeyUserUUID),
 		middleware.UserHeaderCtx(cfg.Identity.HeaderKeyUserUUID, cfg.Identity.HeaderKeyUserEmail),
 	)
@@ -109,7 +109,7 @@ func Serve(
 	// Start server in goroutine
 	errChan := make(chan error, 1)
 	go func() {
-		logger.Info("Starting server", "addr", cfg.Addr())
+		logger.InfoContext(ctx, "starting server", "addr", cfg.Addr())
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errChan <- err
 		}
@@ -118,17 +118,17 @@ func Serve(
 	// Wait for context cancellation or error
 	select {
 	case <-ctx.Done():
-		logger.Info("shutting down server...")
+		logger.InfoContext(ctx, "shutting down server")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		if err := server.Shutdown(shutdownCtx); err != nil {
-			logger.Error("server shutdown error", "err", err)
+			logger.ErrorContext(shutdownCtx, "server shutdown error", "error", err)
 		}
 	case err := <-errChan:
-		logger.Error("server error", "err", err)
+		logger.ErrorContext(ctx, "server error", "error", err)
 		return err
 	}
 
-	logger.Info("server stopped")
+	logger.InfoContext(ctx, "server stopped")
 	return nil
 }

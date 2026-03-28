@@ -14,7 +14,6 @@ import (
 	"github.com/raystack/compass/handler/mocks"
 	"github.com/raystack/compass/internal/middleware"
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
-	log "github.com/raystack/salt/observability/logger"
 	
 	
 	"google.golang.org/protobuf/testing/protocmp"
@@ -37,7 +36,6 @@ func TestGetLineageGraph(t *testing.T) {
 	ctx = middleware.BuildContextWithNamespace(ctx, ns)
 	t.Run("get Lineage", func(t *testing.T) {
 		t.Run("should return a graph containing the requested resource, along with it's related resources", func(t *testing.T) {
-			logger := log.NewNoop()
 			nodeURN := "job-1"
 			level := 8
 			direction := asset.LineageDirectionUpstream
@@ -73,7 +71,7 @@ func TestGetLineageGraph(t *testing.T) {
 			mockSvc.EXPECT().GetLineage(ctx, nodeURN, asset.LineageQuery{Level: level, Direction: direction, WithAttributes: true}).Return(lineage, nil)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetGraph(ctx, connect.NewRequest(&compassv1beta1.GetGraphRequest{
 				Urn:       nodeURN,

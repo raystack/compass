@@ -19,7 +19,6 @@ import (
 	"github.com/raystack/compass/handler/mocks"
 	"github.com/raystack/compass/internal/middleware"
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
-	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	
@@ -173,7 +172,6 @@ func TestGetAllAssets(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -186,7 +184,7 @@ func TestGetAllAssets(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAllAssets(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -322,7 +320,6 @@ func TestGetAssetByID(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			logger := log.NewNoop()
 			mockUserSvc := mocks.NewUserService(t)
 			mockAssetSvc := mocks.NewAssetService(t)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -333,7 +330,7 @@ func TestGetAssetByID(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAssetByID(ctx, connect.NewRequest(&compassv1beta1.GetAssetByIDRequest{
 				Id: assetID,
@@ -541,7 +538,6 @@ func TestUpsertAsset(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -554,7 +550,7 @@ func TestUpsertAsset(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.UpsertAsset(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -869,7 +865,6 @@ func TestUpsertPatchAsset(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -882,7 +877,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.UpsertPatchAsset(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -964,7 +959,6 @@ func TestDeleteAsset(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -977,7 +971,7 @@ func TestDeleteAsset(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			_, err := handler.DeleteAsset(ctx, connect.NewRequest(&compassv1beta1.DeleteAssetRequest{
 				Id: tc.AssetID,
@@ -1064,7 +1058,6 @@ func TestGetAssetStargazers(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockStarSvc := new(mocks.StarService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -1076,7 +1069,7 @@ func TestGetAssetStargazers(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAssetStargazers(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -1192,7 +1185,6 @@ func TestGetAssetVersionHistory(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -1205,7 +1197,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAssetVersionHistory(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -1321,7 +1313,6 @@ func TestGetAssetByVersion(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 
-			logger := log.NewNoop()
 			mockUserSvc := new(mocks.UserService)
 			mockAssetSvc := new(mocks.AssetService)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -1334,7 +1325,7 @@ func TestGetAssetByVersion(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAssetByVersion(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -1483,7 +1474,6 @@ func TestCreateAssetProbe(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 
-			logger := log.NewNoop()
 			mockUserSvc := mocks.NewUserService(t)
 			mockAssetSvc := mocks.NewAssetService(t)
 			mockNamespaceSvc := new(mocks.NamespaceService)
@@ -1494,7 +1484,7 @@ func TestCreateAssetProbe(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.CreateAssetProbe(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {

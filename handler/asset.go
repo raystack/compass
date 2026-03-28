@@ -66,14 +66,14 @@ func (server *Handler) GetAllAssets(ctx context.Context, req *connect.Request[co
 
 	assets, totalCount, err := server.assetService.GetAllAssets(ctx, flt, req.Msg.GetWithTotal())
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	var assetsProto []*compassv1beta1.Asset
 	for _, a := range assets {
 		ap, err := assetToProto(a, false)
 		if err != nil {
-			return nil, internalServerError(server.logger, err.Error())
+			return nil, internalServerError(ctx, "internal error", err)
 		}
 		assetsProto = append(assetsProto, ap)
 	}
@@ -104,12 +104,12 @@ func (server *Handler) GetAssetByID(ctx context.Context, req *connect.Request[co
 		if errors.As(err, new(asset.NotFoundError)) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	astProto, err := assetToProto(ast, false)
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.GetAssetByIDResponse{
@@ -135,7 +135,7 @@ func (server *Handler) GetAssetStargazers(ctx context.Context, req *connect.Requ
 		if errors.As(err, new(star.NotFoundError)) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	usersPB := []*compassv1beta1.User{}
@@ -166,14 +166,14 @@ func (server *Handler) GetAssetVersionHistory(ctx context.Context, req *connect.
 		if errors.As(err, new(asset.NotFoundError)) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	assetsPB := []*compassv1beta1.Asset{}
 	for _, av := range assetVersions {
 		avPB, err := assetToProto(av, true)
 		if err != nil {
-			return nil, internalServerError(server.logger, err.Error())
+			return nil, internalServerError(ctx, "internal error", err)
 		}
 		assetsPB = append(assetsPB, avPB)
 	}
@@ -202,12 +202,12 @@ func (server *Handler) GetAssetByVersion(ctx context.Context, req *connect.Reque
 		if errors.As(err, new(asset.NotFoundError)) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	assetPB, err := assetToProto(ast, true)
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.GetAssetByVersionResponse{
@@ -276,7 +276,7 @@ func (server *Handler) UpsertPatchAsset(ctx context.Context, req *connect.Reques
 				return connect.NewResponse(&compassv1beta1.UpsertPatchAssetResponse{Id: ""}), nil
 			}
 		} else {
-			return nil, internalServerError(server.logger, err.Error())
+			return nil, internalServerError(ctx, "internal error", err)
 		}
 	}
 
@@ -315,7 +315,7 @@ func (server *Handler) DeleteAsset(ctx context.Context, req *connect.Request[com
 		if errors.As(err, new(asset.NotFoundError)) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.DeleteAssetResponse{}), nil
@@ -345,7 +345,7 @@ func (server *Handler) CreateAssetProbe(ctx context.Context, req *connect.Reques
 		if errors.As(err, &asset.NotFoundError{}) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.CreateAssetProbeResponse{
@@ -378,7 +378,7 @@ func (server *Handler) upsertAsset(
 	if errors.As(err, new(asset.InvalidError)) {
 		return "", connect.NewError(connect.CodeInvalidArgument, err)
 	} else if err != nil {
-		return "", internalServerError(server.logger, err.Error())
+		return "", internalServerError(ctx, "internal error", err)
 	}
 
 	return
@@ -394,7 +394,7 @@ func (server *Handler) upsertAssetWithoutLineage(ctx context.Context, ns *namesp
 		if errors.As(err, new(asset.InvalidError)) {
 			return "", connect.NewError(connect.CodeInvalidArgument, err)
 		}
-		return "", internalServerError(server.logger, err.Error())
+		return "", internalServerError(ctx, "internal error", err)
 	}
 
 	return assetID, nil

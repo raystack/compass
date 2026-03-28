@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/raystack/compass/core/star"
 	"github.com/raystack/compass/store/postgres"
-	log "github.com/raystack/salt/observability/logger"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )
@@ -36,8 +35,7 @@ func (r *StarRepositoryTestSuite) SetupSuite() {
 		Metadata: nil,
 	}
 
-	logger := log.NewLogrus()
-	r.client, r.pool, r.resource, err = newTestClient(logger)
+	r.client, r.pool, r.resource, err = newTestClient()
 	if err != nil {
 		r.T().Fatal(err)
 	}

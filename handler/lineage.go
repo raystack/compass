@@ -36,14 +36,14 @@ func (server *Handler) GetGraph(ctx context.Context, req *connect.Request[compas
 		IncludeDeleted: req.Msg.GetIncludeDeleted(),
 	})
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	edges := make([]*compassv1beta1.LineageEdge, 0, len(lineage.Edges))
 	for _, edge := range lineage.Edges {
 		edgePB, err := lineageEdgeToProto(edge)
 		if err != nil {
-			return nil, internalServerError(server.logger, err.Error())
+			return nil, internalServerError(ctx, "internal error", err)
 		}
 		edges = append(edges, edgePB)
 	}
@@ -52,7 +52,7 @@ func (server *Handler) GetGraph(ctx context.Context, req *connect.Request[compas
 	for urn, attrs := range lineage.NodeAttrs {
 		probesInfo, err := probesInfoToProto(attrs.Probes)
 		if err != nil {
-			return nil, internalServerError(server.logger, err.Error())
+			return nil, internalServerError(ctx, "internal error", err)
 		}
 
 		nodeAttrs[urn] = &compassv1beta1.GetGraphResponse_NodeAttributes{

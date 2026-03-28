@@ -12,13 +12,11 @@ import (
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/store/postgres"
-	log "github.com/raystack/salt/observability/logger"
-	"github.com/ory/dockertest/v3"
+"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 )
 
 const (
-	logLevelDebug       = "debug"
 	defaultProviderName = "shield"
 	defaultGetMaxSize   = 7
 )
@@ -32,7 +30,7 @@ var (
 	}
 )
 
-func newTestClient(logger log.Logger) (*postgres.Client, *dockertest.Pool, *dockertest.Resource, error) {
+func newTestClient() (*postgres.Client, *dockertest.Pool, *dockertest.Resource, error) {
 
 	opts := &dockertest.RunOptions{
 		Repository: "postgres",
@@ -65,33 +63,6 @@ func newTestClient(logger log.Logger) (*postgres.Client, *dockertest.Pool, *dock
 		return nil, nil, nil, fmt.Errorf("cannot parse external port of container to int: %w", err)
 	}
 
-	// attach terminal logger to container if exists
-	// for debugging purpose
-	if logger.Level() == logLevelDebug {
-		logWaiter, err := pool.Client.AttachToContainerNonBlocking(docker.AttachToContainerOptions{
-			Container:    resource.Container.ID,
-			OutputStream: logger.Writer(),
-			ErrorStream:  logger.Writer(),
-			Stderr:       true,
-			Stdout:       true,
-			Stream:       true,
-		})
-		if err != nil {
-			logger.Fatal("could not connect to postgres container log output", "error", err)
-		}
-		defer func() {
-			err = logWaiter.Close()
-			if err != nil {
-				logger.Fatal("could not close container log", "error", err)
-			}
-
-			err = logWaiter.Wait()
-			if err != nil {
-				logger.Fatal("could not wait for container log to close", "error", err)
-			}
-		}()
-	}
-
 	// Tell docker to hard kill the container in 120 seconds
 	if err := resource.Expire(120); err != nil {
 		return nil, nil, nil, err
@@ -118,7 +89,7 @@ func newTestClient(logger log.Logger) (*postgres.Client, *dockertest.Pool, *dock
 
 	err = setup(context.Background(), pgClient)
 	if err != nil {
-		logger.Fatal("failed to setup and migrate DB", "error", err)
+		return nil, nil, nil, fmt.Errorf("failed to setup and migrate DB: %w", err)
 	}
 	return pgClient, pool, resource, nil
 }

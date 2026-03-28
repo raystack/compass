@@ -6,12 +6,13 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/internal/client"
+	"github.com/raystack/compass/internal/config"
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
 	"github.com/raystack/salt/cli/printer"
 	"github.com/spf13/cobra"
 )
 
-func lineageCommand(cfg *Config) *cobra.Command {
+func lineageCommand(cfg *config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "lineage <urn>",
 		Aliases: []string{},

@@ -44,7 +44,7 @@ func (server *Handler) GetAllDiscussions(ctx context.Context, req *connect.Reque
 
 	dscs, err := server.discussionService.GetDiscussions(ctx, flt)
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	discussionsProto := []*compassv1beta1.Discussion{}
@@ -81,7 +81,7 @@ func (server *Handler) CreateDiscussion(ctx context.Context, req *connect.Reques
 
 	id, err := server.discussionService.CreateDiscussion(ctx, ns, &dsc)
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.CreateDiscussionResponse{Id: id}), nil
@@ -101,7 +101,7 @@ func (server *Handler) GetDiscussion(ctx context.Context, req *connect.Request[c
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.GetDiscussionResponse{Data: discussionToProto(dsc)}), nil
@@ -147,7 +147,7 @@ func (server *Handler) PatchDiscussion(ctx context.Context, req *connect.Request
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
-		return nil, internalServerError(server.logger, err.Error())
+		return nil, internalServerError(ctx, "internal error", err)
 	}
 
 	return connect.NewResponse(&compassv1beta1.PatchDiscussionResponse{}), nil

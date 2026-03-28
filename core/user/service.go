@@ -5,13 +5,11 @@ import (
 	"errors"
 
 	"github.com/raystack/compass/core/namespace"
-	log "github.com/raystack/salt/observability/logger"
 )
 
 // Service is a type of service that manages business process
 type Service struct {
 	repository Repository
-	logger     log.Logger
 }
 
 // ValidateUser checks if user uuid is already in DB
@@ -26,9 +24,7 @@ func (s *Service) ValidateUser(ctx context.Context, ns *namespace.Namespace, uui
 		if usr.ID != "" {
 			return usr.ID, nil
 		}
-		err := errors.New("fetched user uuid from DB is empty")
-		s.logger.Error(err.Error())
-		return "", err
+		return "", errors.New("fetched user uuid from DB is empty")
 	}
 	if !errors.As(err, &NotFoundError{}) {
 		return "", err
@@ -39,16 +35,14 @@ func (s *Service) ValidateUser(ctx context.Context, ns *namespace.Namespace, uui
 		Email: email,
 	})
 	if err != nil {
-		s.logger.Error("error when UpsertByEmail in ValidateUser service", "err", err.Error())
 		return "", err
 	}
 	return uid, nil
 }
 
 // NewService initializes user service
-func NewService(logger log.Logger, repository Repository) *Service {
+func NewService(repository Repository) *Service {
 	return &Service{
 		repository: repository,
-		logger:     logger,
 	}
 }
