@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func (server *APIServer) GetGraph(ctx context.Context, req *connect.Request[compassv1beta1.GetGraphRequest]) (*connect.Response[compassv1beta1.GetGraphResponse], error) {
+func (server *Handler) GetGraph(ctx context.Context, req *connect.Request[compassv1beta1.GetGraphRequest]) (*connect.Response[compassv1beta1.GetGraphResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err

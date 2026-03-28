@@ -232,7 +232,7 @@ func TestSearch(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.SearchAssets(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -350,7 +350,7 @@ func TestSuggest(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.SuggestAssets(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {

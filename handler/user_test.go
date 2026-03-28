@@ -123,7 +123,7 @@ func TestGetUserStarredAssets(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetUserStarredAssets(ctx, connect.NewRequest(&compassv1beta1.GetUserStarredAssetsRequest{
 				UserId: userID,
@@ -251,7 +251,7 @@ func TestGetMyStarredAssets(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetMyStarredAssets(ctx, connect.NewRequest(&compassv1beta1.GetMyStarredAssetsRequest{
 				Offset: uint32(offset),
@@ -369,7 +369,7 @@ func TestGetMyStarredAsset(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetMyStarredAsset(ctx, connect.NewRequest(&compassv1beta1.GetMyStarredAssetRequest{
 				AssetId: assetID,
@@ -477,7 +477,7 @@ func TestStarAsset(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			_, err := handler.StarAsset(ctx, connect.NewRequest(&compassv1beta1.StarAssetRequest{
 				AssetId: assetID,
@@ -565,7 +565,7 @@ func TestUnstarAsset(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			_, err := handler.UnstarAsset(ctx, connect.NewRequest(&compassv1beta1.UnstarAssetRequest{
 				AssetId: assetID,
@@ -734,7 +734,7 @@ func TestGetMyDiscussions(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockDiscussionSvc, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, mockDiscussionSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetMyDiscussions(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {

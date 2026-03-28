@@ -11,7 +11,7 @@ import (
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
 )
 
-func (server *APIServer) SearchAssets(ctx context.Context, req *connect.Request[compassv1beta1.SearchAssetsRequest]) (*connect.Response[compassv1beta1.SearchAssetsResponse], error) {
+func (server *Handler) SearchAssets(ctx context.Context, req *connect.Request[compassv1beta1.SearchAssetsRequest]) (*connect.Response[compassv1beta1.SearchAssetsResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -48,7 +48,7 @@ func (server *APIServer) SearchAssets(ctx context.Context, req *connect.Request[
 	}), nil
 }
 
-func (server *APIServer) SuggestAssets(ctx context.Context, req *connect.Request[compassv1beta1.SuggestAssetsRequest]) (*connect.Response[compassv1beta1.SuggestAssetsResponse], error) {
+func (server *Handler) SuggestAssets(ctx context.Context, req *connect.Request[compassv1beta1.SuggestAssetsRequest]) (*connect.Response[compassv1beta1.SuggestAssetsResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func (server *APIServer) SuggestAssets(ctx context.Context, req *connect.Request
 	}), nil
 }
 
-func (server *APIServer) GroupAssets(ctx context.Context, req *connect.Request[compassv1beta1.GroupAssetsRequest]) (*connect.Response[compassv1beta1.GroupAssetsResponse], error) {
+func (server *Handler) GroupAssets(ctx context.Context, req *connect.Request[compassv1beta1.GroupAssetsRequest]) (*connect.Response[compassv1beta1.GroupAssetsResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err

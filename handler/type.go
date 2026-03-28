@@ -9,7 +9,7 @@ import (
 	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
 )
 
-func (server *APIServer) GetAllTypes(ctx context.Context, req *connect.Request[compassv1beta1.GetAllTypesRequest]) (*connect.Response[compassv1beta1.GetAllTypesResponse], error) {
+func (server *Handler) GetAllTypes(ctx context.Context, req *connect.Request[compassv1beta1.GetAllTypesRequest]) (*connect.Response[compassv1beta1.GetAllTypesResponse], error) {
 
 	flt, err := asset.NewFilterBuilder().
 		Types(req.Msg.GetTypes()).

@@ -34,7 +34,7 @@ func Serve(
 	tagTemplateService handler.TagTemplateService,
 	userService handler.UserService,
 ) error {
-	v1beta1Handler := handler.NewAPIServer(
+	v1beta1Handler := handler.New(
 		logger,
 		namespaceService,
 		assetService,
@@ -67,13 +67,13 @@ func Serve(
 	mux := http.NewServeMux()
 
 	// Register Connect service handler
-	path, handler := compassv1beta1connect.NewCompassServiceHandler(
+	path, svcHandler := compassv1beta1connect.NewCompassServiceHandler(
 		v1beta1Handler,
 		interceptors,
 		connect.WithReadMaxBytes(cfg.MaxRecvMsgSize),
 		connect.WithSendMaxBytes(cfg.MaxSendMsgSize),
 	)
-	mux.Handle(path, handler)
+	mux.Handle(path, svcHandler)
 
 	// Register gRPC reflection for tooling compatibility (grpcurl, etc.)
 	reflector := grpcreflect.NewStaticReflector(

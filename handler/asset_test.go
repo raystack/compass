@@ -186,7 +186,7 @@ func TestGetAllAssets(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAllAssets(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -333,7 +333,7 @@ func TestGetAssetByID(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAssetByID(ctx, connect.NewRequest(&compassv1beta1.GetAssetByIDRequest{
 				Id: assetID,
@@ -554,7 +554,7 @@ func TestUpsertAsset(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.UpsertAsset(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -882,7 +882,7 @@ func TestUpsertPatchAsset(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.UpsertPatchAsset(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -977,7 +977,7 @@ func TestDeleteAsset(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			_, err := handler.DeleteAsset(ctx, connect.NewRequest(&compassv1beta1.DeleteAssetRequest{
 				Id: tc.AssetID,
@@ -1076,7 +1076,7 @@ func TestGetAssetStargazers(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAssetStargazers(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -1205,7 +1205,7 @@ func TestGetAssetVersionHistory(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAssetVersionHistory(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -1334,7 +1334,7 @@ func TestGetAssetByVersion(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAssetByVersion(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -1494,7 +1494,7 @@ func TestCreateAssetProbe(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, mockAssetSvc, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.CreateAssetProbe(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {

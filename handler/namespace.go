@@ -21,7 +21,7 @@ type NamespaceService interface {
 	List(ctx context.Context) ([]*namespace.Namespace, error)
 }
 
-func (server *APIServer) ListNamespaces(ctx context.Context, req *connect.Request[compassv1beta1.ListNamespacesRequest]) (*connect.Response[compassv1beta1.ListNamespacesResponse], error) {
+func (server *Handler) ListNamespaces(ctx context.Context, req *connect.Request[compassv1beta1.ListNamespacesRequest]) (*connect.Response[compassv1beta1.ListNamespacesResponse], error) {
 	namespaces, err := server.namespaceService.List(ctx)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -39,7 +39,7 @@ func (server *APIServer) ListNamespaces(ctx context.Context, req *connect.Reques
 	}), nil
 }
 
-func (server *APIServer) GetNamespace(ctx context.Context, req *connect.Request[compassv1beta1.GetNamespaceRequest]) (*connect.Response[compassv1beta1.GetNamespaceResponse], error) {
+func (server *Handler) GetNamespace(ctx context.Context, req *connect.Request[compassv1beta1.GetNamespaceRequest]) (*connect.Response[compassv1beta1.GetNamespaceResponse], error) {
 	if req.Msg.GetUrn() == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("urn is required"))
 	}
@@ -72,7 +72,7 @@ func (server *APIServer) GetNamespace(ctx context.Context, req *connect.Request[
 	}), nil
 }
 
-func (server *APIServer) CreateNamespace(ctx context.Context, req *connect.Request[compassv1beta1.CreateNamespaceRequest]) (*connect.Response[compassv1beta1.CreateNamespaceResponse], error) {
+func (server *Handler) CreateNamespace(ctx context.Context, req *connect.Request[compassv1beta1.CreateNamespaceRequest]) (*connect.Response[compassv1beta1.CreateNamespaceResponse], error) {
 	var metadata map[string]interface{}
 	if req.Msg.GetMetadata() != nil {
 		metadata = req.Msg.GetMetadata().AsMap()
@@ -96,7 +96,7 @@ func (server *APIServer) CreateNamespace(ctx context.Context, req *connect.Reque
 	}), nil
 }
 
-func (server *APIServer) UpdateNamespace(ctx context.Context, req *connect.Request[compassv1beta1.UpdateNamespaceRequest]) (*connect.Response[compassv1beta1.UpdateNamespaceResponse], error) {
+func (server *Handler) UpdateNamespace(ctx context.Context, req *connect.Request[compassv1beta1.UpdateNamespaceRequest]) (*connect.Response[compassv1beta1.UpdateNamespaceResponse], error) {
 	if req.Msg.GetUrn() == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("urn is required"))
 	}

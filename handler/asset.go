@@ -39,7 +39,7 @@ type AssetService interface {
 	GroupAssets(ctx context.Context, cfg asset.GroupConfig) ([]asset.GroupResult, error)
 }
 
-func (server *APIServer) GetAllAssets(ctx context.Context, req *connect.Request[compassv1beta1.GetAllAssetsRequest]) (*connect.Response[compassv1beta1.GetAllAssetsResponse], error) {
+func (server *Handler) GetAllAssets(ctx context.Context, req *connect.Request[compassv1beta1.GetAllAssetsRequest]) (*connect.Response[compassv1beta1.GetAllAssetsResponse], error) {
 
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
@@ -89,7 +89,7 @@ func (server *APIServer) GetAllAssets(ctx context.Context, req *connect.Request[
 	return connect.NewResponse(response), nil
 }
 
-func (server *APIServer) GetAssetByID(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetByIDRequest]) (*connect.Response[compassv1beta1.GetAssetByIDResponse], error) {
+func (server *Handler) GetAssetByID(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetByIDRequest]) (*connect.Response[compassv1beta1.GetAssetByIDResponse], error) {
 
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
@@ -117,7 +117,7 @@ func (server *APIServer) GetAssetByID(ctx context.Context, req *connect.Request[
 	}), nil
 }
 
-func (server *APIServer) GetAssetStargazers(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetStargazersRequest]) (*connect.Response[compassv1beta1.GetAssetStargazersResponse], error) {
+func (server *Handler) GetAssetStargazers(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetStargazersRequest]) (*connect.Response[compassv1beta1.GetAssetStargazersResponse], error) {
 
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
@@ -148,7 +148,7 @@ func (server *APIServer) GetAssetStargazers(ctx context.Context, req *connect.Re
 	}), nil
 }
 
-func (server *APIServer) GetAssetVersionHistory(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[compassv1beta1.GetAssetVersionHistoryResponse], error) {
+func (server *Handler) GetAssetVersionHistory(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[compassv1beta1.GetAssetVersionHistoryResponse], error) {
 
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
@@ -183,7 +183,7 @@ func (server *APIServer) GetAssetVersionHistory(ctx context.Context, req *connec
 	}), nil
 }
 
-func (server *APIServer) GetAssetByVersion(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetByVersionRequest]) (*connect.Response[compassv1beta1.GetAssetByVersionResponse], error) {
+func (server *Handler) GetAssetByVersion(ctx context.Context, req *connect.Request[compassv1beta1.GetAssetByVersionRequest]) (*connect.Response[compassv1beta1.GetAssetByVersionResponse], error) {
 
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
@@ -215,7 +215,7 @@ func (server *APIServer) GetAssetByVersion(ctx context.Context, req *connect.Req
 	}), nil
 }
 
-func (server *APIServer) UpsertAsset(ctx context.Context, req *connect.Request[compassv1beta1.UpsertAssetRequest]) (*connect.Response[compassv1beta1.UpsertAssetResponse], error) {
+func (server *Handler) UpsertAsset(ctx context.Context, req *connect.Request[compassv1beta1.UpsertAssetRequest]) (*connect.Response[compassv1beta1.UpsertAssetResponse], error) {
 
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
@@ -251,7 +251,7 @@ func (server *APIServer) UpsertAsset(ctx context.Context, req *connect.Request[c
 	}), nil
 }
 
-func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *connect.Request[compassv1beta1.UpsertPatchAssetRequest]) (*connect.Response[compassv1beta1.UpsertPatchAssetResponse], error) {
+func (server *Handler) UpsertPatchAsset(ctx context.Context, req *connect.Request[compassv1beta1.UpsertPatchAssetRequest]) (*connect.Response[compassv1beta1.UpsertPatchAssetResponse], error) {
 
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
@@ -301,7 +301,7 @@ func (server *APIServer) UpsertPatchAsset(ctx context.Context, req *connect.Requ
 	}), nil
 }
 
-func (server *APIServer) DeleteAsset(ctx context.Context, req *connect.Request[compassv1beta1.DeleteAssetRequest]) (*connect.Response[compassv1beta1.DeleteAssetResponse], error) {
+func (server *Handler) DeleteAsset(ctx context.Context, req *connect.Request[compassv1beta1.DeleteAssetRequest]) (*connect.Response[compassv1beta1.DeleteAssetResponse], error) {
 
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
@@ -321,7 +321,7 @@ func (server *APIServer) DeleteAsset(ctx context.Context, req *connect.Request[c
 	return connect.NewResponse(&compassv1beta1.DeleteAssetResponse{}), nil
 }
 
-func (server *APIServer) CreateAssetProbe(ctx context.Context, req *connect.Request[compassv1beta1.CreateAssetProbeRequest]) (*connect.Response[compassv1beta1.CreateAssetProbeResponse], error) {
+func (server *Handler) CreateAssetProbe(ctx context.Context, req *connect.Request[compassv1beta1.CreateAssetProbeRequest]) (*connect.Response[compassv1beta1.CreateAssetProbeResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -353,7 +353,7 @@ func (server *APIServer) CreateAssetProbe(ctx context.Context, req *connect.Requ
 	}), nil
 }
 
-func (server *APIServer) upsertAsset(
+func (server *Handler) upsertAsset(
 	ctx context.Context,
 	ns *namespace.Namespace,
 	ast asset.Asset,
@@ -384,7 +384,7 @@ func (server *APIServer) upsertAsset(
 	return
 }
 
-func (server *APIServer) upsertAssetWithoutLineage(ctx context.Context, ns *namespace.Namespace, ast asset.Asset) (string, error) {
+func (server *Handler) upsertAssetWithoutLineage(ctx context.Context, ns *namespace.Namespace, ast asset.Asset) (string, error) {
 	if err := server.validateAsset(ast); err != nil {
 		return "", connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -400,7 +400,7 @@ func (server *APIServer) upsertAssetWithoutLineage(ctx context.Context, ns *name
 	return assetID, nil
 }
 
-func (server *APIServer) buildAsset(baseAsset *compassv1beta1.UpsertAssetRequest_Asset) asset.Asset {
+func (server *Handler) buildAsset(baseAsset *compassv1beta1.UpsertAssetRequest_Asset) asset.Asset {
 	ast := asset.Asset{
 		URN:         baseAsset.GetUrn(),
 		Service:     baseAsset.GetService(),
@@ -426,7 +426,7 @@ func (server *APIServer) buildAsset(baseAsset *compassv1beta1.UpsertAssetRequest
 	return ast
 }
 
-func (server *APIServer) validateAsset(ast asset.Asset) error {
+func (server *Handler) validateAsset(ast asset.Asset) error {
 	if ast.URN == "" {
 		return fmt.Errorf("urn is required")
 	}
@@ -449,7 +449,7 @@ func (server *APIServer) validateAsset(ast asset.Asset) error {
 	return nil
 }
 
-func (server *APIServer) validatePatchAsset(ast *compassv1beta1.UpsertPatchAssetRequest_Asset) (urn string, err error) {
+func (server *Handler) validatePatchAsset(ast *compassv1beta1.UpsertPatchAssetRequest_Asset) (urn string, err error) {
 	if urn = ast.GetUrn(); urn == "" {
 		return "", fmt.Errorf("urn is required and can't be empty")
 	}

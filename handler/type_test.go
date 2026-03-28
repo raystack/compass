@@ -128,7 +128,7 @@ func TestGetTypes(t *testing.T) {
 
 			defer mockSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, nil, mockSvc, nil, nil, nil, nil, nil)
+			handler := New(logger, nil, mockSvc, nil, nil, nil, nil, nil)
 
 			got, err := handler.GetAllTypes(ctx, connect.NewRequest(&compassv1beta1.GetAllTypesRequest{}))
 			if tc.ExpectStatus == 0 {

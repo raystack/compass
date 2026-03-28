@@ -19,7 +19,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func TestAPIServer_ListNamespaces(t *testing.T) {
+func TestHandler_ListNamespaces(t *testing.T) {
 	var (
 		userUUID         = uuid.NewString()
 		mockedNamespaces = []*namespace.Namespace{
@@ -71,7 +71,7 @@ func TestAPIServer_ListNamespaces(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.ListNamespaces(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -96,7 +96,7 @@ func TestAPIServer_ListNamespaces(t *testing.T) {
 	}
 }
 
-func TestAPIServer_GetNamespaces(t *testing.T) {
+func TestHandler_GetNamespaces(t *testing.T) {
 	var (
 		userUUID         = uuid.NewString()
 		mockedNamespaces = []*namespace.Namespace{
@@ -160,7 +160,7 @@ func TestAPIServer_GetNamespaces(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.GetNamespace(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -185,7 +185,7 @@ func TestAPIServer_GetNamespaces(t *testing.T) {
 	}
 }
 
-func TestAPIServer_CreateNamespaces(t *testing.T) {
+func TestHandler_CreateNamespaces(t *testing.T) {
 	var (
 		userUUID         = uuid.NewString()
 		mockedNamespaces = []*namespace.Namespace{
@@ -252,7 +252,7 @@ func TestAPIServer_CreateNamespaces(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.CreateNamespace(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -277,7 +277,7 @@ func TestAPIServer_CreateNamespaces(t *testing.T) {
 	}
 }
 
-func TestAPIServer_UpdateNamespaces(t *testing.T) {
+func TestHandler_UpdateNamespaces(t *testing.T) {
 	var (
 		userUUID         = uuid.NewString()
 		mockedNamespaces = []*namespace.Namespace{
@@ -328,7 +328,7 @@ func TestAPIServer_UpdateNamespaces(t *testing.T) {
 			defer mockUserSvc.AssertExpectations(t)
 			defer mockNamespaceSvc.AssertExpectations(t)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
 			got, err := handler.UpdateNamespace(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {

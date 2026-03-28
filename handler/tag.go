@@ -32,7 +32,7 @@ type TagService interface {
 }
 
 // GetTagByAssetAndTemplate handles get tag by asset requests
-func (server *APIServer) GetTagByAssetAndTemplate(ctx context.Context, req *connect.Request[compassv1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[compassv1beta1.GetTagByAssetAndTemplateResponse], error) {
+func (server *Handler) GetTagByAssetAndTemplate(ctx context.Context, req *connect.Request[compassv1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[compassv1beta1.GetTagByAssetAndTemplateResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (server *APIServer) GetTagByAssetAndTemplate(ctx context.Context, req *conn
 }
 
 // CreateTagAsset handles tag creation requests
-func (server *APIServer) CreateTagAsset(ctx context.Context, req *connect.Request[compassv1beta1.CreateTagAssetRequest]) (*connect.Response[compassv1beta1.CreateTagAssetResponse], error) {
+func (server *Handler) CreateTagAsset(ctx context.Context, req *connect.Request[compassv1beta1.CreateTagAssetRequest]) (*connect.Response[compassv1beta1.CreateTagAssetResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ func (server *APIServer) CreateTagAsset(ctx context.Context, req *connect.Reques
 }
 
 // UpdateTagAsset handles tag update requests
-func (server *APIServer) UpdateTagAsset(ctx context.Context, req *connect.Request[compassv1beta1.UpdateTagAssetRequest]) (*connect.Response[compassv1beta1.UpdateTagAssetResponse], error) {
+func (server *Handler) UpdateTagAsset(ctx context.Context, req *connect.Request[compassv1beta1.UpdateTagAssetRequest]) (*connect.Response[compassv1beta1.UpdateTagAssetResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -182,7 +182,7 @@ func (server *APIServer) UpdateTagAsset(ctx context.Context, req *connect.Reques
 }
 
 // DeleteTagAsset handles delete tag by asset and template requests
-func (server *APIServer) DeleteTagAsset(ctx context.Context, req *connect.Request[compassv1beta1.DeleteTagAssetRequest]) (*connect.Response[compassv1beta1.DeleteTagAssetResponse], error) {
+func (server *Handler) DeleteTagAsset(ctx context.Context, req *connect.Request[compassv1beta1.DeleteTagAssetRequest]) (*connect.Response[compassv1beta1.DeleteTagAssetResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -211,7 +211,7 @@ func (server *APIServer) DeleteTagAsset(ctx context.Context, req *connect.Reques
 }
 
 // GetAllTagsByAsset handles get all tags by asset requests
-func (server *APIServer) GetAllTagsByAsset(ctx context.Context, req *connect.Request[compassv1beta1.GetAllTagsByAssetRequest]) (*connect.Response[compassv1beta1.GetAllTagsByAssetResponse], error) {
+func (server *Handler) GetAllTagsByAsset(ctx context.Context, req *connect.Request[compassv1beta1.GetAllTagsByAssetRequest]) (*connect.Response[compassv1beta1.GetAllTagsByAssetResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err

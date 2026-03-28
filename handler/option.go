@@ -1,3 +1,3 @@
 package handler
 
-type Option func(*APIServer)
+type Option func(*Handler)

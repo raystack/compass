@@ -211,7 +211,7 @@ func TestGetTagByAssetAndTemplate(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.GetTagByAssetAndTemplate(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -359,7 +359,7 @@ func TestCreateTagAsset(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.CreateTagAsset(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -491,7 +491,7 @@ func TestUpdateTagAsset(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.UpdateTagAsset(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -604,7 +604,7 @@ func TestDeleteTagAsset(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			_, err := handler.DeleteTagAsset(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -699,7 +699,7 @@ func TestGetAllTagsByAsset(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.GetAllTagsByAsset(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {

@@ -25,7 +25,7 @@ type TagTemplateService interface {
 }
 
 // GetAllTagTemplates handles template read requests
-func (server *APIServer) GetAllTagTemplates(ctx context.Context, req *connect.Request[compassv1beta1.GetAllTagTemplatesRequest]) (*connect.Response[compassv1beta1.GetAllTagTemplatesResponse], error) {
+func (server *Handler) GetAllTagTemplates(ctx context.Context, req *connect.Request[compassv1beta1.GetAllTagTemplatesRequest]) (*connect.Response[compassv1beta1.GetAllTagTemplatesResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func (server *APIServer) GetAllTagTemplates(ctx context.Context, req *connect.Re
 }
 
 // CreateTagTemplate handles template creation requests
-func (server *APIServer) CreateTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.CreateTagTemplateRequest]) (*connect.Response[compassv1beta1.CreateTagTemplateResponse], error) {
+func (server *Handler) CreateTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.CreateTagTemplateRequest]) (*connect.Response[compassv1beta1.CreateTagTemplateResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -91,7 +91,7 @@ func (server *APIServer) CreateTagTemplate(ctx context.Context, req *connect.Req
 }
 
 // GetTagTemplate handles template read requests based on URN
-func (server *APIServer) GetTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.GetTagTemplateRequest]) (*connect.Response[compassv1beta1.GetTagTemplateResponse], error) {
+func (server *Handler) GetTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.GetTagTemplateRequest]) (*connect.Response[compassv1beta1.GetTagTemplateResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (server *APIServer) GetTagTemplate(ctx context.Context, req *connect.Reques
 	}), nil
 }
 
-func (server *APIServer) UpdateTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.UpdateTagTemplateRequest]) (*connect.Response[compassv1beta1.UpdateTagTemplateResponse], error) {
+func (server *Handler) UpdateTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.UpdateTagTemplateRequest]) (*connect.Response[compassv1beta1.UpdateTagTemplateResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -153,7 +153,7 @@ func (server *APIServer) UpdateTagTemplate(ctx context.Context, req *connect.Req
 }
 
 // DeleteTagTemplate handles template delete request based on URN
-func (server *APIServer) DeleteTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.DeleteTagTemplateRequest]) (*connect.Response[compassv1beta1.DeleteTagTemplateResponse], error) {
+func (server *Handler) DeleteTagTemplate(ctx context.Context, req *connect.Request[compassv1beta1.DeleteTagTemplateRequest]) (*connect.Response[compassv1beta1.DeleteTagTemplateResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err

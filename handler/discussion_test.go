@@ -135,7 +135,7 @@ func TestGetAllDiscussions(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetAllDiscussions(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -279,7 +279,7 @@ func TestCreateDiscussion(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 			_, err := handler.CreateDiscussion(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
 				if err != nil {
@@ -392,7 +392,7 @@ func TestGetDiscussion(t *testing.T) {
 			defer mockSvc.AssertExpectations(t)
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 
 			got, err := handler.GetDiscussion(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -545,7 +545,7 @@ func TestPatchDiscussion(t *testing.T) {
 
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, mockSvc, nil, nil, mockUserSvc)
 			_, err := handler.PatchDiscussion(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
 				if err != nil {

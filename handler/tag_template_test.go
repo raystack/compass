@@ -165,7 +165,7 @@ func TestGetAllTagTemplates(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.GetAllTagTemplates(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -269,7 +269,7 @@ func TestCreateTagTemplate(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			got, err := handler.CreateTagTemplate(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
@@ -363,7 +363,7 @@ func TestGetTagTemplate(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 			got, err := handler.GetTagTemplate(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
 				if err != nil {
@@ -479,7 +479,7 @@ func TestUpdateTagTemplate(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 			got, err := handler.UpdateTagTemplate(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {
 				if err != nil {
@@ -560,7 +560,7 @@ func TestDeleteTagTemplate(t *testing.T) {
 			defer mockNamespaceSvc.AssertExpectations(t)
 			mockUserSvc.EXPECT().ValidateUser(ctx, ns, userUUID, "").Return(userID, nil)
 
-			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
+			handler := New(logger, mockNamespaceSvc, nil, nil, nil, mockTagSvc, mockTemplateSvc, mockUserSvc)
 
 			_, err := handler.DeleteTagTemplate(ctx, connect.NewRequest(tc.Request))
 			if tc.ExpectStatus == 0 {

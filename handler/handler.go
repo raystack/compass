@@ -13,7 +13,7 @@ import (
 	log "github.com/raystack/salt/observability/logger"
 )
 
-type APIServer struct {
+type Handler struct {
 	namespaceService   NamespaceService
 	assetService       AssetService
 	starService        StarService
@@ -28,7 +28,7 @@ var (
 	errMissingUserInfo = errors.New("missing user information")
 )
 
-func NewAPIServer(
+func New(
 	logger log.Logger,
 	namespaceService NamespaceService,
 	assetService AssetService,
@@ -37,8 +37,8 @@ func NewAPIServer(
 	tagService TagService,
 	tagTemplateService TagTemplateService,
 	userService UserService,
-) *APIServer {
-	return &APIServer{
+) *Handler {
+	return &Handler{
 		namespaceService:   namespaceService,
 		assetService:       assetService,
 		starService:        starService,
@@ -50,7 +50,7 @@ func NewAPIServer(
 	}
 }
 
-func (server *APIServer) validateUserInCtx(ctx context.Context, ns *namespace.Namespace) (string, error) {
+func (server *Handler) validateUserInCtx(ctx context.Context, ns *namespace.Namespace) (string, error) {
 	usr := user.FromContext(ctx)
 	userID, err := server.userService.ValidateUser(ctx, ns, usr.UUID, usr.Email)
 	if err != nil {

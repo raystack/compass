@@ -16,7 +16,7 @@ import (
 
 // CreateComment will create a new comment of a discussion
 // field body is mandatory
-func (server *APIServer) CreateComment(ctx context.Context, req *connect.Request[compassv1beta1.CreateCommentRequest]) (*connect.Response[compassv1beta1.CreateCommentResponse], error) {
+func (server *Handler) CreateComment(ctx context.Context, req *connect.Request[compassv1beta1.CreateCommentRequest]) (*connect.Response[compassv1beta1.CreateCommentResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
@@ -50,7 +50,7 @@ func (server *APIServer) CreateComment(ctx context.Context, req *connect.Request
 }
 
 // GetAllComments returns all comments of a discussion
-func (server *APIServer) GetAllComments(ctx context.Context, req *connect.Request[compassv1beta1.GetAllCommentsRequest]) (*connect.Response[compassv1beta1.GetAllCommentsResponse], error) {
+func (server *Handler) GetAllComments(ctx context.Context, req *connect.Request[compassv1beta1.GetAllCommentsRequest]) (*connect.Response[compassv1beta1.GetAllCommentsResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func (server *APIServer) GetAllComments(ctx context.Context, req *connect.Reques
 }
 
 // GetComment returns a comment discussion by id from path
-func (server *APIServer) GetComment(ctx context.Context, req *connect.Request[compassv1beta1.GetCommentRequest]) (*connect.Response[compassv1beta1.GetCommentResponse], error) {
+func (server *Handler) GetComment(ctx context.Context, req *connect.Request[compassv1beta1.GetCommentRequest]) (*connect.Response[compassv1beta1.GetCommentResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (server *APIServer) GetComment(ctx context.Context, req *connect.Request[co
 }
 
 // UpdateComment is an api to update a comment by discussion id
-func (server *APIServer) UpdateComment(ctx context.Context, req *connect.Request[compassv1beta1.UpdateCommentRequest]) (*connect.Response[compassv1beta1.UpdateCommentResponse], error) {
+func (server *Handler) UpdateComment(ctx context.Context, req *connect.Request[compassv1beta1.UpdateCommentRequest]) (*connect.Response[compassv1beta1.UpdateCommentResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
@@ -141,7 +141,7 @@ func (server *APIServer) UpdateComment(ctx context.Context, req *connect.Request
 }
 
 // DeleteComment is an api to delete a comment by discussion id
-func (server *APIServer) DeleteComment(ctx context.Context, req *connect.Request[compassv1beta1.DeleteCommentRequest]) (*connect.Response[compassv1beta1.DeleteCommentResponse], error) {
+func (server *Handler) DeleteComment(ctx context.Context, req *connect.Request[compassv1beta1.DeleteCommentRequest]) (*connect.Response[compassv1beta1.DeleteCommentResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -165,7 +165,7 @@ func (server *APIServer) DeleteComment(ctx context.Context, req *connect.Request
 	return connect.NewResponse(&compassv1beta1.DeleteCommentResponse{}), nil
 }
 
-func (server *APIServer) buildGetAllDiscussionsFilter(req *compassv1beta1.GetAllDiscussionsRequest) (discussion.Filter, error) {
+func (server *Handler) buildGetAllDiscussionsFilter(req *compassv1beta1.GetAllDiscussionsRequest) (discussion.Filter, error) {
 
 	fl := discussion.Filter{
 		Type:          req.GetType(),
@@ -202,7 +202,7 @@ func (server *APIServer) buildGetAllDiscussionsFilter(req *compassv1beta1.GetAll
 	return fl, nil
 }
 
-func (server *APIServer) buildGetAllCommentsFilter(req *compassv1beta1.GetAllCommentsRequest) (discussion.Filter, error) {
+func (server *Handler) buildGetAllCommentsFilter(req *compassv1beta1.GetAllCommentsRequest) (discussion.Filter, error) {
 
 	fl := discussion.Filter{
 		SortBy:        req.GetSort(),

@@ -22,7 +22,7 @@ type UserService interface {
 	ValidateUser(ctx context.Context, ns *namespace.Namespace, uuid, email string) (string, error)
 }
 
-func (server *APIServer) GetUserStarredAssets(ctx context.Context, req *connect.Request[compassv1beta1.GetUserStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetUserStarredAssetsResponse], error) {
+func (server *Handler) GetUserStarredAssets(ctx context.Context, req *connect.Request[compassv1beta1.GetUserStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetUserStarredAssetsResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func (server *APIServer) GetUserStarredAssets(ctx context.Context, req *connect.
 	}), nil
 }
 
-func (server *APIServer) GetMyStarredAssets(ctx context.Context, req *connect.Request[compassv1beta1.GetMyStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetsResponse], error) {
+func (server *Handler) GetMyStarredAssets(ctx context.Context, req *connect.Request[compassv1beta1.GetMyStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetsResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
@@ -97,7 +97,7 @@ func (server *APIServer) GetMyStarredAssets(ctx context.Context, req *connect.Re
 	}), nil
 }
 
-func (server *APIServer) GetMyStarredAsset(ctx context.Context, req *connect.Request[compassv1beta1.GetMyStarredAssetRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetResponse], error) {
+func (server *Handler) GetMyStarredAsset(ctx context.Context, req *connect.Request[compassv1beta1.GetMyStarredAssetRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
@@ -125,7 +125,7 @@ func (server *APIServer) GetMyStarredAsset(ctx context.Context, req *connect.Req
 	}), nil
 }
 
-func (server *APIServer) StarAsset(ctx context.Context, req *connect.Request[compassv1beta1.StarAssetRequest]) (*connect.Response[compassv1beta1.StarAssetResponse], error) {
+func (server *Handler) StarAsset(ctx context.Context, req *connect.Request[compassv1beta1.StarAssetRequest]) (*connect.Response[compassv1beta1.StarAssetResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
@@ -154,7 +154,7 @@ func (server *APIServer) StarAsset(ctx context.Context, req *connect.Request[com
 	}), nil
 }
 
-func (server *APIServer) UnstarAsset(ctx context.Context, req *connect.Request[compassv1beta1.UnstarAssetRequest]) (*connect.Response[compassv1beta1.UnstarAssetResponse], error) {
+func (server *Handler) UnstarAsset(ctx context.Context, req *connect.Request[compassv1beta1.UnstarAssetRequest]) (*connect.Response[compassv1beta1.UnstarAssetResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
@@ -175,7 +175,7 @@ func (server *APIServer) UnstarAsset(ctx context.Context, req *connect.Request[c
 	return connect.NewResponse(&compassv1beta1.UnstarAssetResponse{}), nil
 }
 
-func (server *APIServer) GetMyDiscussions(ctx context.Context, req *connect.Request[compassv1beta1.GetMyDiscussionsRequest]) (*connect.Response[compassv1beta1.GetMyDiscussionsResponse], error) {
+func (server *Handler) GetMyDiscussions(ctx context.Context, req *connect.Request[compassv1beta1.GetMyDiscussionsRequest]) (*connect.Response[compassv1beta1.GetMyDiscussionsResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
@@ -202,7 +202,7 @@ func (server *APIServer) GetMyDiscussions(ctx context.Context, req *connect.Requ
 	}), nil
 }
 
-func (server *APIServer) buildGetDiscussionsFilter(req *compassv1beta1.GetMyDiscussionsRequest, userID string) (discussion.Filter, error) {
+func (server *Handler) buildGetDiscussionsFilter(req *compassv1beta1.GetMyDiscussionsRequest, userID string) (discussion.Filter, error) {
 	fl := discussion.Filter{
 		Type:          req.GetType(),
 		State:         req.GetState(),

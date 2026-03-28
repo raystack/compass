@@ -32,7 +32,7 @@ type DiscussionService interface {
 // supported query params are type,state,owner,assignee,asset,labels (supporterd array separated by comma)
 // query params sort,direction to sort asc or desc
 // query params size,offset for pagination
-func (server *APIServer) GetAllDiscussions(ctx context.Context, req *connect.Request[compassv1beta1.GetAllDiscussionsRequest]) (*connect.Response[compassv1beta1.GetAllDiscussionsResponse], error) {
+func (server *Handler) GetAllDiscussions(ctx context.Context, req *connect.Request[compassv1beta1.GetAllDiscussionsRequest]) (*connect.Response[compassv1beta1.GetAllDiscussionsResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (server *APIServer) GetAllDiscussions(ctx context.Context, req *connect.Req
 
 // CreateDiscussion will create a new discussion
 // field title, body, and type are mandatory
-func (server *APIServer) CreateDiscussion(ctx context.Context, req *connect.Request[compassv1beta1.CreateDiscussionRequest]) (*connect.Response[compassv1beta1.CreateDiscussionResponse], error) {
+func (server *Handler) CreateDiscussion(ctx context.Context, req *connect.Request[compassv1beta1.CreateDiscussionRequest]) (*connect.Response[compassv1beta1.CreateDiscussionResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
@@ -87,7 +87,7 @@ func (server *APIServer) CreateDiscussion(ctx context.Context, req *connect.Requ
 	return connect.NewResponse(&compassv1beta1.CreateDiscussionResponse{Id: id}), nil
 }
 
-func (server *APIServer) GetDiscussion(ctx context.Context, req *connect.Request[compassv1beta1.GetDiscussionRequest]) (*connect.Response[compassv1beta1.GetDiscussionResponse], error) {
+func (server *Handler) GetDiscussion(ctx context.Context, req *connect.Request[compassv1beta1.GetDiscussionRequest]) (*connect.Response[compassv1beta1.GetDiscussionResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (server *APIServer) GetDiscussion(ctx context.Context, req *connect.Request
 // PatchDiscussion updates a specific field in discussion
 // empty array in assets,labels,assignees will be considered
 // and clear all assets,labels,assignees from the discussion
-func (server *APIServer) PatchDiscussion(ctx context.Context, req *connect.Request[compassv1beta1.PatchDiscussionRequest]) (*connect.Response[compassv1beta1.PatchDiscussionResponse], error) {
+func (server *Handler) PatchDiscussion(ctx context.Context, req *connect.Request[compassv1beta1.PatchDiscussionRequest]) (*connect.Response[compassv1beta1.PatchDiscussionResponse], error) {
 	ns := middleware.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
@@ -153,7 +153,7 @@ func (server *APIServer) PatchDiscussion(ctx context.Context, req *connect.Reque
 	return connect.NewResponse(&compassv1beta1.PatchDiscussionResponse{}), nil
 }
 
-func (server *APIServer) validateIDInteger(id string) error {
+func (server *Handler) validateIDInteger(id string) error {
 	idInt, err := strconv.ParseInt(id, 10, 32)
 	if err != nil {
 		return err
