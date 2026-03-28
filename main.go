@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/raystack/compass/cli"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -27,37 +28,24 @@ func main() {
 	if cmd, err := cli.New(cliConfig).ExecuteContextC(ctx); err != nil {
 		printError(err)
 
-		cmdErr := strings.HasPrefix(err.Error(), "unknown command")
-		flagErr := strings.HasPrefix(err.Error(), "unknown flag")
-		sflagErr := strings.HasPrefix(err.Error(), "unknown shorthand flag")
-
-		if cmdErr || flagErr || sflagErr {
-			if !strings.HasSuffix(err.Error(), "\n") {
+		msg := err.Error()
+		if strings.HasPrefix(msg, "unknown command") ||
+			strings.HasPrefix(msg, "unknown flag") ||
+			strings.HasPrefix(msg, "unknown shorthand flag") {
+			if !strings.HasSuffix(msg, "\n") {
 				fmt.Println()
 			}
 			fmt.Println(cmd.UsageString())
 			os.Exit(exitOK)
-		} else {
-			os.Exit(exitError)
 		}
+		os.Exit(exitError)
 	}
-
 }
 
 func printError(err error) {
-	e := err.Error()
-	if strings.Split(e, ":")[0] == "rpc error" {
-		es := strings.Split(e, "= ")
-
-		em := es[2]
-		errMsg := "Error: " + em
-
-		ec := es[1]
-		errCode := ec[0 : len(ec)-5]
-		errCode = "Code: " + errCode
-
-		fmt.Fprintln(os.Stderr, errCode, errMsg)
-	} else {
-		fmt.Fprintln(os.Stderr, err)
+	if s, ok := status.FromError(err); ok {
+		fmt.Fprintf(os.Stderr, "Code: %s Error: %s\n", s.Code(), s.Message())
+		return
 	}
+	fmt.Fprintln(os.Stderr, err)
 }

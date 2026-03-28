@@ -1,29 +1,45 @@
 name: Test
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   test:
     runs-on: ubuntu-latest
     services:
       elasticsearch:
-        image: elasticsearch:7.17.9
+        image: elasticsearch:8.17.1
         ports:
           - 9200:9200
         env:
           discovery.type: single-node
           xpack.security.enabled: "false"
           ES_JAVA_OPTS: "-Xms128m -Xmx128m"
+        options: >-
+          --health-cmd "curl -f http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     env:
       ES_TEST_SERVER_URL: "http://localhost:9200"
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
         with:
-          go-version: "1.20"
-      - name: Install dependencies
-        run: sudo apt-get install build-essential
-      - name: Install packages
-        run: go mod tidy
+          go-version-file: "go.mod"
+          cache: true
       - name: Run Test
         run: make test
       - name: Install goveralls and send coverage

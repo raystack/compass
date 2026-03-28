@@ -23,10 +23,8 @@ builds:
     flags: [-a]
     ldflags:
       - -X github.com/raystack/compass/cli.Version={{.Tag}}
-      - -X github.com/raystack/compass/cli.BuildCommit={{.FullCommit}}
-      - -X github.com/raystack/compass/cli.BuildDate={{.Date}}
     goos: [linux, darwin, windows]
-    goarch: [amd64, 386, arm, arm64]
+    goarch: [amd64, arm64]
     env:
       - CGO_ENABLED=0
 
@@ -70,8 +68,6 @@ brews:
       name: homebrew-tap
     license: "Apache 2.0"
     folder: Formula
-    dependencies:
-      - name: git
     install: |-
       bin.install "compass"
     commit_author:

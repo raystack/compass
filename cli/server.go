@@ -19,7 +19,7 @@ import (
 	esStore "github.com/raystack/compass/internal/store/elasticsearch"
 	"github.com/raystack/compass/internal/store/postgres"
 	"github.com/raystack/compass/pkg/telemetry"
-	"github.com/raystack/salt/log"
+	log "github.com/raystack/salt/observability/logger"
 	"github.com/spf13/cobra"
 )
 

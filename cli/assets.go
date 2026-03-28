@@ -7,10 +7,9 @@ import (
 
 	"github.com/raystack/compass/internal/client"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"github.com/raystack/salt/term"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/raystack/salt/printer"
+	"github.com/raystack/salt/cli/printer"
 	"github.com/spf13/cobra"
 )
 
@@ -105,13 +104,13 @@ func listAllAssetsCommand(cfg *Config) *cobra.Command {
 				report := [][]string{}
 				report = append(report, []string{"ID", "TYPE", "SERVICE", "URN", "NAME", "VERSION"})
 				for _, i := range res.GetData() {
-					report = append(report, []string{i.Id, i.Type, i.Service, i.Urn, term.Bluef(i.Name), i.Version})
+					report = append(report, []string{i.Id, i.Type, i.Service, i.Urn, printer.Bluef("%s", i.Name), i.Version})
 				}
 				printer.Table(os.Stdout, report)
 
-				fmt.Println(term.Cyanf("To view all the data in JSON format, use flag `-o json`"))
+				fmt.Println(printer.Cyanf("To view all the data in JSON format, use flag `-o json`"))
 			} else {
-				fmt.Println(term.Bluef(prettyPrint(res.GetData())))
+				fmt.Println(printer.Bluef("%s", prettyPrint(res.GetData())))
 			}
 
 			return nil
@@ -164,7 +163,7 @@ func viewAssetByIDCommand(cfg *Config) *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println(term.Bluef(prettyPrint(res.GetData())))
+			fmt.Println(printer.Bluef("%s", prettyPrint(res.GetData())))
 			return nil
 		},
 	}
@@ -214,7 +213,7 @@ func editAssetCommand(cfg *Config) *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println("ID: \t", term.Greenf(res.Id))
+			fmt.Println("ID: \t", printer.Greenf("%s", res.Id))
 			return nil
 		},
 	}
@@ -256,7 +255,7 @@ func deleteAssetByIDCommand(cfg *Config) *cobra.Command {
 				return err
 			}
 			spinner.Stop()
-			fmt.Println("Asset ", term.Redf(assetID), " Deleted Successfully")
+			fmt.Println("Asset ", printer.Redf("%s", assetID), " Deleted Successfully")
 			return nil
 		},
 	}
@@ -304,7 +303,7 @@ func listAllTypesCommand(cfg *Config) *cobra.Command {
 
 			report := [][]string{{"NAME", "COUNT"}}
 			for _, i := range res.GetData() {
-				report = append(report, []string{term.Bluef(i.Name), fmt.Sprintf("%v", i.Count)})
+				report = append(report, []string{printer.Bluef("%s", i.Name), fmt.Sprintf("%v", i.Count)})
 			}
 			printer.Table(os.Stdout, report)
 
@@ -350,7 +349,7 @@ func listAssetStargazerCommand(cfg *Config) *cobra.Command {
 				return err
 			}
 			spinner.Stop()
-			fmt.Println(term.Bluef(prettyPrint(res.GetData())))
+			fmt.Println(printer.Bluef("%s", prettyPrint(res.GetData())))
 			return nil
 		},
 	}
@@ -388,7 +387,7 @@ func starAssetCommand(cfg *Config) *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println(term.Bluef("Asset %v starred successfully", assetID))
+			fmt.Println(printer.Bluef("Asset %v starred successfully", assetID))
 
 			return nil
 		},
@@ -424,7 +423,7 @@ func unstarAssetCommand(cfg *Config) *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println(term.Bluef("Asset %v unstarred successfully", assetID))
+			fmt.Println(printer.Bluef("Asset %v unstarred successfully", assetID))
 
 			return nil
 		},
@@ -468,13 +467,13 @@ func starredAssetCommand(cfg *Config) *cobra.Command {
 				report := [][]string{}
 				report = append(report, []string{"ID", "TYPE", "SERVICE", "URN", "NAME", "VERSION"})
 				for _, i := range res.GetData() {
-					report = append(report, []string{i.Id, i.Type, i.Service, i.Urn, term.Bluef(i.Name), i.Version})
+					report = append(report, []string{i.Id, i.Type, i.Service, i.Urn, printer.Bluef("%s", i.Name), i.Version})
 				}
 				printer.Table(os.Stdout, report)
 
-				fmt.Println(term.Cyanf("To view all the data in JSON format, use flag `-o json`"))
+				fmt.Println(printer.Cyanf("To view all the data in JSON format, use flag `-o json`"))
 			} else {
-				fmt.Println(term.Bluef(prettyPrint(res.GetData())))
+				fmt.Println(printer.Bluef("%s", prettyPrint(res.GetData())))
 			}
 
 			return nil
@@ -517,7 +516,7 @@ func versionHistoryAssetCommand(cfg *Config) *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println(term.Bluef(prettyPrint(res.GetData())))
+			fmt.Println(printer.Bluef("%s", prettyPrint(res.GetData())))
 
 			return nil
 		},
@@ -560,7 +559,7 @@ func viewAssetByVersionCommand(cfg *Config) *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println(term.Bluef(prettyPrint(res.GetData())))
+			fmt.Println(printer.Bluef("%s", prettyPrint(res.GetData())))
 
 			return nil
 		},

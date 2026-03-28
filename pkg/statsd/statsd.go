@@ -4,7 +4,7 @@ import (
 	"time"
 
 	std "github.com/DataDog/datadog-go/v5/statsd"
-	"github.com/raystack/salt/log"
+	log "github.com/raystack/salt/observability/logger"
 )
 
 // StatsD provides functions for reporting metrics.

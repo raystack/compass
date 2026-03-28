@@ -13,7 +13,7 @@ import (
 	"github.com/raystack/compass/core/star"
 	"github.com/raystack/compass/core/user"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"github.com/r3labs/diff/v2"
+	"github.com/r3labs/diff/v3"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"

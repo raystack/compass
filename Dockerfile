@@ -1,7 +1,6 @@
 FROM alpine:latest
 
 COPY compass /usr/bin/compass
-RUN apk update
-RUN apk add ca-certificates
+RUN apk update && apk add --no-cache ca-certificates && rm -rf /var/cache/apk/*
 
-CMD ["compass"]
+ENTRYPOINT ["compass"]

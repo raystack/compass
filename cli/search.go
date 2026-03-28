@@ -7,8 +7,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/raystack/compass/internal/client"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"github.com/raystack/salt/printer"
-	"github.com/raystack/salt/term"
+	"github.com/raystack/salt/cli/printer"
 	"github.com/spf13/cobra"
 )
 
@@ -43,7 +42,7 @@ func searchCommand(cfg *Config) *cobra.Command {
 				return err
 			}
 
-			fmt.Println(term.Bluef(prettyPrint(res.GetData())))
+			fmt.Println(printer.Bluef("%s", prettyPrint(res.GetData())))
 
 			return nil
 		},

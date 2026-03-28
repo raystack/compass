@@ -10,7 +10,7 @@ import (
 	"github.com/jmoiron/sqlx/types"
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/core/user"
-	"github.com/r3labs/diff/v2"
+	"github.com/r3labs/diff/v3"
 )
 
 type AssetModel struct {
@@ -57,11 +57,11 @@ func (a *AssetModel) toAsset(owners []user.User) asset.Asset {
 }
 
 func (a *AssetModel) toAssetVersion() (asset.Asset, error) {
-
 	var clog diff.Changelog
-	err := a.Changelog.Unmarshal(&clog)
-	if err != nil {
-		return asset.Asset{}, err
+	if len(a.Changelog) > 0 && string(a.Changelog) != "{}" {
+		if err := a.Changelog.Unmarshal(&clog); err != nil {
+			return asset.Asset{}, err
+		}
 	}
 
 	return asset.Asset{
@@ -78,15 +78,17 @@ func (a *AssetModel) toAssetVersion() (asset.Asset, error) {
 
 func (a *AssetModel) toVersionedAsset(latestAssetVersion asset.Asset) (asset.Asset, error) {
 	var owners []user.User
-	err := a.Owners.Unmarshal(&owners)
-	if err != nil {
-		return asset.Asset{}, err
+	if len(a.Owners) > 0 && string(a.Owners) != "{}" {
+		if err := a.Owners.Unmarshal(&owners); err != nil {
+			return asset.Asset{}, err
+		}
 	}
 
 	var clog diff.Changelog
-	err = a.Changelog.Unmarshal(&clog)
-	if err != nil {
-		return asset.Asset{}, err
+	if len(a.Changelog) > 0 && string(a.Changelog) != "{}" {
+		if err := a.Changelog.Unmarshal(&clog); err != nil {
+			return asset.Asset{}, err
+		}
 	}
 
 	return asset.Asset{
@@ -156,6 +158,10 @@ func (m JSONMap) Value() (driver.Value, error) {
 }
 
 func (m *JSONMap) Scan(value interface{}) error {
+	if value == nil {
+		*m = nil
+		return nil
+	}
 	var ba []byte
 	switch v := value.(type) {
 	case []byte:

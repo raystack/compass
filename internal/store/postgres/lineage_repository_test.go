@@ -10,7 +10,7 @@ import (
 
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/internal/store/postgres"
-	"github.com/raystack/salt/log"
+	log "github.com/raystack/salt/observability/logger"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/suite"
 )

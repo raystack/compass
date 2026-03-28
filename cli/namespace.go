@@ -9,8 +9,7 @@ import (
 
 	"github.com/raystack/compass/internal/client"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"github.com/raystack/salt/printer"
-	"github.com/raystack/salt/term"
+	"github.com/raystack/salt/cli/printer"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -76,9 +75,9 @@ func listNamespacesCommand(cfg *Config) *cobra.Command {
 				}
 				printer.Table(os.Stdout, report)
 
-				fmt.Println(term.Cyanf("To view all the data in JSON format, use flag `-o json`"))
+				fmt.Println(printer.Cyanf("To view all the data in JSON format, use flag `-o json`"))
 			} else {
-				fmt.Println(term.Bluef(prettyPrint(res.GetNamespaces())))
+				fmt.Println(printer.Bluef("%s", prettyPrint(res.GetNamespaces())))
 			}
 			return nil
 		},
@@ -118,7 +117,7 @@ func getNamespaceCommand(cfg *Config) *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println(term.Bluef(prettyPrint(res.GetNamespace())))
+			fmt.Println(printer.Bluef("%s", prettyPrint(res.GetNamespace())))
 			return nil
 		},
 	}
@@ -161,7 +160,7 @@ func createNamespaceCommand(cfg *Config) *cobra.Command {
 			}
 			spinner.Stop()
 
-			fmt.Println("ID: \t", term.Greenf(res.Id))
+			fmt.Println("ID: \t", printer.Greenf("%s", res.Id))
 			return nil
 		},
 	}

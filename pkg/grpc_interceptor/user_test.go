@@ -4,11 +4,8 @@ import (
 	"context"
 	"testing"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_testing "github.com/grpc-ecosystem/go-grpc-middleware/testing"
-	pb_testproto "github.com/grpc-ecosystem/go-grpc-middleware/testing/testproto"
+	"github.com/raystack/compass/core/user"
 	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -20,44 +17,45 @@ const (
 	IdentityHeaderKeyEmail = "Compass-User-Email"
 )
 
-type UserTestSuite struct {
-	*grpc_testing.InterceptorTestSuite
-}
+func TestUserHeaderCtx(t *testing.T) {
+	interceptor := UserHeaderCtx(IdentityHeaderKeyUUID, IdentityHeaderKeyEmail)
 
-func TestUserSuite(t *testing.T) {
-	s := &UserTestSuite{
-		InterceptorTestSuite: &grpc_testing.InterceptorTestSuite{
-			TestService: &dummyService{TestServiceServer: &grpc_testing.TestPingService{T: t}},
-			ServerOpts: []grpc.ServerOption{
-				grpc_middleware.WithUnaryServerChain(
-					UserHeaderCtx(IdentityHeaderKeyUUID, IdentityHeaderKeyEmail)),
-			},
-		},
+	// handler mimics a gRPC service that requires user UUID in context
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		u := user.FromContext(ctx)
+		if u.UUID == "" {
+			return nil, status.Error(codes.InvalidArgument, "uuid not found")
+		}
+		return "ok", nil
 	}
-	suite.Run(t, s)
-}
 
-func (s *UserTestSuite) TestUnary_IdentityHeaderNotPresent() {
-	_, err := s.Client.Ping(s.SimpleCtx(), &pb_testproto.PingRequest{Value: "testuser", SleepTimeMs: 9999})
-	code := status.Code(err)
-	require.Equal(s.T(), codes.InvalidArgument, code)
-	require.EqualError(s.T(), err, "rpc error: code = InvalidArgument desc = uuid not found")
-}
+	info := &grpc.UnaryServerInfo{FullMethod: "/test.Service/Test"}
 
-func (s *UserTestSuite) TestUnary_HeaderPresentAndEmpty() {
-	ctx := metadata.AppendToOutgoingContext(context.Background(), IdentityHeaderKeyUUID, "", IdentityHeaderKeyEmail, "")
-	_, err := s.Client.Ping(ctx, &pb_testproto.PingRequest{Value: "testuser", SleepTimeMs: 9999})
-	code := status.Code(err)
-	require.Equal(s.T(), codes.InvalidArgument, code)
-	require.EqualError(s.T(), err, "rpc error: code = InvalidArgument desc = uuid not found")
-}
+	t.Run("IdentityHeaderNotPresent", func(t *testing.T) {
+		ctx := metadata.NewIncomingContext(context.Background(), metadata.MD{})
+		_, err := interceptor(ctx, nil, info, handler)
+		code := status.Code(err)
+		require.Equal(t, codes.InvalidArgument, code)
+		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = uuid not found")
+	})
 
-func (s *UserTestSuite) TestUnary_HeaderPresentAndPassed() {
-	userEmail := "user-email"
-	userUUID := "user-uuid"
+	t.Run("HeaderPresentAndEmpty", func(t *testing.T) {
+		md := metadata.Pairs(IdentityHeaderKeyUUID, "", IdentityHeaderKeyEmail, "")
+		ctx := metadata.NewIncomingContext(context.Background(), md)
+		_, err := interceptor(ctx, nil, info, handler)
+		code := status.Code(err)
+		require.Equal(t, codes.InvalidArgument, code)
+		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = uuid not found")
+	})
 
-	ctx := metadata.AppendToOutgoingContext(s.SimpleCtx(), IdentityHeaderKeyUUID, userUUID, IdentityHeaderKeyEmail, userEmail)
-	_, err := s.Client.Ping(ctx, &pb_testproto.PingRequest{Value: "testuser", SleepTimeMs: 9999})
-	code := status.Code(err)
-	require.Equal(s.T(), codes.OK, code)
+	t.Run("HeaderPresentAndPassed", func(t *testing.T) {
+		userEmail := "user-email"
+		userUUID := "user-uuid"
+
+		md := metadata.Pairs(IdentityHeaderKeyUUID, userUUID, IdentityHeaderKeyEmail, userEmail)
+		ctx := metadata.NewIncomingContext(context.Background(), md)
+		_, err := interceptor(ctx, nil, info, handler)
+		code := status.Code(err)
+		require.Equal(t, codes.OK, code)
+	})
 }

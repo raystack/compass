@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/r3labs/diff/v2"
+	"github.com/r3labs/diff/v3"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/user"
 )

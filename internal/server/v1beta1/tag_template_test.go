@@ -16,7 +16,7 @@ import (
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/internal/server/v1beta1/mocks"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"github.com/raystack/salt/log"
+	log "github.com/raystack/salt/observability/logger"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/testing/protocmp"

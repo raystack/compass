@@ -10,7 +10,7 @@ import (
 
 	"github.com/raystack/compass/core/user"
 	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"github.com/raystack/salt/log"
+	log "github.com/raystack/salt/observability/logger"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -58,12 +58,12 @@ func (server *APIServer) validateUserInCtx(ctx context.Context, ns *namespace.Na
 	userID, err := server.userService.ValidateUser(ctx, ns, usr.UUID, usr.Email)
 	if err != nil {
 		if errors.Is(err, user.ErrNoUserInformation) {
-			return "", status.Errorf(codes.InvalidArgument, err.Error())
+			return "", status.Error(codes.InvalidArgument, err.Error())
 		}
 		if errors.As(err, &user.DuplicateRecordError{UUID: usr.UUID, Email: usr.Email}) {
-			return "", status.Errorf(codes.AlreadyExists, err.Error())
+			return "", status.Error(codes.AlreadyExists, err.Error())
 		}
-		return "", status.Errorf(codes.Internal, err.Error())
+		return "", status.Error(codes.Internal, err.Error())
 	}
 	if userID == "" {
 		return "", status.Error(codes.InvalidArgument, errMissingUserInfo.Error())

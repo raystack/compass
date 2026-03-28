@@ -2,7 +2,7 @@ package cli
 
 import (
 	"github.com/MakeNowJust/heredoc"
-	"github.com/raystack/salt/cmdx"
+	"github.com/raystack/salt/cli/commander"
 	"github.com/spf13/cobra"
 )
 
@@ -64,11 +64,15 @@ func New(cliConfig *Config) *cobra.Command {
 		versionCmd(),
 	)
 
-	// Help topics
-	rootCmd.AddCommand(cmdx.SetCompletionCmd("compass"))
-	rootCmd.AddCommand(cmdx.SetRefCmd(rootCmd))
-	rootCmd.AddCommand(cmdx.SetHelpTopicCmd("environment", envHelp))
-	cmdx.SetHelp(rootCmd)
+	// Help topics, completion, reference
+	mgr := commander.New(rootCmd, commander.WithTopics([]commander.HelpTopic{
+		{
+			Name:  "environment",
+			Short: envHelp["short"],
+			Long:  envHelp["long"],
+		},
+	}))
+	mgr.Init()
 
 	return rootCmd
 }

@@ -1,19 +1,21 @@
 services:
   es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
     ports:
       - 9200:9200
-    image: 'docker.elastic.co/elasticsearch/elasticsearch:7.17.9'
     environment:
       discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms256m -Xmx256m"
     networks:
       - storage
     volumes:
       - ./temp/esdata:/usr/share/elasticsearch/data
 
   postgres:
+    image: postgres:13
     ports:
       - 5432:5432
-    image: 'postgres:13'
     environment:
       POSTGRES_USER: compass
       POSTGRES_PASSWORD: compass_password

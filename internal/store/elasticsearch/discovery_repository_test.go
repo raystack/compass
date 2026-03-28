@@ -11,11 +11,15 @@ import (
 
 	"github.com/raystack/compass/core/asset"
 	store "github.com/raystack/compass/internal/store/elasticsearch"
-	"github.com/raystack/salt/log"
-	"github.com/olivere/elastic/v7"
+	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+type testTotalHits struct {
+	Value    int64  `json:"value"`
+	Relation string `json:"relation"`
+}
 
 func TestDiscoveryRepositoryUpsert(t *testing.T) {
 	var (
@@ -246,7 +250,7 @@ func TestDiscoveryRepositoryDeleteByID(t *testing.T) {
 
 		var body struct {
 			Hits struct {
-				Total elastic.TotalHits `json:"total"`
+				Total testTotalHits `json:"total"`
 			} `json:"hits"`
 		}
 		require.NoError(t, json.NewDecoder(res.Body).Decode(&body))
@@ -308,7 +312,7 @@ func TestDiscoveryRepositoryDeleteByURN(t *testing.T) {
 
 		var body struct {
 			Hits struct {
-				Total elastic.TotalHits `json:"total"`
+				Total testTotalHits `json:"total"`
 			} `json:"hits"`
 		}
 		require.NoError(t, json.NewDecoder(res.Body).Decode(&body))

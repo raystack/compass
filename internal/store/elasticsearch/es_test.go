@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/elastic/go-elasticsearch/esapi"
-	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"github.com/elastic/go-elasticsearch/v8"
 	store "github.com/raystack/compass/internal/store/elasticsearch"
-	"github.com/raystack/salt/log"
+	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
