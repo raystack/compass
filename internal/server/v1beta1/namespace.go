@@ -46,12 +46,20 @@ func (server *APIServer) GetNamespace(ctx context.Context, req *connect.Request[
 
 	var ns *namespace.Namespace
 	if nsID, err := uuid.Parse(req.Msg.GetUrn()); err == nil {
-		if ns, err = server.namespaceService.GetByID(ctx, nsID); err != nil {
-			return nil, connect.NewError(connect.CodeNotFound, err)
+		ns, err = server.namespaceService.GetByID(ctx, nsID)
+		if err != nil {
+			if errors.Is(err, namespace.ErrNotFound) {
+				return nil, connect.NewError(connect.CodeNotFound, err)
+			}
+			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	} else {
-		if ns, err = server.namespaceService.GetByName(ctx, req.Msg.GetUrn()); err != nil {
-			return nil, connect.NewError(connect.CodeNotFound, err)
+		ns, err = server.namespaceService.GetByName(ctx, req.Msg.GetUrn())
+		if err != nil {
+			if errors.Is(err, namespace.ErrNotFound) {
+				return nil, connect.NewError(connect.CodeNotFound, err)
+			}
+			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	}
 

@@ -90,7 +90,7 @@ func (server *APIServer) CreateTagAsset(ctx context.Context, req *connect.Reques
 	if req.Msg.GetTemplateUrn() == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errEmptyTemplateURN)
 	}
-	if req.Msg.GetTagValues() == nil {
+	if len(req.Msg.GetTagValues()) == 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("empty tag values"))
 	}
 
@@ -152,7 +152,7 @@ func (server *APIServer) UpdateTagAsset(ctx context.Context, req *connect.Reques
 		return nil, connect.NewError(connect.CodeInvalidArgument, errEmptyTemplateURN)
 	}
 
-	if req.Msg.GetTagValues() == nil {
+	if len(req.Msg.GetTagValues()) == 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("empty tag values"))
 	}
 

@@ -122,10 +122,6 @@ func (server *APIServer) UpdateComment(ctx context.Context, req *connect.Request
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New(bodyParserErrorMsg(err)))
 	}
 
-	if err := req.Msg.ValidateAll(); err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New(bodyParserErrorMsg(err)))
-	}
-
 	if err := server.validateIDInteger(req.Msg.DiscussionId); err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New(bodyParserErrorMsg(discussion.InvalidError{DiscussionID: req.Msg.DiscussionId})))
 	}
