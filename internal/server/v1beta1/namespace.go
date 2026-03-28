@@ -4,6 +4,7 @@ package handlersv1beta1
 
 import (
 	"context"
+	"errors"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -39,6 +40,10 @@ func (server *APIServer) ListNamespaces(ctx context.Context, req *connect.Reques
 }
 
 func (server *APIServer) GetNamespace(ctx context.Context, req *connect.Request[compassv1beta1.GetNamespaceRequest]) (*connect.Response[compassv1beta1.GetNamespaceResponse], error) {
+	if req.Msg.GetUrn() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("urn is required"))
+	}
+
 	var ns *namespace.Namespace
 	if nsID, err := uuid.Parse(req.Msg.GetUrn()); err == nil {
 		if ns, err = server.namespaceService.GetByID(ctx, nsID); err != nil {
@@ -88,6 +93,10 @@ func (server *APIServer) CreateNamespace(ctx context.Context, req *connect.Reque
 }
 
 func (server *APIServer) UpdateNamespace(ctx context.Context, req *connect.Request[compassv1beta1.UpdateNamespaceRequest]) (*connect.Response[compassv1beta1.UpdateNamespaceResponse], error) {
+	if req.Msg.GetUrn() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("urn is required"))
+	}
+
 	var nsID uuid.UUID
 	var nsName string
 	if id, err := uuid.Parse(req.Msg.GetUrn()); err == nil {

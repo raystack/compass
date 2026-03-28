@@ -3,6 +3,7 @@ package interceptor
 import (
 	"context"
 	"fmt"
+	"log"
 	"runtime/debug"
 
 	"connectrpc.com/connect"
@@ -15,9 +16,10 @@ func Recovery() connect.UnaryInterceptorFunc {
 			defer func() {
 				if r := recover(); r != nil {
 					stack := debug.Stack()
+					log.Printf("panic recovered: %v\n%s", r, string(stack))
 					err = connect.NewError(
 						connect.CodeInternal,
-						fmt.Errorf("panic recovered: %v\n%s", r, string(stack)),
+						fmt.Errorf("internal server error"),
 					)
 				}
 			}()

@@ -102,7 +102,7 @@ func (server *APIServer) GetComment(ctx context.Context, req *connect.Request[co
 
 	cmt, err := server.discussionService.GetComment(ctx, req.Msg.Id, req.Msg.DiscussionId)
 	if errors.As(err, new(discussion.NotFoundError)) {
-		return nil, connect.NewError(connect.CodeNotFound, errMissingUserInfo)
+		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())

@@ -108,7 +108,7 @@ func Serve(
 	// Health check endpoint
 	mux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("pong"))
+		_, _ = w.Write([]byte("pong"))
 	})
 
 	// Create HTTP server with h2c support for HTTP/2 without TLS

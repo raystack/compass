@@ -206,7 +206,7 @@ func (server *APIServer) GetAssetByVersion(ctx context.Context, req *connect.Req
 	}
 
 	if _, err := asset.ParseVersion(req.Msg.GetVersion()); err != nil {
-		return nil, connect.NewError(connect.CodeNotFound, err)
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
 	ast, err := server.assetService.GetAssetByVersion(ctx, req.Msg.GetId(), req.Msg.GetVersion())
@@ -356,10 +356,10 @@ func (server *APIServer) CreateAssetProbe(ctx context.Context, req *connect.Requ
 	}
 
 	if req.Msg.Probe.Status == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("Status is required"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("status is required"))
 	}
 	if !req.Msg.Probe.Timestamp.IsValid() {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("Timestamp is required"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("timestamp is required"))
 	}
 
 	probe := asset.Probe{
@@ -372,7 +372,7 @@ func (server *APIServer) CreateAssetProbe(ctx context.Context, req *connect.Requ
 		if errors.As(err, &asset.NotFoundError{}) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, internalServerError(server.logger, err.Error())
 	}
 
 	return connect.NewResponse(&compassv1beta1.CreateAssetProbeResponse{
