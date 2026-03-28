@@ -10,14 +10,16 @@ This document describes where Compass goes next.
 
 ## The Role
 
-Meteor and Compass are two halves of one system. Meteor goes wide — connecting to every source, resolving entities, building the graph. Compass goes deep — storing the graph, making it queryable, serving it to every consumer.
+Meteor and Compass are two halves of one system. Meteor goes wide — connecting to every source, extracting rich metadata, and delivering it. Compass goes deep — resolving entities, storing the graph, making it queryable, and serving it to every consumer.
 
-Meteor is the agent that roams your infrastructure. Compass is the brain that remembers what the agent found and answers questions about it.
+Meteor is the agent that roams your infrastructure. Compass is the brain that remembers what the agent found, figures out what's the same thing across sources, and answers questions about it.
 
-As Meteor evolves from a flat metadata collector into a context graph builder, Compass evolves from a search catalog into the **persistence, query, and serving layer** for that graph. The division of responsibility:
+As Meteor evolves from a flat metadata collector into a richer extraction and delivery pipeline, Compass evolves from a search catalog into the **graph construction, persistence, query, and serving layer**. The division of responsibility:
 
-- **Meteor** owns collection, entity resolution, and graph construction.
-- **Compass** owns storage, indexing, querying, and serving.
+- **Meteor** owns collection, enrichment, and delivery of raw observations from sources.
+- **Compass** owns entity resolution, graph construction, storage, indexing, querying, and serving.
+
+Meteor sends raw observations — "I found this thing at this source with these properties." Compass resolves those observations against what it already knows, deduplicates, constructs the graph, and serves it. This keeps Meteor stateless and simple, while Compass — which already has the full graph context needed for resolution — owns the intelligence.
 
 The consumer base expands from humans using a UI to AI agents calling APIs. Both remain first-class. But the AI serving path is where most of the new investment goes.
 
@@ -58,7 +60,7 @@ Each edge type carries its own semantics and should be queryable independently. 
 
 The graph query API should support expressive traversal patterns, not just single-node neighborhood lookups.
 
-**Entity as a first-class concept.** Meteor resolves entities across sources — recognizing that a BigQuery table, a dbt model, a Tableau datasource, and an Airflow task reference the same logical thing. Compass should store and expose these resolved identities. One entity, multiple representations, queryable as either the unified entity or any individual facet.
+**Entity resolution and identity.** The same logical thing appears across multiple sources — a BigQuery table, a dbt model, a Tableau datasource, and an Airflow task may all reference the same entity. Compass owns entity resolution. When Meteor delivers raw observations from different sources, Compass matches them against its existing graph, recognizes duplicates, merges facets, and maintains a unified entity identity. One entity, multiple source representations, queryable as either the unified entity or any individual facet. Compass is the right place for this because it has the full graph context needed to make resolution decisions — it can compare incoming observations against everything it already knows.
 
 **Graph-aware ranking.** Assets that are highly connected — many dependents, many consumers, central in the lineage graph — are more important than orphaned tables nobody uses. Search ranking should factor in graph centrality and connectivity, not just text relevance.
 
@@ -111,11 +113,17 @@ Technical metadata — schemas, lineage, service information — is necessary bu
 ```
                      Meteor
                        │
-                       │ resolved assets + relationships
+                       │ raw observations + relationships
                        v
 ┌──────────────────────────────────────────────────┐
 │                    Compass                        │
 │                                                   │
+│  ┌──────────────────┐                             │
+│  │  Entity Resolver  │                             │
+│  │  • deduplication  │                             │
+│  │  • identity merge │                             │
+│  └────────┬─────────┘                              │
+│           v                                        │
 │  ┌─────────────┐  ┌──────────────┐               │
 │  │ Graph Store  │  │ Vector Index │               │
 │  │ (Postgres)   │  │ (Semantic)   │               │
@@ -145,6 +153,7 @@ Technical metadata — schemas, lineage, service information — is necessary bu
 
 The key additions over today's architecture:
 
+- **Entity resolver** that matches incoming observations from Meteor against the existing graph, deduplicates, and merges identities.
 - **Vector index** alongside Elasticsearch for semantic search.
 - **Query engine** that can do graph traversal, text search, and semantic search in a single query.
 - **MCP server** as a first-class API surface alongside gRPC and REST.
@@ -160,7 +169,7 @@ The existing gRPC/REST APIs, Postgres storage, and Elasticsearch indexing remain
 
 **Third: Semantic search.** Add vector embeddings to the indexing pipeline. When an asset is upserted, Compass indexes both the text and a vector embedding. Search becomes hybrid. This requires adding embedding generation and a vector index but doesn't change the data model.
 
-**Fourth: Rich graph model.** Expand relationship types beyond lineage. Add multi-hop traversal queries. Implement graph-aware ranking. Store resolved entity identities from Meteor. This requires schema evolution and new query capabilities — it's the deepest change.
+**Fourth: Rich graph model.** Expand relationship types beyond lineage. Add entity resolution to match and merge observations from Meteor into unified entities. Add multi-hop traversal queries. Implement graph-aware ranking. This requires schema evolution and new query capabilities — it's the deepest change.
 
 **Fifth: Active knowledge layer.** Change feeds, subscriptions, freshness scoring, usage tracking, business glossary. This turns Compass from a store you query into a system that actively keeps consumers informed and provides business context alongside technical metadata.
 
