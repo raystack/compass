@@ -1,17 +1,22 @@
 version: v2
+# Proto source lives in the proton repo (../proton).
+# After running `buf generate`, remove unwanted generated files:
+#   find gen/raystack -mindepth 1 -maxdepth 1 ! -name compass -exec rm -rf {} +
+inputs:
+  - directory: ../proton
+  - module: buf.build/bufbuild/protovalidate
 managed:
   enabled: true
   override:
     - file_option: go_package
       path: raystack/compass/v1beta1/service.proto
-      value: github.com/raystack/compass/proto/compassv1beta1
+      value: github.com/raystack/compass/gen/raystack/compass/v1beta1;compassv1beta1
 plugins:
   - remote: buf.build/protocolbuffers/go:v1.36.11
-    out: proto
-    opt: module=github.com/raystack/compass/proto
-  - remote: buf.build/bufbuild/validate-go:v1.0.2
-    out: proto
-    opt: module=github.com/raystack/compass/proto
+    out: gen
+    opt:
+      - paths=source_relative
   - remote: buf.build/connectrpc/go:v1.18.1
-    out: proto
-    opt: module=github.com/raystack/compass/proto
+    out: gen
+    opt:
+      - paths=source_relative

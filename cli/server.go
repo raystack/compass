@@ -10,16 +10,15 @@ import (
 	"syscall"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/core/discussion"
 	"github.com/raystack/compass/core/star"
 	"github.com/raystack/compass/core/tag"
 	"github.com/raystack/compass/core/user"
 	compassserver "github.com/raystack/compass/internal/server"
-	esStore "github.com/raystack/compass/internal/store/elasticsearch"
-	"github.com/raystack/compass/internal/store/postgres"
-	"github.com/raystack/compass/pkg/telemetry"
+	esStore "github.com/raystack/compass/store/elasticsearch"
+	"github.com/raystack/compass/store/postgres"
+	"github.com/raystack/compass/internal/telemetry"
 	log "github.com/raystack/salt/observability/logger"
 	"github.com/spf13/cobra"
 )
@@ -81,7 +80,7 @@ func serverMigrateCommand(cfg *Config) *cobra.Command {
 			ctx, cancel := signal.NotifyContext(cmd.Context(), syscall.SIGINT, syscall.SIGTERM)
 			defer cancel()
 			if down {
-				return migrateDown(cfg)
+				return migrateDown(ctx, cfg)
 			}
 			return runMigrations(ctx, cfg)
 		},
@@ -96,11 +95,6 @@ func runServer(config *Config) error {
 
 	logger := initLogger(config.LogLevel)
 	logger.Info("compass starting", "version", Version)
-
-	nrApp, err := initNewRelicMonitor(config, logger)
-	if err != nil {
-		return err
-	}
 
 	otelCleanup, err := telemetry.Init(ctx, config.Telemetry, logger)
 	if err != nil {
@@ -117,6 +111,13 @@ func runServer(config *Config) error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		logger.Warn("closing db...")
+		if err := pgClient.Close(); err != nil {
+			logger.Error("error when closing db", "err", err)
+		}
+		logger.Warn("db closed...")
+	}()
 
 	// init tag
 	tagRepository, err := postgres.NewTagRepository(pgClient)
@@ -169,8 +170,6 @@ func runServer(config *Config) error {
 		ctx,
 		config.Service,
 		logger,
-		pgClient,
-		nrApp,
 		namespaceService,
 		assetService,
 		starService,
@@ -212,41 +211,20 @@ func initPostgres(logger log.Logger, config *Config) (*postgres.Client, error) {
 	return pgClient, nil
 }
 
-func initNewRelicMonitor(config *Config, logger log.Logger) (*newrelic.Application, error) {
-	if !config.NewRelic.Enabled {
-		logger.Info("New Relic monitoring is disabled.")
-		return nil, nil
-	}
-	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName(config.NewRelic.AppName),
-		newrelic.ConfigLicense(config.NewRelic.LicenseKey),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create New Relic Application: %w", err)
-	}
-	logger.Info("New Relic monitoring is enabled for", "config", config.NewRelic.AppName)
-
-	return app, nil
-}
-
 func runMigrations(ctx context.Context, config *Config) error {
-	fmt.Println("Preparing migration...")
-
 	logger := initLogger(config.LogLevel)
 	logger.Info("compass is migrating", "version", Version)
 
-	logger.Info("Migrating Postgres & ElasticSearch...")
 	esClient, err := initElasticsearch(logger, config.Elasticsearch)
 	if err != nil {
 		return err
 	}
 
-	logger.Info("Initiating Postgres client...")
-	pgClient, err := postgres.NewClient(config.DB)
+	pgClient, err := initPostgres(logger, config)
 	if err != nil {
-		logger.Error("failed to prepare migration", "error", err)
 		return err
 	}
+	defer pgClient.Close()
 
 	ver, err := pgClient.Migrate(config.DB)
 	if err != nil {
@@ -265,27 +243,24 @@ func runMigrations(ctx context.Context, config *Config) error {
 	} else if err != nil {
 		return fmt.Errorf("problem with migration %w", err)
 	}
-	logger.Info(fmt.Sprintf("Migration finished. Version: %d", ver))
+	logger.Info("migration finished", "version", ver)
 	return nil
 }
 
-func migrateDown(config *Config) error {
-	fmt.Println("Preparing rolling back one step of migration...")
-
+func migrateDown(ctx context.Context, config *Config) error {
 	logger := initLogger(config.LogLevel)
-	logger.Info("compass is migrating", "version", Version)
+	logger.Info("compass is rolling back migration", "version", Version)
 
-	logger.Info("Initiating Postgres client...")
-	pgClient, err := postgres.NewClient(config.DB)
+	pgClient, err := initPostgres(logger, config)
 	if err != nil {
-		logger.Error("failed to prepare migration", "error", err)
 		return err
 	}
+	defer pgClient.Close()
 
 	ver, err := pgClient.MigrateDown(config.DB)
 	if err != nil {
 		return fmt.Errorf("problem with migration %w", err)
 	}
-	logger.Info(fmt.Sprintf("Migration finished. Version: %d", ver))
+	logger.Info("migration finished", "version", ver)
 	return nil
 }

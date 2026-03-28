@@ -6,7 +6,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/internal/client"
-	compassv1beta1 "github.com/raystack/compass/proto/compassv1beta1"
+	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
 	"github.com/raystack/salt/cli/printer"
 	"github.com/spf13/cobra"
 )

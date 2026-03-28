@@ -1,0 +1,311 @@
+package handler
+
+//go:generate mockery --name=UserService -r --case underscore --with-expecter --structname UserService --filename user_service.go --output=./mocks
+import (
+	"context"
+	"errors"
+	"strings"
+	"time"
+
+	"connectrpc.com/connect"
+	"github.com/raystack/compass/core/discussion"
+	"github.com/raystack/compass/core/namespace"
+	"github.com/raystack/compass/core/star"
+	"github.com/raystack/compass/core/user"
+	"github.com/raystack/compass/core/validator"
+	"github.com/raystack/compass/internal/middleware"
+	compassv1beta1 "github.com/raystack/compass/gen/raystack/compass/v1beta1"
+	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+type UserService interface {
+	ValidateUser(ctx context.Context, ns *namespace.Namespace, uuid, email string) (string, error)
+}
+
+func (server *Handler) GetUserStarredAssets(ctx context.Context, req *connect.Request[compassv1beta1.GetUserStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetUserStarredAssetsResponse], error) {
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
+		return nil, err
+	}
+
+	starFilter := star.Filter{
+		Size:   int(req.Msg.GetSize()),
+		Offset: int(req.Msg.GetOffset()),
+	}
+
+	starredAssets, err := server.starService.GetStarredAssetsByUserID(ctx, starFilter, req.Msg.GetUserId())
+
+	if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if errors.As(err, new(star.NotFoundError)) {
+		return nil, connect.NewError(connect.CodeNotFound, err)
+	}
+	if err != nil {
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	var starredAssetsPB []*compassv1beta1.Asset
+	for _, ast := range starredAssets {
+		astPB, err := assetToProto(ast, false)
+		if err != nil {
+			return nil, internalServerError(server.logger, err.Error())
+		}
+		starredAssetsPB = append(starredAssetsPB, astPB)
+	}
+
+	return connect.NewResponse(&compassv1beta1.GetUserStarredAssetsResponse{
+		Data: starredAssetsPB,
+	}), nil
+}
+
+func (server *Handler) GetMyStarredAssets(ctx context.Context, req *connect.Request[compassv1beta1.GetMyStarredAssetsRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetsResponse], error) {
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
+	if err != nil {
+		return nil, err
+	}
+
+	starFilter := star.Filter{
+		Size:   int(req.Msg.GetSize()),
+		Offset: int(req.Msg.GetOffset()),
+	}
+
+	starredAssets, err := server.starService.GetStarredAssetsByUserID(ctx, starFilter, userID)
+
+	if errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if errors.As(err, new(star.NotFoundError)) {
+		return nil, connect.NewError(connect.CodeNotFound, err)
+	}
+	if err != nil {
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	var starredAssetsPB []*compassv1beta1.Asset
+	for _, ast := range starredAssets {
+		astPB, err := assetToProto(ast, false)
+		if err != nil {
+			return nil, internalServerError(server.logger, err.Error())
+		}
+		starredAssetsPB = append(starredAssetsPB, astPB)
+	}
+
+	return connect.NewResponse(&compassv1beta1.GetMyStarredAssetsResponse{
+		Data: starredAssetsPB,
+	}), nil
+}
+
+func (server *Handler) GetMyStarredAsset(ctx context.Context, req *connect.Request[compassv1beta1.GetMyStarredAssetRequest]) (*connect.Response[compassv1beta1.GetMyStarredAssetResponse], error) {
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
+	if err != nil {
+		return nil, err
+	}
+
+	ast, err := server.starService.GetStarredAssetByUserID(ctx, userID, req.Msg.GetAssetId())
+	if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if errors.As(err, new(star.NotFoundError)) {
+		return nil, connect.NewError(connect.CodeNotFound, err)
+	}
+	if err != nil {
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	astPB, err := assetToProto(ast, false)
+	if err != nil {
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	return connect.NewResponse(&compassv1beta1.GetMyStarredAssetResponse{
+		Data: astPB,
+	}), nil
+}
+
+func (server *Handler) StarAsset(ctx context.Context, req *connect.Request[compassv1beta1.StarAssetRequest]) (*connect.Response[compassv1beta1.StarAssetResponse], error) {
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
+	if err != nil {
+		return nil, err
+	}
+
+	starID, err := server.starService.Stars(ctx, ns, userID, req.Msg.GetAssetId())
+	if err != nil {
+		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+		if errors.As(err, new(star.UserNotFoundError)) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+		if errors.As(err, new(star.DuplicateRecordError)) {
+			// idempotent
+			return connect.NewResponse(&compassv1beta1.StarAssetResponse{
+				Id: starID,
+			}), nil
+		}
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	return connect.NewResponse(&compassv1beta1.StarAssetResponse{
+		Id: starID,
+	}), nil
+}
+
+func (server *Handler) UnstarAsset(ctx context.Context, req *connect.Request[compassv1beta1.UnstarAssetRequest]) (*connect.Response[compassv1beta1.UnstarAssetResponse], error) {
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
+	if err != nil {
+		return nil, err
+	}
+
+	err = server.starService.Unstars(ctx, userID, req.Msg.GetAssetId())
+	if err != nil {
+		if errors.Is(err, star.ErrEmptyAssetID) || errors.Is(err, star.ErrEmptyUserID) || errors.As(err, new(star.InvalidError)) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+		if errors.As(err, new(star.NotFoundError)) {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	return connect.NewResponse(&compassv1beta1.UnstarAssetResponse{}), nil
+}
+
+func (server *Handler) GetMyDiscussions(ctx context.Context, req *connect.Request[compassv1beta1.GetMyDiscussionsRequest]) (*connect.Response[compassv1beta1.GetMyDiscussionsResponse], error) {
+	ns := middleware.FetchNamespaceFromContext(ctx)
+	userID, err := server.validateUserInCtx(ctx, ns)
+	if err != nil {
+		return nil, err
+	}
+
+	flt, err := server.buildGetDiscussionsFilter(req.Msg, userID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	dscs, err := server.discussionService.GetDiscussions(ctx, flt)
+	if err != nil {
+		return nil, internalServerError(server.logger, err.Error())
+	}
+
+	var dscsPB []*compassv1beta1.Discussion
+	for _, dsc := range dscs {
+		dscsPB = append(dscsPB, discussionToProto(dsc))
+	}
+
+	return connect.NewResponse(&compassv1beta1.GetMyDiscussionsResponse{
+		Data: dscsPB,
+	}), nil
+}
+
+func (server *Handler) buildGetDiscussionsFilter(req *compassv1beta1.GetMyDiscussionsRequest, userID string) (discussion.Filter, error) {
+	fl := discussion.Filter{
+		Type:          req.GetType(),
+		State:         req.GetState(),
+		SortBy:        req.GetSort(),
+		SortDirection: req.GetDirection(),
+		Size:          int(req.GetSize()),
+		Offset:        int(req.GetOffset()),
+	}
+
+	filterQuery := req.GetFilter()
+	if err := validator.ValidateOneOf(filterQuery, "assigned", "created", "all"); err != nil {
+		return discussion.Filter{}, err
+	}
+
+	if len(strings.TrimSpace(filterQuery)) > 0 {
+		if filterQuery != "created" && filterQuery != "all" {
+			filterQuery = "assigned" // default value
+		}
+	}
+
+	switch filterQuery {
+	case "all":
+		fl.Owner = userID
+		fl.Assignees = []string{userID}
+		fl.DisjointAssigneeOwner = true
+	case "created":
+		fl.Owner = userID
+	default:
+		fl.Assignees = []string{userID}
+	}
+
+	assets := req.GetAsset()
+	if assets != "" {
+		fl.Assets = strings.Split(assets, ",")
+	}
+
+	labels := req.GetLabels()
+	if labels != "" {
+		fl.Labels = strings.Split(labels, ",")
+	}
+
+	if err := fl.Validate(); err != nil {
+		return discussion.Filter{}, err
+	}
+
+	fl.AssignDefault()
+	return fl, nil
+}
+
+// userToProto transforms struct with some fields only to proto
+func userToProto(u user.User) *compassv1beta1.User {
+	if u == (user.User{}) {
+		return nil
+	}
+	return &compassv1beta1.User{
+		Uuid:  u.UUID,
+		Email: u.Email,
+	}
+}
+
+// userToFullProto transforms struct with all fields to proto
+func userToFullProto(u user.User) *compassv1beta1.User {
+	if u == (user.User{}) {
+		return nil
+	}
+	var createdAtPB *timestamppb.Timestamp
+	if !u.CreatedAt.IsZero() {
+		createdAtPB = timestamppb.New(u.CreatedAt)
+	}
+
+	var updatedAtPB *timestamppb.Timestamp
+	if !u.UpdatedAt.IsZero() {
+		updatedAtPB = timestamppb.New(u.UpdatedAt)
+	}
+
+	return &compassv1beta1.User{
+		Id:        u.ID,
+		Uuid:      u.UUID,
+		Email:     u.Email,
+		Provider:  u.Provider,
+		CreatedAt: createdAtPB,
+		UpdatedAt: updatedAtPB,
+	}
+}
+
+// userFromProto transforms proto to struct
+func userFromProto(proto *compassv1beta1.User) user.User {
+	var createdAt time.Time
+	if proto.GetCreatedAt() != nil {
+		createdAt = proto.GetCreatedAt().AsTime()
+	}
+
+	var updatedAt time.Time
+	if proto.GetUpdatedAt() != nil {
+		updatedAt = proto.GetUpdatedAt().AsTime()
+	}
+
+	return user.User{
+		ID:        proto.GetId(),
+		UUID:      proto.GetUuid(),
+		Email:     proto.GetEmail(),
+		Provider:  proto.GetProvider(),
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
+	}
+}

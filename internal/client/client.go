@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/raystack/compass/proto/compassv1beta1/compassv1beta1connect"
+	"github.com/raystack/compass/gen/raystack/compass/v1beta1/compassv1beta1connect"
 )
 
 // NamespaceHeaderKey specify what namespace request is targeted for
