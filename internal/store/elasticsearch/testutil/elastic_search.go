@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -148,22 +149,58 @@ func (srv *ElasticsearchTestServer) purge(cli *elasticsearch.Client) (err error)
 		}
 	}()
 
-	// Use a pattern that excludes system indices (dot-prefixed) which
-	// ES 8.x protects from deletion, causing a 400 error with "DELETE /*".
-	req, err := http.NewRequest("DELETE", "/*,-.*", nil)
-	if err != nil {
-		return
-	}
-	q := req.URL.Query()
-	q.Set("expand_wildcards", "open,closed")
-	q.Set("ignore_unavailable", "true")
-	req.URL.RawQuery = q.Encode()
-	res, err := cli.Perform(req)
+	// List all non-system indices first. ES 8.x protects system indices
+	// (dot-prefixed) from deletion, so we must discover user indices
+	// explicitly and delete only those.
+	catReq, err := http.NewRequest("GET", "/_cat/indices?h=index&format=json&expand_wildcards=open,closed", nil)
 	if err != nil {
 		return err
 	}
-	if res.StatusCode > 299 {
-		return fmt.Errorf("elasticsearch server returned status code %d", res.StatusCode)
+	catRes, err := cli.Perform(catReq)
+	if err != nil {
+		return err
+	}
+	defer catRes.Body.Close()
+	body, err := io.ReadAll(catRes.Body)
+	if err != nil {
+		return err
+	}
+
+	// Extract index names from the JSON array of {"index":"name"} objects.
+	// Use simple string parsing to avoid adding an encoding/json dependency
+	// just for tests. The response looks like: [{"index":"foo"},{"index":"bar"}]
+	var indices []string
+	for _, part := range strings.Split(string(body), "\"index\":\"") {
+		if idx := strings.Index(part, "\""); idx > 0 {
+			name := part[:idx]
+			// Skip system indices (dot-prefixed)
+			if !strings.HasPrefix(name, ".") {
+				indices = append(indices, name)
+			}
+		}
+	}
+
+	// Nothing to delete on a fresh ES instance.
+	if len(indices) == 0 {
+		return nil
+	}
+
+	target := strings.Join(indices, ",")
+	delReq, err := http.NewRequest("DELETE", "/"+target, nil)
+	if err != nil {
+		return err
+	}
+	q := delReq.URL.Query()
+	q.Set("ignore_unavailable", "true")
+	delReq.URL.RawQuery = q.Encode()
+	delRes, err := cli.Perform(delReq)
+	if err != nil {
+		return err
+	}
+	defer delRes.Body.Close()
+	if delRes.StatusCode > 299 {
+		respBody, _ := io.ReadAll(delRes.Body)
+		return fmt.Errorf("elasticsearch server returned status code %d: %s", delRes.StatusCode, respBody)
 	}
 	return nil
 }
