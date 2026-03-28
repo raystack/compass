@@ -11,7 +11,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -ldflags "-X github.com/raystack/compass/cli.Version=${VERSION}" -o compass
 
 # Dev stage — default target, builds from source
-FROM alpine:3.21
+FROM alpine:3.21 AS dev
 COPY --from=builder /build/compass /usr/bin/compass
 RUN apk add --no-cache ca-certificates libc6-compat
 ENTRYPOINT ["compass"]
