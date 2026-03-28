@@ -56,10 +56,6 @@ service:
     headerkey_uuid: Compass-User-UUID #required
     headerkey_email: Compass-User-Email #optional
     provider_default_name: shield #optional
-  grpc:
-    port: 8081 #required
-    max_send_msg_size: 33554432
-    max_recv_msg_size: 33554432
 ```
 
 ### Using environment variable
@@ -82,9 +78,6 @@ SERVICE_PORT=8080
 SERVICE_IDENTITY_HEADERKEY_UUID=Compass-User-UUID
 SERVICE_IDENTITY_HEADERKEY_EMAIL=Compass-User-Email
 SERVICE_IDENTITY_PROVIDER_DEFAULT_NAME=shield
-SERVICE_GRPC_PORT=8081
-SERVICE_GRPC_MAX_SEND_MSG_SIZE=33554432
-SERVICE_GRPC_MAX_RECV_MSG_SIZE=33554432
 ```
 
 Set the env variable using export
@@ -243,7 +236,6 @@ app:
 
   config:
     COMPASS_SERVICE_PORT: 8080
-    COMPASS_SERVICE_GRPC_PORT: 8081
     # COMPASS_SERVICE_HOST: 0.0.0.0
     # COMPASS_STATSD_ENABLED: false
     # COMPASS_STATSD_PREFIX: compass
@@ -276,14 +268,14 @@ Add client configurations in the same `~/compass.yaml` file in root of current d
 
 ```yml
 client:
-  host: localhost:8081
+  host: localhost:8080
   serverheaderkey_uuid: Compass-User-UUID
   serverheadervalue_uuid: john.doe@example.com
 ```
 
 #### Required Header/Metadata in API
 
-Compass has a concept of [User](./concepts/user.md). In the current version, all HTTP & gRPC APIs in Compass requires an identity header/metadata in the request. The header key is configurable but the default name is `Compass-User-UUID`.
+Compass has a concept of [User](./concepts/user.md). In the current version, all APIs in Compass require an identity header in the request. The header key is configurable but the default name is `Compass-User-UUID`.
 
 Compass APIs also expect an additional optional e-mail header. This is also configurable and the default name is `Compass-User-Email`. The purpose of having this optional e-mail header is described in the [User](./concepts/user.md) section.
 

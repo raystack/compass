@@ -2,12 +2,11 @@ package client
 
 import (
 	"context"
+	"net/http"
 	"time"
 
-	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
+	"connectrpc.com/connect"
+	"github.com/raystack/compass/proto/compassv1beta1/compassv1beta1connect"
 )
 
 // NamespaceHeaderKey specify what namespace request is targeted for
@@ -15,38 +14,44 @@ import (
 const NamespaceHeaderKey = "x-namespace"
 
 type Config struct {
-	Host                      string `mapstructure:"host" default:"localhost:8081"`
+	Host                      string `mapstructure:"host" default:"localhost:8080"`
 	ServerHeaderKeyUserUUID   string `yaml:"serverheaderkey_uuid" mapstructure:"serverheaderkey_uuid" default:"Compass-User-UUID"`
 	ServerHeaderValueUserUUID string `yaml:"serverheadervalue_uuid" mapstructure:"serverheadervalue_uuid" default:"compass@raystack.com"`
 }
 
-func Create(ctx context.Context, cfg Config) (compassv1beta1.CompassServiceClient, func(), error) {
-	dialTimeoutCtx, dialCancel := context.WithTimeout(ctx, time.Second*2)
-	conn, err := createConnection(dialTimeoutCtx, cfg)
-	if err != nil {
-		dialCancel()
-		return nil, nil, err
-	}
-
-	cancel := func() {
-		dialCancel()
-		conn.Close()
-	}
-
-	client := compassv1beta1.NewCompassServiceClient(conn)
-	return client, cancel, nil
+// Client wraps the Connect client with header configuration
+type Client struct {
+	compassv1beta1connect.CompassServiceClient
+	cfg Config
 }
 
-func SetMetadata(ctx context.Context, cfg Config, namespaceID string) context.Context {
-	md := metadata.New(map[string]string{
-		cfg.ServerHeaderKeyUserUUID: cfg.ServerHeaderValueUserUUID,
-		NamespaceHeaderKey:          namespaceID,
-	})
-	return metadata.NewOutgoingContext(ctx, md)
-}
+// Create creates a new Connect client for the Compass service.
+func Create(ctx context.Context, cfg Config) (*Client, error) {
+	httpClient := &http.Client{
+		Timeout: time.Second * 30,
+	}
 
-func createConnection(ctx context.Context, cfg Config) (*grpc.ClientConn, error) {
-	return grpc.NewClient(cfg.Host,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	// Build base URL
+	baseURL := "http://" + cfg.Host
+
+	connectClient := compassv1beta1connect.NewCompassServiceClient(
+		httpClient,
+		baseURL,
+		connect.WithProtoJSON(), // Use Connect protocol with JSON encoding
 	)
+
+	return &Client{
+		CompassServiceClient: connectClient,
+		cfg:                  cfg,
+	}, nil
+}
+
+// NewRequest creates a new Connect request with the configured headers.
+func NewRequest[T any](cfg Config, namespaceID string, msg *T) *connect.Request[T] {
+	req := connect.NewRequest(msg)
+	req.Header().Set(cfg.ServerHeaderKeyUserUUID, cfg.ServerHeaderValueUserUUID)
+	if namespaceID != "" {
+		req.Header().Set(NamespaceHeaderKey, namespaceID)
+	}
+	return req
 }

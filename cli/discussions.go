@@ -2,14 +2,13 @@ package cli
 
 import (
 	"fmt"
-	"github.com/raystack/compass/core/namespace"
 	"os"
 
-	"github.com/raystack/compass/internal/client"
-	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"github.com/raystack/salt/cli/printer"
-
 	"github.com/MakeNowJust/heredoc"
+	"github.com/raystack/compass/core/namespace"
+	"github.com/raystack/compass/internal/client"
+	compassv1beta1 "github.com/raystack/compass/proto/compassv1beta1"
+	"github.com/raystack/salt/cli/printer"
 	"github.com/spf13/cobra"
 )
 
@@ -52,14 +51,13 @@ func listAllDiscussionsCommand(cfg *Config) *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
+			clnt, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
-			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
-			res, err := clnt.GetAllDiscussions(ctx, &compassv1beta1.GetAllDiscussionsRequest{})
+			req := client.NewRequest(cfg.Client, namespaceID, &compassv1beta1.GetAllDiscussionsRequest{})
+			res, err := clnt.GetAllDiscussions(cmd.Context(), req)
 			if err != nil {
 				return err
 			}
@@ -68,7 +66,7 @@ func listAllDiscussionsCommand(cfg *Config) *cobra.Command {
 				report := [][]string{}
 				report = append(report, []string{"ID", "TITLE", "TYPE", "STATE"})
 				index := 1
-				for _, i := range res.GetData() {
+				for _, i := range res.Msg.GetData() {
 					report = append(report, []string{i.Id, i.Title, i.Type, i.State})
 					index++
 				}
@@ -76,7 +74,7 @@ func listAllDiscussionsCommand(cfg *Config) *cobra.Command {
 
 				fmt.Println(printer.Cyanf("To view all the data in JSON format, use flag `-o json`"))
 			} else {
-				fmt.Println(printer.Bluef("%s", prettyPrint(res.GetData())))
+				fmt.Println(printer.Bluef("%s", prettyPrint(res.Msg.GetData())))
 			}
 
 			return nil
@@ -102,23 +100,22 @@ func viewDiscussionByIDCommand(cfg *Config) *cobra.Command {
 			spinner := printer.Spin("")
 			defer spinner.Stop()
 
-			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
+			clnt, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
-			defer cancel()
 
 			discussionID := args[0]
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
-			res, err := clnt.GetDiscussion(ctx, &compassv1beta1.GetDiscussionRequest{
+			req := client.NewRequest(cfg.Client, namespaceID, &compassv1beta1.GetDiscussionRequest{
 				Id: discussionID,
 			})
+			res, err := clnt.GetDiscussion(cmd.Context(), req)
 			if err != nil {
 				return err
 			}
 			spinner.Stop()
 
-			fmt.Println(printer.Bluef("%s", prettyPrint(res.GetData())))
+			fmt.Println(printer.Bluef("%s", prettyPrint(res.Msg.GetData())))
 			return nil
 		},
 	}
@@ -151,14 +148,12 @@ func postDiscussionCommand(cfg *Config) *cobra.Command {
 				return err
 			}
 
-			clnt, cancel, err := client.Create(cmd.Context(), cfg.Client)
+			clnt, err := client.Create(cmd.Context(), cfg.Client)
 			if err != nil {
 				return err
 			}
-			defer cancel()
 
-			ctx := client.SetMetadata(cmd.Context(), cfg.Client, namespaceID)
-			res, err := clnt.CreateDiscussion(ctx, &compassv1beta1.CreateDiscussionRequest{
+			req := client.NewRequest(cfg.Client, namespaceID, &compassv1beta1.CreateDiscussionRequest{
 				Title:  reqBody.Title,
 				Body:   reqBody.Body,
 				Type:   reqBody.Type,
@@ -166,13 +161,13 @@ func postDiscussionCommand(cfg *Config) *cobra.Command {
 				Labels: reqBody.Labels,
 				Assets: reqBody.Assets,
 			})
-
+			res, err := clnt.CreateDiscussion(cmd.Context(), req)
 			if err != nil {
 				return err
 			}
 			spinner.Stop()
 
-			fmt.Println("ID: \t", printer.Greenf("%s", res.Id))
+			fmt.Println("ID: \t", printer.Greenf("%s", res.Msg.Id))
 			return nil
 		},
 	}

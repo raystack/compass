@@ -4,23 +4,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
 	"reflect"
 	"testing"
 	"time"
 
+	"connectrpc.com/connect"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/core/discussion"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/star"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/internal/server/v1beta1/mocks"
-	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
+	"github.com/raystack/compass/pkg/server/interceptor"
+	compassv1beta1 "github.com/raystack/compass/proto/compassv1beta1"
 	log "github.com/raystack/salt/observability/logger"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -40,7 +39,7 @@ func TestGetUserStarredAssets(t *testing.T) {
 	)
 	type testCase struct {
 		Description  string
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.StarService)
 		PostCheck    func(resp *compassv1beta1.GetUserStarredAssetsResponse) error
 	}
@@ -48,28 +47,28 @@ func TestGetUserStarredAssets(t *testing.T) {
 	var testCases = []testCase{
 		{
 			Description:  "should return internal server error if failed to fetch starred",
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().GetStarredAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return(nil, errors.New("failed to fetch starred"))
 			},
 		},
 		{
 			Description:  "should return invalid argument if star repository return invalid error",
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().GetStarredAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return(nil, star.InvalidError{})
 			},
 		},
 		{
 			Description:  "should return not found if starred not found",
-			ExpectStatus: codes.NotFound,
+			ExpectStatus: connect.CodeNotFound,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().GetStarredAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return(nil, star.NotFoundError{})
 			},
 		},
 		{
 			Description:  "should return starred assets of a user if no error",
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().GetStarredAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return([]asset.Asset{
 					{ID: "1", URN: "asset-urn-1", Type: "asset-type"},
@@ -108,7 +107,7 @@ func TestGetUserStarredAssets(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-			ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+			ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 
 			logger := log.NewNoop()
 
@@ -126,18 +125,25 @@ func TestGetUserStarredAssets(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
-			got, err := handler.GetUserStarredAssets(ctx, &compassv1beta1.GetUserStarredAssetsRequest{
+			got, err := handler.GetUserStarredAssets(ctx, connect.NewRequest(&compassv1beta1.GetUserStarredAssetsRequest{
 				UserId: userID,
 				Offset: uint32(offset),
 				Size:   uint32(size),
-			})
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			}))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}
@@ -161,7 +167,7 @@ func TestGetMyStarredAssets(t *testing.T) {
 	)
 	type testCase struct {
 		Description  string
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.StarService)
 		PostCheck    func(resp *compassv1beta1.GetMyStarredAssetsResponse) error
 	}
@@ -169,28 +175,28 @@ func TestGetMyStarredAssets(t *testing.T) {
 	var testCases = []testCase{
 		{
 			Description:  "should return internal server error if failed to fetch starred",
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().GetStarredAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return(nil, errors.New("failed to fetch starred"))
 			},
 		},
 		{
 			Description:  "should return invalid argument if star repository return invalid error",
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().GetStarredAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return(nil, star.InvalidError{})
 			},
 		},
 		{
 			Description:  "should return not found if starred not found",
-			ExpectStatus: codes.NotFound,
+			ExpectStatus: connect.CodeNotFound,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().GetStarredAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return(nil, star.NotFoundError{})
 			},
 		},
 		{
 			Description:  "should return starred assets of a user if no error",
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().GetStarredAssetsByUserID(ctx, star.Filter{Offset: offset, Size: size}, userID).Return([]asset.Asset{
 					{ID: "1", URN: "asset-urn-1", Type: "asset-type"},
@@ -229,7 +235,7 @@ func TestGetMyStarredAssets(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-			ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+			ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 
 			logger := log.NewNoop()
 
@@ -247,17 +253,24 @@ func TestGetMyStarredAssets(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
-			got, err := handler.GetMyStarredAssets(ctx, &compassv1beta1.GetMyStarredAssetsRequest{
+			got, err := handler.GetMyStarredAssets(ctx, connect.NewRequest(&compassv1beta1.GetMyStarredAssetsRequest{
 				Offset: uint32(offset),
 				Size:   uint32(size),
-			})
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			}))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}
@@ -282,7 +295,7 @@ func TestGetMyStarredAsset(t *testing.T) {
 	)
 	type testCase struct {
 		Description  string
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.StarService)
 		PostCheck    func(resp *compassv1beta1.GetMyStarredAssetResponse) error
 	}
@@ -290,35 +303,35 @@ func TestGetMyStarredAsset(t *testing.T) {
 	var testCases = []testCase{
 		{
 			Description:  "should return invalid argument if asset id is empty",
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().GetStarredAssetByUserID(ctx, userID, assetID).Return(asset.Asset{}, star.ErrEmptyAssetID)
 			},
 		},
 		{
 			Description:  "should return invalid argument if repository return invalid error",
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().GetStarredAssetByUserID(ctx, userID, assetID).Return(asset.Asset{}, star.InvalidError{})
 			},
 		},
 		{
 			Description:  "should return not found if star not found",
-			ExpectStatus: codes.NotFound,
+			ExpectStatus: connect.CodeNotFound,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().GetStarredAssetByUserID(ctx, userID, assetID).Return(asset.Asset{}, star.NotFoundError{})
 			},
 		},
 		{
 			Description:  "should return internal server error if failed to fetch a starred asset",
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().GetStarredAssetByUserID(ctx, userID, assetID).Return(asset.Asset{}, errors.New("failed to fetch starred"))
 			},
 		},
 		{
 			Description:  "should return a starred assets of a user if no error",
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().GetStarredAssetByUserID(ctx, userID, assetID).Return(asset.Asset{Type: asset.Type(assetType), URN: assetURN}, nil)
 			},
@@ -340,7 +353,7 @@ func TestGetMyStarredAsset(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-			ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+			ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 
 			logger := log.NewNoop()
 
@@ -358,16 +371,23 @@ func TestGetMyStarredAsset(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
-			got, err := handler.GetMyStarredAsset(ctx, &compassv1beta1.GetMyStarredAssetRequest{
+			got, err := handler.GetMyStarredAsset(ctx, connect.NewRequest(&compassv1beta1.GetMyStarredAssetRequest{
 				AssetId: assetID,
-			})
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			}))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}
@@ -390,49 +410,49 @@ func TestStarAsset(t *testing.T) {
 	)
 	type testCase struct {
 		Description  string
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.StarService)
 	}
 
 	var testCases = []testCase{
 		{
 			Description:  "should return invalid argument if asset id in param is invalid",
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().Stars(ctx, ns, userID, assetID).Return("", star.ErrEmptyAssetID)
 			},
 		},
 		{
 			Description:  "should return invalid argument if star repository return invalid error",
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().Stars(ctx, ns, userID, assetID).Return("", star.InvalidError{})
 			},
 		},
 		{
 			Description:  "should return invalid argument if user not found",
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().Stars(ctx, ns, userID, assetID).Return("", star.UserNotFoundError{UserID: userID})
 			},
 		},
 		{
 			Description:  "should return internal server error if failed to star an asset",
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().Stars(ctx, ns, userID, assetID).Return("", errors.New("failed to star an asset"))
 			},
 		},
 		{
 			Description:  "should return ok if starring success",
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().Stars(ctx, ns, userID, assetID).Return("1234", nil)
 			},
 		},
 		{
 			Description:  "should return ok if asset is already starred",
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().Stars(ctx, ns, userID, assetID).Return("", star.DuplicateRecordError{})
 			},
@@ -441,7 +461,7 @@ func TestStarAsset(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-			ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+			ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 
 			logger := log.NewNoop()
 
@@ -459,13 +479,20 @@ func TestStarAsset(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
-			_, err := handler.StarAsset(ctx, &compassv1beta1.StarAssetRequest{
+			_, err := handler.StarAsset(ctx, connect.NewRequest(&compassv1beta1.StarAssetRequest{
 				AssetId: assetID,
-			})
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			}))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 		})
 	}
@@ -485,35 +512,35 @@ func TestUnstarAsset(t *testing.T) {
 	)
 	type testCase struct {
 		Description  string
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.StarService)
 	}
 
 	var testCases = []testCase{
 		{
 			Description:  "should return invalid argument if asset id in param is empty",
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().Unstars(ctx, userID, assetID).Return(star.ErrEmptyAssetID)
 			},
 		},
 		{
 			Description:  "should return invalid argument if star repository return invalid error",
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().Unstars(ctx, userID, assetID).Return(star.InvalidError{})
 			},
 		},
 		{
 			Description:  "should return internal server error if failed to unstar an asset",
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().Unstars(ctx, userID, assetID).Return(errors.New("failed to star an asset"))
 			},
 		},
 		{
 			Description:  "should return ok if unstarring success",
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ss *mocks.StarService) {
 				ss.EXPECT().Unstars(ctx, userID, assetID).Return(nil)
 			},
@@ -522,7 +549,7 @@ func TestUnstarAsset(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-			ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+			ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 
 			logger := log.NewNoop()
 
@@ -540,13 +567,20 @@ func TestUnstarAsset(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, mockStarSvc, nil, nil, nil, mockUserSvc)
 
-			_, err := handler.UnstarAsset(ctx, &compassv1beta1.UnstarAssetRequest{
+			_, err := handler.UnstarAsset(ctx, connect.NewRequest(&compassv1beta1.UnstarAssetRequest{
 				AssetId: assetID,
-			})
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			}))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 		})
 	}
@@ -565,7 +599,7 @@ func TestGetMyDiscussions(t *testing.T) {
 	)
 	type testCase struct {
 		Description  string
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Request      *compassv1beta1.GetMyDiscussionsRequest
 		Setup        func(context.Context, *mocks.DiscussionService)
 		PostCheck    func(resp *compassv1beta1.GetMyDiscussionsResponse) error
@@ -575,7 +609,7 @@ func TestGetMyDiscussions(t *testing.T) {
 		{
 			Description:  `should return internal server error if fetching fails`,
 			Request:      &compassv1beta1.GetMyDiscussionsRequest{},
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
 				ds.EXPECT().GetDiscussions(ctx, discussion.Filter{
 					Type:                  "all",
@@ -599,7 +633,7 @@ func TestGetMyDiscussions(t *testing.T) {
 				Size:      30,
 				Offset:    50,
 			},
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
 				ds.EXPECT().GetDiscussions(ctx, discussion.Filter{
 					Type:                  "issues",
@@ -619,7 +653,7 @@ func TestGetMyDiscussions(t *testing.T) {
 			Request: &compassv1beta1.GetMyDiscussionsRequest{
 				Filter: "all",
 			},
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
 				ds.EXPECT().GetDiscussions(ctx, discussion.Filter{
 					Type:                  "all",
@@ -634,7 +668,7 @@ func TestGetMyDiscussions(t *testing.T) {
 		},
 		{
 			Description:  `should set filter to default if empty`,
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Request:      &compassv1beta1.GetMyDiscussionsRequest{},
 			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
 				ds.EXPECT().GetDiscussions(ctx, discussion.Filter{
@@ -651,7 +685,7 @@ func TestGetMyDiscussions(t *testing.T) {
 		},
 		{
 			Description:  "should return ok along with list of discussions",
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Request:      &compassv1beta1.GetMyDiscussionsRequest{},
 			Setup: func(ctx context.Context, ds *mocks.DiscussionService) {
 				ds.EXPECT().GetDiscussions(ctx, discussion.Filter{
@@ -684,7 +718,7 @@ func TestGetMyDiscussions(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
 			ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-			ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+			ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 
 			logger := log.NewNoop()
 
@@ -702,14 +736,21 @@ func TestGetMyDiscussions(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, mockDiscussionSvc, nil, nil, mockUserSvc)
 
-			got, err := handler.GetMyDiscussions(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.GetMyDiscussions(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}

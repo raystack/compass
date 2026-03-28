@@ -4,16 +4,15 @@ package handlersv1beta1
 import (
 	"context"
 	"errors"
-	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
 	"strconv"
 	"time"
 
+	"connectrpc.com/connect"
 	"github.com/raystack/compass/core/discussion"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/user"
-	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/raystack/compass/pkg/server/interceptor"
+	compassv1beta1 "github.com/raystack/compass/proto/compassv1beta1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -33,17 +32,17 @@ type DiscussionService interface {
 // supported query params are type,state,owner,assignee,asset,labels (supporterd array separated by comma)
 // query params sort,direction to sort asc or desc
 // query params size,offset for pagination
-func (server *APIServer) GetAllDiscussions(ctx context.Context, req *compassv1beta1.GetAllDiscussionsRequest) (*compassv1beta1.GetAllDiscussionsResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) GetAllDiscussions(ctx context.Context, req *connect.Request[compassv1beta1.GetAllDiscussionsRequest]) (*connect.Response[compassv1beta1.GetAllDiscussionsResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New(bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
-	flt, err := server.buildGetAllDiscussionsFilter(req)
+	flt, err := server.buildGetAllDiscussionsFilter(req.Msg)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New(bodyParserErrorMsg(err)))
 	}
 
 	dscs, err := server.discussionService.GetDiscussions(ctx, flt)
@@ -56,34 +55,34 @@ func (server *APIServer) GetAllDiscussions(ctx context.Context, req *compassv1be
 		discussionsProto = append(discussionsProto, discussionToProto(dsc))
 	}
 
-	return &compassv1beta1.GetAllDiscussionsResponse{Data: discussionsProto}, nil
+	return connect.NewResponse(&compassv1beta1.GetAllDiscussionsResponse{Data: discussionsProto}), nil
 }
 
 // CreateDiscussion will create a new discussion
 // field title, body, and type are mandatory
-func (server *APIServer) CreateDiscussion(ctx context.Context, req *compassv1beta1.CreateDiscussionRequest) (*compassv1beta1.CreateDiscussionResponse, error) {
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+func (server *APIServer) CreateDiscussion(ctx context.Context, req *connect.Request[compassv1beta1.CreateDiscussionRequest]) (*connect.Response[compassv1beta1.CreateDiscussionResponse], error) {
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	userID, err := server.validateUserInCtx(ctx, ns)
 	if err != nil {
 		return nil, err
 	}
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New(bodyParserErrorMsg(err)))
 	}
 
 	dsc := discussion.Discussion{
-		Title:     req.Title,
-		Body:      req.Body,
-		Type:      discussion.Type(req.Type),
-		State:     discussion.GetStateEnum(req.State),
-		Labels:    req.GetLabels(),
-		Assets:    req.Assets,
-		Assignees: req.Assignees,
+		Title:     req.Msg.Title,
+		Body:      req.Msg.Body,
+		Type:      discussion.Type(req.Msg.Type),
+		State:     discussion.GetStateEnum(req.Msg.State),
+		Labels:    req.Msg.GetLabels(),
+		Assets:    req.Msg.Assets,
+		Assignees: req.Msg.Assignees,
 		Owner:     user.User{ID: userID},
 	}
 
 	if err := dsc.Validate(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
 	id, err := server.discussionService.CreateDiscussion(ctx, ns, &dsc)
@@ -91,79 +90,79 @@ func (server *APIServer) CreateDiscussion(ctx context.Context, req *compassv1bet
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	return &compassv1beta1.CreateDiscussionResponse{Id: id}, nil
+	return connect.NewResponse(&compassv1beta1.CreateDiscussionResponse{Id: id}), nil
 }
 
-func (server *APIServer) GetDiscussion(ctx context.Context, req *compassv1beta1.GetDiscussionRequest) (*compassv1beta1.GetDiscussionResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) GetDiscussion(ctx context.Context, req *connect.Request[compassv1beta1.GetDiscussionRequest]) (*connect.Response[compassv1beta1.GetDiscussionResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New(bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
-	if err := server.validateIDInteger(req.Id); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(discussion.ErrInvalidID))
+	if err := server.validateIDInteger(req.Msg.Id); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New(bodyParserErrorMsg(discussion.ErrInvalidID)))
 	}
 
-	dsc, err := server.discussionService.GetDiscussion(ctx, req.Id)
+	dsc, err := server.discussionService.GetDiscussion(ctx, req.Msg.Id)
 	if errors.As(err, new(discussion.NotFoundError)) {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	return &compassv1beta1.GetDiscussionResponse{Data: discussionToProto(dsc)}, nil
+	return connect.NewResponse(&compassv1beta1.GetDiscussionResponse{Data: discussionToProto(dsc)}), nil
 }
 
 // PatchDiscussion updates a specific field in discussion
 // empty array in assets,labels,assignees will be considered
 // and clear all assets,labels,assignees from the discussion
-func (server *APIServer) PatchDiscussion(ctx context.Context, req *compassv1beta1.PatchDiscussionRequest) (*compassv1beta1.PatchDiscussionResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) PatchDiscussion(ctx context.Context, req *connect.Request[compassv1beta1.PatchDiscussionRequest]) (*connect.Response[compassv1beta1.PatchDiscussionResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New(bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
-	if err := server.validateIDInteger(req.Id); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(discussion.ErrInvalidID))
+	if err := server.validateIDInteger(req.Msg.Id); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New(bodyParserErrorMsg(discussion.ErrInvalidID)))
 	}
 
 	dsc := discussion.Discussion{
-		ID:        req.GetId(),
-		Title:     req.GetTitle(),
-		Body:      req.GetBody(),
-		Type:      discussion.Type(req.GetType()),
-		State:     discussion.State(req.GetState()),
-		Labels:    req.GetLabels(),
-		Assets:    req.GetAssets(),
-		Assignees: req.GetAssignees(),
+		ID:        req.Msg.GetId(),
+		Title:     req.Msg.GetTitle(),
+		Body:      req.Msg.GetBody(),
+		Type:      discussion.Type(req.Msg.GetType()),
+		State:     discussion.State(req.Msg.GetState()),
+		Labels:    req.Msg.GetLabels(),
+		Assets:    req.Msg.GetAssets(),
+		Assignees: req.Msg.GetAssignees(),
 	}
 
 	if isEmpty := dsc.IsEmpty(); isEmpty {
 		err := errors.New("empty discussion body")
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New(bodyParserErrorMsg(err)))
 	}
 
 	if err := dsc.ValidateConstraint(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
 	err := server.discussionService.PatchDiscussion(ctx, &dsc)
 	if errors.Is(err, discussion.ErrInvalidID) {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	if errors.As(err, new(discussion.NotFoundError)) {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	return &compassv1beta1.PatchDiscussionResponse{}, nil
+	return connect.NewResponse(&compassv1beta1.PatchDiscussionResponse{}), nil
 }
 
 func (server *APIServer) validateIDInteger(id string) error {

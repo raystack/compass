@@ -4,19 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/raystack/compass/core/namespace"
 	"net/http"
 	"time"
 
+	"connectrpc.com/connect"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/user"
-	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
 	log "github.com/raystack/salt/observability/logger"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type APIServer struct {
-	compassv1beta1.UnimplementedCompassServiceServer
 	namespaceService   NamespaceService
 	assetService       AssetService
 	starService        StarService
@@ -58,15 +55,15 @@ func (server *APIServer) validateUserInCtx(ctx context.Context, ns *namespace.Na
 	userID, err := server.userService.ValidateUser(ctx, ns, usr.UUID, usr.Email)
 	if err != nil {
 		if errors.Is(err, user.ErrNoUserInformation) {
-			return "", status.Error(codes.InvalidArgument, err.Error())
+			return "", connect.NewError(connect.CodeInvalidArgument, err)
 		}
 		if errors.As(err, &user.DuplicateRecordError{UUID: usr.UUID, Email: usr.Email}) {
-			return "", status.Error(codes.AlreadyExists, err.Error())
+			return "", connect.NewError(connect.CodeAlreadyExists, err)
 		}
-		return "", status.Error(codes.Internal, err.Error())
+		return "", internalServerError(server.logger, err.Error())
 	}
 	if userID == "" {
-		return "", status.Error(codes.InvalidArgument, errMissingUserInfo.Error())
+		return "", connect.NewError(connect.CodeInvalidArgument, errMissingUserInfo)
 	}
 	return userID, nil
 }
@@ -75,7 +72,7 @@ func internalServerError(logger log.Logger, msg string) error {
 	ref := time.Now().Unix()
 
 	logger.Error(msg, "ref", ref)
-	return status.Error(codes.Internal, fmt.Sprintf(
+	return connect.NewError(connect.CodeInternal, fmt.Errorf(
 		"%s - ref (%d)",
 		http.StatusText(http.StatusInternalServerError),
 		ref,

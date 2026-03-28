@@ -95,7 +95,7 @@ alias compass="docker run -e HOME=/tmp -v $HOME/.config/raystack:/tmp/.config/ra
 
 ## Usage
 
-Compass is purely API-driven. It is very easy to get started with Compass. It provides CLI, HTTP and GRPC APIs for simpler developer experience.
+Compass is purely API-driven. It is very easy to get started with Compass. It provides CLI and HTTP APIs for simpler developer experience.
 
 #### CLI
 
@@ -115,7 +115,7 @@ compass reference
 
 #### API
 
-Compass provides a fully-featured GRPC and HTTP API to interact with Compass server. Both APIs adheres to a set of standards that are rigidly followed. Please refer to [proton](https://github.com/raystack/proton/tree/main/raystack/compass/v1beta1) for GRPC API definitions.
+Compass provides a fully-featured HTTP API to interact with Compass server. The API is built with [Connect RPC](https://connectrpc.com/) and supports both Connect and gRPC protocols. Please refer to [proton](https://github.com/raystack/proton/tree/main/raystack/compass/v1beta1) for API definitions.
 
 ## Contribute
 

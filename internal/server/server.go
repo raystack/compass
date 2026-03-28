@@ -4,30 +4,21 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/raystack/compass/internal/client"
 	"net/http"
-	"strings"
 	"time"
 
+	"connectrpc.com/connect"
+	"connectrpc.com/grpcreflect"
+	"connectrpc.com/otelconnect"
 	"github.com/gorilla/handlers"
-	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-	"github.com/raystack/compass/internal/server/health"
 	handlersv1beta1 "github.com/raystack/compass/internal/server/v1beta1"
 	"github.com/raystack/compass/internal/store/postgres"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
-	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
+	"github.com/raystack/compass/pkg/server/interceptor"
+	"github.com/raystack/compass/proto/compassv1beta1/compassv1beta1connect"
 	log "github.com/raystack/salt/observability/logger"
-	"github.com/raystack/salt/server/mux"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	_ "google.golang.org/grpc/encoding/gzip" // Install the gzip compressor
-	"google.golang.org/grpc/health/grpc_health_v1"
-	"google.golang.org/grpc/reflection"
-	"google.golang.org/protobuf/encoding/protojson"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 type Config struct {
@@ -38,12 +29,12 @@ type Config struct {
 	// User Identity
 	Identity IdentityConfig `mapstructure:"identity"`
 
-	// GRPC Config
-	GRPC GRPCConfig `mapstructure:"grpc"`
+	// Message size limits (for compatibility)
+	MaxRecvMsgSize int `yaml:"max_recv_msg_size" mapstructure:"max_recv_msg_size" default:"33554432"`
+	MaxSendMsgSize int `yaml:"max_send_msg_size" mapstructure:"max_send_msg_size" default:"33554432"`
 }
 
-func (cfg Config) addr() string     { return fmt.Sprintf("%s:%d", cfg.Host, cfg.Port) }
-func (cfg Config) grpcAddr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.GRPC.Port) }
+func (cfg Config) addr() string { return fmt.Sprintf("%s:%d", cfg.Host, cfg.Port) }
 
 type IdentityConfig struct {
 	// User Identity
@@ -53,12 +44,6 @@ type IdentityConfig struct {
 	ProviderDefaultName string `yaml:"provider_default_name" mapstructure:"provider_default_name" default:""`
 
 	NamespaceClaimKey string `yaml:"namespace_claim_key" mapstructure:"namespace_claim_key" default:"namespace_id"`
-}
-
-type GRPCConfig struct {
-	Port           int `yaml:"port" mapstructure:"port" default:"8081"`
-	MaxRecvMsgSize int `yaml:"max_recv_msg_size" mapstructure:"max_recv_msg_size" default:"33554432"`
-	MaxSendMsgSize int `yaml:"max_send_msg_size" mapstructure:"max_send_msg_size" default:"33554432"`
 }
 
 func Serve(
@@ -86,61 +71,56 @@ func Serve(
 		userService,
 	)
 
-	healthHandler := health.NewHandler()
-
-	// init grpc
-	grpcServer := grpc.NewServer(
-		grpc.MaxRecvMsgSize(config.GRPC.MaxRecvMsgSize),
-		grpc.MaxSendMsgSize(config.GRPC.MaxSendMsgSize),
-		grpc.StatsHandler(otelgrpc.NewServerHandler()),
-		grpc.ChainUnaryInterceptor(
-			recovery.UnaryServerInterceptor(),
-			nrgrpc.UnaryServerInterceptor(nrApp),
-			grpc_interceptor.NamespaceUnaryInterceptor(namespaceService, config.Identity.NamespaceClaimKey, config.Identity.HeaderKeyUserUUID),
-			grpc_interceptor.UserHeaderCtx(config.Identity.HeaderKeyUserUUID, config.Identity.HeaderKeyUserEmail),
-		),
-	)
-	reflection.Register(grpcServer)
-
-	compassv1beta1.RegisterCompassServiceServer(grpcServer, v1beta1Handler)
-	grpc_health_v1.RegisterHealthServer(grpcServer, healthHandler)
-
-	// init http proxy
-	headerMatcher := makeHeaderMatcher(config)
-
-	grpcConn, err := grpc.NewClient(
-		config.grpcAddr(),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithDefaultCallOptions(
-			grpc.MaxCallRecvMsgSize(config.GRPC.MaxRecvMsgSize),
-			grpc.MaxCallSendMsgSize(config.GRPC.MaxSendMsgSize),
-		))
+	// Build interceptor chain
+	otelInterceptor, err := otelconnect.NewInterceptor()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create otel interceptor: %w", err)
 	}
 
-	runtimeCtx, runtimeCancel := context.WithCancel(ctx)
-	defer runtimeCancel()
-
-	gwmux := runtime.NewServeMux(
-		runtime.WithErrorHandler(runtime.DefaultHTTPErrorHandler),
-		runtime.WithIncomingHeaderMatcher(headerMatcher),
-		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
-			MarshalOptions: protojson.MarshalOptions{
-				UseProtoNames:   true,
-				EmitUnpopulated: true,
-			},
-			UnmarshalOptions: protojson.UnmarshalOptions{
-				DiscardUnknown: true,
-			},
-		}),
-		runtime.WithHealthEndpointAt(grpc_health_v1.NewHealthClient(grpcConn), "/ping"),
+	interceptors := connect.WithInterceptors(
+		otelInterceptor,
+		interceptor.Recovery(),
+		interceptor.Logger(logger),
+		interceptor.ErrorResponse(logger),
+		interceptor.Namespace(namespaceService, config.Identity.NamespaceClaimKey, config.Identity.HeaderKeyUserUUID),
+		interceptor.UserHeaderCtx(config.Identity.HeaderKeyUserUUID, config.Identity.HeaderKeyUserEmail),
 	)
 
-	if err := compassv1beta1.RegisterCompassServiceHandler(runtimeCtx, gwmux, grpcConn); err != nil {
-		return err
+	// Create HTTP mux
+	mux := http.NewServeMux()
+
+	// Register Connect service handler
+	path, handler := compassv1beta1connect.NewCompassServiceHandler(
+		v1beta1Handler,
+		interceptors,
+		connect.WithReadMaxBytes(config.MaxRecvMsgSize),
+		connect.WithSendMaxBytes(config.MaxSendMsgSize),
+	)
+	mux.Handle(path, handler)
+
+	// Register gRPC reflection for tooling compatibility (grpcurl, etc.)
+	reflector := grpcreflect.NewStaticReflector(
+		"raystack.compass.v1beta1.CompassService",
+	)
+	mux.Handle(grpcreflect.NewHandlerV1(reflector))
+	mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
+
+	// Health check endpoint
+	mux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("pong"))
+	})
+
+	// Create HTTP server with h2c support for HTTP/2 without TLS
+	server := &http.Server{
+		Addr:         config.addr(),
+		Handler:      h2c.NewHandler(handlers.CompressHandler(mux), &http2.Server{}),
+		ReadTimeout:  60 * time.Second,
+		WriteTimeout: 60 * time.Second,
+		IdleTimeout:  120 * time.Second,
 	}
 
+	// Cleanup on shutdown
 	defer func() {
 		if pgClient != nil {
 			logger.Warn("closing db...")
@@ -151,38 +131,29 @@ func Serve(
 		}
 	}()
 
-	logger.Info("Starting server", "http_port", config.addr(), "grpc_port", config.grpcAddr())
-	if err := mux.Serve(
-		ctx,
-		mux.WithHTTPTarget(config.addr(), &http.Server{
-			Handler:      handlers.CompressHandler(gwmux),
-			ReadTimeout:  60 * time.Second,
-			WriteTimeout: 60 * time.Second,
-			IdleTimeout:  120 * time.Second,
-		}),
-		mux.WithGRPCTarget(config.grpcAddr(), grpcServer),
-		mux.WithGracePeriod(5*time.Second),
-	); !errors.Is(err, context.Canceled) {
-		logger.Error("mux serve error", "err", err)
+	// Start server in goroutine
+	errChan := make(chan error, 1)
+	go func() {
+		logger.Info("Starting server", "addr", config.addr())
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errChan <- err
+		}
+	}()
+
+	// Wait for context cancellation or error
+	select {
+	case <-ctx.Done():
+		logger.Info("shutting down server...")
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			logger.Error("server shutdown error", "err", err)
+		}
+	case err := <-errChan:
+		logger.Error("server error", "err", err)
+		return err
 	}
 
 	logger.Info("server stopped")
 	return nil
-}
-
-// makeHeaderMatcher overrides the default grpc gateway behaviour of only mapping http headers
-// that start with "grpc-metadata-" prefix
-func makeHeaderMatcher(c Config) func(key string) (string, bool) {
-	return func(key string) (string, bool) {
-		switch strings.ToLower(key) {
-		case strings.ToLower(c.Identity.HeaderKeyUserUUID):
-			return key, true
-		case strings.ToLower(c.Identity.HeaderKeyUserEmail):
-			return key, true
-		case client.NamespaceHeaderKey:
-			return key, true
-		default:
-			return runtime.DefaultHeaderMatcher(key)
-		}
-	}
 }

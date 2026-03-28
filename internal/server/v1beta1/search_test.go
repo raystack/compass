@@ -4,19 +4,20 @@ import (
 	"context"
 	"fmt"
 	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
+	"github.com/raystack/compass/pkg/server/interceptor"
 	"testing"
 
+	"connectrpc.com/connect"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/internal/server/v1beta1/mocks"
-	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
+	compassv1beta1 "github.com/raystack/compass/proto/compassv1beta1"
 	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/mock"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
@@ -32,11 +33,11 @@ func TestSearch(t *testing.T) {
 		}
 	)
 	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+	ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.SearchAssetsRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.AssetService, *mocks.NamespaceService)
 		PostCheck    func(resp *compassv1beta1.SearchAssetsResponse) error
 	}
@@ -44,7 +45,7 @@ func TestSearch(t *testing.T) {
 	var testCases = []testCase{
 		{
 			Description:  "should allow empty text search",
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Request:      &compassv1beta1.SearchAssetsRequest{},
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 				cfg := asset.SearchConfig{
@@ -65,7 +66,7 @@ func TestSearch(t *testing.T) {
 				as.EXPECT().SearchAssets(ctx, mock.AnythingOfType("asset.SearchConfig")).
 					Return([]asset.SearchResult{}, err)
 			},
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 		},
 		{
 			Description: "should pass filter to search config format",
@@ -233,14 +234,21 @@ func TestSearch(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
-			got, err := handler.SearchAssets(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.SearchAssets(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}
@@ -261,11 +269,11 @@ func TestSuggest(t *testing.T) {
 		}
 	)
 	ctx := user.NewContext(context.Background(), user.User{UUID: userUUID})
-	ctx = grpc_interceptor.BuildContextWithNamespace(ctx, ns)
+	ctx = interceptor.BuildContextWithNamespace(ctx, ns)
 	type testCase struct {
 		Description  string
 		Request      *compassv1beta1.SuggestAssetsRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.AssetService, *mocks.NamespaceService)
 		PostCheck    func(resp *compassv1beta1.SuggestAssetsResponse) error
 	}
@@ -273,7 +281,7 @@ func TestSuggest(t *testing.T) {
 	var testCases = []testCase{
 		{
 			Description:  "should return invalid arguments if 'text' parameter is empty or missing",
-			ExpectStatus: codes.InvalidArgument,
+			ExpectStatus: connect.CodeInvalidArgument,
 			Request:      &compassv1beta1.SuggestAssetsRequest{},
 			Setup: func(ctx context.Context, as *mocks.AssetService, nss *mocks.NamespaceService) {
 			},
@@ -290,7 +298,7 @@ func TestSuggest(t *testing.T) {
 				}
 				as.EXPECT().SuggestAssets(ctx, cfg).Return([]string{}, fmt.Errorf("service unavailable"))
 			},
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 		},
 		{
 			Description: "should return suggestions",
@@ -344,14 +352,21 @@ func TestSuggest(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, mockSvc, nil, nil, nil, nil, mockUserSvc)
 
-			got, err := handler.SuggestAssets(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.SuggestAssets(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}

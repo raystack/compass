@@ -15,9 +15,6 @@ const (
 	namespaceTable = "namespaces"
 )
 
-var (
-	ErrNamespaceNotFound = errors.New("namespace not found")
-)
 
 type NamespaceRepository struct {
 	client *Client
@@ -88,7 +85,7 @@ func (n *NamespaceRepository) GetByName(ctx context.Context, name string) (*name
 	var nsModel NamespaceModel
 	if err := n.client.GetContext(ctx, &nsModel, query, args...); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrNamespaceNotFound
+			return nil, namespace.ErrNotFound
 		}
 		return nil, err
 	}
@@ -106,7 +103,7 @@ func (n *NamespaceRepository) GetByID(ctx context.Context, uuid uuid.UUID) (*nam
 	var nsModel NamespaceModel
 	if err := n.client.GetContext(ctx, &nsModel, query, args...); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrNamespaceNotFound
+			return nil, namespace.ErrNotFound
 		}
 		return nil, err
 	}

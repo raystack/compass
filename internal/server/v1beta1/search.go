@@ -5,31 +5,30 @@ import (
 	"fmt"
 	"strings"
 
+	"connectrpc.com/connect"
 	"github.com/raystack/compass/core/asset"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
-	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/raystack/compass/pkg/server/interceptor"
+	compassv1beta1 "github.com/raystack/compass/proto/compassv1beta1"
 )
 
-func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.SearchAssetsRequest) (*compassv1beta1.SearchAssetsResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) SearchAssets(ctx context.Context, req *connect.Request[compassv1beta1.SearchAssetsRequest]) (*connect.Response[compassv1beta1.SearchAssetsResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
 	cfg := asset.SearchConfig{
-		Text:          strings.TrimSpace(req.GetText()),
-		MaxResults:    int(req.GetSize()),
-		Offset:        int(req.GetOffset()),
-		Filters:       filterConfigFromValues(req.GetFilter()),
-		RankBy:        req.GetRankby(),
-		Queries:       req.GetQuery(),
-		IncludeFields: req.GetIncludeFields(),
-		Flags:         getSearchFlagsFromProto(req.GetFlags()),
+		Text:          strings.TrimSpace(req.Msg.GetText()),
+		MaxResults:    int(req.Msg.GetSize()),
+		Offset:        int(req.Msg.GetOffset()),
+		Filters:       filterConfigFromValues(req.Msg.GetFilter()),
+		RankBy:        req.Msg.GetRankby(),
+		Queries:       req.Msg.GetQuery(),
+		IncludeFields: req.Msg.GetIncludeFields(),
+		Flags:         getSearchFlagsFromProto(req.Msg.GetFlags()),
 		Namespace:     ns,
 	}
 
@@ -47,23 +46,23 @@ func (server *APIServer) SearchAssets(ctx context.Context, req *compassv1beta1.S
 		assetsPB = append(assetsPB, assetPB)
 	}
 
-	return &compassv1beta1.SearchAssetsResponse{
+	return connect.NewResponse(&compassv1beta1.SearchAssetsResponse{
 		Data: assetsPB,
-	}, nil
+	}), nil
 }
 
-func (server *APIServer) SuggestAssets(ctx context.Context, req *compassv1beta1.SuggestAssetsRequest) (*compassv1beta1.SuggestAssetsResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) SuggestAssets(ctx context.Context, req *connect.Request[compassv1beta1.SuggestAssetsRequest]) (*connect.Response[compassv1beta1.SuggestAssetsResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
-	text := strings.TrimSpace(req.GetText())
+	text := strings.TrimSpace(req.Msg.GetText())
 	if text == "" {
-		return nil, status.Error(codes.InvalidArgument, "'text' must be specified")
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("'text' must be specified"))
 	}
 
 	cfg := asset.SearchConfig{
@@ -75,29 +74,29 @@ func (server *APIServer) SuggestAssets(ctx context.Context, req *compassv1beta1.
 		return nil, internalServerError(server.logger, err.Error())
 	}
 
-	return &compassv1beta1.SuggestAssetsResponse{
+	return connect.NewResponse(&compassv1beta1.SuggestAssetsResponse{
 		Data: suggestions,
-	}, nil
+	}), nil
 }
 
-func (server *APIServer) GroupAssets(ctx context.Context, req *compassv1beta1.GroupAssetsRequest) (*compassv1beta1.GroupAssetsResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) GroupAssets(ctx context.Context, req *connect.Request[compassv1beta1.GroupAssetsRequest]) (*connect.Response[compassv1beta1.GroupAssetsResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
-	if len(req.GetGroupby()) == 0 {
-		return nil, status.Error(codes.InvalidArgument, "groupby must be specified")
+	if len(req.Msg.GetGroupby()) == 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("groupby must be specified"))
 	}
 
 	cfg := asset.GroupConfig{
-		GroupBy:       req.GetGroupby(),
-		Filters:       filterConfigFromValues(req.GetFilter()),
-		IncludeFields: req.GetIncludeFields(),
-		Size:          int(req.GetSize()),
+		GroupBy:       req.Msg.GetGroupby(),
+		Filters:       filterConfigFromValues(req.Msg.GetFilter()),
+		IncludeFields: req.Msg.GetIncludeFields(),
+		Size:          int(req.Msg.GetSize()),
 		Namespace:     ns,
 	}
 
@@ -129,9 +128,9 @@ func (server *APIServer) GroupAssets(ctx context.Context, req *compassv1beta1.Gr
 		})
 	}
 
-	return &compassv1beta1.GroupAssetsResponse{
+	return connect.NewResponse(&compassv1beta1.GroupAssetsResponse{
 		AssetGroups: groups,
-	}, nil
+	}), nil
 }
 
 func getSearchFlagsFromProto(flags *compassv1beta1.SearchFlags) asset.SearchFlags {

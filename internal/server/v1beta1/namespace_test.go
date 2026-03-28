@@ -3,18 +3,20 @@ package handlersv1beta1
 import (
 	"context"
 	"errors"
+	"testing"
+
+	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/internal/server/v1beta1/mocks"
-	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
+	compassv1beta1 "github.com/raystack/compass/proto/compassv1beta1"
 	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
 	"google.golang.org/protobuf/types/known/structpb"
-	"testing"
 )
 
 func TestAPIServer_ListNamespaces(t *testing.T) {
@@ -38,7 +40,7 @@ func TestAPIServer_ListNamespaces(t *testing.T) {
 	type testCase struct {
 		name         string
 		Request      *compassv1beta1.ListNamespacesRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.NamespaceService)
 		PostCheck    func(resp *compassv1beta1.ListNamespacesResponse) error
 	}
@@ -46,7 +48,7 @@ func TestAPIServer_ListNamespaces(t *testing.T) {
 		{
 			name:         "list namespace items successfully",
 			Request:      &compassv1beta1.ListNamespacesRequest{},
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, nss *mocks.NamespaceService) {
 				nss.EXPECT().List(ctx).Return(mockedNamespaces, nil)
 			},
@@ -71,14 +73,21 @@ func TestAPIServer_ListNamespaces(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
-			got, err := handler.ListNamespaces(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.ListNamespaces(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}
@@ -102,7 +111,7 @@ func TestAPIServer_GetNamespaces(t *testing.T) {
 	type testCase struct {
 		name         string
 		Request      *compassv1beta1.GetNamespaceRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.NamespaceService)
 		PostCheck    func(resp *compassv1beta1.GetNamespaceResponse) error
 	}
@@ -112,7 +121,7 @@ func TestAPIServer_GetNamespaces(t *testing.T) {
 			Request: &compassv1beta1.GetNamespaceRequest{
 				Urn: mockedNamespaces[0].ID.String(),
 			},
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, nss *mocks.NamespaceService) {
 				nss.EXPECT().GetByID(ctx, mockedNamespaces[0].ID).Return(mockedNamespaces[0], nil)
 			},
@@ -127,7 +136,7 @@ func TestAPIServer_GetNamespaces(t *testing.T) {
 			Request: &compassv1beta1.GetNamespaceRequest{
 				Urn: mockedNamespaces[0].Name,
 			},
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, nss *mocks.NamespaceService) {
 				nss.EXPECT().GetByName(ctx, mockedNamespaces[0].Name).Return(mockedNamespaces[0], nil)
 			},
@@ -153,14 +162,21 @@ func TestAPIServer_GetNamespaces(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
-			got, err := handler.GetNamespace(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.GetNamespace(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}
@@ -189,7 +205,7 @@ func TestAPIServer_CreateNamespaces(t *testing.T) {
 	type testCase struct {
 		name         string
 		Request      *compassv1beta1.CreateNamespaceRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.NamespaceService)
 		PostCheck    func(resp *compassv1beta1.CreateNamespaceResponse) error
 	}
@@ -201,7 +217,7 @@ func TestAPIServer_CreateNamespaces(t *testing.T) {
 				State:    mockedNamespaces[0].State.String(),
 				Metadata: mockedNamespace0Meta,
 			},
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, nss *mocks.NamespaceService) {
 				nss.EXPECT().Create(ctx, mock.AnythingOfType("*namespace.Namespace")).Return(mockedNamespaces[0].ID.String(), nil)
 			},
@@ -217,7 +233,7 @@ func TestAPIServer_CreateNamespaces(t *testing.T) {
 				State:    mockedNamespaces[0].State.String(),
 				Metadata: mockedNamespace0Meta,
 			},
-			ExpectStatus: codes.Internal,
+			ExpectStatus: connect.CodeInternal,
 			Setup: func(ctx context.Context, nss *mocks.NamespaceService) {
 				nss.EXPECT().Create(ctx, mock.AnythingOfType("*namespace.Namespace")).Return("", errors.New("already exists"))
 			},
@@ -238,14 +254,21 @@ func TestAPIServer_CreateNamespaces(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
-			got, err := handler.CreateNamespace(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.CreateNamespace(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}
@@ -269,7 +292,7 @@ func TestAPIServer_UpdateNamespaces(t *testing.T) {
 	type testCase struct {
 		name         string
 		Request      *compassv1beta1.UpdateNamespaceRequest
-		ExpectStatus codes.Code
+		ExpectStatus connect.Code
 		Setup        func(context.Context, *mocks.NamespaceService)
 		PostCheck    func(resp *compassv1beta1.UpdateNamespaceResponse) error
 	}
@@ -281,7 +304,7 @@ func TestAPIServer_UpdateNamespaces(t *testing.T) {
 				State:    mockedNamespaces[0].State.String(),
 				Metadata: nil,
 			},
-			ExpectStatus: codes.OK,
+			ExpectStatus: 0,
 			Setup: func(ctx context.Context, nss *mocks.NamespaceService) {
 				nss.EXPECT().Update(ctx, &namespace.Namespace{
 					ID:       mockedNamespaces[0].ID,
@@ -307,14 +330,21 @@ func TestAPIServer_UpdateNamespaces(t *testing.T) {
 
 			handler := NewAPIServer(logger, mockNamespaceSvc, nil, nil, nil, nil, nil, mockUserSvc)
 
-			got, err := handler.UpdateNamespace(ctx, tc.Request)
-			code := status.Code(err)
-			if code != tc.ExpectStatus {
-				t.Errorf("expected handler to return Code %s, returned Code %sinstead", tc.ExpectStatus.String(), code.String())
-				return
+			got, err := handler.UpdateNamespace(ctx, connect.NewRequest(tc.Request))
+			if tc.ExpectStatus == 0 {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+					return
+				}
+			} else {
+				code := connect.CodeOf(err)
+				if code != tc.ExpectStatus {
+					t.Errorf("expected handler to return Code %s, returned Code %s instead", tc.ExpectStatus.String(), code.String())
+					return
+				}
 			}
 			if tc.PostCheck != nil {
-				if err := tc.PostCheck(got); err != nil {
+				if err := tc.PostCheck(got.Msg); err != nil {
 					t.Error(err)
 					return
 				}

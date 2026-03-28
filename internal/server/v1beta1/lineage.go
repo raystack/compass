@@ -2,41 +2,41 @@ package handlersv1beta1
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"github.com/raystack/compass/pkg/grpc_interceptor"
 
+	"connectrpc.com/connect"
 	"github.com/raystack/compass/core/asset"
-	compassv1beta1 "github.com/raystack/compass/proto/raystack/compass/v1beta1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/raystack/compass/pkg/server/interceptor"
+	compassv1beta1 "github.com/raystack/compass/proto/compassv1beta1"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func (server *APIServer) GetGraph(ctx context.Context, req *compassv1beta1.GetGraphRequest) (*compassv1beta1.GetGraphResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, bodyParserErrorMsg(err))
+func (server *APIServer) GetGraph(ctx context.Context, req *connect.Request[compassv1beta1.GetGraphRequest]) (*connect.Response[compassv1beta1.GetGraphResponse], error) {
+	if err := req.Msg.ValidateAll(); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New(bodyParserErrorMsg(err)))
 	}
-	ns := grpc_interceptor.FetchNamespaceFromContext(ctx)
+	ns := interceptor.FetchNamespaceFromContext(ctx)
 	if _, err := server.validateUserInCtx(ctx, ns); err != nil {
 		return nil, err
 	}
 
-	direction := asset.LineageDirection(req.GetDirection())
+	direction := asset.LineageDirection(req.Msg.GetDirection())
 	if !direction.IsValid() {
-		return nil, status.Error(codes.InvalidArgument, "invalid direction value")
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid direction value"))
 	}
 
 	// Default to true for backward compatibility
 	withAttributes := true
-	if req.WithAttributes != nil {
-		withAttributes = *req.WithAttributes
+	if req.Msg.WithAttributes != nil {
+		withAttributes = *req.Msg.WithAttributes
 	}
 
-	lineage, err := server.assetService.GetLineage(ctx, req.GetUrn(), asset.LineageQuery{
-		Level:          int(req.GetLevel()),
+	lineage, err := server.assetService.GetLineage(ctx, req.Msg.GetUrn(), asset.LineageQuery{
+		Level:          int(req.Msg.GetLevel()),
 		Direction:      direction,
 		WithAttributes: withAttributes,
-		IncludeDeleted: req.GetIncludeDeleted(),
+		IncludeDeleted: req.Msg.GetIncludeDeleted(),
 	})
 	if err != nil {
 		return nil, internalServerError(server.logger, err.Error())
@@ -63,10 +63,10 @@ func (server *APIServer) GetGraph(ctx context.Context, req *compassv1beta1.GetGr
 		}
 	}
 
-	return &compassv1beta1.GetGraphResponse{
+	return connect.NewResponse(&compassv1beta1.GetGraphResponse{
 		Data:      edges,
 		NodeAttrs: nodeAttrs,
-	}, nil
+	}), nil
 }
 
 func lineageEdgeToProto(e asset.LineageEdge) (*compassv1beta1.LineageEdge, error) {
