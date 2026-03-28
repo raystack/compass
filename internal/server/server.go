@@ -14,7 +14,7 @@ import (
 	"connectrpc.com/validate"
 	"github.com/raystack/compass/internal/config"
 	"github.com/rs/cors"
-	handlersv1beta1 "github.com/raystack/compass/handler/v1beta1"
+	"github.com/raystack/compass/handler"
 	"github.com/raystack/compass/internal/middleware"
 	"github.com/raystack/compass/proto/gen/raystack/compass/v1beta1/compassv1beta1connect"
 	log "github.com/raystack/salt/observability/logger"
@@ -26,15 +26,15 @@ func Serve(
 	ctx context.Context,
 	cfg config.ServerConfig,
 	logger *log.Logrus,
-	namespaceService handlersv1beta1.NamespaceService,
-	assetService handlersv1beta1.AssetService,
-	starService handlersv1beta1.StarService,
-	discussionService handlersv1beta1.DiscussionService,
-	tagService handlersv1beta1.TagService,
-	tagTemplateService handlersv1beta1.TagTemplateService,
-	userService handlersv1beta1.UserService,
+	namespaceService handler.NamespaceService,
+	assetService handler.AssetService,
+	starService handler.StarService,
+	discussionService handler.DiscussionService,
+	tagService handler.TagService,
+	tagTemplateService handler.TagTemplateService,
+	userService handler.UserService,
 ) error {
-	v1beta1Handler := handlersv1beta1.NewAPIServer(
+	v1beta1Handler := handler.NewAPIServer(
 		logger,
 		namespaceService,
 		assetService,

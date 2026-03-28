@@ -1,4 +1,4 @@
-package handlersv1beta1
+package handler
 
 //go:generate mockery --name=TagTemplateService -r --case underscore --with-expecter --structname TagTemplateService --filename tag_template_service.go --output=./mocks
 import (

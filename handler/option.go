@@ -1,3 +1,3 @@
-package handlersv1beta1
+package handler
 
 type Option func(*APIServer)

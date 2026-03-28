@@ -1,4 +1,4 @@
-package handlersv1beta1
+package handler
 
 //go:generate mockery --name=AssetService -r --case underscore --with-expecter --structname AssetService --filename asset_service.go --output=./mocks
 import (

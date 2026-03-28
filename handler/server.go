@@ -1,4 +1,4 @@
-package handlersv1beta1
+package handler
 
 import (
 	"context"

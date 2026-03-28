@@ -1,4 +1,4 @@
-package handlersv1beta1
+package handler
 
 //go:generate mockery --name=StarService -r --case underscore --with-expecter --structname StarService --filename star_service.go --output=./mocks
 import (

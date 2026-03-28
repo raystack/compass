@@ -1,4 +1,4 @@
-package handlersv1beta1
+package handler
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/user"
-	"github.com/raystack/compass/handler/v1beta1/mocks"
+	"github.com/raystack/compass/handler/mocks"
 	compassv1beta1 "github.com/raystack/compass/proto/gen/raystack/compass/v1beta1"
 	log "github.com/raystack/salt/observability/logger"
 	"github.com/stretchr/testify/assert"
