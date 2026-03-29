@@ -59,10 +59,12 @@ func (r *EntitySearchRepository) Suggest(ctx context.Context, ns *namespace.Name
 		limit = 5
 	}
 
-	query := `SELECT DISTINCT name FROM entities
+	query := `SELECT name FROM (
+		SELECT name, similarity(name, $2) AS sim FROM entities
 		WHERE namespace_id = $1 AND valid_to IS NULL AND name % $2
-		ORDER BY similarity(name, $2) DESC
-		LIMIT $3`
+		ORDER BY sim DESC
+		LIMIT $3
+	) sub`
 
 	var names []string
 	if err := r.client.SelectContext(ctx, &names, query, ns.ID, text, limit); err != nil {
