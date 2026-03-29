@@ -269,9 +269,9 @@ client:
 
 #### Required Header/Metadata in API
 
-Compass has a concept of [User](./concepts/user.md). In the current version, all APIs in Compass require an identity header in the request. The header key is configurable but the default name is `Compass-User-UUID`.
+Compass has a concept of User. In the current version, all APIs in Compass require an identity header in the request. The header key is configurable but the default name is `Compass-User-UUID`.
 
-Compass APIs also expect an additional optional e-mail header. This is also configurable and the default name is `Compass-User-Email`. The purpose of having this optional e-mail header is described in the [User](./concepts/user.md) section.
+Compass APIs also expect an additional optional e-mail header. This is also configurable and the default name is `Compass-User-Email`. The purpose of having this optional e-mail header is described in the API reference.
 
 If everything goes ok, you should see something like this:
 
