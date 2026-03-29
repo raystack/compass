@@ -1,8 +1,5 @@
 log_level: info
 
-elasticsearch:
-    brokers: http://localhost:9200
-
 db:
     host: localhost
     port: 5432
@@ -18,11 +15,9 @@ service:
         headerkey_uuid: Compass-User-UUID
         headerkey_email: Compass-User-Email
         provider_default_name: shield
-        # namespace_claim_key is used to get the namespace from the jwt token, if not set default is "namespace_id"
-        # used for multi-tenancy
         namespace_claim_key: project_id
 
 client:
     host: localhost:8080
-    serverheaderkey_uuid: Compass-User-UUID # if omitted, will use value on service.identity.headerkey_uuid
+    serverheaderkey_uuid: Compass-User-UUID
     serverheadervalue_uuid: raystack@email.com
