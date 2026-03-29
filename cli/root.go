@@ -32,7 +32,6 @@ var (
 		},
 	}
 
-	namespaceID string
 )
 
 func New(cliConfig *config.Config) *cobra.Command {

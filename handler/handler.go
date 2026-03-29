@@ -69,7 +69,3 @@ func internalServerError(ctx context.Context, msg string, err error) error {
 		ref,
 	))
 }
-
-func bodyParserErrorMsg(err error) string {
-	return fmt.Sprintf("error parsing request body: %v", err)
-}

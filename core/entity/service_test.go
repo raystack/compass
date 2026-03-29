@@ -110,7 +110,7 @@ func TestService_Delete(t *testing.T) {
 	ctx := context.Background()
 	ns := namespace.DefaultNamespace
 
-	svc.Upsert(ctx, ns, &Entity{URN: "urn:x", Type: TypeJob, Name: "x"})
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:x", Type: TypeJob, Name: "x"})
 
 	err := svc.Delete(ctx, ns, "urn:x")
 	if err != nil {
@@ -129,8 +129,8 @@ func TestService_GetAll(t *testing.T) {
 	ctx := context.Background()
 	ns := namespace.DefaultNamespace
 
-	svc.Upsert(ctx, ns, &Entity{URN: "urn:a", Type: TypeTable, Name: "a"})
-	svc.Upsert(ctx, ns, &Entity{URN: "urn:b", Type: TypeJob, Name: "b"})
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:a", Type: TypeTable, Name: "a"})
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:b", Type: TypeJob, Name: "b"})
 
 	entities, count, err := svc.GetAll(ctx, ns, Filter{})
 	if err != nil {
@@ -150,9 +150,9 @@ func TestService_GetTypes(t *testing.T) {
 	ctx := context.Background()
 	ns := namespace.DefaultNamespace
 
-	svc.Upsert(ctx, ns, &Entity{URN: "urn:a", Type: TypeTable, Name: "a"})
-	svc.Upsert(ctx, ns, &Entity{URN: "urn:b", Type: TypeTable, Name: "b"})
-	svc.Upsert(ctx, ns, &Entity{URN: "urn:c", Type: TypeJob, Name: "c"})
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:a", Type: TypeTable, Name: "a"})
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:b", Type: TypeTable, Name: "b"})
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:c", Type: TypeJob, Name: "c"})
 
 	types, err := svc.GetTypes(ctx, ns)
 	if err != nil {

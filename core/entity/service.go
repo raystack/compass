@@ -112,9 +112,7 @@ func (s *Service) GetContext(ctx context.Context, ns *namespace.Namespace, urn s
 	cg := &ContextGraph{Entity: ent}
 
 	if s.edges != nil {
-		if depth <= 0 {
-			depth = 2
-		}
+		_ = depth // TODO: use depth for multi-hop traversal
 		outgoing, _ := s.edges.GetBySource(ctx, ns, urn, EdgeFilter{Current: true})
 		incoming, _ := s.edges.GetByTarget(ctx, ns, urn, EdgeFilter{Current: true})
 		cg.Edges = append(outgoing, incoming...)
