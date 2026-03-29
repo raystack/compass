@@ -10,6 +10,7 @@ import (
 
 	"github.com/raystack/compass/core/asset"
 	"github.com/raystack/compass/core/discussion"
+	"github.com/raystack/compass/core/entity"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/star"
 	"github.com/raystack/compass/core/tag"
@@ -116,8 +117,26 @@ func Start(ctx context.Context, cfg *config.Config, version string) error {
 	// init namespace
 	namespaceService := namespace.NewService(postgres.NewNamespaceRepository(pgClient), discoveryRepository)
 
-	// init MCP server
-	mcpServer := compassmcp.New(assetService, namespace.DefaultNamespace)
+	// init entity v2 system (runs alongside existing asset system)
+	// All search is Postgres-native: tsvector + pg_trgm + pgvector. No ES dependency.
+	entityRepo, err := postgres.NewEntityRepository(pgClient)
+	if err != nil {
+		return fmt.Errorf("failed to create entity repository: %w", err)
+	}
+	edgeRepo, err := postgres.NewEdgeRepository(pgClient)
+	if err != nil {
+		return fmt.Errorf("failed to create edge repository: %w", err)
+	}
+	entitySearchRepo, err := postgres.NewEntitySearchRepository(pgClient)
+	if err != nil {
+		return fmt.Errorf("failed to create entity search repository: %w", err)
+	}
+	entityService := entity.NewService(entityRepo, edgeRepo, entitySearchRepo)
+
+	// init MCP server (v1 asset tools + v2 entity tools)
+	mcpServer := compassmcp.New(assetService, namespace.DefaultNamespace,
+		compassmcp.WithEntityService(entityService),
+	)
 
 	return Serve(
 		ctx,
