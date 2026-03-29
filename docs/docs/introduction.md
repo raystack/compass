@@ -44,7 +44,7 @@ You can use the Compass command line interface to issue commands and to perform 
 ### HTTPS API
 
 You can get hands on asset searching, listing, tagging, starring and much more by using the Compass HTTPS API, which lets you issue HTTPS requests directly to the service. When you use the HTTPS API, you must include the user information from the configurable identity uuid in the request header.
-For more information, see the [User Management](./concepts/user.md) and [API reference](./reference/api.md) pages.
+For more information, see the [API reference](./reference/api.md) page.
 
 ## Where to go from here
 

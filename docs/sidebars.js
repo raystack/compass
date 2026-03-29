@@ -4,34 +4,10 @@ module.exports = {
     'installation',
     'configuration',
     {
-      type: 'category',
-      label: 'Tour',
-      items: [
-        "tour/introduction",
-        "tour/my-first-asset",
-        "tour/querying-assets",
-        "tour/asset-lineage"
-      ]
-    },
-    {
-      type: "category",
-      label: "Guides",
-      items: [
-        "guides/ingestion",
-        "guides/querying",
-        "guides/starring",
-        "guides/tagging",
-        "guides/discussion",
-      ],
-    },
-    {
       type: "category",
       label: "Concepts",
       items: [
         "concepts/overview",
-        "concepts/asset",
-        "concepts/type",
-        "concepts/user",
         "concepts/architecture",
         "concepts/internals",
       ],

@@ -8,16 +8,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/raystack/compass/core/asset"
-	"github.com/raystack/compass/core/discussion"
+	"github.com/raystack/compass/core/entity"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/star"
-	"github.com/raystack/compass/core/tag"
 	"github.com/raystack/compass/core/user"
 	"github.com/raystack/compass/internal/config"
 	compassmcp "github.com/raystack/compass/internal/mcp"
 	"github.com/raystack/compass/internal/telemetry"
-	esStore "github.com/raystack/compass/store/elasticsearch"
 	"github.com/raystack/compass/store/postgres"
 )
 
@@ -52,11 +49,6 @@ func Start(ctx context.Context, cfg *config.Config, version string) error {
 	}
 	defer otelCleanup()
 
-	esClient, err := initElasticsearch(cfg.Elasticsearch)
-	if err != nil {
-		return err
-	}
-
 	pgClient, err := initPostgres(cfg.DB)
 	if err != nil {
 		return err
@@ -69,67 +61,50 @@ func Start(ctx context.Context, cfg *config.Config, version string) error {
 		slog.Warn("db closed")
 	}()
 
-	// init tag
-	tagRepository, err := postgres.NewTagRepository(pgClient)
-	if err != nil {
-		return fmt.Errorf("failed to create new tag repository: %w", err)
-	}
-	tagTemplateRepository, err := postgres.NewTagTemplateRepository(pgClient)
-	if err != nil {
-		return fmt.Errorf("failed to create new tag template repository: %w", err)
-	}
-	tagTemplateService := tag.NewTemplateService(tagTemplateRepository)
-	tagService := tag.NewService(tagRepository, tagTemplateService)
-
 	// init user
 	userRepository, err := postgres.NewUserRepository(pgClient)
 	if err != nil {
-		return fmt.Errorf("failed to create new user repository: %w", err)
+		return fmt.Errorf("failed to create user repository: %w", err)
 	}
 	userService := user.NewService(userRepository)
-
-	assetRepository, err := postgres.NewAssetRepository(pgClient, userRepository, 0, cfg.Service.Identity.ProviderDefaultName)
-	if err != nil {
-		return fmt.Errorf("failed to create new asset repository: %w", err)
-	}
-	discoveryRepository := esStore.NewDiscoveryRepository(esClient)
-	lineageRepository, err := postgres.NewLineageRepository(pgClient)
-	if err != nil {
-		return fmt.Errorf("failed to create new lineage repository: %w", err)
-	}
-	assetService := asset.NewService(assetRepository, discoveryRepository, lineageRepository)
-
-	// init discussion
-	discussionRepository, err := postgres.NewDiscussionRepository(pgClient, 0)
-	if err != nil {
-		return fmt.Errorf("failed to create new discussion repository: %w", err)
-	}
-	discussionService := discussion.NewService(discussionRepository)
 
 	// init star
 	starRepository, err := postgres.NewStarRepository(pgClient)
 	if err != nil {
-		return fmt.Errorf("failed to create new star repository: %w", err)
+		return fmt.Errorf("failed to create star repository: %w", err)
 	}
 	starService := star.NewService(starRepository)
 
 	// init namespace
-	namespaceService := namespace.NewService(postgres.NewNamespaceRepository(pgClient), discoveryRepository)
+	namespaceService := namespace.NewService(postgres.NewNamespaceRepository(pgClient), nil)
+
+	// init entity system (Postgres-native: tsvector + pg_trgm + pgvector)
+	entityRepo, err := postgres.NewEntityRepository(pgClient)
+	if err != nil {
+		return fmt.Errorf("failed to create entity repository: %w", err)
+	}
+	edgeRepo, err := postgres.NewEdgeRepository(pgClient)
+	if err != nil {
+		return fmt.Errorf("failed to create edge repository: %w", err)
+	}
+	entitySearchRepo, err := postgres.NewEntitySearchRepository(pgClient)
+	if err != nil {
+		return fmt.Errorf("failed to create entity search repository: %w", err)
+	}
+	entityService := entity.NewService(entityRepo, edgeRepo, entitySearchRepo)
 
 	// init MCP server
-	mcpServer := compassmcp.New(assetService, namespace.DefaultNamespace)
+	mcpServer := compassmcp.New(entityService, namespace.DefaultNamespace)
 
 	return Serve(
 		ctx,
 		cfg.Service,
 		mcpServer,
 		namespaceService,
-		assetService,
 		starService,
-		discussionService,
-		tagService,
-		tagTemplateService,
 		userService,
+		entityService,
+		edgeRepo,
 	)
 }
 
@@ -137,11 +112,6 @@ func Start(ctx context.Context, cfg *config.Config, version string) error {
 func Migrate(ctx context.Context, cfg *config.Config, version string) error {
 	InitLogger(cfg.LogLevel)
 	slog.InfoContext(ctx, "compass is migrating", "version", version)
-
-	esClient, err := initElasticsearch(cfg.Elasticsearch)
-	if err != nil {
-		return err
-	}
 
 	pgClient, err := initPostgres(cfg.DB)
 	if err != nil {
@@ -155,9 +125,7 @@ func Migrate(ctx context.Context, cfg *config.Config, version string) error {
 	}
 
 	// create default namespace
-	nsService := namespace.NewService(
-		postgres.NewNamespaceRepository(pgClient),
-		esStore.NewDiscoveryRepository(esClient))
+	nsService := namespace.NewService(postgres.NewNamespaceRepository(pgClient), nil)
 	if _, err = nsService.GetByID(ctx, namespace.DefaultNamespace.ID); errors.Is(err, namespace.ErrNotFound) {
 		if _, err := nsService.MigrateDefault(ctx); err != nil {
 			return fmt.Errorf("problem with migration %w", err)
@@ -186,19 +154,6 @@ func MigrateDown(ctx context.Context, cfg *config.Config, version string) error 
 	}
 	slog.InfoContext(ctx, "migration finished", "version", ver)
 	return nil
-}
-
-func initElasticsearch(cfg esStore.Config) (*esStore.Client, error) {
-	esClient, err := esStore.NewClient(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new elasticsearch client: %w", err)
-	}
-	got, err := esClient.Init()
-	if err != nil {
-		return nil, fmt.Errorf("failed to establish connection to elasticsearch: %w", err)
-	}
-	slog.Info("connected to elasticsearch", "info", got)
-	return esClient, nil
 }
 
 func initPostgres(cfg postgres.Config) (*postgres.Client, error) {

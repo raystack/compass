@@ -26,8 +26,10 @@ func (s Service) Create(ctx context.Context, namespace *Namespace) (string, erro
 	if err != nil {
 		return "", err
 	}
-	if err := s.discoveryRepo.CreateNamespace(ctx, namespace); err != nil {
-		return "", err
+	if s.discoveryRepo != nil {
+		if err := s.discoveryRepo.CreateNamespace(ctx, namespace); err != nil {
+			return "", err
+		}
 	}
 	return id, nil
 }

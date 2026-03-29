@@ -60,15 +60,15 @@ Compass's required variables to start using it.
 ### `IDENTITY_UUID_HEADER`
 * Example value: `Compass-User-UUID`
 * Type: `required`
-* Header key to accept Compass User UUID. See [User](../concepts/user.md) for more information about the usage.
+* Header key to accept Compass User UUID. See the API reference for more information.
 ### `IDENTITY_EMAIL_HEADER`
 * Example value: `Compass-User-Email`
 * Type: `optional`
-* Header key to accept Compass User Email. See [User](../concepts/user.md) for more information about the usage.
+* Header key to accept Compass User Email. See the API reference for more information.
 ### `IDENTITY_PROVIDER_DEFAULT_NAME`
 * Example value: `shield`
 * Type: `optional`
-* Default value of user provider. See [User](../concepts/user.md) for more information about the usage.
+* Default value of user provider. See the API reference for more information.
 
 ## Telemetry
 

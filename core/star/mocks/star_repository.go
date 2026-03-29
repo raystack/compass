@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	asset "github.com/raystack/compass/core/asset"
+	entity "github.com/raystack/compass/core/entity"
 
 	mock "github.com/stretchr/testify/mock"
 
@@ -29,23 +29,23 @@ func (_m *StarRepository) EXPECT() *StarRepository_Expecter {
 	return &StarRepository_Expecter{mock: &_m.Mock}
 }
 
-// Create provides a mock function with given fields: ctx, ns, userID, assetID
-func (_m *StarRepository) Create(ctx context.Context, ns *namespace.Namespace, userID string, assetID string) (string, error) {
-	ret := _m.Called(ctx, ns, userID, assetID)
+// Create provides a mock function with given fields: ctx, ns, userID, entityID
+func (_m *StarRepository) Create(ctx context.Context, ns *namespace.Namespace, userID string, entityID string) (string, error) {
+	ret := _m.Called(ctx, ns, userID, entityID)
 
 	var r0 string
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string, string) (string, error)); ok {
-		return rf(ctx, ns, userID, assetID)
+		return rf(ctx, ns, userID, entityID)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, *namespace.Namespace, string, string) string); ok {
-		r0 = rf(ctx, ns, userID, assetID)
+		r0 = rf(ctx, ns, userID, entityID)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, *namespace.Namespace, string, string) error); ok {
-		r1 = rf(ctx, ns, userID, assetID)
+		r1 = rf(ctx, ns, userID, entityID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -62,12 +62,12 @@ type StarRepository_Create_Call struct {
 //   - ctx context.Context
 //   - ns *namespace.Namespace
 //   - userID string
-//   - assetID string
-func (_e *StarRepository_Expecter) Create(ctx interface{}, ns interface{}, userID interface{}, assetID interface{}) *StarRepository_Create_Call {
-	return &StarRepository_Create_Call{Call: _e.mock.On("Create", ctx, ns, userID, assetID)}
+//   - entityID string
+func (_e *StarRepository_Expecter) Create(ctx interface{}, ns interface{}, userID interface{}, entityID interface{}) *StarRepository_Create_Call {
+	return &StarRepository_Create_Call{Call: _e.mock.On("Create", ctx, ns, userID, entityID)}
 }
 
-func (_c *StarRepository_Create_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, userID string, assetID string)) *StarRepository_Create_Call {
+func (_c *StarRepository_Create_Call) Run(run func(ctx context.Context, ns *namespace.Namespace, userID string, entityID string)) *StarRepository_Create_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(*namespace.Namespace), args[2].(string), args[3].(string))
 	})
@@ -84,13 +84,13 @@ func (_c *StarRepository_Create_Call) RunAndReturn(run func(context.Context, *na
 	return _c
 }
 
-// Delete provides a mock function with given fields: ctx, userID, assetID
-func (_m *StarRepository) Delete(ctx context.Context, userID string, assetID string) error {
-	ret := _m.Called(ctx, userID, assetID)
+// Delete provides a mock function with given fields: ctx, userID, entityID
+func (_m *StarRepository) Delete(ctx context.Context, userID string, entityID string) error {
+	ret := _m.Called(ctx, userID, entityID)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
-		r0 = rf(ctx, userID, assetID)
+		r0 = rf(ctx, userID, entityID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -106,12 +106,12 @@ type StarRepository_Delete_Call struct {
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID string
-//   - assetID string
-func (_e *StarRepository_Expecter) Delete(ctx interface{}, userID interface{}, assetID interface{}) *StarRepository_Delete_Call {
-	return &StarRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, userID, assetID)}
+//   - entityID string
+func (_e *StarRepository_Expecter) Delete(ctx interface{}, userID interface{}, entityID interface{}) *StarRepository_Delete_Call {
+	return &StarRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, userID, entityID)}
 }
 
-func (_c *StarRepository_Delete_Call) Run(run func(ctx context.Context, userID string, assetID string)) *StarRepository_Delete_Call {
+func (_c *StarRepository_Delete_Call) Run(run func(ctx context.Context, userID string, entityID string)) *StarRepository_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
@@ -128,20 +128,20 @@ func (_c *StarRepository_Delete_Call) RunAndReturn(run func(context.Context, str
 	return _c
 }
 
-// GetAllAssetsByUserID provides a mock function with given fields: ctx, flt, userID
-func (_m *StarRepository) GetAllAssetsByUserID(ctx context.Context, flt star.Filter, userID string) ([]asset.Asset, error) {
+// GetAllEntitiesByUserID provides a mock function with given fields: ctx, flt, userID
+func (_m *StarRepository) GetAllEntitiesByUserID(ctx context.Context, flt star.Filter, userID string) ([]entity.Entity, error) {
 	ret := _m.Called(ctx, flt, userID)
 
-	var r0 []asset.Asset
+	var r0 []entity.Entity
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, star.Filter, string) ([]asset.Asset, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, star.Filter, string) ([]entity.Entity, error)); ok {
 		return rf(ctx, flt, userID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, star.Filter, string) []asset.Asset); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, star.Filter, string) []entity.Entity); ok {
 		r0 = rf(ctx, flt, userID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]asset.Asset)
+			r0 = ret.Get(0).([]entity.Entity)
 		}
 	}
 
@@ -154,53 +154,53 @@ func (_m *StarRepository) GetAllAssetsByUserID(ctx context.Context, flt star.Fil
 	return r0, r1
 }
 
-// StarRepository_GetAllAssetsByUserID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllAssetsByUserID'
-type StarRepository_GetAllAssetsByUserID_Call struct {
+// StarRepository_GetAllEntitiesByUserID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllEntitiesByUserID'
+type StarRepository_GetAllEntitiesByUserID_Call struct {
 	*mock.Call
 }
 
-// GetAllAssetsByUserID is a helper method to define mock.On call
+// GetAllEntitiesByUserID is a helper method to define mock.On call
 //   - ctx context.Context
 //   - flt star.Filter
 //   - userID string
-func (_e *StarRepository_Expecter) GetAllAssetsByUserID(ctx interface{}, flt interface{}, userID interface{}) *StarRepository_GetAllAssetsByUserID_Call {
-	return &StarRepository_GetAllAssetsByUserID_Call{Call: _e.mock.On("GetAllAssetsByUserID", ctx, flt, userID)}
+func (_e *StarRepository_Expecter) GetAllEntitiesByUserID(ctx interface{}, flt interface{}, userID interface{}) *StarRepository_GetAllEntitiesByUserID_Call {
+	return &StarRepository_GetAllEntitiesByUserID_Call{Call: _e.mock.On("GetAllEntitiesByUserID", ctx, flt, userID)}
 }
 
-func (_c *StarRepository_GetAllAssetsByUserID_Call) Run(run func(ctx context.Context, flt star.Filter, userID string)) *StarRepository_GetAllAssetsByUserID_Call {
+func (_c *StarRepository_GetAllEntitiesByUserID_Call) Run(run func(ctx context.Context, flt star.Filter, userID string)) *StarRepository_GetAllEntitiesByUserID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(star.Filter), args[2].(string))
 	})
 	return _c
 }
 
-func (_c *StarRepository_GetAllAssetsByUserID_Call) Return(_a0 []asset.Asset, _a1 error) *StarRepository_GetAllAssetsByUserID_Call {
+func (_c *StarRepository_GetAllEntitiesByUserID_Call) Return(_a0 []entity.Entity, _a1 error) *StarRepository_GetAllEntitiesByUserID_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *StarRepository_GetAllAssetsByUserID_Call) RunAndReturn(run func(context.Context, star.Filter, string) ([]asset.Asset, error)) *StarRepository_GetAllAssetsByUserID_Call {
+func (_c *StarRepository_GetAllEntitiesByUserID_Call) RunAndReturn(run func(context.Context, star.Filter, string) ([]entity.Entity, error)) *StarRepository_GetAllEntitiesByUserID_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetAssetByUserID provides a mock function with given fields: ctx, userID, assetID
-func (_m *StarRepository) GetAssetByUserID(ctx context.Context, userID string, assetID string) (asset.Asset, error) {
-	ret := _m.Called(ctx, userID, assetID)
+// GetEntityByUserID provides a mock function with given fields: ctx, userID, entityID
+func (_m *StarRepository) GetEntityByUserID(ctx context.Context, userID string, entityID string) (entity.Entity, error) {
+	ret := _m.Called(ctx, userID, entityID)
 
-	var r0 asset.Asset
+	var r0 entity.Entity
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) (asset.Asset, error)); ok {
-		return rf(ctx, userID, assetID)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (entity.Entity, error)); ok {
+		return rf(ctx, userID, entityID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) asset.Asset); ok {
-		r0 = rf(ctx, userID, assetID)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) entity.Entity); ok {
+		r0 = rf(ctx, userID, entityID)
 	} else {
-		r0 = ret.Get(0).(asset.Asset)
+		r0 = ret.Get(0).(entity.Entity)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = rf(ctx, userID, assetID)
+		r1 = rf(ctx, userID, entityID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -208,47 +208,47 @@ func (_m *StarRepository) GetAssetByUserID(ctx context.Context, userID string, a
 	return r0, r1
 }
 
-// StarRepository_GetAssetByUserID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAssetByUserID'
-type StarRepository_GetAssetByUserID_Call struct {
+// StarRepository_GetEntityByUserID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetEntityByUserID'
+type StarRepository_GetEntityByUserID_Call struct {
 	*mock.Call
 }
 
-// GetAssetByUserID is a helper method to define mock.On call
+// GetEntityByUserID is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID string
-//   - assetID string
-func (_e *StarRepository_Expecter) GetAssetByUserID(ctx interface{}, userID interface{}, assetID interface{}) *StarRepository_GetAssetByUserID_Call {
-	return &StarRepository_GetAssetByUserID_Call{Call: _e.mock.On("GetAssetByUserID", ctx, userID, assetID)}
+//   - entityID string
+func (_e *StarRepository_Expecter) GetEntityByUserID(ctx interface{}, userID interface{}, entityID interface{}) *StarRepository_GetEntityByUserID_Call {
+	return &StarRepository_GetEntityByUserID_Call{Call: _e.mock.On("GetEntityByUserID", ctx, userID, entityID)}
 }
 
-func (_c *StarRepository_GetAssetByUserID_Call) Run(run func(ctx context.Context, userID string, assetID string)) *StarRepository_GetAssetByUserID_Call {
+func (_c *StarRepository_GetEntityByUserID_Call) Run(run func(ctx context.Context, userID string, entityID string)) *StarRepository_GetEntityByUserID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
 
-func (_c *StarRepository_GetAssetByUserID_Call) Return(_a0 asset.Asset, _a1 error) *StarRepository_GetAssetByUserID_Call {
+func (_c *StarRepository_GetEntityByUserID_Call) Return(_a0 entity.Entity, _a1 error) *StarRepository_GetEntityByUserID_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *StarRepository_GetAssetByUserID_Call) RunAndReturn(run func(context.Context, string, string) (asset.Asset, error)) *StarRepository_GetAssetByUserID_Call {
+func (_c *StarRepository_GetEntityByUserID_Call) RunAndReturn(run func(context.Context, string, string) (entity.Entity, error)) *StarRepository_GetEntityByUserID_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetStargazers provides a mock function with given fields: ctx, flt, assetID
-func (_m *StarRepository) GetStargazers(ctx context.Context, flt star.Filter, assetID string) ([]user.User, error) {
-	ret := _m.Called(ctx, flt, assetID)
+// GetStargazers provides a mock function with given fields: ctx, flt, entityID
+func (_m *StarRepository) GetStargazers(ctx context.Context, flt star.Filter, entityID string) ([]user.User, error) {
+	ret := _m.Called(ctx, flt, entityID)
 
 	var r0 []user.User
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, star.Filter, string) ([]user.User, error)); ok {
-		return rf(ctx, flt, assetID)
+		return rf(ctx, flt, entityID)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, star.Filter, string) []user.User); ok {
-		r0 = rf(ctx, flt, assetID)
+		r0 = rf(ctx, flt, entityID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]user.User)
@@ -256,7 +256,7 @@ func (_m *StarRepository) GetStargazers(ctx context.Context, flt star.Filter, as
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, star.Filter, string) error); ok {
-		r1 = rf(ctx, flt, assetID)
+		r1 = rf(ctx, flt, entityID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -272,12 +272,12 @@ type StarRepository_GetStargazers_Call struct {
 // GetStargazers is a helper method to define mock.On call
 //   - ctx context.Context
 //   - flt star.Filter
-//   - assetID string
-func (_e *StarRepository_Expecter) GetStargazers(ctx interface{}, flt interface{}, assetID interface{}) *StarRepository_GetStargazers_Call {
-	return &StarRepository_GetStargazers_Call{Call: _e.mock.On("GetStargazers", ctx, flt, assetID)}
+//   - entityID string
+func (_e *StarRepository_Expecter) GetStargazers(ctx interface{}, flt interface{}, entityID interface{}) *StarRepository_GetStargazers_Call {
+	return &StarRepository_GetStargazers_Call{Call: _e.mock.On("GetStargazers", ctx, flt, entityID)}
 }
 
-func (_c *StarRepository_GetStargazers_Call) Run(run func(ctx context.Context, flt star.Filter, assetID string)) *StarRepository_GetStargazers_Call {
+func (_c *StarRepository_GetStargazers_Call) Run(run func(ctx context.Context, flt star.Filter, entityID string)) *StarRepository_GetStargazers_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(star.Filter), args[2].(string))
 	})

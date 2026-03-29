@@ -1,30 +1,32 @@
 # Overview
 
-Compass has three major concept when it comes to data ingestion: Asset, Type, and Service.
+Compass is an organizational context engine that builds a temporal entity graph of your systems and serves it to AI agents via MCP.
 
-Asset is the main model that represents a metadata of a specific service with a specific type.
+## Core Concepts
 
-Type defines a ‘type’ of an asset and it is pre-defined. Compass currently supports the following types:
-1. `table`
-2. `job`
-3. `dashboard`
-4. `topic`
-5. `feature_table`
-6. `model` (under development)
-7. `application` (under development)
- 
-Service defines the application or source that maintains or generates the asset. Examples would be `biquery`, `postgres`, etc.
+**Entity** is the core domain object — anything worth naming in your organization's knowledge graph: a table, service, pipeline, satellite, person, decision, etc. Entities have an open type system — any non-empty string is a valid type.
 
-Some features that compass has:
-* [Discovery](../tour/2-querying-assets.mdx)
-* [Lineage](../tour/3-asset-lineage.mdx)
-* [Asset Tagging](./asset#tagging-an-asset)
-* [User](./user.md)
-* [Discussion](../guides/discussion.md)
-* [Starring](../guides/starring.md)
+**Edge** is a typed, directed, temporal relationship between two entities. Lineage, ownership, and other relationships are all modeled as edges.
 
-## Discussion
-Compass supports discussion feature. User could drop comments in each discussion. Currently, there are three types of discussions `issues`, `open ended`, and `question and answer`. Depending on the type, the discussion could have multiple possible states. In the current version, all types only have two states: `open` and `closed`. A newly created discussion will always be assign an `open` state. More detail about [Discussion](../guides/discussion.md).
+**Chunk** is a text fragment with a vector embedding for semantic search. Chunks are derived from entities — they're an indexing mechanism, not knowledge.
 
-## Starring
-Compass allows a user to stars an asset. This bookmarking functionality is introduced to increase the speed of a user to get information. There is also an API to see which users star an asset (stargazers). More detail about [Starring](../guides/starring.md).
+## Features
+
+- **Entity Graph**: Temporal entities with typed edges and properties (JSONB)
+- **Search**: Keyword (tsvector), semantic (pgvector), and hybrid (RRF fusion)
+- **Context Assembly**: `get_context` builds a subgraph around any entity
+- **Impact Analysis**: `impact` traces downstream blast radius
+- **MCP Tools**: AI agents query the graph via MCP protocol
+- **Stars**: Users can star entities for quick access
+
+## Architecture
+
+All search is Postgres-native — no Elasticsearch dependency:
+
+| Mode | Engine | Purpose |
+|---|---|---|
+| Keyword | tsvector + pg_trgm | Exact matches, fuzzy/typo tolerance |
+| Semantic | pgvector cosine | Conceptual/natural language |
+| Hybrid | Both + RRF fusion | Best of both |
+
+Schema: `namespaces` → `users` → `entities` → `edges` → `chunks` → `stars`

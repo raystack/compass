@@ -5,18 +5,16 @@ import (
 
 	"github.com/raystack/compass/internal/client"
 	"github.com/raystack/compass/internal/telemetry"
-	esStore "github.com/raystack/compass/store/elasticsearch"
 	"github.com/raystack/compass/store/postgres"
 )
 
 // Config is the root configuration for the compass application.
 type Config struct {
-	LogLevel      string           `yaml:"log_level" mapstructure:"log_level" default:"info"`
-	Telemetry     telemetry.Config `mapstructure:"telemetry"`
-	Elasticsearch esStore.Config   `mapstructure:"elasticsearch"`
-	DB            postgres.Config  `mapstructure:"db"`
-	Service       ServerConfig     `mapstructure:"service"`
-	Client        client.Config    `mapstructure:"client"`
+	LogLevel  string           `yaml:"log_level" mapstructure:"log_level" default:"info"`
+	Telemetry telemetry.Config `mapstructure:"telemetry"`
+	DB        postgres.Config  `mapstructure:"db"`
+	Service   ServerConfig     `mapstructure:"service"`
+	Client    client.Config    `mapstructure:"client"`
 }
 
 // ServerConfig holds HTTP server configuration.

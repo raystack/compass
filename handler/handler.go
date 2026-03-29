@@ -14,13 +14,11 @@ import (
 )
 
 type Handler struct {
-	namespaceService   NamespaceService
-	assetService       AssetService
-	starService        StarService
-	discussionService  DiscussionService
-	tagService         TagService
-	tagTemplateService TagTemplateService
-	userService        UserService
+	namespaceService NamespaceService
+	starService      StarService
+	userService      UserService
+	entityService    EntityServiceV2
+	edgeService      EdgeServiceV2
 }
 
 var (
@@ -29,21 +27,17 @@ var (
 
 func New(
 	namespaceService NamespaceService,
-	assetService AssetService,
 	starService StarService,
-	discussionService DiscussionService,
-	tagService TagService,
-	tagTemplateService TagTemplateService,
 	userService UserService,
+	entityService EntityServiceV2,
+	edgeService EdgeServiceV2,
 ) *Handler {
 	return &Handler{
-		namespaceService:   namespaceService,
-		assetService:       assetService,
-		starService:        starService,
-		discussionService:  discussionService,
-		tagService:         tagService,
-		tagTemplateService: tagTemplateService,
-		userService:        userService,
+		namespaceService: namespaceService,
+		starService:      starService,
+		userService:      userService,
+		entityService:    entityService,
+		edgeService:      edgeService,
 	}
 }
 
@@ -74,8 +68,4 @@ func internalServerError(ctx context.Context, msg string, err error) error {
 		http.StatusText(http.StatusInternalServerError),
 		ref,
 	))
-}
-
-func bodyParserErrorMsg(err error) string {
-	return fmt.Sprintf("error parsing request body: %v", err)
 }

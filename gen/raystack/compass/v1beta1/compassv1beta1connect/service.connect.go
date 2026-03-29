@@ -33,122 +33,59 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// CompassServiceGetAllDiscussionsProcedure is the fully-qualified name of the CompassService's
-	// GetAllDiscussions RPC.
-	CompassServiceGetAllDiscussionsProcedure = "/raystack.compass.v1beta1.CompassService/GetAllDiscussions"
-	// CompassServiceCreateDiscussionProcedure is the fully-qualified name of the CompassService's
-	// CreateDiscussion RPC.
-	CompassServiceCreateDiscussionProcedure = "/raystack.compass.v1beta1.CompassService/CreateDiscussion"
-	// CompassServiceGetDiscussionProcedure is the fully-qualified name of the CompassService's
-	// GetDiscussion RPC.
-	CompassServiceGetDiscussionProcedure = "/raystack.compass.v1beta1.CompassService/GetDiscussion"
-	// CompassServicePatchDiscussionProcedure is the fully-qualified name of the CompassService's
-	// PatchDiscussion RPC.
-	CompassServicePatchDiscussionProcedure = "/raystack.compass.v1beta1.CompassService/PatchDiscussion"
-	// CompassServiceCreateCommentProcedure is the fully-qualified name of the CompassService's
-	// CreateComment RPC.
-	CompassServiceCreateCommentProcedure = "/raystack.compass.v1beta1.CompassService/CreateComment"
-	// CompassServiceGetAllCommentsProcedure is the fully-qualified name of the CompassService's
-	// GetAllComments RPC.
-	CompassServiceGetAllCommentsProcedure = "/raystack.compass.v1beta1.CompassService/GetAllComments"
-	// CompassServiceGetCommentProcedure is the fully-qualified name of the CompassService's GetComment
+	// CompassServiceGetAllEntitiesProcedure is the fully-qualified name of the CompassService's
+	// GetAllEntities RPC.
+	CompassServiceGetAllEntitiesProcedure = "/raystack.compass.v1beta1.CompassService/GetAllEntities"
+	// CompassServiceGetEntityByIDProcedure is the fully-qualified name of the CompassService's
+	// GetEntityByID RPC.
+	CompassServiceGetEntityByIDProcedure = "/raystack.compass.v1beta1.CompassService/GetEntityByID"
+	// CompassServiceUpsertEntityProcedure is the fully-qualified name of the CompassService's
+	// UpsertEntity RPC.
+	CompassServiceUpsertEntityProcedure = "/raystack.compass.v1beta1.CompassService/UpsertEntity"
+	// CompassServiceDeleteEntityProcedure is the fully-qualified name of the CompassService's
+	// DeleteEntity RPC.
+	CompassServiceDeleteEntityProcedure = "/raystack.compass.v1beta1.CompassService/DeleteEntity"
+	// CompassServiceSearchEntitiesProcedure is the fully-qualified name of the CompassService's
+	// SearchEntities RPC.
+	CompassServiceSearchEntitiesProcedure = "/raystack.compass.v1beta1.CompassService/SearchEntities"
+	// CompassServiceSuggestEntitiesProcedure is the fully-qualified name of the CompassService's
+	// SuggestEntities RPC.
+	CompassServiceSuggestEntitiesProcedure = "/raystack.compass.v1beta1.CompassService/SuggestEntities"
+	// CompassServiceGetEntityTypesProcedure is the fully-qualified name of the CompassService's
+	// GetEntityTypes RPC.
+	CompassServiceGetEntityTypesProcedure = "/raystack.compass.v1beta1.CompassService/GetEntityTypes"
+	// CompassServiceGetEntityContextProcedure is the fully-qualified name of the CompassService's
+	// GetEntityContext RPC.
+	CompassServiceGetEntityContextProcedure = "/raystack.compass.v1beta1.CompassService/GetEntityContext"
+	// CompassServiceGetEntityImpactProcedure is the fully-qualified name of the CompassService's
+	// GetEntityImpact RPC.
+	CompassServiceGetEntityImpactProcedure = "/raystack.compass.v1beta1.CompassService/GetEntityImpact"
+	// CompassServiceUpsertEdgeProcedure is the fully-qualified name of the CompassService's UpsertEdge
 	// RPC.
-	CompassServiceGetCommentProcedure = "/raystack.compass.v1beta1.CompassService/GetComment"
-	// CompassServiceUpdateCommentProcedure is the fully-qualified name of the CompassService's
-	// UpdateComment RPC.
-	CompassServiceUpdateCommentProcedure = "/raystack.compass.v1beta1.CompassService/UpdateComment"
-	// CompassServiceDeleteCommentProcedure is the fully-qualified name of the CompassService's
-	// DeleteComment RPC.
-	CompassServiceDeleteCommentProcedure = "/raystack.compass.v1beta1.CompassService/DeleteComment"
-	// CompassServiceSearchAssetsProcedure is the fully-qualified name of the CompassService's
-	// SearchAssets RPC.
-	CompassServiceSearchAssetsProcedure = "/raystack.compass.v1beta1.CompassService/SearchAssets"
-	// CompassServiceSuggestAssetsProcedure is the fully-qualified name of the CompassService's
-	// SuggestAssets RPC.
-	CompassServiceSuggestAssetsProcedure = "/raystack.compass.v1beta1.CompassService/SuggestAssets"
-	// CompassServiceGroupAssetsProcedure is the fully-qualified name of the CompassService's
-	// GroupAssets RPC.
-	CompassServiceGroupAssetsProcedure = "/raystack.compass.v1beta1.CompassService/GroupAssets"
-	// CompassServiceGetGraphProcedure is the fully-qualified name of the CompassService's GetGraph RPC.
-	CompassServiceGetGraphProcedure = "/raystack.compass.v1beta1.CompassService/GetGraph"
-	// CompassServiceGetAllTypesProcedure is the fully-qualified name of the CompassService's
-	// GetAllTypes RPC.
-	CompassServiceGetAllTypesProcedure = "/raystack.compass.v1beta1.CompassService/GetAllTypes"
-	// CompassServiceGetAllAssetsProcedure is the fully-qualified name of the CompassService's
-	// GetAllAssets RPC.
-	CompassServiceGetAllAssetsProcedure = "/raystack.compass.v1beta1.CompassService/GetAllAssets"
-	// CompassServiceGetAssetByIDProcedure is the fully-qualified name of the CompassService's
-	// GetAssetByID RPC.
-	CompassServiceGetAssetByIDProcedure = "/raystack.compass.v1beta1.CompassService/GetAssetByID"
-	// CompassServiceUpsertAssetProcedure is the fully-qualified name of the CompassService's
-	// UpsertAsset RPC.
-	CompassServiceUpsertAssetProcedure = "/raystack.compass.v1beta1.CompassService/UpsertAsset"
-	// CompassServiceUpsertPatchAssetProcedure is the fully-qualified name of the CompassService's
-	// UpsertPatchAsset RPC.
-	CompassServiceUpsertPatchAssetProcedure = "/raystack.compass.v1beta1.CompassService/UpsertPatchAsset"
-	// CompassServiceDeleteAssetProcedure is the fully-qualified name of the CompassService's
-	// DeleteAsset RPC.
-	CompassServiceDeleteAssetProcedure = "/raystack.compass.v1beta1.CompassService/DeleteAsset"
-	// CompassServiceGetAssetStargazersProcedure is the fully-qualified name of the CompassService's
-	// GetAssetStargazers RPC.
-	CompassServiceGetAssetStargazersProcedure = "/raystack.compass.v1beta1.CompassService/GetAssetStargazers"
-	// CompassServiceGetAssetVersionHistoryProcedure is the fully-qualified name of the CompassService's
-	// GetAssetVersionHistory RPC.
-	CompassServiceGetAssetVersionHistoryProcedure = "/raystack.compass.v1beta1.CompassService/GetAssetVersionHistory"
-	// CompassServiceGetAssetByVersionProcedure is the fully-qualified name of the CompassService's
-	// GetAssetByVersion RPC.
-	CompassServiceGetAssetByVersionProcedure = "/raystack.compass.v1beta1.CompassService/GetAssetByVersion"
-	// CompassServiceCreateAssetProbeProcedure is the fully-qualified name of the CompassService's
-	// CreateAssetProbe RPC.
-	CompassServiceCreateAssetProbeProcedure = "/raystack.compass.v1beta1.CompassService/CreateAssetProbe"
-	// CompassServiceGetUserStarredAssetsProcedure is the fully-qualified name of the CompassService's
-	// GetUserStarredAssets RPC.
-	CompassServiceGetUserStarredAssetsProcedure = "/raystack.compass.v1beta1.CompassService/GetUserStarredAssets"
-	// CompassServiceGetMyStarredAssetsProcedure is the fully-qualified name of the CompassService's
-	// GetMyStarredAssets RPC.
-	CompassServiceGetMyStarredAssetsProcedure = "/raystack.compass.v1beta1.CompassService/GetMyStarredAssets"
-	// CompassServiceGetMyStarredAssetProcedure is the fully-qualified name of the CompassService's
-	// GetMyStarredAsset RPC.
-	CompassServiceGetMyStarredAssetProcedure = "/raystack.compass.v1beta1.CompassService/GetMyStarredAsset"
-	// CompassServiceStarAssetProcedure is the fully-qualified name of the CompassService's StarAsset
+	CompassServiceUpsertEdgeProcedure = "/raystack.compass.v1beta1.CompassService/UpsertEdge"
+	// CompassServiceGetEdgesProcedure is the fully-qualified name of the CompassService's GetEdges RPC.
+	CompassServiceGetEdgesProcedure = "/raystack.compass.v1beta1.CompassService/GetEdges"
+	// CompassServiceDeleteEdgeProcedure is the fully-qualified name of the CompassService's DeleteEdge
 	// RPC.
-	CompassServiceStarAssetProcedure = "/raystack.compass.v1beta1.CompassService/StarAsset"
-	// CompassServiceUnstarAssetProcedure is the fully-qualified name of the CompassService's
-	// UnstarAsset RPC.
-	CompassServiceUnstarAssetProcedure = "/raystack.compass.v1beta1.CompassService/UnstarAsset"
-	// CompassServiceGetMyDiscussionsProcedure is the fully-qualified name of the CompassService's
-	// GetMyDiscussions RPC.
-	CompassServiceGetMyDiscussionsProcedure = "/raystack.compass.v1beta1.CompassService/GetMyDiscussions"
-	// CompassServiceCreateTagAssetProcedure is the fully-qualified name of the CompassService's
-	// CreateTagAsset RPC.
-	CompassServiceCreateTagAssetProcedure = "/raystack.compass.v1beta1.CompassService/CreateTagAsset"
-	// CompassServiceGetTagByAssetAndTemplateProcedure is the fully-qualified name of the
-	// CompassService's GetTagByAssetAndTemplate RPC.
-	CompassServiceGetTagByAssetAndTemplateProcedure = "/raystack.compass.v1beta1.CompassService/GetTagByAssetAndTemplate"
-	// CompassServiceUpdateTagAssetProcedure is the fully-qualified name of the CompassService's
-	// UpdateTagAsset RPC.
-	CompassServiceUpdateTagAssetProcedure = "/raystack.compass.v1beta1.CompassService/UpdateTagAsset"
-	// CompassServiceDeleteTagAssetProcedure is the fully-qualified name of the CompassService's
-	// DeleteTagAsset RPC.
-	CompassServiceDeleteTagAssetProcedure = "/raystack.compass.v1beta1.CompassService/DeleteTagAsset"
-	// CompassServiceGetAllTagsByAssetProcedure is the fully-qualified name of the CompassService's
-	// GetAllTagsByAsset RPC.
-	CompassServiceGetAllTagsByAssetProcedure = "/raystack.compass.v1beta1.CompassService/GetAllTagsByAsset"
-	// CompassServiceGetAllTagTemplatesProcedure is the fully-qualified name of the CompassService's
-	// GetAllTagTemplates RPC.
-	CompassServiceGetAllTagTemplatesProcedure = "/raystack.compass.v1beta1.CompassService/GetAllTagTemplates"
-	// CompassServiceCreateTagTemplateProcedure is the fully-qualified name of the CompassService's
-	// CreateTagTemplate RPC.
-	CompassServiceCreateTagTemplateProcedure = "/raystack.compass.v1beta1.CompassService/CreateTagTemplate"
-	// CompassServiceGetTagTemplateProcedure is the fully-qualified name of the CompassService's
-	// GetTagTemplate RPC.
-	CompassServiceGetTagTemplateProcedure = "/raystack.compass.v1beta1.CompassService/GetTagTemplate"
-	// CompassServiceUpdateTagTemplateProcedure is the fully-qualified name of the CompassService's
-	// UpdateTagTemplate RPC.
-	CompassServiceUpdateTagTemplateProcedure = "/raystack.compass.v1beta1.CompassService/UpdateTagTemplate"
-	// CompassServiceDeleteTagTemplateProcedure is the fully-qualified name of the CompassService's
-	// DeleteTagTemplate RPC.
-	CompassServiceDeleteTagTemplateProcedure = "/raystack.compass.v1beta1.CompassService/DeleteTagTemplate"
+	CompassServiceDeleteEdgeProcedure = "/raystack.compass.v1beta1.CompassService/DeleteEdge"
+	// CompassServiceStarEntityProcedure is the fully-qualified name of the CompassService's StarEntity
+	// RPC.
+	CompassServiceStarEntityProcedure = "/raystack.compass.v1beta1.CompassService/StarEntity"
+	// CompassServiceUnstarEntityProcedure is the fully-qualified name of the CompassService's
+	// UnstarEntity RPC.
+	CompassServiceUnstarEntityProcedure = "/raystack.compass.v1beta1.CompassService/UnstarEntity"
+	// CompassServiceGetUserStarredEntitiesProcedure is the fully-qualified name of the CompassService's
+	// GetUserStarredEntities RPC.
+	CompassServiceGetUserStarredEntitiesProcedure = "/raystack.compass.v1beta1.CompassService/GetUserStarredEntities"
+	// CompassServiceGetMyStarredEntitiesProcedure is the fully-qualified name of the CompassService's
+	// GetMyStarredEntities RPC.
+	CompassServiceGetMyStarredEntitiesProcedure = "/raystack.compass.v1beta1.CompassService/GetMyStarredEntities"
+	// CompassServiceGetMyStarredEntityProcedure is the fully-qualified name of the CompassService's
+	// GetMyStarredEntity RPC.
+	CompassServiceGetMyStarredEntityProcedure = "/raystack.compass.v1beta1.CompassService/GetMyStarredEntity"
+	// CompassServiceGetEntityStargazersProcedure is the fully-qualified name of the CompassService's
+	// GetEntityStargazers RPC.
+	CompassServiceGetEntityStargazersProcedure = "/raystack.compass.v1beta1.CompassService/GetEntityStargazers"
 	// CompassServiceCreateNamespaceProcedure is the fully-qualified name of the CompassService's
 	// CreateNamespace RPC.
 	CompassServiceCreateNamespaceProcedure = "/raystack.compass.v1beta1.CompassService/CreateNamespace"
@@ -165,49 +102,28 @@ const (
 
 // CompassServiceClient is a client for the raystack.compass.v1beta1.CompassService service.
 type CompassServiceClient interface {
-	// Domain: Discussion
-	GetAllDiscussions(context.Context, *connect.Request[v1beta1.GetAllDiscussionsRequest]) (*connect.Response[v1beta1.GetAllDiscussionsResponse], error)
-	CreateDiscussion(context.Context, *connect.Request[v1beta1.CreateDiscussionRequest]) (*connect.Response[v1beta1.CreateDiscussionResponse], error)
-	GetDiscussion(context.Context, *connect.Request[v1beta1.GetDiscussionRequest]) (*connect.Response[v1beta1.GetDiscussionResponse], error)
-	PatchDiscussion(context.Context, *connect.Request[v1beta1.PatchDiscussionRequest]) (*connect.Response[v1beta1.PatchDiscussionResponse], error)
-	CreateComment(context.Context, *connect.Request[v1beta1.CreateCommentRequest]) (*connect.Response[v1beta1.CreateCommentResponse], error)
-	GetAllComments(context.Context, *connect.Request[v1beta1.GetAllCommentsRequest]) (*connect.Response[v1beta1.GetAllCommentsResponse], error)
-	GetComment(context.Context, *connect.Request[v1beta1.GetCommentRequest]) (*connect.Response[v1beta1.GetCommentResponse], error)
-	UpdateComment(context.Context, *connect.Request[v1beta1.UpdateCommentRequest]) (*connect.Response[v1beta1.UpdateCommentResponse], error)
-	DeleteComment(context.Context, *connect.Request[v1beta1.DeleteCommentRequest]) (*connect.Response[v1beta1.DeleteCommentResponse], error)
-	// Domain: Asset
-	SearchAssets(context.Context, *connect.Request[v1beta1.SearchAssetsRequest]) (*connect.Response[v1beta1.SearchAssetsResponse], error)
-	SuggestAssets(context.Context, *connect.Request[v1beta1.SuggestAssetsRequest]) (*connect.Response[v1beta1.SuggestAssetsResponse], error)
-	GroupAssets(context.Context, *connect.Request[v1beta1.GroupAssetsRequest]) (*connect.Response[v1beta1.GroupAssetsResponse], error)
-	GetGraph(context.Context, *connect.Request[v1beta1.GetGraphRequest]) (*connect.Response[v1beta1.GetGraphResponse], error)
-	GetAllTypes(context.Context, *connect.Request[v1beta1.GetAllTypesRequest]) (*connect.Response[v1beta1.GetAllTypesResponse], error)
-	GetAllAssets(context.Context, *connect.Request[v1beta1.GetAllAssetsRequest]) (*connect.Response[v1beta1.GetAllAssetsResponse], error)
-	GetAssetByID(context.Context, *connect.Request[v1beta1.GetAssetByIDRequest]) (*connect.Response[v1beta1.GetAssetByIDResponse], error)
-	UpsertAsset(context.Context, *connect.Request[v1beta1.UpsertAssetRequest]) (*connect.Response[v1beta1.UpsertAssetResponse], error)
-	UpsertPatchAsset(context.Context, *connect.Request[v1beta1.UpsertPatchAssetRequest]) (*connect.Response[v1beta1.UpsertPatchAssetResponse], error)
-	DeleteAsset(context.Context, *connect.Request[v1beta1.DeleteAssetRequest]) (*connect.Response[v1beta1.DeleteAssetResponse], error)
-	GetAssetStargazers(context.Context, *connect.Request[v1beta1.GetAssetStargazersRequest]) (*connect.Response[v1beta1.GetAssetStargazersResponse], error)
-	GetAssetVersionHistory(context.Context, *connect.Request[v1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[v1beta1.GetAssetVersionHistoryResponse], error)
-	GetAssetByVersion(context.Context, *connect.Request[v1beta1.GetAssetByVersionRequest]) (*connect.Response[v1beta1.GetAssetByVersionResponse], error)
-	CreateAssetProbe(context.Context, *connect.Request[v1beta1.CreateAssetProbeRequest]) (*connect.Response[v1beta1.CreateAssetProbeResponse], error)
-	// Domain: User * Star
-	GetUserStarredAssets(context.Context, *connect.Request[v1beta1.GetUserStarredAssetsRequest]) (*connect.Response[v1beta1.GetUserStarredAssetsResponse], error)
-	GetMyStarredAssets(context.Context, *connect.Request[v1beta1.GetMyStarredAssetsRequest]) (*connect.Response[v1beta1.GetMyStarredAssetsResponse], error)
-	GetMyStarredAsset(context.Context, *connect.Request[v1beta1.GetMyStarredAssetRequest]) (*connect.Response[v1beta1.GetMyStarredAssetResponse], error)
-	StarAsset(context.Context, *connect.Request[v1beta1.StarAssetRequest]) (*connect.Response[v1beta1.StarAssetResponse], error)
-	UnstarAsset(context.Context, *connect.Request[v1beta1.UnstarAssetRequest]) (*connect.Response[v1beta1.UnstarAssetResponse], error)
-	GetMyDiscussions(context.Context, *connect.Request[v1beta1.GetMyDiscussionsRequest]) (*connect.Response[v1beta1.GetMyDiscussionsResponse], error)
-	// Domain: Tag Templates
-	CreateTagAsset(context.Context, *connect.Request[v1beta1.CreateTagAssetRequest]) (*connect.Response[v1beta1.CreateTagAssetResponse], error)
-	GetTagByAssetAndTemplate(context.Context, *connect.Request[v1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[v1beta1.GetTagByAssetAndTemplateResponse], error)
-	UpdateTagAsset(context.Context, *connect.Request[v1beta1.UpdateTagAssetRequest]) (*connect.Response[v1beta1.UpdateTagAssetResponse], error)
-	DeleteTagAsset(context.Context, *connect.Request[v1beta1.DeleteTagAssetRequest]) (*connect.Response[v1beta1.DeleteTagAssetResponse], error)
-	GetAllTagsByAsset(context.Context, *connect.Request[v1beta1.GetAllTagsByAssetRequest]) (*connect.Response[v1beta1.GetAllTagsByAssetResponse], error)
-	GetAllTagTemplates(context.Context, *connect.Request[v1beta1.GetAllTagTemplatesRequest]) (*connect.Response[v1beta1.GetAllTagTemplatesResponse], error)
-	CreateTagTemplate(context.Context, *connect.Request[v1beta1.CreateTagTemplateRequest]) (*connect.Response[v1beta1.CreateTagTemplateResponse], error)
-	GetTagTemplate(context.Context, *connect.Request[v1beta1.GetTagTemplateRequest]) (*connect.Response[v1beta1.GetTagTemplateResponse], error)
-	UpdateTagTemplate(context.Context, *connect.Request[v1beta1.UpdateTagTemplateRequest]) (*connect.Response[v1beta1.UpdateTagTemplateResponse], error)
-	DeleteTagTemplate(context.Context, *connect.Request[v1beta1.DeleteTagTemplateRequest]) (*connect.Response[v1beta1.DeleteTagTemplateResponse], error)
+	// Domain: Entity
+	GetAllEntities(context.Context, *connect.Request[v1beta1.GetAllEntitiesRequest]) (*connect.Response[v1beta1.GetAllEntitiesResponse], error)
+	GetEntityByID(context.Context, *connect.Request[v1beta1.GetEntityByIDRequest]) (*connect.Response[v1beta1.GetEntityByIDResponse], error)
+	UpsertEntity(context.Context, *connect.Request[v1beta1.UpsertEntityRequest]) (*connect.Response[v1beta1.UpsertEntityResponse], error)
+	DeleteEntity(context.Context, *connect.Request[v1beta1.DeleteEntityRequest]) (*connect.Response[v1beta1.DeleteEntityResponse], error)
+	SearchEntities(context.Context, *connect.Request[v1beta1.SearchEntitiesRequest]) (*connect.Response[v1beta1.SearchEntitiesResponse], error)
+	SuggestEntities(context.Context, *connect.Request[v1beta1.SuggestEntitiesRequest]) (*connect.Response[v1beta1.SuggestEntitiesResponse], error)
+	GetEntityTypes(context.Context, *connect.Request[v1beta1.GetEntityTypesRequest]) (*connect.Response[v1beta1.GetEntityTypesResponse], error)
+	// Domain: Entity Context & Impact
+	GetEntityContext(context.Context, *connect.Request[v1beta1.GetEntityContextRequest]) (*connect.Response[v1beta1.GetEntityContextResponse], error)
+	GetEntityImpact(context.Context, *connect.Request[v1beta1.GetEntityImpactRequest]) (*connect.Response[v1beta1.GetEntityImpactResponse], error)
+	// Domain: Edge
+	UpsertEdge(context.Context, *connect.Request[v1beta1.UpsertEdgeRequest]) (*connect.Response[v1beta1.UpsertEdgeResponse], error)
+	GetEdges(context.Context, *connect.Request[v1beta1.GetEdgesRequest]) (*connect.Response[v1beta1.GetEdgesResponse], error)
+	DeleteEdge(context.Context, *connect.Request[v1beta1.DeleteEdgeRequest]) (*connect.Response[v1beta1.DeleteEdgeResponse], error)
+	// Domain: Star
+	StarEntity(context.Context, *connect.Request[v1beta1.StarEntityRequest]) (*connect.Response[v1beta1.StarEntityResponse], error)
+	UnstarEntity(context.Context, *connect.Request[v1beta1.UnstarEntityRequest]) (*connect.Response[v1beta1.UnstarEntityResponse], error)
+	GetUserStarredEntities(context.Context, *connect.Request[v1beta1.GetUserStarredEntitiesRequest]) (*connect.Response[v1beta1.GetUserStarredEntitiesResponse], error)
+	GetMyStarredEntities(context.Context, *connect.Request[v1beta1.GetMyStarredEntitiesRequest]) (*connect.Response[v1beta1.GetMyStarredEntitiesResponse], error)
+	GetMyStarredEntity(context.Context, *connect.Request[v1beta1.GetMyStarredEntityRequest]) (*connect.Response[v1beta1.GetMyStarredEntityResponse], error)
+	GetEntityStargazers(context.Context, *connect.Request[v1beta1.GetEntityStargazersRequest]) (*connect.Response[v1beta1.GetEntityStargazersResponse], error)
 	// Domain: Namespace
 	CreateNamespace(context.Context, *connect.Request[v1beta1.CreateNamespaceRequest]) (*connect.Response[v1beta1.CreateNamespaceResponse], error)
 	GetNamespace(context.Context, *connect.Request[v1beta1.GetNamespaceRequest]) (*connect.Response[v1beta1.GetNamespaceResponse], error)
@@ -226,238 +142,112 @@ func NewCompassServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 	baseURL = strings.TrimRight(baseURL, "/")
 	compassServiceMethods := v1beta1.File_raystack_compass_v1beta1_service_proto.Services().ByName("CompassService").Methods()
 	return &compassServiceClient{
-		getAllDiscussions: connect.NewClient[v1beta1.GetAllDiscussionsRequest, v1beta1.GetAllDiscussionsResponse](
+		getAllEntities: connect.NewClient[v1beta1.GetAllEntitiesRequest, v1beta1.GetAllEntitiesResponse](
 			httpClient,
-			baseURL+CompassServiceGetAllDiscussionsProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetAllDiscussions")),
+			baseURL+CompassServiceGetAllEntitiesProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetAllEntities")),
 			connect.WithClientOptions(opts...),
 		),
-		createDiscussion: connect.NewClient[v1beta1.CreateDiscussionRequest, v1beta1.CreateDiscussionResponse](
+		getEntityByID: connect.NewClient[v1beta1.GetEntityByIDRequest, v1beta1.GetEntityByIDResponse](
 			httpClient,
-			baseURL+CompassServiceCreateDiscussionProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("CreateDiscussion")),
+			baseURL+CompassServiceGetEntityByIDProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetEntityByID")),
 			connect.WithClientOptions(opts...),
 		),
-		getDiscussion: connect.NewClient[v1beta1.GetDiscussionRequest, v1beta1.GetDiscussionResponse](
+		upsertEntity: connect.NewClient[v1beta1.UpsertEntityRequest, v1beta1.UpsertEntityResponse](
 			httpClient,
-			baseURL+CompassServiceGetDiscussionProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetDiscussion")),
+			baseURL+CompassServiceUpsertEntityProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("UpsertEntity")),
 			connect.WithClientOptions(opts...),
 		),
-		patchDiscussion: connect.NewClient[v1beta1.PatchDiscussionRequest, v1beta1.PatchDiscussionResponse](
+		deleteEntity: connect.NewClient[v1beta1.DeleteEntityRequest, v1beta1.DeleteEntityResponse](
 			httpClient,
-			baseURL+CompassServicePatchDiscussionProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("PatchDiscussion")),
+			baseURL+CompassServiceDeleteEntityProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("DeleteEntity")),
 			connect.WithClientOptions(opts...),
 		),
-		createComment: connect.NewClient[v1beta1.CreateCommentRequest, v1beta1.CreateCommentResponse](
+		searchEntities: connect.NewClient[v1beta1.SearchEntitiesRequest, v1beta1.SearchEntitiesResponse](
 			httpClient,
-			baseURL+CompassServiceCreateCommentProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("CreateComment")),
+			baseURL+CompassServiceSearchEntitiesProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("SearchEntities")),
 			connect.WithClientOptions(opts...),
 		),
-		getAllComments: connect.NewClient[v1beta1.GetAllCommentsRequest, v1beta1.GetAllCommentsResponse](
+		suggestEntities: connect.NewClient[v1beta1.SuggestEntitiesRequest, v1beta1.SuggestEntitiesResponse](
 			httpClient,
-			baseURL+CompassServiceGetAllCommentsProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetAllComments")),
+			baseURL+CompassServiceSuggestEntitiesProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("SuggestEntities")),
 			connect.WithClientOptions(opts...),
 		),
-		getComment: connect.NewClient[v1beta1.GetCommentRequest, v1beta1.GetCommentResponse](
+		getEntityTypes: connect.NewClient[v1beta1.GetEntityTypesRequest, v1beta1.GetEntityTypesResponse](
 			httpClient,
-			baseURL+CompassServiceGetCommentProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetComment")),
+			baseURL+CompassServiceGetEntityTypesProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetEntityTypes")),
 			connect.WithClientOptions(opts...),
 		),
-		updateComment: connect.NewClient[v1beta1.UpdateCommentRequest, v1beta1.UpdateCommentResponse](
+		getEntityContext: connect.NewClient[v1beta1.GetEntityContextRequest, v1beta1.GetEntityContextResponse](
 			httpClient,
-			baseURL+CompassServiceUpdateCommentProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("UpdateComment")),
+			baseURL+CompassServiceGetEntityContextProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetEntityContext")),
 			connect.WithClientOptions(opts...),
 		),
-		deleteComment: connect.NewClient[v1beta1.DeleteCommentRequest, v1beta1.DeleteCommentResponse](
+		getEntityImpact: connect.NewClient[v1beta1.GetEntityImpactRequest, v1beta1.GetEntityImpactResponse](
 			httpClient,
-			baseURL+CompassServiceDeleteCommentProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("DeleteComment")),
+			baseURL+CompassServiceGetEntityImpactProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetEntityImpact")),
 			connect.WithClientOptions(opts...),
 		),
-		searchAssets: connect.NewClient[v1beta1.SearchAssetsRequest, v1beta1.SearchAssetsResponse](
+		upsertEdge: connect.NewClient[v1beta1.UpsertEdgeRequest, v1beta1.UpsertEdgeResponse](
 			httpClient,
-			baseURL+CompassServiceSearchAssetsProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("SearchAssets")),
+			baseURL+CompassServiceUpsertEdgeProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("UpsertEdge")),
 			connect.WithClientOptions(opts...),
 		),
-		suggestAssets: connect.NewClient[v1beta1.SuggestAssetsRequest, v1beta1.SuggestAssetsResponse](
+		getEdges: connect.NewClient[v1beta1.GetEdgesRequest, v1beta1.GetEdgesResponse](
 			httpClient,
-			baseURL+CompassServiceSuggestAssetsProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("SuggestAssets")),
+			baseURL+CompassServiceGetEdgesProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetEdges")),
 			connect.WithClientOptions(opts...),
 		),
-		groupAssets: connect.NewClient[v1beta1.GroupAssetsRequest, v1beta1.GroupAssetsResponse](
+		deleteEdge: connect.NewClient[v1beta1.DeleteEdgeRequest, v1beta1.DeleteEdgeResponse](
 			httpClient,
-			baseURL+CompassServiceGroupAssetsProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GroupAssets")),
+			baseURL+CompassServiceDeleteEdgeProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("DeleteEdge")),
 			connect.WithClientOptions(opts...),
 		),
-		getGraph: connect.NewClient[v1beta1.GetGraphRequest, v1beta1.GetGraphResponse](
+		starEntity: connect.NewClient[v1beta1.StarEntityRequest, v1beta1.StarEntityResponse](
 			httpClient,
-			baseURL+CompassServiceGetGraphProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetGraph")),
+			baseURL+CompassServiceStarEntityProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("StarEntity")),
 			connect.WithClientOptions(opts...),
 		),
-		getAllTypes: connect.NewClient[v1beta1.GetAllTypesRequest, v1beta1.GetAllTypesResponse](
+		unstarEntity: connect.NewClient[v1beta1.UnstarEntityRequest, v1beta1.UnstarEntityResponse](
 			httpClient,
-			baseURL+CompassServiceGetAllTypesProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetAllTypes")),
+			baseURL+CompassServiceUnstarEntityProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("UnstarEntity")),
 			connect.WithClientOptions(opts...),
 		),
-		getAllAssets: connect.NewClient[v1beta1.GetAllAssetsRequest, v1beta1.GetAllAssetsResponse](
+		getUserStarredEntities: connect.NewClient[v1beta1.GetUserStarredEntitiesRequest, v1beta1.GetUserStarredEntitiesResponse](
 			httpClient,
-			baseURL+CompassServiceGetAllAssetsProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetAllAssets")),
+			baseURL+CompassServiceGetUserStarredEntitiesProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetUserStarredEntities")),
 			connect.WithClientOptions(opts...),
 		),
-		getAssetByID: connect.NewClient[v1beta1.GetAssetByIDRequest, v1beta1.GetAssetByIDResponse](
+		getMyStarredEntities: connect.NewClient[v1beta1.GetMyStarredEntitiesRequest, v1beta1.GetMyStarredEntitiesResponse](
 			httpClient,
-			baseURL+CompassServiceGetAssetByIDProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetAssetByID")),
+			baseURL+CompassServiceGetMyStarredEntitiesProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetMyStarredEntities")),
 			connect.WithClientOptions(opts...),
 		),
-		upsertAsset: connect.NewClient[v1beta1.UpsertAssetRequest, v1beta1.UpsertAssetResponse](
+		getMyStarredEntity: connect.NewClient[v1beta1.GetMyStarredEntityRequest, v1beta1.GetMyStarredEntityResponse](
 			httpClient,
-			baseURL+CompassServiceUpsertAssetProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("UpsertAsset")),
+			baseURL+CompassServiceGetMyStarredEntityProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetMyStarredEntity")),
 			connect.WithClientOptions(opts...),
 		),
-		upsertPatchAsset: connect.NewClient[v1beta1.UpsertPatchAssetRequest, v1beta1.UpsertPatchAssetResponse](
+		getEntityStargazers: connect.NewClient[v1beta1.GetEntityStargazersRequest, v1beta1.GetEntityStargazersResponse](
 			httpClient,
-			baseURL+CompassServiceUpsertPatchAssetProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("UpsertPatchAsset")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteAsset: connect.NewClient[v1beta1.DeleteAssetRequest, v1beta1.DeleteAssetResponse](
-			httpClient,
-			baseURL+CompassServiceDeleteAssetProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("DeleteAsset")),
-			connect.WithClientOptions(opts...),
-		),
-		getAssetStargazers: connect.NewClient[v1beta1.GetAssetStargazersRequest, v1beta1.GetAssetStargazersResponse](
-			httpClient,
-			baseURL+CompassServiceGetAssetStargazersProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetAssetStargazers")),
-			connect.WithClientOptions(opts...),
-		),
-		getAssetVersionHistory: connect.NewClient[v1beta1.GetAssetVersionHistoryRequest, v1beta1.GetAssetVersionHistoryResponse](
-			httpClient,
-			baseURL+CompassServiceGetAssetVersionHistoryProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetAssetVersionHistory")),
-			connect.WithClientOptions(opts...),
-		),
-		getAssetByVersion: connect.NewClient[v1beta1.GetAssetByVersionRequest, v1beta1.GetAssetByVersionResponse](
-			httpClient,
-			baseURL+CompassServiceGetAssetByVersionProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetAssetByVersion")),
-			connect.WithClientOptions(opts...),
-		),
-		createAssetProbe: connect.NewClient[v1beta1.CreateAssetProbeRequest, v1beta1.CreateAssetProbeResponse](
-			httpClient,
-			baseURL+CompassServiceCreateAssetProbeProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("CreateAssetProbe")),
-			connect.WithClientOptions(opts...),
-		),
-		getUserStarredAssets: connect.NewClient[v1beta1.GetUserStarredAssetsRequest, v1beta1.GetUserStarredAssetsResponse](
-			httpClient,
-			baseURL+CompassServiceGetUserStarredAssetsProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetUserStarredAssets")),
-			connect.WithClientOptions(opts...),
-		),
-		getMyStarredAssets: connect.NewClient[v1beta1.GetMyStarredAssetsRequest, v1beta1.GetMyStarredAssetsResponse](
-			httpClient,
-			baseURL+CompassServiceGetMyStarredAssetsProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetMyStarredAssets")),
-			connect.WithClientOptions(opts...),
-		),
-		getMyStarredAsset: connect.NewClient[v1beta1.GetMyStarredAssetRequest, v1beta1.GetMyStarredAssetResponse](
-			httpClient,
-			baseURL+CompassServiceGetMyStarredAssetProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetMyStarredAsset")),
-			connect.WithClientOptions(opts...),
-		),
-		starAsset: connect.NewClient[v1beta1.StarAssetRequest, v1beta1.StarAssetResponse](
-			httpClient,
-			baseURL+CompassServiceStarAssetProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("StarAsset")),
-			connect.WithClientOptions(opts...),
-		),
-		unstarAsset: connect.NewClient[v1beta1.UnstarAssetRequest, v1beta1.UnstarAssetResponse](
-			httpClient,
-			baseURL+CompassServiceUnstarAssetProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("UnstarAsset")),
-			connect.WithClientOptions(opts...),
-		),
-		getMyDiscussions: connect.NewClient[v1beta1.GetMyDiscussionsRequest, v1beta1.GetMyDiscussionsResponse](
-			httpClient,
-			baseURL+CompassServiceGetMyDiscussionsProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetMyDiscussions")),
-			connect.WithClientOptions(opts...),
-		),
-		createTagAsset: connect.NewClient[v1beta1.CreateTagAssetRequest, v1beta1.CreateTagAssetResponse](
-			httpClient,
-			baseURL+CompassServiceCreateTagAssetProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("CreateTagAsset")),
-			connect.WithClientOptions(opts...),
-		),
-		getTagByAssetAndTemplate: connect.NewClient[v1beta1.GetTagByAssetAndTemplateRequest, v1beta1.GetTagByAssetAndTemplateResponse](
-			httpClient,
-			baseURL+CompassServiceGetTagByAssetAndTemplateProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetTagByAssetAndTemplate")),
-			connect.WithClientOptions(opts...),
-		),
-		updateTagAsset: connect.NewClient[v1beta1.UpdateTagAssetRequest, v1beta1.UpdateTagAssetResponse](
-			httpClient,
-			baseURL+CompassServiceUpdateTagAssetProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("UpdateTagAsset")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteTagAsset: connect.NewClient[v1beta1.DeleteTagAssetRequest, v1beta1.DeleteTagAssetResponse](
-			httpClient,
-			baseURL+CompassServiceDeleteTagAssetProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("DeleteTagAsset")),
-			connect.WithClientOptions(opts...),
-		),
-		getAllTagsByAsset: connect.NewClient[v1beta1.GetAllTagsByAssetRequest, v1beta1.GetAllTagsByAssetResponse](
-			httpClient,
-			baseURL+CompassServiceGetAllTagsByAssetProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetAllTagsByAsset")),
-			connect.WithClientOptions(opts...),
-		),
-		getAllTagTemplates: connect.NewClient[v1beta1.GetAllTagTemplatesRequest, v1beta1.GetAllTagTemplatesResponse](
-			httpClient,
-			baseURL+CompassServiceGetAllTagTemplatesProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetAllTagTemplates")),
-			connect.WithClientOptions(opts...),
-		),
-		createTagTemplate: connect.NewClient[v1beta1.CreateTagTemplateRequest, v1beta1.CreateTagTemplateResponse](
-			httpClient,
-			baseURL+CompassServiceCreateTagTemplateProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("CreateTagTemplate")),
-			connect.WithClientOptions(opts...),
-		),
-		getTagTemplate: connect.NewClient[v1beta1.GetTagTemplateRequest, v1beta1.GetTagTemplateResponse](
-			httpClient,
-			baseURL+CompassServiceGetTagTemplateProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetTagTemplate")),
-			connect.WithClientOptions(opts...),
-		),
-		updateTagTemplate: connect.NewClient[v1beta1.UpdateTagTemplateRequest, v1beta1.UpdateTagTemplateResponse](
-			httpClient,
-			baseURL+CompassServiceUpdateTagTemplateProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("UpdateTagTemplate")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteTagTemplate: connect.NewClient[v1beta1.DeleteTagTemplateRequest, v1beta1.DeleteTagTemplateResponse](
-			httpClient,
-			baseURL+CompassServiceDeleteTagTemplateProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("DeleteTagTemplate")),
+			baseURL+CompassServiceGetEntityStargazersProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetEntityStargazers")),
 			connect.WithClientOptions(opts...),
 		),
 		createNamespace: connect.NewClient[v1beta1.CreateNamespaceRequest, v1beta1.CreateNamespaceResponse](
@@ -489,244 +279,118 @@ func NewCompassServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 
 // compassServiceClient implements CompassServiceClient.
 type compassServiceClient struct {
-	getAllDiscussions        *connect.Client[v1beta1.GetAllDiscussionsRequest, v1beta1.GetAllDiscussionsResponse]
-	createDiscussion         *connect.Client[v1beta1.CreateDiscussionRequest, v1beta1.CreateDiscussionResponse]
-	getDiscussion            *connect.Client[v1beta1.GetDiscussionRequest, v1beta1.GetDiscussionResponse]
-	patchDiscussion          *connect.Client[v1beta1.PatchDiscussionRequest, v1beta1.PatchDiscussionResponse]
-	createComment            *connect.Client[v1beta1.CreateCommentRequest, v1beta1.CreateCommentResponse]
-	getAllComments           *connect.Client[v1beta1.GetAllCommentsRequest, v1beta1.GetAllCommentsResponse]
-	getComment               *connect.Client[v1beta1.GetCommentRequest, v1beta1.GetCommentResponse]
-	updateComment            *connect.Client[v1beta1.UpdateCommentRequest, v1beta1.UpdateCommentResponse]
-	deleteComment            *connect.Client[v1beta1.DeleteCommentRequest, v1beta1.DeleteCommentResponse]
-	searchAssets             *connect.Client[v1beta1.SearchAssetsRequest, v1beta1.SearchAssetsResponse]
-	suggestAssets            *connect.Client[v1beta1.SuggestAssetsRequest, v1beta1.SuggestAssetsResponse]
-	groupAssets              *connect.Client[v1beta1.GroupAssetsRequest, v1beta1.GroupAssetsResponse]
-	getGraph                 *connect.Client[v1beta1.GetGraphRequest, v1beta1.GetGraphResponse]
-	getAllTypes              *connect.Client[v1beta1.GetAllTypesRequest, v1beta1.GetAllTypesResponse]
-	getAllAssets             *connect.Client[v1beta1.GetAllAssetsRequest, v1beta1.GetAllAssetsResponse]
-	getAssetByID             *connect.Client[v1beta1.GetAssetByIDRequest, v1beta1.GetAssetByIDResponse]
-	upsertAsset              *connect.Client[v1beta1.UpsertAssetRequest, v1beta1.UpsertAssetResponse]
-	upsertPatchAsset         *connect.Client[v1beta1.UpsertPatchAssetRequest, v1beta1.UpsertPatchAssetResponse]
-	deleteAsset              *connect.Client[v1beta1.DeleteAssetRequest, v1beta1.DeleteAssetResponse]
-	getAssetStargazers       *connect.Client[v1beta1.GetAssetStargazersRequest, v1beta1.GetAssetStargazersResponse]
-	getAssetVersionHistory   *connect.Client[v1beta1.GetAssetVersionHistoryRequest, v1beta1.GetAssetVersionHistoryResponse]
-	getAssetByVersion        *connect.Client[v1beta1.GetAssetByVersionRequest, v1beta1.GetAssetByVersionResponse]
-	createAssetProbe         *connect.Client[v1beta1.CreateAssetProbeRequest, v1beta1.CreateAssetProbeResponse]
-	getUserStarredAssets     *connect.Client[v1beta1.GetUserStarredAssetsRequest, v1beta1.GetUserStarredAssetsResponse]
-	getMyStarredAssets       *connect.Client[v1beta1.GetMyStarredAssetsRequest, v1beta1.GetMyStarredAssetsResponse]
-	getMyStarredAsset        *connect.Client[v1beta1.GetMyStarredAssetRequest, v1beta1.GetMyStarredAssetResponse]
-	starAsset                *connect.Client[v1beta1.StarAssetRequest, v1beta1.StarAssetResponse]
-	unstarAsset              *connect.Client[v1beta1.UnstarAssetRequest, v1beta1.UnstarAssetResponse]
-	getMyDiscussions         *connect.Client[v1beta1.GetMyDiscussionsRequest, v1beta1.GetMyDiscussionsResponse]
-	createTagAsset           *connect.Client[v1beta1.CreateTagAssetRequest, v1beta1.CreateTagAssetResponse]
-	getTagByAssetAndTemplate *connect.Client[v1beta1.GetTagByAssetAndTemplateRequest, v1beta1.GetTagByAssetAndTemplateResponse]
-	updateTagAsset           *connect.Client[v1beta1.UpdateTagAssetRequest, v1beta1.UpdateTagAssetResponse]
-	deleteTagAsset           *connect.Client[v1beta1.DeleteTagAssetRequest, v1beta1.DeleteTagAssetResponse]
-	getAllTagsByAsset        *connect.Client[v1beta1.GetAllTagsByAssetRequest, v1beta1.GetAllTagsByAssetResponse]
-	getAllTagTemplates       *connect.Client[v1beta1.GetAllTagTemplatesRequest, v1beta1.GetAllTagTemplatesResponse]
-	createTagTemplate        *connect.Client[v1beta1.CreateTagTemplateRequest, v1beta1.CreateTagTemplateResponse]
-	getTagTemplate           *connect.Client[v1beta1.GetTagTemplateRequest, v1beta1.GetTagTemplateResponse]
-	updateTagTemplate        *connect.Client[v1beta1.UpdateTagTemplateRequest, v1beta1.UpdateTagTemplateResponse]
-	deleteTagTemplate        *connect.Client[v1beta1.DeleteTagTemplateRequest, v1beta1.DeleteTagTemplateResponse]
-	createNamespace          *connect.Client[v1beta1.CreateNamespaceRequest, v1beta1.CreateNamespaceResponse]
-	getNamespace             *connect.Client[v1beta1.GetNamespaceRequest, v1beta1.GetNamespaceResponse]
-	updateNamespace          *connect.Client[v1beta1.UpdateNamespaceRequest, v1beta1.UpdateNamespaceResponse]
-	listNamespaces           *connect.Client[v1beta1.ListNamespacesRequest, v1beta1.ListNamespacesResponse]
+	getAllEntities         *connect.Client[v1beta1.GetAllEntitiesRequest, v1beta1.GetAllEntitiesResponse]
+	getEntityByID          *connect.Client[v1beta1.GetEntityByIDRequest, v1beta1.GetEntityByIDResponse]
+	upsertEntity           *connect.Client[v1beta1.UpsertEntityRequest, v1beta1.UpsertEntityResponse]
+	deleteEntity           *connect.Client[v1beta1.DeleteEntityRequest, v1beta1.DeleteEntityResponse]
+	searchEntities         *connect.Client[v1beta1.SearchEntitiesRequest, v1beta1.SearchEntitiesResponse]
+	suggestEntities        *connect.Client[v1beta1.SuggestEntitiesRequest, v1beta1.SuggestEntitiesResponse]
+	getEntityTypes         *connect.Client[v1beta1.GetEntityTypesRequest, v1beta1.GetEntityTypesResponse]
+	getEntityContext       *connect.Client[v1beta1.GetEntityContextRequest, v1beta1.GetEntityContextResponse]
+	getEntityImpact        *connect.Client[v1beta1.GetEntityImpactRequest, v1beta1.GetEntityImpactResponse]
+	upsertEdge             *connect.Client[v1beta1.UpsertEdgeRequest, v1beta1.UpsertEdgeResponse]
+	getEdges               *connect.Client[v1beta1.GetEdgesRequest, v1beta1.GetEdgesResponse]
+	deleteEdge             *connect.Client[v1beta1.DeleteEdgeRequest, v1beta1.DeleteEdgeResponse]
+	starEntity             *connect.Client[v1beta1.StarEntityRequest, v1beta1.StarEntityResponse]
+	unstarEntity           *connect.Client[v1beta1.UnstarEntityRequest, v1beta1.UnstarEntityResponse]
+	getUserStarredEntities *connect.Client[v1beta1.GetUserStarredEntitiesRequest, v1beta1.GetUserStarredEntitiesResponse]
+	getMyStarredEntities   *connect.Client[v1beta1.GetMyStarredEntitiesRequest, v1beta1.GetMyStarredEntitiesResponse]
+	getMyStarredEntity     *connect.Client[v1beta1.GetMyStarredEntityRequest, v1beta1.GetMyStarredEntityResponse]
+	getEntityStargazers    *connect.Client[v1beta1.GetEntityStargazersRequest, v1beta1.GetEntityStargazersResponse]
+	createNamespace        *connect.Client[v1beta1.CreateNamespaceRequest, v1beta1.CreateNamespaceResponse]
+	getNamespace           *connect.Client[v1beta1.GetNamespaceRequest, v1beta1.GetNamespaceResponse]
+	updateNamespace        *connect.Client[v1beta1.UpdateNamespaceRequest, v1beta1.UpdateNamespaceResponse]
+	listNamespaces         *connect.Client[v1beta1.ListNamespacesRequest, v1beta1.ListNamespacesResponse]
 }
 
-// GetAllDiscussions calls raystack.compass.v1beta1.CompassService.GetAllDiscussions.
-func (c *compassServiceClient) GetAllDiscussions(ctx context.Context, req *connect.Request[v1beta1.GetAllDiscussionsRequest]) (*connect.Response[v1beta1.GetAllDiscussionsResponse], error) {
-	return c.getAllDiscussions.CallUnary(ctx, req)
+// GetAllEntities calls raystack.compass.v1beta1.CompassService.GetAllEntities.
+func (c *compassServiceClient) GetAllEntities(ctx context.Context, req *connect.Request[v1beta1.GetAllEntitiesRequest]) (*connect.Response[v1beta1.GetAllEntitiesResponse], error) {
+	return c.getAllEntities.CallUnary(ctx, req)
 }
 
-// CreateDiscussion calls raystack.compass.v1beta1.CompassService.CreateDiscussion.
-func (c *compassServiceClient) CreateDiscussion(ctx context.Context, req *connect.Request[v1beta1.CreateDiscussionRequest]) (*connect.Response[v1beta1.CreateDiscussionResponse], error) {
-	return c.createDiscussion.CallUnary(ctx, req)
+// GetEntityByID calls raystack.compass.v1beta1.CompassService.GetEntityByID.
+func (c *compassServiceClient) GetEntityByID(ctx context.Context, req *connect.Request[v1beta1.GetEntityByIDRequest]) (*connect.Response[v1beta1.GetEntityByIDResponse], error) {
+	return c.getEntityByID.CallUnary(ctx, req)
 }
 
-// GetDiscussion calls raystack.compass.v1beta1.CompassService.GetDiscussion.
-func (c *compassServiceClient) GetDiscussion(ctx context.Context, req *connect.Request[v1beta1.GetDiscussionRequest]) (*connect.Response[v1beta1.GetDiscussionResponse], error) {
-	return c.getDiscussion.CallUnary(ctx, req)
+// UpsertEntity calls raystack.compass.v1beta1.CompassService.UpsertEntity.
+func (c *compassServiceClient) UpsertEntity(ctx context.Context, req *connect.Request[v1beta1.UpsertEntityRequest]) (*connect.Response[v1beta1.UpsertEntityResponse], error) {
+	return c.upsertEntity.CallUnary(ctx, req)
 }
 
-// PatchDiscussion calls raystack.compass.v1beta1.CompassService.PatchDiscussion.
-func (c *compassServiceClient) PatchDiscussion(ctx context.Context, req *connect.Request[v1beta1.PatchDiscussionRequest]) (*connect.Response[v1beta1.PatchDiscussionResponse], error) {
-	return c.patchDiscussion.CallUnary(ctx, req)
+// DeleteEntity calls raystack.compass.v1beta1.CompassService.DeleteEntity.
+func (c *compassServiceClient) DeleteEntity(ctx context.Context, req *connect.Request[v1beta1.DeleteEntityRequest]) (*connect.Response[v1beta1.DeleteEntityResponse], error) {
+	return c.deleteEntity.CallUnary(ctx, req)
 }
 
-// CreateComment calls raystack.compass.v1beta1.CompassService.CreateComment.
-func (c *compassServiceClient) CreateComment(ctx context.Context, req *connect.Request[v1beta1.CreateCommentRequest]) (*connect.Response[v1beta1.CreateCommentResponse], error) {
-	return c.createComment.CallUnary(ctx, req)
+// SearchEntities calls raystack.compass.v1beta1.CompassService.SearchEntities.
+func (c *compassServiceClient) SearchEntities(ctx context.Context, req *connect.Request[v1beta1.SearchEntitiesRequest]) (*connect.Response[v1beta1.SearchEntitiesResponse], error) {
+	return c.searchEntities.CallUnary(ctx, req)
 }
 
-// GetAllComments calls raystack.compass.v1beta1.CompassService.GetAllComments.
-func (c *compassServiceClient) GetAllComments(ctx context.Context, req *connect.Request[v1beta1.GetAllCommentsRequest]) (*connect.Response[v1beta1.GetAllCommentsResponse], error) {
-	return c.getAllComments.CallUnary(ctx, req)
+// SuggestEntities calls raystack.compass.v1beta1.CompassService.SuggestEntities.
+func (c *compassServiceClient) SuggestEntities(ctx context.Context, req *connect.Request[v1beta1.SuggestEntitiesRequest]) (*connect.Response[v1beta1.SuggestEntitiesResponse], error) {
+	return c.suggestEntities.CallUnary(ctx, req)
 }
 
-// GetComment calls raystack.compass.v1beta1.CompassService.GetComment.
-func (c *compassServiceClient) GetComment(ctx context.Context, req *connect.Request[v1beta1.GetCommentRequest]) (*connect.Response[v1beta1.GetCommentResponse], error) {
-	return c.getComment.CallUnary(ctx, req)
+// GetEntityTypes calls raystack.compass.v1beta1.CompassService.GetEntityTypes.
+func (c *compassServiceClient) GetEntityTypes(ctx context.Context, req *connect.Request[v1beta1.GetEntityTypesRequest]) (*connect.Response[v1beta1.GetEntityTypesResponse], error) {
+	return c.getEntityTypes.CallUnary(ctx, req)
 }
 
-// UpdateComment calls raystack.compass.v1beta1.CompassService.UpdateComment.
-func (c *compassServiceClient) UpdateComment(ctx context.Context, req *connect.Request[v1beta1.UpdateCommentRequest]) (*connect.Response[v1beta1.UpdateCommentResponse], error) {
-	return c.updateComment.CallUnary(ctx, req)
+// GetEntityContext calls raystack.compass.v1beta1.CompassService.GetEntityContext.
+func (c *compassServiceClient) GetEntityContext(ctx context.Context, req *connect.Request[v1beta1.GetEntityContextRequest]) (*connect.Response[v1beta1.GetEntityContextResponse], error) {
+	return c.getEntityContext.CallUnary(ctx, req)
 }
 
-// DeleteComment calls raystack.compass.v1beta1.CompassService.DeleteComment.
-func (c *compassServiceClient) DeleteComment(ctx context.Context, req *connect.Request[v1beta1.DeleteCommentRequest]) (*connect.Response[v1beta1.DeleteCommentResponse], error) {
-	return c.deleteComment.CallUnary(ctx, req)
+// GetEntityImpact calls raystack.compass.v1beta1.CompassService.GetEntityImpact.
+func (c *compassServiceClient) GetEntityImpact(ctx context.Context, req *connect.Request[v1beta1.GetEntityImpactRequest]) (*connect.Response[v1beta1.GetEntityImpactResponse], error) {
+	return c.getEntityImpact.CallUnary(ctx, req)
 }
 
-// SearchAssets calls raystack.compass.v1beta1.CompassService.SearchAssets.
-func (c *compassServiceClient) SearchAssets(ctx context.Context, req *connect.Request[v1beta1.SearchAssetsRequest]) (*connect.Response[v1beta1.SearchAssetsResponse], error) {
-	return c.searchAssets.CallUnary(ctx, req)
+// UpsertEdge calls raystack.compass.v1beta1.CompassService.UpsertEdge.
+func (c *compassServiceClient) UpsertEdge(ctx context.Context, req *connect.Request[v1beta1.UpsertEdgeRequest]) (*connect.Response[v1beta1.UpsertEdgeResponse], error) {
+	return c.upsertEdge.CallUnary(ctx, req)
 }
 
-// SuggestAssets calls raystack.compass.v1beta1.CompassService.SuggestAssets.
-func (c *compassServiceClient) SuggestAssets(ctx context.Context, req *connect.Request[v1beta1.SuggestAssetsRequest]) (*connect.Response[v1beta1.SuggestAssetsResponse], error) {
-	return c.suggestAssets.CallUnary(ctx, req)
+// GetEdges calls raystack.compass.v1beta1.CompassService.GetEdges.
+func (c *compassServiceClient) GetEdges(ctx context.Context, req *connect.Request[v1beta1.GetEdgesRequest]) (*connect.Response[v1beta1.GetEdgesResponse], error) {
+	return c.getEdges.CallUnary(ctx, req)
 }
 
-// GroupAssets calls raystack.compass.v1beta1.CompassService.GroupAssets.
-func (c *compassServiceClient) GroupAssets(ctx context.Context, req *connect.Request[v1beta1.GroupAssetsRequest]) (*connect.Response[v1beta1.GroupAssetsResponse], error) {
-	return c.groupAssets.CallUnary(ctx, req)
+// DeleteEdge calls raystack.compass.v1beta1.CompassService.DeleteEdge.
+func (c *compassServiceClient) DeleteEdge(ctx context.Context, req *connect.Request[v1beta1.DeleteEdgeRequest]) (*connect.Response[v1beta1.DeleteEdgeResponse], error) {
+	return c.deleteEdge.CallUnary(ctx, req)
 }
 
-// GetGraph calls raystack.compass.v1beta1.CompassService.GetGraph.
-func (c *compassServiceClient) GetGraph(ctx context.Context, req *connect.Request[v1beta1.GetGraphRequest]) (*connect.Response[v1beta1.GetGraphResponse], error) {
-	return c.getGraph.CallUnary(ctx, req)
+// StarEntity calls raystack.compass.v1beta1.CompassService.StarEntity.
+func (c *compassServiceClient) StarEntity(ctx context.Context, req *connect.Request[v1beta1.StarEntityRequest]) (*connect.Response[v1beta1.StarEntityResponse], error) {
+	return c.starEntity.CallUnary(ctx, req)
 }
 
-// GetAllTypes calls raystack.compass.v1beta1.CompassService.GetAllTypes.
-func (c *compassServiceClient) GetAllTypes(ctx context.Context, req *connect.Request[v1beta1.GetAllTypesRequest]) (*connect.Response[v1beta1.GetAllTypesResponse], error) {
-	return c.getAllTypes.CallUnary(ctx, req)
+// UnstarEntity calls raystack.compass.v1beta1.CompassService.UnstarEntity.
+func (c *compassServiceClient) UnstarEntity(ctx context.Context, req *connect.Request[v1beta1.UnstarEntityRequest]) (*connect.Response[v1beta1.UnstarEntityResponse], error) {
+	return c.unstarEntity.CallUnary(ctx, req)
 }
 
-// GetAllAssets calls raystack.compass.v1beta1.CompassService.GetAllAssets.
-func (c *compassServiceClient) GetAllAssets(ctx context.Context, req *connect.Request[v1beta1.GetAllAssetsRequest]) (*connect.Response[v1beta1.GetAllAssetsResponse], error) {
-	return c.getAllAssets.CallUnary(ctx, req)
+// GetUserStarredEntities calls raystack.compass.v1beta1.CompassService.GetUserStarredEntities.
+func (c *compassServiceClient) GetUserStarredEntities(ctx context.Context, req *connect.Request[v1beta1.GetUserStarredEntitiesRequest]) (*connect.Response[v1beta1.GetUserStarredEntitiesResponse], error) {
+	return c.getUserStarredEntities.CallUnary(ctx, req)
 }
 
-// GetAssetByID calls raystack.compass.v1beta1.CompassService.GetAssetByID.
-func (c *compassServiceClient) GetAssetByID(ctx context.Context, req *connect.Request[v1beta1.GetAssetByIDRequest]) (*connect.Response[v1beta1.GetAssetByIDResponse], error) {
-	return c.getAssetByID.CallUnary(ctx, req)
+// GetMyStarredEntities calls raystack.compass.v1beta1.CompassService.GetMyStarredEntities.
+func (c *compassServiceClient) GetMyStarredEntities(ctx context.Context, req *connect.Request[v1beta1.GetMyStarredEntitiesRequest]) (*connect.Response[v1beta1.GetMyStarredEntitiesResponse], error) {
+	return c.getMyStarredEntities.CallUnary(ctx, req)
 }
 
-// UpsertAsset calls raystack.compass.v1beta1.CompassService.UpsertAsset.
-func (c *compassServiceClient) UpsertAsset(ctx context.Context, req *connect.Request[v1beta1.UpsertAssetRequest]) (*connect.Response[v1beta1.UpsertAssetResponse], error) {
-	return c.upsertAsset.CallUnary(ctx, req)
+// GetMyStarredEntity calls raystack.compass.v1beta1.CompassService.GetMyStarredEntity.
+func (c *compassServiceClient) GetMyStarredEntity(ctx context.Context, req *connect.Request[v1beta1.GetMyStarredEntityRequest]) (*connect.Response[v1beta1.GetMyStarredEntityResponse], error) {
+	return c.getMyStarredEntity.CallUnary(ctx, req)
 }
 
-// UpsertPatchAsset calls raystack.compass.v1beta1.CompassService.UpsertPatchAsset.
-func (c *compassServiceClient) UpsertPatchAsset(ctx context.Context, req *connect.Request[v1beta1.UpsertPatchAssetRequest]) (*connect.Response[v1beta1.UpsertPatchAssetResponse], error) {
-	return c.upsertPatchAsset.CallUnary(ctx, req)
-}
-
-// DeleteAsset calls raystack.compass.v1beta1.CompassService.DeleteAsset.
-func (c *compassServiceClient) DeleteAsset(ctx context.Context, req *connect.Request[v1beta1.DeleteAssetRequest]) (*connect.Response[v1beta1.DeleteAssetResponse], error) {
-	return c.deleteAsset.CallUnary(ctx, req)
-}
-
-// GetAssetStargazers calls raystack.compass.v1beta1.CompassService.GetAssetStargazers.
-func (c *compassServiceClient) GetAssetStargazers(ctx context.Context, req *connect.Request[v1beta1.GetAssetStargazersRequest]) (*connect.Response[v1beta1.GetAssetStargazersResponse], error) {
-	return c.getAssetStargazers.CallUnary(ctx, req)
-}
-
-// GetAssetVersionHistory calls raystack.compass.v1beta1.CompassService.GetAssetVersionHistory.
-func (c *compassServiceClient) GetAssetVersionHistory(ctx context.Context, req *connect.Request[v1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[v1beta1.GetAssetVersionHistoryResponse], error) {
-	return c.getAssetVersionHistory.CallUnary(ctx, req)
-}
-
-// GetAssetByVersion calls raystack.compass.v1beta1.CompassService.GetAssetByVersion.
-func (c *compassServiceClient) GetAssetByVersion(ctx context.Context, req *connect.Request[v1beta1.GetAssetByVersionRequest]) (*connect.Response[v1beta1.GetAssetByVersionResponse], error) {
-	return c.getAssetByVersion.CallUnary(ctx, req)
-}
-
-// CreateAssetProbe calls raystack.compass.v1beta1.CompassService.CreateAssetProbe.
-func (c *compassServiceClient) CreateAssetProbe(ctx context.Context, req *connect.Request[v1beta1.CreateAssetProbeRequest]) (*connect.Response[v1beta1.CreateAssetProbeResponse], error) {
-	return c.createAssetProbe.CallUnary(ctx, req)
-}
-
-// GetUserStarredAssets calls raystack.compass.v1beta1.CompassService.GetUserStarredAssets.
-func (c *compassServiceClient) GetUserStarredAssets(ctx context.Context, req *connect.Request[v1beta1.GetUserStarredAssetsRequest]) (*connect.Response[v1beta1.GetUserStarredAssetsResponse], error) {
-	return c.getUserStarredAssets.CallUnary(ctx, req)
-}
-
-// GetMyStarredAssets calls raystack.compass.v1beta1.CompassService.GetMyStarredAssets.
-func (c *compassServiceClient) GetMyStarredAssets(ctx context.Context, req *connect.Request[v1beta1.GetMyStarredAssetsRequest]) (*connect.Response[v1beta1.GetMyStarredAssetsResponse], error) {
-	return c.getMyStarredAssets.CallUnary(ctx, req)
-}
-
-// GetMyStarredAsset calls raystack.compass.v1beta1.CompassService.GetMyStarredAsset.
-func (c *compassServiceClient) GetMyStarredAsset(ctx context.Context, req *connect.Request[v1beta1.GetMyStarredAssetRequest]) (*connect.Response[v1beta1.GetMyStarredAssetResponse], error) {
-	return c.getMyStarredAsset.CallUnary(ctx, req)
-}
-
-// StarAsset calls raystack.compass.v1beta1.CompassService.StarAsset.
-func (c *compassServiceClient) StarAsset(ctx context.Context, req *connect.Request[v1beta1.StarAssetRequest]) (*connect.Response[v1beta1.StarAssetResponse], error) {
-	return c.starAsset.CallUnary(ctx, req)
-}
-
-// UnstarAsset calls raystack.compass.v1beta1.CompassService.UnstarAsset.
-func (c *compassServiceClient) UnstarAsset(ctx context.Context, req *connect.Request[v1beta1.UnstarAssetRequest]) (*connect.Response[v1beta1.UnstarAssetResponse], error) {
-	return c.unstarAsset.CallUnary(ctx, req)
-}
-
-// GetMyDiscussions calls raystack.compass.v1beta1.CompassService.GetMyDiscussions.
-func (c *compassServiceClient) GetMyDiscussions(ctx context.Context, req *connect.Request[v1beta1.GetMyDiscussionsRequest]) (*connect.Response[v1beta1.GetMyDiscussionsResponse], error) {
-	return c.getMyDiscussions.CallUnary(ctx, req)
-}
-
-// CreateTagAsset calls raystack.compass.v1beta1.CompassService.CreateTagAsset.
-func (c *compassServiceClient) CreateTagAsset(ctx context.Context, req *connect.Request[v1beta1.CreateTagAssetRequest]) (*connect.Response[v1beta1.CreateTagAssetResponse], error) {
-	return c.createTagAsset.CallUnary(ctx, req)
-}
-
-// GetTagByAssetAndTemplate calls raystack.compass.v1beta1.CompassService.GetTagByAssetAndTemplate.
-func (c *compassServiceClient) GetTagByAssetAndTemplate(ctx context.Context, req *connect.Request[v1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[v1beta1.GetTagByAssetAndTemplateResponse], error) {
-	return c.getTagByAssetAndTemplate.CallUnary(ctx, req)
-}
-
-// UpdateTagAsset calls raystack.compass.v1beta1.CompassService.UpdateTagAsset.
-func (c *compassServiceClient) UpdateTagAsset(ctx context.Context, req *connect.Request[v1beta1.UpdateTagAssetRequest]) (*connect.Response[v1beta1.UpdateTagAssetResponse], error) {
-	return c.updateTagAsset.CallUnary(ctx, req)
-}
-
-// DeleteTagAsset calls raystack.compass.v1beta1.CompassService.DeleteTagAsset.
-func (c *compassServiceClient) DeleteTagAsset(ctx context.Context, req *connect.Request[v1beta1.DeleteTagAssetRequest]) (*connect.Response[v1beta1.DeleteTagAssetResponse], error) {
-	return c.deleteTagAsset.CallUnary(ctx, req)
-}
-
-// GetAllTagsByAsset calls raystack.compass.v1beta1.CompassService.GetAllTagsByAsset.
-func (c *compassServiceClient) GetAllTagsByAsset(ctx context.Context, req *connect.Request[v1beta1.GetAllTagsByAssetRequest]) (*connect.Response[v1beta1.GetAllTagsByAssetResponse], error) {
-	return c.getAllTagsByAsset.CallUnary(ctx, req)
-}
-
-// GetAllTagTemplates calls raystack.compass.v1beta1.CompassService.GetAllTagTemplates.
-func (c *compassServiceClient) GetAllTagTemplates(ctx context.Context, req *connect.Request[v1beta1.GetAllTagTemplatesRequest]) (*connect.Response[v1beta1.GetAllTagTemplatesResponse], error) {
-	return c.getAllTagTemplates.CallUnary(ctx, req)
-}
-
-// CreateTagTemplate calls raystack.compass.v1beta1.CompassService.CreateTagTemplate.
-func (c *compassServiceClient) CreateTagTemplate(ctx context.Context, req *connect.Request[v1beta1.CreateTagTemplateRequest]) (*connect.Response[v1beta1.CreateTagTemplateResponse], error) {
-	return c.createTagTemplate.CallUnary(ctx, req)
-}
-
-// GetTagTemplate calls raystack.compass.v1beta1.CompassService.GetTagTemplate.
-func (c *compassServiceClient) GetTagTemplate(ctx context.Context, req *connect.Request[v1beta1.GetTagTemplateRequest]) (*connect.Response[v1beta1.GetTagTemplateResponse], error) {
-	return c.getTagTemplate.CallUnary(ctx, req)
-}
-
-// UpdateTagTemplate calls raystack.compass.v1beta1.CompassService.UpdateTagTemplate.
-func (c *compassServiceClient) UpdateTagTemplate(ctx context.Context, req *connect.Request[v1beta1.UpdateTagTemplateRequest]) (*connect.Response[v1beta1.UpdateTagTemplateResponse], error) {
-	return c.updateTagTemplate.CallUnary(ctx, req)
-}
-
-// DeleteTagTemplate calls raystack.compass.v1beta1.CompassService.DeleteTagTemplate.
-func (c *compassServiceClient) DeleteTagTemplate(ctx context.Context, req *connect.Request[v1beta1.DeleteTagTemplateRequest]) (*connect.Response[v1beta1.DeleteTagTemplateResponse], error) {
-	return c.deleteTagTemplate.CallUnary(ctx, req)
+// GetEntityStargazers calls raystack.compass.v1beta1.CompassService.GetEntityStargazers.
+func (c *compassServiceClient) GetEntityStargazers(ctx context.Context, req *connect.Request[v1beta1.GetEntityStargazersRequest]) (*connect.Response[v1beta1.GetEntityStargazersResponse], error) {
+	return c.getEntityStargazers.CallUnary(ctx, req)
 }
 
 // CreateNamespace calls raystack.compass.v1beta1.CompassService.CreateNamespace.
@@ -752,49 +416,28 @@ func (c *compassServiceClient) ListNamespaces(ctx context.Context, req *connect.
 // CompassServiceHandler is an implementation of the raystack.compass.v1beta1.CompassService
 // service.
 type CompassServiceHandler interface {
-	// Domain: Discussion
-	GetAllDiscussions(context.Context, *connect.Request[v1beta1.GetAllDiscussionsRequest]) (*connect.Response[v1beta1.GetAllDiscussionsResponse], error)
-	CreateDiscussion(context.Context, *connect.Request[v1beta1.CreateDiscussionRequest]) (*connect.Response[v1beta1.CreateDiscussionResponse], error)
-	GetDiscussion(context.Context, *connect.Request[v1beta1.GetDiscussionRequest]) (*connect.Response[v1beta1.GetDiscussionResponse], error)
-	PatchDiscussion(context.Context, *connect.Request[v1beta1.PatchDiscussionRequest]) (*connect.Response[v1beta1.PatchDiscussionResponse], error)
-	CreateComment(context.Context, *connect.Request[v1beta1.CreateCommentRequest]) (*connect.Response[v1beta1.CreateCommentResponse], error)
-	GetAllComments(context.Context, *connect.Request[v1beta1.GetAllCommentsRequest]) (*connect.Response[v1beta1.GetAllCommentsResponse], error)
-	GetComment(context.Context, *connect.Request[v1beta1.GetCommentRequest]) (*connect.Response[v1beta1.GetCommentResponse], error)
-	UpdateComment(context.Context, *connect.Request[v1beta1.UpdateCommentRequest]) (*connect.Response[v1beta1.UpdateCommentResponse], error)
-	DeleteComment(context.Context, *connect.Request[v1beta1.DeleteCommentRequest]) (*connect.Response[v1beta1.DeleteCommentResponse], error)
-	// Domain: Asset
-	SearchAssets(context.Context, *connect.Request[v1beta1.SearchAssetsRequest]) (*connect.Response[v1beta1.SearchAssetsResponse], error)
-	SuggestAssets(context.Context, *connect.Request[v1beta1.SuggestAssetsRequest]) (*connect.Response[v1beta1.SuggestAssetsResponse], error)
-	GroupAssets(context.Context, *connect.Request[v1beta1.GroupAssetsRequest]) (*connect.Response[v1beta1.GroupAssetsResponse], error)
-	GetGraph(context.Context, *connect.Request[v1beta1.GetGraphRequest]) (*connect.Response[v1beta1.GetGraphResponse], error)
-	GetAllTypes(context.Context, *connect.Request[v1beta1.GetAllTypesRequest]) (*connect.Response[v1beta1.GetAllTypesResponse], error)
-	GetAllAssets(context.Context, *connect.Request[v1beta1.GetAllAssetsRequest]) (*connect.Response[v1beta1.GetAllAssetsResponse], error)
-	GetAssetByID(context.Context, *connect.Request[v1beta1.GetAssetByIDRequest]) (*connect.Response[v1beta1.GetAssetByIDResponse], error)
-	UpsertAsset(context.Context, *connect.Request[v1beta1.UpsertAssetRequest]) (*connect.Response[v1beta1.UpsertAssetResponse], error)
-	UpsertPatchAsset(context.Context, *connect.Request[v1beta1.UpsertPatchAssetRequest]) (*connect.Response[v1beta1.UpsertPatchAssetResponse], error)
-	DeleteAsset(context.Context, *connect.Request[v1beta1.DeleteAssetRequest]) (*connect.Response[v1beta1.DeleteAssetResponse], error)
-	GetAssetStargazers(context.Context, *connect.Request[v1beta1.GetAssetStargazersRequest]) (*connect.Response[v1beta1.GetAssetStargazersResponse], error)
-	GetAssetVersionHistory(context.Context, *connect.Request[v1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[v1beta1.GetAssetVersionHistoryResponse], error)
-	GetAssetByVersion(context.Context, *connect.Request[v1beta1.GetAssetByVersionRequest]) (*connect.Response[v1beta1.GetAssetByVersionResponse], error)
-	CreateAssetProbe(context.Context, *connect.Request[v1beta1.CreateAssetProbeRequest]) (*connect.Response[v1beta1.CreateAssetProbeResponse], error)
-	// Domain: User * Star
-	GetUserStarredAssets(context.Context, *connect.Request[v1beta1.GetUserStarredAssetsRequest]) (*connect.Response[v1beta1.GetUserStarredAssetsResponse], error)
-	GetMyStarredAssets(context.Context, *connect.Request[v1beta1.GetMyStarredAssetsRequest]) (*connect.Response[v1beta1.GetMyStarredAssetsResponse], error)
-	GetMyStarredAsset(context.Context, *connect.Request[v1beta1.GetMyStarredAssetRequest]) (*connect.Response[v1beta1.GetMyStarredAssetResponse], error)
-	StarAsset(context.Context, *connect.Request[v1beta1.StarAssetRequest]) (*connect.Response[v1beta1.StarAssetResponse], error)
-	UnstarAsset(context.Context, *connect.Request[v1beta1.UnstarAssetRequest]) (*connect.Response[v1beta1.UnstarAssetResponse], error)
-	GetMyDiscussions(context.Context, *connect.Request[v1beta1.GetMyDiscussionsRequest]) (*connect.Response[v1beta1.GetMyDiscussionsResponse], error)
-	// Domain: Tag Templates
-	CreateTagAsset(context.Context, *connect.Request[v1beta1.CreateTagAssetRequest]) (*connect.Response[v1beta1.CreateTagAssetResponse], error)
-	GetTagByAssetAndTemplate(context.Context, *connect.Request[v1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[v1beta1.GetTagByAssetAndTemplateResponse], error)
-	UpdateTagAsset(context.Context, *connect.Request[v1beta1.UpdateTagAssetRequest]) (*connect.Response[v1beta1.UpdateTagAssetResponse], error)
-	DeleteTagAsset(context.Context, *connect.Request[v1beta1.DeleteTagAssetRequest]) (*connect.Response[v1beta1.DeleteTagAssetResponse], error)
-	GetAllTagsByAsset(context.Context, *connect.Request[v1beta1.GetAllTagsByAssetRequest]) (*connect.Response[v1beta1.GetAllTagsByAssetResponse], error)
-	GetAllTagTemplates(context.Context, *connect.Request[v1beta1.GetAllTagTemplatesRequest]) (*connect.Response[v1beta1.GetAllTagTemplatesResponse], error)
-	CreateTagTemplate(context.Context, *connect.Request[v1beta1.CreateTagTemplateRequest]) (*connect.Response[v1beta1.CreateTagTemplateResponse], error)
-	GetTagTemplate(context.Context, *connect.Request[v1beta1.GetTagTemplateRequest]) (*connect.Response[v1beta1.GetTagTemplateResponse], error)
-	UpdateTagTemplate(context.Context, *connect.Request[v1beta1.UpdateTagTemplateRequest]) (*connect.Response[v1beta1.UpdateTagTemplateResponse], error)
-	DeleteTagTemplate(context.Context, *connect.Request[v1beta1.DeleteTagTemplateRequest]) (*connect.Response[v1beta1.DeleteTagTemplateResponse], error)
+	// Domain: Entity
+	GetAllEntities(context.Context, *connect.Request[v1beta1.GetAllEntitiesRequest]) (*connect.Response[v1beta1.GetAllEntitiesResponse], error)
+	GetEntityByID(context.Context, *connect.Request[v1beta1.GetEntityByIDRequest]) (*connect.Response[v1beta1.GetEntityByIDResponse], error)
+	UpsertEntity(context.Context, *connect.Request[v1beta1.UpsertEntityRequest]) (*connect.Response[v1beta1.UpsertEntityResponse], error)
+	DeleteEntity(context.Context, *connect.Request[v1beta1.DeleteEntityRequest]) (*connect.Response[v1beta1.DeleteEntityResponse], error)
+	SearchEntities(context.Context, *connect.Request[v1beta1.SearchEntitiesRequest]) (*connect.Response[v1beta1.SearchEntitiesResponse], error)
+	SuggestEntities(context.Context, *connect.Request[v1beta1.SuggestEntitiesRequest]) (*connect.Response[v1beta1.SuggestEntitiesResponse], error)
+	GetEntityTypes(context.Context, *connect.Request[v1beta1.GetEntityTypesRequest]) (*connect.Response[v1beta1.GetEntityTypesResponse], error)
+	// Domain: Entity Context & Impact
+	GetEntityContext(context.Context, *connect.Request[v1beta1.GetEntityContextRequest]) (*connect.Response[v1beta1.GetEntityContextResponse], error)
+	GetEntityImpact(context.Context, *connect.Request[v1beta1.GetEntityImpactRequest]) (*connect.Response[v1beta1.GetEntityImpactResponse], error)
+	// Domain: Edge
+	UpsertEdge(context.Context, *connect.Request[v1beta1.UpsertEdgeRequest]) (*connect.Response[v1beta1.UpsertEdgeResponse], error)
+	GetEdges(context.Context, *connect.Request[v1beta1.GetEdgesRequest]) (*connect.Response[v1beta1.GetEdgesResponse], error)
+	DeleteEdge(context.Context, *connect.Request[v1beta1.DeleteEdgeRequest]) (*connect.Response[v1beta1.DeleteEdgeResponse], error)
+	// Domain: Star
+	StarEntity(context.Context, *connect.Request[v1beta1.StarEntityRequest]) (*connect.Response[v1beta1.StarEntityResponse], error)
+	UnstarEntity(context.Context, *connect.Request[v1beta1.UnstarEntityRequest]) (*connect.Response[v1beta1.UnstarEntityResponse], error)
+	GetUserStarredEntities(context.Context, *connect.Request[v1beta1.GetUserStarredEntitiesRequest]) (*connect.Response[v1beta1.GetUserStarredEntitiesResponse], error)
+	GetMyStarredEntities(context.Context, *connect.Request[v1beta1.GetMyStarredEntitiesRequest]) (*connect.Response[v1beta1.GetMyStarredEntitiesResponse], error)
+	GetMyStarredEntity(context.Context, *connect.Request[v1beta1.GetMyStarredEntityRequest]) (*connect.Response[v1beta1.GetMyStarredEntityResponse], error)
+	GetEntityStargazers(context.Context, *connect.Request[v1beta1.GetEntityStargazersRequest]) (*connect.Response[v1beta1.GetEntityStargazersResponse], error)
 	// Domain: Namespace
 	CreateNamespace(context.Context, *connect.Request[v1beta1.CreateNamespaceRequest]) (*connect.Response[v1beta1.CreateNamespaceResponse], error)
 	GetNamespace(context.Context, *connect.Request[v1beta1.GetNamespaceRequest]) (*connect.Response[v1beta1.GetNamespaceResponse], error)
@@ -809,238 +452,112 @@ type CompassServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewCompassServiceHandler(svc CompassServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	compassServiceMethods := v1beta1.File_raystack_compass_v1beta1_service_proto.Services().ByName("CompassService").Methods()
-	compassServiceGetAllDiscussionsHandler := connect.NewUnaryHandler(
-		CompassServiceGetAllDiscussionsProcedure,
-		svc.GetAllDiscussions,
-		connect.WithSchema(compassServiceMethods.ByName("GetAllDiscussions")),
+	compassServiceGetAllEntitiesHandler := connect.NewUnaryHandler(
+		CompassServiceGetAllEntitiesProcedure,
+		svc.GetAllEntities,
+		connect.WithSchema(compassServiceMethods.ByName("GetAllEntities")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceCreateDiscussionHandler := connect.NewUnaryHandler(
-		CompassServiceCreateDiscussionProcedure,
-		svc.CreateDiscussion,
-		connect.WithSchema(compassServiceMethods.ByName("CreateDiscussion")),
+	compassServiceGetEntityByIDHandler := connect.NewUnaryHandler(
+		CompassServiceGetEntityByIDProcedure,
+		svc.GetEntityByID,
+		connect.WithSchema(compassServiceMethods.ByName("GetEntityByID")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceGetDiscussionHandler := connect.NewUnaryHandler(
-		CompassServiceGetDiscussionProcedure,
-		svc.GetDiscussion,
-		connect.WithSchema(compassServiceMethods.ByName("GetDiscussion")),
+	compassServiceUpsertEntityHandler := connect.NewUnaryHandler(
+		CompassServiceUpsertEntityProcedure,
+		svc.UpsertEntity,
+		connect.WithSchema(compassServiceMethods.ByName("UpsertEntity")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServicePatchDiscussionHandler := connect.NewUnaryHandler(
-		CompassServicePatchDiscussionProcedure,
-		svc.PatchDiscussion,
-		connect.WithSchema(compassServiceMethods.ByName("PatchDiscussion")),
+	compassServiceDeleteEntityHandler := connect.NewUnaryHandler(
+		CompassServiceDeleteEntityProcedure,
+		svc.DeleteEntity,
+		connect.WithSchema(compassServiceMethods.ByName("DeleteEntity")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceCreateCommentHandler := connect.NewUnaryHandler(
-		CompassServiceCreateCommentProcedure,
-		svc.CreateComment,
-		connect.WithSchema(compassServiceMethods.ByName("CreateComment")),
+	compassServiceSearchEntitiesHandler := connect.NewUnaryHandler(
+		CompassServiceSearchEntitiesProcedure,
+		svc.SearchEntities,
+		connect.WithSchema(compassServiceMethods.ByName("SearchEntities")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceGetAllCommentsHandler := connect.NewUnaryHandler(
-		CompassServiceGetAllCommentsProcedure,
-		svc.GetAllComments,
-		connect.WithSchema(compassServiceMethods.ByName("GetAllComments")),
+	compassServiceSuggestEntitiesHandler := connect.NewUnaryHandler(
+		CompassServiceSuggestEntitiesProcedure,
+		svc.SuggestEntities,
+		connect.WithSchema(compassServiceMethods.ByName("SuggestEntities")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceGetCommentHandler := connect.NewUnaryHandler(
-		CompassServiceGetCommentProcedure,
-		svc.GetComment,
-		connect.WithSchema(compassServiceMethods.ByName("GetComment")),
+	compassServiceGetEntityTypesHandler := connect.NewUnaryHandler(
+		CompassServiceGetEntityTypesProcedure,
+		svc.GetEntityTypes,
+		connect.WithSchema(compassServiceMethods.ByName("GetEntityTypes")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceUpdateCommentHandler := connect.NewUnaryHandler(
-		CompassServiceUpdateCommentProcedure,
-		svc.UpdateComment,
-		connect.WithSchema(compassServiceMethods.ByName("UpdateComment")),
+	compassServiceGetEntityContextHandler := connect.NewUnaryHandler(
+		CompassServiceGetEntityContextProcedure,
+		svc.GetEntityContext,
+		connect.WithSchema(compassServiceMethods.ByName("GetEntityContext")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceDeleteCommentHandler := connect.NewUnaryHandler(
-		CompassServiceDeleteCommentProcedure,
-		svc.DeleteComment,
-		connect.WithSchema(compassServiceMethods.ByName("DeleteComment")),
+	compassServiceGetEntityImpactHandler := connect.NewUnaryHandler(
+		CompassServiceGetEntityImpactProcedure,
+		svc.GetEntityImpact,
+		connect.WithSchema(compassServiceMethods.ByName("GetEntityImpact")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceSearchAssetsHandler := connect.NewUnaryHandler(
-		CompassServiceSearchAssetsProcedure,
-		svc.SearchAssets,
-		connect.WithSchema(compassServiceMethods.ByName("SearchAssets")),
+	compassServiceUpsertEdgeHandler := connect.NewUnaryHandler(
+		CompassServiceUpsertEdgeProcedure,
+		svc.UpsertEdge,
+		connect.WithSchema(compassServiceMethods.ByName("UpsertEdge")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceSuggestAssetsHandler := connect.NewUnaryHandler(
-		CompassServiceSuggestAssetsProcedure,
-		svc.SuggestAssets,
-		connect.WithSchema(compassServiceMethods.ByName("SuggestAssets")),
+	compassServiceGetEdgesHandler := connect.NewUnaryHandler(
+		CompassServiceGetEdgesProcedure,
+		svc.GetEdges,
+		connect.WithSchema(compassServiceMethods.ByName("GetEdges")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceGroupAssetsHandler := connect.NewUnaryHandler(
-		CompassServiceGroupAssetsProcedure,
-		svc.GroupAssets,
-		connect.WithSchema(compassServiceMethods.ByName("GroupAssets")),
+	compassServiceDeleteEdgeHandler := connect.NewUnaryHandler(
+		CompassServiceDeleteEdgeProcedure,
+		svc.DeleteEdge,
+		connect.WithSchema(compassServiceMethods.ByName("DeleteEdge")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceGetGraphHandler := connect.NewUnaryHandler(
-		CompassServiceGetGraphProcedure,
-		svc.GetGraph,
-		connect.WithSchema(compassServiceMethods.ByName("GetGraph")),
+	compassServiceStarEntityHandler := connect.NewUnaryHandler(
+		CompassServiceStarEntityProcedure,
+		svc.StarEntity,
+		connect.WithSchema(compassServiceMethods.ByName("StarEntity")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceGetAllTypesHandler := connect.NewUnaryHandler(
-		CompassServiceGetAllTypesProcedure,
-		svc.GetAllTypes,
-		connect.WithSchema(compassServiceMethods.ByName("GetAllTypes")),
+	compassServiceUnstarEntityHandler := connect.NewUnaryHandler(
+		CompassServiceUnstarEntityProcedure,
+		svc.UnstarEntity,
+		connect.WithSchema(compassServiceMethods.ByName("UnstarEntity")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceGetAllAssetsHandler := connect.NewUnaryHandler(
-		CompassServiceGetAllAssetsProcedure,
-		svc.GetAllAssets,
-		connect.WithSchema(compassServiceMethods.ByName("GetAllAssets")),
+	compassServiceGetUserStarredEntitiesHandler := connect.NewUnaryHandler(
+		CompassServiceGetUserStarredEntitiesProcedure,
+		svc.GetUserStarredEntities,
+		connect.WithSchema(compassServiceMethods.ByName("GetUserStarredEntities")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceGetAssetByIDHandler := connect.NewUnaryHandler(
-		CompassServiceGetAssetByIDProcedure,
-		svc.GetAssetByID,
-		connect.WithSchema(compassServiceMethods.ByName("GetAssetByID")),
+	compassServiceGetMyStarredEntitiesHandler := connect.NewUnaryHandler(
+		CompassServiceGetMyStarredEntitiesProcedure,
+		svc.GetMyStarredEntities,
+		connect.WithSchema(compassServiceMethods.ByName("GetMyStarredEntities")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceUpsertAssetHandler := connect.NewUnaryHandler(
-		CompassServiceUpsertAssetProcedure,
-		svc.UpsertAsset,
-		connect.WithSchema(compassServiceMethods.ByName("UpsertAsset")),
+	compassServiceGetMyStarredEntityHandler := connect.NewUnaryHandler(
+		CompassServiceGetMyStarredEntityProcedure,
+		svc.GetMyStarredEntity,
+		connect.WithSchema(compassServiceMethods.ByName("GetMyStarredEntity")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceUpsertPatchAssetHandler := connect.NewUnaryHandler(
-		CompassServiceUpsertPatchAssetProcedure,
-		svc.UpsertPatchAsset,
-		connect.WithSchema(compassServiceMethods.ByName("UpsertPatchAsset")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceDeleteAssetHandler := connect.NewUnaryHandler(
-		CompassServiceDeleteAssetProcedure,
-		svc.DeleteAsset,
-		connect.WithSchema(compassServiceMethods.ByName("DeleteAsset")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetAssetStargazersHandler := connect.NewUnaryHandler(
-		CompassServiceGetAssetStargazersProcedure,
-		svc.GetAssetStargazers,
-		connect.WithSchema(compassServiceMethods.ByName("GetAssetStargazers")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetAssetVersionHistoryHandler := connect.NewUnaryHandler(
-		CompassServiceGetAssetVersionHistoryProcedure,
-		svc.GetAssetVersionHistory,
-		connect.WithSchema(compassServiceMethods.ByName("GetAssetVersionHistory")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetAssetByVersionHandler := connect.NewUnaryHandler(
-		CompassServiceGetAssetByVersionProcedure,
-		svc.GetAssetByVersion,
-		connect.WithSchema(compassServiceMethods.ByName("GetAssetByVersion")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceCreateAssetProbeHandler := connect.NewUnaryHandler(
-		CompassServiceCreateAssetProbeProcedure,
-		svc.CreateAssetProbe,
-		connect.WithSchema(compassServiceMethods.ByName("CreateAssetProbe")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetUserStarredAssetsHandler := connect.NewUnaryHandler(
-		CompassServiceGetUserStarredAssetsProcedure,
-		svc.GetUserStarredAssets,
-		connect.WithSchema(compassServiceMethods.ByName("GetUserStarredAssets")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetMyStarredAssetsHandler := connect.NewUnaryHandler(
-		CompassServiceGetMyStarredAssetsProcedure,
-		svc.GetMyStarredAssets,
-		connect.WithSchema(compassServiceMethods.ByName("GetMyStarredAssets")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetMyStarredAssetHandler := connect.NewUnaryHandler(
-		CompassServiceGetMyStarredAssetProcedure,
-		svc.GetMyStarredAsset,
-		connect.WithSchema(compassServiceMethods.ByName("GetMyStarredAsset")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceStarAssetHandler := connect.NewUnaryHandler(
-		CompassServiceStarAssetProcedure,
-		svc.StarAsset,
-		connect.WithSchema(compassServiceMethods.ByName("StarAsset")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceUnstarAssetHandler := connect.NewUnaryHandler(
-		CompassServiceUnstarAssetProcedure,
-		svc.UnstarAsset,
-		connect.WithSchema(compassServiceMethods.ByName("UnstarAsset")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetMyDiscussionsHandler := connect.NewUnaryHandler(
-		CompassServiceGetMyDiscussionsProcedure,
-		svc.GetMyDiscussions,
-		connect.WithSchema(compassServiceMethods.ByName("GetMyDiscussions")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceCreateTagAssetHandler := connect.NewUnaryHandler(
-		CompassServiceCreateTagAssetProcedure,
-		svc.CreateTagAsset,
-		connect.WithSchema(compassServiceMethods.ByName("CreateTagAsset")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetTagByAssetAndTemplateHandler := connect.NewUnaryHandler(
-		CompassServiceGetTagByAssetAndTemplateProcedure,
-		svc.GetTagByAssetAndTemplate,
-		connect.WithSchema(compassServiceMethods.ByName("GetTagByAssetAndTemplate")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceUpdateTagAssetHandler := connect.NewUnaryHandler(
-		CompassServiceUpdateTagAssetProcedure,
-		svc.UpdateTagAsset,
-		connect.WithSchema(compassServiceMethods.ByName("UpdateTagAsset")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceDeleteTagAssetHandler := connect.NewUnaryHandler(
-		CompassServiceDeleteTagAssetProcedure,
-		svc.DeleteTagAsset,
-		connect.WithSchema(compassServiceMethods.ByName("DeleteTagAsset")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetAllTagsByAssetHandler := connect.NewUnaryHandler(
-		CompassServiceGetAllTagsByAssetProcedure,
-		svc.GetAllTagsByAsset,
-		connect.WithSchema(compassServiceMethods.ByName("GetAllTagsByAsset")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetAllTagTemplatesHandler := connect.NewUnaryHandler(
-		CompassServiceGetAllTagTemplatesProcedure,
-		svc.GetAllTagTemplates,
-		connect.WithSchema(compassServiceMethods.ByName("GetAllTagTemplates")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceCreateTagTemplateHandler := connect.NewUnaryHandler(
-		CompassServiceCreateTagTemplateProcedure,
-		svc.CreateTagTemplate,
-		connect.WithSchema(compassServiceMethods.ByName("CreateTagTemplate")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetTagTemplateHandler := connect.NewUnaryHandler(
-		CompassServiceGetTagTemplateProcedure,
-		svc.GetTagTemplate,
-		connect.WithSchema(compassServiceMethods.ByName("GetTagTemplate")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceUpdateTagTemplateHandler := connect.NewUnaryHandler(
-		CompassServiceUpdateTagTemplateProcedure,
-		svc.UpdateTagTemplate,
-		connect.WithSchema(compassServiceMethods.ByName("UpdateTagTemplate")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceDeleteTagTemplateHandler := connect.NewUnaryHandler(
-		CompassServiceDeleteTagTemplateProcedure,
-		svc.DeleteTagTemplate,
-		connect.WithSchema(compassServiceMethods.ByName("DeleteTagTemplate")),
+	compassServiceGetEntityStargazersHandler := connect.NewUnaryHandler(
+		CompassServiceGetEntityStargazersProcedure,
+		svc.GetEntityStargazers,
+		connect.WithSchema(compassServiceMethods.ByName("GetEntityStargazers")),
 		connect.WithHandlerOptions(opts...),
 	)
 	compassServiceCreateNamespaceHandler := connect.NewUnaryHandler(
@@ -1069,84 +586,42 @@ func NewCompassServiceHandler(svc CompassServiceHandler, opts ...connect.Handler
 	)
 	return "/raystack.compass.v1beta1.CompassService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case CompassServiceGetAllDiscussionsProcedure:
-			compassServiceGetAllDiscussionsHandler.ServeHTTP(w, r)
-		case CompassServiceCreateDiscussionProcedure:
-			compassServiceCreateDiscussionHandler.ServeHTTP(w, r)
-		case CompassServiceGetDiscussionProcedure:
-			compassServiceGetDiscussionHandler.ServeHTTP(w, r)
-		case CompassServicePatchDiscussionProcedure:
-			compassServicePatchDiscussionHandler.ServeHTTP(w, r)
-		case CompassServiceCreateCommentProcedure:
-			compassServiceCreateCommentHandler.ServeHTTP(w, r)
-		case CompassServiceGetAllCommentsProcedure:
-			compassServiceGetAllCommentsHandler.ServeHTTP(w, r)
-		case CompassServiceGetCommentProcedure:
-			compassServiceGetCommentHandler.ServeHTTP(w, r)
-		case CompassServiceUpdateCommentProcedure:
-			compassServiceUpdateCommentHandler.ServeHTTP(w, r)
-		case CompassServiceDeleteCommentProcedure:
-			compassServiceDeleteCommentHandler.ServeHTTP(w, r)
-		case CompassServiceSearchAssetsProcedure:
-			compassServiceSearchAssetsHandler.ServeHTTP(w, r)
-		case CompassServiceSuggestAssetsProcedure:
-			compassServiceSuggestAssetsHandler.ServeHTTP(w, r)
-		case CompassServiceGroupAssetsProcedure:
-			compassServiceGroupAssetsHandler.ServeHTTP(w, r)
-		case CompassServiceGetGraphProcedure:
-			compassServiceGetGraphHandler.ServeHTTP(w, r)
-		case CompassServiceGetAllTypesProcedure:
-			compassServiceGetAllTypesHandler.ServeHTTP(w, r)
-		case CompassServiceGetAllAssetsProcedure:
-			compassServiceGetAllAssetsHandler.ServeHTTP(w, r)
-		case CompassServiceGetAssetByIDProcedure:
-			compassServiceGetAssetByIDHandler.ServeHTTP(w, r)
-		case CompassServiceUpsertAssetProcedure:
-			compassServiceUpsertAssetHandler.ServeHTTP(w, r)
-		case CompassServiceUpsertPatchAssetProcedure:
-			compassServiceUpsertPatchAssetHandler.ServeHTTP(w, r)
-		case CompassServiceDeleteAssetProcedure:
-			compassServiceDeleteAssetHandler.ServeHTTP(w, r)
-		case CompassServiceGetAssetStargazersProcedure:
-			compassServiceGetAssetStargazersHandler.ServeHTTP(w, r)
-		case CompassServiceGetAssetVersionHistoryProcedure:
-			compassServiceGetAssetVersionHistoryHandler.ServeHTTP(w, r)
-		case CompassServiceGetAssetByVersionProcedure:
-			compassServiceGetAssetByVersionHandler.ServeHTTP(w, r)
-		case CompassServiceCreateAssetProbeProcedure:
-			compassServiceCreateAssetProbeHandler.ServeHTTP(w, r)
-		case CompassServiceGetUserStarredAssetsProcedure:
-			compassServiceGetUserStarredAssetsHandler.ServeHTTP(w, r)
-		case CompassServiceGetMyStarredAssetsProcedure:
-			compassServiceGetMyStarredAssetsHandler.ServeHTTP(w, r)
-		case CompassServiceGetMyStarredAssetProcedure:
-			compassServiceGetMyStarredAssetHandler.ServeHTTP(w, r)
-		case CompassServiceStarAssetProcedure:
-			compassServiceStarAssetHandler.ServeHTTP(w, r)
-		case CompassServiceUnstarAssetProcedure:
-			compassServiceUnstarAssetHandler.ServeHTTP(w, r)
-		case CompassServiceGetMyDiscussionsProcedure:
-			compassServiceGetMyDiscussionsHandler.ServeHTTP(w, r)
-		case CompassServiceCreateTagAssetProcedure:
-			compassServiceCreateTagAssetHandler.ServeHTTP(w, r)
-		case CompassServiceGetTagByAssetAndTemplateProcedure:
-			compassServiceGetTagByAssetAndTemplateHandler.ServeHTTP(w, r)
-		case CompassServiceUpdateTagAssetProcedure:
-			compassServiceUpdateTagAssetHandler.ServeHTTP(w, r)
-		case CompassServiceDeleteTagAssetProcedure:
-			compassServiceDeleteTagAssetHandler.ServeHTTP(w, r)
-		case CompassServiceGetAllTagsByAssetProcedure:
-			compassServiceGetAllTagsByAssetHandler.ServeHTTP(w, r)
-		case CompassServiceGetAllTagTemplatesProcedure:
-			compassServiceGetAllTagTemplatesHandler.ServeHTTP(w, r)
-		case CompassServiceCreateTagTemplateProcedure:
-			compassServiceCreateTagTemplateHandler.ServeHTTP(w, r)
-		case CompassServiceGetTagTemplateProcedure:
-			compassServiceGetTagTemplateHandler.ServeHTTP(w, r)
-		case CompassServiceUpdateTagTemplateProcedure:
-			compassServiceUpdateTagTemplateHandler.ServeHTTP(w, r)
-		case CompassServiceDeleteTagTemplateProcedure:
-			compassServiceDeleteTagTemplateHandler.ServeHTTP(w, r)
+		case CompassServiceGetAllEntitiesProcedure:
+			compassServiceGetAllEntitiesHandler.ServeHTTP(w, r)
+		case CompassServiceGetEntityByIDProcedure:
+			compassServiceGetEntityByIDHandler.ServeHTTP(w, r)
+		case CompassServiceUpsertEntityProcedure:
+			compassServiceUpsertEntityHandler.ServeHTTP(w, r)
+		case CompassServiceDeleteEntityProcedure:
+			compassServiceDeleteEntityHandler.ServeHTTP(w, r)
+		case CompassServiceSearchEntitiesProcedure:
+			compassServiceSearchEntitiesHandler.ServeHTTP(w, r)
+		case CompassServiceSuggestEntitiesProcedure:
+			compassServiceSuggestEntitiesHandler.ServeHTTP(w, r)
+		case CompassServiceGetEntityTypesProcedure:
+			compassServiceGetEntityTypesHandler.ServeHTTP(w, r)
+		case CompassServiceGetEntityContextProcedure:
+			compassServiceGetEntityContextHandler.ServeHTTP(w, r)
+		case CompassServiceGetEntityImpactProcedure:
+			compassServiceGetEntityImpactHandler.ServeHTTP(w, r)
+		case CompassServiceUpsertEdgeProcedure:
+			compassServiceUpsertEdgeHandler.ServeHTTP(w, r)
+		case CompassServiceGetEdgesProcedure:
+			compassServiceGetEdgesHandler.ServeHTTP(w, r)
+		case CompassServiceDeleteEdgeProcedure:
+			compassServiceDeleteEdgeHandler.ServeHTTP(w, r)
+		case CompassServiceStarEntityProcedure:
+			compassServiceStarEntityHandler.ServeHTTP(w, r)
+		case CompassServiceUnstarEntityProcedure:
+			compassServiceUnstarEntityHandler.ServeHTTP(w, r)
+		case CompassServiceGetUserStarredEntitiesProcedure:
+			compassServiceGetUserStarredEntitiesHandler.ServeHTTP(w, r)
+		case CompassServiceGetMyStarredEntitiesProcedure:
+			compassServiceGetMyStarredEntitiesHandler.ServeHTTP(w, r)
+		case CompassServiceGetMyStarredEntityProcedure:
+			compassServiceGetMyStarredEntityHandler.ServeHTTP(w, r)
+		case CompassServiceGetEntityStargazersProcedure:
+			compassServiceGetEntityStargazersHandler.ServeHTTP(w, r)
 		case CompassServiceCreateNamespaceProcedure:
 			compassServiceCreateNamespaceHandler.ServeHTTP(w, r)
 		case CompassServiceGetNamespaceProcedure:
@@ -1164,160 +639,76 @@ func NewCompassServiceHandler(svc CompassServiceHandler, opts ...connect.Handler
 // UnimplementedCompassServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedCompassServiceHandler struct{}
 
-func (UnimplementedCompassServiceHandler) GetAllDiscussions(context.Context, *connect.Request[v1beta1.GetAllDiscussionsRequest]) (*connect.Response[v1beta1.GetAllDiscussionsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAllDiscussions is not implemented"))
+func (UnimplementedCompassServiceHandler) GetAllEntities(context.Context, *connect.Request[v1beta1.GetAllEntitiesRequest]) (*connect.Response[v1beta1.GetAllEntitiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAllEntities is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) CreateDiscussion(context.Context, *connect.Request[v1beta1.CreateDiscussionRequest]) (*connect.Response[v1beta1.CreateDiscussionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.CreateDiscussion is not implemented"))
+func (UnimplementedCompassServiceHandler) GetEntityByID(context.Context, *connect.Request[v1beta1.GetEntityByIDRequest]) (*connect.Response[v1beta1.GetEntityByIDResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetEntityByID is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetDiscussion(context.Context, *connect.Request[v1beta1.GetDiscussionRequest]) (*connect.Response[v1beta1.GetDiscussionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetDiscussion is not implemented"))
+func (UnimplementedCompassServiceHandler) UpsertEntity(context.Context, *connect.Request[v1beta1.UpsertEntityRequest]) (*connect.Response[v1beta1.UpsertEntityResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpsertEntity is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) PatchDiscussion(context.Context, *connect.Request[v1beta1.PatchDiscussionRequest]) (*connect.Response[v1beta1.PatchDiscussionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.PatchDiscussion is not implemented"))
+func (UnimplementedCompassServiceHandler) DeleteEntity(context.Context, *connect.Request[v1beta1.DeleteEntityRequest]) (*connect.Response[v1beta1.DeleteEntityResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.DeleteEntity is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) CreateComment(context.Context, *connect.Request[v1beta1.CreateCommentRequest]) (*connect.Response[v1beta1.CreateCommentResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.CreateComment is not implemented"))
+func (UnimplementedCompassServiceHandler) SearchEntities(context.Context, *connect.Request[v1beta1.SearchEntitiesRequest]) (*connect.Response[v1beta1.SearchEntitiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.SearchEntities is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetAllComments(context.Context, *connect.Request[v1beta1.GetAllCommentsRequest]) (*connect.Response[v1beta1.GetAllCommentsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAllComments is not implemented"))
+func (UnimplementedCompassServiceHandler) SuggestEntities(context.Context, *connect.Request[v1beta1.SuggestEntitiesRequest]) (*connect.Response[v1beta1.SuggestEntitiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.SuggestEntities is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetComment(context.Context, *connect.Request[v1beta1.GetCommentRequest]) (*connect.Response[v1beta1.GetCommentResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetComment is not implemented"))
+func (UnimplementedCompassServiceHandler) GetEntityTypes(context.Context, *connect.Request[v1beta1.GetEntityTypesRequest]) (*connect.Response[v1beta1.GetEntityTypesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetEntityTypes is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) UpdateComment(context.Context, *connect.Request[v1beta1.UpdateCommentRequest]) (*connect.Response[v1beta1.UpdateCommentResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpdateComment is not implemented"))
+func (UnimplementedCompassServiceHandler) GetEntityContext(context.Context, *connect.Request[v1beta1.GetEntityContextRequest]) (*connect.Response[v1beta1.GetEntityContextResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetEntityContext is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) DeleteComment(context.Context, *connect.Request[v1beta1.DeleteCommentRequest]) (*connect.Response[v1beta1.DeleteCommentResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.DeleteComment is not implemented"))
+func (UnimplementedCompassServiceHandler) GetEntityImpact(context.Context, *connect.Request[v1beta1.GetEntityImpactRequest]) (*connect.Response[v1beta1.GetEntityImpactResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetEntityImpact is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) SearchAssets(context.Context, *connect.Request[v1beta1.SearchAssetsRequest]) (*connect.Response[v1beta1.SearchAssetsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.SearchAssets is not implemented"))
+func (UnimplementedCompassServiceHandler) UpsertEdge(context.Context, *connect.Request[v1beta1.UpsertEdgeRequest]) (*connect.Response[v1beta1.UpsertEdgeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpsertEdge is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) SuggestAssets(context.Context, *connect.Request[v1beta1.SuggestAssetsRequest]) (*connect.Response[v1beta1.SuggestAssetsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.SuggestAssets is not implemented"))
+func (UnimplementedCompassServiceHandler) GetEdges(context.Context, *connect.Request[v1beta1.GetEdgesRequest]) (*connect.Response[v1beta1.GetEdgesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetEdges is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GroupAssets(context.Context, *connect.Request[v1beta1.GroupAssetsRequest]) (*connect.Response[v1beta1.GroupAssetsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GroupAssets is not implemented"))
+func (UnimplementedCompassServiceHandler) DeleteEdge(context.Context, *connect.Request[v1beta1.DeleteEdgeRequest]) (*connect.Response[v1beta1.DeleteEdgeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.DeleteEdge is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetGraph(context.Context, *connect.Request[v1beta1.GetGraphRequest]) (*connect.Response[v1beta1.GetGraphResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetGraph is not implemented"))
+func (UnimplementedCompassServiceHandler) StarEntity(context.Context, *connect.Request[v1beta1.StarEntityRequest]) (*connect.Response[v1beta1.StarEntityResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.StarEntity is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetAllTypes(context.Context, *connect.Request[v1beta1.GetAllTypesRequest]) (*connect.Response[v1beta1.GetAllTypesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAllTypes is not implemented"))
+func (UnimplementedCompassServiceHandler) UnstarEntity(context.Context, *connect.Request[v1beta1.UnstarEntityRequest]) (*connect.Response[v1beta1.UnstarEntityResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UnstarEntity is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetAllAssets(context.Context, *connect.Request[v1beta1.GetAllAssetsRequest]) (*connect.Response[v1beta1.GetAllAssetsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAllAssets is not implemented"))
+func (UnimplementedCompassServiceHandler) GetUserStarredEntities(context.Context, *connect.Request[v1beta1.GetUserStarredEntitiesRequest]) (*connect.Response[v1beta1.GetUserStarredEntitiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetUserStarredEntities is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) GetAssetByID(context.Context, *connect.Request[v1beta1.GetAssetByIDRequest]) (*connect.Response[v1beta1.GetAssetByIDResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAssetByID is not implemented"))
+func (UnimplementedCompassServiceHandler) GetMyStarredEntities(context.Context, *connect.Request[v1beta1.GetMyStarredEntitiesRequest]) (*connect.Response[v1beta1.GetMyStarredEntitiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetMyStarredEntities is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) UpsertAsset(context.Context, *connect.Request[v1beta1.UpsertAssetRequest]) (*connect.Response[v1beta1.UpsertAssetResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpsertAsset is not implemented"))
+func (UnimplementedCompassServiceHandler) GetMyStarredEntity(context.Context, *connect.Request[v1beta1.GetMyStarredEntityRequest]) (*connect.Response[v1beta1.GetMyStarredEntityResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetMyStarredEntity is not implemented"))
 }
 
-func (UnimplementedCompassServiceHandler) UpsertPatchAsset(context.Context, *connect.Request[v1beta1.UpsertPatchAssetRequest]) (*connect.Response[v1beta1.UpsertPatchAssetResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpsertPatchAsset is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) DeleteAsset(context.Context, *connect.Request[v1beta1.DeleteAssetRequest]) (*connect.Response[v1beta1.DeleteAssetResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.DeleteAsset is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetAssetStargazers(context.Context, *connect.Request[v1beta1.GetAssetStargazersRequest]) (*connect.Response[v1beta1.GetAssetStargazersResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAssetStargazers is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetAssetVersionHistory(context.Context, *connect.Request[v1beta1.GetAssetVersionHistoryRequest]) (*connect.Response[v1beta1.GetAssetVersionHistoryResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAssetVersionHistory is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetAssetByVersion(context.Context, *connect.Request[v1beta1.GetAssetByVersionRequest]) (*connect.Response[v1beta1.GetAssetByVersionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAssetByVersion is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) CreateAssetProbe(context.Context, *connect.Request[v1beta1.CreateAssetProbeRequest]) (*connect.Response[v1beta1.CreateAssetProbeResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.CreateAssetProbe is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetUserStarredAssets(context.Context, *connect.Request[v1beta1.GetUserStarredAssetsRequest]) (*connect.Response[v1beta1.GetUserStarredAssetsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetUserStarredAssets is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetMyStarredAssets(context.Context, *connect.Request[v1beta1.GetMyStarredAssetsRequest]) (*connect.Response[v1beta1.GetMyStarredAssetsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetMyStarredAssets is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetMyStarredAsset(context.Context, *connect.Request[v1beta1.GetMyStarredAssetRequest]) (*connect.Response[v1beta1.GetMyStarredAssetResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetMyStarredAsset is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) StarAsset(context.Context, *connect.Request[v1beta1.StarAssetRequest]) (*connect.Response[v1beta1.StarAssetResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.StarAsset is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) UnstarAsset(context.Context, *connect.Request[v1beta1.UnstarAssetRequest]) (*connect.Response[v1beta1.UnstarAssetResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UnstarAsset is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetMyDiscussions(context.Context, *connect.Request[v1beta1.GetMyDiscussionsRequest]) (*connect.Response[v1beta1.GetMyDiscussionsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetMyDiscussions is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) CreateTagAsset(context.Context, *connect.Request[v1beta1.CreateTagAssetRequest]) (*connect.Response[v1beta1.CreateTagAssetResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.CreateTagAsset is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetTagByAssetAndTemplate(context.Context, *connect.Request[v1beta1.GetTagByAssetAndTemplateRequest]) (*connect.Response[v1beta1.GetTagByAssetAndTemplateResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetTagByAssetAndTemplate is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) UpdateTagAsset(context.Context, *connect.Request[v1beta1.UpdateTagAssetRequest]) (*connect.Response[v1beta1.UpdateTagAssetResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpdateTagAsset is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) DeleteTagAsset(context.Context, *connect.Request[v1beta1.DeleteTagAssetRequest]) (*connect.Response[v1beta1.DeleteTagAssetResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.DeleteTagAsset is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetAllTagsByAsset(context.Context, *connect.Request[v1beta1.GetAllTagsByAssetRequest]) (*connect.Response[v1beta1.GetAllTagsByAssetResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAllTagsByAsset is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetAllTagTemplates(context.Context, *connect.Request[v1beta1.GetAllTagTemplatesRequest]) (*connect.Response[v1beta1.GetAllTagTemplatesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAllTagTemplates is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) CreateTagTemplate(context.Context, *connect.Request[v1beta1.CreateTagTemplateRequest]) (*connect.Response[v1beta1.CreateTagTemplateResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.CreateTagTemplate is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetTagTemplate(context.Context, *connect.Request[v1beta1.GetTagTemplateRequest]) (*connect.Response[v1beta1.GetTagTemplateResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetTagTemplate is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) UpdateTagTemplate(context.Context, *connect.Request[v1beta1.UpdateTagTemplateRequest]) (*connect.Response[v1beta1.UpdateTagTemplateResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpdateTagTemplate is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) DeleteTagTemplate(context.Context, *connect.Request[v1beta1.DeleteTagTemplateRequest]) (*connect.Response[v1beta1.DeleteTagTemplateResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.DeleteTagTemplate is not implemented"))
+func (UnimplementedCompassServiceHandler) GetEntityStargazers(context.Context, *connect.Request[v1beta1.GetEntityStargazersRequest]) (*connect.Response[v1beta1.GetEntityStargazersResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetEntityStargazers is not implemented"))
 }
 
 func (UnimplementedCompassServiceHandler) CreateNamespace(context.Context, *connect.Request[v1beta1.CreateNamespaceRequest]) (*connect.Response[v1beta1.CreateNamespaceResponse], error) {

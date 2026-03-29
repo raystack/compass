@@ -4,16 +4,16 @@ package star
 
 import (
 	"context"
-	"github.com/raystack/compass/core/namespace"
 
-	"github.com/raystack/compass/core/asset"
+	"github.com/raystack/compass/core/entity"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/user"
 )
 
 type Repository interface {
-	Create(ctx context.Context, ns *namespace.Namespace, userID string, assetID string) (string, error)
-	GetStargazers(ctx context.Context, flt Filter, assetID string) ([]user.User, error)
-	GetAllAssetsByUserID(ctx context.Context, flt Filter, userID string) ([]asset.Asset, error)
-	GetAssetByUserID(ctx context.Context, userID string, assetID string) (asset.Asset, error)
-	Delete(ctx context.Context, userID string, assetID string) error
+	Create(ctx context.Context, ns *namespace.Namespace, userID string, entityID string) (string, error)
+	GetStargazers(ctx context.Context, flt Filter, entityID string) ([]user.User, error)
+	GetAllEntitiesByUserID(ctx context.Context, flt Filter, userID string) ([]entity.Entity, error)
+	GetEntityByUserID(ctx context.Context, userID string, entityID string) (entity.Entity, error)
+	Delete(ctx context.Context, userID string, entityID string) error
 }

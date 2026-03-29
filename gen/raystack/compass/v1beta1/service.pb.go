@@ -12,7 +12,6 @@ import (
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
-	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -24,4739 +23,6 @@ const (
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
-
-type GetAllDiscussionsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
-	State         string                 `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
-	Owner         string                 `protobuf:"bytes,3,opt,name=owner,proto3" json:"owner,omitempty"`
-	Assignee      string                 `protobuf:"bytes,4,opt,name=assignee,proto3" json:"assignee,omitempty"`
-	Asset         string                 `protobuf:"bytes,5,opt,name=asset,proto3" json:"asset,omitempty"`
-	Labels        string                 `protobuf:"bytes,6,opt,name=labels,proto3" json:"labels,omitempty"`
-	Sort          string                 `protobuf:"bytes,7,opt,name=sort,proto3" json:"sort,omitempty"`
-	Direction     string                 `protobuf:"bytes,8,opt,name=direction,proto3" json:"direction,omitempty"`
-	Size          uint32                 `protobuf:"varint,9,opt,name=size,proto3" json:"size,omitempty"`
-	Offset        uint32                 `protobuf:"varint,10,opt,name=offset,proto3" json:"offset,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAllDiscussionsRequest) Reset() {
-	*x = GetAllDiscussionsRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAllDiscussionsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllDiscussionsRequest) ProtoMessage() {}
-
-func (x *GetAllDiscussionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllDiscussionsRequest.ProtoReflect.Descriptor instead.
-func (*GetAllDiscussionsRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *GetAllDiscussionsRequest) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
-func (x *GetAllDiscussionsRequest) GetState() string {
-	if x != nil {
-		return x.State
-	}
-	return ""
-}
-
-func (x *GetAllDiscussionsRequest) GetOwner() string {
-	if x != nil {
-		return x.Owner
-	}
-	return ""
-}
-
-func (x *GetAllDiscussionsRequest) GetAssignee() string {
-	if x != nil {
-		return x.Assignee
-	}
-	return ""
-}
-
-func (x *GetAllDiscussionsRequest) GetAsset() string {
-	if x != nil {
-		return x.Asset
-	}
-	return ""
-}
-
-func (x *GetAllDiscussionsRequest) GetLabels() string {
-	if x != nil {
-		return x.Labels
-	}
-	return ""
-}
-
-func (x *GetAllDiscussionsRequest) GetSort() string {
-	if x != nil {
-		return x.Sort
-	}
-	return ""
-}
-
-func (x *GetAllDiscussionsRequest) GetDirection() string {
-	if x != nil {
-		return x.Direction
-	}
-	return ""
-}
-
-func (x *GetAllDiscussionsRequest) GetSize() uint32 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-func (x *GetAllDiscussionsRequest) GetOffset() uint32 {
-	if x != nil {
-		return x.Offset
-	}
-	return 0
-}
-
-type GetAllDiscussionsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []*Discussion          `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAllDiscussionsResponse) Reset() {
-	*x = GetAllDiscussionsResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAllDiscussionsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllDiscussionsResponse) ProtoMessage() {}
-
-func (x *GetAllDiscussionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllDiscussionsResponse.ProtoReflect.Descriptor instead.
-func (*GetAllDiscussionsResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *GetAllDiscussionsResponse) GetData() []*Discussion {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type CreateDiscussionRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Body          string                 `protobuf:"bytes,3,opt,name=body,proto3" json:"body,omitempty"`
-	Type          string                 `protobuf:"bytes,4,opt,name=type,proto3" json:"type,omitempty"`
-	State         string                 `protobuf:"bytes,5,opt,name=state,proto3" json:"state,omitempty"`
-	Labels        []string               `protobuf:"bytes,6,rep,name=labels,proto3" json:"labels,omitempty"`
-	Assets        []string               `protobuf:"bytes,7,rep,name=assets,proto3" json:"assets,omitempty"`
-	Assignees     []string               `protobuf:"bytes,8,rep,name=assignees,proto3" json:"assignees,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateDiscussionRequest) Reset() {
-	*x = CreateDiscussionRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateDiscussionRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateDiscussionRequest) ProtoMessage() {}
-
-func (x *CreateDiscussionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateDiscussionRequest.ProtoReflect.Descriptor instead.
-func (*CreateDiscussionRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *CreateDiscussionRequest) GetTitle() string {
-	if x != nil {
-		return x.Title
-	}
-	return ""
-}
-
-func (x *CreateDiscussionRequest) GetBody() string {
-	if x != nil {
-		return x.Body
-	}
-	return ""
-}
-
-func (x *CreateDiscussionRequest) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
-func (x *CreateDiscussionRequest) GetState() string {
-	if x != nil {
-		return x.State
-	}
-	return ""
-}
-
-func (x *CreateDiscussionRequest) GetLabels() []string {
-	if x != nil {
-		return x.Labels
-	}
-	return nil
-}
-
-func (x *CreateDiscussionRequest) GetAssets() []string {
-	if x != nil {
-		return x.Assets
-	}
-	return nil
-}
-
-func (x *CreateDiscussionRequest) GetAssignees() []string {
-	if x != nil {
-		return x.Assignees
-	}
-	return nil
-}
-
-type CreateDiscussionResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateDiscussionResponse) Reset() {
-	*x = CreateDiscussionResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateDiscussionResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateDiscussionResponse) ProtoMessage() {}
-
-func (x *CreateDiscussionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateDiscussionResponse.ProtoReflect.Descriptor instead.
-func (*CreateDiscussionResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *CreateDiscussionResponse) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type GetDiscussionRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetDiscussionRequest) Reset() {
-	*x = GetDiscussionRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetDiscussionRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetDiscussionRequest) ProtoMessage() {}
-
-func (x *GetDiscussionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetDiscussionRequest.ProtoReflect.Descriptor instead.
-func (*GetDiscussionRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *GetDiscussionRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type GetDiscussionResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          *Discussion            `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetDiscussionResponse) Reset() {
-	*x = GetDiscussionResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetDiscussionResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetDiscussionResponse) ProtoMessage() {}
-
-func (x *GetDiscussionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetDiscussionResponse.ProtoReflect.Descriptor instead.
-func (*GetDiscussionResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *GetDiscussionResponse) GetData() *Discussion {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type PatchDiscussionRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Body          string                 `protobuf:"bytes,3,opt,name=body,proto3" json:"body,omitempty"`
-	Type          string                 `protobuf:"bytes,4,opt,name=type,proto3" json:"type,omitempty"`
-	State         string                 `protobuf:"bytes,5,opt,name=state,proto3" json:"state,omitempty"`
-	Labels        []string               `protobuf:"bytes,6,rep,name=labels,proto3" json:"labels,omitempty"`
-	Assets        []string               `protobuf:"bytes,7,rep,name=assets,proto3" json:"assets,omitempty"`
-	Assignees     []string               `protobuf:"bytes,8,rep,name=assignees,proto3" json:"assignees,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PatchDiscussionRequest) Reset() {
-	*x = PatchDiscussionRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PatchDiscussionRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PatchDiscussionRequest) ProtoMessage() {}
-
-func (x *PatchDiscussionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PatchDiscussionRequest.ProtoReflect.Descriptor instead.
-func (*PatchDiscussionRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *PatchDiscussionRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *PatchDiscussionRequest) GetTitle() string {
-	if x != nil {
-		return x.Title
-	}
-	return ""
-}
-
-func (x *PatchDiscussionRequest) GetBody() string {
-	if x != nil {
-		return x.Body
-	}
-	return ""
-}
-
-func (x *PatchDiscussionRequest) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
-func (x *PatchDiscussionRequest) GetState() string {
-	if x != nil {
-		return x.State
-	}
-	return ""
-}
-
-func (x *PatchDiscussionRequest) GetLabels() []string {
-	if x != nil {
-		return x.Labels
-	}
-	return nil
-}
-
-func (x *PatchDiscussionRequest) GetAssets() []string {
-	if x != nil {
-		return x.Assets
-	}
-	return nil
-}
-
-func (x *PatchDiscussionRequest) GetAssignees() []string {
-	if x != nil {
-		return x.Assignees
-	}
-	return nil
-}
-
-type CreateCommentRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DiscussionId  string                 `protobuf:"bytes,1,opt,name=discussion_id,json=discussionId,proto3" json:"discussion_id,omitempty"`
-	Body          string                 `protobuf:"bytes,2,opt,name=body,proto3" json:"body,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateCommentRequest) Reset() {
-	*x = CreateCommentRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateCommentRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateCommentRequest) ProtoMessage() {}
-
-func (x *CreateCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateCommentRequest.ProtoReflect.Descriptor instead.
-func (*CreateCommentRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *CreateCommentRequest) GetDiscussionId() string {
-	if x != nil {
-		return x.DiscussionId
-	}
-	return ""
-}
-
-func (x *CreateCommentRequest) GetBody() string {
-	if x != nil {
-		return x.Body
-	}
-	return ""
-}
-
-type PatchDiscussionResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PatchDiscussionResponse) Reset() {
-	*x = PatchDiscussionResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PatchDiscussionResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PatchDiscussionResponse) ProtoMessage() {}
-
-func (x *PatchDiscussionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PatchDiscussionResponse.ProtoReflect.Descriptor instead.
-func (*PatchDiscussionResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{8}
-}
-
-type CreateCommentResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateCommentResponse) Reset() {
-	*x = CreateCommentResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateCommentResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateCommentResponse) ProtoMessage() {}
-
-func (x *CreateCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateCommentResponse.ProtoReflect.Descriptor instead.
-func (*CreateCommentResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *CreateCommentResponse) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type GetAllCommentsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DiscussionId  string                 `protobuf:"bytes,1,opt,name=discussion_id,json=discussionId,proto3" json:"discussion_id,omitempty"`
-	Sort          string                 `protobuf:"bytes,2,opt,name=sort,proto3" json:"sort,omitempty"`
-	Direction     string                 `protobuf:"bytes,3,opt,name=direction,proto3" json:"direction,omitempty"`
-	Size          uint32                 `protobuf:"varint,4,opt,name=size,proto3" json:"size,omitempty"`
-	Offset        uint32                 `protobuf:"varint,5,opt,name=offset,proto3" json:"offset,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAllCommentsRequest) Reset() {
-	*x = GetAllCommentsRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAllCommentsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllCommentsRequest) ProtoMessage() {}
-
-func (x *GetAllCommentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllCommentsRequest.ProtoReflect.Descriptor instead.
-func (*GetAllCommentsRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *GetAllCommentsRequest) GetDiscussionId() string {
-	if x != nil {
-		return x.DiscussionId
-	}
-	return ""
-}
-
-func (x *GetAllCommentsRequest) GetSort() string {
-	if x != nil {
-		return x.Sort
-	}
-	return ""
-}
-
-func (x *GetAllCommentsRequest) GetDirection() string {
-	if x != nil {
-		return x.Direction
-	}
-	return ""
-}
-
-func (x *GetAllCommentsRequest) GetSize() uint32 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-func (x *GetAllCommentsRequest) GetOffset() uint32 {
-	if x != nil {
-		return x.Offset
-	}
-	return 0
-}
-
-type GetAllCommentsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []*Comment             `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAllCommentsResponse) Reset() {
-	*x = GetAllCommentsResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[11]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAllCommentsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllCommentsResponse) ProtoMessage() {}
-
-func (x *GetAllCommentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[11]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllCommentsResponse.ProtoReflect.Descriptor instead.
-func (*GetAllCommentsResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *GetAllCommentsResponse) GetData() []*Comment {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type GetCommentRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DiscussionId  string                 `protobuf:"bytes,1,opt,name=discussion_id,json=discussionId,proto3" json:"discussion_id,omitempty"`
-	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetCommentRequest) Reset() {
-	*x = GetCommentRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[12]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetCommentRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetCommentRequest) ProtoMessage() {}
-
-func (x *GetCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[12]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetCommentRequest.ProtoReflect.Descriptor instead.
-func (*GetCommentRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *GetCommentRequest) GetDiscussionId() string {
-	if x != nil {
-		return x.DiscussionId
-	}
-	return ""
-}
-
-func (x *GetCommentRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type GetCommentResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          *Comment               `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetCommentResponse) Reset() {
-	*x = GetCommentResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetCommentResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetCommentResponse) ProtoMessage() {}
-
-func (x *GetCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetCommentResponse.ProtoReflect.Descriptor instead.
-func (*GetCommentResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *GetCommentResponse) GetData() *Comment {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type UpdateCommentRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DiscussionId  string                 `protobuf:"bytes,1,opt,name=discussion_id,json=discussionId,proto3" json:"discussion_id,omitempty"`
-	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
-	Body          string                 `protobuf:"bytes,3,opt,name=body,proto3" json:"body,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateCommentRequest) Reset() {
-	*x = UpdateCommentRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[14]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateCommentRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateCommentRequest) ProtoMessage() {}
-
-func (x *UpdateCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[14]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateCommentRequest.ProtoReflect.Descriptor instead.
-func (*UpdateCommentRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *UpdateCommentRequest) GetDiscussionId() string {
-	if x != nil {
-		return x.DiscussionId
-	}
-	return ""
-}
-
-func (x *UpdateCommentRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *UpdateCommentRequest) GetBody() string {
-	if x != nil {
-		return x.Body
-	}
-	return ""
-}
-
-type UpdateCommentResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateCommentResponse) Reset() {
-	*x = UpdateCommentResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateCommentResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateCommentResponse) ProtoMessage() {}
-
-func (x *UpdateCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateCommentResponse.ProtoReflect.Descriptor instead.
-func (*UpdateCommentResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{15}
-}
-
-type DeleteCommentRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DiscussionId  string                 `protobuf:"bytes,1,opt,name=discussion_id,json=discussionId,proto3" json:"discussion_id,omitempty"`
-	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteCommentRequest) Reset() {
-	*x = DeleteCommentRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[16]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteCommentRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteCommentRequest) ProtoMessage() {}
-
-func (x *DeleteCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[16]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteCommentRequest.ProtoReflect.Descriptor instead.
-func (*DeleteCommentRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *DeleteCommentRequest) GetDiscussionId() string {
-	if x != nil {
-		return x.DiscussionId
-	}
-	return ""
-}
-
-func (x *DeleteCommentRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type DeleteCommentResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteCommentResponse) Reset() {
-	*x = DeleteCommentResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[17]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteCommentResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteCommentResponse) ProtoMessage() {}
-
-func (x *DeleteCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[17]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteCommentResponse.ProtoReflect.Descriptor instead.
-func (*DeleteCommentResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{17}
-}
-
-type SearchAssetsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
-	Rankby        string                 `protobuf:"bytes,2,opt,name=rankby,proto3" json:"rankby,omitempty"`
-	Size          uint32                 `protobuf:"varint,3,opt,name=size,proto3" json:"size,omitempty"`
-	Filter        map[string]string      `protobuf:"bytes,4,rep,name=filter,proto3" json:"filter,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Query         map[string]string      `protobuf:"bytes,5,rep,name=query,proto3" json:"query,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	IncludeFields []string               `protobuf:"bytes,6,rep,name=include_fields,json=includeFields,proto3" json:"include_fields,omitempty"`
-	Offset        uint32                 `protobuf:"varint,7,opt,name=offset,proto3" json:"offset,omitempty"`
-	Flags         *SearchFlags           `protobuf:"bytes,8,opt,name=flags,proto3" json:"flags,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SearchAssetsRequest) Reset() {
-	*x = SearchAssetsRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[18]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SearchAssetsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SearchAssetsRequest) ProtoMessage() {}
-
-func (x *SearchAssetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[18]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SearchAssetsRequest.ProtoReflect.Descriptor instead.
-func (*SearchAssetsRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *SearchAssetsRequest) GetText() string {
-	if x != nil {
-		return x.Text
-	}
-	return ""
-}
-
-func (x *SearchAssetsRequest) GetRankby() string {
-	if x != nil {
-		return x.Rankby
-	}
-	return ""
-}
-
-func (x *SearchAssetsRequest) GetSize() uint32 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-func (x *SearchAssetsRequest) GetFilter() map[string]string {
-	if x != nil {
-		return x.Filter
-	}
-	return nil
-}
-
-func (x *SearchAssetsRequest) GetQuery() map[string]string {
-	if x != nil {
-		return x.Query
-	}
-	return nil
-}
-
-func (x *SearchAssetsRequest) GetIncludeFields() []string {
-	if x != nil {
-		return x.IncludeFields
-	}
-	return nil
-}
-
-func (x *SearchAssetsRequest) GetOffset() uint32 {
-	if x != nil {
-		return x.Offset
-	}
-	return 0
-}
-
-func (x *SearchAssetsRequest) GetFlags() *SearchFlags {
-	if x != nil {
-		return x.Flags
-	}
-	return nil
-}
-
-type SearchFlags struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	IsColumnSearch  bool                   `protobuf:"varint,1,opt,name=is_column_search,json=isColumnSearch,proto3" json:"is_column_search,omitempty"`
-	DisableFuzzy    bool                   `protobuf:"varint,2,opt,name=disable_fuzzy,json=disableFuzzy,proto3" json:"disable_fuzzy,omitempty"`
-	EnableHighlight bool                   `protobuf:"varint,3,opt,name=enable_highlight,json=enableHighlight,proto3" json:"enable_highlight,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
-}
-
-func (x *SearchFlags) Reset() {
-	*x = SearchFlags{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[19]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SearchFlags) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SearchFlags) ProtoMessage() {}
-
-func (x *SearchFlags) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[19]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SearchFlags.ProtoReflect.Descriptor instead.
-func (*SearchFlags) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{19}
-}
-
-func (x *SearchFlags) GetIsColumnSearch() bool {
-	if x != nil {
-		return x.IsColumnSearch
-	}
-	return false
-}
-
-func (x *SearchFlags) GetDisableFuzzy() bool {
-	if x != nil {
-		return x.DisableFuzzy
-	}
-	return false
-}
-
-func (x *SearchFlags) GetEnableHighlight() bool {
-	if x != nil {
-		return x.EnableHighlight
-	}
-	return false
-}
-
-type SearchAssetsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []*Asset               `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SearchAssetsResponse) Reset() {
-	*x = SearchAssetsResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[20]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SearchAssetsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SearchAssetsResponse) ProtoMessage() {}
-
-func (x *SearchAssetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[20]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SearchAssetsResponse.ProtoReflect.Descriptor instead.
-func (*SearchAssetsResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{20}
-}
-
-func (x *SearchAssetsResponse) GetData() []*Asset {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type SuggestAssetsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SuggestAssetsRequest) Reset() {
-	*x = SuggestAssetsRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[21]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SuggestAssetsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SuggestAssetsRequest) ProtoMessage() {}
-
-func (x *SuggestAssetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[21]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SuggestAssetsRequest.ProtoReflect.Descriptor instead.
-func (*SuggestAssetsRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{21}
-}
-
-func (x *SuggestAssetsRequest) GetText() string {
-	if x != nil {
-		return x.Text
-	}
-	return ""
-}
-
-type SuggestAssetsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []string               `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SuggestAssetsResponse) Reset() {
-	*x = SuggestAssetsResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[22]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SuggestAssetsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SuggestAssetsResponse) ProtoMessage() {}
-
-func (x *SuggestAssetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[22]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SuggestAssetsResponse.ProtoReflect.Descriptor instead.
-func (*SuggestAssetsResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{22}
-}
-
-func (x *SuggestAssetsResponse) GetData() []string {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type GroupAssetsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Groupby       []string               `protobuf:"bytes,1,rep,name=groupby,proto3" json:"groupby,omitempty"`
-	Filter        map[string]string      `protobuf:"bytes,2,rep,name=filter,proto3" json:"filter,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	IncludeFields []string               `protobuf:"bytes,3,rep,name=include_fields,json=includeFields,proto3" json:"include_fields,omitempty"`
-	Size          uint32                 `protobuf:"varint,4,opt,name=size,proto3" json:"size,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GroupAssetsRequest) Reset() {
-	*x = GroupAssetsRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[23]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GroupAssetsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GroupAssetsRequest) ProtoMessage() {}
-
-func (x *GroupAssetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[23]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GroupAssetsRequest.ProtoReflect.Descriptor instead.
-func (*GroupAssetsRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{23}
-}
-
-func (x *GroupAssetsRequest) GetGroupby() []string {
-	if x != nil {
-		return x.Groupby
-	}
-	return nil
-}
-
-func (x *GroupAssetsRequest) GetFilter() map[string]string {
-	if x != nil {
-		return x.Filter
-	}
-	return nil
-}
-
-func (x *GroupAssetsRequest) GetIncludeFields() []string {
-	if x != nil {
-		return x.IncludeFields
-	}
-	return nil
-}
-
-func (x *GroupAssetsRequest) GetSize() uint32 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-type GroupAssetsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AssetGroups   []*AssetGroup          `protobuf:"bytes,1,rep,name=asset_groups,json=assetGroups,proto3" json:"asset_groups,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GroupAssetsResponse) Reset() {
-	*x = GroupAssetsResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[24]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GroupAssetsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GroupAssetsResponse) ProtoMessage() {}
-
-func (x *GroupAssetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[24]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GroupAssetsResponse.ProtoReflect.Descriptor instead.
-func (*GroupAssetsResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{24}
-}
-
-func (x *GroupAssetsResponse) GetAssetGroups() []*AssetGroup {
-	if x != nil {
-		return x.AssetGroups
-	}
-	return nil
-}
-
-type AssetGroup struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GroupFields   []*GroupField          `protobuf:"bytes,1,rep,name=group_fields,json=groupFields,proto3" json:"group_fields,omitempty"`
-	Assets        []*Asset               `protobuf:"bytes,2,rep,name=assets,proto3" json:"assets,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AssetGroup) Reset() {
-	*x = AssetGroup{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[25]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AssetGroup) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AssetGroup) ProtoMessage() {}
-
-func (x *AssetGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[25]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AssetGroup.ProtoReflect.Descriptor instead.
-func (*AssetGroup) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{25}
-}
-
-func (x *AssetGroup) GetGroupFields() []*GroupField {
-	if x != nil {
-		return x.GroupFields
-	}
-	return nil
-}
-
-func (x *AssetGroup) GetAssets() []*Asset {
-	if x != nil {
-		return x.Assets
-	}
-	return nil
-}
-
-type GroupField struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GroupKey      string                 `protobuf:"bytes,1,opt,name=group_key,json=groupKey,proto3" json:"group_key,omitempty"`
-	GroupValue    string                 `protobuf:"bytes,2,opt,name=group_value,json=groupValue,proto3" json:"group_value,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GroupField) Reset() {
-	*x = GroupField{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[26]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GroupField) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GroupField) ProtoMessage() {}
-
-func (x *GroupField) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[26]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GroupField.ProtoReflect.Descriptor instead.
-func (*GroupField) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{26}
-}
-
-func (x *GroupField) GetGroupKey() string {
-	if x != nil {
-		return x.GroupKey
-	}
-	return ""
-}
-
-func (x *GroupField) GetGroupValue() string {
-	if x != nil {
-		return x.GroupValue
-	}
-	return ""
-}
-
-type GetGraphRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Urn            string                 `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
-	Level          uint32                 `protobuf:"varint,2,opt,name=level,proto3" json:"level,omitempty"`
-	Direction      string                 `protobuf:"bytes,3,opt,name=direction,proto3" json:"direction,omitempty"`
-	WithAttributes *bool                  `protobuf:"varint,4,opt,name=with_attributes,json=withAttributes,proto3,oneof" json:"with_attributes,omitempty"`
-	IncludeDeleted bool                   `protobuf:"varint,5,opt,name=include_deleted,json=includeDeleted,proto3" json:"include_deleted,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *GetGraphRequest) Reset() {
-	*x = GetGraphRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[27]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetGraphRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetGraphRequest) ProtoMessage() {}
-
-func (x *GetGraphRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[27]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetGraphRequest.ProtoReflect.Descriptor instead.
-func (*GetGraphRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{27}
-}
-
-func (x *GetGraphRequest) GetUrn() string {
-	if x != nil {
-		return x.Urn
-	}
-	return ""
-}
-
-func (x *GetGraphRequest) GetLevel() uint32 {
-	if x != nil {
-		return x.Level
-	}
-	return 0
-}
-
-func (x *GetGraphRequest) GetDirection() string {
-	if x != nil {
-		return x.Direction
-	}
-	return ""
-}
-
-func (x *GetGraphRequest) GetWithAttributes() bool {
-	if x != nil && x.WithAttributes != nil {
-		return *x.WithAttributes
-	}
-	return false
-}
-
-func (x *GetGraphRequest) GetIncludeDeleted() bool {
-	if x != nil {
-		return x.IncludeDeleted
-	}
-	return false
-}
-
-type GetGraphResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Edges in the graph.
-	Data []*LineageEdge `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	// Key is the asset URN. Node attributes, if present, will be returned for
-	// source and target nodes in the LineageEdge.
-	NodeAttrs     map[string]*GetGraphResponse_NodeAttributes `protobuf:"bytes,2,rep,name=node_attrs,json=nodeAttrs,proto3" json:"node_attrs,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetGraphResponse) Reset() {
-	*x = GetGraphResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[28]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetGraphResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetGraphResponse) ProtoMessage() {}
-
-func (x *GetGraphResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[28]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetGraphResponse.ProtoReflect.Descriptor instead.
-func (*GetGraphResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{28}
-}
-
-func (x *GetGraphResponse) GetData() []*LineageEdge {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-func (x *GetGraphResponse) GetNodeAttrs() map[string]*GetGraphResponse_NodeAttributes {
-	if x != nil {
-		return x.NodeAttrs
-	}
-	return nil
-}
-
-type GetAllTypesRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Q             string                 `protobuf:"bytes,1,opt,name=q,proto3" json:"q,omitempty"`
-	QFields       string                 `protobuf:"bytes,2,opt,name=q_fields,json=qFields,proto3" json:"q_fields,omitempty"`
-	Types         string                 `protobuf:"bytes,3,opt,name=types,proto3" json:"types,omitempty"`
-	Services      string                 `protobuf:"bytes,4,opt,name=services,proto3" json:"services,omitempty"`
-	Data          map[string]string      `protobuf:"bytes,5,rep,name=data,proto3" json:"data,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAllTypesRequest) Reset() {
-	*x = GetAllTypesRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[29]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAllTypesRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllTypesRequest) ProtoMessage() {}
-
-func (x *GetAllTypesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[29]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllTypesRequest.ProtoReflect.Descriptor instead.
-func (*GetAllTypesRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{29}
-}
-
-func (x *GetAllTypesRequest) GetQ() string {
-	if x != nil {
-		return x.Q
-	}
-	return ""
-}
-
-func (x *GetAllTypesRequest) GetQFields() string {
-	if x != nil {
-		return x.QFields
-	}
-	return ""
-}
-
-func (x *GetAllTypesRequest) GetTypes() string {
-	if x != nil {
-		return x.Types
-	}
-	return ""
-}
-
-func (x *GetAllTypesRequest) GetServices() string {
-	if x != nil {
-		return x.Services
-	}
-	return ""
-}
-
-func (x *GetAllTypesRequest) GetData() map[string]string {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type GetAllTypesResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []*Type                `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAllTypesResponse) Reset() {
-	*x = GetAllTypesResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[30]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAllTypesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllTypesResponse) ProtoMessage() {}
-
-func (x *GetAllTypesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[30]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllTypesResponse.ProtoReflect.Descriptor instead.
-func (*GetAllTypesResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{30}
-}
-
-func (x *GetAllTypesResponse) GetData() []*Type {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type GetAllAssetsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Q             string                 `protobuf:"bytes,1,opt,name=q,proto3" json:"q,omitempty"`
-	QFields       string                 `protobuf:"bytes,2,opt,name=q_fields,json=qFields,proto3" json:"q_fields,omitempty"`
-	Types         string                 `protobuf:"bytes,3,opt,name=types,proto3" json:"types,omitempty"`
-	Services      string                 `protobuf:"bytes,4,opt,name=services,proto3" json:"services,omitempty"`
-	Sort          string                 `protobuf:"bytes,5,opt,name=sort,proto3" json:"sort,omitempty"`
-	Direction     string                 `protobuf:"bytes,6,opt,name=direction,proto3" json:"direction,omitempty"`
-	Data          map[string]string      `protobuf:"bytes,7,rep,name=data,proto3" json:"data,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Size          uint32                 `protobuf:"varint,8,opt,name=size,proto3" json:"size,omitempty"`
-	Offset        uint32                 `protobuf:"varint,9,opt,name=offset,proto3" json:"offset,omitempty"`
-	WithTotal     bool                   `protobuf:"varint,10,opt,name=with_total,json=withTotal,proto3" json:"with_total,omitempty"`
-	IsDeleted     bool                   `protobuf:"varint,11,opt,name=is_deleted,json=isDeleted,proto3" json:"is_deleted,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAllAssetsRequest) Reset() {
-	*x = GetAllAssetsRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[31]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAllAssetsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllAssetsRequest) ProtoMessage() {}
-
-func (x *GetAllAssetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[31]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllAssetsRequest.ProtoReflect.Descriptor instead.
-func (*GetAllAssetsRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{31}
-}
-
-func (x *GetAllAssetsRequest) GetQ() string {
-	if x != nil {
-		return x.Q
-	}
-	return ""
-}
-
-func (x *GetAllAssetsRequest) GetQFields() string {
-	if x != nil {
-		return x.QFields
-	}
-	return ""
-}
-
-func (x *GetAllAssetsRequest) GetTypes() string {
-	if x != nil {
-		return x.Types
-	}
-	return ""
-}
-
-func (x *GetAllAssetsRequest) GetServices() string {
-	if x != nil {
-		return x.Services
-	}
-	return ""
-}
-
-func (x *GetAllAssetsRequest) GetSort() string {
-	if x != nil {
-		return x.Sort
-	}
-	return ""
-}
-
-func (x *GetAllAssetsRequest) GetDirection() string {
-	if x != nil {
-		return x.Direction
-	}
-	return ""
-}
-
-func (x *GetAllAssetsRequest) GetData() map[string]string {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-func (x *GetAllAssetsRequest) GetSize() uint32 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-func (x *GetAllAssetsRequest) GetOffset() uint32 {
-	if x != nil {
-		return x.Offset
-	}
-	return 0
-}
-
-func (x *GetAllAssetsRequest) GetWithTotal() bool {
-	if x != nil {
-		return x.WithTotal
-	}
-	return false
-}
-
-func (x *GetAllAssetsRequest) GetIsDeleted() bool {
-	if x != nil {
-		return x.IsDeleted
-	}
-	return false
-}
-
-type GetAllAssetsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []*Asset               `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	Total         uint32                 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAllAssetsResponse) Reset() {
-	*x = GetAllAssetsResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[32]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAllAssetsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllAssetsResponse) ProtoMessage() {}
-
-func (x *GetAllAssetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[32]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllAssetsResponse.ProtoReflect.Descriptor instead.
-func (*GetAllAssetsResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{32}
-}
-
-func (x *GetAllAssetsResponse) GetData() []*Asset {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-func (x *GetAllAssetsResponse) GetTotal() uint32 {
-	if x != nil {
-		return x.Total
-	}
-	return 0
-}
-
-type GetAssetByIDRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAssetByIDRequest) Reset() {
-	*x = GetAssetByIDRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[33]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAssetByIDRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAssetByIDRequest) ProtoMessage() {}
-
-func (x *GetAssetByIDRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[33]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAssetByIDRequest.ProtoReflect.Descriptor instead.
-func (*GetAssetByIDRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{33}
-}
-
-func (x *GetAssetByIDRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type GetAssetByIDResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          *Asset                 `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAssetByIDResponse) Reset() {
-	*x = GetAssetByIDResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[34]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAssetByIDResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAssetByIDResponse) ProtoMessage() {}
-
-func (x *GetAssetByIDResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[34]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAssetByIDResponse.ProtoReflect.Descriptor instead.
-func (*GetAssetByIDResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{34}
-}
-
-func (x *GetAssetByIDResponse) GetData() *Asset {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type UpsertAssetRequest struct {
-	state         protoimpl.MessageState    `protogen:"open.v1"`
-	Asset         *UpsertAssetRequest_Asset `protobuf:"bytes,1,opt,name=asset,proto3" json:"asset,omitempty"`
-	Upstreams     []*LineageNode            `protobuf:"bytes,2,rep,name=upstreams,proto3" json:"upstreams,omitempty"`
-	Downstreams   []*LineageNode            `protobuf:"bytes,3,rep,name=downstreams,proto3" json:"downstreams,omitempty"`
-	UpdateOnly    bool                      `protobuf:"varint,4,opt,name=update_only,json=updateOnly,proto3" json:"update_only,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpsertAssetRequest) Reset() {
-	*x = UpsertAssetRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[35]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpsertAssetRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpsertAssetRequest) ProtoMessage() {}
-
-func (x *UpsertAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[35]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpsertAssetRequest.ProtoReflect.Descriptor instead.
-func (*UpsertAssetRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{35}
-}
-
-func (x *UpsertAssetRequest) GetAsset() *UpsertAssetRequest_Asset {
-	if x != nil {
-		return x.Asset
-	}
-	return nil
-}
-
-func (x *UpsertAssetRequest) GetUpstreams() []*LineageNode {
-	if x != nil {
-		return x.Upstreams
-	}
-	return nil
-}
-
-func (x *UpsertAssetRequest) GetDownstreams() []*LineageNode {
-	if x != nil {
-		return x.Downstreams
-	}
-	return nil
-}
-
-func (x *UpsertAssetRequest) GetUpdateOnly() bool {
-	if x != nil {
-		return x.UpdateOnly
-	}
-	return false
-}
-
-type UpsertAssetResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpsertAssetResponse) Reset() {
-	*x = UpsertAssetResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[36]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpsertAssetResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpsertAssetResponse) ProtoMessage() {}
-
-func (x *UpsertAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[36]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpsertAssetResponse.ProtoReflect.Descriptor instead.
-func (*UpsertAssetResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{36}
-}
-
-func (x *UpsertAssetResponse) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type UpsertPatchAssetRequest struct {
-	state       protoimpl.MessageState         `protogen:"open.v1"`
-	Asset       *UpsertPatchAssetRequest_Asset `protobuf:"bytes,1,opt,name=asset,proto3" json:"asset,omitempty"`
-	Upstreams   []*LineageNode                 `protobuf:"bytes,2,rep,name=upstreams,proto3" json:"upstreams,omitempty"`
-	Downstreams []*LineageNode                 `protobuf:"bytes,3,rep,name=downstreams,proto3" json:"downstreams,omitempty"`
-	// overwrite_lineage determines whether the asset's lineage should be
-	// overwritten with the upstreams and downstreams specified in the request.
-	// Currently, it is only applicable when both upstreams and downstreams are
-	// empty/not specified.
-	OverwriteLineage bool `protobuf:"varint,4,opt,name=overwrite_lineage,json=overwriteLineage,proto3" json:"overwrite_lineage,omitempty"`
-	UpdateOnly       bool `protobuf:"varint,5,opt,name=update_only,json=updateOnly,proto3" json:"update_only,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
-}
-
-func (x *UpsertPatchAssetRequest) Reset() {
-	*x = UpsertPatchAssetRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[37]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpsertPatchAssetRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpsertPatchAssetRequest) ProtoMessage() {}
-
-func (x *UpsertPatchAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[37]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpsertPatchAssetRequest.ProtoReflect.Descriptor instead.
-func (*UpsertPatchAssetRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{37}
-}
-
-func (x *UpsertPatchAssetRequest) GetAsset() *UpsertPatchAssetRequest_Asset {
-	if x != nil {
-		return x.Asset
-	}
-	return nil
-}
-
-func (x *UpsertPatchAssetRequest) GetUpstreams() []*LineageNode {
-	if x != nil {
-		return x.Upstreams
-	}
-	return nil
-}
-
-func (x *UpsertPatchAssetRequest) GetDownstreams() []*LineageNode {
-	if x != nil {
-		return x.Downstreams
-	}
-	return nil
-}
-
-func (x *UpsertPatchAssetRequest) GetOverwriteLineage() bool {
-	if x != nil {
-		return x.OverwriteLineage
-	}
-	return false
-}
-
-func (x *UpsertPatchAssetRequest) GetUpdateOnly() bool {
-	if x != nil {
-		return x.UpdateOnly
-	}
-	return false
-}
-
-type UpsertPatchAssetResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpsertPatchAssetResponse) Reset() {
-	*x = UpsertPatchAssetResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[38]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpsertPatchAssetResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpsertPatchAssetResponse) ProtoMessage() {}
-
-func (x *UpsertPatchAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[38]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpsertPatchAssetResponse.ProtoReflect.Descriptor instead.
-func (*UpsertPatchAssetResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{38}
-}
-
-func (x *UpsertPatchAssetResponse) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type DeleteAssetRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteAssetRequest) Reset() {
-	*x = DeleteAssetRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[39]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteAssetRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteAssetRequest) ProtoMessage() {}
-
-func (x *DeleteAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[39]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteAssetRequest.ProtoReflect.Descriptor instead.
-func (*DeleteAssetRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{39}
-}
-
-func (x *DeleteAssetRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type DeleteAssetResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteAssetResponse) Reset() {
-	*x = DeleteAssetResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[40]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteAssetResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteAssetResponse) ProtoMessage() {}
-
-func (x *DeleteAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[40]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteAssetResponse.ProtoReflect.Descriptor instead.
-func (*DeleteAssetResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{40}
-}
-
-type GetAssetStargazersRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Size          uint32                 `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
-	Offset        uint32                 `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAssetStargazersRequest) Reset() {
-	*x = GetAssetStargazersRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[41]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAssetStargazersRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAssetStargazersRequest) ProtoMessage() {}
-
-func (x *GetAssetStargazersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[41]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAssetStargazersRequest.ProtoReflect.Descriptor instead.
-func (*GetAssetStargazersRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{41}
-}
-
-func (x *GetAssetStargazersRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *GetAssetStargazersRequest) GetSize() uint32 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-func (x *GetAssetStargazersRequest) GetOffset() uint32 {
-	if x != nil {
-		return x.Offset
-	}
-	return 0
-}
-
-type GetAssetStargazersResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []*User                `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAssetStargazersResponse) Reset() {
-	*x = GetAssetStargazersResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[42]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAssetStargazersResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAssetStargazersResponse) ProtoMessage() {}
-
-func (x *GetAssetStargazersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[42]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAssetStargazersResponse.ProtoReflect.Descriptor instead.
-func (*GetAssetStargazersResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{42}
-}
-
-func (x *GetAssetStargazersResponse) GetData() []*User {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type GetAssetVersionHistoryRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Size          uint32                 `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
-	Offset        uint32                 `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAssetVersionHistoryRequest) Reset() {
-	*x = GetAssetVersionHistoryRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[43]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAssetVersionHistoryRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAssetVersionHistoryRequest) ProtoMessage() {}
-
-func (x *GetAssetVersionHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[43]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAssetVersionHistoryRequest.ProtoReflect.Descriptor instead.
-func (*GetAssetVersionHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{43}
-}
-
-func (x *GetAssetVersionHistoryRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *GetAssetVersionHistoryRequest) GetSize() uint32 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-func (x *GetAssetVersionHistoryRequest) GetOffset() uint32 {
-	if x != nil {
-		return x.Offset
-	}
-	return 0
-}
-
-type GetAssetVersionHistoryResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []*Asset               `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAssetVersionHistoryResponse) Reset() {
-	*x = GetAssetVersionHistoryResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[44]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAssetVersionHistoryResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAssetVersionHistoryResponse) ProtoMessage() {}
-
-func (x *GetAssetVersionHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[44]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAssetVersionHistoryResponse.ProtoReflect.Descriptor instead.
-func (*GetAssetVersionHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{44}
-}
-
-func (x *GetAssetVersionHistoryResponse) GetData() []*Asset {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type GetAssetByVersionRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Version       string                 `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAssetByVersionRequest) Reset() {
-	*x = GetAssetByVersionRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[45]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAssetByVersionRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAssetByVersionRequest) ProtoMessage() {}
-
-func (x *GetAssetByVersionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[45]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAssetByVersionRequest.ProtoReflect.Descriptor instead.
-func (*GetAssetByVersionRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{45}
-}
-
-func (x *GetAssetByVersionRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *GetAssetByVersionRequest) GetVersion() string {
-	if x != nil {
-		return x.Version
-	}
-	return ""
-}
-
-type GetAssetByVersionResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          *Asset                 `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAssetByVersionResponse) Reset() {
-	*x = GetAssetByVersionResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[46]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAssetByVersionResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAssetByVersionResponse) ProtoMessage() {}
-
-func (x *GetAssetByVersionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[46]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAssetByVersionResponse.ProtoReflect.Descriptor instead.
-func (*GetAssetByVersionResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{46}
-}
-
-func (x *GetAssetByVersionResponse) GetData() *Asset {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type CreateAssetProbeRequest struct {
-	state         protoimpl.MessageState         `protogen:"open.v1"`
-	AssetUrn      string                         `protobuf:"bytes,1,opt,name=asset_urn,json=assetUrn,proto3" json:"asset_urn,omitempty"`
-	Probe         *CreateAssetProbeRequest_Probe `protobuf:"bytes,2,opt,name=probe,proto3" json:"probe,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateAssetProbeRequest) Reset() {
-	*x = CreateAssetProbeRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[47]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateAssetProbeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateAssetProbeRequest) ProtoMessage() {}
-
-func (x *CreateAssetProbeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[47]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateAssetProbeRequest.ProtoReflect.Descriptor instead.
-func (*CreateAssetProbeRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{47}
-}
-
-func (x *CreateAssetProbeRequest) GetAssetUrn() string {
-	if x != nil {
-		return x.AssetUrn
-	}
-	return ""
-}
-
-func (x *CreateAssetProbeRequest) GetProbe() *CreateAssetProbeRequest_Probe {
-	if x != nil {
-		return x.Probe
-	}
-	return nil
-}
-
-type CreateAssetProbeResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateAssetProbeResponse) Reset() {
-	*x = CreateAssetProbeResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[48]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateAssetProbeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateAssetProbeResponse) ProtoMessage() {}
-
-func (x *CreateAssetProbeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[48]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateAssetProbeResponse.ProtoReflect.Descriptor instead.
-func (*CreateAssetProbeResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{48}
-}
-
-func (x *CreateAssetProbeResponse) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type GetUserStarredAssetsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Size          uint32                 `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
-	Offset        uint32                 `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetUserStarredAssetsRequest) Reset() {
-	*x = GetUserStarredAssetsRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[49]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetUserStarredAssetsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetUserStarredAssetsRequest) ProtoMessage() {}
-
-func (x *GetUserStarredAssetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[49]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetUserStarredAssetsRequest.ProtoReflect.Descriptor instead.
-func (*GetUserStarredAssetsRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{49}
-}
-
-func (x *GetUserStarredAssetsRequest) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *GetUserStarredAssetsRequest) GetSize() uint32 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-func (x *GetUserStarredAssetsRequest) GetOffset() uint32 {
-	if x != nil {
-		return x.Offset
-	}
-	return 0
-}
-
-type GetUserStarredAssetsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []*Asset               `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetUserStarredAssetsResponse) Reset() {
-	*x = GetUserStarredAssetsResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[50]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetUserStarredAssetsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetUserStarredAssetsResponse) ProtoMessage() {}
-
-func (x *GetUserStarredAssetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[50]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetUserStarredAssetsResponse.ProtoReflect.Descriptor instead.
-func (*GetUserStarredAssetsResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{50}
-}
-
-func (x *GetUserStarredAssetsResponse) GetData() []*Asset {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type GetMyStarredAssetsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Size          uint32                 `protobuf:"varint,1,opt,name=size,proto3" json:"size,omitempty"`
-	Offset        uint32                 `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetMyStarredAssetsRequest) Reset() {
-	*x = GetMyStarredAssetsRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[51]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetMyStarredAssetsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMyStarredAssetsRequest) ProtoMessage() {}
-
-func (x *GetMyStarredAssetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[51]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMyStarredAssetsRequest.ProtoReflect.Descriptor instead.
-func (*GetMyStarredAssetsRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{51}
-}
-
-func (x *GetMyStarredAssetsRequest) GetSize() uint32 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-func (x *GetMyStarredAssetsRequest) GetOffset() uint32 {
-	if x != nil {
-		return x.Offset
-	}
-	return 0
-}
-
-type GetMyStarredAssetsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []*Asset               `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetMyStarredAssetsResponse) Reset() {
-	*x = GetMyStarredAssetsResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[52]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetMyStarredAssetsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMyStarredAssetsResponse) ProtoMessage() {}
-
-func (x *GetMyStarredAssetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[52]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMyStarredAssetsResponse.ProtoReflect.Descriptor instead.
-func (*GetMyStarredAssetsResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{52}
-}
-
-func (x *GetMyStarredAssetsResponse) GetData() []*Asset {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type GetMyStarredAssetRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AssetId       string                 `protobuf:"bytes,1,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetMyStarredAssetRequest) Reset() {
-	*x = GetMyStarredAssetRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[53]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetMyStarredAssetRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMyStarredAssetRequest) ProtoMessage() {}
-
-func (x *GetMyStarredAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[53]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMyStarredAssetRequest.ProtoReflect.Descriptor instead.
-func (*GetMyStarredAssetRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{53}
-}
-
-func (x *GetMyStarredAssetRequest) GetAssetId() string {
-	if x != nil {
-		return x.AssetId
-	}
-	return ""
-}
-
-type GetMyStarredAssetResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          *Asset                 `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetMyStarredAssetResponse) Reset() {
-	*x = GetMyStarredAssetResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[54]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetMyStarredAssetResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMyStarredAssetResponse) ProtoMessage() {}
-
-func (x *GetMyStarredAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[54]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMyStarredAssetResponse.ProtoReflect.Descriptor instead.
-func (*GetMyStarredAssetResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{54}
-}
-
-func (x *GetMyStarredAssetResponse) GetData() *Asset {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type StarAssetRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AssetId       string                 `protobuf:"bytes,1,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *StarAssetRequest) Reset() {
-	*x = StarAssetRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[55]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *StarAssetRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StarAssetRequest) ProtoMessage() {}
-
-func (x *StarAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[55]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StarAssetRequest.ProtoReflect.Descriptor instead.
-func (*StarAssetRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{55}
-}
-
-func (x *StarAssetRequest) GetAssetId() string {
-	if x != nil {
-		return x.AssetId
-	}
-	return ""
-}
-
-type StarAssetResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *StarAssetResponse) Reset() {
-	*x = StarAssetResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[56]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *StarAssetResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StarAssetResponse) ProtoMessage() {}
-
-func (x *StarAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[56]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StarAssetResponse.ProtoReflect.Descriptor instead.
-func (*StarAssetResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{56}
-}
-
-func (x *StarAssetResponse) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type UnstarAssetRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AssetId       string                 `protobuf:"bytes,1,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UnstarAssetRequest) Reset() {
-	*x = UnstarAssetRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[57]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UnstarAssetRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UnstarAssetRequest) ProtoMessage() {}
-
-func (x *UnstarAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[57]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UnstarAssetRequest.ProtoReflect.Descriptor instead.
-func (*UnstarAssetRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{57}
-}
-
-func (x *UnstarAssetRequest) GetAssetId() string {
-	if x != nil {
-		return x.AssetId
-	}
-	return ""
-}
-
-type UnstarAssetResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UnstarAssetResponse) Reset() {
-	*x = UnstarAssetResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[58]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UnstarAssetResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UnstarAssetResponse) ProtoMessage() {}
-
-func (x *UnstarAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[58]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UnstarAssetResponse.ProtoReflect.Descriptor instead.
-func (*UnstarAssetResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{58}
-}
-
-type GetMyDiscussionsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Filter        string                 `protobuf:"bytes,1,opt,name=filter,proto3" json:"filter,omitempty"`
-	Type          string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	State         string                 `protobuf:"bytes,3,opt,name=state,proto3" json:"state,omitempty"`
-	Asset         string                 `protobuf:"bytes,4,opt,name=asset,proto3" json:"asset,omitempty"`
-	Labels        string                 `protobuf:"bytes,5,opt,name=labels,proto3" json:"labels,omitempty"`
-	Sort          string                 `protobuf:"bytes,6,opt,name=sort,proto3" json:"sort,omitempty"`
-	Direction     string                 `protobuf:"bytes,7,opt,name=direction,proto3" json:"direction,omitempty"`
-	Size          uint32                 `protobuf:"varint,8,opt,name=size,proto3" json:"size,omitempty"`
-	Offset        uint32                 `protobuf:"varint,9,opt,name=offset,proto3" json:"offset,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetMyDiscussionsRequest) Reset() {
-	*x = GetMyDiscussionsRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[59]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetMyDiscussionsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMyDiscussionsRequest) ProtoMessage() {}
-
-func (x *GetMyDiscussionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[59]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMyDiscussionsRequest.ProtoReflect.Descriptor instead.
-func (*GetMyDiscussionsRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{59}
-}
-
-func (x *GetMyDiscussionsRequest) GetFilter() string {
-	if x != nil {
-		return x.Filter
-	}
-	return ""
-}
-
-func (x *GetMyDiscussionsRequest) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
-func (x *GetMyDiscussionsRequest) GetState() string {
-	if x != nil {
-		return x.State
-	}
-	return ""
-}
-
-func (x *GetMyDiscussionsRequest) GetAsset() string {
-	if x != nil {
-		return x.Asset
-	}
-	return ""
-}
-
-func (x *GetMyDiscussionsRequest) GetLabels() string {
-	if x != nil {
-		return x.Labels
-	}
-	return ""
-}
-
-func (x *GetMyDiscussionsRequest) GetSort() string {
-	if x != nil {
-		return x.Sort
-	}
-	return ""
-}
-
-func (x *GetMyDiscussionsRequest) GetDirection() string {
-	if x != nil {
-		return x.Direction
-	}
-	return ""
-}
-
-func (x *GetMyDiscussionsRequest) GetSize() uint32 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-func (x *GetMyDiscussionsRequest) GetOffset() uint32 {
-	if x != nil {
-		return x.Offset
-	}
-	return 0
-}
-
-type GetMyDiscussionsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []*Discussion          `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetMyDiscussionsResponse) Reset() {
-	*x = GetMyDiscussionsResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[60]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetMyDiscussionsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMyDiscussionsResponse) ProtoMessage() {}
-
-func (x *GetMyDiscussionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[60]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMyDiscussionsResponse.ProtoReflect.Descriptor instead.
-func (*GetMyDiscussionsResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{60}
-}
-
-func (x *GetMyDiscussionsResponse) GetData() []*Discussion {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type CreateTagAssetRequest struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	AssetId             string                 `protobuf:"bytes,1,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`             // required
-	TemplateUrn         string                 `protobuf:"bytes,2,opt,name=template_urn,json=templateUrn,proto3" json:"template_urn,omitempty"` // required
-	TagValues           []*TagValue            `protobuf:"bytes,3,rep,name=tag_values,json=tagValues,proto3" json:"tag_values,omitempty"`       // required
-	TemplateDisplayName string                 `protobuf:"bytes,4,opt,name=template_display_name,json=templateDisplayName,proto3" json:"template_display_name,omitempty"`
-	TemplateDescription string                 `protobuf:"bytes,5,opt,name=template_description,json=templateDescription,proto3" json:"template_description,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
-}
-
-func (x *CreateTagAssetRequest) Reset() {
-	*x = CreateTagAssetRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[61]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateTagAssetRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateTagAssetRequest) ProtoMessage() {}
-
-func (x *CreateTagAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[61]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateTagAssetRequest.ProtoReflect.Descriptor instead.
-func (*CreateTagAssetRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{61}
-}
-
-func (x *CreateTagAssetRequest) GetAssetId() string {
-	if x != nil {
-		return x.AssetId
-	}
-	return ""
-}
-
-func (x *CreateTagAssetRequest) GetTemplateUrn() string {
-	if x != nil {
-		return x.TemplateUrn
-	}
-	return ""
-}
-
-func (x *CreateTagAssetRequest) GetTagValues() []*TagValue {
-	if x != nil {
-		return x.TagValues
-	}
-	return nil
-}
-
-func (x *CreateTagAssetRequest) GetTemplateDisplayName() string {
-	if x != nil {
-		return x.TemplateDisplayName
-	}
-	return ""
-}
-
-func (x *CreateTagAssetRequest) GetTemplateDescription() string {
-	if x != nil {
-		return x.TemplateDescription
-	}
-	return ""
-}
-
-type CreateTagAssetResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          *Tag                   `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateTagAssetResponse) Reset() {
-	*x = CreateTagAssetResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[62]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateTagAssetResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateTagAssetResponse) ProtoMessage() {}
-
-func (x *CreateTagAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[62]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateTagAssetResponse.ProtoReflect.Descriptor instead.
-func (*CreateTagAssetResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{62}
-}
-
-func (x *CreateTagAssetResponse) GetData() *Tag {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type GetTagByAssetAndTemplateRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AssetId       string                 `protobuf:"bytes,1,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
-	TemplateUrn   string                 `protobuf:"bytes,3,opt,name=template_urn,json=templateUrn,proto3" json:"template_urn,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetTagByAssetAndTemplateRequest) Reset() {
-	*x = GetTagByAssetAndTemplateRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[63]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetTagByAssetAndTemplateRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetTagByAssetAndTemplateRequest) ProtoMessage() {}
-
-func (x *GetTagByAssetAndTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[63]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetTagByAssetAndTemplateRequest.ProtoReflect.Descriptor instead.
-func (*GetTagByAssetAndTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{63}
-}
-
-func (x *GetTagByAssetAndTemplateRequest) GetAssetId() string {
-	if x != nil {
-		return x.AssetId
-	}
-	return ""
-}
-
-func (x *GetTagByAssetAndTemplateRequest) GetTemplateUrn() string {
-	if x != nil {
-		return x.TemplateUrn
-	}
-	return ""
-}
-
-type GetTagByAssetAndTemplateResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          *Tag                   `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetTagByAssetAndTemplateResponse) Reset() {
-	*x = GetTagByAssetAndTemplateResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[64]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetTagByAssetAndTemplateResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetTagByAssetAndTemplateResponse) ProtoMessage() {}
-
-func (x *GetTagByAssetAndTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[64]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetTagByAssetAndTemplateResponse.ProtoReflect.Descriptor instead.
-func (*GetTagByAssetAndTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{64}
-}
-
-func (x *GetTagByAssetAndTemplateResponse) GetData() *Tag {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type UpdateTagAssetRequest struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	AssetId             string                 `protobuf:"bytes,1,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"` // required
-	TemplateUrn         string                 `protobuf:"bytes,2,opt,name=template_urn,json=templateUrn,proto3" json:"template_urn,omitempty"`
-	TagValues           []*TagValue            `protobuf:"bytes,3,rep,name=tag_values,json=tagValues,proto3" json:"tag_values,omitempty"` // required
-	TemplateDisplayName string                 `protobuf:"bytes,4,opt,name=template_display_name,json=templateDisplayName,proto3" json:"template_display_name,omitempty"`
-	TemplateDescription string                 `protobuf:"bytes,5,opt,name=template_description,json=templateDescription,proto3" json:"template_description,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
-}
-
-func (x *UpdateTagAssetRequest) Reset() {
-	*x = UpdateTagAssetRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[65]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateTagAssetRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateTagAssetRequest) ProtoMessage() {}
-
-func (x *UpdateTagAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[65]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateTagAssetRequest.ProtoReflect.Descriptor instead.
-func (*UpdateTagAssetRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{65}
-}
-
-func (x *UpdateTagAssetRequest) GetAssetId() string {
-	if x != nil {
-		return x.AssetId
-	}
-	return ""
-}
-
-func (x *UpdateTagAssetRequest) GetTemplateUrn() string {
-	if x != nil {
-		return x.TemplateUrn
-	}
-	return ""
-}
-
-func (x *UpdateTagAssetRequest) GetTagValues() []*TagValue {
-	if x != nil {
-		return x.TagValues
-	}
-	return nil
-}
-
-func (x *UpdateTagAssetRequest) GetTemplateDisplayName() string {
-	if x != nil {
-		return x.TemplateDisplayName
-	}
-	return ""
-}
-
-func (x *UpdateTagAssetRequest) GetTemplateDescription() string {
-	if x != nil {
-		return x.TemplateDescription
-	}
-	return ""
-}
-
-type UpdateTagAssetResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          *Tag                   `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateTagAssetResponse) Reset() {
-	*x = UpdateTagAssetResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[66]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateTagAssetResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateTagAssetResponse) ProtoMessage() {}
-
-func (x *UpdateTagAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[66]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateTagAssetResponse.ProtoReflect.Descriptor instead.
-func (*UpdateTagAssetResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{66}
-}
-
-func (x *UpdateTagAssetResponse) GetData() *Tag {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type DeleteTagAssetRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AssetId       string                 `protobuf:"bytes,1,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
-	TemplateUrn   string                 `protobuf:"bytes,2,opt,name=template_urn,json=templateUrn,proto3" json:"template_urn,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteTagAssetRequest) Reset() {
-	*x = DeleteTagAssetRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[67]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteTagAssetRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteTagAssetRequest) ProtoMessage() {}
-
-func (x *DeleteTagAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[67]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteTagAssetRequest.ProtoReflect.Descriptor instead.
-func (*DeleteTagAssetRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{67}
-}
-
-func (x *DeleteTagAssetRequest) GetAssetId() string {
-	if x != nil {
-		return x.AssetId
-	}
-	return ""
-}
-
-func (x *DeleteTagAssetRequest) GetTemplateUrn() string {
-	if x != nil {
-		return x.TemplateUrn
-	}
-	return ""
-}
-
-type DeleteTagAssetResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteTagAssetResponse) Reset() {
-	*x = DeleteTagAssetResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[68]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteTagAssetResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteTagAssetResponse) ProtoMessage() {}
-
-func (x *DeleteTagAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[68]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteTagAssetResponse.ProtoReflect.Descriptor instead.
-func (*DeleteTagAssetResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{68}
-}
-
-type GetAllTagsByAssetRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AssetId       string                 `protobuf:"bytes,1,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAllTagsByAssetRequest) Reset() {
-	*x = GetAllTagsByAssetRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[69]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAllTagsByAssetRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllTagsByAssetRequest) ProtoMessage() {}
-
-func (x *GetAllTagsByAssetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[69]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllTagsByAssetRequest.ProtoReflect.Descriptor instead.
-func (*GetAllTagsByAssetRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{69}
-}
-
-func (x *GetAllTagsByAssetRequest) GetAssetId() string {
-	if x != nil {
-		return x.AssetId
-	}
-	return ""
-}
-
-type GetAllTagsByAssetResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []*Tag                 `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAllTagsByAssetResponse) Reset() {
-	*x = GetAllTagsByAssetResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[70]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAllTagsByAssetResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllTagsByAssetResponse) ProtoMessage() {}
-
-func (x *GetAllTagsByAssetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[70]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllTagsByAssetResponse.ProtoReflect.Descriptor instead.
-func (*GetAllTagsByAssetResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{70}
-}
-
-func (x *GetAllTagsByAssetResponse) GetData() []*Tag {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type GetAllTagTemplatesRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Urn           string                 `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAllTagTemplatesRequest) Reset() {
-	*x = GetAllTagTemplatesRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[71]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAllTagTemplatesRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllTagTemplatesRequest) ProtoMessage() {}
-
-func (x *GetAllTagTemplatesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[71]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllTagTemplatesRequest.ProtoReflect.Descriptor instead.
-func (*GetAllTagTemplatesRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{71}
-}
-
-func (x *GetAllTagTemplatesRequest) GetUrn() string {
-	if x != nil {
-		return x.Urn
-	}
-	return ""
-}
-
-type GetAllTagTemplatesResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []*TagTemplate         `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetAllTagTemplatesResponse) Reset() {
-	*x = GetAllTagTemplatesResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[72]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAllTagTemplatesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllTagTemplatesResponse) ProtoMessage() {}
-
-func (x *GetAllTagTemplatesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[72]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllTagTemplatesResponse.ProtoReflect.Descriptor instead.
-func (*GetAllTagTemplatesResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{72}
-}
-
-func (x *GetAllTagTemplatesResponse) GetData() []*TagTemplate {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type CreateTagTemplateRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Urn           string                 `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`                                    // required
-	DisplayName   string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"` // required
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`                    // required
-	Fields        []*TagTemplateField    `protobuf:"bytes,4,rep,name=fields,proto3" json:"fields,omitempty"`                              // required
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateTagTemplateRequest) Reset() {
-	*x = CreateTagTemplateRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[73]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateTagTemplateRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateTagTemplateRequest) ProtoMessage() {}
-
-func (x *CreateTagTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[73]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateTagTemplateRequest.ProtoReflect.Descriptor instead.
-func (*CreateTagTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{73}
-}
-
-func (x *CreateTagTemplateRequest) GetUrn() string {
-	if x != nil {
-		return x.Urn
-	}
-	return ""
-}
-
-func (x *CreateTagTemplateRequest) GetDisplayName() string {
-	if x != nil {
-		return x.DisplayName
-	}
-	return ""
-}
-
-func (x *CreateTagTemplateRequest) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *CreateTagTemplateRequest) GetFields() []*TagTemplateField {
-	if x != nil {
-		return x.Fields
-	}
-	return nil
-}
-
-type CreateTagTemplateResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          *TagTemplate           `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateTagTemplateResponse) Reset() {
-	*x = CreateTagTemplateResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[74]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateTagTemplateResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateTagTemplateResponse) ProtoMessage() {}
-
-func (x *CreateTagTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[74]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateTagTemplateResponse.ProtoReflect.Descriptor instead.
-func (*CreateTagTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{74}
-}
-
-func (x *CreateTagTemplateResponse) GetData() *TagTemplate {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type GetTagTemplateRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	TemplateUrn   string                 `protobuf:"bytes,1,opt,name=template_urn,json=templateUrn,proto3" json:"template_urn,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetTagTemplateRequest) Reset() {
-	*x = GetTagTemplateRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[75]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetTagTemplateRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetTagTemplateRequest) ProtoMessage() {}
-
-func (x *GetTagTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[75]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetTagTemplateRequest.ProtoReflect.Descriptor instead.
-func (*GetTagTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{75}
-}
-
-func (x *GetTagTemplateRequest) GetTemplateUrn() string {
-	if x != nil {
-		return x.TemplateUrn
-	}
-	return ""
-}
-
-type GetTagTemplateResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          *TagTemplate           `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetTagTemplateResponse) Reset() {
-	*x = GetTagTemplateResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[76]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetTagTemplateResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetTagTemplateResponse) ProtoMessage() {}
-
-func (x *GetTagTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[76]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetTagTemplateResponse.ProtoReflect.Descriptor instead.
-func (*GetTagTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{76}
-}
-
-func (x *GetTagTemplateResponse) GetData() *TagTemplate {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type UpdateTagTemplateRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	TemplateUrn   string                 `protobuf:"bytes,1,opt,name=template_urn,json=templateUrn,proto3" json:"template_urn,omitempty"`
-	DisplayName   string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"` // required
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`                    // required
-	Fields        []*TagTemplateField    `protobuf:"bytes,4,rep,name=fields,proto3" json:"fields,omitempty"`                              // required
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateTagTemplateRequest) Reset() {
-	*x = UpdateTagTemplateRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[77]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateTagTemplateRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateTagTemplateRequest) ProtoMessage() {}
-
-func (x *UpdateTagTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[77]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateTagTemplateRequest.ProtoReflect.Descriptor instead.
-func (*UpdateTagTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{77}
-}
-
-func (x *UpdateTagTemplateRequest) GetTemplateUrn() string {
-	if x != nil {
-		return x.TemplateUrn
-	}
-	return ""
-}
-
-func (x *UpdateTagTemplateRequest) GetDisplayName() string {
-	if x != nil {
-		return x.DisplayName
-	}
-	return ""
-}
-
-func (x *UpdateTagTemplateRequest) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *UpdateTagTemplateRequest) GetFields() []*TagTemplateField {
-	if x != nil {
-		return x.Fields
-	}
-	return nil
-}
-
-type UpdateTagTemplateResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          *TagTemplate           `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateTagTemplateResponse) Reset() {
-	*x = UpdateTagTemplateResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[78]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateTagTemplateResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateTagTemplateResponse) ProtoMessage() {}
-
-func (x *UpdateTagTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[78]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateTagTemplateResponse.ProtoReflect.Descriptor instead.
-func (*UpdateTagTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{78}
-}
-
-func (x *UpdateTagTemplateResponse) GetData() *TagTemplate {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type DeleteTagTemplateRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	TemplateUrn   string                 `protobuf:"bytes,1,opt,name=template_urn,json=templateUrn,proto3" json:"template_urn,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteTagTemplateRequest) Reset() {
-	*x = DeleteTagTemplateRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[79]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteTagTemplateRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteTagTemplateRequest) ProtoMessage() {}
-
-func (x *DeleteTagTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[79]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteTagTemplateRequest.ProtoReflect.Descriptor instead.
-func (*DeleteTagTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{79}
-}
-
-func (x *DeleteTagTemplateRequest) GetTemplateUrn() string {
-	if x != nil {
-		return x.TemplateUrn
-	}
-	return ""
-}
-
-type DeleteTagTemplateResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteTagTemplateResponse) Reset() {
-	*x = DeleteTagTemplateResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[80]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteTagTemplateResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteTagTemplateResponse) ProtoMessage() {}
-
-func (x *DeleteTagTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[80]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteTagTemplateResponse.ProtoReflect.Descriptor instead.
-func (*DeleteTagTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{80}
-}
-
-type CreateNamespaceRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	State         string                 `protobuf:"bytes,3,opt,name=state,proto3" json:"state,omitempty"`
-	Metadata      *structpb.Struct       `protobuf:"bytes,4,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateNamespaceRequest) Reset() {
-	*x = CreateNamespaceRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[81]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateNamespaceRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateNamespaceRequest) ProtoMessage() {}
-
-func (x *CreateNamespaceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[81]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateNamespaceRequest.ProtoReflect.Descriptor instead.
-func (*CreateNamespaceRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{81}
-}
-
-func (x *CreateNamespaceRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *CreateNamespaceRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *CreateNamespaceRequest) GetState() string {
-	if x != nil {
-		return x.State
-	}
-	return ""
-}
-
-func (x *CreateNamespaceRequest) GetMetadata() *structpb.Struct {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
-}
-
-type CreateNamespaceResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateNamespaceResponse) Reset() {
-	*x = CreateNamespaceResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[82]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateNamespaceResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateNamespaceResponse) ProtoMessage() {}
-
-func (x *CreateNamespaceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[82]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateNamespaceResponse.ProtoReflect.Descriptor instead.
-func (*CreateNamespaceResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{82}
-}
-
-func (x *CreateNamespaceResponse) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type GetNamespaceRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// set either id or name
-	Urn           string `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetNamespaceRequest) Reset() {
-	*x = GetNamespaceRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[83]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetNamespaceRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetNamespaceRequest) ProtoMessage() {}
-
-func (x *GetNamespaceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[83]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetNamespaceRequest.ProtoReflect.Descriptor instead.
-func (*GetNamespaceRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{83}
-}
-
-func (x *GetNamespaceRequest) GetUrn() string {
-	if x != nil {
-		return x.Urn
-	}
-	return ""
-}
-
-type GetNamespaceResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Namespace     *Namespace             `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetNamespaceResponse) Reset() {
-	*x = GetNamespaceResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[84]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetNamespaceResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetNamespaceResponse) ProtoMessage() {}
-
-func (x *GetNamespaceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[84]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetNamespaceResponse.ProtoReflect.Descriptor instead.
-func (*GetNamespaceResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{84}
-}
-
-func (x *GetNamespaceResponse) GetNamespace() *Namespace {
-	if x != nil {
-		return x.Namespace
-	}
-	return nil
-}
-
-type UpdateNamespaceRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// set either id or name
-	Urn           string           `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
-	State         string           `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
-	Metadata      *structpb.Struct `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateNamespaceRequest) Reset() {
-	*x = UpdateNamespaceRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[85]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateNamespaceRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateNamespaceRequest) ProtoMessage() {}
-
-func (x *UpdateNamespaceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[85]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateNamespaceRequest.ProtoReflect.Descriptor instead.
-func (*UpdateNamespaceRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{85}
-}
-
-func (x *UpdateNamespaceRequest) GetUrn() string {
-	if x != nil {
-		return x.Urn
-	}
-	return ""
-}
-
-func (x *UpdateNamespaceRequest) GetState() string {
-	if x != nil {
-		return x.State
-	}
-	return ""
-}
-
-func (x *UpdateNamespaceRequest) GetMetadata() *structpb.Struct {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
-}
-
-type UpdateNamespaceResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateNamespaceResponse) Reset() {
-	*x = UpdateNamespaceResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[86]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateNamespaceResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateNamespaceResponse) ProtoMessage() {}
-
-func (x *UpdateNamespaceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[86]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateNamespaceResponse.ProtoReflect.Descriptor instead.
-func (*UpdateNamespaceResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{86}
-}
-
-type ListNamespacesRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListNamespacesRequest) Reset() {
-	*x = ListNamespacesRequest{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[87]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListNamespacesRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListNamespacesRequest) ProtoMessage() {}
-
-func (x *ListNamespacesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[87]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListNamespacesRequest.ProtoReflect.Descriptor instead.
-func (*ListNamespacesRequest) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{87}
-}
-
-type ListNamespacesResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Namespaces    []*Namespace           `protobuf:"bytes,1,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListNamespacesResponse) Reset() {
-	*x = ListNamespacesResponse{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[88]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListNamespacesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListNamespacesResponse) ProtoMessage() {}
-
-func (x *ListNamespacesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[88]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListNamespacesResponse.ProtoReflect.Descriptor instead.
-func (*ListNamespacesResponse) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{88}
-}
-
-func (x *ListNamespacesResponse) GetNamespaces() []*Namespace {
-	if x != nil {
-		return x.Namespaces
-	}
-	return nil
-}
 
 type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -4772,7 +38,7 @@ type User struct {
 
 func (x *User) Reset() {
 	*x = User{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[89]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4784,7 +50,7 @@ func (x *User) String() string {
 func (*User) ProtoMessage() {}
 
 func (x *User) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[89]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4797,7 +63,7 @@ func (x *User) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use User.ProtoReflect.Descriptor instead.
 func (*User) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{89}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *User) GetId() string {
@@ -4842,370 +108,38 @@ func (x *User) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-type Change struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
-	Path          []string               `protobuf:"bytes,2,rep,name=path,proto3" json:"path,omitempty"`
-	From          *structpb.Value        `protobuf:"bytes,3,opt,name=from,proto3" json:"from,omitempty"`
-	To            *structpb.Value        `protobuf:"bytes,4,opt,name=to,proto3" json:"to,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Change) Reset() {
-	*x = Change{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[90]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Change) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Change) ProtoMessage() {}
-
-func (x *Change) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[90]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Change.ProtoReflect.Descriptor instead.
-func (*Change) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{90}
-}
-
-func (x *Change) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
-func (x *Change) GetPath() []string {
-	if x != nil {
-		return x.Path
-	}
-	return nil
-}
-
-func (x *Change) GetFrom() *structpb.Value {
-	if x != nil {
-		return x.From
-	}
-	return nil
-}
-
-func (x *Change) GetTo() *structpb.Value {
-	if x != nil {
-		return x.To
-	}
-	return nil
-}
-
-type Asset struct {
+type Entity struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Urn           string                 `protobuf:"bytes,2,opt,name=urn,proto3" json:"urn,omitempty"`
 	Type          string                 `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
-	Service       string                 `protobuf:"bytes,4,opt,name=service,proto3" json:"service,omitempty"`
-	Name          string                 `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
-	Description   string                 `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
-	Data          *structpb.Struct       `protobuf:"bytes,7,opt,name=data,proto3" json:"data,omitempty"`
-	Labels        map[string]string      `protobuf:"bytes,8,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Owners        []*User                `protobuf:"bytes,9,rep,name=owners,proto3" json:"owners,omitempty"`
-	Version       string                 `protobuf:"bytes,10,opt,name=version,proto3" json:"version,omitempty"`
-	UpdatedBy     *User                  `protobuf:"bytes,11,opt,name=updated_by,json=updatedBy,proto3" json:"updated_by,omitempty"`
-	Changelog     []*Change              `protobuf:"bytes,12,rep,name=changelog,proto3" json:"changelog,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	Url           string                 `protobuf:"bytes,15,opt,name=url,proto3" json:"url,omitempty"`
-	Probes        []*Probe               `protobuf:"bytes,16,rep,name=probes,proto3" json:"probes,omitempty"`
-	IsDeleted     bool                   `protobuf:"varint,17,opt,name=is_deleted,json=isDeleted,proto3" json:"is_deleted,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Asset) Reset() {
-	*x = Asset{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[91]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Asset) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Asset) ProtoMessage() {}
-
-func (x *Asset) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[91]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Asset.ProtoReflect.Descriptor instead.
-func (*Asset) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{91}
-}
-
-func (x *Asset) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *Asset) GetUrn() string {
-	if x != nil {
-		return x.Urn
-	}
-	return ""
-}
-
-func (x *Asset) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
-func (x *Asset) GetService() string {
-	if x != nil {
-		return x.Service
-	}
-	return ""
-}
-
-func (x *Asset) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Asset) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *Asset) GetData() *structpb.Struct {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-func (x *Asset) GetLabels() map[string]string {
-	if x != nil {
-		return x.Labels
-	}
-	return nil
-}
-
-func (x *Asset) GetOwners() []*User {
-	if x != nil {
-		return x.Owners
-	}
-	return nil
-}
-
-func (x *Asset) GetVersion() string {
-	if x != nil {
-		return x.Version
-	}
-	return ""
-}
-
-func (x *Asset) GetUpdatedBy() *User {
-	if x != nil {
-		return x.UpdatedBy
-	}
-	return nil
-}
-
-func (x *Asset) GetChangelog() []*Change {
-	if x != nil {
-		return x.Changelog
-	}
-	return nil
-}
-
-func (x *Asset) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *Asset) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return nil
-}
-
-func (x *Asset) GetUrl() string {
-	if x != nil {
-		return x.Url
-	}
-	return ""
-}
-
-func (x *Asset) GetProbes() []*Probe {
-	if x != nil {
-		return x.Probes
-	}
-	return nil
-}
-
-func (x *Asset) GetIsDeleted() bool {
-	if x != nil {
-		return x.IsDeleted
-	}
-	return false
-}
-
-type Probe struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	AssetUrn      string                 `protobuf:"bytes,2,opt,name=asset_urn,json=assetUrn,proto3" json:"asset_urn,omitempty"`
-	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
-	StatusReason  string                 `protobuf:"bytes,4,opt,name=status_reason,json=statusReason,proto3" json:"status_reason,omitempty"`
-	Metadata      *structpb.Struct       `protobuf:"bytes,5,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	Timestamp     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Probe) Reset() {
-	*x = Probe{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[92]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Probe) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Probe) ProtoMessage() {}
-
-func (x *Probe) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[92]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Probe.ProtoReflect.Descriptor instead.
-func (*Probe) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{92}
-}
-
-func (x *Probe) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *Probe) GetAssetUrn() string {
-	if x != nil {
-		return x.AssetUrn
-	}
-	return ""
-}
-
-func (x *Probe) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
-func (x *Probe) GetStatusReason() string {
-	if x != nil {
-		return x.StatusReason
-	}
-	return ""
-}
-
-func (x *Probe) GetMetadata() *structpb.Struct {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
-}
-
-func (x *Probe) GetTimestamp() *timestamppb.Timestamp {
-	if x != nil {
-		return x.Timestamp
-	}
-	return nil
-}
-
-func (x *Probe) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-type Discussion struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Body          string                 `protobuf:"bytes,3,opt,name=body,proto3" json:"body,omitempty"`
-	Type          string                 `protobuf:"bytes,4,opt,name=type,proto3" json:"type,omitempty"`
-	State         string                 `protobuf:"bytes,5,opt,name=state,proto3" json:"state,omitempty"`
-	Labels        []string               `protobuf:"bytes,6,rep,name=labels,proto3" json:"labels,omitempty"`
-	Assets        []string               `protobuf:"bytes,7,rep,name=assets,proto3" json:"assets,omitempty"`
-	Assignees     []string               `protobuf:"bytes,8,rep,name=assignees,proto3" json:"assignees,omitempty"`
-	Owner         *User                  `protobuf:"bytes,9,opt,name=owner,proto3" json:"owner,omitempty"`
+	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	Properties    *structpb.Struct       `protobuf:"bytes,6,opt,name=properties,proto3" json:"properties,omitempty"`
+	Source        string                 `protobuf:"bytes,7,opt,name=source,proto3" json:"source,omitempty"`
+	ValidFrom     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=valid_from,json=validFrom,proto3" json:"valid_from,omitempty"`
+	ValidTo       *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=valid_to,json=validTo,proto3" json:"valid_to,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Discussion) Reset() {
-	*x = Discussion{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[93]
+func (x *Entity) Reset() {
+	*x = Entity{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Discussion) String() string {
+func (x *Entity) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Discussion) ProtoMessage() {}
+func (*Entity) ProtoMessage() {}
 
-func (x *Discussion) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[93]
+func (x *Entity) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5216,266 +150,118 @@ func (x *Discussion) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Discussion.ProtoReflect.Descriptor instead.
-func (*Discussion) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{93}
+// Deprecated: Use Entity.ProtoReflect.Descriptor instead.
+func (*Entity) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Discussion) GetId() string {
+func (x *Entity) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *Discussion) GetTitle() string {
+func (x *Entity) GetUrn() string {
 	if x != nil {
-		return x.Title
+		return x.Urn
 	}
 	return ""
 }
 
-func (x *Discussion) GetBody() string {
-	if x != nil {
-		return x.Body
-	}
-	return ""
-}
-
-func (x *Discussion) GetType() string {
+func (x *Entity) GetType() string {
 	if x != nil {
 		return x.Type
 	}
 	return ""
 }
 
-func (x *Discussion) GetState() string {
+func (x *Entity) GetName() string {
 	if x != nil {
-		return x.State
+		return x.Name
 	}
 	return ""
 }
 
-func (x *Discussion) GetLabels() []string {
+func (x *Entity) GetDescription() string {
 	if x != nil {
-		return x.Labels
-	}
-	return nil
-}
-
-func (x *Discussion) GetAssets() []string {
-	if x != nil {
-		return x.Assets
-	}
-	return nil
-}
-
-func (x *Discussion) GetAssignees() []string {
-	if x != nil {
-		return x.Assignees
-	}
-	return nil
-}
-
-func (x *Discussion) GetOwner() *User {
-	if x != nil {
-		return x.Owner
-	}
-	return nil
-}
-
-func (x *Discussion) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *Discussion) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return nil
-}
-
-type Comment struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	DiscussionId  string                 `protobuf:"bytes,2,opt,name=discussion_id,json=discussionId,proto3" json:"discussion_id,omitempty"`
-	Body          string                 `protobuf:"bytes,3,opt,name=body,proto3" json:"body,omitempty"`
-	Owner         *User                  `protobuf:"bytes,4,opt,name=owner,proto3" json:"owner,omitempty"`
-	UpdatedBy     *User                  `protobuf:"bytes,5,opt,name=updated_by,json=updatedBy,proto3" json:"updated_by,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Comment) Reset() {
-	*x = Comment{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[94]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Comment) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Comment) ProtoMessage() {}
-
-func (x *Comment) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[94]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Comment.ProtoReflect.Descriptor instead.
-func (*Comment) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{94}
-}
-
-func (x *Comment) GetId() string {
-	if x != nil {
-		return x.Id
+		return x.Description
 	}
 	return ""
 }
 
-func (x *Comment) GetDiscussionId() string {
+func (x *Entity) GetProperties() *structpb.Struct {
 	if x != nil {
-		return x.DiscussionId
-	}
-	return ""
-}
-
-func (x *Comment) GetBody() string {
-	if x != nil {
-		return x.Body
-	}
-	return ""
-}
-
-func (x *Comment) GetOwner() *User {
-	if x != nil {
-		return x.Owner
+		return x.Properties
 	}
 	return nil
 }
 
-func (x *Comment) GetUpdatedBy() *User {
-	if x != nil {
-		return x.UpdatedBy
-	}
-	return nil
-}
-
-func (x *Comment) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *Comment) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return nil
-}
-
-type LineageEdge struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Source        string                 `protobuf:"bytes,1,opt,name=source,proto3" json:"source,omitempty"`
-	Target        string                 `protobuf:"bytes,2,opt,name=target,proto3" json:"target,omitempty"`
-	Prop          *structpb.Struct       `protobuf:"bytes,3,opt,name=prop,proto3" json:"prop,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *LineageEdge) Reset() {
-	*x = LineageEdge{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[95]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *LineageEdge) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*LineageEdge) ProtoMessage() {}
-
-func (x *LineageEdge) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[95]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use LineageEdge.ProtoReflect.Descriptor instead.
-func (*LineageEdge) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{95}
-}
-
-func (x *LineageEdge) GetSource() string {
+func (x *Entity) GetSource() string {
 	if x != nil {
 		return x.Source
 	}
 	return ""
 }
 
-func (x *LineageEdge) GetTarget() string {
+func (x *Entity) GetValidFrom() *timestamppb.Timestamp {
 	if x != nil {
-		return x.Target
-	}
-	return ""
-}
-
-func (x *LineageEdge) GetProp() *structpb.Struct {
-	if x != nil {
-		return x.Prop
+		return x.ValidFrom
 	}
 	return nil
 }
 
-type LineageNode struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	Urn   string                 `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
-	// Deprecated: Marked as deprecated in raystack/compass/v1beta1/service.proto.
-	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	// Deprecated: Marked as deprecated in raystack/compass/v1beta1/service.proto.
-	Service       string `protobuf:"bytes,3,opt,name=service,proto3" json:"service,omitempty"`
+func (x *Entity) GetValidTo() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ValidTo
+	}
+	return nil
+}
+
+func (x *Entity) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *Entity) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
+type Edge struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	SourceUrn     string                 `protobuf:"bytes,2,opt,name=source_urn,json=sourceUrn,proto3" json:"source_urn,omitempty"`
+	TargetUrn     string                 `protobuf:"bytes,3,opt,name=target_urn,json=targetUrn,proto3" json:"target_urn,omitempty"`
+	Type          string                 `protobuf:"bytes,4,opt,name=type,proto3" json:"type,omitempty"`
+	Properties    *structpb.Struct       `protobuf:"bytes,5,opt,name=properties,proto3" json:"properties,omitempty"`
+	Source        string                 `protobuf:"bytes,6,opt,name=source,proto3" json:"source,omitempty"`
+	ValidFrom     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=valid_from,json=validFrom,proto3" json:"valid_from,omitempty"`
+	ValidTo       *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=valid_to,json=validTo,proto3" json:"valid_to,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *LineageNode) Reset() {
-	*x = LineageNode{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[96]
+func (x *Edge) Reset() {
+	*x = Edge{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *LineageNode) String() string {
+func (x *Edge) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*LineageNode) ProtoMessage() {}
+func (*Edge) ProtoMessage() {}
 
-func (x *LineageNode) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[96]
+func (x *Edge) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5486,414 +272,70 @@ func (x *LineageNode) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use LineageNode.ProtoReflect.Descriptor instead.
-func (*LineageNode) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{96}
+// Deprecated: Use Edge.ProtoReflect.Descriptor instead.
+func (*Edge) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *LineageNode) GetUrn() string {
+func (x *Edge) GetId() string {
 	if x != nil {
-		return x.Urn
+		return x.Id
 	}
 	return ""
 }
 
-// Deprecated: Marked as deprecated in raystack/compass/v1beta1/service.proto.
-func (x *LineageNode) GetType() string {
+func (x *Edge) GetSourceUrn() string {
+	if x != nil {
+		return x.SourceUrn
+	}
+	return ""
+}
+
+func (x *Edge) GetTargetUrn() string {
+	if x != nil {
+		return x.TargetUrn
+	}
+	return ""
+}
+
+func (x *Edge) GetType() string {
 	if x != nil {
 		return x.Type
 	}
 	return ""
 }
 
-// Deprecated: Marked as deprecated in raystack/compass/v1beta1/service.proto.
-func (x *LineageNode) GetService() string {
+func (x *Edge) GetProperties() *structpb.Struct {
 	if x != nil {
-		return x.Service
-	}
-	return ""
-}
-
-type Tag struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	AssetId             string                 `protobuf:"bytes,1,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
-	TemplateUrn         string                 `protobuf:"bytes,2,opt,name=template_urn,json=templateUrn,proto3" json:"template_urn,omitempty"`
-	TagValues           []*TagValue            `protobuf:"bytes,3,rep,name=tag_values,json=tagValues,proto3" json:"tag_values,omitempty"`
-	TemplateDisplayName string                 `protobuf:"bytes,4,opt,name=template_display_name,json=templateDisplayName,proto3" json:"template_display_name,omitempty"`
-	TemplateDescription string                 `protobuf:"bytes,5,opt,name=template_description,json=templateDescription,proto3" json:"template_description,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
-}
-
-func (x *Tag) Reset() {
-	*x = Tag{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[97]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Tag) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Tag) ProtoMessage() {}
-
-func (x *Tag) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[97]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Tag.ProtoReflect.Descriptor instead.
-func (*Tag) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{97}
-}
-
-func (x *Tag) GetAssetId() string {
-	if x != nil {
-		return x.AssetId
-	}
-	return ""
-}
-
-func (x *Tag) GetTemplateUrn() string {
-	if x != nil {
-		return x.TemplateUrn
-	}
-	return ""
-}
-
-func (x *Tag) GetTagValues() []*TagValue {
-	if x != nil {
-		return x.TagValues
+		return x.Properties
 	}
 	return nil
 }
 
-func (x *Tag) GetTemplateDisplayName() string {
+func (x *Edge) GetSource() string {
 	if x != nil {
-		return x.TemplateDisplayName
+		return x.Source
 	}
 	return ""
 }
 
-func (x *Tag) GetTemplateDescription() string {
+func (x *Edge) GetValidFrom() *timestamppb.Timestamp {
 	if x != nil {
-		return x.TemplateDescription
-	}
-	return ""
-}
-
-type TagValue struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	FieldId          uint32                 `protobuf:"varint,1,opt,name=field_id,json=fieldId,proto3" json:"field_id,omitempty"`
-	FieldValue       *structpb.Value        `protobuf:"bytes,2,opt,name=field_value,json=fieldValue,proto3" json:"field_value,omitempty"`
-	FieldUrn         string                 `protobuf:"bytes,3,opt,name=field_urn,json=fieldUrn,proto3" json:"field_urn,omitempty"`
-	FieldDisplayName string                 `protobuf:"bytes,4,opt,name=field_display_name,json=fieldDisplayName,proto3" json:"field_display_name,omitempty"`
-	FieldDescription string                 `protobuf:"bytes,5,opt,name=field_description,json=fieldDescription,proto3" json:"field_description,omitempty"`
-	FieldDataType    string                 `protobuf:"bytes,6,opt,name=field_data_type,json=fieldDataType,proto3" json:"field_data_type,omitempty"`
-	FieldOptions     []string               `protobuf:"bytes,7,rep,name=field_options,json=fieldOptions,proto3" json:"field_options,omitempty"`
-	FieldRequired    bool                   `protobuf:"varint,8,opt,name=field_required,json=fieldRequired,proto3" json:"field_required,omitempty"`
-	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt        *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
-}
-
-func (x *TagValue) Reset() {
-	*x = TagValue{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[98]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TagValue) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TagValue) ProtoMessage() {}
-
-func (x *TagValue) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[98]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TagValue.ProtoReflect.Descriptor instead.
-func (*TagValue) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{98}
-}
-
-func (x *TagValue) GetFieldId() uint32 {
-	if x != nil {
-		return x.FieldId
-	}
-	return 0
-}
-
-func (x *TagValue) GetFieldValue() *structpb.Value {
-	if x != nil {
-		return x.FieldValue
+		return x.ValidFrom
 	}
 	return nil
 }
 
-func (x *TagValue) GetFieldUrn() string {
+func (x *Edge) GetValidTo() *timestamppb.Timestamp {
 	if x != nil {
-		return x.FieldUrn
-	}
-	return ""
-}
-
-func (x *TagValue) GetFieldDisplayName() string {
-	if x != nil {
-		return x.FieldDisplayName
-	}
-	return ""
-}
-
-func (x *TagValue) GetFieldDescription() string {
-	if x != nil {
-		return x.FieldDescription
-	}
-	return ""
-}
-
-func (x *TagValue) GetFieldDataType() string {
-	if x != nil {
-		return x.FieldDataType
-	}
-	return ""
-}
-
-func (x *TagValue) GetFieldOptions() []string {
-	if x != nil {
-		return x.FieldOptions
+		return x.ValidTo
 	}
 	return nil
 }
 
-func (x *TagValue) GetFieldRequired() bool {
-	if x != nil {
-		return x.FieldRequired
-	}
-	return false
-}
-
-func (x *TagValue) GetCreatedAt() *timestamppb.Timestamp {
+func (x *Edge) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *TagValue) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return nil
-}
-
-type TagTemplate struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Urn           string                 `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
-	DisplayName   string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Fields        []*TagTemplateField    `protobuf:"bytes,4,rep,name=fields,proto3" json:"fields,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TagTemplate) Reset() {
-	*x = TagTemplate{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[99]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TagTemplate) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TagTemplate) ProtoMessage() {}
-
-func (x *TagTemplate) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[99]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TagTemplate.ProtoReflect.Descriptor instead.
-func (*TagTemplate) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{99}
-}
-
-func (x *TagTemplate) GetUrn() string {
-	if x != nil {
-		return x.Urn
-	}
-	return ""
-}
-
-func (x *TagTemplate) GetDisplayName() string {
-	if x != nil {
-		return x.DisplayName
-	}
-	return ""
-}
-
-func (x *TagTemplate) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *TagTemplate) GetFields() []*TagTemplateField {
-	if x != nil {
-		return x.Fields
-	}
-	return nil
-}
-
-func (x *TagTemplate) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *TagTemplate) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return nil
-}
-
-type TagTemplateField struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            uint32                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Urn           string                 `protobuf:"bytes,2,opt,name=urn,proto3" json:"urn,omitempty"`
-	DisplayName   string                 `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	DataType      string                 `protobuf:"bytes,5,opt,name=data_type,json=dataType,proto3" json:"data_type,omitempty"`
-	Options       []string               `protobuf:"bytes,6,rep,name=options,proto3" json:"options,omitempty"`
-	Required      bool                   `protobuf:"varint,7,opt,name=required,proto3" json:"required,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TagTemplateField) Reset() {
-	*x = TagTemplateField{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[100]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TagTemplateField) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TagTemplateField) ProtoMessage() {}
-
-func (x *TagTemplateField) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[100]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TagTemplateField.ProtoReflect.Descriptor instead.
-func (*TagTemplateField) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{100}
-}
-
-func (x *TagTemplateField) GetId() uint32 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-func (x *TagTemplateField) GetUrn() string {
-	if x != nil {
-		return x.Urn
-	}
-	return ""
-}
-
-func (x *TagTemplateField) GetDisplayName() string {
-	if x != nil {
-		return x.DisplayName
-	}
-	return ""
-}
-
-func (x *TagTemplateField) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *TagTemplateField) GetDataType() string {
-	if x != nil {
-		return x.DataType
-	}
-	return ""
-}
-
-func (x *TagTemplateField) GetOptions() []string {
-	if x != nil {
-		return x.Options
-	}
-	return nil
-}
-
-func (x *TagTemplateField) GetRequired() bool {
-	if x != nil {
-		return x.Required
-	}
-	return false
-}
-
-func (x *TagTemplateField) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *TagTemplateField) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
 	}
 	return nil
 }
@@ -5908,7 +350,7 @@ type Type struct {
 
 func (x *Type) Reset() {
 	*x = Type{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[101]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5920,7 +362,7 @@ func (x *Type) String() string {
 func (*Type) ProtoMessage() {}
 
 func (x *Type) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[101]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5933,7 +375,7 @@ func (x *Type) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Type.ProtoReflect.Descriptor instead.
 func (*Type) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{101}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Type) GetName() string {
@@ -5962,7 +404,7 @@ type Namespace struct {
 
 func (x *Namespace) Reset() {
 	*x = Namespace{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[102]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5974,7 +416,7 @@ func (x *Namespace) String() string {
 func (*Namespace) ProtoMessage() {}
 
 func (x *Namespace) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[102]
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5987,7 +429,7 @@ func (x *Namespace) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Namespace.ProtoReflect.Descriptor instead.
 func (*Namespace) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{102}
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Namespace) GetId() string {
@@ -6018,28 +460,32 @@ func (x *Namespace) GetMetadata() *structpb.Struct {
 	return nil
 }
 
-type GetGraphResponse_ProbesInfo struct {
+type GetAllEntitiesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Latest        *Probe                 `protobuf:"bytes,1,opt,name=latest,proto3" json:"latest,omitempty"`
+	Types         string                 `protobuf:"bytes,1,opt,name=types,proto3" json:"types,omitempty"`
+	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	Q             string                 `protobuf:"bytes,3,opt,name=q,proto3" json:"q,omitempty"`
+	Size          uint32                 `protobuf:"varint,4,opt,name=size,proto3" json:"size,omitempty"`
+	Offset        uint32                 `protobuf:"varint,5,opt,name=offset,proto3" json:"offset,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetGraphResponse_ProbesInfo) Reset() {
-	*x = GetGraphResponse_ProbesInfo{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[106]
+func (x *GetAllEntitiesRequest) Reset() {
+	*x = GetAllEntitiesRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetGraphResponse_ProbesInfo) String() string {
+func (x *GetAllEntitiesRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetGraphResponse_ProbesInfo) ProtoMessage() {}
+func (*GetAllEntitiesRequest) ProtoMessage() {}
 
-func (x *GetGraphResponse_ProbesInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[106]
+func (x *GetAllEntitiesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6050,92 +496,69 @@ func (x *GetGraphResponse_ProbesInfo) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetGraphResponse_ProbesInfo.ProtoReflect.Descriptor instead.
-func (*GetGraphResponse_ProbesInfo) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{28, 0}
+// Deprecated: Use GetAllEntitiesRequest.ProtoReflect.Descriptor instead.
+func (*GetAllEntitiesRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *GetGraphResponse_ProbesInfo) GetLatest() *Probe {
+func (x *GetAllEntitiesRequest) GetTypes() string {
 	if x != nil {
-		return x.Latest
+		return x.Types
 	}
-	return nil
+	return ""
 }
 
-type GetGraphResponse_NodeAttributes struct {
-	state         protoimpl.MessageState       `protogen:"open.v1"`
-	Probes        *GetGraphResponse_ProbesInfo `protobuf:"bytes,1,opt,name=probes,proto3" json:"probes,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetGraphResponse_NodeAttributes) Reset() {
-	*x = GetGraphResponse_NodeAttributes{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[107]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetGraphResponse_NodeAttributes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetGraphResponse_NodeAttributes) ProtoMessage() {}
-
-func (x *GetGraphResponse_NodeAttributes) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[107]
+func (x *GetAllEntitiesRequest) GetSource() string {
 	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
+		return x.Source
 	}
-	return mi.MessageOf(x)
+	return ""
 }
 
-// Deprecated: Use GetGraphResponse_NodeAttributes.ProtoReflect.Descriptor instead.
-func (*GetGraphResponse_NodeAttributes) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{28, 1}
-}
-
-func (x *GetGraphResponse_NodeAttributes) GetProbes() *GetGraphResponse_ProbesInfo {
+func (x *GetAllEntitiesRequest) GetQ() string {
 	if x != nil {
-		return x.Probes
+		return x.Q
 	}
-	return nil
+	return ""
 }
 
-type UpsertAssetRequest_Asset struct {
+func (x *GetAllEntitiesRequest) GetSize() uint32 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *GetAllEntitiesRequest) GetOffset() uint32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type GetAllEntitiesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Urn           string                 `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
-	Type          string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Service       string                 `protobuf:"bytes,4,opt,name=service,proto3" json:"service,omitempty"`
-	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	Data          *structpb.Struct       `protobuf:"bytes,6,opt,name=data,proto3" json:"data,omitempty"`
-	Labels        map[string]string      `protobuf:"bytes,7,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Owners        []*User                `protobuf:"bytes,8,rep,name=owners,proto3" json:"owners,omitempty"`
-	Url           string                 `protobuf:"bytes,9,opt,name=url,proto3" json:"url,omitempty"`
+	Data          []*Entity              `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	Total         uint32                 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UpsertAssetRequest_Asset) Reset() {
-	*x = UpsertAssetRequest_Asset{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[111]
+func (x *GetAllEntitiesResponse) Reset() {
+	*x = GetAllEntitiesResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UpsertAssetRequest_Asset) String() string {
+func (x *GetAllEntitiesResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpsertAssetRequest_Asset) ProtoMessage() {}
+func (*GetAllEntitiesResponse) ProtoMessage() {}
 
-func (x *UpsertAssetRequest_Asset) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[111]
+func (x *GetAllEntitiesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6146,208 +569,47 @@ func (x *UpsertAssetRequest_Asset) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpsertAssetRequest_Asset.ProtoReflect.Descriptor instead.
-func (*UpsertAssetRequest_Asset) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{35, 0}
+// Deprecated: Use GetAllEntitiesResponse.ProtoReflect.Descriptor instead.
+func (*GetAllEntitiesResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *UpsertAssetRequest_Asset) GetUrn() string {
-	if x != nil {
-		return x.Urn
-	}
-	return ""
-}
-
-func (x *UpsertAssetRequest_Asset) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
-func (x *UpsertAssetRequest_Asset) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *UpsertAssetRequest_Asset) GetService() string {
-	if x != nil {
-		return x.Service
-	}
-	return ""
-}
-
-func (x *UpsertAssetRequest_Asset) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *UpsertAssetRequest_Asset) GetData() *structpb.Struct {
+func (x *GetAllEntitiesResponse) GetData() []*Entity {
 	if x != nil {
 		return x.Data
 	}
 	return nil
 }
 
-func (x *UpsertAssetRequest_Asset) GetLabels() map[string]string {
+func (x *GetAllEntitiesResponse) GetTotal() uint32 {
 	if x != nil {
-		return x.Labels
+		return x.Total
 	}
-	return nil
+	return 0
 }
 
-func (x *UpsertAssetRequest_Asset) GetOwners() []*User {
-	if x != nil {
-		return x.Owners
-	}
-	return nil
-}
-
-func (x *UpsertAssetRequest_Asset) GetUrl() string {
-	if x != nil {
-		return x.Url
-	}
-	return ""
-}
-
-type UpsertPatchAssetRequest_Asset struct {
-	state         protoimpl.MessageState  `protogen:"open.v1"`
-	Urn           string                  `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
-	Type          string                  `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	Name          *wrapperspb.StringValue `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Service       string                  `protobuf:"bytes,4,opt,name=service,proto3" json:"service,omitempty"`
-	Description   *wrapperspb.StringValue `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	Data          *structpb.Struct        `protobuf:"bytes,6,opt,name=data,proto3" json:"data,omitempty"`
-	Labels        map[string]string       `protobuf:"bytes,7,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Owners        []*User                 `protobuf:"bytes,8,rep,name=owners,proto3" json:"owners,omitempty"`
-	Url           string                  `protobuf:"bytes,9,opt,name=url,proto3" json:"url,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpsertPatchAssetRequest_Asset) Reset() {
-	*x = UpsertPatchAssetRequest_Asset{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[113]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpsertPatchAssetRequest_Asset) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpsertPatchAssetRequest_Asset) ProtoMessage() {}
-
-func (x *UpsertPatchAssetRequest_Asset) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[113]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpsertPatchAssetRequest_Asset.ProtoReflect.Descriptor instead.
-func (*UpsertPatchAssetRequest_Asset) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{37, 0}
-}
-
-func (x *UpsertPatchAssetRequest_Asset) GetUrn() string {
-	if x != nil {
-		return x.Urn
-	}
-	return ""
-}
-
-func (x *UpsertPatchAssetRequest_Asset) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
-func (x *UpsertPatchAssetRequest_Asset) GetName() *wrapperspb.StringValue {
-	if x != nil {
-		return x.Name
-	}
-	return nil
-}
-
-func (x *UpsertPatchAssetRequest_Asset) GetService() string {
-	if x != nil {
-		return x.Service
-	}
-	return ""
-}
-
-func (x *UpsertPatchAssetRequest_Asset) GetDescription() *wrapperspb.StringValue {
-	if x != nil {
-		return x.Description
-	}
-	return nil
-}
-
-func (x *UpsertPatchAssetRequest_Asset) GetData() *structpb.Struct {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-func (x *UpsertPatchAssetRequest_Asset) GetLabels() map[string]string {
-	if x != nil {
-		return x.Labels
-	}
-	return nil
-}
-
-func (x *UpsertPatchAssetRequest_Asset) GetOwners() []*User {
-	if x != nil {
-		return x.Owners
-	}
-	return nil
-}
-
-func (x *UpsertPatchAssetRequest_Asset) GetUrl() string {
-	if x != nil {
-		return x.Url
-	}
-	return ""
-}
-
-type CreateAssetProbeRequest_Probe struct {
+type GetEntityByIDRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
-	StatusReason  string                 `protobuf:"bytes,2,opt,name=status_reason,json=statusReason,proto3" json:"status_reason,omitempty"`
-	Metadata      *structpb.Struct       `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	Timestamp     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	Id            string                 `protobuf:"bytes,5,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateAssetProbeRequest_Probe) Reset() {
-	*x = CreateAssetProbeRequest_Probe{}
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[115]
+func (x *GetEntityByIDRequest) Reset() {
+	*x = GetEntityByIDRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateAssetProbeRequest_Probe) String() string {
+func (x *GetEntityByIDRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateAssetProbeRequest_Probe) ProtoMessage() {}
+func (*GetEntityByIDRequest) ProtoMessage() {}
 
-func (x *CreateAssetProbeRequest_Probe) ProtoReflect() protoreflect.Message {
-	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[115]
+func (x *GetEntityByIDRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6358,381 +620,2230 @@ func (x *CreateAssetProbeRequest_Probe) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateAssetProbeRequest_Probe.ProtoReflect.Descriptor instead.
-func (*CreateAssetProbeRequest_Probe) Descriptor() ([]byte, []int) {
-	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{47, 0}
+// Deprecated: Use GetEntityByIDRequest.ProtoReflect.Descriptor instead.
+func (*GetEntityByIDRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *CreateAssetProbeRequest_Probe) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
-func (x *CreateAssetProbeRequest_Probe) GetStatusReason() string {
-	if x != nil {
-		return x.StatusReason
-	}
-	return ""
-}
-
-func (x *CreateAssetProbeRequest_Probe) GetMetadata() *structpb.Struct {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
-}
-
-func (x *CreateAssetProbeRequest_Probe) GetTimestamp() *timestamppb.Timestamp {
-	if x != nil {
-		return x.Timestamp
-	}
-	return nil
-}
-
-func (x *CreateAssetProbeRequest_Probe) GetId() string {
+func (x *GetEntityByIDRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
+type GetEntityByIDResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          *Entity                `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEntityByIDResponse) Reset() {
+	*x = GetEntityByIDResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEntityByIDResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEntityByIDResponse) ProtoMessage() {}
+
+func (x *GetEntityByIDResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEntityByIDResponse.ProtoReflect.Descriptor instead.
+func (*GetEntityByIDResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GetEntityByIDResponse) GetData() *Entity {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type UpsertEntityRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Urn           string                 `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
+	Type          string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	Properties    *structpb.Struct       `protobuf:"bytes,5,opt,name=properties,proto3" json:"properties,omitempty"`
+	Source        string                 `protobuf:"bytes,6,opt,name=source,proto3" json:"source,omitempty"`
+	Upstreams     []string               `protobuf:"bytes,7,rep,name=upstreams,proto3" json:"upstreams,omitempty"`
+	Downstreams   []string               `protobuf:"bytes,8,rep,name=downstreams,proto3" json:"downstreams,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpsertEntityRequest) Reset() {
+	*x = UpsertEntityRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpsertEntityRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpsertEntityRequest) ProtoMessage() {}
+
+func (x *UpsertEntityRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpsertEntityRequest.ProtoReflect.Descriptor instead.
+func (*UpsertEntityRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *UpsertEntityRequest) GetUrn() string {
+	if x != nil {
+		return x.Urn
+	}
+	return ""
+}
+
+func (x *UpsertEntityRequest) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *UpsertEntityRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UpsertEntityRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *UpsertEntityRequest) GetProperties() *structpb.Struct {
+	if x != nil {
+		return x.Properties
+	}
+	return nil
+}
+
+func (x *UpsertEntityRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *UpsertEntityRequest) GetUpstreams() []string {
+	if x != nil {
+		return x.Upstreams
+	}
+	return nil
+}
+
+func (x *UpsertEntityRequest) GetDownstreams() []string {
+	if x != nil {
+		return x.Downstreams
+	}
+	return nil
+}
+
+type UpsertEntityResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpsertEntityResponse) Reset() {
+	*x = UpsertEntityResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpsertEntityResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpsertEntityResponse) ProtoMessage() {}
+
+func (x *UpsertEntityResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpsertEntityResponse.ProtoReflect.Descriptor instead.
+func (*UpsertEntityResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *UpsertEntityResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type DeleteEntityRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Urn           string                 `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteEntityRequest) Reset() {
+	*x = DeleteEntityRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteEntityRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteEntityRequest) ProtoMessage() {}
+
+func (x *DeleteEntityRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteEntityRequest.ProtoReflect.Descriptor instead.
+func (*DeleteEntityRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *DeleteEntityRequest) GetUrn() string {
+	if x != nil {
+		return x.Urn
+	}
+	return ""
+}
+
+type DeleteEntityResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteEntityResponse) Reset() {
+	*x = DeleteEntityResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteEntityResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteEntityResponse) ProtoMessage() {}
+
+func (x *DeleteEntityResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteEntityResponse.ProtoReflect.Descriptor instead.
+func (*DeleteEntityResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{12}
+}
+
+type SearchEntitiesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	Types         string                 `protobuf:"bytes,2,opt,name=types,proto3" json:"types,omitempty"`
+	Source        string                 `protobuf:"bytes,3,opt,name=source,proto3" json:"source,omitempty"`
+	Mode          string                 `protobuf:"bytes,4,opt,name=mode,proto3" json:"mode,omitempty"` // keyword, semantic, hybrid
+	Size          uint32                 `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"`
+	Offset        uint32                 `protobuf:"varint,6,opt,name=offset,proto3" json:"offset,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchEntitiesRequest) Reset() {
+	*x = SearchEntitiesRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchEntitiesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchEntitiesRequest) ProtoMessage() {}
+
+func (x *SearchEntitiesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchEntitiesRequest.ProtoReflect.Descriptor instead.
+func (*SearchEntitiesRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *SearchEntitiesRequest) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
+func (x *SearchEntitiesRequest) GetTypes() string {
+	if x != nil {
+		return x.Types
+	}
+	return ""
+}
+
+func (x *SearchEntitiesRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *SearchEntitiesRequest) GetMode() string {
+	if x != nil {
+		return x.Mode
+	}
+	return ""
+}
+
+func (x *SearchEntitiesRequest) GetSize() uint32 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *SearchEntitiesRequest) GetOffset() uint32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type SearchEntitiesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []*Entity              `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchEntitiesResponse) Reset() {
+	*x = SearchEntitiesResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchEntitiesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchEntitiesResponse) ProtoMessage() {}
+
+func (x *SearchEntitiesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchEntitiesResponse.ProtoReflect.Descriptor instead.
+func (*SearchEntitiesResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *SearchEntitiesResponse) GetData() []*Entity {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type SuggestEntitiesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SuggestEntitiesRequest) Reset() {
+	*x = SuggestEntitiesRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SuggestEntitiesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SuggestEntitiesRequest) ProtoMessage() {}
+
+func (x *SuggestEntitiesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SuggestEntitiesRequest.ProtoReflect.Descriptor instead.
+func (*SuggestEntitiesRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *SuggestEntitiesRequest) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
+type SuggestEntitiesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []string               `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SuggestEntitiesResponse) Reset() {
+	*x = SuggestEntitiesResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SuggestEntitiesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SuggestEntitiesResponse) ProtoMessage() {}
+
+func (x *SuggestEntitiesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SuggestEntitiesResponse.ProtoReflect.Descriptor instead.
+func (*SuggestEntitiesResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *SuggestEntitiesResponse) GetData() []string {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type GetEntityTypesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEntityTypesRequest) Reset() {
+	*x = GetEntityTypesRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEntityTypesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEntityTypesRequest) ProtoMessage() {}
+
+func (x *GetEntityTypesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEntityTypesRequest.ProtoReflect.Descriptor instead.
+func (*GetEntityTypesRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{17}
+}
+
+type GetEntityTypesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []*Type                `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEntityTypesResponse) Reset() {
+	*x = GetEntityTypesResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEntityTypesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEntityTypesResponse) ProtoMessage() {}
+
+func (x *GetEntityTypesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEntityTypesResponse.ProtoReflect.Descriptor instead.
+func (*GetEntityTypesResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *GetEntityTypesResponse) GetData() []*Type {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type GetEntityContextRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Urn           string                 `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
+	Depth         uint32                 `protobuf:"varint,2,opt,name=depth,proto3" json:"depth,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEntityContextRequest) Reset() {
+	*x = GetEntityContextRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEntityContextRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEntityContextRequest) ProtoMessage() {}
+
+func (x *GetEntityContextRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEntityContextRequest.ProtoReflect.Descriptor instead.
+func (*GetEntityContextRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *GetEntityContextRequest) GetUrn() string {
+	if x != nil {
+		return x.Urn
+	}
+	return ""
+}
+
+func (x *GetEntityContextRequest) GetDepth() uint32 {
+	if x != nil {
+		return x.Depth
+	}
+	return 0
+}
+
+type GetEntityContextResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Entity        *Entity                `protobuf:"bytes,1,opt,name=entity,proto3" json:"entity,omitempty"`
+	Edges         []*Edge                `protobuf:"bytes,2,rep,name=edges,proto3" json:"edges,omitempty"`
+	Related       []*Entity              `protobuf:"bytes,3,rep,name=related,proto3" json:"related,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEntityContextResponse) Reset() {
+	*x = GetEntityContextResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEntityContextResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEntityContextResponse) ProtoMessage() {}
+
+func (x *GetEntityContextResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEntityContextResponse.ProtoReflect.Descriptor instead.
+func (*GetEntityContextResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *GetEntityContextResponse) GetEntity() *Entity {
+	if x != nil {
+		return x.Entity
+	}
+	return nil
+}
+
+func (x *GetEntityContextResponse) GetEdges() []*Edge {
+	if x != nil {
+		return x.Edges
+	}
+	return nil
+}
+
+func (x *GetEntityContextResponse) GetRelated() []*Entity {
+	if x != nil {
+		return x.Related
+	}
+	return nil
+}
+
+type GetEntityImpactRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Urn           string                 `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
+	Depth         uint32                 `protobuf:"varint,2,opt,name=depth,proto3" json:"depth,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEntityImpactRequest) Reset() {
+	*x = GetEntityImpactRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEntityImpactRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEntityImpactRequest) ProtoMessage() {}
+
+func (x *GetEntityImpactRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEntityImpactRequest.ProtoReflect.Descriptor instead.
+func (*GetEntityImpactRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *GetEntityImpactRequest) GetUrn() string {
+	if x != nil {
+		return x.Urn
+	}
+	return ""
+}
+
+func (x *GetEntityImpactRequest) GetDepth() uint32 {
+	if x != nil {
+		return x.Depth
+	}
+	return 0
+}
+
+type GetEntityImpactResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Edges         []*Edge                `protobuf:"bytes,1,rep,name=edges,proto3" json:"edges,omitempty"`
+	Affected      []*Entity              `protobuf:"bytes,2,rep,name=affected,proto3" json:"affected,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEntityImpactResponse) Reset() {
+	*x = GetEntityImpactResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEntityImpactResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEntityImpactResponse) ProtoMessage() {}
+
+func (x *GetEntityImpactResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEntityImpactResponse.ProtoReflect.Descriptor instead.
+func (*GetEntityImpactResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *GetEntityImpactResponse) GetEdges() []*Edge {
+	if x != nil {
+		return x.Edges
+	}
+	return nil
+}
+
+func (x *GetEntityImpactResponse) GetAffected() []*Entity {
+	if x != nil {
+		return x.Affected
+	}
+	return nil
+}
+
+type UpsertEdgeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SourceUrn     string                 `protobuf:"bytes,1,opt,name=source_urn,json=sourceUrn,proto3" json:"source_urn,omitempty"`
+	TargetUrn     string                 `protobuf:"bytes,2,opt,name=target_urn,json=targetUrn,proto3" json:"target_urn,omitempty"`
+	Type          string                 `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
+	Properties    *structpb.Struct       `protobuf:"bytes,4,opt,name=properties,proto3" json:"properties,omitempty"`
+	Source        string                 `protobuf:"bytes,5,opt,name=source,proto3" json:"source,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpsertEdgeRequest) Reset() {
+	*x = UpsertEdgeRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpsertEdgeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpsertEdgeRequest) ProtoMessage() {}
+
+func (x *UpsertEdgeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpsertEdgeRequest.ProtoReflect.Descriptor instead.
+func (*UpsertEdgeRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *UpsertEdgeRequest) GetSourceUrn() string {
+	if x != nil {
+		return x.SourceUrn
+	}
+	return ""
+}
+
+func (x *UpsertEdgeRequest) GetTargetUrn() string {
+	if x != nil {
+		return x.TargetUrn
+	}
+	return ""
+}
+
+func (x *UpsertEdgeRequest) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *UpsertEdgeRequest) GetProperties() *structpb.Struct {
+	if x != nil {
+		return x.Properties
+	}
+	return nil
+}
+
+func (x *UpsertEdgeRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+type UpsertEdgeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpsertEdgeResponse) Reset() {
+	*x = UpsertEdgeResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpsertEdgeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpsertEdgeResponse) ProtoMessage() {}
+
+func (x *UpsertEdgeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpsertEdgeResponse.ProtoReflect.Descriptor instead.
+func (*UpsertEdgeResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *UpsertEdgeResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type GetEdgesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Urn           string                 `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
+	Direction     string                 `protobuf:"bytes,2,opt,name=direction,proto3" json:"direction,omitempty"` // outgoing, incoming, both
+	Type          string                 `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
+	CurrentOnly   bool                   `protobuf:"varint,4,opt,name=current_only,json=currentOnly,proto3" json:"current_only,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEdgesRequest) Reset() {
+	*x = GetEdgesRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEdgesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEdgesRequest) ProtoMessage() {}
+
+func (x *GetEdgesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEdgesRequest.ProtoReflect.Descriptor instead.
+func (*GetEdgesRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *GetEdgesRequest) GetUrn() string {
+	if x != nil {
+		return x.Urn
+	}
+	return ""
+}
+
+func (x *GetEdgesRequest) GetDirection() string {
+	if x != nil {
+		return x.Direction
+	}
+	return ""
+}
+
+func (x *GetEdgesRequest) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *GetEdgesRequest) GetCurrentOnly() bool {
+	if x != nil {
+		return x.CurrentOnly
+	}
+	return false
+}
+
+type GetEdgesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []*Edge                `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEdgesResponse) Reset() {
+	*x = GetEdgesResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEdgesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEdgesResponse) ProtoMessage() {}
+
+func (x *GetEdgesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEdgesResponse.ProtoReflect.Descriptor instead.
+func (*GetEdgesResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *GetEdgesResponse) GetData() []*Edge {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type DeleteEdgeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SourceUrn     string                 `protobuf:"bytes,1,opt,name=source_urn,json=sourceUrn,proto3" json:"source_urn,omitempty"`
+	TargetUrn     string                 `protobuf:"bytes,2,opt,name=target_urn,json=targetUrn,proto3" json:"target_urn,omitempty"`
+	Type          string                 `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteEdgeRequest) Reset() {
+	*x = DeleteEdgeRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteEdgeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteEdgeRequest) ProtoMessage() {}
+
+func (x *DeleteEdgeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteEdgeRequest.ProtoReflect.Descriptor instead.
+func (*DeleteEdgeRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *DeleteEdgeRequest) GetSourceUrn() string {
+	if x != nil {
+		return x.SourceUrn
+	}
+	return ""
+}
+
+func (x *DeleteEdgeRequest) GetTargetUrn() string {
+	if x != nil {
+		return x.TargetUrn
+	}
+	return ""
+}
+
+func (x *DeleteEdgeRequest) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+type DeleteEdgeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteEdgeResponse) Reset() {
+	*x = DeleteEdgeResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteEdgeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteEdgeResponse) ProtoMessage() {}
+
+func (x *DeleteEdgeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteEdgeResponse.ProtoReflect.Descriptor instead.
+func (*DeleteEdgeResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{28}
+}
+
+type StarEntityRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EntityId      string                 `protobuf:"bytes,1,opt,name=entity_id,json=entityId,proto3" json:"entity_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StarEntityRequest) Reset() {
+	*x = StarEntityRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StarEntityRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StarEntityRequest) ProtoMessage() {}
+
+func (x *StarEntityRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StarEntityRequest.ProtoReflect.Descriptor instead.
+func (*StarEntityRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *StarEntityRequest) GetEntityId() string {
+	if x != nil {
+		return x.EntityId
+	}
+	return ""
+}
+
+type StarEntityResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StarEntityResponse) Reset() {
+	*x = StarEntityResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StarEntityResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StarEntityResponse) ProtoMessage() {}
+
+func (x *StarEntityResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StarEntityResponse.ProtoReflect.Descriptor instead.
+func (*StarEntityResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *StarEntityResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type UnstarEntityRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EntityId      string                 `protobuf:"bytes,1,opt,name=entity_id,json=entityId,proto3" json:"entity_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UnstarEntityRequest) Reset() {
+	*x = UnstarEntityRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnstarEntityRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnstarEntityRequest) ProtoMessage() {}
+
+func (x *UnstarEntityRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnstarEntityRequest.ProtoReflect.Descriptor instead.
+func (*UnstarEntityRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *UnstarEntityRequest) GetEntityId() string {
+	if x != nil {
+		return x.EntityId
+	}
+	return ""
+}
+
+type UnstarEntityResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UnstarEntityResponse) Reset() {
+	*x = UnstarEntityResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnstarEntityResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnstarEntityResponse) ProtoMessage() {}
+
+func (x *UnstarEntityResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnstarEntityResponse.ProtoReflect.Descriptor instead.
+func (*UnstarEntityResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{32}
+}
+
+type GetUserStarredEntitiesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Size          uint32                 `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
+	Offset        uint32                 `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserStarredEntitiesRequest) Reset() {
+	*x = GetUserStarredEntitiesRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserStarredEntitiesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserStarredEntitiesRequest) ProtoMessage() {}
+
+func (x *GetUserStarredEntitiesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserStarredEntitiesRequest.ProtoReflect.Descriptor instead.
+func (*GetUserStarredEntitiesRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *GetUserStarredEntitiesRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *GetUserStarredEntitiesRequest) GetSize() uint32 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *GetUserStarredEntitiesRequest) GetOffset() uint32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type GetUserStarredEntitiesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []*Entity              `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserStarredEntitiesResponse) Reset() {
+	*x = GetUserStarredEntitiesResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserStarredEntitiesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserStarredEntitiesResponse) ProtoMessage() {}
+
+func (x *GetUserStarredEntitiesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserStarredEntitiesResponse.ProtoReflect.Descriptor instead.
+func (*GetUserStarredEntitiesResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *GetUserStarredEntitiesResponse) GetData() []*Entity {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type GetMyStarredEntitiesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Size          uint32                 `protobuf:"varint,1,opt,name=size,proto3" json:"size,omitempty"`
+	Offset        uint32                 `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMyStarredEntitiesRequest) Reset() {
+	*x = GetMyStarredEntitiesRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMyStarredEntitiesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMyStarredEntitiesRequest) ProtoMessage() {}
+
+func (x *GetMyStarredEntitiesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMyStarredEntitiesRequest.ProtoReflect.Descriptor instead.
+func (*GetMyStarredEntitiesRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *GetMyStarredEntitiesRequest) GetSize() uint32 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *GetMyStarredEntitiesRequest) GetOffset() uint32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type GetMyStarredEntitiesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []*Entity              `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMyStarredEntitiesResponse) Reset() {
+	*x = GetMyStarredEntitiesResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMyStarredEntitiesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMyStarredEntitiesResponse) ProtoMessage() {}
+
+func (x *GetMyStarredEntitiesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMyStarredEntitiesResponse.ProtoReflect.Descriptor instead.
+func (*GetMyStarredEntitiesResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *GetMyStarredEntitiesResponse) GetData() []*Entity {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type GetMyStarredEntityRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EntityId      string                 `protobuf:"bytes,1,opt,name=entity_id,json=entityId,proto3" json:"entity_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMyStarredEntityRequest) Reset() {
+	*x = GetMyStarredEntityRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMyStarredEntityRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMyStarredEntityRequest) ProtoMessage() {}
+
+func (x *GetMyStarredEntityRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMyStarredEntityRequest.ProtoReflect.Descriptor instead.
+func (*GetMyStarredEntityRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *GetMyStarredEntityRequest) GetEntityId() string {
+	if x != nil {
+		return x.EntityId
+	}
+	return ""
+}
+
+type GetMyStarredEntityResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          *Entity                `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMyStarredEntityResponse) Reset() {
+	*x = GetMyStarredEntityResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMyStarredEntityResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMyStarredEntityResponse) ProtoMessage() {}
+
+func (x *GetMyStarredEntityResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMyStarredEntityResponse.ProtoReflect.Descriptor instead.
+func (*GetMyStarredEntityResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *GetMyStarredEntityResponse) GetData() *Entity {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type GetEntityStargazersRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Size          uint32                 `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
+	Offset        uint32                 `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEntityStargazersRequest) Reset() {
+	*x = GetEntityStargazersRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEntityStargazersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEntityStargazersRequest) ProtoMessage() {}
+
+func (x *GetEntityStargazersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEntityStargazersRequest.ProtoReflect.Descriptor instead.
+func (*GetEntityStargazersRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *GetEntityStargazersRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *GetEntityStargazersRequest) GetSize() uint32 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *GetEntityStargazersRequest) GetOffset() uint32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type GetEntityStargazersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []*User                `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEntityStargazersResponse) Reset() {
+	*x = GetEntityStargazersResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEntityStargazersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEntityStargazersResponse) ProtoMessage() {}
+
+func (x *GetEntityStargazersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEntityStargazersResponse.ProtoReflect.Descriptor instead.
+func (*GetEntityStargazersResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *GetEntityStargazersResponse) GetData() []*User {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type CreateNamespaceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	State         string                 `protobuf:"bytes,3,opt,name=state,proto3" json:"state,omitempty"`
+	Metadata      *structpb.Struct       `protobuf:"bytes,4,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateNamespaceRequest) Reset() {
+	*x = CreateNamespaceRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateNamespaceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateNamespaceRequest) ProtoMessage() {}
+
+func (x *CreateNamespaceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateNamespaceRequest.ProtoReflect.Descriptor instead.
+func (*CreateNamespaceRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *CreateNamespaceRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CreateNamespaceRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateNamespaceRequest) GetState() string {
+	if x != nil {
+		return x.State
+	}
+	return ""
+}
+
+func (x *CreateNamespaceRequest) GetMetadata() *structpb.Struct {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+type CreateNamespaceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateNamespaceResponse) Reset() {
+	*x = CreateNamespaceResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateNamespaceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateNamespaceResponse) ProtoMessage() {}
+
+func (x *CreateNamespaceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateNamespaceResponse.ProtoReflect.Descriptor instead.
+func (*CreateNamespaceResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *CreateNamespaceResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type GetNamespaceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Urn           string                 `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetNamespaceRequest) Reset() {
+	*x = GetNamespaceRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNamespaceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNamespaceRequest) ProtoMessage() {}
+
+func (x *GetNamespaceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNamespaceRequest.ProtoReflect.Descriptor instead.
+func (*GetNamespaceRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *GetNamespaceRequest) GetUrn() string {
+	if x != nil {
+		return x.Urn
+	}
+	return ""
+}
+
+type GetNamespaceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Namespace     *Namespace             `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetNamespaceResponse) Reset() {
+	*x = GetNamespaceResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNamespaceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNamespaceResponse) ProtoMessage() {}
+
+func (x *GetNamespaceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNamespaceResponse.ProtoReflect.Descriptor instead.
+func (*GetNamespaceResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *GetNamespaceResponse) GetNamespace() *Namespace {
+	if x != nil {
+		return x.Namespace
+	}
+	return nil
+}
+
+type UpdateNamespaceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Urn           string                 `protobuf:"bytes,1,opt,name=urn,proto3" json:"urn,omitempty"`
+	State         string                 `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
+	Metadata      *structpb.Struct       `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateNamespaceRequest) Reset() {
+	*x = UpdateNamespaceRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[45]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateNamespaceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateNamespaceRequest) ProtoMessage() {}
+
+func (x *UpdateNamespaceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[45]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateNamespaceRequest.ProtoReflect.Descriptor instead.
+func (*UpdateNamespaceRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *UpdateNamespaceRequest) GetUrn() string {
+	if x != nil {
+		return x.Urn
+	}
+	return ""
+}
+
+func (x *UpdateNamespaceRequest) GetState() string {
+	if x != nil {
+		return x.State
+	}
+	return ""
+}
+
+func (x *UpdateNamespaceRequest) GetMetadata() *structpb.Struct {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+type UpdateNamespaceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateNamespaceResponse) Reset() {
+	*x = UpdateNamespaceResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateNamespaceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateNamespaceResponse) ProtoMessage() {}
+
+func (x *UpdateNamespaceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateNamespaceResponse.ProtoReflect.Descriptor instead.
+func (*UpdateNamespaceResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{46}
+}
+
+type ListNamespacesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListNamespacesRequest) Reset() {
+	*x = ListNamespacesRequest{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[47]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListNamespacesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListNamespacesRequest) ProtoMessage() {}
+
+func (x *ListNamespacesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[47]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListNamespacesRequest.ProtoReflect.Descriptor instead.
+func (*ListNamespacesRequest) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{47}
+}
+
+type ListNamespacesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Namespaces    []*Namespace           `protobuf:"bytes,1,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListNamespacesResponse) Reset() {
+	*x = ListNamespacesResponse{}
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[48]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListNamespacesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListNamespacesResponse) ProtoMessage() {}
+
+func (x *ListNamespacesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_raystack_compass_v1beta1_service_proto_msgTypes[48]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListNamespacesResponse.ProtoReflect.Descriptor instead.
+func (*ListNamespacesResponse) Descriptor() ([]byte, []int) {
+	return file_raystack_compass_v1beta1_service_proto_rawDescGZIP(), []int{48}
+}
+
+func (x *ListNamespacesResponse) GetNamespaces() []*Namespace {
+	if x != nil {
+		return x.Namespaces
+	}
+	return nil
+}
+
 var File_raystack_compass_v1beta1_service_proto protoreflect.FileDescriptor
 
 const file_raystack_compass_v1beta1_service_proto_rawDesc = "" +
 	"\n" +
-	"&raystack/compass/v1beta1/service.proto\x12\x18raystack.compass.v1beta1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x1bbuf/validate/validate.proto\"\x94\x02\n" +
-	"\x18GetAllDiscussionsRequest\x12\x12\n" +
-	"\x04type\x18\x01 \x01(\tR\x04type\x12\x14\n" +
-	"\x05state\x18\x02 \x01(\tR\x05state\x12\x14\n" +
-	"\x05owner\x18\x03 \x01(\tR\x05owner\x12\x1a\n" +
-	"\bassignee\x18\x04 \x01(\tR\bassignee\x12\x14\n" +
-	"\x05asset\x18\x05 \x01(\tR\x05asset\x12\x16\n" +
-	"\x06labels\x18\x06 \x01(\tR\x06labels\x12\x12\n" +
-	"\x04sort\x18\a \x01(\tR\x04sort\x12\x1c\n" +
-	"\tdirection\x18\b \x01(\tR\tdirection\x12\x1b\n" +
-	"\x04size\x18\t \x01(\rB\a\xbaH\x04*\x02(\x00R\x04size\x12\x1f\n" +
-	"\x06offset\x18\n" +
-	" \x01(\rB\a\xbaH\x04*\x02(\x00R\x06offset\"U\n" +
-	"\x19GetAllDiscussionsResponse\x128\n" +
-	"\x04data\x18\x01 \x03(\v2$.raystack.compass.v1beta1.DiscussionR\x04data\"\xeb\x01\n" +
-	"\x17CreateDiscussionRequest\x12\x1d\n" +
-	"\x05title\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05title\x12\x1b\n" +
-	"\x04body\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04body\x12\x12\n" +
-	"\x04type\x18\x04 \x01(\tR\x04type\x12\x14\n" +
-	"\x05state\x18\x05 \x01(\tR\x05state\x12 \n" +
-	"\x06labels\x18\x06 \x03(\tB\b\xbaH\x05\x92\x01\x02\x18\x01R\x06labels\x12 \n" +
-	"\x06assets\x18\a \x03(\tB\b\xbaH\x05\x92\x01\x02\x18\x01R\x06assets\x12&\n" +
-	"\tassignees\x18\b \x03(\tB\b\xbaH\x05\x92\x01\x02\x18\x01R\tassignees\"*\n" +
-	"\x18CreateDiscussionResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"&\n" +
-	"\x14GetDiscussionRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"Q\n" +
-	"\x15GetDiscussionResponse\x128\n" +
-	"\x04data\x18\x01 \x01(\v2$.raystack.compass.v1beta1.DiscussionR\x04data\"\xe8\x01\n" +
-	"\x16PatchDiscussionRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title\x12\x12\n" +
-	"\x04body\x18\x03 \x01(\tR\x04body\x12\x12\n" +
-	"\x04type\x18\x04 \x01(\tR\x04type\x12\x14\n" +
-	"\x05state\x18\x05 \x01(\tR\x05state\x12 \n" +
-	"\x06labels\x18\x06 \x03(\tB\b\xbaH\x05\x92\x01\x02\x18\x01R\x06labels\x12 \n" +
-	"\x06assets\x18\a \x03(\tB\b\xbaH\x05\x92\x01\x02\x18\x01R\x06assets\x12&\n" +
-	"\tassignees\x18\b \x03(\tB\b\xbaH\x05\x92\x01\x02\x18\x01R\tassignees\"X\n" +
-	"\x14CreateCommentRequest\x12#\n" +
-	"\rdiscussion_id\x18\x01 \x01(\tR\fdiscussionId\x12\x1b\n" +
-	"\x04body\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04body\"\x19\n" +
-	"\x17PatchDiscussionResponse\"'\n" +
-	"\x15CreateCommentResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xac\x01\n" +
-	"\x15GetAllCommentsRequest\x12#\n" +
-	"\rdiscussion_id\x18\x01 \x01(\tR\fdiscussionId\x12\x12\n" +
-	"\x04sort\x18\x02 \x01(\tR\x04sort\x12\x1c\n" +
-	"\tdirection\x18\x03 \x01(\tR\tdirection\x12\x1b\n" +
+	"&raystack/compass/v1beta1/service.proto\x12\x18raystack.compass.v1beta1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bbuf/validate/validate.proto\"\xd2\x01\n" +
+	"\x04User\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04uuid\x18\x02 \x01(\tR\x04uuid\x12\x14\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email\x12\x1a\n" +
+	"\bprovider\x18\x04 \x01(\tR\bprovider\x129\n" +
+	"\n" +
+	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"\n" +
+	"updated_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xad\x03\n" +
+	"\x06Entity\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
+	"\x03urn\x18\x02 \x01(\tR\x03urn\x12\x12\n" +
+	"\x04type\x18\x03 \x01(\tR\x04type\x12\x12\n" +
+	"\x04name\x18\x04 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x127\n" +
+	"\n" +
+	"properties\x18\x06 \x01(\v2\x17.google.protobuf.StructR\n" +
+	"properties\x12\x16\n" +
+	"\x06source\x18\a \x01(\tR\x06source\x129\n" +
+	"\n" +
+	"valid_from\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tvalidFrom\x125\n" +
+	"\bvalid_to\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\avalidTo\x129\n" +
+	"\n" +
+	"created_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"\n" +
+	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xe6\x02\n" +
+	"\x04Edge\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
+	"\n" +
+	"source_urn\x18\x02 \x01(\tR\tsourceUrn\x12\x1d\n" +
+	"\n" +
+	"target_urn\x18\x03 \x01(\tR\ttargetUrn\x12\x12\n" +
+	"\x04type\x18\x04 \x01(\tR\x04type\x127\n" +
+	"\n" +
+	"properties\x18\x05 \x01(\v2\x17.google.protobuf.StructR\n" +
+	"properties\x12\x16\n" +
+	"\x06source\x18\x06 \x01(\tR\x06source\x129\n" +
+	"\n" +
+	"valid_from\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tvalidFrom\x125\n" +
+	"\bvalid_to\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\avalidTo\x129\n" +
+	"\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"0\n" +
+	"\x04Type\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
+	"\x05count\x18\x02 \x01(\rR\x05count\"\x83\x01\n" +
+	"\tNamespace\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
+	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x03R\x04name\x12\x14\n" +
+	"\x05state\x18\x03 \x01(\tR\x05state\x123\n" +
+	"\bmetadata\x18\x04 \x01(\v2\x17.google.protobuf.StructR\bmetadata\"\x91\x01\n" +
+	"\x15GetAllEntitiesRequest\x12\x14\n" +
+	"\x05types\x18\x01 \x01(\tR\x05types\x12\x16\n" +
+	"\x06source\x18\x02 \x01(\tR\x06source\x12\f\n" +
+	"\x01q\x18\x03 \x01(\tR\x01q\x12\x1b\n" +
 	"\x04size\x18\x04 \x01(\rB\a\xbaH\x04*\x02(\x00R\x04size\x12\x1f\n" +
-	"\x06offset\x18\x05 \x01(\rB\a\xbaH\x04*\x02(\x00R\x06offset\"O\n" +
-	"\x16GetAllCommentsResponse\x125\n" +
-	"\x04data\x18\x01 \x03(\v2!.raystack.compass.v1beta1.CommentR\x04data\"H\n" +
-	"\x11GetCommentRequest\x12#\n" +
-	"\rdiscussion_id\x18\x01 \x01(\tR\fdiscussionId\x12\x0e\n" +
-	"\x02id\x18\x02 \x01(\tR\x02id\"K\n" +
-	"\x12GetCommentResponse\x125\n" +
-	"\x04data\x18\x01 \x01(\v2!.raystack.compass.v1beta1.CommentR\x04data\"h\n" +
-	"\x14UpdateCommentRequest\x12#\n" +
-	"\rdiscussion_id\x18\x01 \x01(\tR\fdiscussionId\x12\x0e\n" +
-	"\x02id\x18\x02 \x01(\tR\x02id\x12\x1b\n" +
-	"\x04body\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04body\"\x17\n" +
-	"\x15UpdateCommentResponse\"K\n" +
-	"\x14DeleteCommentRequest\x12#\n" +
-	"\rdiscussion_id\x18\x01 \x01(\tR\fdiscussionId\x12\x0e\n" +
-	"\x02id\x18\x02 \x01(\tR\x02id\"\x17\n" +
-	"\x15DeleteCommentResponse\"\x85\x04\n" +
-	"\x13SearchAssetsRequest\x12\x12\n" +
-	"\x04text\x18\x01 \x01(\tR\x04text\x12\x16\n" +
-	"\x06rankby\x18\x02 \x01(\tR\x06rankby\x12\x1b\n" +
-	"\x04size\x18\x03 \x01(\rB\a\xbaH\x04*\x02(\x00R\x04size\x12Q\n" +
-	"\x06filter\x18\x04 \x03(\v29.raystack.compass.v1beta1.SearchAssetsRequest.FilterEntryR\x06filter\x12N\n" +
-	"\x05query\x18\x05 \x03(\v28.raystack.compass.v1beta1.SearchAssetsRequest.QueryEntryR\x05query\x12/\n" +
-	"\x0einclude_fields\x18\x06 \x03(\tB\b\xbaH\x05\x92\x01\x02\x18\x01R\rincludeFields\x12\x1f\n" +
-	"\x06offset\x18\a \x01(\rB\a\xbaH\x04*\x02(\x00R\x06offset\x12;\n" +
-	"\x05flags\x18\b \x01(\v2%.raystack.compass.v1beta1.SearchFlagsR\x05flags\x1a9\n" +
-	"\vFilterEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1a8\n" +
+	"\x06offset\x18\x05 \x01(\rB\a\xbaH\x04*\x02(\x00R\x06offset\"d\n" +
+	"\x16GetAllEntitiesResponse\x124\n" +
+	"\x04data\x18\x01 \x03(\v2 .raystack.compass.v1beta1.EntityR\x04data\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\rR\x05total\"&\n" +
+	"\x14GetEntityByIDRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"M\n" +
+	"\x15GetEntityByIDResponse\x124\n" +
+	"\x04data\x18\x01 \x01(\v2 .raystack.compass.v1beta1.EntityR\x04data\"\x9d\x02\n" +
+	"\x13UpsertEntityRequest\x12\x19\n" +
+	"\x03urn\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03urn\x12\x1b\n" +
+	"\x04type\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04type\x12\x1b\n" +
+	"\x04name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\x127\n" +
 	"\n" +
-	"QueryEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x87\x01\n" +
-	"\vSearchFlags\x12(\n" +
-	"\x10is_column_search\x18\x01 \x01(\bR\x0eisColumnSearch\x12#\n" +
-	"\rdisable_fuzzy\x18\x02 \x01(\bR\fdisableFuzzy\x12)\n" +
-	"\x10enable_highlight\x18\x03 \x01(\bR\x0fenableHighlight\"K\n" +
-	"\x14SearchAssetsResponse\x123\n" +
-	"\x04data\x18\x01 \x03(\v2\x1f.raystack.compass.v1beta1.AssetR\x04data\"*\n" +
-	"\x14SuggestAssetsRequest\x12\x12\n" +
-	"\x04text\x18\x01 \x01(\tR\x04text\"+\n" +
-	"\x15SuggestAssetsResponse\x12\x12\n" +
-	"\x04data\x18\x01 \x03(\tR\x04data\"\x89\x02\n" +
-	"\x12GroupAssetsRequest\x12\"\n" +
-	"\agroupby\x18\x01 \x03(\tB\b\xbaH\x05\x92\x01\x02\b\x01R\agroupby\x12P\n" +
-	"\x06filter\x18\x02 \x03(\v28.raystack.compass.v1beta1.GroupAssetsRequest.FilterEntryR\x06filter\x12%\n" +
-	"\x0einclude_fields\x18\x03 \x03(\tR\rincludeFields\x12\x1b\n" +
-	"\x04size\x18\x04 \x01(\rB\a\xbaH\x04*\x02(\x00R\x04size\x1a9\n" +
-	"\vFilterEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"^\n" +
-	"\x13GroupAssetsResponse\x12G\n" +
-	"\fasset_groups\x18\x01 \x03(\v2$.raystack.compass.v1beta1.AssetGroupR\vassetGroups\"\x8e\x01\n" +
+	"properties\x18\x05 \x01(\v2\x17.google.protobuf.StructR\n" +
+	"properties\x12\x16\n" +
+	"\x06source\x18\x06 \x01(\tR\x06source\x12\x1c\n" +
+	"\tupstreams\x18\a \x03(\tR\tupstreams\x12 \n" +
+	"\vdownstreams\x18\b \x03(\tR\vdownstreams\"&\n" +
+	"\x14UpsertEntityResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"0\n" +
+	"\x13DeleteEntityRequest\x12\x19\n" +
+	"\x03urn\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03urn\"\x16\n" +
+	"\x14DeleteEntityResponse\"\xab\x01\n" +
+	"\x15SearchEntitiesRequest\x12\x12\n" +
+	"\x04text\x18\x01 \x01(\tR\x04text\x12\x14\n" +
+	"\x05types\x18\x02 \x01(\tR\x05types\x12\x16\n" +
+	"\x06source\x18\x03 \x01(\tR\x06source\x12\x12\n" +
+	"\x04mode\x18\x04 \x01(\tR\x04mode\x12\x1b\n" +
+	"\x04size\x18\x05 \x01(\rB\a\xbaH\x04*\x02(\x00R\x04size\x12\x1f\n" +
+	"\x06offset\x18\x06 \x01(\rB\a\xbaH\x04*\x02(\x00R\x06offset\"N\n" +
+	"\x16SearchEntitiesResponse\x124\n" +
+	"\x04data\x18\x01 \x03(\v2 .raystack.compass.v1beta1.EntityR\x04data\",\n" +
+	"\x16SuggestEntitiesRequest\x12\x12\n" +
+	"\x04text\x18\x01 \x01(\tR\x04text\"-\n" +
+	"\x17SuggestEntitiesResponse\x12\x12\n" +
+	"\x04data\x18\x01 \x03(\tR\x04data\"\x17\n" +
+	"\x15GetEntityTypesRequest\"L\n" +
+	"\x16GetEntityTypesResponse\x122\n" +
+	"\x04data\x18\x01 \x03(\v2\x1e.raystack.compass.v1beta1.TypeR\x04data\"J\n" +
+	"\x17GetEntityContextRequest\x12\x19\n" +
+	"\x03urn\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03urn\x12\x14\n" +
+	"\x05depth\x18\x02 \x01(\rR\x05depth\"\xc6\x01\n" +
+	"\x18GetEntityContextResponse\x128\n" +
+	"\x06entity\x18\x01 \x01(\v2 .raystack.compass.v1beta1.EntityR\x06entity\x124\n" +
+	"\x05edges\x18\x02 \x03(\v2\x1e.raystack.compass.v1beta1.EdgeR\x05edges\x12:\n" +
+	"\arelated\x18\x03 \x03(\v2 .raystack.compass.v1beta1.EntityR\arelated\"I\n" +
+	"\x16GetEntityImpactRequest\x12\x19\n" +
+	"\x03urn\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03urn\x12\x14\n" +
+	"\x05depth\x18\x02 \x01(\rR\x05depth\"\x8d\x01\n" +
+	"\x17GetEntityImpactResponse\x124\n" +
+	"\x05edges\x18\x01 \x03(\v2\x1e.raystack.compass.v1beta1.EdgeR\x05edges\x12<\n" +
+	"\baffected\x18\x02 \x03(\v2 .raystack.compass.v1beta1.EntityR\baffected\"\xd1\x01\n" +
+	"\x11UpsertEdgeRequest\x12&\n" +
 	"\n" +
-	"AssetGroup\x12G\n" +
-	"\fgroup_fields\x18\x01 \x03(\v2$.raystack.compass.v1beta1.GroupFieldR\vgroupFields\x127\n" +
-	"\x06assets\x18\x02 \x03(\v2\x1f.raystack.compass.v1beta1.AssetR\x06assets\"J\n" +
+	"source_urn\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tsourceUrn\x12&\n" +
 	"\n" +
-	"GroupField\x12\x1b\n" +
-	"\tgroup_key\x18\x01 \x01(\tR\bgroupKey\x12\x1f\n" +
-	"\vgroup_value\x18\x02 \x01(\tR\n" +
-	"groupValue\"\xe1\x01\n" +
-	"\x0fGetGraphRequest\x12\x10\n" +
-	"\x03urn\x18\x01 \x01(\tR\x03urn\x12\x14\n" +
-	"\x05level\x18\x02 \x01(\rR\x05level\x12;\n" +
-	"\tdirection\x18\x03 \x01(\tB\x1d\xbaH\x1ar\x18R\bupstreamR\n" +
-	"downstreamR\x00R\tdirection\x12,\n" +
-	"\x0fwith_attributes\x18\x04 \x01(\bH\x00R\x0ewithAttributes\x88\x01\x01\x12'\n" +
-	"\x0finclude_deleted\x18\x05 \x01(\bR\x0eincludeDeletedB\x12\n" +
-	"\x10_with_attributes\"\xc8\x03\n" +
-	"\x10GetGraphResponse\x129\n" +
-	"\x04data\x18\x01 \x03(\v2%.raystack.compass.v1beta1.LineageEdgeR\x04data\x12X\n" +
+	"target_urn\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ttargetUrn\x12\x1b\n" +
+	"\x04type\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04type\x127\n" +
 	"\n" +
-	"node_attrs\x18\x02 \x03(\v29.raystack.compass.v1beta1.GetGraphResponse.NodeAttrsEntryR\tnodeAttrs\x1aE\n" +
+	"properties\x18\x04 \x01(\v2\x17.google.protobuf.StructR\n" +
+	"properties\x12\x16\n" +
+	"\x06source\x18\x05 \x01(\tR\x06source\"$\n" +
+	"\x12UpsertEdgeResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x81\x01\n" +
+	"\x0fGetEdgesRequest\x12\x19\n" +
+	"\x03urn\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03urn\x12\x1c\n" +
+	"\tdirection\x18\x02 \x01(\tR\tdirection\x12\x12\n" +
+	"\x04type\x18\x03 \x01(\tR\x04type\x12!\n" +
+	"\fcurrent_only\x18\x04 \x01(\bR\vcurrentOnly\"F\n" +
+	"\x10GetEdgesResponse\x122\n" +
+	"\x04data\x18\x01 \x03(\v2\x1e.raystack.compass.v1beta1.EdgeR\x04data\"\x80\x01\n" +
+	"\x11DeleteEdgeRequest\x12&\n" +
 	"\n" +
-	"ProbesInfo\x127\n" +
-	"\x06latest\x18\x01 \x01(\v2\x1f.raystack.compass.v1beta1.ProbeR\x06latest\x1a_\n" +
-	"\x0eNodeAttributes\x12M\n" +
-	"\x06probes\x18\x01 \x01(\v25.raystack.compass.v1beta1.GetGraphResponse.ProbesInfoR\x06probes\x1aw\n" +
-	"\x0eNodeAttrsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12O\n" +
-	"\x05value\x18\x02 \x01(\v29.raystack.compass.v1beta1.GetGraphResponse.NodeAttributesR\x05value:\x028\x01\"\xf4\x01\n" +
-	"\x12GetAllTypesRequest\x12\f\n" +
-	"\x01q\x18\x01 \x01(\tR\x01q\x12\x19\n" +
-	"\bq_fields\x18\x02 \x01(\tR\aqFields\x12\x14\n" +
-	"\x05types\x18\x03 \x01(\tR\x05types\x12\x1a\n" +
-	"\bservices\x18\x04 \x01(\tR\bservices\x12J\n" +
-	"\x04data\x18\x05 \x03(\v26.raystack.compass.v1beta1.GetAllTypesRequest.DataEntryR\x04data\x1a7\n" +
-	"\tDataEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"I\n" +
-	"\x13GetAllTypesResponse\x122\n" +
-	"\x04data\x18\x01 \x03(\v2\x1e.raystack.compass.v1beta1.TypeR\x04data\"\xa4\x03\n" +
-	"\x13GetAllAssetsRequest\x12\f\n" +
-	"\x01q\x18\x01 \x01(\tR\x01q\x12\x19\n" +
-	"\bq_fields\x18\x02 \x01(\tR\aqFields\x12\x14\n" +
-	"\x05types\x18\x03 \x01(\tR\x05types\x12\x1a\n" +
-	"\bservices\x18\x04 \x01(\tR\bservices\x12\x12\n" +
-	"\x04sort\x18\x05 \x01(\tR\x04sort\x12\x1c\n" +
-	"\tdirection\x18\x06 \x01(\tR\tdirection\x12K\n" +
-	"\x04data\x18\a \x03(\v27.raystack.compass.v1beta1.GetAllAssetsRequest.DataEntryR\x04data\x12\x1b\n" +
-	"\x04size\x18\b \x01(\rB\a\xbaH\x04*\x02(\x00R\x04size\x12\x1f\n" +
-	"\x06offset\x18\t \x01(\rB\a\xbaH\x04*\x02(\x00R\x06offset\x12\x1d\n" +
+	"source_urn\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tsourceUrn\x12&\n" +
 	"\n" +
-	"with_total\x18\n" +
-	" \x01(\bR\twithTotal\x12\x1d\n" +
-	"\n" +
-	"is_deleted\x18\v \x01(\bR\tisDeleted\x1a7\n" +
-	"\tDataEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"a\n" +
-	"\x14GetAllAssetsResponse\x123\n" +
-	"\x04data\x18\x01 \x03(\v2\x1f.raystack.compass.v1beta1.AssetR\x04data\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\rR\x05total\"%\n" +
-	"\x13GetAssetByIDRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"K\n" +
-	"\x14GetAssetByIDResponse\x123\n" +
-	"\x04data\x18\x01 \x01(\v2\x1f.raystack.compass.v1beta1.AssetR\x04data\"\x97\x05\n" +
-	"\x12UpsertAssetRequest\x12H\n" +
-	"\x05asset\x18\x01 \x01(\v22.raystack.compass.v1beta1.UpsertAssetRequest.AssetR\x05asset\x12C\n" +
-	"\tupstreams\x18\x02 \x03(\v2%.raystack.compass.v1beta1.LineageNodeR\tupstreams\x12G\n" +
-	"\vdownstreams\x18\x03 \x03(\v2%.raystack.compass.v1beta1.LineageNodeR\vdownstreams\x12\x1f\n" +
-	"\vupdate_only\x18\x04 \x01(\bR\n" +
-	"updateOnly\x1a\x87\x03\n" +
-	"\x05Asset\x12\x10\n" +
-	"\x03urn\x18\x01 \x01(\tR\x03urn\x12\x12\n" +
-	"\x04type\x18\x02 \x01(\tR\x04type\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12\x18\n" +
-	"\aservice\x18\x04 \x01(\tR\aservice\x12 \n" +
-	"\vdescription\x18\x05 \x01(\tR\vdescription\x12+\n" +
-	"\x04data\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x04data\x12V\n" +
-	"\x06labels\x18\a \x03(\v2>.raystack.compass.v1beta1.UpsertAssetRequest.Asset.LabelsEntryR\x06labels\x126\n" +
-	"\x06owners\x18\b \x03(\v2\x1e.raystack.compass.v1beta1.UserR\x06owners\x12\x10\n" +
-	"\x03url\x18\t \x01(\tR\x03url\x1a9\n" +
-	"\vLabelsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"%\n" +
-	"\x13UpsertAssetResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\x8f\x06\n" +
-	"\x17UpsertPatchAssetRequest\x12M\n" +
-	"\x05asset\x18\x01 \x01(\v27.raystack.compass.v1beta1.UpsertPatchAssetRequest.AssetR\x05asset\x12C\n" +
-	"\tupstreams\x18\x02 \x03(\v2%.raystack.compass.v1beta1.LineageNodeR\tupstreams\x12G\n" +
-	"\vdownstreams\x18\x03 \x03(\v2%.raystack.compass.v1beta1.LineageNodeR\vdownstreams\x12+\n" +
-	"\x11overwrite_lineage\x18\x04 \x01(\bR\x10overwriteLineage\x12\x1f\n" +
-	"\vupdate_only\x18\x05 \x01(\bR\n" +
-	"updateOnly\x1a\xc8\x03\n" +
-	"\x05Asset\x12\x10\n" +
-	"\x03urn\x18\x01 \x01(\tR\x03urn\x12\x12\n" +
-	"\x04type\x18\x02 \x01(\tR\x04type\x120\n" +
-	"\x04name\x18\x03 \x01(\v2\x1c.google.protobuf.StringValueR\x04name\x12\x18\n" +
-	"\aservice\x18\x04 \x01(\tR\aservice\x12>\n" +
-	"\vdescription\x18\x05 \x01(\v2\x1c.google.protobuf.StringValueR\vdescription\x12+\n" +
-	"\x04data\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x04data\x12[\n" +
-	"\x06labels\x18\a \x03(\v2C.raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.LabelsEntryR\x06labels\x126\n" +
-	"\x06owners\x18\b \x03(\v2\x1e.raystack.compass.v1beta1.UserR\x06owners\x12\x10\n" +
-	"\x03url\x18\t \x01(\tR\x03url\x1a9\n" +
-	"\vLabelsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"*\n" +
-	"\x18UpsertPatchAssetResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"$\n" +
-	"\x12DeleteAssetRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\x15\n" +
-	"\x13DeleteAssetResponse\"i\n" +
-	"\x19GetAssetStargazersRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
-	"\x04size\x18\x02 \x01(\rB\a\xbaH\x04*\x02(\x00R\x04size\x12\x1f\n" +
-	"\x06offset\x18\x03 \x01(\rB\a\xbaH\x04*\x02(\x00R\x06offset\"P\n" +
-	"\x1aGetAssetStargazersResponse\x122\n" +
-	"\x04data\x18\x01 \x03(\v2\x1e.raystack.compass.v1beta1.UserR\x04data\"m\n" +
-	"\x1dGetAssetVersionHistoryRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
-	"\x04size\x18\x02 \x01(\rB\a\xbaH\x04*\x02(\x00R\x04size\x12\x1f\n" +
-	"\x06offset\x18\x03 \x01(\rB\a\xbaH\x04*\x02(\x00R\x06offset\"U\n" +
-	"\x1eGetAssetVersionHistoryResponse\x123\n" +
-	"\x04data\x18\x01 \x03(\v2\x1f.raystack.compass.v1beta1.AssetR\x04data\"D\n" +
-	"\x18GetAssetByVersionRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\tR\aversion\"P\n" +
-	"\x19GetAssetByVersionResponse\x123\n" +
-	"\x04data\x18\x01 \x01(\v2\x1f.raystack.compass.v1beta1.AssetR\x04data\"\xdd\x02\n" +
-	"\x17CreateAssetProbeRequest\x12$\n" +
-	"\tasset_urn\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bassetUrn\x12M\n" +
-	"\x05probe\x18\x02 \x01(\v27.raystack.compass.v1beta1.CreateAssetProbeRequest.ProbeR\x05probe\x1a\xcc\x01\n" +
-	"\x05Probe\x12\x1f\n" +
-	"\x06status\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06status\x12#\n" +
-	"\rstatus_reason\x18\x02 \x01(\tR\fstatusReason\x123\n" +
-	"\bmetadata\x18\x03 \x01(\v2\x17.google.protobuf.StructR\bmetadata\x128\n" +
-	"\ttimestamp\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12\x0e\n" +
-	"\x02id\x18\x05 \x01(\tR\x02id\"*\n" +
-	"\x18CreateAssetProbeResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"t\n" +
-	"\x1bGetUserStarredAssetsRequest\x12\x17\n" +
+	"target_urn\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ttargetUrn\x12\x1b\n" +
+	"\x04type\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04type\"\x14\n" +
+	"\x12DeleteEdgeResponse\"0\n" +
+	"\x11StarEntityRequest\x12\x1b\n" +
+	"\tentity_id\x18\x01 \x01(\tR\bentityId\"$\n" +
+	"\x12StarEntityResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"2\n" +
+	"\x13UnstarEntityRequest\x12\x1b\n" +
+	"\tentity_id\x18\x01 \x01(\tR\bentityId\"\x16\n" +
+	"\x14UnstarEntityResponse\"v\n" +
+	"\x1dGetUserStarredEntitiesRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1b\n" +
 	"\x04size\x18\x02 \x01(\rB\a\xbaH\x04*\x02(\x00R\x04size\x12\x1f\n" +
-	"\x06offset\x18\x03 \x01(\rB\a\xbaH\x04*\x02(\x00R\x06offset\"S\n" +
-	"\x1cGetUserStarredAssetsResponse\x123\n" +
-	"\x04data\x18\x01 \x03(\v2\x1f.raystack.compass.v1beta1.AssetR\x04data\"Y\n" +
-	"\x19GetMyStarredAssetsRequest\x12\x1b\n" +
+	"\x06offset\x18\x03 \x01(\rB\a\xbaH\x04*\x02(\x00R\x06offset\"V\n" +
+	"\x1eGetUserStarredEntitiesResponse\x124\n" +
+	"\x04data\x18\x01 \x03(\v2 .raystack.compass.v1beta1.EntityR\x04data\"[\n" +
+	"\x1bGetMyStarredEntitiesRequest\x12\x1b\n" +
 	"\x04size\x18\x01 \x01(\rB\a\xbaH\x04*\x02(\x00R\x04size\x12\x1f\n" +
-	"\x06offset\x18\x02 \x01(\rB\a\xbaH\x04*\x02(\x00R\x06offset\"Q\n" +
-	"\x1aGetMyStarredAssetsResponse\x123\n" +
-	"\x04data\x18\x01 \x03(\v2\x1f.raystack.compass.v1beta1.AssetR\x04data\"5\n" +
-	"\x18GetMyStarredAssetRequest\x12\x19\n" +
-	"\basset_id\x18\x01 \x01(\tR\aassetId\"P\n" +
-	"\x19GetMyStarredAssetResponse\x123\n" +
-	"\x04data\x18\x01 \x01(\v2\x1f.raystack.compass.v1beta1.AssetR\x04data\"-\n" +
-	"\x10StarAssetRequest\x12\x19\n" +
-	"\basset_id\x18\x01 \x01(\tR\aassetId\"#\n" +
-	"\x11StarAssetResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"/\n" +
-	"\x12UnstarAssetRequest\x12\x19\n" +
-	"\basset_id\x18\x01 \x01(\tR\aassetId\"\x15\n" +
-	"\x13UnstarAssetResponse\"\xf9\x01\n" +
-	"\x17GetMyDiscussionsRequest\x12\x16\n" +
-	"\x06filter\x18\x01 \x01(\tR\x06filter\x12\x12\n" +
-	"\x04type\x18\x02 \x01(\tR\x04type\x12\x14\n" +
-	"\x05state\x18\x03 \x01(\tR\x05state\x12\x14\n" +
-	"\x05asset\x18\x04 \x01(\tR\x05asset\x12\x16\n" +
-	"\x06labels\x18\x05 \x01(\tR\x06labels\x12\x12\n" +
-	"\x04sort\x18\x06 \x01(\tR\x04sort\x12\x1c\n" +
-	"\tdirection\x18\a \x01(\tR\tdirection\x12\x1b\n" +
-	"\x04size\x18\b \x01(\rB\a\xbaH\x04*\x02(\x00R\x04size\x12\x1f\n" +
-	"\x06offset\x18\t \x01(\rB\a\xbaH\x04*\x02(\x00R\x06offset\"T\n" +
-	"\x18GetMyDiscussionsResponse\x128\n" +
-	"\x04data\x18\x01 \x03(\v2$.raystack.compass.v1beta1.DiscussionR\x04data\"\xff\x01\n" +
-	"\x15CreateTagAssetRequest\x12\x19\n" +
-	"\basset_id\x18\x01 \x01(\tR\aassetId\x12!\n" +
-	"\ftemplate_urn\x18\x02 \x01(\tR\vtemplateUrn\x12A\n" +
-	"\n" +
-	"tag_values\x18\x03 \x03(\v2\".raystack.compass.v1beta1.TagValueR\ttagValues\x122\n" +
-	"\x15template_display_name\x18\x04 \x01(\tR\x13templateDisplayName\x121\n" +
-	"\x14template_description\x18\x05 \x01(\tR\x13templateDescription\"K\n" +
-	"\x16CreateTagAssetResponse\x121\n" +
-	"\x04data\x18\x01 \x01(\v2\x1d.raystack.compass.v1beta1.TagR\x04data\"_\n" +
-	"\x1fGetTagByAssetAndTemplateRequest\x12\x19\n" +
-	"\basset_id\x18\x01 \x01(\tR\aassetId\x12!\n" +
-	"\ftemplate_urn\x18\x03 \x01(\tR\vtemplateUrn\"U\n" +
-	" GetTagByAssetAndTemplateResponse\x121\n" +
-	"\x04data\x18\x01 \x01(\v2\x1d.raystack.compass.v1beta1.TagR\x04data\"\xff\x01\n" +
-	"\x15UpdateTagAssetRequest\x12\x19\n" +
-	"\basset_id\x18\x01 \x01(\tR\aassetId\x12!\n" +
-	"\ftemplate_urn\x18\x02 \x01(\tR\vtemplateUrn\x12A\n" +
-	"\n" +
-	"tag_values\x18\x03 \x03(\v2\".raystack.compass.v1beta1.TagValueR\ttagValues\x122\n" +
-	"\x15template_display_name\x18\x04 \x01(\tR\x13templateDisplayName\x121\n" +
-	"\x14template_description\x18\x05 \x01(\tR\x13templateDescription\"K\n" +
-	"\x16UpdateTagAssetResponse\x121\n" +
-	"\x04data\x18\x01 \x01(\v2\x1d.raystack.compass.v1beta1.TagR\x04data\"U\n" +
-	"\x15DeleteTagAssetRequest\x12\x19\n" +
-	"\basset_id\x18\x01 \x01(\tR\aassetId\x12!\n" +
-	"\ftemplate_urn\x18\x02 \x01(\tR\vtemplateUrn\"\x18\n" +
-	"\x16DeleteTagAssetResponse\"5\n" +
-	"\x18GetAllTagsByAssetRequest\x12\x19\n" +
-	"\basset_id\x18\x01 \x01(\tR\aassetId\"N\n" +
-	"\x19GetAllTagsByAssetResponse\x121\n" +
-	"\x04data\x18\x01 \x03(\v2\x1d.raystack.compass.v1beta1.TagR\x04data\"-\n" +
-	"\x19GetAllTagTemplatesRequest\x12\x10\n" +
-	"\x03urn\x18\x01 \x01(\tR\x03urn\"W\n" +
-	"\x1aGetAllTagTemplatesResponse\x129\n" +
-	"\x04data\x18\x01 \x03(\v2%.raystack.compass.v1beta1.TagTemplateR\x04data\"\xb5\x01\n" +
-	"\x18CreateTagTemplateRequest\x12\x10\n" +
-	"\x03urn\x18\x01 \x01(\tR\x03urn\x12!\n" +
-	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12B\n" +
-	"\x06fields\x18\x04 \x03(\v2*.raystack.compass.v1beta1.TagTemplateFieldR\x06fields\"V\n" +
-	"\x19CreateTagTemplateResponse\x129\n" +
-	"\x04data\x18\x01 \x01(\v2%.raystack.compass.v1beta1.TagTemplateR\x04data\":\n" +
-	"\x15GetTagTemplateRequest\x12!\n" +
-	"\ftemplate_urn\x18\x01 \x01(\tR\vtemplateUrn\"S\n" +
-	"\x16GetTagTemplateResponse\x129\n" +
-	"\x04data\x18\x01 \x01(\v2%.raystack.compass.v1beta1.TagTemplateR\x04data\"\xc6\x01\n" +
-	"\x18UpdateTagTemplateRequest\x12!\n" +
-	"\ftemplate_urn\x18\x01 \x01(\tR\vtemplateUrn\x12!\n" +
-	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12B\n" +
-	"\x06fields\x18\x04 \x03(\v2*.raystack.compass.v1beta1.TagTemplateFieldR\x06fields\"V\n" +
-	"\x19UpdateTagTemplateResponse\x129\n" +
-	"\x04data\x18\x01 \x01(\v2%.raystack.compass.v1beta1.TagTemplateR\x04data\"=\n" +
-	"\x18DeleteTagTemplateRequest\x12!\n" +
-	"\ftemplate_urn\x18\x01 \x01(\tR\vtemplateUrn\"\x1b\n" +
-	"\x19DeleteTagTemplateResponse\"\x90\x01\n" +
+	"\x06offset\x18\x02 \x01(\rB\a\xbaH\x04*\x02(\x00R\x06offset\"T\n" +
+	"\x1cGetMyStarredEntitiesResponse\x124\n" +
+	"\x04data\x18\x01 \x03(\v2 .raystack.compass.v1beta1.EntityR\x04data\"8\n" +
+	"\x19GetMyStarredEntityRequest\x12\x1b\n" +
+	"\tentity_id\x18\x01 \x01(\tR\bentityId\"R\n" +
+	"\x1aGetMyStarredEntityResponse\x124\n" +
+	"\x04data\x18\x01 \x01(\v2 .raystack.compass.v1beta1.EntityR\x04data\"j\n" +
+	"\x1aGetEntityStargazersRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
+	"\x04size\x18\x02 \x01(\rB\a\xbaH\x04*\x02(\x00R\x04size\x12\x1f\n" +
+	"\x06offset\x18\x03 \x01(\rB\a\xbaH\x04*\x02(\x00R\x06offset\"Q\n" +
+	"\x1bGetEntityStargazersResponse\x122\n" +
+	"\x04data\x18\x01 \x03(\v2\x1e.raystack.compass.v1beta1.UserR\x04data\"\x90\x01\n" +
 	"\x16CreateNamespaceRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x03R\x04name\x12\x14\n" +
@@ -6753,183 +2864,29 @@ const file_raystack_compass_v1beta1_service_proto_rawDesc = "" +
 	"\x16ListNamespacesResponse\x12C\n" +
 	"\n" +
 	"namespaces\x18\x01 \x03(\v2#.raystack.compass.v1beta1.NamespaceR\n" +
-	"namespaces\"\xd2\x01\n" +
-	"\x04User\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04uuid\x18\x02 \x01(\tR\x04uuid\x12\x14\n" +
-	"\x05email\x18\x03 \x01(\tR\x05email\x12\x1a\n" +
-	"\bprovider\x18\x04 \x01(\tR\bprovider\x129\n" +
+	"namespaces2\xd4\x14\n" +
+	"\x0eCompassService\x12u\n" +
+	"\x0eGetAllEntities\x12/.raystack.compass.v1beta1.GetAllEntitiesRequest\x1a0.raystack.compass.v1beta1.GetAllEntitiesResponse\"\x00\x12r\n" +
+	"\rGetEntityByID\x12..raystack.compass.v1beta1.GetEntityByIDRequest\x1a/.raystack.compass.v1beta1.GetEntityByIDResponse\"\x00\x12o\n" +
+	"\fUpsertEntity\x12-.raystack.compass.v1beta1.UpsertEntityRequest\x1a..raystack.compass.v1beta1.UpsertEntityResponse\"\x00\x12o\n" +
+	"\fDeleteEntity\x12-.raystack.compass.v1beta1.DeleteEntityRequest\x1a..raystack.compass.v1beta1.DeleteEntityResponse\"\x00\x12u\n" +
+	"\x0eSearchEntities\x12/.raystack.compass.v1beta1.SearchEntitiesRequest\x1a0.raystack.compass.v1beta1.SearchEntitiesResponse\"\x00\x12x\n" +
+	"\x0fSuggestEntities\x120.raystack.compass.v1beta1.SuggestEntitiesRequest\x1a1.raystack.compass.v1beta1.SuggestEntitiesResponse\"\x00\x12u\n" +
+	"\x0eGetEntityTypes\x12/.raystack.compass.v1beta1.GetEntityTypesRequest\x1a0.raystack.compass.v1beta1.GetEntityTypesResponse\"\x00\x12{\n" +
+	"\x10GetEntityContext\x121.raystack.compass.v1beta1.GetEntityContextRequest\x1a2.raystack.compass.v1beta1.GetEntityContextResponse\"\x00\x12x\n" +
+	"\x0fGetEntityImpact\x120.raystack.compass.v1beta1.GetEntityImpactRequest\x1a1.raystack.compass.v1beta1.GetEntityImpactResponse\"\x00\x12i\n" +
 	"\n" +
-	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"UpsertEdge\x12+.raystack.compass.v1beta1.UpsertEdgeRequest\x1a,.raystack.compass.v1beta1.UpsertEdgeResponse\"\x00\x12c\n" +
+	"\bGetEdges\x12).raystack.compass.v1beta1.GetEdgesRequest\x1a*.raystack.compass.v1beta1.GetEdgesResponse\"\x00\x12i\n" +
 	"\n" +
-	"updated_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x84\x01\n" +
-	"\x06Change\x12\x12\n" +
-	"\x04type\x18\x01 \x01(\tR\x04type\x12\x12\n" +
-	"\x04path\x18\x02 \x03(\tR\x04path\x12*\n" +
-	"\x04from\x18\x03 \x01(\v2\x16.google.protobuf.ValueR\x04from\x12&\n" +
-	"\x02to\x18\x04 \x01(\v2\x16.google.protobuf.ValueR\x02to\"\xeb\x05\n" +
-	"\x05Asset\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
-	"\x03urn\x18\x02 \x01(\tR\x03urn\x12\x12\n" +
-	"\x04type\x18\x03 \x01(\tR\x04type\x12\x18\n" +
-	"\aservice\x18\x04 \x01(\tR\aservice\x12\x12\n" +
-	"\x04name\x18\x05 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x06 \x01(\tR\vdescription\x12+\n" +
-	"\x04data\x18\a \x01(\v2\x17.google.protobuf.StructR\x04data\x12C\n" +
-	"\x06labels\x18\b \x03(\v2+.raystack.compass.v1beta1.Asset.LabelsEntryR\x06labels\x126\n" +
-	"\x06owners\x18\t \x03(\v2\x1e.raystack.compass.v1beta1.UserR\x06owners\x12\x18\n" +
-	"\aversion\x18\n" +
-	" \x01(\tR\aversion\x12=\n" +
+	"DeleteEdge\x12+.raystack.compass.v1beta1.DeleteEdgeRequest\x1a,.raystack.compass.v1beta1.DeleteEdgeResponse\"\x00\x12i\n" +
 	"\n" +
-	"updated_by\x18\v \x01(\v2\x1e.raystack.compass.v1beta1.UserR\tupdatedBy\x12>\n" +
-	"\tchangelog\x18\f \x03(\v2 .raystack.compass.v1beta1.ChangeR\tchangelog\x129\n" +
-	"\n" +
-	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x10\n" +
-	"\x03url\x18\x0f \x01(\tR\x03url\x127\n" +
-	"\x06probes\x18\x10 \x03(\v2\x1f.raystack.compass.v1beta1.ProbeR\x06probes\x12\x1d\n" +
-	"\n" +
-	"is_deleted\x18\x11 \x01(\bR\tisDeleted\x1a9\n" +
-	"\vLabelsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x9b\x02\n" +
-	"\x05Probe\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
-	"\tasset_urn\x18\x02 \x01(\tR\bassetUrn\x12\x16\n" +
-	"\x06status\x18\x03 \x01(\tR\x06status\x12#\n" +
-	"\rstatus_reason\x18\x04 \x01(\tR\fstatusReason\x123\n" +
-	"\bmetadata\x18\x05 \x01(\v2\x17.google.protobuf.StructR\bmetadata\x128\n" +
-	"\ttimestamp\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x129\n" +
-	"\n" +
-	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xea\x02\n" +
-	"\n" +
-	"Discussion\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title\x12\x12\n" +
-	"\x04body\x18\x03 \x01(\tR\x04body\x12\x12\n" +
-	"\x04type\x18\x04 \x01(\tR\x04type\x12\x14\n" +
-	"\x05state\x18\x05 \x01(\tR\x05state\x12\x16\n" +
-	"\x06labels\x18\x06 \x03(\tR\x06labels\x12\x16\n" +
-	"\x06assets\x18\a \x03(\tR\x06assets\x12\x1c\n" +
-	"\tassignees\x18\b \x03(\tR\tassignees\x124\n" +
-	"\x05owner\x18\t \x01(\v2\x1e.raystack.compass.v1beta1.UserR\x05owner\x129\n" +
-	"\n" +
-	"created_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xbd\x02\n" +
-	"\aComment\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12#\n" +
-	"\rdiscussion_id\x18\x02 \x01(\tR\fdiscussionId\x12\x12\n" +
-	"\x04body\x18\x03 \x01(\tR\x04body\x124\n" +
-	"\x05owner\x18\x04 \x01(\v2\x1e.raystack.compass.v1beta1.UserR\x05owner\x12=\n" +
-	"\n" +
-	"updated_by\x18\x05 \x01(\v2\x1e.raystack.compass.v1beta1.UserR\tupdatedBy\x129\n" +
-	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"j\n" +
-	"\vLineageEdge\x12\x16\n" +
-	"\x06source\x18\x01 \x01(\tR\x06source\x12\x16\n" +
-	"\x06target\x18\x02 \x01(\tR\x06target\x12+\n" +
-	"\x04prop\x18\x03 \x01(\v2\x17.google.protobuf.StructR\x04prop\"U\n" +
-	"\vLineageNode\x12\x10\n" +
-	"\x03urn\x18\x01 \x01(\tR\x03urn\x12\x16\n" +
-	"\x04type\x18\x02 \x01(\tB\x02\x18\x01R\x04type\x12\x1c\n" +
-	"\aservice\x18\x03 \x01(\tB\x02\x18\x01R\aservice\"\xed\x01\n" +
-	"\x03Tag\x12\x19\n" +
-	"\basset_id\x18\x01 \x01(\tR\aassetId\x12!\n" +
-	"\ftemplate_urn\x18\x02 \x01(\tR\vtemplateUrn\x12A\n" +
-	"\n" +
-	"tag_values\x18\x03 \x03(\v2\".raystack.compass.v1beta1.TagValueR\ttagValues\x122\n" +
-	"\x15template_display_name\x18\x04 \x01(\tR\x13templateDisplayName\x121\n" +
-	"\x14template_description\x18\x05 \x01(\tR\x13templateDescription\"\xc0\x03\n" +
-	"\bTagValue\x12\x19\n" +
-	"\bfield_id\x18\x01 \x01(\rR\afieldId\x127\n" +
-	"\vfield_value\x18\x02 \x01(\v2\x16.google.protobuf.ValueR\n" +
-	"fieldValue\x12\x1b\n" +
-	"\tfield_urn\x18\x03 \x01(\tR\bfieldUrn\x12,\n" +
-	"\x12field_display_name\x18\x04 \x01(\tR\x10fieldDisplayName\x12+\n" +
-	"\x11field_description\x18\x05 \x01(\tR\x10fieldDescription\x12&\n" +
-	"\x0ffield_data_type\x18\x06 \x01(\tR\rfieldDataType\x12#\n" +
-	"\rfield_options\x18\a \x03(\tR\ffieldOptions\x12%\n" +
-	"\x0efield_required\x18\b \x01(\bR\rfieldRequired\x129\n" +
-	"\n" +
-	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x9e\x02\n" +
-	"\vTagTemplate\x12\x10\n" +
-	"\x03urn\x18\x01 \x01(\tR\x03urn\x12!\n" +
-	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12B\n" +
-	"\x06fields\x18\x04 \x03(\v2*.raystack.compass.v1beta1.TagTemplateFieldR\x06fields\x129\n" +
-	"\n" +
-	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xc2\x02\n" +
-	"\x10TagTemplateField\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\rR\x02id\x12\x10\n" +
-	"\x03urn\x18\x02 \x01(\tR\x03urn\x12!\n" +
-	"\fdisplay_name\x18\x03 \x01(\tR\vdisplayName\x12 \n" +
-	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x1b\n" +
-	"\tdata_type\x18\x05 \x01(\tR\bdataType\x12\x18\n" +
-	"\aoptions\x18\x06 \x03(\tR\aoptions\x12\x1a\n" +
-	"\brequired\x18\a \x01(\bR\brequired\x129\n" +
-	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"0\n" +
-	"\x04Type\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
-	"\x05count\x18\x02 \x01(\rR\x05count\"\x83\x01\n" +
-	"\tNamespace\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
-	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x03R\x04name\x12\x14\n" +
-	"\x05state\x18\x03 \x01(\tR\x05state\x123\n" +
-	"\bmetadata\x18\x04 \x01(\v2\x17.google.protobuf.StructR\bmetadata2\xde(\n" +
-	"\x0eCompassService\x12~\n" +
-	"\x11GetAllDiscussions\x122.raystack.compass.v1beta1.GetAllDiscussionsRequest\x1a3.raystack.compass.v1beta1.GetAllDiscussionsResponse\"\x00\x12{\n" +
-	"\x10CreateDiscussion\x121.raystack.compass.v1beta1.CreateDiscussionRequest\x1a2.raystack.compass.v1beta1.CreateDiscussionResponse\"\x00\x12r\n" +
-	"\rGetDiscussion\x12..raystack.compass.v1beta1.GetDiscussionRequest\x1a/.raystack.compass.v1beta1.GetDiscussionResponse\"\x00\x12x\n" +
-	"\x0fPatchDiscussion\x120.raystack.compass.v1beta1.PatchDiscussionRequest\x1a1.raystack.compass.v1beta1.PatchDiscussionResponse\"\x00\x12r\n" +
-	"\rCreateComment\x12..raystack.compass.v1beta1.CreateCommentRequest\x1a/.raystack.compass.v1beta1.CreateCommentResponse\"\x00\x12u\n" +
-	"\x0eGetAllComments\x12/.raystack.compass.v1beta1.GetAllCommentsRequest\x1a0.raystack.compass.v1beta1.GetAllCommentsResponse\"\x00\x12i\n" +
-	"\n" +
-	"GetComment\x12+.raystack.compass.v1beta1.GetCommentRequest\x1a,.raystack.compass.v1beta1.GetCommentResponse\"\x00\x12r\n" +
-	"\rUpdateComment\x12..raystack.compass.v1beta1.UpdateCommentRequest\x1a/.raystack.compass.v1beta1.UpdateCommentResponse\"\x00\x12r\n" +
-	"\rDeleteComment\x12..raystack.compass.v1beta1.DeleteCommentRequest\x1a/.raystack.compass.v1beta1.DeleteCommentResponse\"\x00\x12o\n" +
-	"\fSearchAssets\x12-.raystack.compass.v1beta1.SearchAssetsRequest\x1a..raystack.compass.v1beta1.SearchAssetsResponse\"\x00\x12r\n" +
-	"\rSuggestAssets\x12..raystack.compass.v1beta1.SuggestAssetsRequest\x1a/.raystack.compass.v1beta1.SuggestAssetsResponse\"\x00\x12l\n" +
-	"\vGroupAssets\x12,.raystack.compass.v1beta1.GroupAssetsRequest\x1a-.raystack.compass.v1beta1.GroupAssetsResponse\"\x00\x12c\n" +
-	"\bGetGraph\x12).raystack.compass.v1beta1.GetGraphRequest\x1a*.raystack.compass.v1beta1.GetGraphResponse\"\x00\x12l\n" +
-	"\vGetAllTypes\x12,.raystack.compass.v1beta1.GetAllTypesRequest\x1a-.raystack.compass.v1beta1.GetAllTypesResponse\"\x00\x12o\n" +
-	"\fGetAllAssets\x12-.raystack.compass.v1beta1.GetAllAssetsRequest\x1a..raystack.compass.v1beta1.GetAllAssetsResponse\"\x00\x12o\n" +
-	"\fGetAssetByID\x12-.raystack.compass.v1beta1.GetAssetByIDRequest\x1a..raystack.compass.v1beta1.GetAssetByIDResponse\"\x00\x12l\n" +
-	"\vUpsertAsset\x12,.raystack.compass.v1beta1.UpsertAssetRequest\x1a-.raystack.compass.v1beta1.UpsertAssetResponse\"\x00\x12{\n" +
-	"\x10UpsertPatchAsset\x121.raystack.compass.v1beta1.UpsertPatchAssetRequest\x1a2.raystack.compass.v1beta1.UpsertPatchAssetResponse\"\x00\x12l\n" +
-	"\vDeleteAsset\x12,.raystack.compass.v1beta1.DeleteAssetRequest\x1a-.raystack.compass.v1beta1.DeleteAssetResponse\"\x00\x12\x81\x01\n" +
-	"\x12GetAssetStargazers\x123.raystack.compass.v1beta1.GetAssetStargazersRequest\x1a4.raystack.compass.v1beta1.GetAssetStargazersResponse\"\x00\x12\x8d\x01\n" +
-	"\x16GetAssetVersionHistory\x127.raystack.compass.v1beta1.GetAssetVersionHistoryRequest\x1a8.raystack.compass.v1beta1.GetAssetVersionHistoryResponse\"\x00\x12~\n" +
-	"\x11GetAssetByVersion\x122.raystack.compass.v1beta1.GetAssetByVersionRequest\x1a3.raystack.compass.v1beta1.GetAssetByVersionResponse\"\x00\x12{\n" +
-	"\x10CreateAssetProbe\x121.raystack.compass.v1beta1.CreateAssetProbeRequest\x1a2.raystack.compass.v1beta1.CreateAssetProbeResponse\"\x00\x12\x87\x01\n" +
-	"\x14GetUserStarredAssets\x125.raystack.compass.v1beta1.GetUserStarredAssetsRequest\x1a6.raystack.compass.v1beta1.GetUserStarredAssetsResponse\"\x00\x12\x81\x01\n" +
-	"\x12GetMyStarredAssets\x123.raystack.compass.v1beta1.GetMyStarredAssetsRequest\x1a4.raystack.compass.v1beta1.GetMyStarredAssetsResponse\"\x00\x12~\n" +
-	"\x11GetMyStarredAsset\x122.raystack.compass.v1beta1.GetMyStarredAssetRequest\x1a3.raystack.compass.v1beta1.GetMyStarredAssetResponse\"\x00\x12f\n" +
-	"\tStarAsset\x12*.raystack.compass.v1beta1.StarAssetRequest\x1a+.raystack.compass.v1beta1.StarAssetResponse\"\x00\x12l\n" +
-	"\vUnstarAsset\x12,.raystack.compass.v1beta1.UnstarAssetRequest\x1a-.raystack.compass.v1beta1.UnstarAssetResponse\"\x00\x12{\n" +
-	"\x10GetMyDiscussions\x121.raystack.compass.v1beta1.GetMyDiscussionsRequest\x1a2.raystack.compass.v1beta1.GetMyDiscussionsResponse\"\x00\x12u\n" +
-	"\x0eCreateTagAsset\x12/.raystack.compass.v1beta1.CreateTagAssetRequest\x1a0.raystack.compass.v1beta1.CreateTagAssetResponse\"\x00\x12\x93\x01\n" +
-	"\x18GetTagByAssetAndTemplate\x129.raystack.compass.v1beta1.GetTagByAssetAndTemplateRequest\x1a:.raystack.compass.v1beta1.GetTagByAssetAndTemplateResponse\"\x00\x12u\n" +
-	"\x0eUpdateTagAsset\x12/.raystack.compass.v1beta1.UpdateTagAssetRequest\x1a0.raystack.compass.v1beta1.UpdateTagAssetResponse\"\x00\x12u\n" +
-	"\x0eDeleteTagAsset\x12/.raystack.compass.v1beta1.DeleteTagAssetRequest\x1a0.raystack.compass.v1beta1.DeleteTagAssetResponse\"\x00\x12~\n" +
-	"\x11GetAllTagsByAsset\x122.raystack.compass.v1beta1.GetAllTagsByAssetRequest\x1a3.raystack.compass.v1beta1.GetAllTagsByAssetResponse\"\x00\x12\x81\x01\n" +
-	"\x12GetAllTagTemplates\x123.raystack.compass.v1beta1.GetAllTagTemplatesRequest\x1a4.raystack.compass.v1beta1.GetAllTagTemplatesResponse\"\x00\x12~\n" +
-	"\x11CreateTagTemplate\x122.raystack.compass.v1beta1.CreateTagTemplateRequest\x1a3.raystack.compass.v1beta1.CreateTagTemplateResponse\"\x00\x12u\n" +
-	"\x0eGetTagTemplate\x12/.raystack.compass.v1beta1.GetTagTemplateRequest\x1a0.raystack.compass.v1beta1.GetTagTemplateResponse\"\x00\x12~\n" +
-	"\x11UpdateTagTemplate\x122.raystack.compass.v1beta1.UpdateTagTemplateRequest\x1a3.raystack.compass.v1beta1.UpdateTagTemplateResponse\"\x00\x12~\n" +
-	"\x11DeleteTagTemplate\x122.raystack.compass.v1beta1.DeleteTagTemplateRequest\x1a3.raystack.compass.v1beta1.DeleteTagTemplateResponse\"\x00\x12x\n" +
+	"StarEntity\x12+.raystack.compass.v1beta1.StarEntityRequest\x1a,.raystack.compass.v1beta1.StarEntityResponse\"\x00\x12o\n" +
+	"\fUnstarEntity\x12-.raystack.compass.v1beta1.UnstarEntityRequest\x1a..raystack.compass.v1beta1.UnstarEntityResponse\"\x00\x12\x8d\x01\n" +
+	"\x16GetUserStarredEntities\x127.raystack.compass.v1beta1.GetUserStarredEntitiesRequest\x1a8.raystack.compass.v1beta1.GetUserStarredEntitiesResponse\"\x00\x12\x87\x01\n" +
+	"\x14GetMyStarredEntities\x125.raystack.compass.v1beta1.GetMyStarredEntitiesRequest\x1a6.raystack.compass.v1beta1.GetMyStarredEntitiesResponse\"\x00\x12\x81\x01\n" +
+	"\x12GetMyStarredEntity\x123.raystack.compass.v1beta1.GetMyStarredEntityRequest\x1a4.raystack.compass.v1beta1.GetMyStarredEntityResponse\"\x00\x12\x84\x01\n" +
+	"\x13GetEntityStargazers\x124.raystack.compass.v1beta1.GetEntityStargazersRequest\x1a5.raystack.compass.v1beta1.GetEntityStargazersResponse\"\x00\x12x\n" +
 	"\x0fCreateNamespace\x120.raystack.compass.v1beta1.CreateNamespaceRequest\x1a1.raystack.compass.v1beta1.CreateNamespaceResponse\"\x00\x12o\n" +
 	"\fGetNamespace\x12-.raystack.compass.v1beta1.GetNamespaceRequest\x1a..raystack.compass.v1beta1.GetNamespaceResponse\"\x00\x12x\n" +
 	"\x0fUpdateNamespace\x120.raystack.compass.v1beta1.UpdateNamespaceRequest\x1a1.raystack.compass.v1beta1.UpdateNamespaceResponse\"\x00\x12u\n" +
@@ -6948,317 +2905,142 @@ func file_raystack_compass_v1beta1_service_proto_rawDescGZIP() []byte {
 	return file_raystack_compass_v1beta1_service_proto_rawDescData
 }
 
-var file_raystack_compass_v1beta1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 117)
+var file_raystack_compass_v1beta1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 49)
 var file_raystack_compass_v1beta1_service_proto_goTypes = []any{
-	(*GetAllDiscussionsRequest)(nil),         // 0: raystack.compass.v1beta1.GetAllDiscussionsRequest
-	(*GetAllDiscussionsResponse)(nil),        // 1: raystack.compass.v1beta1.GetAllDiscussionsResponse
-	(*CreateDiscussionRequest)(nil),          // 2: raystack.compass.v1beta1.CreateDiscussionRequest
-	(*CreateDiscussionResponse)(nil),         // 3: raystack.compass.v1beta1.CreateDiscussionResponse
-	(*GetDiscussionRequest)(nil),             // 4: raystack.compass.v1beta1.GetDiscussionRequest
-	(*GetDiscussionResponse)(nil),            // 5: raystack.compass.v1beta1.GetDiscussionResponse
-	(*PatchDiscussionRequest)(nil),           // 6: raystack.compass.v1beta1.PatchDiscussionRequest
-	(*CreateCommentRequest)(nil),             // 7: raystack.compass.v1beta1.CreateCommentRequest
-	(*PatchDiscussionResponse)(nil),          // 8: raystack.compass.v1beta1.PatchDiscussionResponse
-	(*CreateCommentResponse)(nil),            // 9: raystack.compass.v1beta1.CreateCommentResponse
-	(*GetAllCommentsRequest)(nil),            // 10: raystack.compass.v1beta1.GetAllCommentsRequest
-	(*GetAllCommentsResponse)(nil),           // 11: raystack.compass.v1beta1.GetAllCommentsResponse
-	(*GetCommentRequest)(nil),                // 12: raystack.compass.v1beta1.GetCommentRequest
-	(*GetCommentResponse)(nil),               // 13: raystack.compass.v1beta1.GetCommentResponse
-	(*UpdateCommentRequest)(nil),             // 14: raystack.compass.v1beta1.UpdateCommentRequest
-	(*UpdateCommentResponse)(nil),            // 15: raystack.compass.v1beta1.UpdateCommentResponse
-	(*DeleteCommentRequest)(nil),             // 16: raystack.compass.v1beta1.DeleteCommentRequest
-	(*DeleteCommentResponse)(nil),            // 17: raystack.compass.v1beta1.DeleteCommentResponse
-	(*SearchAssetsRequest)(nil),              // 18: raystack.compass.v1beta1.SearchAssetsRequest
-	(*SearchFlags)(nil),                      // 19: raystack.compass.v1beta1.SearchFlags
-	(*SearchAssetsResponse)(nil),             // 20: raystack.compass.v1beta1.SearchAssetsResponse
-	(*SuggestAssetsRequest)(nil),             // 21: raystack.compass.v1beta1.SuggestAssetsRequest
-	(*SuggestAssetsResponse)(nil),            // 22: raystack.compass.v1beta1.SuggestAssetsResponse
-	(*GroupAssetsRequest)(nil),               // 23: raystack.compass.v1beta1.GroupAssetsRequest
-	(*GroupAssetsResponse)(nil),              // 24: raystack.compass.v1beta1.GroupAssetsResponse
-	(*AssetGroup)(nil),                       // 25: raystack.compass.v1beta1.AssetGroup
-	(*GroupField)(nil),                       // 26: raystack.compass.v1beta1.GroupField
-	(*GetGraphRequest)(nil),                  // 27: raystack.compass.v1beta1.GetGraphRequest
-	(*GetGraphResponse)(nil),                 // 28: raystack.compass.v1beta1.GetGraphResponse
-	(*GetAllTypesRequest)(nil),               // 29: raystack.compass.v1beta1.GetAllTypesRequest
-	(*GetAllTypesResponse)(nil),              // 30: raystack.compass.v1beta1.GetAllTypesResponse
-	(*GetAllAssetsRequest)(nil),              // 31: raystack.compass.v1beta1.GetAllAssetsRequest
-	(*GetAllAssetsResponse)(nil),             // 32: raystack.compass.v1beta1.GetAllAssetsResponse
-	(*GetAssetByIDRequest)(nil),              // 33: raystack.compass.v1beta1.GetAssetByIDRequest
-	(*GetAssetByIDResponse)(nil),             // 34: raystack.compass.v1beta1.GetAssetByIDResponse
-	(*UpsertAssetRequest)(nil),               // 35: raystack.compass.v1beta1.UpsertAssetRequest
-	(*UpsertAssetResponse)(nil),              // 36: raystack.compass.v1beta1.UpsertAssetResponse
-	(*UpsertPatchAssetRequest)(nil),          // 37: raystack.compass.v1beta1.UpsertPatchAssetRequest
-	(*UpsertPatchAssetResponse)(nil),         // 38: raystack.compass.v1beta1.UpsertPatchAssetResponse
-	(*DeleteAssetRequest)(nil),               // 39: raystack.compass.v1beta1.DeleteAssetRequest
-	(*DeleteAssetResponse)(nil),              // 40: raystack.compass.v1beta1.DeleteAssetResponse
-	(*GetAssetStargazersRequest)(nil),        // 41: raystack.compass.v1beta1.GetAssetStargazersRequest
-	(*GetAssetStargazersResponse)(nil),       // 42: raystack.compass.v1beta1.GetAssetStargazersResponse
-	(*GetAssetVersionHistoryRequest)(nil),    // 43: raystack.compass.v1beta1.GetAssetVersionHistoryRequest
-	(*GetAssetVersionHistoryResponse)(nil),   // 44: raystack.compass.v1beta1.GetAssetVersionHistoryResponse
-	(*GetAssetByVersionRequest)(nil),         // 45: raystack.compass.v1beta1.GetAssetByVersionRequest
-	(*GetAssetByVersionResponse)(nil),        // 46: raystack.compass.v1beta1.GetAssetByVersionResponse
-	(*CreateAssetProbeRequest)(nil),          // 47: raystack.compass.v1beta1.CreateAssetProbeRequest
-	(*CreateAssetProbeResponse)(nil),         // 48: raystack.compass.v1beta1.CreateAssetProbeResponse
-	(*GetUserStarredAssetsRequest)(nil),      // 49: raystack.compass.v1beta1.GetUserStarredAssetsRequest
-	(*GetUserStarredAssetsResponse)(nil),     // 50: raystack.compass.v1beta1.GetUserStarredAssetsResponse
-	(*GetMyStarredAssetsRequest)(nil),        // 51: raystack.compass.v1beta1.GetMyStarredAssetsRequest
-	(*GetMyStarredAssetsResponse)(nil),       // 52: raystack.compass.v1beta1.GetMyStarredAssetsResponse
-	(*GetMyStarredAssetRequest)(nil),         // 53: raystack.compass.v1beta1.GetMyStarredAssetRequest
-	(*GetMyStarredAssetResponse)(nil),        // 54: raystack.compass.v1beta1.GetMyStarredAssetResponse
-	(*StarAssetRequest)(nil),                 // 55: raystack.compass.v1beta1.StarAssetRequest
-	(*StarAssetResponse)(nil),                // 56: raystack.compass.v1beta1.StarAssetResponse
-	(*UnstarAssetRequest)(nil),               // 57: raystack.compass.v1beta1.UnstarAssetRequest
-	(*UnstarAssetResponse)(nil),              // 58: raystack.compass.v1beta1.UnstarAssetResponse
-	(*GetMyDiscussionsRequest)(nil),          // 59: raystack.compass.v1beta1.GetMyDiscussionsRequest
-	(*GetMyDiscussionsResponse)(nil),         // 60: raystack.compass.v1beta1.GetMyDiscussionsResponse
-	(*CreateTagAssetRequest)(nil),            // 61: raystack.compass.v1beta1.CreateTagAssetRequest
-	(*CreateTagAssetResponse)(nil),           // 62: raystack.compass.v1beta1.CreateTagAssetResponse
-	(*GetTagByAssetAndTemplateRequest)(nil),  // 63: raystack.compass.v1beta1.GetTagByAssetAndTemplateRequest
-	(*GetTagByAssetAndTemplateResponse)(nil), // 64: raystack.compass.v1beta1.GetTagByAssetAndTemplateResponse
-	(*UpdateTagAssetRequest)(nil),            // 65: raystack.compass.v1beta1.UpdateTagAssetRequest
-	(*UpdateTagAssetResponse)(nil),           // 66: raystack.compass.v1beta1.UpdateTagAssetResponse
-	(*DeleteTagAssetRequest)(nil),            // 67: raystack.compass.v1beta1.DeleteTagAssetRequest
-	(*DeleteTagAssetResponse)(nil),           // 68: raystack.compass.v1beta1.DeleteTagAssetResponse
-	(*GetAllTagsByAssetRequest)(nil),         // 69: raystack.compass.v1beta1.GetAllTagsByAssetRequest
-	(*GetAllTagsByAssetResponse)(nil),        // 70: raystack.compass.v1beta1.GetAllTagsByAssetResponse
-	(*GetAllTagTemplatesRequest)(nil),        // 71: raystack.compass.v1beta1.GetAllTagTemplatesRequest
-	(*GetAllTagTemplatesResponse)(nil),       // 72: raystack.compass.v1beta1.GetAllTagTemplatesResponse
-	(*CreateTagTemplateRequest)(nil),         // 73: raystack.compass.v1beta1.CreateTagTemplateRequest
-	(*CreateTagTemplateResponse)(nil),        // 74: raystack.compass.v1beta1.CreateTagTemplateResponse
-	(*GetTagTemplateRequest)(nil),            // 75: raystack.compass.v1beta1.GetTagTemplateRequest
-	(*GetTagTemplateResponse)(nil),           // 76: raystack.compass.v1beta1.GetTagTemplateResponse
-	(*UpdateTagTemplateRequest)(nil),         // 77: raystack.compass.v1beta1.UpdateTagTemplateRequest
-	(*UpdateTagTemplateResponse)(nil),        // 78: raystack.compass.v1beta1.UpdateTagTemplateResponse
-	(*DeleteTagTemplateRequest)(nil),         // 79: raystack.compass.v1beta1.DeleteTagTemplateRequest
-	(*DeleteTagTemplateResponse)(nil),        // 80: raystack.compass.v1beta1.DeleteTagTemplateResponse
-	(*CreateNamespaceRequest)(nil),           // 81: raystack.compass.v1beta1.CreateNamespaceRequest
-	(*CreateNamespaceResponse)(nil),          // 82: raystack.compass.v1beta1.CreateNamespaceResponse
-	(*GetNamespaceRequest)(nil),              // 83: raystack.compass.v1beta1.GetNamespaceRequest
-	(*GetNamespaceResponse)(nil),             // 84: raystack.compass.v1beta1.GetNamespaceResponse
-	(*UpdateNamespaceRequest)(nil),           // 85: raystack.compass.v1beta1.UpdateNamespaceRequest
-	(*UpdateNamespaceResponse)(nil),          // 86: raystack.compass.v1beta1.UpdateNamespaceResponse
-	(*ListNamespacesRequest)(nil),            // 87: raystack.compass.v1beta1.ListNamespacesRequest
-	(*ListNamespacesResponse)(nil),           // 88: raystack.compass.v1beta1.ListNamespacesResponse
-	(*User)(nil),                             // 89: raystack.compass.v1beta1.User
-	(*Change)(nil),                           // 90: raystack.compass.v1beta1.Change
-	(*Asset)(nil),                            // 91: raystack.compass.v1beta1.Asset
-	(*Probe)(nil),                            // 92: raystack.compass.v1beta1.Probe
-	(*Discussion)(nil),                       // 93: raystack.compass.v1beta1.Discussion
-	(*Comment)(nil),                          // 94: raystack.compass.v1beta1.Comment
-	(*LineageEdge)(nil),                      // 95: raystack.compass.v1beta1.LineageEdge
-	(*LineageNode)(nil),                      // 96: raystack.compass.v1beta1.LineageNode
-	(*Tag)(nil),                              // 97: raystack.compass.v1beta1.Tag
-	(*TagValue)(nil),                         // 98: raystack.compass.v1beta1.TagValue
-	(*TagTemplate)(nil),                      // 99: raystack.compass.v1beta1.TagTemplate
-	(*TagTemplateField)(nil),                 // 100: raystack.compass.v1beta1.TagTemplateField
-	(*Type)(nil),                             // 101: raystack.compass.v1beta1.Type
-	(*Namespace)(nil),                        // 102: raystack.compass.v1beta1.Namespace
-	nil,                                      // 103: raystack.compass.v1beta1.SearchAssetsRequest.FilterEntry
-	nil,                                      // 104: raystack.compass.v1beta1.SearchAssetsRequest.QueryEntry
-	nil,                                      // 105: raystack.compass.v1beta1.GroupAssetsRequest.FilterEntry
-	(*GetGraphResponse_ProbesInfo)(nil),      // 106: raystack.compass.v1beta1.GetGraphResponse.ProbesInfo
-	(*GetGraphResponse_NodeAttributes)(nil),  // 107: raystack.compass.v1beta1.GetGraphResponse.NodeAttributes
-	nil,                                      // 108: raystack.compass.v1beta1.GetGraphResponse.NodeAttrsEntry
-	nil,                                      // 109: raystack.compass.v1beta1.GetAllTypesRequest.DataEntry
-	nil,                                      // 110: raystack.compass.v1beta1.GetAllAssetsRequest.DataEntry
-	(*UpsertAssetRequest_Asset)(nil),         // 111: raystack.compass.v1beta1.UpsertAssetRequest.Asset
-	nil,                                      // 112: raystack.compass.v1beta1.UpsertAssetRequest.Asset.LabelsEntry
-	(*UpsertPatchAssetRequest_Asset)(nil),    // 113: raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset
-	nil,                                      // 114: raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.LabelsEntry
-	(*CreateAssetProbeRequest_Probe)(nil),    // 115: raystack.compass.v1beta1.CreateAssetProbeRequest.Probe
-	nil,                                      // 116: raystack.compass.v1beta1.Asset.LabelsEntry
-	(*structpb.Struct)(nil),                  // 117: google.protobuf.Struct
-	(*timestamppb.Timestamp)(nil),            // 118: google.protobuf.Timestamp
-	(*structpb.Value)(nil),                   // 119: google.protobuf.Value
-	(*wrapperspb.StringValue)(nil),           // 120: google.protobuf.StringValue
+	(*User)(nil),                           // 0: raystack.compass.v1beta1.User
+	(*Entity)(nil),                         // 1: raystack.compass.v1beta1.Entity
+	(*Edge)(nil),                           // 2: raystack.compass.v1beta1.Edge
+	(*Type)(nil),                           // 3: raystack.compass.v1beta1.Type
+	(*Namespace)(nil),                      // 4: raystack.compass.v1beta1.Namespace
+	(*GetAllEntitiesRequest)(nil),          // 5: raystack.compass.v1beta1.GetAllEntitiesRequest
+	(*GetAllEntitiesResponse)(nil),         // 6: raystack.compass.v1beta1.GetAllEntitiesResponse
+	(*GetEntityByIDRequest)(nil),           // 7: raystack.compass.v1beta1.GetEntityByIDRequest
+	(*GetEntityByIDResponse)(nil),          // 8: raystack.compass.v1beta1.GetEntityByIDResponse
+	(*UpsertEntityRequest)(nil),            // 9: raystack.compass.v1beta1.UpsertEntityRequest
+	(*UpsertEntityResponse)(nil),           // 10: raystack.compass.v1beta1.UpsertEntityResponse
+	(*DeleteEntityRequest)(nil),            // 11: raystack.compass.v1beta1.DeleteEntityRequest
+	(*DeleteEntityResponse)(nil),           // 12: raystack.compass.v1beta1.DeleteEntityResponse
+	(*SearchEntitiesRequest)(nil),          // 13: raystack.compass.v1beta1.SearchEntitiesRequest
+	(*SearchEntitiesResponse)(nil),         // 14: raystack.compass.v1beta1.SearchEntitiesResponse
+	(*SuggestEntitiesRequest)(nil),         // 15: raystack.compass.v1beta1.SuggestEntitiesRequest
+	(*SuggestEntitiesResponse)(nil),        // 16: raystack.compass.v1beta1.SuggestEntitiesResponse
+	(*GetEntityTypesRequest)(nil),          // 17: raystack.compass.v1beta1.GetEntityTypesRequest
+	(*GetEntityTypesResponse)(nil),         // 18: raystack.compass.v1beta1.GetEntityTypesResponse
+	(*GetEntityContextRequest)(nil),        // 19: raystack.compass.v1beta1.GetEntityContextRequest
+	(*GetEntityContextResponse)(nil),       // 20: raystack.compass.v1beta1.GetEntityContextResponse
+	(*GetEntityImpactRequest)(nil),         // 21: raystack.compass.v1beta1.GetEntityImpactRequest
+	(*GetEntityImpactResponse)(nil),        // 22: raystack.compass.v1beta1.GetEntityImpactResponse
+	(*UpsertEdgeRequest)(nil),              // 23: raystack.compass.v1beta1.UpsertEdgeRequest
+	(*UpsertEdgeResponse)(nil),             // 24: raystack.compass.v1beta1.UpsertEdgeResponse
+	(*GetEdgesRequest)(nil),                // 25: raystack.compass.v1beta1.GetEdgesRequest
+	(*GetEdgesResponse)(nil),               // 26: raystack.compass.v1beta1.GetEdgesResponse
+	(*DeleteEdgeRequest)(nil),              // 27: raystack.compass.v1beta1.DeleteEdgeRequest
+	(*DeleteEdgeResponse)(nil),             // 28: raystack.compass.v1beta1.DeleteEdgeResponse
+	(*StarEntityRequest)(nil),              // 29: raystack.compass.v1beta1.StarEntityRequest
+	(*StarEntityResponse)(nil),             // 30: raystack.compass.v1beta1.StarEntityResponse
+	(*UnstarEntityRequest)(nil),            // 31: raystack.compass.v1beta1.UnstarEntityRequest
+	(*UnstarEntityResponse)(nil),           // 32: raystack.compass.v1beta1.UnstarEntityResponse
+	(*GetUserStarredEntitiesRequest)(nil),  // 33: raystack.compass.v1beta1.GetUserStarredEntitiesRequest
+	(*GetUserStarredEntitiesResponse)(nil), // 34: raystack.compass.v1beta1.GetUserStarredEntitiesResponse
+	(*GetMyStarredEntitiesRequest)(nil),    // 35: raystack.compass.v1beta1.GetMyStarredEntitiesRequest
+	(*GetMyStarredEntitiesResponse)(nil),   // 36: raystack.compass.v1beta1.GetMyStarredEntitiesResponse
+	(*GetMyStarredEntityRequest)(nil),      // 37: raystack.compass.v1beta1.GetMyStarredEntityRequest
+	(*GetMyStarredEntityResponse)(nil),     // 38: raystack.compass.v1beta1.GetMyStarredEntityResponse
+	(*GetEntityStargazersRequest)(nil),     // 39: raystack.compass.v1beta1.GetEntityStargazersRequest
+	(*GetEntityStargazersResponse)(nil),    // 40: raystack.compass.v1beta1.GetEntityStargazersResponse
+	(*CreateNamespaceRequest)(nil),         // 41: raystack.compass.v1beta1.CreateNamespaceRequest
+	(*CreateNamespaceResponse)(nil),        // 42: raystack.compass.v1beta1.CreateNamespaceResponse
+	(*GetNamespaceRequest)(nil),            // 43: raystack.compass.v1beta1.GetNamespaceRequest
+	(*GetNamespaceResponse)(nil),           // 44: raystack.compass.v1beta1.GetNamespaceResponse
+	(*UpdateNamespaceRequest)(nil),         // 45: raystack.compass.v1beta1.UpdateNamespaceRequest
+	(*UpdateNamespaceResponse)(nil),        // 46: raystack.compass.v1beta1.UpdateNamespaceResponse
+	(*ListNamespacesRequest)(nil),          // 47: raystack.compass.v1beta1.ListNamespacesRequest
+	(*ListNamespacesResponse)(nil),         // 48: raystack.compass.v1beta1.ListNamespacesResponse
+	(*timestamppb.Timestamp)(nil),          // 49: google.protobuf.Timestamp
+	(*structpb.Struct)(nil),                // 50: google.protobuf.Struct
 }
 var file_raystack_compass_v1beta1_service_proto_depIdxs = []int32{
-	93,  // 0: raystack.compass.v1beta1.GetAllDiscussionsResponse.data:type_name -> raystack.compass.v1beta1.Discussion
-	93,  // 1: raystack.compass.v1beta1.GetDiscussionResponse.data:type_name -> raystack.compass.v1beta1.Discussion
-	94,  // 2: raystack.compass.v1beta1.GetAllCommentsResponse.data:type_name -> raystack.compass.v1beta1.Comment
-	94,  // 3: raystack.compass.v1beta1.GetCommentResponse.data:type_name -> raystack.compass.v1beta1.Comment
-	103, // 4: raystack.compass.v1beta1.SearchAssetsRequest.filter:type_name -> raystack.compass.v1beta1.SearchAssetsRequest.FilterEntry
-	104, // 5: raystack.compass.v1beta1.SearchAssetsRequest.query:type_name -> raystack.compass.v1beta1.SearchAssetsRequest.QueryEntry
-	19,  // 6: raystack.compass.v1beta1.SearchAssetsRequest.flags:type_name -> raystack.compass.v1beta1.SearchFlags
-	91,  // 7: raystack.compass.v1beta1.SearchAssetsResponse.data:type_name -> raystack.compass.v1beta1.Asset
-	105, // 8: raystack.compass.v1beta1.GroupAssetsRequest.filter:type_name -> raystack.compass.v1beta1.GroupAssetsRequest.FilterEntry
-	25,  // 9: raystack.compass.v1beta1.GroupAssetsResponse.asset_groups:type_name -> raystack.compass.v1beta1.AssetGroup
-	26,  // 10: raystack.compass.v1beta1.AssetGroup.group_fields:type_name -> raystack.compass.v1beta1.GroupField
-	91,  // 11: raystack.compass.v1beta1.AssetGroup.assets:type_name -> raystack.compass.v1beta1.Asset
-	95,  // 12: raystack.compass.v1beta1.GetGraphResponse.data:type_name -> raystack.compass.v1beta1.LineageEdge
-	108, // 13: raystack.compass.v1beta1.GetGraphResponse.node_attrs:type_name -> raystack.compass.v1beta1.GetGraphResponse.NodeAttrsEntry
-	109, // 14: raystack.compass.v1beta1.GetAllTypesRequest.data:type_name -> raystack.compass.v1beta1.GetAllTypesRequest.DataEntry
-	101, // 15: raystack.compass.v1beta1.GetAllTypesResponse.data:type_name -> raystack.compass.v1beta1.Type
-	110, // 16: raystack.compass.v1beta1.GetAllAssetsRequest.data:type_name -> raystack.compass.v1beta1.GetAllAssetsRequest.DataEntry
-	91,  // 17: raystack.compass.v1beta1.GetAllAssetsResponse.data:type_name -> raystack.compass.v1beta1.Asset
-	91,  // 18: raystack.compass.v1beta1.GetAssetByIDResponse.data:type_name -> raystack.compass.v1beta1.Asset
-	111, // 19: raystack.compass.v1beta1.UpsertAssetRequest.asset:type_name -> raystack.compass.v1beta1.UpsertAssetRequest.Asset
-	96,  // 20: raystack.compass.v1beta1.UpsertAssetRequest.upstreams:type_name -> raystack.compass.v1beta1.LineageNode
-	96,  // 21: raystack.compass.v1beta1.UpsertAssetRequest.downstreams:type_name -> raystack.compass.v1beta1.LineageNode
-	113, // 22: raystack.compass.v1beta1.UpsertPatchAssetRequest.asset:type_name -> raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset
-	96,  // 23: raystack.compass.v1beta1.UpsertPatchAssetRequest.upstreams:type_name -> raystack.compass.v1beta1.LineageNode
-	96,  // 24: raystack.compass.v1beta1.UpsertPatchAssetRequest.downstreams:type_name -> raystack.compass.v1beta1.LineageNode
-	89,  // 25: raystack.compass.v1beta1.GetAssetStargazersResponse.data:type_name -> raystack.compass.v1beta1.User
-	91,  // 26: raystack.compass.v1beta1.GetAssetVersionHistoryResponse.data:type_name -> raystack.compass.v1beta1.Asset
-	91,  // 27: raystack.compass.v1beta1.GetAssetByVersionResponse.data:type_name -> raystack.compass.v1beta1.Asset
-	115, // 28: raystack.compass.v1beta1.CreateAssetProbeRequest.probe:type_name -> raystack.compass.v1beta1.CreateAssetProbeRequest.Probe
-	91,  // 29: raystack.compass.v1beta1.GetUserStarredAssetsResponse.data:type_name -> raystack.compass.v1beta1.Asset
-	91,  // 30: raystack.compass.v1beta1.GetMyStarredAssetsResponse.data:type_name -> raystack.compass.v1beta1.Asset
-	91,  // 31: raystack.compass.v1beta1.GetMyStarredAssetResponse.data:type_name -> raystack.compass.v1beta1.Asset
-	93,  // 32: raystack.compass.v1beta1.GetMyDiscussionsResponse.data:type_name -> raystack.compass.v1beta1.Discussion
-	98,  // 33: raystack.compass.v1beta1.CreateTagAssetRequest.tag_values:type_name -> raystack.compass.v1beta1.TagValue
-	97,  // 34: raystack.compass.v1beta1.CreateTagAssetResponse.data:type_name -> raystack.compass.v1beta1.Tag
-	97,  // 35: raystack.compass.v1beta1.GetTagByAssetAndTemplateResponse.data:type_name -> raystack.compass.v1beta1.Tag
-	98,  // 36: raystack.compass.v1beta1.UpdateTagAssetRequest.tag_values:type_name -> raystack.compass.v1beta1.TagValue
-	97,  // 37: raystack.compass.v1beta1.UpdateTagAssetResponse.data:type_name -> raystack.compass.v1beta1.Tag
-	97,  // 38: raystack.compass.v1beta1.GetAllTagsByAssetResponse.data:type_name -> raystack.compass.v1beta1.Tag
-	99,  // 39: raystack.compass.v1beta1.GetAllTagTemplatesResponse.data:type_name -> raystack.compass.v1beta1.TagTemplate
-	100, // 40: raystack.compass.v1beta1.CreateTagTemplateRequest.fields:type_name -> raystack.compass.v1beta1.TagTemplateField
-	99,  // 41: raystack.compass.v1beta1.CreateTagTemplateResponse.data:type_name -> raystack.compass.v1beta1.TagTemplate
-	99,  // 42: raystack.compass.v1beta1.GetTagTemplateResponse.data:type_name -> raystack.compass.v1beta1.TagTemplate
-	100, // 43: raystack.compass.v1beta1.UpdateTagTemplateRequest.fields:type_name -> raystack.compass.v1beta1.TagTemplateField
-	99,  // 44: raystack.compass.v1beta1.UpdateTagTemplateResponse.data:type_name -> raystack.compass.v1beta1.TagTemplate
-	117, // 45: raystack.compass.v1beta1.CreateNamespaceRequest.metadata:type_name -> google.protobuf.Struct
-	102, // 46: raystack.compass.v1beta1.GetNamespaceResponse.namespace:type_name -> raystack.compass.v1beta1.Namespace
-	117, // 47: raystack.compass.v1beta1.UpdateNamespaceRequest.metadata:type_name -> google.protobuf.Struct
-	102, // 48: raystack.compass.v1beta1.ListNamespacesResponse.namespaces:type_name -> raystack.compass.v1beta1.Namespace
-	118, // 49: raystack.compass.v1beta1.User.created_at:type_name -> google.protobuf.Timestamp
-	118, // 50: raystack.compass.v1beta1.User.updated_at:type_name -> google.protobuf.Timestamp
-	119, // 51: raystack.compass.v1beta1.Change.from:type_name -> google.protobuf.Value
-	119, // 52: raystack.compass.v1beta1.Change.to:type_name -> google.protobuf.Value
-	117, // 53: raystack.compass.v1beta1.Asset.data:type_name -> google.protobuf.Struct
-	116, // 54: raystack.compass.v1beta1.Asset.labels:type_name -> raystack.compass.v1beta1.Asset.LabelsEntry
-	89,  // 55: raystack.compass.v1beta1.Asset.owners:type_name -> raystack.compass.v1beta1.User
-	89,  // 56: raystack.compass.v1beta1.Asset.updated_by:type_name -> raystack.compass.v1beta1.User
-	90,  // 57: raystack.compass.v1beta1.Asset.changelog:type_name -> raystack.compass.v1beta1.Change
-	118, // 58: raystack.compass.v1beta1.Asset.created_at:type_name -> google.protobuf.Timestamp
-	118, // 59: raystack.compass.v1beta1.Asset.updated_at:type_name -> google.protobuf.Timestamp
-	92,  // 60: raystack.compass.v1beta1.Asset.probes:type_name -> raystack.compass.v1beta1.Probe
-	117, // 61: raystack.compass.v1beta1.Probe.metadata:type_name -> google.protobuf.Struct
-	118, // 62: raystack.compass.v1beta1.Probe.timestamp:type_name -> google.protobuf.Timestamp
-	118, // 63: raystack.compass.v1beta1.Probe.created_at:type_name -> google.protobuf.Timestamp
-	89,  // 64: raystack.compass.v1beta1.Discussion.owner:type_name -> raystack.compass.v1beta1.User
-	118, // 65: raystack.compass.v1beta1.Discussion.created_at:type_name -> google.protobuf.Timestamp
-	118, // 66: raystack.compass.v1beta1.Discussion.updated_at:type_name -> google.protobuf.Timestamp
-	89,  // 67: raystack.compass.v1beta1.Comment.owner:type_name -> raystack.compass.v1beta1.User
-	89,  // 68: raystack.compass.v1beta1.Comment.updated_by:type_name -> raystack.compass.v1beta1.User
-	118, // 69: raystack.compass.v1beta1.Comment.created_at:type_name -> google.protobuf.Timestamp
-	118, // 70: raystack.compass.v1beta1.Comment.updated_at:type_name -> google.protobuf.Timestamp
-	117, // 71: raystack.compass.v1beta1.LineageEdge.prop:type_name -> google.protobuf.Struct
-	98,  // 72: raystack.compass.v1beta1.Tag.tag_values:type_name -> raystack.compass.v1beta1.TagValue
-	119, // 73: raystack.compass.v1beta1.TagValue.field_value:type_name -> google.protobuf.Value
-	118, // 74: raystack.compass.v1beta1.TagValue.created_at:type_name -> google.protobuf.Timestamp
-	118, // 75: raystack.compass.v1beta1.TagValue.updated_at:type_name -> google.protobuf.Timestamp
-	100, // 76: raystack.compass.v1beta1.TagTemplate.fields:type_name -> raystack.compass.v1beta1.TagTemplateField
-	118, // 77: raystack.compass.v1beta1.TagTemplate.created_at:type_name -> google.protobuf.Timestamp
-	118, // 78: raystack.compass.v1beta1.TagTemplate.updated_at:type_name -> google.protobuf.Timestamp
-	118, // 79: raystack.compass.v1beta1.TagTemplateField.created_at:type_name -> google.protobuf.Timestamp
-	118, // 80: raystack.compass.v1beta1.TagTemplateField.updated_at:type_name -> google.protobuf.Timestamp
-	117, // 81: raystack.compass.v1beta1.Namespace.metadata:type_name -> google.protobuf.Struct
-	92,  // 82: raystack.compass.v1beta1.GetGraphResponse.ProbesInfo.latest:type_name -> raystack.compass.v1beta1.Probe
-	106, // 83: raystack.compass.v1beta1.GetGraphResponse.NodeAttributes.probes:type_name -> raystack.compass.v1beta1.GetGraphResponse.ProbesInfo
-	107, // 84: raystack.compass.v1beta1.GetGraphResponse.NodeAttrsEntry.value:type_name -> raystack.compass.v1beta1.GetGraphResponse.NodeAttributes
-	117, // 85: raystack.compass.v1beta1.UpsertAssetRequest.Asset.data:type_name -> google.protobuf.Struct
-	112, // 86: raystack.compass.v1beta1.UpsertAssetRequest.Asset.labels:type_name -> raystack.compass.v1beta1.UpsertAssetRequest.Asset.LabelsEntry
-	89,  // 87: raystack.compass.v1beta1.UpsertAssetRequest.Asset.owners:type_name -> raystack.compass.v1beta1.User
-	120, // 88: raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.name:type_name -> google.protobuf.StringValue
-	120, // 89: raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.description:type_name -> google.protobuf.StringValue
-	117, // 90: raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.data:type_name -> google.protobuf.Struct
-	114, // 91: raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.labels:type_name -> raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.LabelsEntry
-	89,  // 92: raystack.compass.v1beta1.UpsertPatchAssetRequest.Asset.owners:type_name -> raystack.compass.v1beta1.User
-	117, // 93: raystack.compass.v1beta1.CreateAssetProbeRequest.Probe.metadata:type_name -> google.protobuf.Struct
-	118, // 94: raystack.compass.v1beta1.CreateAssetProbeRequest.Probe.timestamp:type_name -> google.protobuf.Timestamp
-	0,   // 95: raystack.compass.v1beta1.CompassService.GetAllDiscussions:input_type -> raystack.compass.v1beta1.GetAllDiscussionsRequest
-	2,   // 96: raystack.compass.v1beta1.CompassService.CreateDiscussion:input_type -> raystack.compass.v1beta1.CreateDiscussionRequest
-	4,   // 97: raystack.compass.v1beta1.CompassService.GetDiscussion:input_type -> raystack.compass.v1beta1.GetDiscussionRequest
-	6,   // 98: raystack.compass.v1beta1.CompassService.PatchDiscussion:input_type -> raystack.compass.v1beta1.PatchDiscussionRequest
-	7,   // 99: raystack.compass.v1beta1.CompassService.CreateComment:input_type -> raystack.compass.v1beta1.CreateCommentRequest
-	10,  // 100: raystack.compass.v1beta1.CompassService.GetAllComments:input_type -> raystack.compass.v1beta1.GetAllCommentsRequest
-	12,  // 101: raystack.compass.v1beta1.CompassService.GetComment:input_type -> raystack.compass.v1beta1.GetCommentRequest
-	14,  // 102: raystack.compass.v1beta1.CompassService.UpdateComment:input_type -> raystack.compass.v1beta1.UpdateCommentRequest
-	16,  // 103: raystack.compass.v1beta1.CompassService.DeleteComment:input_type -> raystack.compass.v1beta1.DeleteCommentRequest
-	18,  // 104: raystack.compass.v1beta1.CompassService.SearchAssets:input_type -> raystack.compass.v1beta1.SearchAssetsRequest
-	21,  // 105: raystack.compass.v1beta1.CompassService.SuggestAssets:input_type -> raystack.compass.v1beta1.SuggestAssetsRequest
-	23,  // 106: raystack.compass.v1beta1.CompassService.GroupAssets:input_type -> raystack.compass.v1beta1.GroupAssetsRequest
-	27,  // 107: raystack.compass.v1beta1.CompassService.GetGraph:input_type -> raystack.compass.v1beta1.GetGraphRequest
-	29,  // 108: raystack.compass.v1beta1.CompassService.GetAllTypes:input_type -> raystack.compass.v1beta1.GetAllTypesRequest
-	31,  // 109: raystack.compass.v1beta1.CompassService.GetAllAssets:input_type -> raystack.compass.v1beta1.GetAllAssetsRequest
-	33,  // 110: raystack.compass.v1beta1.CompassService.GetAssetByID:input_type -> raystack.compass.v1beta1.GetAssetByIDRequest
-	35,  // 111: raystack.compass.v1beta1.CompassService.UpsertAsset:input_type -> raystack.compass.v1beta1.UpsertAssetRequest
-	37,  // 112: raystack.compass.v1beta1.CompassService.UpsertPatchAsset:input_type -> raystack.compass.v1beta1.UpsertPatchAssetRequest
-	39,  // 113: raystack.compass.v1beta1.CompassService.DeleteAsset:input_type -> raystack.compass.v1beta1.DeleteAssetRequest
-	41,  // 114: raystack.compass.v1beta1.CompassService.GetAssetStargazers:input_type -> raystack.compass.v1beta1.GetAssetStargazersRequest
-	43,  // 115: raystack.compass.v1beta1.CompassService.GetAssetVersionHistory:input_type -> raystack.compass.v1beta1.GetAssetVersionHistoryRequest
-	45,  // 116: raystack.compass.v1beta1.CompassService.GetAssetByVersion:input_type -> raystack.compass.v1beta1.GetAssetByVersionRequest
-	47,  // 117: raystack.compass.v1beta1.CompassService.CreateAssetProbe:input_type -> raystack.compass.v1beta1.CreateAssetProbeRequest
-	49,  // 118: raystack.compass.v1beta1.CompassService.GetUserStarredAssets:input_type -> raystack.compass.v1beta1.GetUserStarredAssetsRequest
-	51,  // 119: raystack.compass.v1beta1.CompassService.GetMyStarredAssets:input_type -> raystack.compass.v1beta1.GetMyStarredAssetsRequest
-	53,  // 120: raystack.compass.v1beta1.CompassService.GetMyStarredAsset:input_type -> raystack.compass.v1beta1.GetMyStarredAssetRequest
-	55,  // 121: raystack.compass.v1beta1.CompassService.StarAsset:input_type -> raystack.compass.v1beta1.StarAssetRequest
-	57,  // 122: raystack.compass.v1beta1.CompassService.UnstarAsset:input_type -> raystack.compass.v1beta1.UnstarAssetRequest
-	59,  // 123: raystack.compass.v1beta1.CompassService.GetMyDiscussions:input_type -> raystack.compass.v1beta1.GetMyDiscussionsRequest
-	61,  // 124: raystack.compass.v1beta1.CompassService.CreateTagAsset:input_type -> raystack.compass.v1beta1.CreateTagAssetRequest
-	63,  // 125: raystack.compass.v1beta1.CompassService.GetTagByAssetAndTemplate:input_type -> raystack.compass.v1beta1.GetTagByAssetAndTemplateRequest
-	65,  // 126: raystack.compass.v1beta1.CompassService.UpdateTagAsset:input_type -> raystack.compass.v1beta1.UpdateTagAssetRequest
-	67,  // 127: raystack.compass.v1beta1.CompassService.DeleteTagAsset:input_type -> raystack.compass.v1beta1.DeleteTagAssetRequest
-	69,  // 128: raystack.compass.v1beta1.CompassService.GetAllTagsByAsset:input_type -> raystack.compass.v1beta1.GetAllTagsByAssetRequest
-	71,  // 129: raystack.compass.v1beta1.CompassService.GetAllTagTemplates:input_type -> raystack.compass.v1beta1.GetAllTagTemplatesRequest
-	73,  // 130: raystack.compass.v1beta1.CompassService.CreateTagTemplate:input_type -> raystack.compass.v1beta1.CreateTagTemplateRequest
-	75,  // 131: raystack.compass.v1beta1.CompassService.GetTagTemplate:input_type -> raystack.compass.v1beta1.GetTagTemplateRequest
-	77,  // 132: raystack.compass.v1beta1.CompassService.UpdateTagTemplate:input_type -> raystack.compass.v1beta1.UpdateTagTemplateRequest
-	79,  // 133: raystack.compass.v1beta1.CompassService.DeleteTagTemplate:input_type -> raystack.compass.v1beta1.DeleteTagTemplateRequest
-	81,  // 134: raystack.compass.v1beta1.CompassService.CreateNamespace:input_type -> raystack.compass.v1beta1.CreateNamespaceRequest
-	83,  // 135: raystack.compass.v1beta1.CompassService.GetNamespace:input_type -> raystack.compass.v1beta1.GetNamespaceRequest
-	85,  // 136: raystack.compass.v1beta1.CompassService.UpdateNamespace:input_type -> raystack.compass.v1beta1.UpdateNamespaceRequest
-	87,  // 137: raystack.compass.v1beta1.CompassService.ListNamespaces:input_type -> raystack.compass.v1beta1.ListNamespacesRequest
-	1,   // 138: raystack.compass.v1beta1.CompassService.GetAllDiscussions:output_type -> raystack.compass.v1beta1.GetAllDiscussionsResponse
-	3,   // 139: raystack.compass.v1beta1.CompassService.CreateDiscussion:output_type -> raystack.compass.v1beta1.CreateDiscussionResponse
-	5,   // 140: raystack.compass.v1beta1.CompassService.GetDiscussion:output_type -> raystack.compass.v1beta1.GetDiscussionResponse
-	8,   // 141: raystack.compass.v1beta1.CompassService.PatchDiscussion:output_type -> raystack.compass.v1beta1.PatchDiscussionResponse
-	9,   // 142: raystack.compass.v1beta1.CompassService.CreateComment:output_type -> raystack.compass.v1beta1.CreateCommentResponse
-	11,  // 143: raystack.compass.v1beta1.CompassService.GetAllComments:output_type -> raystack.compass.v1beta1.GetAllCommentsResponse
-	13,  // 144: raystack.compass.v1beta1.CompassService.GetComment:output_type -> raystack.compass.v1beta1.GetCommentResponse
-	15,  // 145: raystack.compass.v1beta1.CompassService.UpdateComment:output_type -> raystack.compass.v1beta1.UpdateCommentResponse
-	17,  // 146: raystack.compass.v1beta1.CompassService.DeleteComment:output_type -> raystack.compass.v1beta1.DeleteCommentResponse
-	20,  // 147: raystack.compass.v1beta1.CompassService.SearchAssets:output_type -> raystack.compass.v1beta1.SearchAssetsResponse
-	22,  // 148: raystack.compass.v1beta1.CompassService.SuggestAssets:output_type -> raystack.compass.v1beta1.SuggestAssetsResponse
-	24,  // 149: raystack.compass.v1beta1.CompassService.GroupAssets:output_type -> raystack.compass.v1beta1.GroupAssetsResponse
-	28,  // 150: raystack.compass.v1beta1.CompassService.GetGraph:output_type -> raystack.compass.v1beta1.GetGraphResponse
-	30,  // 151: raystack.compass.v1beta1.CompassService.GetAllTypes:output_type -> raystack.compass.v1beta1.GetAllTypesResponse
-	32,  // 152: raystack.compass.v1beta1.CompassService.GetAllAssets:output_type -> raystack.compass.v1beta1.GetAllAssetsResponse
-	34,  // 153: raystack.compass.v1beta1.CompassService.GetAssetByID:output_type -> raystack.compass.v1beta1.GetAssetByIDResponse
-	36,  // 154: raystack.compass.v1beta1.CompassService.UpsertAsset:output_type -> raystack.compass.v1beta1.UpsertAssetResponse
-	38,  // 155: raystack.compass.v1beta1.CompassService.UpsertPatchAsset:output_type -> raystack.compass.v1beta1.UpsertPatchAssetResponse
-	40,  // 156: raystack.compass.v1beta1.CompassService.DeleteAsset:output_type -> raystack.compass.v1beta1.DeleteAssetResponse
-	42,  // 157: raystack.compass.v1beta1.CompassService.GetAssetStargazers:output_type -> raystack.compass.v1beta1.GetAssetStargazersResponse
-	44,  // 158: raystack.compass.v1beta1.CompassService.GetAssetVersionHistory:output_type -> raystack.compass.v1beta1.GetAssetVersionHistoryResponse
-	46,  // 159: raystack.compass.v1beta1.CompassService.GetAssetByVersion:output_type -> raystack.compass.v1beta1.GetAssetByVersionResponse
-	48,  // 160: raystack.compass.v1beta1.CompassService.CreateAssetProbe:output_type -> raystack.compass.v1beta1.CreateAssetProbeResponse
-	50,  // 161: raystack.compass.v1beta1.CompassService.GetUserStarredAssets:output_type -> raystack.compass.v1beta1.GetUserStarredAssetsResponse
-	52,  // 162: raystack.compass.v1beta1.CompassService.GetMyStarredAssets:output_type -> raystack.compass.v1beta1.GetMyStarredAssetsResponse
-	54,  // 163: raystack.compass.v1beta1.CompassService.GetMyStarredAsset:output_type -> raystack.compass.v1beta1.GetMyStarredAssetResponse
-	56,  // 164: raystack.compass.v1beta1.CompassService.StarAsset:output_type -> raystack.compass.v1beta1.StarAssetResponse
-	58,  // 165: raystack.compass.v1beta1.CompassService.UnstarAsset:output_type -> raystack.compass.v1beta1.UnstarAssetResponse
-	60,  // 166: raystack.compass.v1beta1.CompassService.GetMyDiscussions:output_type -> raystack.compass.v1beta1.GetMyDiscussionsResponse
-	62,  // 167: raystack.compass.v1beta1.CompassService.CreateTagAsset:output_type -> raystack.compass.v1beta1.CreateTagAssetResponse
-	64,  // 168: raystack.compass.v1beta1.CompassService.GetTagByAssetAndTemplate:output_type -> raystack.compass.v1beta1.GetTagByAssetAndTemplateResponse
-	66,  // 169: raystack.compass.v1beta1.CompassService.UpdateTagAsset:output_type -> raystack.compass.v1beta1.UpdateTagAssetResponse
-	68,  // 170: raystack.compass.v1beta1.CompassService.DeleteTagAsset:output_type -> raystack.compass.v1beta1.DeleteTagAssetResponse
-	70,  // 171: raystack.compass.v1beta1.CompassService.GetAllTagsByAsset:output_type -> raystack.compass.v1beta1.GetAllTagsByAssetResponse
-	72,  // 172: raystack.compass.v1beta1.CompassService.GetAllTagTemplates:output_type -> raystack.compass.v1beta1.GetAllTagTemplatesResponse
-	74,  // 173: raystack.compass.v1beta1.CompassService.CreateTagTemplate:output_type -> raystack.compass.v1beta1.CreateTagTemplateResponse
-	76,  // 174: raystack.compass.v1beta1.CompassService.GetTagTemplate:output_type -> raystack.compass.v1beta1.GetTagTemplateResponse
-	78,  // 175: raystack.compass.v1beta1.CompassService.UpdateTagTemplate:output_type -> raystack.compass.v1beta1.UpdateTagTemplateResponse
-	80,  // 176: raystack.compass.v1beta1.CompassService.DeleteTagTemplate:output_type -> raystack.compass.v1beta1.DeleteTagTemplateResponse
-	82,  // 177: raystack.compass.v1beta1.CompassService.CreateNamespace:output_type -> raystack.compass.v1beta1.CreateNamespaceResponse
-	84,  // 178: raystack.compass.v1beta1.CompassService.GetNamespace:output_type -> raystack.compass.v1beta1.GetNamespaceResponse
-	86,  // 179: raystack.compass.v1beta1.CompassService.UpdateNamespace:output_type -> raystack.compass.v1beta1.UpdateNamespaceResponse
-	88,  // 180: raystack.compass.v1beta1.CompassService.ListNamespaces:output_type -> raystack.compass.v1beta1.ListNamespacesResponse
-	138, // [138:181] is the sub-list for method output_type
-	95,  // [95:138] is the sub-list for method input_type
-	95,  // [95:95] is the sub-list for extension type_name
-	95,  // [95:95] is the sub-list for extension extendee
-	0,   // [0:95] is the sub-list for field type_name
+	49, // 0: raystack.compass.v1beta1.User.created_at:type_name -> google.protobuf.Timestamp
+	49, // 1: raystack.compass.v1beta1.User.updated_at:type_name -> google.protobuf.Timestamp
+	50, // 2: raystack.compass.v1beta1.Entity.properties:type_name -> google.protobuf.Struct
+	49, // 3: raystack.compass.v1beta1.Entity.valid_from:type_name -> google.protobuf.Timestamp
+	49, // 4: raystack.compass.v1beta1.Entity.valid_to:type_name -> google.protobuf.Timestamp
+	49, // 5: raystack.compass.v1beta1.Entity.created_at:type_name -> google.protobuf.Timestamp
+	49, // 6: raystack.compass.v1beta1.Entity.updated_at:type_name -> google.protobuf.Timestamp
+	50, // 7: raystack.compass.v1beta1.Edge.properties:type_name -> google.protobuf.Struct
+	49, // 8: raystack.compass.v1beta1.Edge.valid_from:type_name -> google.protobuf.Timestamp
+	49, // 9: raystack.compass.v1beta1.Edge.valid_to:type_name -> google.protobuf.Timestamp
+	49, // 10: raystack.compass.v1beta1.Edge.created_at:type_name -> google.protobuf.Timestamp
+	50, // 11: raystack.compass.v1beta1.Namespace.metadata:type_name -> google.protobuf.Struct
+	1,  // 12: raystack.compass.v1beta1.GetAllEntitiesResponse.data:type_name -> raystack.compass.v1beta1.Entity
+	1,  // 13: raystack.compass.v1beta1.GetEntityByIDResponse.data:type_name -> raystack.compass.v1beta1.Entity
+	50, // 14: raystack.compass.v1beta1.UpsertEntityRequest.properties:type_name -> google.protobuf.Struct
+	1,  // 15: raystack.compass.v1beta1.SearchEntitiesResponse.data:type_name -> raystack.compass.v1beta1.Entity
+	3,  // 16: raystack.compass.v1beta1.GetEntityTypesResponse.data:type_name -> raystack.compass.v1beta1.Type
+	1,  // 17: raystack.compass.v1beta1.GetEntityContextResponse.entity:type_name -> raystack.compass.v1beta1.Entity
+	2,  // 18: raystack.compass.v1beta1.GetEntityContextResponse.edges:type_name -> raystack.compass.v1beta1.Edge
+	1,  // 19: raystack.compass.v1beta1.GetEntityContextResponse.related:type_name -> raystack.compass.v1beta1.Entity
+	2,  // 20: raystack.compass.v1beta1.GetEntityImpactResponse.edges:type_name -> raystack.compass.v1beta1.Edge
+	1,  // 21: raystack.compass.v1beta1.GetEntityImpactResponse.affected:type_name -> raystack.compass.v1beta1.Entity
+	50, // 22: raystack.compass.v1beta1.UpsertEdgeRequest.properties:type_name -> google.protobuf.Struct
+	2,  // 23: raystack.compass.v1beta1.GetEdgesResponse.data:type_name -> raystack.compass.v1beta1.Edge
+	1,  // 24: raystack.compass.v1beta1.GetUserStarredEntitiesResponse.data:type_name -> raystack.compass.v1beta1.Entity
+	1,  // 25: raystack.compass.v1beta1.GetMyStarredEntitiesResponse.data:type_name -> raystack.compass.v1beta1.Entity
+	1,  // 26: raystack.compass.v1beta1.GetMyStarredEntityResponse.data:type_name -> raystack.compass.v1beta1.Entity
+	0,  // 27: raystack.compass.v1beta1.GetEntityStargazersResponse.data:type_name -> raystack.compass.v1beta1.User
+	50, // 28: raystack.compass.v1beta1.CreateNamespaceRequest.metadata:type_name -> google.protobuf.Struct
+	4,  // 29: raystack.compass.v1beta1.GetNamespaceResponse.namespace:type_name -> raystack.compass.v1beta1.Namespace
+	50, // 30: raystack.compass.v1beta1.UpdateNamespaceRequest.metadata:type_name -> google.protobuf.Struct
+	4,  // 31: raystack.compass.v1beta1.ListNamespacesResponse.namespaces:type_name -> raystack.compass.v1beta1.Namespace
+	5,  // 32: raystack.compass.v1beta1.CompassService.GetAllEntities:input_type -> raystack.compass.v1beta1.GetAllEntitiesRequest
+	7,  // 33: raystack.compass.v1beta1.CompassService.GetEntityByID:input_type -> raystack.compass.v1beta1.GetEntityByIDRequest
+	9,  // 34: raystack.compass.v1beta1.CompassService.UpsertEntity:input_type -> raystack.compass.v1beta1.UpsertEntityRequest
+	11, // 35: raystack.compass.v1beta1.CompassService.DeleteEntity:input_type -> raystack.compass.v1beta1.DeleteEntityRequest
+	13, // 36: raystack.compass.v1beta1.CompassService.SearchEntities:input_type -> raystack.compass.v1beta1.SearchEntitiesRequest
+	15, // 37: raystack.compass.v1beta1.CompassService.SuggestEntities:input_type -> raystack.compass.v1beta1.SuggestEntitiesRequest
+	17, // 38: raystack.compass.v1beta1.CompassService.GetEntityTypes:input_type -> raystack.compass.v1beta1.GetEntityTypesRequest
+	19, // 39: raystack.compass.v1beta1.CompassService.GetEntityContext:input_type -> raystack.compass.v1beta1.GetEntityContextRequest
+	21, // 40: raystack.compass.v1beta1.CompassService.GetEntityImpact:input_type -> raystack.compass.v1beta1.GetEntityImpactRequest
+	23, // 41: raystack.compass.v1beta1.CompassService.UpsertEdge:input_type -> raystack.compass.v1beta1.UpsertEdgeRequest
+	25, // 42: raystack.compass.v1beta1.CompassService.GetEdges:input_type -> raystack.compass.v1beta1.GetEdgesRequest
+	27, // 43: raystack.compass.v1beta1.CompassService.DeleteEdge:input_type -> raystack.compass.v1beta1.DeleteEdgeRequest
+	29, // 44: raystack.compass.v1beta1.CompassService.StarEntity:input_type -> raystack.compass.v1beta1.StarEntityRequest
+	31, // 45: raystack.compass.v1beta1.CompassService.UnstarEntity:input_type -> raystack.compass.v1beta1.UnstarEntityRequest
+	33, // 46: raystack.compass.v1beta1.CompassService.GetUserStarredEntities:input_type -> raystack.compass.v1beta1.GetUserStarredEntitiesRequest
+	35, // 47: raystack.compass.v1beta1.CompassService.GetMyStarredEntities:input_type -> raystack.compass.v1beta1.GetMyStarredEntitiesRequest
+	37, // 48: raystack.compass.v1beta1.CompassService.GetMyStarredEntity:input_type -> raystack.compass.v1beta1.GetMyStarredEntityRequest
+	39, // 49: raystack.compass.v1beta1.CompassService.GetEntityStargazers:input_type -> raystack.compass.v1beta1.GetEntityStargazersRequest
+	41, // 50: raystack.compass.v1beta1.CompassService.CreateNamespace:input_type -> raystack.compass.v1beta1.CreateNamespaceRequest
+	43, // 51: raystack.compass.v1beta1.CompassService.GetNamespace:input_type -> raystack.compass.v1beta1.GetNamespaceRequest
+	45, // 52: raystack.compass.v1beta1.CompassService.UpdateNamespace:input_type -> raystack.compass.v1beta1.UpdateNamespaceRequest
+	47, // 53: raystack.compass.v1beta1.CompassService.ListNamespaces:input_type -> raystack.compass.v1beta1.ListNamespacesRequest
+	6,  // 54: raystack.compass.v1beta1.CompassService.GetAllEntities:output_type -> raystack.compass.v1beta1.GetAllEntitiesResponse
+	8,  // 55: raystack.compass.v1beta1.CompassService.GetEntityByID:output_type -> raystack.compass.v1beta1.GetEntityByIDResponse
+	10, // 56: raystack.compass.v1beta1.CompassService.UpsertEntity:output_type -> raystack.compass.v1beta1.UpsertEntityResponse
+	12, // 57: raystack.compass.v1beta1.CompassService.DeleteEntity:output_type -> raystack.compass.v1beta1.DeleteEntityResponse
+	14, // 58: raystack.compass.v1beta1.CompassService.SearchEntities:output_type -> raystack.compass.v1beta1.SearchEntitiesResponse
+	16, // 59: raystack.compass.v1beta1.CompassService.SuggestEntities:output_type -> raystack.compass.v1beta1.SuggestEntitiesResponse
+	18, // 60: raystack.compass.v1beta1.CompassService.GetEntityTypes:output_type -> raystack.compass.v1beta1.GetEntityTypesResponse
+	20, // 61: raystack.compass.v1beta1.CompassService.GetEntityContext:output_type -> raystack.compass.v1beta1.GetEntityContextResponse
+	22, // 62: raystack.compass.v1beta1.CompassService.GetEntityImpact:output_type -> raystack.compass.v1beta1.GetEntityImpactResponse
+	24, // 63: raystack.compass.v1beta1.CompassService.UpsertEdge:output_type -> raystack.compass.v1beta1.UpsertEdgeResponse
+	26, // 64: raystack.compass.v1beta1.CompassService.GetEdges:output_type -> raystack.compass.v1beta1.GetEdgesResponse
+	28, // 65: raystack.compass.v1beta1.CompassService.DeleteEdge:output_type -> raystack.compass.v1beta1.DeleteEdgeResponse
+	30, // 66: raystack.compass.v1beta1.CompassService.StarEntity:output_type -> raystack.compass.v1beta1.StarEntityResponse
+	32, // 67: raystack.compass.v1beta1.CompassService.UnstarEntity:output_type -> raystack.compass.v1beta1.UnstarEntityResponse
+	34, // 68: raystack.compass.v1beta1.CompassService.GetUserStarredEntities:output_type -> raystack.compass.v1beta1.GetUserStarredEntitiesResponse
+	36, // 69: raystack.compass.v1beta1.CompassService.GetMyStarredEntities:output_type -> raystack.compass.v1beta1.GetMyStarredEntitiesResponse
+	38, // 70: raystack.compass.v1beta1.CompassService.GetMyStarredEntity:output_type -> raystack.compass.v1beta1.GetMyStarredEntityResponse
+	40, // 71: raystack.compass.v1beta1.CompassService.GetEntityStargazers:output_type -> raystack.compass.v1beta1.GetEntityStargazersResponse
+	42, // 72: raystack.compass.v1beta1.CompassService.CreateNamespace:output_type -> raystack.compass.v1beta1.CreateNamespaceResponse
+	44, // 73: raystack.compass.v1beta1.CompassService.GetNamespace:output_type -> raystack.compass.v1beta1.GetNamespaceResponse
+	46, // 74: raystack.compass.v1beta1.CompassService.UpdateNamespace:output_type -> raystack.compass.v1beta1.UpdateNamespaceResponse
+	48, // 75: raystack.compass.v1beta1.CompassService.ListNamespaces:output_type -> raystack.compass.v1beta1.ListNamespacesResponse
+	54, // [54:76] is the sub-list for method output_type
+	32, // [32:54] is the sub-list for method input_type
+	32, // [32:32] is the sub-list for extension type_name
+	32, // [32:32] is the sub-list for extension extendee
+	0,  // [0:32] is the sub-list for field type_name
 }
 
 func init() { file_raystack_compass_v1beta1_service_proto_init() }
@@ -7266,14 +3048,13 @@ func file_raystack_compass_v1beta1_service_proto_init() {
 	if File_raystack_compass_v1beta1_service_proto != nil {
 		return
 	}
-	file_raystack_compass_v1beta1_service_proto_msgTypes[27].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_raystack_compass_v1beta1_service_proto_rawDesc), len(file_raystack_compass_v1beta1_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   117,
+			NumMessages:   49,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
