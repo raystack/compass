@@ -52,7 +52,7 @@ type InvalidError struct {
 func (e InvalidError) Error() string {
 	fields := []string{"invalid"}
 	if e.EntityID != "" {
-		fields = append(fields, fmt.Sprintf("asset id \"%s\"", e.EntityID))
+		fields = append(fields, fmt.Sprintf("entity id \"%s\"", e.EntityID))
 	}
 	if e.UserID != "" {
 		fields = append(fields, fmt.Sprintf("user id \"%s\"", e.UserID))

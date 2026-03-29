@@ -16,7 +16,7 @@ var (
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		Example: heredoc.Doc(`
-			$ compass asset
+			$ compass entity
 			$ compass search
 			$ compass server
 	`),
