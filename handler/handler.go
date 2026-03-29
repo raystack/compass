@@ -21,11 +21,26 @@ type Handler struct {
 	tagService         TagService
 	tagTemplateService TagTemplateService
 	userService        UserService
+	entityService      EntityServiceV2
+	edgeService        EdgeServiceV2
 }
 
 var (
 	errMissingUserInfo = errors.New("missing user information")
 )
+
+// HandlerOption configures the Handler.
+type HandlerOption func(*Handler)
+
+// WithEntityService adds the v2 entity service.
+func WithEntityService(svc EntityServiceV2) HandlerOption {
+	return func(h *Handler) { h.entityService = svc }
+}
+
+// WithEdgeService adds the v2 edge service.
+func WithEdgeService(svc EdgeServiceV2) HandlerOption {
+	return func(h *Handler) { h.edgeService = svc }
+}
 
 func New(
 	namespaceService NamespaceService,
@@ -35,8 +50,9 @@ func New(
 	tagService TagService,
 	tagTemplateService TagTemplateService,
 	userService UserService,
+	opts ...HandlerOption,
 ) *Handler {
-	return &Handler{
+	h := &Handler{
 		namespaceService:   namespaceService,
 		assetService:       assetService,
 		starService:        starService,
@@ -45,6 +61,10 @@ func New(
 		tagTemplateService: tagTemplateService,
 		userService:        userService,
 	}
+	for _, opt := range opts {
+		opt(h)
+	}
+	return h
 }
 
 func (server *Handler) validateUserInCtx(ctx context.Context, ns *namespace.Namespace) (string, error) {

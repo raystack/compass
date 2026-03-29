@@ -161,6 +161,41 @@ const (
 	// CompassServiceListNamespacesProcedure is the fully-qualified name of the CompassService's
 	// ListNamespaces RPC.
 	CompassServiceListNamespacesProcedure = "/raystack.compass.v1beta1.CompassService/ListNamespaces"
+	// CompassServiceGetAllEntitiesProcedure is the fully-qualified name of the CompassService's
+	// GetAllEntities RPC.
+	CompassServiceGetAllEntitiesProcedure = "/raystack.compass.v1beta1.CompassService/GetAllEntities"
+	// CompassServiceGetEntityByIDProcedure is the fully-qualified name of the CompassService's
+	// GetEntityByID RPC.
+	CompassServiceGetEntityByIDProcedure = "/raystack.compass.v1beta1.CompassService/GetEntityByID"
+	// CompassServiceUpsertEntityProcedure is the fully-qualified name of the CompassService's
+	// UpsertEntity RPC.
+	CompassServiceUpsertEntityProcedure = "/raystack.compass.v1beta1.CompassService/UpsertEntity"
+	// CompassServiceDeleteEntityProcedure is the fully-qualified name of the CompassService's
+	// DeleteEntity RPC.
+	CompassServiceDeleteEntityProcedure = "/raystack.compass.v1beta1.CompassService/DeleteEntity"
+	// CompassServiceSearchEntitiesProcedure is the fully-qualified name of the CompassService's
+	// SearchEntities RPC.
+	CompassServiceSearchEntitiesProcedure = "/raystack.compass.v1beta1.CompassService/SearchEntities"
+	// CompassServiceSuggestEntitiesProcedure is the fully-qualified name of the CompassService's
+	// SuggestEntities RPC.
+	CompassServiceSuggestEntitiesProcedure = "/raystack.compass.v1beta1.CompassService/SuggestEntities"
+	// CompassServiceGetEntityTypesProcedure is the fully-qualified name of the CompassService's
+	// GetEntityTypes RPC.
+	CompassServiceGetEntityTypesProcedure = "/raystack.compass.v1beta1.CompassService/GetEntityTypes"
+	// CompassServiceGetEntityContextProcedure is the fully-qualified name of the CompassService's
+	// GetEntityContext RPC.
+	CompassServiceGetEntityContextProcedure = "/raystack.compass.v1beta1.CompassService/GetEntityContext"
+	// CompassServiceGetEntityImpactProcedure is the fully-qualified name of the CompassService's
+	// GetEntityImpact RPC.
+	CompassServiceGetEntityImpactProcedure = "/raystack.compass.v1beta1.CompassService/GetEntityImpact"
+	// CompassServiceUpsertEdgeProcedure is the fully-qualified name of the CompassService's UpsertEdge
+	// RPC.
+	CompassServiceUpsertEdgeProcedure = "/raystack.compass.v1beta1.CompassService/UpsertEdge"
+	// CompassServiceGetEdgesProcedure is the fully-qualified name of the CompassService's GetEdges RPC.
+	CompassServiceGetEdgesProcedure = "/raystack.compass.v1beta1.CompassService/GetEdges"
+	// CompassServiceDeleteEdgeProcedure is the fully-qualified name of the CompassService's DeleteEdge
+	// RPC.
+	CompassServiceDeleteEdgeProcedure = "/raystack.compass.v1beta1.CompassService/DeleteEdge"
 )
 
 // CompassServiceClient is a client for the raystack.compass.v1beta1.CompassService service.
@@ -213,6 +248,21 @@ type CompassServiceClient interface {
 	GetNamespace(context.Context, *connect.Request[v1beta1.GetNamespaceRequest]) (*connect.Response[v1beta1.GetNamespaceResponse], error)
 	UpdateNamespace(context.Context, *connect.Request[v1beta1.UpdateNamespaceRequest]) (*connect.Response[v1beta1.UpdateNamespaceResponse], error)
 	ListNamespaces(context.Context, *connect.Request[v1beta1.ListNamespacesRequest]) (*connect.Response[v1beta1.ListNamespacesResponse], error)
+	// Domain: Entity (v2)
+	GetAllEntities(context.Context, *connect.Request[v1beta1.GetAllEntitiesRequest]) (*connect.Response[v1beta1.GetAllEntitiesResponse], error)
+	GetEntityByID(context.Context, *connect.Request[v1beta1.GetEntityByIDRequest]) (*connect.Response[v1beta1.GetEntityByIDResponse], error)
+	UpsertEntity(context.Context, *connect.Request[v1beta1.UpsertEntityRequest]) (*connect.Response[v1beta1.UpsertEntityResponse], error)
+	DeleteEntity(context.Context, *connect.Request[v1beta1.DeleteEntityRequest]) (*connect.Response[v1beta1.DeleteEntityResponse], error)
+	SearchEntities(context.Context, *connect.Request[v1beta1.SearchEntitiesRequest]) (*connect.Response[v1beta1.SearchEntitiesResponse], error)
+	SuggestEntities(context.Context, *connect.Request[v1beta1.SuggestEntitiesRequest]) (*connect.Response[v1beta1.SuggestEntitiesResponse], error)
+	GetEntityTypes(context.Context, *connect.Request[v1beta1.GetEntityTypesRequest]) (*connect.Response[v1beta1.GetEntityTypesResponse], error)
+	// Domain: Entity Context & Impact (v2)
+	GetEntityContext(context.Context, *connect.Request[v1beta1.GetEntityContextRequest]) (*connect.Response[v1beta1.GetEntityContextResponse], error)
+	GetEntityImpact(context.Context, *connect.Request[v1beta1.GetEntityImpactRequest]) (*connect.Response[v1beta1.GetEntityImpactResponse], error)
+	// Domain: Edges (v2)
+	UpsertEdge(context.Context, *connect.Request[v1beta1.UpsertEdgeRequest]) (*connect.Response[v1beta1.UpsertEdgeResponse], error)
+	GetEdges(context.Context, *connect.Request[v1beta1.GetEdgesRequest]) (*connect.Response[v1beta1.GetEdgesResponse], error)
+	DeleteEdge(context.Context, *connect.Request[v1beta1.DeleteEdgeRequest]) (*connect.Response[v1beta1.DeleteEdgeResponse], error)
 }
 
 // NewCompassServiceClient constructs a client for the raystack.compass.v1beta1.CompassService
@@ -484,6 +534,78 @@ func NewCompassServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(compassServiceMethods.ByName("ListNamespaces")),
 			connect.WithClientOptions(opts...),
 		),
+		getAllEntities: connect.NewClient[v1beta1.GetAllEntitiesRequest, v1beta1.GetAllEntitiesResponse](
+			httpClient,
+			baseURL+CompassServiceGetAllEntitiesProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetAllEntities")),
+			connect.WithClientOptions(opts...),
+		),
+		getEntityByID: connect.NewClient[v1beta1.GetEntityByIDRequest, v1beta1.GetEntityByIDResponse](
+			httpClient,
+			baseURL+CompassServiceGetEntityByIDProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetEntityByID")),
+			connect.WithClientOptions(opts...),
+		),
+		upsertEntity: connect.NewClient[v1beta1.UpsertEntityRequest, v1beta1.UpsertEntityResponse](
+			httpClient,
+			baseURL+CompassServiceUpsertEntityProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("UpsertEntity")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteEntity: connect.NewClient[v1beta1.DeleteEntityRequest, v1beta1.DeleteEntityResponse](
+			httpClient,
+			baseURL+CompassServiceDeleteEntityProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("DeleteEntity")),
+			connect.WithClientOptions(opts...),
+		),
+		searchEntities: connect.NewClient[v1beta1.SearchEntitiesRequest, v1beta1.SearchEntitiesResponse](
+			httpClient,
+			baseURL+CompassServiceSearchEntitiesProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("SearchEntities")),
+			connect.WithClientOptions(opts...),
+		),
+		suggestEntities: connect.NewClient[v1beta1.SuggestEntitiesRequest, v1beta1.SuggestEntitiesResponse](
+			httpClient,
+			baseURL+CompassServiceSuggestEntitiesProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("SuggestEntities")),
+			connect.WithClientOptions(opts...),
+		),
+		getEntityTypes: connect.NewClient[v1beta1.GetEntityTypesRequest, v1beta1.GetEntityTypesResponse](
+			httpClient,
+			baseURL+CompassServiceGetEntityTypesProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetEntityTypes")),
+			connect.WithClientOptions(opts...),
+		),
+		getEntityContext: connect.NewClient[v1beta1.GetEntityContextRequest, v1beta1.GetEntityContextResponse](
+			httpClient,
+			baseURL+CompassServiceGetEntityContextProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetEntityContext")),
+			connect.WithClientOptions(opts...),
+		),
+		getEntityImpact: connect.NewClient[v1beta1.GetEntityImpactRequest, v1beta1.GetEntityImpactResponse](
+			httpClient,
+			baseURL+CompassServiceGetEntityImpactProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetEntityImpact")),
+			connect.WithClientOptions(opts...),
+		),
+		upsertEdge: connect.NewClient[v1beta1.UpsertEdgeRequest, v1beta1.UpsertEdgeResponse](
+			httpClient,
+			baseURL+CompassServiceUpsertEdgeProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("UpsertEdge")),
+			connect.WithClientOptions(opts...),
+		),
+		getEdges: connect.NewClient[v1beta1.GetEdgesRequest, v1beta1.GetEdgesResponse](
+			httpClient,
+			baseURL+CompassServiceGetEdgesProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("GetEdges")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteEdge: connect.NewClient[v1beta1.DeleteEdgeRequest, v1beta1.DeleteEdgeResponse](
+			httpClient,
+			baseURL+CompassServiceDeleteEdgeProcedure,
+			connect.WithSchema(compassServiceMethods.ByName("DeleteEdge")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -532,6 +654,18 @@ type compassServiceClient struct {
 	getNamespace             *connect.Client[v1beta1.GetNamespaceRequest, v1beta1.GetNamespaceResponse]
 	updateNamespace          *connect.Client[v1beta1.UpdateNamespaceRequest, v1beta1.UpdateNamespaceResponse]
 	listNamespaces           *connect.Client[v1beta1.ListNamespacesRequest, v1beta1.ListNamespacesResponse]
+	getAllEntities           *connect.Client[v1beta1.GetAllEntitiesRequest, v1beta1.GetAllEntitiesResponse]
+	getEntityByID            *connect.Client[v1beta1.GetEntityByIDRequest, v1beta1.GetEntityByIDResponse]
+	upsertEntity             *connect.Client[v1beta1.UpsertEntityRequest, v1beta1.UpsertEntityResponse]
+	deleteEntity             *connect.Client[v1beta1.DeleteEntityRequest, v1beta1.DeleteEntityResponse]
+	searchEntities           *connect.Client[v1beta1.SearchEntitiesRequest, v1beta1.SearchEntitiesResponse]
+	suggestEntities          *connect.Client[v1beta1.SuggestEntitiesRequest, v1beta1.SuggestEntitiesResponse]
+	getEntityTypes           *connect.Client[v1beta1.GetEntityTypesRequest, v1beta1.GetEntityTypesResponse]
+	getEntityContext         *connect.Client[v1beta1.GetEntityContextRequest, v1beta1.GetEntityContextResponse]
+	getEntityImpact          *connect.Client[v1beta1.GetEntityImpactRequest, v1beta1.GetEntityImpactResponse]
+	upsertEdge               *connect.Client[v1beta1.UpsertEdgeRequest, v1beta1.UpsertEdgeResponse]
+	getEdges                 *connect.Client[v1beta1.GetEdgesRequest, v1beta1.GetEdgesResponse]
+	deleteEdge               *connect.Client[v1beta1.DeleteEdgeRequest, v1beta1.DeleteEdgeResponse]
 }
 
 // GetAllDiscussions calls raystack.compass.v1beta1.CompassService.GetAllDiscussions.
@@ -749,6 +883,66 @@ func (c *compassServiceClient) ListNamespaces(ctx context.Context, req *connect.
 	return c.listNamespaces.CallUnary(ctx, req)
 }
 
+// GetAllEntities calls raystack.compass.v1beta1.CompassService.GetAllEntities.
+func (c *compassServiceClient) GetAllEntities(ctx context.Context, req *connect.Request[v1beta1.GetAllEntitiesRequest]) (*connect.Response[v1beta1.GetAllEntitiesResponse], error) {
+	return c.getAllEntities.CallUnary(ctx, req)
+}
+
+// GetEntityByID calls raystack.compass.v1beta1.CompassService.GetEntityByID.
+func (c *compassServiceClient) GetEntityByID(ctx context.Context, req *connect.Request[v1beta1.GetEntityByIDRequest]) (*connect.Response[v1beta1.GetEntityByIDResponse], error) {
+	return c.getEntityByID.CallUnary(ctx, req)
+}
+
+// UpsertEntity calls raystack.compass.v1beta1.CompassService.UpsertEntity.
+func (c *compassServiceClient) UpsertEntity(ctx context.Context, req *connect.Request[v1beta1.UpsertEntityRequest]) (*connect.Response[v1beta1.UpsertEntityResponse], error) {
+	return c.upsertEntity.CallUnary(ctx, req)
+}
+
+// DeleteEntity calls raystack.compass.v1beta1.CompassService.DeleteEntity.
+func (c *compassServiceClient) DeleteEntity(ctx context.Context, req *connect.Request[v1beta1.DeleteEntityRequest]) (*connect.Response[v1beta1.DeleteEntityResponse], error) {
+	return c.deleteEntity.CallUnary(ctx, req)
+}
+
+// SearchEntities calls raystack.compass.v1beta1.CompassService.SearchEntities.
+func (c *compassServiceClient) SearchEntities(ctx context.Context, req *connect.Request[v1beta1.SearchEntitiesRequest]) (*connect.Response[v1beta1.SearchEntitiesResponse], error) {
+	return c.searchEntities.CallUnary(ctx, req)
+}
+
+// SuggestEntities calls raystack.compass.v1beta1.CompassService.SuggestEntities.
+func (c *compassServiceClient) SuggestEntities(ctx context.Context, req *connect.Request[v1beta1.SuggestEntitiesRequest]) (*connect.Response[v1beta1.SuggestEntitiesResponse], error) {
+	return c.suggestEntities.CallUnary(ctx, req)
+}
+
+// GetEntityTypes calls raystack.compass.v1beta1.CompassService.GetEntityTypes.
+func (c *compassServiceClient) GetEntityTypes(ctx context.Context, req *connect.Request[v1beta1.GetEntityTypesRequest]) (*connect.Response[v1beta1.GetEntityTypesResponse], error) {
+	return c.getEntityTypes.CallUnary(ctx, req)
+}
+
+// GetEntityContext calls raystack.compass.v1beta1.CompassService.GetEntityContext.
+func (c *compassServiceClient) GetEntityContext(ctx context.Context, req *connect.Request[v1beta1.GetEntityContextRequest]) (*connect.Response[v1beta1.GetEntityContextResponse], error) {
+	return c.getEntityContext.CallUnary(ctx, req)
+}
+
+// GetEntityImpact calls raystack.compass.v1beta1.CompassService.GetEntityImpact.
+func (c *compassServiceClient) GetEntityImpact(ctx context.Context, req *connect.Request[v1beta1.GetEntityImpactRequest]) (*connect.Response[v1beta1.GetEntityImpactResponse], error) {
+	return c.getEntityImpact.CallUnary(ctx, req)
+}
+
+// UpsertEdge calls raystack.compass.v1beta1.CompassService.UpsertEdge.
+func (c *compassServiceClient) UpsertEdge(ctx context.Context, req *connect.Request[v1beta1.UpsertEdgeRequest]) (*connect.Response[v1beta1.UpsertEdgeResponse], error) {
+	return c.upsertEdge.CallUnary(ctx, req)
+}
+
+// GetEdges calls raystack.compass.v1beta1.CompassService.GetEdges.
+func (c *compassServiceClient) GetEdges(ctx context.Context, req *connect.Request[v1beta1.GetEdgesRequest]) (*connect.Response[v1beta1.GetEdgesResponse], error) {
+	return c.getEdges.CallUnary(ctx, req)
+}
+
+// DeleteEdge calls raystack.compass.v1beta1.CompassService.DeleteEdge.
+func (c *compassServiceClient) DeleteEdge(ctx context.Context, req *connect.Request[v1beta1.DeleteEdgeRequest]) (*connect.Response[v1beta1.DeleteEdgeResponse], error) {
+	return c.deleteEdge.CallUnary(ctx, req)
+}
+
 // CompassServiceHandler is an implementation of the raystack.compass.v1beta1.CompassService
 // service.
 type CompassServiceHandler interface {
@@ -800,6 +994,21 @@ type CompassServiceHandler interface {
 	GetNamespace(context.Context, *connect.Request[v1beta1.GetNamespaceRequest]) (*connect.Response[v1beta1.GetNamespaceResponse], error)
 	UpdateNamespace(context.Context, *connect.Request[v1beta1.UpdateNamespaceRequest]) (*connect.Response[v1beta1.UpdateNamespaceResponse], error)
 	ListNamespaces(context.Context, *connect.Request[v1beta1.ListNamespacesRequest]) (*connect.Response[v1beta1.ListNamespacesResponse], error)
+	// Domain: Entity (v2)
+	GetAllEntities(context.Context, *connect.Request[v1beta1.GetAllEntitiesRequest]) (*connect.Response[v1beta1.GetAllEntitiesResponse], error)
+	GetEntityByID(context.Context, *connect.Request[v1beta1.GetEntityByIDRequest]) (*connect.Response[v1beta1.GetEntityByIDResponse], error)
+	UpsertEntity(context.Context, *connect.Request[v1beta1.UpsertEntityRequest]) (*connect.Response[v1beta1.UpsertEntityResponse], error)
+	DeleteEntity(context.Context, *connect.Request[v1beta1.DeleteEntityRequest]) (*connect.Response[v1beta1.DeleteEntityResponse], error)
+	SearchEntities(context.Context, *connect.Request[v1beta1.SearchEntitiesRequest]) (*connect.Response[v1beta1.SearchEntitiesResponse], error)
+	SuggestEntities(context.Context, *connect.Request[v1beta1.SuggestEntitiesRequest]) (*connect.Response[v1beta1.SuggestEntitiesResponse], error)
+	GetEntityTypes(context.Context, *connect.Request[v1beta1.GetEntityTypesRequest]) (*connect.Response[v1beta1.GetEntityTypesResponse], error)
+	// Domain: Entity Context & Impact (v2)
+	GetEntityContext(context.Context, *connect.Request[v1beta1.GetEntityContextRequest]) (*connect.Response[v1beta1.GetEntityContextResponse], error)
+	GetEntityImpact(context.Context, *connect.Request[v1beta1.GetEntityImpactRequest]) (*connect.Response[v1beta1.GetEntityImpactResponse], error)
+	// Domain: Edges (v2)
+	UpsertEdge(context.Context, *connect.Request[v1beta1.UpsertEdgeRequest]) (*connect.Response[v1beta1.UpsertEdgeResponse], error)
+	GetEdges(context.Context, *connect.Request[v1beta1.GetEdgesRequest]) (*connect.Response[v1beta1.GetEdgesResponse], error)
+	DeleteEdge(context.Context, *connect.Request[v1beta1.DeleteEdgeRequest]) (*connect.Response[v1beta1.DeleteEdgeResponse], error)
 }
 
 // NewCompassServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -1067,6 +1276,78 @@ func NewCompassServiceHandler(svc CompassServiceHandler, opts ...connect.Handler
 		connect.WithSchema(compassServiceMethods.ByName("ListNamespaces")),
 		connect.WithHandlerOptions(opts...),
 	)
+	compassServiceGetAllEntitiesHandler := connect.NewUnaryHandler(
+		CompassServiceGetAllEntitiesProcedure,
+		svc.GetAllEntities,
+		connect.WithSchema(compassServiceMethods.ByName("GetAllEntities")),
+		connect.WithHandlerOptions(opts...),
+	)
+	compassServiceGetEntityByIDHandler := connect.NewUnaryHandler(
+		CompassServiceGetEntityByIDProcedure,
+		svc.GetEntityByID,
+		connect.WithSchema(compassServiceMethods.ByName("GetEntityByID")),
+		connect.WithHandlerOptions(opts...),
+	)
+	compassServiceUpsertEntityHandler := connect.NewUnaryHandler(
+		CompassServiceUpsertEntityProcedure,
+		svc.UpsertEntity,
+		connect.WithSchema(compassServiceMethods.ByName("UpsertEntity")),
+		connect.WithHandlerOptions(opts...),
+	)
+	compassServiceDeleteEntityHandler := connect.NewUnaryHandler(
+		CompassServiceDeleteEntityProcedure,
+		svc.DeleteEntity,
+		connect.WithSchema(compassServiceMethods.ByName("DeleteEntity")),
+		connect.WithHandlerOptions(opts...),
+	)
+	compassServiceSearchEntitiesHandler := connect.NewUnaryHandler(
+		CompassServiceSearchEntitiesProcedure,
+		svc.SearchEntities,
+		connect.WithSchema(compassServiceMethods.ByName("SearchEntities")),
+		connect.WithHandlerOptions(opts...),
+	)
+	compassServiceSuggestEntitiesHandler := connect.NewUnaryHandler(
+		CompassServiceSuggestEntitiesProcedure,
+		svc.SuggestEntities,
+		connect.WithSchema(compassServiceMethods.ByName("SuggestEntities")),
+		connect.WithHandlerOptions(opts...),
+	)
+	compassServiceGetEntityTypesHandler := connect.NewUnaryHandler(
+		CompassServiceGetEntityTypesProcedure,
+		svc.GetEntityTypes,
+		connect.WithSchema(compassServiceMethods.ByName("GetEntityTypes")),
+		connect.WithHandlerOptions(opts...),
+	)
+	compassServiceGetEntityContextHandler := connect.NewUnaryHandler(
+		CompassServiceGetEntityContextProcedure,
+		svc.GetEntityContext,
+		connect.WithSchema(compassServiceMethods.ByName("GetEntityContext")),
+		connect.WithHandlerOptions(opts...),
+	)
+	compassServiceGetEntityImpactHandler := connect.NewUnaryHandler(
+		CompassServiceGetEntityImpactProcedure,
+		svc.GetEntityImpact,
+		connect.WithSchema(compassServiceMethods.ByName("GetEntityImpact")),
+		connect.WithHandlerOptions(opts...),
+	)
+	compassServiceUpsertEdgeHandler := connect.NewUnaryHandler(
+		CompassServiceUpsertEdgeProcedure,
+		svc.UpsertEdge,
+		connect.WithSchema(compassServiceMethods.ByName("UpsertEdge")),
+		connect.WithHandlerOptions(opts...),
+	)
+	compassServiceGetEdgesHandler := connect.NewUnaryHandler(
+		CompassServiceGetEdgesProcedure,
+		svc.GetEdges,
+		connect.WithSchema(compassServiceMethods.ByName("GetEdges")),
+		connect.WithHandlerOptions(opts...),
+	)
+	compassServiceDeleteEdgeHandler := connect.NewUnaryHandler(
+		CompassServiceDeleteEdgeProcedure,
+		svc.DeleteEdge,
+		connect.WithSchema(compassServiceMethods.ByName("DeleteEdge")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/raystack.compass.v1beta1.CompassService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case CompassServiceGetAllDiscussionsProcedure:
@@ -1155,6 +1436,30 @@ func NewCompassServiceHandler(svc CompassServiceHandler, opts ...connect.Handler
 			compassServiceUpdateNamespaceHandler.ServeHTTP(w, r)
 		case CompassServiceListNamespacesProcedure:
 			compassServiceListNamespacesHandler.ServeHTTP(w, r)
+		case CompassServiceGetAllEntitiesProcedure:
+			compassServiceGetAllEntitiesHandler.ServeHTTP(w, r)
+		case CompassServiceGetEntityByIDProcedure:
+			compassServiceGetEntityByIDHandler.ServeHTTP(w, r)
+		case CompassServiceUpsertEntityProcedure:
+			compassServiceUpsertEntityHandler.ServeHTTP(w, r)
+		case CompassServiceDeleteEntityProcedure:
+			compassServiceDeleteEntityHandler.ServeHTTP(w, r)
+		case CompassServiceSearchEntitiesProcedure:
+			compassServiceSearchEntitiesHandler.ServeHTTP(w, r)
+		case CompassServiceSuggestEntitiesProcedure:
+			compassServiceSuggestEntitiesHandler.ServeHTTP(w, r)
+		case CompassServiceGetEntityTypesProcedure:
+			compassServiceGetEntityTypesHandler.ServeHTTP(w, r)
+		case CompassServiceGetEntityContextProcedure:
+			compassServiceGetEntityContextHandler.ServeHTTP(w, r)
+		case CompassServiceGetEntityImpactProcedure:
+			compassServiceGetEntityImpactHandler.ServeHTTP(w, r)
+		case CompassServiceUpsertEdgeProcedure:
+			compassServiceUpsertEdgeHandler.ServeHTTP(w, r)
+		case CompassServiceGetEdgesProcedure:
+			compassServiceGetEdgesHandler.ServeHTTP(w, r)
+		case CompassServiceDeleteEdgeProcedure:
+			compassServiceDeleteEdgeHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -1334,4 +1639,52 @@ func (UnimplementedCompassServiceHandler) UpdateNamespace(context.Context, *conn
 
 func (UnimplementedCompassServiceHandler) ListNamespaces(context.Context, *connect.Request[v1beta1.ListNamespacesRequest]) (*connect.Response[v1beta1.ListNamespacesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.ListNamespaces is not implemented"))
+}
+
+func (UnimplementedCompassServiceHandler) GetAllEntities(context.Context, *connect.Request[v1beta1.GetAllEntitiesRequest]) (*connect.Response[v1beta1.GetAllEntitiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetAllEntities is not implemented"))
+}
+
+func (UnimplementedCompassServiceHandler) GetEntityByID(context.Context, *connect.Request[v1beta1.GetEntityByIDRequest]) (*connect.Response[v1beta1.GetEntityByIDResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetEntityByID is not implemented"))
+}
+
+func (UnimplementedCompassServiceHandler) UpsertEntity(context.Context, *connect.Request[v1beta1.UpsertEntityRequest]) (*connect.Response[v1beta1.UpsertEntityResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpsertEntity is not implemented"))
+}
+
+func (UnimplementedCompassServiceHandler) DeleteEntity(context.Context, *connect.Request[v1beta1.DeleteEntityRequest]) (*connect.Response[v1beta1.DeleteEntityResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.DeleteEntity is not implemented"))
+}
+
+func (UnimplementedCompassServiceHandler) SearchEntities(context.Context, *connect.Request[v1beta1.SearchEntitiesRequest]) (*connect.Response[v1beta1.SearchEntitiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.SearchEntities is not implemented"))
+}
+
+func (UnimplementedCompassServiceHandler) SuggestEntities(context.Context, *connect.Request[v1beta1.SuggestEntitiesRequest]) (*connect.Response[v1beta1.SuggestEntitiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.SuggestEntities is not implemented"))
+}
+
+func (UnimplementedCompassServiceHandler) GetEntityTypes(context.Context, *connect.Request[v1beta1.GetEntityTypesRequest]) (*connect.Response[v1beta1.GetEntityTypesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetEntityTypes is not implemented"))
+}
+
+func (UnimplementedCompassServiceHandler) GetEntityContext(context.Context, *connect.Request[v1beta1.GetEntityContextRequest]) (*connect.Response[v1beta1.GetEntityContextResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetEntityContext is not implemented"))
+}
+
+func (UnimplementedCompassServiceHandler) GetEntityImpact(context.Context, *connect.Request[v1beta1.GetEntityImpactRequest]) (*connect.Response[v1beta1.GetEntityImpactResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetEntityImpact is not implemented"))
+}
+
+func (UnimplementedCompassServiceHandler) UpsertEdge(context.Context, *connect.Request[v1beta1.UpsertEdgeRequest]) (*connect.Response[v1beta1.UpsertEdgeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UpsertEdge is not implemented"))
+}
+
+func (UnimplementedCompassServiceHandler) GetEdges(context.Context, *connect.Request[v1beta1.GetEdgesRequest]) (*connect.Response[v1beta1.GetEdgesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetEdges is not implemented"))
+}
+
+func (UnimplementedCompassServiceHandler) DeleteEdge(context.Context, *connect.Request[v1beta1.DeleteEdgeRequest]) (*connect.Response[v1beta1.DeleteEdgeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.DeleteEdge is not implemented"))
 }

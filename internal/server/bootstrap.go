@@ -15,6 +15,7 @@ import (
 	"github.com/raystack/compass/core/star"
 	"github.com/raystack/compass/core/tag"
 	"github.com/raystack/compass/core/user"
+	"github.com/raystack/compass/handler"
 	"github.com/raystack/compass/internal/config"
 	compassmcp "github.com/raystack/compass/internal/mcp"
 	"github.com/raystack/compass/internal/telemetry"
@@ -149,6 +150,8 @@ func Start(ctx context.Context, cfg *config.Config, version string) error {
 		tagService,
 		tagTemplateService,
 		userService,
+		handler.WithEntityService(entityService),
+		handler.WithEdgeService(edgeRepo),
 	)
 }
 

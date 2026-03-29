@@ -34,6 +34,7 @@ func Serve(
 	tagService handler.TagService,
 	tagTemplateService handler.TagTemplateService,
 	userService handler.UserService,
+	handlerOpts ...handler.HandlerOption,
 ) error {
 	logger := slog.Default().With("component", "server")
 
@@ -45,6 +46,7 @@ func Serve(
 		tagService,
 		tagTemplateService,
 		userService,
+		handlerOpts...,
 	)
 
 	// Build interceptor chain
