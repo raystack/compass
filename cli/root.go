@@ -17,7 +17,6 @@ var (
 		SilenceUsage:  true,
 		Example: heredoc.Doc(`
 			$ compass asset
-			$ compass discussion
 			$ compass search
 			$ compass server
 	`),
@@ -58,10 +57,7 @@ func New(cliConfig *config.Config) *cobra.Command {
 		serverCmd(cliConfig),
 		configCommand(cliConfig),
 		namespacesCommand(cliConfig),
-		assetsCommand(cliConfig),
-		discussionsCommand(cliConfig),
-		searchCommand(cliConfig),
-		lineageCommand(cliConfig),
+		entitiesCommand(cliConfig),
 		versionCmd(),
 	)
 

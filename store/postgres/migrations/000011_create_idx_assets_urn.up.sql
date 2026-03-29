@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS assets_idx_urn ON assets(urn);

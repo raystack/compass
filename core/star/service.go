@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/raystack/compass/core/namespace"
 
-	"github.com/raystack/compass/core/asset"
+	"github.com/raystack/compass/core/entity"
 	"github.com/raystack/compass/core/user"
 )
 
@@ -18,18 +18,18 @@ type Service struct {
 	starRepository Repository
 }
 
-func (s *Service) GetStarredAssetsByUserID(ctx context.Context, flt Filter, userID string) ([]asset.Asset, error) {
-	return s.starRepository.GetAllAssetsByUserID(ctx, flt, userID)
+func (s *Service) GetStarredEntitiesByUserID(ctx context.Context, flt Filter, userID string) ([]entity.Entity, error) {
+	return s.starRepository.GetAllEntitiesByUserID(ctx, flt, userID)
 }
-func (s *Service) GetStarredAssetByUserID(ctx context.Context, userID, assetID string) (asset.Asset, error) {
-	return s.starRepository.GetAssetByUserID(ctx, userID, assetID)
+func (s *Service) GetStarredEntityByUserID(ctx context.Context, userID, entityID string) (entity.Entity, error) {
+	return s.starRepository.GetEntityByUserID(ctx, userID, entityID)
 }
-func (s *Service) GetStargazers(ctx context.Context, flt Filter, assetID string) ([]user.User, error) {
-	return s.starRepository.GetStargazers(ctx, flt, assetID)
+func (s *Service) GetStargazers(ctx context.Context, flt Filter, entityID string) ([]user.User, error) {
+	return s.starRepository.GetStargazers(ctx, flt, entityID)
 }
-func (s *Service) Stars(ctx context.Context, ns *namespace.Namespace, userID, assetID string) (string, error) {
-	return s.starRepository.Create(ctx, ns, userID, assetID)
+func (s *Service) Stars(ctx context.Context, ns *namespace.Namespace, userID, entityID string) (string, error) {
+	return s.starRepository.Create(ctx, ns, userID, entityID)
 }
-func (s *Service) Unstars(ctx context.Context, userID, assetID string) error {
-	return s.starRepository.Delete(ctx, userID, assetID)
+func (s *Service) Unstars(ctx context.Context, userID, entityID string) error {
+	return s.starRepository.Delete(ctx, userID, entityID)
 }

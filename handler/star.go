@@ -1,19 +1,19 @@
 package handler
 
-//go:generate mockery --name=StarService -r --case underscore --with-expecter --structname StarService --filename star_service.go --output=./mocks
 import (
 	"context"
-	"github.com/raystack/compass/core/namespace"
 
-	"github.com/raystack/compass/core/asset"
+	"github.com/raystack/compass/core/entity"
+	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/star"
 	"github.com/raystack/compass/core/user"
 )
 
+// StarService defines star operations for the handler.
 type StarService interface {
-	GetStarredAssetsByUserID(context.Context, star.Filter, string) ([]asset.Asset, error)
-	GetStarredAssetByUserID(context.Context, string, string) (asset.Asset, error)
-	GetStargazers(context.Context, star.Filter, string) ([]user.User, error)
-	Stars(context.Context, *namespace.Namespace, string, string) (string, error)
-	Unstars(context.Context, string, string) error
+	GetStarredEntitiesByUserID(ctx context.Context, flt star.Filter, userID string) ([]entity.Entity, error)
+	GetStarredEntityByUserID(ctx context.Context, userID string, entityID string) (entity.Entity, error)
+	Stars(ctx context.Context, ns *namespace.Namespace, userID string, entityID string) (string, error)
+	Unstars(ctx context.Context, userID string, entityID string) error
+	GetStargazers(ctx context.Context, flt star.Filter, entityID string) ([]user.User, error)
 }

@@ -28,25 +28,19 @@ func Serve(
 	cfg config.ServerConfig,
 	mcpServer *compassmcp.Server,
 	namespaceService handler.NamespaceService,
-	assetService handler.AssetService,
 	starService handler.StarService,
-	discussionService handler.DiscussionService,
-	tagService handler.TagService,
-	tagTemplateService handler.TagTemplateService,
 	userService handler.UserService,
-	handlerOpts ...handler.HandlerOption,
+	entityService handler.EntityServiceV2,
+	edgeService handler.EdgeServiceV2,
 ) error {
 	logger := slog.Default().With("component", "server")
 
 	v1beta1Handler := handler.New(
 		namespaceService,
-		assetService,
 		starService,
-		discussionService,
-		tagService,
-		tagTemplateService,
 		userService,
-		handlerOpts...,
+		entityService,
+		edgeService,
 	)
 
 	// Build interceptor chain
