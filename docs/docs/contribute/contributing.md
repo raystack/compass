@@ -14,7 +14,8 @@ We are always interested in adding new contributors. What we look for is a serie
 * You can report a bug or suggest a feature enhancement or can just ask questions. Reach out on Github discussions for this purpose.
 * You can modify the code
   * Add any new feature
-  * Optimise Lineage Graph building
+  * Improve entity resolution and graph construction
+  * Enhance search capabilities (keyword, semantic, hybrid)
   * Improve Health and Monitoring Metrics
   * Improve Logging
   * Update deprecated libraries or tools

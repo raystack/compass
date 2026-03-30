@@ -9,42 +9,45 @@ Welcome to the introductory guide to Compass! This guide is the best place to st
 
 ## What is Compass?
 
-Compass is a search and discovery engine built for querying application deployments, datasets and meta resources. It can also optionally track data flow relationships between these resources and allow the user to view a representation of the data flow graph.
+Compass is a context engine that builds a knowledge graph of your organization's metadata, capturing entities, relationships, and lineage across systems and time, making it discoverable and queryable for both humans and AI agents.
+
+Critical organizational knowledge lives scattered across dozens of systems: services, datasets, applications, teams, configurations, decisions, and the relationships between them. Compass resolves observations from these sources into unified entities, constructs a temporal graph of their relationships, and indexes everything for both keyword and semantic search. The result is a context graph that stitches together what exists, who owns it, how it connects, and what changed over time, so both humans and AI agents can discover, traverse, and reason over the full picture.
 
 ![](/assets/overview.svg)
 
-## The problem we aim to solve
+## The Problem
 
-Organizational teams face the challenge of finding the right data from various sources for their analysis and decision-making needs. A lack of transparency about the flow of data within the organization can lead to problems when it comes to updating or discarding outdated data.
+Organizational knowledge is fragmented. The same logical entity appears across multiple systems with different names, schemas, and levels of detail. Relationships between entities live in people's heads, scattered across wikis, chat threads, and tribal knowledge. When humans need context, they spend hours stitching it together manually. When AI agents need context, they have nowhere to look.
 
-Manual methods for tracking the dependencies of data are time-consuming and subject to human error or oversight as it depends on mapping of the movement of data in the organisation on knowledge in people's head. Huge code volume, rate of change and complexity in manually examning the data changes make the process unsustainable.
-In addition, organizations may struggle to locate the most relevant data from the massive amounts stored in their data stores. The longer it takes for users to find the business data they need, the less productive they are.
+This fragmentation compounds as organizations grow. Teams cannot find what already exists. Dependencies are invisible until something breaks. Ownership is unclear. Decisions are made without the full picture because assembling that picture takes too long.
 
-To address these challenges, Compass was designed as a data discovery and search tool for organizations. It provides comprehensive asset-listing and search capabilities to enhance user productivity. Organizing the data assets using Compass allows the data professionals to collect, access, and enrich metadata to support data discovery and governance. The data lineage information provided by Compass also helps organizations meet compliance requirements by offering a clear record of the movement of sensitive data. Using Compass one can identify and star the most relevant data assets, and safely delete when you don’t need.
+Compass solves this by acting as the resolution and serving layer for organizational metadata. It takes raw observations from collection systems like Meteor, resolves them into unified entities, builds a graph of their relationships, and makes everything searchable and traversable through APIs that serve both human interfaces and AI agents.
 
 ## Key Features
 
-Discover why users choose Compass as their main data discovery and lineage service
-
-- **Full text search** Faster and better search results powered by ElasticSearch full text search capability.
-- **Search Tuning** Narrow down your search results by adding filters, getting your crisp results.
-- **Data Lineage** Understand the relationship between metadata with data lineage interface.
-- **Scale:** Compass scales in an instant, both vertically and horizontally for high performance.
-- **Extensibility:** Add your own metadata types and resources to support wide variety of metadata.
-- **Runtime:** Compass can run inside VMs or containers in a fully managed runtime environment like kubernetes.
+- **Entity Resolution:** Resolve and deduplicate metadata observations from multiple sources into unified entities with stable identity.
+- **Knowledge Graph:** Store typed, directed relationships between entities including lineage, ownership, documentation, and custom edge types.
+- **Hybrid Search:** Combine keyword precision with semantic similarity using Postgres-native full-text search and pgvector embeddings.
+- **Graph Traversal:** Multi-hop traversal queries across the entity graph for impact analysis, dependency tracking, and path discovery.
+- **Context Composition:** Assemble schema, lineage, ownership, and quality signals into context documents ready for LLM consumption.
+- **AI Serving:** Expose the full graph as an MCP server so AI agents can discover, traverse, and reason over organizational knowledge.
+- **Extensibility:** Open type system for entities and relationships to support any kind of metadata across your infrastructure.
 
 ## Using Compass
 
-You can manage the data discovery for your resources via Compass in any of the following ways:
+You can interact with Compass in any of the following ways:
 
-### Compass Command Line Interface
+### Command Line Interface
 
-You can use the Compass command line interface to issue commands and to perform the entire data discovery flow. Using the command line can be faster and more convenient than the console. For more information on using the Compass CLI, see the [CLI Reference](./reference/cli.md) page.
+You can use the Compass command line interface to issue commands and manage the server. Using the command line can be faster and more convenient than the console. For more information on using the Compass CLI, see the [CLI Reference](./reference/cli.md) page.
 
-### HTTPS API
+### HTTP and gRPC APIs
 
-You can get hands on asset searching, listing, tagging, starring and much more by using the Compass HTTPS API, which lets you issue HTTPS requests directly to the service. When you use the HTTPS API, you must include the user information from the configurable identity uuid in the request header.
-For more information, see the [API reference](./reference/api.md) page.
+Compass provides HTTP and gRPC APIs for programmatic access. The API is built with [Connect RPC](https://connectrpc.com/) and supports both Connect and gRPC protocols. For more information, see the [API reference](./reference/api.md) page.
+
+### MCP Server
+
+Compass exposes itself as an MCP (Model Context Protocol) server, allowing any MCP-compatible AI system to connect and use tools like search, lineage traversal, schema lookup, and context assembly.
 
 ## Where to go from here
 

@@ -6,20 +6,21 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)
 [![Version](https://img.shields.io/github/v/release/raystack/compass?logo=semantic-release)](Version)
 
-Compass is a search and discovery engine built for querying application deployments, datasets and meta resources. It can also optionally track data flow relationships between these resources and allow the user to view a representation of the data flow graph.
+Compass is a context engine that builds a knowledge graph of your organization's metadata, capturing entities, relationships, and lineage across systems and time, making it discoverable and queryable for both humans and AI agents.
+
+Critical organizational knowledge lives scattered across dozens of systems: services, datasets, applications, teams, configurations, decisions, and the relationships between them. Compass resolves observations from these sources into unified entities, constructs a temporal graph of their relationships, and indexes everything for both keyword and semantic search. The result is a context graph that stitches together what exists, who owns it, how it connects, and what changed over time, so both humans and AI agents can discover, traverse, and reason over the full picture.
 
 <p align="center"><img src="./docs/static/assets/overview.svg" /></p>
 
 ## Key Features
 
-Discover why users choose Compass as their main data discovery and lineage service
-
-- **Full text search** Faster and better search results powered by ElasticSearch full text search capability.
-- **Search Tuning** Narrow down your search results by adding filters, getting your crisp results.
-- **Data Lineage** Understand the relationship between metadata with data lineage interface.
-- **Scale:** Compass scales in an instant, both vertically and horizontally for high performance.
-- **Extensibility:** Add your own metadata types and resources to support wide variety of metadata.
-- **Runtime:** Compass can run inside VMs or containers in a fully managed runtime environment like kubernetes.
+- **Entity Resolution:** Resolve and deduplicate metadata observations from multiple sources into unified entities with stable identity.
+- **Knowledge Graph:** Store typed, directed relationships between entities including lineage, ownership, documentation, and custom edge types.
+- **Hybrid Search:** Combine keyword precision with semantic similarity using Postgres-native full-text search and pgvector embeddings.
+- **Graph Traversal:** Multi-hop traversal queries across the entity graph for impact analysis, dependency tracking, and path discovery.
+- **Context Composition:** Assemble schema, lineage, ownership, and quality signals into context documents ready for LLM consumption.
+- **AI Serving:** Expose the full graph as an MCP server so AI agents can discover, traverse, and reason over organizational knowledge.
+- **Extensibility:** Open type system for entities and relationships to support any kind of metadata across your infrastructure.
 
 ## Documentation
 
@@ -95,13 +96,11 @@ alias compass="docker run -e HOME=/tmp -v $HOME/.config/raystack:/tmp/.config/ra
 
 ## Usage
 
-Compass is purely API-driven. It is very easy to get started with Compass. It provides CLI and HTTP APIs for simpler developer experience.
+Compass provides a CLI, Connect RPC API (HTTP + gRPC), and an MCP server for AI agents.
 
 #### CLI
 
-Compass CLI is fully featured and simple to use, even for those who have very limited experience working from the command line. Run `compass --help` to see list of all available commands and instructions to use.
-
-List of commands
+Compass CLI is fully featured and simple to use. Run `compass --help` to see all available commands.
 
 ```
 compass --help
@@ -115,7 +114,11 @@ compass reference
 
 #### API
 
-Compass provides a fully-featured HTTP API to interact with Compass server. The API is built with [Connect RPC](https://connectrpc.com/) and supports both Connect and gRPC protocols. Please refer to [proton](https://github.com/raystack/proton/tree/main/raystack/compass/v1beta1) for API definitions.
+Compass provides a Connect RPC API that supports both Connect (HTTP) and gRPC protocols. Please refer to [proton](https://github.com/raystack/proton/tree/main/raystack/compass/v1beta1) for API definitions.
+
+#### MCP Server
+
+Compass exposes an MCP server at `/mcp` for AI agent integration. MCP-compatible systems can connect and use tools like `search_entities`, `get_context`, and `impact`.
 
 ## Contribute
 

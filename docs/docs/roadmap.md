@@ -1,6 +1,6 @@
 # Roadmap
 
-Compass was built as a search and discovery engine for data assets. It stores metadata, indexes it in Elasticsearch, and lets humans find what they need through text search. It tracks lineage, supports discussions and tagging, and serves as the catalog layer in the Raystack ecosystem.
+Compass was originally built as a search and discovery engine for data assets. It stored metadata, indexed it for text search, and let humans find what they needed. It tracked lineage, supported discussions and tagging, and served as the catalog layer in the Raystack ecosystem.
 
 That was the right design for a world where humans were the primary consumers of metadata. The world has shifted. AI agents, copilots, and autonomous systems are now the fastest-growing consumers of organizational knowledge. They don't browse a catalog UI. They need structured context they can reason over, a graph they can traverse programmatically, and answers they can trust.
 
@@ -27,13 +27,13 @@ The consumer base expands from humans using a UI to AI agents calling APIs. Both
 
 ### From Text Search to Semantic and Hybrid Search
 
-Compass search today is keyword-based. You type a term, Elasticsearch returns matches ranked by text relevance. This works when you know what you're looking for and can name it.
+Compass search was originally keyword-based. You typed a term, the search engine returned matches ranked by text relevance. This works when you know what you're looking for and can name it.
 
 AI agents and natural language queries work differently. A user asking "find me everything related to revenue" expects results even when the word "revenue" doesn't appear in the asset name or description. The table might be called `monthly_mrr`. The column might be `net_arr`. The business context lives in descriptions, labels, discussions, and relationships — not always in the exact term being searched.
 
 The search layer needs to become hybrid:
 
-- **Vector embeddings alongside the text index.** When Meteor pushes an asset to Compass, Compass indexes both the text fields and a vector embedding of the asset's semantic content — description, column names, labels, business glossary terms. Elasticsearch 8.x supports dense vector search natively.
+- **Vector embeddings alongside the text index.** When Meteor pushes an asset to Compass, Compass indexes both the text fields and a vector embedding of the asset's semantic content — description, column names, labels, business glossary terms. pgvector supports dense vector search natively in PostgreSQL.
 - **Hybrid ranking.** Combine keyword precision (exact matches on table names, column names, URNs) with semantic similarity (conceptual matches on meaning). A query for "customer churn" should surface a table called `user_retention_weekly` even though the words don't overlap.
 - **Natural language query decomposition.** Accept free-form questions and decompose them into structured graph queries plus semantic search. "What tables does the revenue dashboard depend on?" is a lineage traversal. "Find something related to customer lifetime value" is a semantic search. Compass should handle both through the same interface.
 
@@ -154,12 +154,12 @@ Technical metadata — schemas, lineage, service information — is necessary bu
 The key additions over today's architecture:
 
 - **Entity resolver** that matches incoming observations from Meteor against the existing graph, deduplicates, and merges identities.
-- **Vector index** alongside Elasticsearch for semantic search.
+- **Vector index** with pgvector for semantic search.
 - **Query engine** that can do graph traversal, text search, and semantic search in a single query.
 - **MCP server** as a first-class API surface alongside gRPC and REST.
 - **Change feed** for reactive downstream consumers including AI agents.
 
-The existing gRPC/REST APIs, Postgres storage, and Elasticsearch indexing remain. Everything new is additive.
+The existing gRPC/REST APIs and Postgres storage remain. Elasticsearch has been replaced by Postgres-native search (tsvector, pg_trgm, pgvector).
 
 ## Priorities
 
@@ -175,8 +175,7 @@ The existing gRPC/REST APIs, Postgres storage, and Elasticsearch indexing remain
 
 ## What Stays the Same
 
-- **Postgres as the source of truth.** The transactional store is solid and stays.
-- **Elasticsearch for text search.** Full-text search isn't going away — it's being augmented with vectors, not replaced.
+- **Postgres as the source of truth.** The transactional store is solid and stays. All search is now Postgres-native (tsvector, pg_trgm, pgvector) — no external search engine dependencies.
 - **gRPC and REST APIs.** Existing integrations keep working. MCP is an additional serving layer.
 - **Asset model.** The core asset structure — URN, type, service, schema, lineage, owners — remains the foundation. It gets extended, not replaced.
 - **Social features.** Starring, discussions, tagging — these stay and become more valuable as knowledge capture mechanisms for AI consumption.

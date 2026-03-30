@@ -55,14 +55,14 @@ docker pull raystack/compass:latest
 To pull a specific version:
 
 ```
-docker pull raystack/compass:v0.3.2
+docker pull raystack/compass:v0.7.1
 ```
 
 If you like to have a shell alias that runs the latest version of compass from docker whenever you type `compass`:
 
 ```
 mkdir -p $HOME/.config/raystack
-alias compass="docker run -e HOME=/tmp -v $HOME/.config/raystack:/tmp/.config/raystack --user $(id -u):$(id -g) --rm -it -p 3306:3306/tcp raystack/compass:latest"
+alias compass="docker run -e HOME=/tmp -v $HOME/.config/raystack:/tmp/.config/raystack --user $(id -u):$(id -g) --rm -it -p 8080:8080/tcp raystack/compass:latest"
 ```
 
 ### Building from Source

@@ -1,97 +1,12 @@
 # CLI
 
-## `compass asset`
+Compass CLI provides commands to manage the server, entities, namespaces, and configuration. Run `compass --help` to see all available commands.
 
-Manage assets
-
-### `compass asset delete <id>`
-
-delete asset with the given ID
-
-### `compass asset edit [flags]`
-
-upsert a new asset or patch
+## Global Flags
 
 ```
--b, --body string   filepath to body that has to be upserted
-````
-
-### `compass asset list [flags]`
-
-lists all assets
-
+-c, --config string   Override config file
 ```
--d, --data stringToString   filter by field in asset.data (default [])
--o, --out -o json           flag to control output viewing, for json -o json (default "table")
-    --page uint32           Page number offset (starts from 0)
-    --query string          querying by field
-    --query_fields string   querying by fields
--s, --services string       filter by services
-    --size uint32           Size of each page (default 10)
-    --sort string           sort by certain fields
-    --sort_dir string       sorting direction (asc / desc)
--t, --types string          filter by types
-````
-
-### `compass asset star <id>`
-
-star an asset by id for current user
-
-### `compass asset stargazers <id> [flags]`
-
-list all stargazers for a given asset id
-
-```
---page uint32   Page number offset (starts from 0)
---size uint32   Size of each page (default 10)
-````
-
-### `compass asset starred [flags]`
-
-list all the starred assets for current user
-
-```
--o, --out -o json   flag to control output viewing, for json -o json (default "table")
-    --page uint32   Page number offset (starts from 0)
-    --size uint32   Size of each page (default 10)
-````
-
-### `compass asset types [flags]`
-
-lists all asset types
-
-```
--d, --data stringToString   filter by field in asset.data (default [])
-    --query string          filter by specific query
-    --query_fields string   filter by query field
--s, --services string       filter by services
--t, --types string          filter by types
-````
-
-### `compass asset unstar <id>`
-
-unstar an asset by id for current user
-
-### `compass asset version <urn> <version>`
-
-get asset's previous version by urn or id and version number
-
-### `compass asset versionhistory <id> [flags]`
-
-get asset version history by id
-
-```
---page uint32   Page number offset (start from 0)
---size uint32   Size of each page (default 10)
-````
-
-### `compass asset view <urn>`
-
-view asset for the given ID or URN
-
-## `compass completion [bash|zsh|fish|powershell]`
-
-Generate shell completion scripts
 
 ## `compass config <command>`
 
@@ -99,80 +14,107 @@ Manage server and client configurations
 
 ### `compass config init`
 
-Initialize a new sevrer and client configuration
+Initialize a new server and client configuration
 
 ### `compass config list`
 
 List server and client configuration settings
 
-## `compass discussion`
+## `compass entity`
 
-Manage discussions
+Manage entities in the knowledge graph. Alias: `entities`
 
-### `compass discussion list [flags]`
+### `compass entity list [flags]`
 
-lists all discussions
-
-```
--o, --out -o json   flag to control output viewing, for json -o json (default "table")
-````
-
-### `compass discussion post [flags]`
-
-post discussions, add 
+List all entities
 
 ```
--b, --body string   filepath to body that has to be upserted
-````
+    --types string    filter by types (comma-separated)
+    --source string   filter by source
+-q, --query string    search query
+    --size uint32     page size (default 20)
+    --offset uint32   page offset (default 0)
+```
 
-### `compass discussion view <id>`
+### `compass entity view <id>`
 
-view discussion for the given ID
+View entity details by ID or URN
 
-## `compass lineage <urn>`
+### `compass entity upsert [flags]`
 
-observe the lineage of metadata
+Create or update an entity
+
+```
+    --urn string           entity URN (required)
+    --type string          entity type (required)
+    --name string          entity name (required)
+    --description string   description
+    --source string        source system
+```
+
+### `compass entity delete <urn>`
+
+Delete an entity by URN
+
+### `compass entity search <text> [flags]`
+
+Search entities using keyword, semantic, or hybrid mode
+
+```
+    --types string    filter by types
+    --source string   filter by source
+    --mode string     search mode: keyword, semantic, hybrid (default "keyword")
+    --size uint32     max results (default 10)
+```
+
+### `compass entity types`
+
+List all entity types with counts
+
+### `compass entity context <urn> [flags]`
+
+Get full context subgraph for an entity
+
+```
+    --depth uint32   traversal depth (default 2)
+```
+
+### `compass entity impact <urn> [flags]`
+
+Analyze downstream blast radius for an entity
+
+```
+    --depth uint32   traversal depth (default 3)
+```
 
 ## `compass namespace`
 
-Manage namespaces
+Manage namespaces. Alias: `ns`
 
 ### `compass namespace create [flags]`
 
-create a new namespace
+Create a new namespace
 
 ```
 -n, --name string    namespace unique name
 -s, --state string   is namespace shared with existing tenants or a dedicated one (default "shared")
-````
+```
 
 ### `compass namespace list [flags]`
 
-lists all namespaces
+List all namespaces
 
 ```
 -o, --out -o json   flag to control output viewing, for json -o json (default "table")
-````
+```
 
 ### `compass namespace view <id>`
 
-view namespace for the given uuid or name
-
-## `compass search <text> [flags]`
-
-query the metadata available
-
-```
--f, --filter string      --filter=field_key1:val1,key2:val2,key3:val3 gives exact match for values
--n, --namespace string   namespace id or name (default "00000000-0000-0000-0000-000000000000")
--q, --query string       --query=--filter=field_key1:val1 supports fuzzy search
--r, --rankby string      --rankby=<numeric_field>
--s, --size uint32        --size=10 maximum size of response query
-````
+View namespace for the given uuid or name
 
 ## `compass server <command>`
 
-Run compass server
+Run compass server. Alias: `s`
 
 ### `compass server migrate [flags]`
 
@@ -180,7 +122,7 @@ Run storage migration
 
 ```
 --down   rollback migration one step
-````
+```
 
 ### `compass server start`
 
@@ -189,4 +131,3 @@ Start server on default port 8080
 ## `compass version`
 
 Print version information
-

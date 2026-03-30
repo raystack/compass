@@ -1,6 +1,6 @@
 # Configuration
 
-Compass binary contains both the CLI client and the server. Each has it's own configuration in order to run. Server configuration contains information such as database credentials, elastic search brokers, log severity, etc. while CLI client configuration only has configuration about which server to connect.
+Compass binary contains both the CLI client and the server. Each has its own configuration in order to run. Server configuration contains information such as database credentials, log severity, search backend settings, etc. while CLI client configuration only has configuration about which server to connect.
 
 ## Server Setup
 
@@ -12,8 +12,7 @@ There are several approaches to setup Compass Server
 
 #### General pre-requisites
 
-- PostgreSQL (version 13 or above)
-- ElasticSearch v7 (optional)
+- PostgreSQL (version 13 or above) with pgvector and pg_trgm extensions
 
 ## Using the CLI
 
@@ -29,7 +28,7 @@ alternatively you can [use `--config` flag](#using---config-flag) to customize t
 
 You can also [use environment variables](#using-environment-variable) to provide the server configuration.
 
-Setup up the Postgres database, and ElasticSearch instance and provide the details as shown in the example below.
+Set up the Postgres database (with pgvector and pg_trgm extensions) and provide the details as shown in the example below.
 
 > If you're new to YAML and want to learn more, see [Learn YAML in Y minutes.](https://learnxinyminutes.com/docs/yaml/)
 
@@ -37,9 +36,6 @@ Following is a sample server configuration yaml:
 
 ```yaml title="compass.yaml"
 log_level: info # debug|info|warning|error|fatal|trace|panic - default: info
-
-elasticsearch:
-  brokers: http://localhost:9200 #required
 
 db:
   host: localhost #required
@@ -66,7 +62,6 @@ See [configuration reference](./reference/configuration.md) for the list of all 
 
 ```sh title=".env"
 LOG_LEVEL=info
-ELASTICSEARCH_BROKERS=http://localhost:9200
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=compass
@@ -118,7 +113,7 @@ To run the Compass server using Docker, you need to have Docker installed on you
 
 You can choose to set the configuration using environment variables or a config file. The environment variables will override the config file.
 
-If you use Docker to build compass, then configuring networking requires extra steps. Following is one of doing it by running postgres and elasticsearch inside with `docker-compose` first.
+If you use Docker to build Compass, then configuring networking requires extra steps. Following is one way of doing it by running Postgres inside with `docker-compose` first.
 
 Go to the root of this project and run `docker-compose`.
 
@@ -126,7 +121,7 @@ Go to the root of this project and run `docker-compose`.
 $ docker-compose up
 ```
 
-Once postgres and elasticsearch has been ready, we can run Compass by passing in the config of postgres and elasticsearch defined in `docker-compose.yaml` file.
+Once Postgres has been ready, we can run Compass by passing in the config defined in `docker-compose.yaml` file.
 
 ### Using config file
 
@@ -194,7 +189,7 @@ app:
   image:
     repository: raystack/compass
     pullPolicy: Always
-    tag: "0.3.0"
+    tag: "0.7.1"
   container:
     command:
       - compass
@@ -241,7 +236,6 @@ app:
 
   secretConfig:
     {}
-    # COMPASS_ELASTICSEARCH_BROKERS: ~
     # COMPASS_DB_HOST: ~
     # COMPASS_DB_PORT: 5432
     # COMPASS_DB_NAME: ~
@@ -276,8 +270,7 @@ Compass APIs also expect an additional optional e-mail header. This is also conf
 If everything goes ok, you should see something like this:
 
 ```bash
-time="2022-04-27T09:18:08Z" level=info msg="compass starting" version=v0.2.0
-time="2022-04-27T09:18:08Z" level=info msg="connected to elasticsearch cluster" config="\"docker-cluster\" (server version 7.6.1)"
+time="2022-04-27T09:18:08Z" level=info msg="compass starting" version=v0.7.1
 time="2022-04-27T09:18:08Z" level=info msg="connected to postgres server" host=postgres port=5432
 time="2022-04-27T09:18:08Z" level=info msg="server started"
 ```

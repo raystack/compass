@@ -4,7 +4,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 (module.exports = {
   title: 'Compass',
-  tagline: 'Data Catalog',
+  tagline: 'Context engine for organizational metadata',
   url: 'https://compass-raystack.vercel.app/',
   baseUrl: '/',
   onBrokenLinks: 'throw',

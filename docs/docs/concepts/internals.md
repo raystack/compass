@@ -1,39 +1,52 @@
 # Internals
 
-This document details information about how Compass interfaces with elasticsearch. It is meant to give an overview of how some concepts work internally, to help streamline understanding of how things work under the hood.
+This document details how Compass works under the hood. It covers the search architecture, storage internals, and multi-tenancy model.
 
-## Index Setup
+## Search Architecture
 
-There is a migration command in compass to setup all storages. The indices are configured with a camel case tokenizer, to support proper lexing of some resources that use camel case in their nomenclature \(protobuf names for instance\). Given below is a sample of the index settings that are used:
+All search in Compass is Postgres-native, combining keyword, fuzzy, and semantic strategies with no external search engine dependencies.
 
-```javascript
-// PUT http://${ES_HOST}/{index}
-{
-        "mappings": {},         // used for boost
-        "aliases": {            // all indices are aliased to the "universe" index
-            "universe": {}
-        },
-        "settings": {           // configuration for handling camel case text
-            "analysis": {
-                "analyzer": {
-                    "default": {
-                        "type": "pattern",
-                        "pattern": "([^\\p{L}\\d]+)|(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)|(?<=[\\p{L}&&[^\\p{Lu}]])(?=\\p{Lu})|(?<=\\p{Lu})(?=\\p{Lu}[\\p{L}&&[^\\p{Lu}]])"
-                    }
-                }
-            }
-        }
-    }
-```
+### Postgres-Native Search
 
-One shared index is created for all services and tenants but each request(read/write) is routed to a unique shard for each tenant. Compass categorize tenants into two tires, `shared` and `dedicated`. For shared tenants, all the requests will be routed by namespace id over a single shard in an index. For dedicated tenants, each tenant will have its own index. Note, a single index will have N number of `types` same as the number of `Services` supported in Compass. This design will ensure, all the document insert/query requests are only confined to a single shard(in case of shared) or a single index(in case of dedicated).
-Details on why we did this is available at [issue #208](https://github.com/raystack/compass/issues/208).
+#### Full-Text Search (tsvector)
 
-## Postgres
+Entities are indexed using PostgreSQL's built-in full-text search. A `search_vector` generated column is maintained on the entities table with weighted fields:
 
-To enforce multi-tenant restrictions at the database level, [Row Level Security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html) is used. RLS requires Postgres users used for application database connection not to be a table owner or a superuser else all RLS are bypassed by default. That means a Postgres user that is migrating the application and a user that is used to serve the app should both be different.
+- **Weight A:** URN and name (highest relevance)
+- **Weight B:** Description
+- **Weight C:** Source and service metadata
 
-To create a postgres user
+GIN indexes on the search vector enable fast full-text queries.
+
+#### Fuzzy Matching (pg_trgm)
+
+Trigram indexes powered by the `pg_trgm` extension support typo-tolerant and partial matching. This handles cases where users misspell entity names or search with partial terms.
+
+#### Semantic Search (pgvector)
+
+Vector embeddings are stored in a chunks table and indexed for cosine similarity search using pgvector. When an entity is created or updated, its semantic content (description, properties, labels) is embedded and stored. Semantic search finds conceptually related entities even when the exact terms don't overlap.
+
+#### Hybrid Ranking
+
+Results from keyword and semantic search are combined using Reciprocal Rank Fusion (RRF). This produces a single ranked list that balances keyword precision with semantic recall.
+
+## Entity Storage
+
+### Temporal Model
+
+Entities in Compass are temporal. Each entity version carries `valid_from` and `valid_to` timestamps, allowing Compass to track how entities and their properties evolve over time. This supports queries like "what did this entity look like last week" and "what changed in the last 24 hours."
+
+### Graph Edges
+
+Relationships between entities are stored as typed, directed edges. Each edge has a type (lineage, ownership, documentation, etc.) and optional properties. Edges are also temporal, capturing when relationships were established and when they ended.
+
+Graph traversal uses recursive Common Table Expressions (CTEs) in PostgreSQL, enabling multi-hop queries without external graph database dependencies.
+
+## PostgreSQL Multi-Tenancy
+
+To enforce multi-tenant restrictions at the database level, [Row Level Security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html) is used. RLS requires Postgres users used for application database connection not to be a table owner or a superuser, else all RLS policies are bypassed by default. That means the Postgres user that runs migrations and the user that serves the app should be different.
+
+To create a postgres user:
 
 ```sql
 CREATE USER "compass_user" WITH PASSWORD 'compass';
@@ -48,105 +61,4 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA "public" GRANT USAGE ON SEQUENCES TO "compass
 ALTER DEFAULT PRIVILEGES IN SCHEMA "public" GRANT EXECUTE ON FUNCTIONS TO "compass_user";
 ```
 
-A middleware looks for `x-namespace` header to extract tenant id if not found falls back to `default` namespace.
-Same could be passed in a `jwt token` of Authentication Bearer with `namespace_id` as a claim.
-
-## Search
-
-We use elasticsearch's `multi_match` search for running our queries. Depending on whether there are additional filter's specified during search, we augment the query with a custom script query that filter's the result set.
-
-The script filter is designed to match a document if:
-
-- the document contains the filter key and it's value matches the filter value OR
-- the document doesn't contain the filter key at all
-
-To demonstrate, the following API call:
-
-```text
-$ curl http://localhost:8080/v1beta1/search?text=log&filter[landscape]=id
-```
-
-is internally translated to the following elasticsearch query
-
-```javascript
-{
-    "query": {
-        "bool": {
-            "must": {
-                "multi_match": {
-                    "query": "log"
-                }
-            },
-            "filter": [{
-                "script": {
-                    "script": {
-                        "source": "doc.containsKey(\"landscape.keyword\") == false || doc[\"landscape.keyword\"].value == \"id\""
-                    }
-                }
-            }]
-        }
-    }
-}
-```
-
-Compass also supports filter with fuzzy match with `query` query params. The script query is designed to match a document if:
-
-- the document contains the filter key and it's value is fuzzily matches the `query` value
-
-```text
-$ curl http://localhost:8080/v1beta1/search?text=log&filter[landscape]=id
-```
-
-is internally translated to the following elasticsearch query
-
-```javascript
-{
-   "query":{
-      "bool":{
-         "filter":{
-            "match":{
-               "description":{
-                  "fuzziness":"AUTO",
-                  "query":"test"
-               }
-            }
-         },
-         "should":{
-            "bool":{
-               "should":[
-                  {
-                     "multi_match":{
-                        "fields":[
-                           "urn^10",
-                           "name^5"
-                        ],
-                        "query":"log"
-                     }
-                  },
-                  {
-                     "multi_match":{
-                        "fields":[
-                           "urn^10",
-                           "name^5"
-                        ],
-                        "fuzziness":"AUTO",
-                        "query":"log"
-                     }
-                  },
-                  {
-                     "multi_match":{
-                        "fields":[
-
-                        ],
-                        "fuzziness":"AUTO",
-                        "query":"log"
-                     }
-                  }
-               ]
-            }
-         }
-      }
-   },
-   "min_score":0.01
-}
-```
+A middleware looks for `x-namespace` header to extract tenant id. If not found, it falls back to the `default` namespace. The same can be passed in a JWT token of Authentication Bearer with `namespace_id` as a claim.
