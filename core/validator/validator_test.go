@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/raystack/compass/core/validator"
-	"gotest.tools/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestValidateStruct(t *testing.T) {
@@ -15,7 +15,7 @@ func TestValidateStruct(t *testing.T) {
 
 	type TestCase struct {
 		Description string
-		Struct      interface{}
+		Struct      any
 		ErrString   string
 	}
 

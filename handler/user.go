@@ -78,13 +78,16 @@ func (server *Handler) StarEntity(ctx context.Context, req *connect.Request[comp
 
 	id, err := server.starService.Stars(ctx, ns, userID, req.Msg.GetEntityId())
 	if err != nil {
-		if errors.Is(err, star.ErrEmptyUserID) || errors.Is(err, star.ErrEmptyEntityID) || errors.As(err, new(star.InvalidError)) {
+		var invalidErr star.InvalidError
+		var userNotFoundErr star.UserNotFoundError
+		var duplicateErr star.DuplicateRecordError
+		if errors.Is(err, star.ErrEmptyUserID) || errors.Is(err, star.ErrEmptyEntityID) || errors.As(err, &invalidErr) {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
-		if errors.As(err, new(star.UserNotFoundError)) {
+		if errors.As(err, &userNotFoundErr) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
-		if errors.As(err, new(star.DuplicateRecordError)) {
+		if errors.As(err, &duplicateErr) {
 			return nil, connect.NewError(connect.CodeAlreadyExists, err)
 		}
 		return nil, internalServerError(ctx, "error starring entity", err)
@@ -101,10 +104,12 @@ func (server *Handler) UnstarEntity(ctx context.Context, req *connect.Request[co
 	}
 
 	if err := server.starService.Unstars(ctx, userID, req.Msg.GetEntityId()); err != nil {
-		if errors.Is(err, star.ErrEmptyUserID) || errors.Is(err, star.ErrEmptyEntityID) || errors.As(err, new(star.InvalidError)) {
+		var invalidErr star.InvalidError
+		var notFoundErr star.NotFoundError
+		if errors.Is(err, star.ErrEmptyUserID) || errors.Is(err, star.ErrEmptyEntityID) || errors.As(err, &invalidErr) {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
-		if errors.As(err, new(star.NotFoundError)) {
+		if errors.As(err, &notFoundErr) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, internalServerError(ctx, "error unstarring entity", err)

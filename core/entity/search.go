@@ -1,8 +1,9 @@
 package entity
 
 import (
+	"cmp"
 	"context"
-	"sort"
+	"slices"
 
 	"github.com/raystack/compass/core/namespace"
 )
@@ -155,7 +156,7 @@ func reciprocalRankFusion(lists ...[]SearchResult) []SearchResult {
 	for _, s := range scores {
 		all = append(all, *s)
 	}
-	sort.Slice(all, func(i, j int) bool { return all[i].score > all[j].score })
+	slices.SortFunc(all, func(a, b scored) int { return cmp.Compare(b.score, a.score) })
 
 	results := make([]SearchResult, len(all))
 	for i, s := range all {

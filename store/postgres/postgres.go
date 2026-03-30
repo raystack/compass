@@ -151,7 +151,7 @@ func (c *Client) RunWithinTx(ctx context.Context, f func(tx *sqlx.Tx) error) err
 	}
 	if err = f(tx); err != nil {
 		if txErr := tx.Rollback(); txErr != nil {
-			err = fmt.Errorf("rollback transaction error: %v (original error: %w)", txErr, err)
+			err = fmt.Errorf("rollback transaction error: %w (original error: %w)", txErr, err)
 		}
 
 		// reset context

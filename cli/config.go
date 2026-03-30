@@ -8,7 +8,7 @@ import (
 	"github.com/raystack/compass/internal/config"
 	saltconfig "github.com/raystack/salt/config"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const configFlag = "config"

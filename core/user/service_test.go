@@ -83,7 +83,7 @@ func TestValidateUser(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			ctx := context.TODO()
+			ctx := context.Background()
 			mockUserRepo := new(mocks.UserRepository)
 
 			if tc.Setup != nil {

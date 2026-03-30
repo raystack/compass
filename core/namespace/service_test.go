@@ -11,7 +11,7 @@ import (
 )
 
 func TestService_Create(t *testing.T) {
-	ctx := context.TODO()
+	ctx := context.Background()
 	mockedNamespace := &namespace.Namespace{
 		ID:       uuid.New(),
 		Name:     "tenant-1",
@@ -78,7 +78,7 @@ func TestService_Create(t *testing.T) {
 }
 
 func TestService_Update(t *testing.T) {
-	ctx := context.TODO()
+	ctx := context.Background()
 	mockedNamespace := &namespace.Namespace{
 		ID:       uuid.New(),
 		Name:     "tenant-1",
