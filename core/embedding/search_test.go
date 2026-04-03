@@ -1,16 +1,18 @@
-package entity
+package embedding
 
 import (
 	"testing"
+
+	"github.com/raystack/compass/core/entity"
 )
 
 func TestReciprocalRankFusion(t *testing.T) {
-	list1 := []SearchResult{
+	list1 := []entity.SearchResult{
 		{URN: "a", Name: "Alpha"},
 		{URN: "b", Name: "Beta"},
 		{URN: "c", Name: "Charlie"},
 	}
-	list2 := []SearchResult{
+	list2 := []entity.SearchResult{
 		{URN: "b", Name: "Beta"},
 		{URN: "d", Name: "Delta"},
 		{URN: "a", Name: "Alpha"},
@@ -23,8 +25,6 @@ func TestReciprocalRankFusion(t *testing.T) {
 	}
 
 	// "a" and "b" appear in both lists, should be ranked higher
-	// "b" is rank 2 in list1 and rank 1 in list2 → strong
-	// "a" is rank 1 in list1 and rank 3 in list2 → strong
 	topTwo := map[string]bool{fused[0].URN: true, fused[1].URN: true}
 	if !topTwo["a"] || !topTwo["b"] {
 		t.Errorf("expected a and b in top 2, got %s and %s", fused[0].URN, fused[1].URN)
@@ -39,7 +39,7 @@ func TestReciprocalRankFusion_EmptyLists(t *testing.T) {
 }
 
 func TestReciprocalRankFusion_SingleList(t *testing.T) {
-	list := []SearchResult{
+	list := []entity.SearchResult{
 		{URN: "a"},
 		{URN: "b"},
 	}

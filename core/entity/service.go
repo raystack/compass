@@ -7,12 +7,24 @@ import (
 	"github.com/raystack/compass/core/namespace"
 )
 
+// HybridSearcher is an interface for hybrid search (keyword + semantic).
+// Implemented by embedding.HybridSearch.
+type HybridSearcher interface {
+	Search(ctx context.Context, cfg SearchConfig) ([]SearchResult, error)
+}
+
+// EmbeddingPipeline enqueues entities for async embedding.
+type EmbeddingPipeline interface {
+	EnqueueEntity(ctx context.Context, ns *namespace.Namespace, ent *Entity) error
+}
+
 // Service orchestrates entity operations across repositories.
 type Service struct {
-	repo   Repository
-	edges  EdgeRepository
-	search SearchRepository
-	hybrid *HybridSearch
+	repo     Repository
+	edges    EdgeRepository
+	search   SearchRepository
+	hybrid   HybridSearcher
+	pipeline EmbeddingPipeline
 }
 
 func NewService(repo Repository, edges EdgeRepository, search SearchRepository) *Service {
@@ -20,8 +32,13 @@ func NewService(repo Repository, edges EdgeRepository, search SearchRepository) 
 }
 
 // WithHybridSearch enables semantic/hybrid search modes.
-func (s *Service) WithHybridSearch(hs *HybridSearch) {
+func (s *Service) WithHybridSearch(hs HybridSearcher) {
 	s.hybrid = hs
+}
+
+// WithPipeline enables async embedding on entity upsert.
+func (s *Service) WithPipeline(p EmbeddingPipeline) {
+	s.pipeline = p
 }
 
 func (s *Service) Upsert(ctx context.Context, ns *namespace.Namespace, ent *Entity) (string, error) {
@@ -30,6 +47,11 @@ func (s *Service) Upsert(ctx context.Context, ns *namespace.Namespace, ent *Enti
 		return "", fmt.Errorf("upsert entity: %w", err)
 	}
 	ent.ID = id
+
+	if s.pipeline != nil {
+		_ = s.pipeline.EnqueueEntity(ctx, ns, ent)
+	}
+
 	return id, nil
 }
 

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	mcpserver "github.com/mark3labs/mcp-go/server"
+	"github.com/raystack/compass/core/document"
 	"github.com/raystack/compass/core/entity"
 	"github.com/raystack/compass/core/namespace"
 )
@@ -16,19 +17,26 @@ type EntityService interface {
 	GetImpact(ctx context.Context, ns *namespace.Namespace, urn string, depth int) ([]entity.Edge, error)
 }
 
+// DocumentService defines document operations needed by the MCP server.
+type DocumentService interface {
+	GetByEntityURN(ctx context.Context, ns *namespace.Namespace, entityURN string) ([]document.Document, error)
+}
+
 // Server is the MCP server that exposes Compass as AI-agent tools.
 type Server struct {
-	entityService EntityService
-	namespace     *namespace.Namespace
-	mcpServer     *mcpserver.MCPServer
-	httpServer    *mcpserver.StreamableHTTPServer
+	entityService  EntityService
+	documentService DocumentService
+	namespace      *namespace.Namespace
+	mcpServer      *mcpserver.MCPServer
+	httpServer     *mcpserver.StreamableHTTPServer
 }
 
 // New creates a new MCP server.
-func New(entitySvc EntityService, ns *namespace.Namespace) *Server {
+func New(entitySvc EntityService, docSvc DocumentService, ns *namespace.Namespace) *Server {
 	s := &Server{
-		entityService: entitySvc,
-		namespace:     ns,
+		entityService:  entitySvc,
+		documentService: docSvc,
+		namespace:      ns,
 	}
 
 	mcpSrv := mcpserver.NewMCPServer(
@@ -40,6 +48,7 @@ func New(entitySvc EntityService, ns *namespace.Namespace) *Server {
 	mcpSrv.AddTool(searchEntitiesTool(), s.handleSearchEntities)
 	mcpSrv.AddTool(getContextTool(), s.handleGetContext)
 	mcpSrv.AddTool(impactAnalysisTool(), s.handleImpact)
+	mcpSrv.AddTool(getDocumentsTool(), s.handleGetDocuments)
 
 	s.mcpServer = mcpSrv
 	s.httpServer = mcpserver.NewStreamableHTTPServer(mcpSrv)

@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 
+	"github.com/raystack/compass/core/embedding"
 	"github.com/raystack/compass/internal/client"
 	"github.com/raystack/compass/internal/telemetry"
 	"github.com/raystack/compass/store/postgres"
@@ -15,6 +16,19 @@ type Config struct {
 	DB        postgres.Config  `mapstructure:"db"`
 	Service   ServerConfig     `mapstructure:"service"`
 	Client    client.Config    `mapstructure:"client"`
+	Embedding EmbeddingConfig  `mapstructure:"embedding"`
+}
+
+// EmbeddingConfig configures the embedding pipeline.
+type EmbeddingConfig struct {
+	Enabled   bool                 `yaml:"enabled" mapstructure:"enabled" default:"false"`
+	Provider  string               `yaml:"provider" mapstructure:"provider" default:"ollama"`
+	Ollama    embedding.OllamaConfig `yaml:"ollama" mapstructure:"ollama"`
+	OpenAI    embedding.OpenAIConfig `yaml:"openai" mapstructure:"openai"`
+	Workers   int                  `yaml:"workers" mapstructure:"workers" default:"2"`
+	QueueSize int                  `yaml:"queue_size" mapstructure:"queue_size" default:"1000"`
+	MaxTokens int                  `yaml:"max_tokens" mapstructure:"max_tokens" default:"512"`
+	Overlap   int                  `yaml:"overlap" mapstructure:"overlap" default:"50"`
 }
 
 // ServerConfig holds HTTP server configuration.

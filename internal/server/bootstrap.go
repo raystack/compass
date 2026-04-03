@@ -8,10 +8,14 @@ import (
 	"os"
 	"strings"
 
+	"github.com/raystack/compass/core/document"
+	"github.com/raystack/compass/core/embedding"
 	"github.com/raystack/compass/core/entity"
 	"github.com/raystack/compass/core/namespace"
+	"github.com/raystack/compass/core/pipeline"
 	"github.com/raystack/compass/core/star"
 	"github.com/raystack/compass/core/user"
+	"github.com/raystack/compass/handler"
 	"github.com/raystack/compass/internal/config"
 	compassmcp "github.com/raystack/compass/internal/mcp"
 	"github.com/raystack/compass/internal/telemetry"
@@ -93,8 +97,51 @@ func Start(ctx context.Context, cfg *config.Config, version string) error {
 	}
 	entityService := entity.NewService(entityRepo, edgeRepo, entitySearchRepo)
 
+	// init document system
+	docRepo, err := postgres.NewDocumentRepository(pgClient)
+	if err != nil {
+		return fmt.Errorf("failed to create document repository: %w", err)
+	}
+	docService := document.NewService(docRepo)
+
+	// init embedding pipeline (optional)
+	if cfg.Embedding.Enabled {
+		provider, err := initEmbeddingProvider(cfg.Embedding)
+		if err != nil {
+			return fmt.Errorf("failed to initialize embedding provider: %w", err)
+		}
+		slog.Info("embedding pipeline enabled", "provider", provider.Name())
+
+		embeddingRepo, err := postgres.NewEmbeddingRepository(pgClient)
+		if err != nil {
+			return fmt.Errorf("failed to create embedding repository: %w", err)
+		}
+
+		// Start async pipeline
+		p := pipeline.New(embeddingRepo, provider,
+			pipeline.WithWorkers(cfg.Embedding.Workers),
+			pipeline.WithQueueSize(cfg.Embedding.QueueSize),
+			pipeline.WithMaxTokens(cfg.Embedding.MaxTokens),
+			pipeline.WithOverlap(cfg.Embedding.Overlap),
+		)
+		p.Start(ctx)
+		defer p.Stop()
+
+		// Wire hybrid search into entity service
+		hybridSearch := embedding.NewHybridSearch(entitySearchRepo, embeddingRepo,
+			embedding.AsEmbeddingFunc(provider))
+		entityService.WithHybridSearch(hybridSearch)
+
+		// Wire pipeline into services
+		entityService.WithPipeline(p)
+		docService.WithPipeline(p)
+	}
+
 	// init MCP server
-	mcpServer := compassmcp.New(entityService, namespace.DefaultNamespace)
+	mcpServer := compassmcp.New(entityService, docService, namespace.DefaultNamespace)
+
+	// init document handler
+	docHandler := handler.NewDocumentHandler(docService)
 
 	return Serve(
 		ctx,
@@ -105,6 +152,7 @@ func Start(ctx context.Context, cfg *config.Config, version string) error {
 		userService,
 		entityService,
 		edgeRepo,
+		docHandler,
 	)
 }
 
@@ -163,4 +211,18 @@ func initPostgres(cfg postgres.Config) (*postgres.Client, error) {
 	}
 	slog.Info("connected to postgres server", "host", cfg.Host, "port", cfg.Port)
 	return pgClient, nil
+}
+
+func initEmbeddingProvider(cfg config.EmbeddingConfig) (embedding.Provider, error) {
+	switch strings.ToLower(cfg.Provider) {
+	case "openai":
+		if cfg.OpenAI.APIKey == "" {
+			return nil, fmt.Errorf("openai api_key is required")
+		}
+		return embedding.NewOpenAI(cfg.OpenAI), nil
+	case "ollama", "":
+		return embedding.NewOllama(cfg.Ollama), nil
+	default:
+		return nil, fmt.Errorf("unknown embedding provider: %s", cfg.Provider)
+	}
 }

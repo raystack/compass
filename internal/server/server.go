@@ -32,6 +32,7 @@ func Serve(
 	userService handler.UserService,
 	entityService handler.EntityServiceV2,
 	edgeService handler.EdgeServiceV2,
+	documentHandler *handler.DocumentHandler,
 ) error {
 	logger := slog.Default().With("component", "server")
 
@@ -79,6 +80,11 @@ func Serve(
 	)
 	mux.Handle(grpcreflect.NewHandlerV1(reflector))
 	mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
+
+	// Document REST API
+	if documentHandler != nil {
+		documentHandler.RegisterRoutes(mux)
+	}
 
 	// Health check endpoint
 	mux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
