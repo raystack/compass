@@ -34,6 +34,7 @@ type EdgeRepository interface {
 	GetByTarget(ctx context.Context, ns *namespace.Namespace, urn string, filter EdgeFilter) ([]Edge, error)
 	GetDownstream(ctx context.Context, ns *namespace.Namespace, urn string, depth int) ([]Edge, error)
 	GetUpstream(ctx context.Context, ns *namespace.Namespace, urn string, depth int) ([]Edge, error)
+	GetBidirectional(ctx context.Context, ns *namespace.Namespace, urn string, depth int) ([]Edge, error)
 	Delete(ctx context.Context, ns *namespace.Namespace, sourceURN, targetURN, edgeType string) error
 	DeleteByURN(ctx context.Context, ns *namespace.Namespace, urn string) error
 }

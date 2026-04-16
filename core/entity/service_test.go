@@ -166,6 +166,221 @@ func TestService_GetTypes(t *testing.T) {
 	}
 }
 
+// mockEdgeRepo is a simple in-memory edge repository for testing.
+type mockEdgeRepo struct {
+	edges []Edge
+}
+
+func (m *mockEdgeRepo) Upsert(_ context.Context, _ *namespace.Namespace, e *Edge) error {
+	m.edges = append(m.edges, *e)
+	return nil
+}
+
+func (m *mockEdgeRepo) GetBySource(_ context.Context, _ *namespace.Namespace, urn string, _ EdgeFilter) ([]Edge, error) {
+	var result []Edge
+	for _, e := range m.edges {
+		if e.SourceURN == urn {
+			result = append(result, e)
+		}
+	}
+	return result, nil
+}
+
+func (m *mockEdgeRepo) GetByTarget(_ context.Context, _ *namespace.Namespace, urn string, _ EdgeFilter) ([]Edge, error) {
+	var result []Edge
+	for _, e := range m.edges {
+		if e.TargetURN == urn {
+			result = append(result, e)
+		}
+	}
+	return result, nil
+}
+
+func (m *mockEdgeRepo) GetDownstream(_ context.Context, _ *namespace.Namespace, _ string, _ int) ([]Edge, error) {
+	return nil, nil
+}
+
+func (m *mockEdgeRepo) GetUpstream(_ context.Context, _ *namespace.Namespace, _ string, _ int) ([]Edge, error) {
+	return nil, nil
+}
+
+func (m *mockEdgeRepo) GetBidirectional(_ context.Context, _ *namespace.Namespace, urn string, depth int) ([]Edge, error) {
+	// BFS traversal up to depth hops in both directions.
+	type frontier struct {
+		urn   string
+		level int
+	}
+	visited := map[string]bool{urn: true}
+	queue := []frontier{{urn: urn, level: 0}}
+	var result []Edge
+	seen := map[string]bool{} // dedup edges by source+target+type
+
+	for len(queue) > 0 {
+		cur := queue[0]
+		queue = queue[1:]
+		if cur.level >= depth {
+			continue
+		}
+		for _, e := range m.edges {
+			key := e.SourceURN + "|" + e.TargetURN + "|" + e.Type
+			var neighbor string
+			if e.SourceURN == cur.urn {
+				neighbor = e.TargetURN
+			} else if e.TargetURN == cur.urn {
+				neighbor = e.SourceURN
+			} else {
+				continue
+			}
+			if !seen[key] {
+				seen[key] = true
+				result = append(result, e)
+			}
+			if !visited[neighbor] {
+				visited[neighbor] = true
+				queue = append(queue, frontier{urn: neighbor, level: cur.level + 1})
+			}
+		}
+	}
+	return result, nil
+}
+
+func (m *mockEdgeRepo) Delete(_ context.Context, _ *namespace.Namespace, _, _, _ string) error {
+	return nil
+}
+
+func (m *mockEdgeRepo) DeleteByURN(_ context.Context, _ *namespace.Namespace, _ string) error {
+	return nil
+}
+
+func TestService_GetContext_DefaultDepth(t *testing.T) {
+	repo := newMockRepo()
+	edges := &mockEdgeRepo{}
+	svc := NewService(repo, edges, nil)
+	ctx := context.Background()
+	ns := namespace.DefaultNamespace
+
+	// A -> B -> C (linear chain)
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:a", Type: TypeTable, Name: "a"})
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:b", Type: TypeTable, Name: "b"})
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:c", Type: TypeTable, Name: "c"})
+	edges.edges = []Edge{
+		{SourceURN: "urn:a", TargetURN: "urn:b", Type: "lineage"},
+		{SourceURN: "urn:b", TargetURN: "urn:c", Type: "lineage"},
+	}
+
+	// depth=0 should default to 1 (only direct neighbors of B)
+	cg, err := svc.GetContext(ctx, ns, "urn:b", 0)
+	if err != nil {
+		t.Fatalf("GetContext failed: %v", err)
+	}
+	if len(cg.Edges) != 2 {
+		t.Errorf("expected 2 edges at depth 1, got %d", len(cg.Edges))
+	}
+	if len(cg.Related) != 2 {
+		t.Errorf("expected 2 related entities, got %d", len(cg.Related))
+	}
+}
+
+func TestService_GetContext_MultiHop(t *testing.T) {
+	repo := newMockRepo()
+	edges := &mockEdgeRepo{}
+	svc := NewService(repo, edges, nil)
+	ctx := context.Background()
+	ns := namespace.DefaultNamespace
+
+	// A -> B -> C -> D
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:a", Type: TypeTable, Name: "a"})
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:b", Type: TypeTable, Name: "b"})
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:c", Type: TypeTable, Name: "c"})
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:d", Type: TypeTable, Name: "d"})
+	edges.edges = []Edge{
+		{SourceURN: "urn:a", TargetURN: "urn:b", Type: "lineage"},
+		{SourceURN: "urn:b", TargetURN: "urn:c", Type: "lineage"},
+		{SourceURN: "urn:c", TargetURN: "urn:d", Type: "lineage"},
+	}
+
+	// depth=2 from B should reach A, C, and D
+	cg, err := svc.GetContext(ctx, ns, "urn:b", 2)
+	if err != nil {
+		t.Fatalf("GetContext failed: %v", err)
+	}
+	if len(cg.Edges) != 3 {
+		t.Errorf("expected 3 edges at depth 2, got %d", len(cg.Edges))
+	}
+	if len(cg.Related) != 3 {
+		t.Errorf("expected 3 related entities (a, c, d), got %d", len(cg.Related))
+	}
+}
+
+func TestService_GetContext_MaxDepthCap(t *testing.T) {
+	repo := newMockRepo()
+	edges := &mockEdgeRepo{}
+	svc := NewService(repo, edges, nil)
+	ctx := context.Background()
+	ns := namespace.DefaultNamespace
+
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:a", Type: TypeTable, Name: "a"})
+
+	// depth=10 should be capped to maxContextDepth (5), not error
+	cg, err := svc.GetContext(ctx, ns, "urn:a", 10)
+	if err != nil {
+		t.Fatalf("GetContext with large depth should not error: %v", err)
+	}
+	if cg.Entity.URN != "urn:a" {
+		t.Errorf("expected entity urn:a, got %s", cg.Entity.URN)
+	}
+}
+
+func TestService_GetContext_NilEdges(t *testing.T) {
+	repo := newMockRepo()
+	svc := NewService(repo, nil, nil) // no edge repo
+	ctx := context.Background()
+	ns := namespace.DefaultNamespace
+
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:a", Type: TypeTable, Name: "a"})
+
+	cg, err := svc.GetContext(ctx, ns, "urn:a", 2)
+	if err != nil {
+		t.Fatalf("GetContext with nil edges should not error: %v", err)
+	}
+	if len(cg.Edges) != 0 {
+		t.Errorf("expected 0 edges, got %d", len(cg.Edges))
+	}
+	if len(cg.Related) != 0 {
+		t.Errorf("expected 0 related, got %d", len(cg.Related))
+	}
+}
+
+func TestService_GetContext_CycleHandling(t *testing.T) {
+	repo := newMockRepo()
+	edges := &mockEdgeRepo{}
+	svc := NewService(repo, edges, nil)
+	ctx := context.Background()
+	ns := namespace.DefaultNamespace
+
+	// Cycle: A -> B -> C -> A
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:a", Type: TypeTable, Name: "a"})
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:b", Type: TypeTable, Name: "b"})
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:c", Type: TypeTable, Name: "c"})
+	edges.edges = []Edge{
+		{SourceURN: "urn:a", TargetURN: "urn:b", Type: "lineage"},
+		{SourceURN: "urn:b", TargetURN: "urn:c", Type: "lineage"},
+		{SourceURN: "urn:c", TargetURN: "urn:a", Type: "lineage"},
+	}
+
+	// depth=3 should not infinite loop
+	cg, err := svc.GetContext(ctx, ns, "urn:a", 3)
+	if err != nil {
+		t.Fatalf("GetContext with cycle should not error: %v", err)
+	}
+	if len(cg.Edges) != 3 {
+		t.Errorf("expected 3 edges in cycle, got %d", len(cg.Edges))
+	}
+	if len(cg.Related) != 2 {
+		t.Errorf("expected 2 related entities (b, c), got %d", len(cg.Related))
+	}
+}
+
 func TestService_Search_NilRepos(t *testing.T) {
 	svc := NewService(newMockRepo(), nil, nil)
 	results, err := svc.Search(context.Background(), SearchConfig{Text: "test"})

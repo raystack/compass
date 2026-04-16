@@ -77,6 +77,41 @@ func (r *EdgeRepository) GetUpstream(ctx context.Context, ns *namespace.Namespac
 	return r.traverse(ctx, ns, urn, depth, "upstream")
 }
 
+func (r *EdgeRepository) GetBidirectional(ctx context.Context, ns *namespace.Namespace, urn string, depth int) ([]entity.Edge, error) {
+	if depth <= 0 {
+		depth = 1
+	}
+
+	query := `
+		WITH RECURSIVE graph(source_urn, target_urn, type, properties, depth, path, frontier) AS (
+			SELECT source_urn, target_urn, type, properties, 1, ARRAY[source_urn], target_urn
+			FROM edges
+			WHERE namespace_id = $1 AND source_urn = $2 AND valid_to IS NULL
+		UNION ALL
+			SELECT source_urn, target_urn, type, properties, 1, ARRAY[target_urn], source_urn
+			FROM edges
+			WHERE namespace_id = $1 AND target_urn = $2 AND valid_to IS NULL
+		UNION ALL
+			SELECT e.source_urn, e.target_urn, e.type, e.properties, g.depth + 1, g.path || g.frontier, e.target_urn
+			FROM edges e
+			JOIN graph g ON e.source_urn = g.frontier
+			WHERE e.target_urn <> ALL(g.path) AND e.valid_to IS NULL AND g.depth < $3
+		UNION ALL
+			SELECT e.source_urn, e.target_urn, e.type, e.properties, g.depth + 1, g.path || g.frontier, e.source_urn
+			FROM edges e
+			JOIN graph g ON e.target_urn = g.frontier
+			WHERE e.source_urn <> ALL(g.path) AND e.valid_to IS NULL AND g.depth < $3
+		)
+		SELECT DISTINCT source_urn, target_urn, type, properties FROM graph
+		LIMIT 1000`
+
+	var models []edgeModel
+	if err := r.client.SelectContext(ctx, &models, query, ns.ID, urn, depth); err != nil {
+		return nil, fmt.Errorf("traverse bidirectional: %w", err)
+	}
+	return toEdgeList(models), nil
+}
+
 func (r *EdgeRepository) Delete(ctx context.Context, ns *namespace.Namespace, sourceURN, targetURN, edgeType string) error {
 	_, err := r.client.ExecContext(ctx,
 		`UPDATE edges SET valid_to = now() WHERE namespace_id = $1 AND source_urn = $2 AND target_urn = $3 AND type = $4 AND valid_to IS NULL`,

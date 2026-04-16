@@ -124,6 +124,9 @@ func (s *Service) Suggest(ctx context.Context, ns *namespace.Namespace, text str
 	return nil, nil
 }
 
+// maxContextDepth caps the maximum traversal depth for context queries.
+const maxContextDepth = 5
+
 // GetContext assembles a context subgraph around an entity.
 func (s *Service) GetContext(ctx context.Context, ns *namespace.Namespace, urn string, depth int) (*ContextGraph, error) {
 	ent, err := s.repo.GetByURN(ctx, ns, urn)
@@ -134,23 +137,28 @@ func (s *Service) GetContext(ctx context.Context, ns *namespace.Namespace, urn s
 	cg := &ContextGraph{Entity: ent}
 
 	if s.edges != nil {
-		_ = depth // TODO: use depth for multi-hop traversal
-		outgoing, _ := s.edges.GetBySource(ctx, ns, urn, EdgeFilter{Current: true})
-		incoming, _ := s.edges.GetByTarget(ctx, ns, urn, EdgeFilter{Current: true})
-		cg.Edges = append(outgoing, incoming...)
+		if depth <= 0 {
+			depth = 1
+		}
+		if depth > maxContextDepth {
+			depth = maxContextDepth
+		}
+
+		cg.Edges, err = s.edges.GetBidirectional(ctx, ns, urn, depth)
+		if err != nil {
+			return nil, fmt.Errorf("get context edges: %w", err)
+		}
 
 		seen := map[string]bool{urn: true}
 		for _, e := range cg.Edges {
-			relURN := e.TargetURN
-			if relURN == urn {
-				relURN = e.SourceURN
-			}
-			if seen[relURN] {
-				continue
-			}
-			seen[relURN] = true
-			if rel, err := s.repo.GetByURN(ctx, ns, relURN); err == nil {
-				cg.Related = append(cg.Related, rel)
+			for _, candidate := range []string{e.SourceURN, e.TargetURN} {
+				if seen[candidate] {
+					continue
+				}
+				seen[candidate] = true
+				if rel, err := s.repo.GetByURN(ctx, ns, candidate); err == nil {
+					cg.Related = append(cg.Related, rel)
+				}
 			}
 		}
 	}
