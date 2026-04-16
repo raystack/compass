@@ -1,0 +1,88 @@
+---
+title: Search
+description: Keyword, semantic, and hybrid search across the knowledge graph.
+order: 3
+---
+
+# Search
+
+Compass supports three search modes, all Postgres-native with no external search engine dependencies.
+
+## Modes
+
+### Keyword
+
+Uses PostgreSQL tsvector full-text search with weighted fields:
+
+- **Weight A:** URN and name (highest relevance)
+- **Weight B:** Description
+- **Weight C:** Source metadata
+
+Includes pg_trgm trigram fuzzy matching for typo tolerance.
+
+```bash
+compass entity search "orders" --mode keyword
+```
+
+### Semantic
+
+Uses pgvector cosine similarity on embeddings. Finds conceptually related entities even when exact terms don't overlap. Requires an [embedding provider](../configuration#embedding) to be configured.
+
+```bash
+compass entity search "revenue metrics" --mode semantic
+```
+
+### Hybrid
+
+Combines keyword and semantic results using Reciprocal Rank Fusion (RRF). Best of both — keyword precision with semantic recall.
+
+```bash
+compass entity search "order processing pipeline" --mode hybrid
+```
+
+## Filtering
+
+Filter results by entity type or source:
+
+```bash
+compass entity search "orders" --types table,topic --source bigquery --size 20
+```
+
+## Via API
+
+```bash
+curl -X POST http://localhost:8080/raystack.compass.v1beta1.CompassService/SearchEntities \
+  -H "Content-Type: application/json" \
+  -H "Compass-User-UUID: user@example.com" \
+  -d '{"text": "orders", "mode": "hybrid", "size": 10}'
+```
+
+## Autocomplete
+
+Get entity name suggestions:
+
+```bash
+curl -X POST http://localhost:8080/raystack.compass.v1beta1.CompassService/SuggestEntities \
+  -H "Content-Type: application/json" \
+  -H "Compass-User-UUID: user@example.com" \
+  -d '{"text": "ord"}'
+```
+
+## Embedding Setup
+
+Semantic and hybrid modes require embeddings. Enable the embedding pipeline in your configuration:
+
+```yaml
+embedding:
+  enabled: true
+  provider: ollama       # or openai
+  workers: 2
+  queue_size: 1000
+```
+
+Embeddings are generated asynchronously when entities are created or updated. To backfill existing entities:
+
+```bash
+compass embed --type entity
+compass embed --type document
+```

@@ -1,0 +1,63 @@
+---
+title: Architecture
+description: System design and component architecture of the Compass context engine.
+order: 1
+---
+
+# Architecture
+
+Compass is built as a layered context engine. Raw metadata observations flow in, get stored in a temporal knowledge graph, indexed for hybrid search, and served to both human interfaces and AI agents.
+
+## Components
+
+### Graph Store (PostgreSQL)
+
+PostgreSQL is the sole store for the knowledge graph. Entities, typed directed edges, and temporal metadata (`valid_from`/`valid_to`) are stored relationally. Recursive CTE queries power multi-hop graph traversal for both context assembly and impact analysis. Row Level Security enforces multi-tenant isolation at the database level.
+
+### Vector Index (pgvector)
+
+Semantic search is powered by pgvector embeddings stored alongside entities. When entities or documents are created/updated, the embedding pipeline asynchronously generates vector embeddings. HNSW indexes enable fast cosine similarity search.
+
+### Search Engine
+
+Three search strategies, all Postgres-native:
+
+- **Keyword** — tsvector full-text search with weighted fields, plus pg_trgm trigram fuzzy matching
+- **Semantic** — pgvector cosine similarity for conceptual matching
+- **Hybrid** — Reciprocal Rank Fusion combines keyword and semantic results into a single ranked list
+
+No external search engine dependencies.
+
+### Embedding Pipeline
+
+An async worker pool generates embeddings on entity/document upsert. Content is chunked (token-aware splitting with overlap), embedded via a pluggable provider (OpenAI or Ollama), and stored in the embeddings table. The pipeline is non-blocking with configurable queue size and worker count.
+
+### Query Engine
+
+Orchestrates graph traversal, hybrid search, and context composition:
+
+- **Context assembly** — Bidirectional multi-hop traversal via recursive CTEs with cycle detection
+- **Impact analysis** — Downstream-only recursive traversal for blast radius
+- **Search** — Keyword, semantic, or hybrid with configurable filters
+
+### Serving Layer
+
+- **Connect RPC** — HTTP and gRPC via a single service definition. API definitions in [raystack/proton](https://github.com/raystack/proton).
+- **MCP Server** — Model Context Protocol at `/mcp` for AI agents. Four composable tools: `search_entities`, `get_context`, `impact`, `get_documents`.
+
+## Multi-Tenancy
+
+Namespace-based isolation using PostgreSQL Row Level Security. Each request includes a namespace (via `x-namespace` header or JWT claim). RLS policies ensure queries only see data in their namespace.
+
+The migration user and the application user must be different — RLS policies are bypassed for table owners and superusers.
+
+## Schema
+
+```
+namespaces → users → entities → edges
+                              → embeddings
+                   → documents → embeddings
+                   → stars
+```
+
+All tables carry `namespace_id` and are covered by RLS policies.

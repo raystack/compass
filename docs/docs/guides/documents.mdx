@@ -1,0 +1,71 @@
+---
+title: Documents
+description: Attach runbooks, decisions, and annotations to entities.
+order: 6
+---
+
+# Documents
+
+Documents are knowledge objects — runbooks, ADRs, annotations, decisions — linked to entities. They are stored as first-class objects, indexed for semantic search, and served through the MCP `get_documents` tool.
+
+## Document Model
+
+| Field | Description |
+|-------|-------------|
+| `entity_urn` | URN of the entity this document is about |
+| `title` | Document title |
+| `body` | Document content (markdown or plaintext) |
+| `format` | Content format: `markdown`, `plaintext` |
+| `source` | Origin system: `confluence`, `github`, `manual`, etc. |
+| `source_id` | ID in the source system (used for deduplication) |
+| `properties` | Optional key-value metadata |
+
+## Create or Update
+
+```bash
+curl -X POST http://localhost:8080/v1/documents \
+  -H "Content-Type: application/json" \
+  -H "Compass-User-UUID: user@example.com" \
+  -d '{
+    "entity_urn": "urn:bigquery:warehouse.analytics.orders",
+    "title": "Orders Table Runbook",
+    "body": "## Overview\nThis table contains daily order aggregations...",
+    "format": "markdown",
+    "source": "confluence",
+    "source_id": "CONF-12345"
+  }'
+```
+
+Upsert uses `entity_urn` + `source` + `source_id` for deduplication.
+
+## Query by Entity
+
+Get all documents attached to an entity:
+
+```bash
+curl http://localhost:8080/v1/entities/urn:bigquery:warehouse.analytics.orders/documents \
+  -H "Compass-User-UUID: user@example.com"
+```
+
+## List All
+
+```bash
+curl http://localhost:8080/v1/documents \
+  -H "Compass-User-UUID: user@example.com"
+```
+
+## MCP
+
+AI agents retrieve documents with:
+
+```
+get_documents(urn: "urn:bigquery:warehouse.analytics.orders")
+```
+
+## Embedding
+
+When the embedding pipeline is enabled, documents are automatically chunked and embedded for semantic search. To backfill existing documents:
+
+```bash
+compass embed --type document
+```

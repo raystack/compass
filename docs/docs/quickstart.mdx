@@ -1,0 +1,129 @@
+---
+title: Quickstart
+description: Get Compass running and explore the knowledge graph in 5 minutes.
+order: 2
+---
+
+# Quickstart
+
+This guide gets you from zero to a working Compass instance with sample data you can search and explore.
+
+## 1. Start Compass
+
+Start PostgreSQL and Compass using Docker Compose:
+
+```bash
+git clone https://github.com/raystack/compass.git
+cd compass
+docker-compose up -d
+```
+
+This starts PostgreSQL (with pgvector) on port 5433 and prepares the database.
+
+Build and run Compass:
+
+```bash
+make
+./compass config init
+./compass server migrate
+./compass server start
+```
+
+Compass is now running at `http://localhost:8080`.
+
+## 2. Create Entities
+
+Create a few entities to build a small graph:
+
+```bash
+# Create a Kafka topic
+compass entity upsert \
+  --urn "urn:kafka:orders" \
+  --type topic \
+  --name "Orders Topic" \
+  --source kafka \
+  --description "Raw order events from the checkout service"
+
+# Create a BigQuery table
+compass entity upsert \
+  --urn "urn:bigquery:orders_daily" \
+  --type table \
+  --name "Orders Daily" \
+  --source bigquery \
+  --description "Daily aggregated order metrics"
+
+# Create a dashboard
+compass entity upsert \
+  --urn "urn:metabase:revenue" \
+  --type dashboard \
+  --name "Revenue Dashboard" \
+  --source metabase \
+  --description "Executive revenue and order KPIs"
+```
+
+## 3. Create Relationships
+
+Connect the entities with lineage edges using the API:
+
+```bash
+# Orders Topic -> Orders Daily table
+curl -X POST http://localhost:8080/raystack.compass.v1beta1.CompassService/UpsertEdge \
+  -H "Content-Type: application/json" \
+  -H "Compass-User-UUID: quickstart@example.com" \
+  -d '{"source_urn": "urn:kafka:orders", "target_urn": "urn:bigquery:orders_daily", "type": "lineage"}'
+
+# Orders Daily table -> Revenue Dashboard
+curl -X POST http://localhost:8080/raystack.compass.v1beta1.CompassService/UpsertEdge \
+  -H "Content-Type: application/json" \
+  -H "Compass-User-UUID: quickstart@example.com" \
+  -d '{"source_urn": "urn:bigquery:orders_daily", "target_urn": "urn:metabase:revenue", "type": "lineage"}'
+```
+
+## 4. Search
+
+```bash
+compass entity search "orders"
+```
+
+## 5. Explore Context
+
+Get the full context around the orders table, including its upstream and downstream neighbors:
+
+```bash
+compass entity context urn:bigquery:orders_daily --depth 2
+```
+
+This returns the entity, its edges (Orders Topic upstream, Revenue Dashboard downstream), and the related entities.
+
+## 6. Analyze Impact
+
+See what breaks if the Kafka topic changes:
+
+```bash
+compass entity impact urn:kafka:orders --depth 3
+```
+
+This traces the downstream blast radius: Orders Topic -> Orders Daily -> Revenue Dashboard.
+
+## 7. Connect AI Agents
+
+Add Compass as an MCP server in your AI tool. For Claude Code, add to `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "compass": {
+      "type": "sse",
+      "url": "http://localhost:8080/mcp"
+    }
+  }
+}
+```
+
+Now your AI agent can search the graph, explore context, and analyze impact using Compass tools.
+
+## Next Steps
+
+- [Entities](./guides/entities) -- Entity model and operations in detail
+- [Search](./guides/search) -- Keyword, semantic, and hybrid search modes
+- [MCP](./guides/mcp) -- Full MCP setup for AI agents

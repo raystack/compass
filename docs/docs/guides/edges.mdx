@@ -1,0 +1,58 @@
+---
+title: Edges
+description: Create and query typed, directed relationships between entities.
+order: 2
+---
+
+# Edges
+
+Edges are typed, directed, temporal relationships between entities. Lineage, ownership, documentation links, and any custom relationship type are all modeled as edges.
+
+## Edge Model
+
+| Field | Description |
+|-------|-------------|
+| `source_urn` | URN of the source entity |
+| `target_urn` | URN of the target entity |
+| `type` | Relationship type: `lineage`, `owns`, `reads`, `documents`, or any string |
+| `properties` | Optional key-value map |
+| `valid_from` / `valid_to` | Temporal validity |
+
+## Create or Update
+
+```bash
+curl -X POST http://localhost:8080/raystack.compass.v1beta1.CompassService/UpsertEdge \
+  -H "Content-Type: application/json" \
+  -H "Compass-User-UUID: user@example.com" \
+  -d '{
+    "source_urn": "urn:kafka:events.orders",
+    "target_urn": "urn:bigquery:warehouse.analytics.orders",
+    "type": "lineage"
+  }'
+```
+
+Upsert is idempotent — re-sending the same source, target, and type updates the existing edge.
+
+## Query
+
+Get edges for an entity, optionally filtered by type and direction:
+
+```bash
+curl http://localhost:8080/raystack.compass.v1beta1.CompassService/GetEdges \
+  -H "Content-Type: application/json" \
+  -H "Compass-User-UUID: user@example.com" \
+  -d '{"urn": "urn:bigquery:warehouse.analytics.orders"}'
+```
+
+## Delete
+
+```bash
+curl -X POST http://localhost:8080/raystack.compass.v1beta1.CompassService/DeleteEdge \
+  -H "Content-Type: application/json" \
+  -H "Compass-User-UUID: user@example.com" \
+  -d '{"id": "<edge-id>"}'
+```
+
+## Temporal Edges
+
+Like entities, edges carry `valid_from` and `valid_to` timestamps. Deleting an edge sets `valid_to` rather than removing the row, preserving the historical record.

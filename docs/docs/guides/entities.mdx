@@ -1,0 +1,81 @@
+---
+title: Entities
+description: Create, update, query, and delete entities in the knowledge graph.
+order: 1
+---
+
+# Entities
+
+An entity is anything worth naming in your organization's knowledge graph: a table, service, pipeline, dashboard, person, decision, satellite, or any other type. The type system is open — any non-empty string is a valid type.
+
+## Entity Model
+
+| Field | Description |
+|-------|-------------|
+| `urn` | Unique identifier across the organization (e.g., `urn:bigquery:project.dataset.table`) |
+| `type` | Entity type: `table`, `topic`, `dashboard`, `job`, `application`, `model`, etc. |
+| `name` | Human-readable name |
+| `description` | Free-text description |
+| `source` | Origin system (e.g., `bigquery`, `kafka`, `metabase`) |
+| `properties` | Freeform key-value map (JSONB) — Compass doesn't interpret these |
+| `valid_from` / `valid_to` | Temporal validity for point-in-time queries |
+
+## Create or Update
+
+```bash
+compass entity upsert \
+  --urn "urn:bigquery:warehouse.analytics.orders" \
+  --type table \
+  --name "Orders" \
+  --source bigquery \
+  --description "Daily order transactions"
+```
+
+Via API:
+
+```bash
+curl -X POST http://localhost:8080/raystack.compass.v1beta1.CompassService/UpsertEntity \
+  -H "Content-Type: application/json" \
+  -H "Compass-User-UUID: user@example.com" \
+  -d '{
+    "urn": "urn:bigquery:warehouse.analytics.orders",
+    "type": "table",
+    "name": "Orders",
+    "source": "bigquery",
+    "description": "Daily order transactions"
+  }'
+```
+
+Upsert is idempotent — re-sending the same URN updates the existing entity.
+
+## List
+
+```bash
+compass entity list --types table,topic --source bigquery --size 50
+```
+
+## View
+
+```bash
+compass entity view <id-or-urn>
+```
+
+## Delete
+
+```bash
+compass entity delete <urn>
+```
+
+Deleting an entity also removes its edges.
+
+## Types
+
+List all entity types with counts:
+
+```bash
+compass entity types
+```
+
+## Temporal Model
+
+Every entity version carries `valid_from` and `valid_to` timestamps. When an entity is updated, the previous version gets a `valid_to` timestamp and a new version is created. This enables point-in-time queries and change tracking.

@@ -1,0 +1,67 @@
+---
+title: Storage
+description: Temporal model, Row Level Security, and PostgreSQL storage internals.
+order: 3
+---
+
+# Storage Internals
+
+Compass uses PostgreSQL as its sole storage layer — no external search engines, vector databases, or graph databases.
+
+## Temporal Model
+
+Every entity and edge version carries `valid_from` and `valid_to` timestamps:
+
+- **Current records** have `valid_to IS NULL`
+- **Historical records** have a `valid_to` timestamp marking when they were superseded
+- **Uniqueness** is enforced on `(namespace_id, urn, valid_from)` for entities
+
+This enables point-in-time queries and change tracking without deleting data.
+
+## Tables
+
+| Table | Purpose |
+|-------|---------|
+| `namespaces` | Tenant isolation roots |
+| `users` | Identity (UUID, email, provider) |
+| `entities` | Core knowledge objects with temporal versioning |
+| `edges` | Typed, directed, temporal relationships |
+| `embeddings` | Vector embeddings for semantic search |
+| `documents` | Knowledge documents linked to entities |
+| `stars` | User-starred entities |
+
+## Indexes
+
+| Type | Purpose |
+|------|---------|
+| GIN on `search_vector` | Full-text search |
+| GIN with `pg_trgm` | Fuzzy/trigram matching |
+| HNSW on embeddings | Vector similarity search |
+| GIN on `properties` | JSONB property queries |
+| B-tree on `valid_to IS NULL` | Fast current-record filtering |
+
+## Row Level Security
+
+Multi-tenancy is enforced at the database level using PostgreSQL RLS:
+
+1. Every table has a `namespace_id` column
+2. RLS policies filter rows by `current_setting('app.current_tenant')`
+3. Each request sets `app.current_tenant` via `SET LOCAL` before querying
+4. The namespace is extracted from the `x-namespace` header or JWT `namespace_id` claim
+
+**Important:** The application database user must not be a table owner or superuser, as these roles bypass RLS policies. Use separate users for migrations and application queries.
+
+### Creating the Application User
+
+```sql
+CREATE USER "compass_user" WITH PASSWORD 'compass';
+GRANT CONNECT ON DATABASE "compass" TO "compass_user";
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "compass_user";
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO "compass_user";
+GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO "compass_user";
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA "public" GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES
+ON TABLES TO "compass_user";
+ALTER DEFAULT PRIVILEGES IN SCHEMA "public" GRANT USAGE ON SEQUENCES TO "compass_user";
+ALTER DEFAULT PRIVILEGES IN SCHEMA "public" GRANT EXECUTE ON FUNCTIONS TO "compass_user";
+```

@@ -1,0 +1,104 @@
+---
+title: MCP
+description: Connect AI agents to Compass via the Model Context Protocol.
+order: 7
+---
+
+# MCP
+
+Compass exposes an MCP (Model Context Protocol) server at `/mcp`. Any MCP-compatible AI tool can connect and query the knowledge graph using structured tools.
+
+## Setup
+
+### Claude Code
+
+Add to your project's `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "compass": {
+      "type": "sse",
+      "url": "http://localhost:8080/mcp"
+    }
+  }
+}
+```
+
+### Cursor
+
+Add to Cursor's MCP settings (Settings > MCP Servers):
+
+```json
+{
+  "compass": {
+    "type": "sse",
+    "url": "http://localhost:8080/mcp"
+  }
+}
+```
+
+### Windsurf
+
+Add to Windsurf's MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "compass": {
+      "serverUrl": "http://localhost:8080/mcp"
+    }
+  }
+}
+```
+
+## Tools
+
+### `search_entities`
+
+Search the knowledge graph with keyword, semantic, or hybrid mode.
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `text` | Yes | Search query |
+| `types` | No | Comma-separated entity types (e.g., `table,topic`) |
+| `source` | No | Filter by source system |
+| `mode` | No | `keyword`, `semantic`, or `hybrid` (default: `keyword`) |
+| `size` | No | Max results (default: 10) |
+
+### `get_context`
+
+Get full context about an entity: the entity itself, its relationships, and related entities.
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `urn` | Yes | Entity URN |
+| `depth` | No | Traversal depth, 1-5 (default: 2) |
+
+### `impact`
+
+Analyze downstream blast radius — what entities are affected if this entity changes.
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `urn` | Yes | Entity URN |
+| `depth` | No | Downstream traversal depth (default: 3) |
+
+### `get_documents`
+
+Get documents (runbooks, annotations, decisions) attached to an entity.
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `urn` | Yes | Entity URN |
+
+## Usage Patterns
+
+AI agents typically compose these tools together:
+
+1. **Discover** — `search_entities` to find relevant entities
+2. **Understand** — `get_context` to see relationships and neighbors
+3. **Assess risk** — `impact` to evaluate downstream effects
+4. **Get knowledge** — `get_documents` for runbooks and decisions
+
+The agent controls what context it assembles. Compass provides focused, composable tools rather than monolithic responses.

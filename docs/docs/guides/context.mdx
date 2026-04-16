@@ -1,0 +1,67 @@
+---
+title: Context
+description: Multi-hop bidirectional graph traversal to assemble context around any entity.
+order: 4
+---
+
+# Context
+
+Context assembly builds a subgraph around an entity — the entity itself, its relationships, and related entities within a configurable number of hops. This is the primary way to understand an entity in its full graph context.
+
+## How It Works
+
+`get_context` starts from a root entity and traverses edges bidirectionally (both upstream and downstream) up to the specified depth. It returns:
+
+- **Entity** — The root entity with all its properties
+- **Edges** — All relationships discovered within the traversal depth
+- **Related** — All entities connected via those edges
+
+### Depth
+
+The `depth` parameter controls how many hops to traverse:
+
+- **Depth 1** (default) — Direct neighbors only
+- **Depth 2** — Neighbors of neighbors
+- **Depth 3+** — Wider graph context
+
+Maximum depth is capped at 5. Results are bounded at 1000 edges to prevent runaway queries on dense graphs. Cycle detection prevents infinite loops.
+
+## CLI
+
+```bash
+# Direct neighbors
+compass entity context urn:bigquery:orders
+
+# 2-hop neighborhood
+compass entity context urn:bigquery:orders --depth 2
+
+# Downstream impact analysis
+compass entity impact urn:kafka:events.orders --depth 3
+```
+
+## API
+
+```bash
+curl -X POST http://localhost:8080/raystack.compass.v1beta1.CompassService/GetEntityContext \
+  -H "Content-Type: application/json" \
+  -H "Compass-User-UUID: user@example.com" \
+  -d '{"urn": "urn:bigquery:orders", "depth": 2}'
+```
+
+## MCP
+
+```
+get_context(urn: "urn:bigquery:orders", depth: 2)
+```
+
+## Example
+
+For a graph: `Kafka Topic -> BigQuery Table -> Dashboard`
+
+Calling `get_context` on the BigQuery table with depth 1 returns the table, both edges, and both neighbors (Kafka Topic and Dashboard).
+
+With depth 2, it would also include any entities connected to the Kafka Topic and Dashboard.
+
+## Impact Analysis
+
+`impact` is the downstream-only counterpart to `get_context` — it answers "if I change this, what breaks?" by tracing edges in one direction. Same depth mechanics, same cycle detection, but only follows downstream relationships. Available as `entity impact` in the CLI, `GetEntityImpact` in the API, and `impact` in MCP.

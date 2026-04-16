@@ -1,0 +1,124 @@
+---
+title: CLI
+description: Command reference for the Compass CLI.
+order: 8
+---
+
+# CLI
+
+The Compass CLI manages the server, entities, namespaces, and configuration.
+
+## Global Flags
+
+```
+-c, --config string   Override config file path
+```
+
+## `compass config`
+
+| Command | Description |
+|---------|-------------|
+| `config init` | Initialize a new config file |
+| `config list` | List current configuration |
+
+## `compass entity`
+
+Alias: `entities`
+
+| Command | Description |
+|---------|-------------|
+| `entity list` | List entities |
+| `entity view <id>` | View entity by ID or URN |
+| `entity upsert` | Create or update an entity |
+| `entity delete <urn>` | Delete an entity |
+| `entity search <text>` | Search entities |
+| `entity types` | List entity types with counts |
+| `entity context <urn>` | Get context subgraph |
+| `entity impact <urn>` | Analyze downstream impact |
+
+### `entity list [flags]`
+
+```
+    --types string    Filter by types (comma-separated)
+    --source string   Filter by source
+-q, --query string    Search query
+    --size uint32     Page size (default 20)
+    --offset uint32   Page offset (default 0)
+```
+
+### `entity upsert [flags]`
+
+```
+    --urn string           Entity URN (required)
+    --type string          Entity type (required)
+    --name string          Entity name (required)
+    --description string   Description
+    --source string        Source system
+```
+
+### `entity search <text> [flags]`
+
+```
+    --types string    Filter by types
+    --source string   Filter by source
+    --mode string     keyword, semantic, or hybrid (default "keyword")
+    --size uint32     Max results (default 10)
+```
+
+### `entity context <urn> [flags]`
+
+```
+    --depth uint32   Traversal depth, 1-5 (default 2)
+```
+
+### `entity impact <urn> [flags]`
+
+```
+    --depth uint32   Traversal depth (default 3)
+```
+
+## `compass namespace`
+
+Alias: `ns`
+
+| Command | Description |
+|---------|-------------|
+| `namespace create` | Create a namespace |
+| `namespace list` | List namespaces |
+| `namespace view <id>` | View namespace by ID or name |
+
+### `namespace create [flags]`
+
+```
+-n, --name string    Namespace name
+-s, --state string   shared or dedicated (default "shared")
+```
+
+## `compass server`
+
+Alias: `s`
+
+| Command | Description |
+|---------|-------------|
+| `server migrate` | Run database migrations |
+| `server start` | Start server on port 8080 |
+
+### `server migrate [flags]`
+
+```
+    --down   Rollback migration one step
+```
+
+## `compass embed`
+
+Backfill embeddings for existing data.
+
+```bash
+compass embed --type entity     # Embed all entities
+compass embed --type document   # Embed all documents
+compass embed --type all        # Embed everything
+```
+
+## `compass version`
+
+Print version information.

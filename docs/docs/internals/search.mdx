@@ -1,0 +1,61 @@
+---
+title: Search
+description: How Compass search works under the hood — tsvector, pgvector, and RRF fusion.
+order: 2
+---
+
+# Search Internals
+
+All search in Compass is Postgres-native. No Elasticsearch, no external vector database.
+
+## Full-Text Search (tsvector)
+
+Entities have a `search_vector` generated column with weighted fields:
+
+| Weight | Fields | Purpose |
+|--------|--------|---------|
+| A | URN, name | Highest relevance — exact identity matches |
+| B | Description | Content relevance |
+| C | Source | Metadata-level matching |
+
+A GIN index on `search_vector` enables fast full-text queries. PostgreSQL's `ts_rank` function scores results.
+
+## Fuzzy Matching (pg_trgm)
+
+The `pg_trgm` extension provides trigram-based similarity matching. This handles:
+
+- Typos (`ordrs` matches `orders`)
+- Partial terms (`ord` matches `orders`)
+- Similar names across different naming conventions
+
+Trigram indexes are GIN-based and work alongside tsvector.
+
+## Semantic Search (pgvector)
+
+Vector embeddings are stored in an embeddings table with HNSW indexes for cosine similarity. The embedding pipeline:
+
+1. Entity/document content is serialized into text
+2. Text is split into token-aware chunks with overlap
+3. Chunks are embedded via the configured provider (OpenAI or Ollama)
+4. Embeddings are stored and indexed
+
+Semantic search finds conceptually related entities even when exact terms don't overlap.
+
+## Hybrid Ranking (RRF)
+
+Reciprocal Rank Fusion combines keyword and semantic results:
+
+```
+RRF_score(d) = 1/(k + rank_keyword(d)) + 1/(k + rank_semantic(d))
+```
+
+Where `k` is a constant (typically 60). Documents that rank well in both lists get the highest combined score. This balances keyword precision with semantic recall.
+
+## Graph Traversal
+
+Context assembly and impact analysis use PostgreSQL recursive CTEs:
+
+- **Context** (`GetBidirectional`) — Bidirectional traversal from a root entity, following edges in both directions up to the specified depth. Uses a `path` array for cycle detection and `DISTINCT` for deduplication. Results capped at 1000 edges.
+- **Impact** (`GetDownstream`) — Unidirectional downstream traversal. Same CTE pattern, single direction.
+
+Both use the `frontier` pattern: each recursive step expands from the frontier URN discovered in the previous step, checking against the path to prevent cycles.
