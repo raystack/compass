@@ -6,14 +6,14 @@ import (
 	"github.com/raystack/compass/core/embedding"
 	"github.com/raystack/compass/internal/client"
 	"github.com/raystack/compass/internal/telemetry"
-	"github.com/raystack/compass/store/postgres"
+	"github.com/raystack/compass/store"
 )
 
 // Config is the root configuration for the compass application.
 type Config struct {
 	LogLevel  string           `yaml:"log_level" mapstructure:"log_level" default:"info"`
 	Telemetry telemetry.Config `mapstructure:"telemetry"`
-	DB        postgres.Config  `mapstructure:"db"`
+	DB        store.Config     `mapstructure:"db"`
 	Service   ServerConfig     `mapstructure:"service"`
 	Client    client.Config    `mapstructure:"client"`
 	Embedding EmbeddingConfig  `mapstructure:"embedding"`

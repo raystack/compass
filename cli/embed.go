@@ -14,7 +14,7 @@ import (
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/internal/config"
 	compassserver "github.com/raystack/compass/internal/server"
-	"github.com/raystack/compass/store/postgres"
+	"github.com/raystack/compass/store"
 	"github.com/spf13/cobra"
 )
 
@@ -57,13 +57,13 @@ func runEmbed(ctx context.Context, cfg *config.Config, embedType string, batchSi
 	slog.Info("embedding provider initialized", "provider", provider.Name())
 
 	// Init postgres
-	pgClient, err := postgres.NewClient(cfg.DB)
+	pgClient, err := store.NewClient(cfg.DB)
 	if err != nil {
 		return fmt.Errorf("connect to postgres: %w", err)
 	}
 	defer pgClient.Close()
 
-	embeddingRepo, err := postgres.NewEmbeddingRepository(pgClient)
+	embeddingRepo, err := store.NewEmbeddingRepository(pgClient)
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func runEmbed(ctx context.Context, cfg *config.Config, embedType string, batchSi
 	ns := namespace.DefaultNamespace
 
 	if embedType == "all" || embedType == "entity" {
-		entityRepo, err := postgres.NewEntityRepository(pgClient)
+		entityRepo, err := store.NewEntityRepository(pgClient)
 		if err != nil {
 			return err
 		}
@@ -81,7 +81,7 @@ func runEmbed(ctx context.Context, cfg *config.Config, embedType string, batchSi
 	}
 
 	if embedType == "all" || embedType == "document" {
-		docRepo, err := postgres.NewDocumentRepository(pgClient)
+		docRepo, err := store.NewDocumentRepository(pgClient)
 		if err != nil {
 			return err
 		}

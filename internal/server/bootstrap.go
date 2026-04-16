@@ -19,7 +19,7 @@ import (
 	"github.com/raystack/compass/internal/config"
 	compassmcp "github.com/raystack/compass/internal/mcp"
 	"github.com/raystack/compass/internal/telemetry"
-	"github.com/raystack/compass/store/postgres"
+	"github.com/raystack/compass/store"
 )
 
 // InitLogger sets up the global slog logger with a JSON handler.
@@ -66,39 +66,39 @@ func Start(ctx context.Context, cfg *config.Config, version string) error {
 	}()
 
 	// init user
-	userRepository, err := postgres.NewUserRepository(pgClient)
+	userRepository, err := store.NewUserRepository(pgClient)
 	if err != nil {
 		return fmt.Errorf("failed to create user repository: %w", err)
 	}
 	userService := user.NewService(userRepository)
 
 	// init star
-	starRepository, err := postgres.NewStarRepository(pgClient)
+	starRepository, err := store.NewStarRepository(pgClient)
 	if err != nil {
 		return fmt.Errorf("failed to create star repository: %w", err)
 	}
 	starService := star.NewService(starRepository)
 
 	// init namespace
-	namespaceService := namespace.NewService(postgres.NewNamespaceRepository(pgClient), nil)
+	namespaceService := namespace.NewService(store.NewNamespaceRepository(pgClient), nil)
 
 	// init entity system (Postgres-native: tsvector + pg_trgm + pgvector)
-	entityRepo, err := postgres.NewEntityRepository(pgClient)
+	entityRepo, err := store.NewEntityRepository(pgClient)
 	if err != nil {
 		return fmt.Errorf("failed to create entity repository: %w", err)
 	}
-	edgeRepo, err := postgres.NewEdgeRepository(pgClient)
+	edgeRepo, err := store.NewEdgeRepository(pgClient)
 	if err != nil {
 		return fmt.Errorf("failed to create edge repository: %w", err)
 	}
-	entitySearchRepo, err := postgres.NewEntitySearchRepository(pgClient)
+	entitySearchRepo, err := store.NewEntitySearchRepository(pgClient)
 	if err != nil {
 		return fmt.Errorf("failed to create entity search repository: %w", err)
 	}
 	entityService := entity.NewService(entityRepo, edgeRepo, entitySearchRepo)
 
 	// init document system
-	docRepo, err := postgres.NewDocumentRepository(pgClient)
+	docRepo, err := store.NewDocumentRepository(pgClient)
 	if err != nil {
 		return fmt.Errorf("failed to create document repository: %w", err)
 	}
@@ -112,7 +112,7 @@ func Start(ctx context.Context, cfg *config.Config, version string) error {
 		}
 		slog.Info("embedding pipeline enabled", "provider", provider.Name())
 
-		embeddingRepo, err := postgres.NewEmbeddingRepository(pgClient)
+		embeddingRepo, err := store.NewEmbeddingRepository(pgClient)
 		if err != nil {
 			return fmt.Errorf("failed to create embedding repository: %w", err)
 		}
@@ -173,7 +173,7 @@ func Migrate(ctx context.Context, cfg *config.Config, version string) error {
 	}
 
 	// create default namespace
-	nsService := namespace.NewService(postgres.NewNamespaceRepository(pgClient), nil)
+	nsService := namespace.NewService(store.NewNamespaceRepository(pgClient), nil)
 	if _, err = nsService.GetByID(ctx, namespace.DefaultNamespace.ID); errors.Is(err, namespace.ErrNotFound) {
 		if _, err := nsService.MigrateDefault(ctx); err != nil {
 			return fmt.Errorf("problem with migration %w", err)
@@ -204,8 +204,8 @@ func MigrateDown(ctx context.Context, cfg *config.Config, version string) error 
 	return nil
 }
 
-func initPostgres(cfg postgres.Config) (*postgres.Client, error) {
-	pgClient, err := postgres.NewClient(cfg)
+func initPostgres(cfg store.Config) (*store.Client, error) {
+	pgClient, err := store.NewClient(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("error creating postgres client: %w", err)
 	}
