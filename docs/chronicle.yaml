@@ -1,0 +1,23 @@
+title: Compass
+description: Context engine for organizational metadata
+
+theme:
+  name: default
+
+navigation:
+  links:
+    - label: GitHub
+      href: https://github.com/raystack/compass
+
+search:
+  enabled: true
+  placeholder: Search docs...
+
+llms:
+  enabled: true
+
+footer:
+  copyright: "Raystack"
+  links:
+    - label: GitHub
+      href: https://github.com/raystack/compass

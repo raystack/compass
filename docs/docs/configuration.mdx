@@ -1,3 +1,9 @@
+---
+title: Configuration
+description: Configure the Compass server and CLI client.
+order: 3
+---
+
 # Configuration
 
 Compass binary contains both the CLI client and the server. Each has its own configuration in order to run. Server configuration contains information such as database credentials, log severity, search backend settings, etc. while CLI client configuration only has configuration about which server to connect.
@@ -34,7 +40,7 @@ Set up the Postgres database (with pgvector and pg_trgm extensions) and provide 
 
 Following is a sample server configuration yaml:
 
-```yaml title="compass.yaml"
+```yaml
 log_level: info # debug|info|warning|error|fatal|trace|panic - default: info
 
 db:
@@ -58,9 +64,9 @@ service:
 
 All the server configurations can be passed as environment variables using underscore \_ as the delimiter between nested keys.
 
-See [configuration reference](./reference/configuration.md) for the list of all the configuration keys.
+See [configuration reference](./reference/configuration) for the list of all the configuration keys.
 
-```sh title=".env"
+```sh
 LOG_LEVEL=info
 DB_HOST=localhost
 DB_PORT=5432
@@ -184,7 +190,7 @@ The following table lists the configurable parameters of the Compass chart and t
 
 See full helm values guide [here](https://github.com/raystack/charts/tree/main/stable/compass#values)
 
-```yaml title="values.yaml"
+```yaml
 app:
   image:
     repository: raystack/compass
