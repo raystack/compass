@@ -109,6 +109,36 @@ Alias: `s`
     --down   Rollback migration one step
 ```
 
+## `compass document`
+
+Alias: `documents`, `doc`, `docs`
+
+| Command | Description |
+|---------|-------------|
+| `document list` | List documents |
+| `document view <id>` | View document by ID |
+| `document upsert` | Create or update a document |
+| `document delete <id>` | Delete a document |
+| `document entity <urn>` | List documents for an entity |
+
+### `document list [flags]`
+
+```
+    --entity-urn string   Filter by entity URN
+    --source string       Filter by source
+```
+
+### `document upsert [flags]`
+
+```
+    --entity-urn string   Entity URN (required)
+    --title string        Document title (required)
+    --body string         Document body (required)
+    --format string       Format: markdown, plaintext
+    --source string       Source system (e.g., confluence, github)
+    --source-id string    ID in source system
+```
+
 ## `compass embed`
 
 Backfill embeddings for existing data.

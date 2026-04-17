@@ -57,6 +57,7 @@ func New(cliConfig *config.Config) *cobra.Command {
 		configCommand(cliConfig),
 		namespacesCommand(cliConfig),
 		entitiesCommand(cliConfig),
+		documentsCommand(cliConfig),
 		embedCommand(cliConfig),
 		versionCmd(),
 	)
