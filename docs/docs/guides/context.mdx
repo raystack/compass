@@ -64,4 +64,4 @@ With depth 2, it would also include any entities connected to the Kafka Topic an
 
 ## Impact Analysis
 
-`impact` is the downstream-only counterpart to `get_context` — it answers "if I change this, what breaks?" by tracing edges in one direction. Same depth mechanics, same cycle detection, but only follows downstream relationships. Available as `entity impact` in the CLI, `GetEntityImpact` in the API, and `impact` in MCP.
+`impact` answers "if I change this, what breaks?" by tracing edges downstream from a root entity. Same depth mechanics and cycle detection as `get_context`, but follows relationships in one direction to map the blast radius. Available as `entity impact` in the CLI, `GetEntityImpact` in the API, and `impact` in MCP.

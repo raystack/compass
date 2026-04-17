@@ -1,28 +1,30 @@
 ---
 title: Introduction
-description: Compass is a context engine that builds a knowledge graph of your organization's metadata for humans and AI agents.
+description: Compass is a context engine — a temporal knowledge graph queryable by engineers and AI agents.
 order: 1
 ---
 
 # Introduction
 
-Compass is a context engine that builds a knowledge graph of your organization's metadata, capturing entities, relationships, and lineage across systems and time, making it discoverable and queryable for both humans and AI agents.
+Compass is a context engine that builds a temporal knowledge graph of your organization — entities, relationships, and documents across every system — queryable by humans and AI agents alike. Search it. Traverse it. Reason over it.
 
 ## The Problem
 
-Organizational knowledge is fragmented. The same logical entity appears across multiple systems with different names, schemas, and levels of detail. Relationships live in people's heads, scattered across wikis, chat threads, and tribal knowledge. When someone needs context, they spend hours stitching it together. When AI agents need context, they have nowhere to look.
+Organizations build complex systems — hundreds of services, pipelines, models, devices, and operations — all deeply interdependent. The knowledge about how these things connect, why they exist, and what depends on what lives in people's heads, scattered docs, and tribal memory.
 
-Compass solves this by acting as the resolution and serving layer for organizational metadata. It takes raw observations from collection systems like [Meteor](https://github.com/raystack/meteor), resolves them into unified entities, builds a graph of their relationships, and makes everything searchable and traversable.
+Every day, engineers waste hours assembling context manually. AI agents hallucinate because they have no grounded knowledge to reason over. Changes break things nobody predicted. The missing layer is context.
+
+Compass is that layer. It takes raw observations from collection systems like [Meteor](https://github.com/raystack/meteor), resolves them into unified entities, builds a temporal graph of their relationships, and makes everything searchable and traversable — by humans and agents.
 
 ## Key Features
 
+- **AI-Native** -- Composable MCP tools let AI agents search, traverse, assess impact, and read documents. Works with any MCP-compatible client.
 - **Knowledge Graph** -- Typed, directed, temporal relationships between entities including lineage, ownership, documentation, and custom edge types.
+- **Context Assembly** -- Multi-hop bidirectional traversal builds a subgraph around any entity — the full picture in one call.
+- **Impact Analysis** -- Blast radius analysis traces what depends on what and what breaks when something changes.
 - **Hybrid Search** -- Keyword precision combined with semantic similarity using Postgres-native full-text search and pgvector embeddings.
-- **Context Assembly** -- Multi-hop bidirectional traversal builds a subgraph around any entity, assembling the full picture.
-- **Impact Analysis** -- Downstream blast radius analysis traces what breaks when something changes.
-- **Documents** -- Attach runbooks, decisions, and annotations to entities, indexed for semantic search.
-- **MCP Server** -- AI agents query the graph via Model Context Protocol. Works with Claude Code, Cursor, and Windsurf.
-- **Open Type System** -- Any entity type, any edge type, any properties. Compass doesn't prescribe your domain model.
+- **Documents** -- Attach any document to entities — runbooks, decisions, postmortems, design docs — all indexed for semantic search.
+- **Open Type System** -- Any entity type, any edge type, any properties. Hardware, software, operations, people — anything fits.
 
 ## Interfaces
 

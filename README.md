@@ -6,17 +6,17 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)
 [![Version](https://img.shields.io/github/v/release/raystack/compass?logo=semantic-release)](Version)
 
-Compass is a context engine that builds a knowledge graph of your organization's metadata, capturing entities, relationships, and lineage across systems and time, making it discoverable and queryable for both humans and AI agents.
+Compass is a context engine that builds a temporal knowledge graph of your organization — entities, relationships, and documents across every system — queryable by humans and AI agents alike. Search it. Traverse it. Reason over it.
 
 ## Key Features
 
+- **AI-Native** -- Composable MCP tools let AI agents search, traverse, assess impact, and read documents over your organizational graph.
 - **Knowledge Graph** -- Typed, directed, temporal relationships between entities including lineage, ownership, and custom edge types.
+- **Context Assembly** -- Multi-hop bidirectional traversal builds a subgraph around any entity — the full picture in one call.
+- **Impact Analysis** -- Blast radius analysis traces what depends on what and what breaks when something changes.
 - **Hybrid Search** -- Keyword precision with semantic similarity using Postgres-native full-text search and pgvector embeddings.
-- **Context Assembly** -- Multi-hop bidirectional traversal builds a subgraph around any entity.
-- **Impact Analysis** -- Downstream blast radius analysis traces what breaks when something changes.
-- **Documents** -- Attach runbooks, decisions, and annotations to entities, indexed for semantic search.
-- **MCP Server** -- AI agents query the graph via Model Context Protocol.
-- **Open Type System** -- Any entity type, any edge type, any properties.
+- **Documents** -- Attach any document to entities — runbooks, decisions, postmortems, design docs — all indexed for semantic search.
+- **Open Type System** -- Any entity type, any edge type, any properties. Hardware, software, operations, people — anything fits.
 
 ## Documentation
 
