@@ -13,7 +13,7 @@ DROP INDEX IF EXISTS idx_embeddings_vector;
 ALTER TABLE embeddings ALTER COLUMN embedding TYPE vector(768);
 CREATE INDEX idx_embeddings_vector ON embeddings
     USING hnsw (embedding vector_cosine_ops)
-    WITH (m = 16, ef_construction = 64);
+    WITH (m = 32, ef_construction = 256);
 
 -- Add content tracking columns
 ALTER TABLE embeddings ADD COLUMN content_id uuid;

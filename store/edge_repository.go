@@ -83,24 +83,26 @@ func (r *EdgeRepository) GetBidirectional(ctx context.Context, ns *namespace.Nam
 	}
 
 	query := `
-		WITH RECURSIVE graph(source_urn, target_urn, type, properties, depth, path, frontier) AS (
-			SELECT source_urn, target_urn, type, properties, 1, ARRAY[source_urn], target_urn
+		WITH RECURSIVE seed AS (
+			SELECT source_urn, target_urn, type, properties, target_urn AS frontier
 			FROM edges
 			WHERE namespace_id = $1 AND source_urn = $2 AND valid_to IS NULL
-		UNION ALL
-			SELECT source_urn, target_urn, type, properties, 1, ARRAY[target_urn], source_urn
+			UNION ALL
+			SELECT source_urn, target_urn, type, properties, source_urn AS frontier
 			FROM edges
 			WHERE namespace_id = $1 AND target_urn = $2 AND valid_to IS NULL
+		),
+		graph(source_urn, target_urn, type, properties, depth, path, frontier) AS (
+			SELECT source_urn, target_urn, type, properties, 1, ARRAY[source_urn, target_urn], frontier
+			FROM seed
 		UNION ALL
-			SELECT e.source_urn, e.target_urn, e.type, e.properties, g.depth + 1, g.path || g.frontier, e.target_urn
+			SELECT e.source_urn, e.target_urn, e.type, e.properties, g.depth + 1,
+				g.path || e.target_urn || e.source_urn,
+				CASE WHEN e.source_urn = g.frontier THEN e.target_urn ELSE e.source_urn END
 			FROM edges e
-			JOIN graph g ON e.source_urn = g.frontier
-			WHERE e.target_urn <> ALL(g.path) AND e.valid_to IS NULL AND g.depth < $3
-		UNION ALL
-			SELECT e.source_urn, e.target_urn, e.type, e.properties, g.depth + 1, g.path || g.frontier, e.source_urn
-			FROM edges e
-			JOIN graph g ON e.target_urn = g.frontier
-			WHERE e.source_urn <> ALL(g.path) AND e.valid_to IS NULL AND g.depth < $3
+			JOIN graph g ON e.source_urn = g.frontier OR e.target_urn = g.frontier
+			WHERE CASE WHEN e.source_urn = g.frontier THEN e.target_urn ELSE e.source_urn END <> ALL(g.path)
+				AND e.valid_to IS NULL AND g.depth < $3
 		)
 		SELECT DISTINCT source_urn, target_urn, type, properties FROM graph
 		LIMIT 1000`
@@ -149,8 +151,8 @@ func (r *EdgeRepository) traverse(ctx context.Context, ns *namespace.Namespace, 
 			JOIN graph g ON e.%s = g.%s
 			WHERE e.%s <> ALL(g.path) AND e.valid_to IS NULL AND g.depth < $3
 		)
-		SELECT source_urn, target_urn, type, properties FROM graph`,
-		seedCol, seedCol, seedCol, joinCol, joinCol, seedCol)
+		SELECT DISTINCT source_urn, target_urn, type, properties FROM graph`,
+		seedCol, seedCol, seedCol, seedCol, joinCol, seedCol)
 
 	var models []edgeModel
 	if err := r.client.SelectContext(ctx, &models, query, ns.ID, urn, depth); err != nil {

@@ -116,7 +116,7 @@ CREATE TABLE chunks (
 
 CREATE INDEX chunks_embedding_idx ON chunks
     USING hnsw (embedding vector_cosine_ops)
-    WITH (m = 16, ef_construction = 64);
+    WITH (m = 32, ef_construction = 256);
 CREATE INDEX idx_chunks_entity_urn ON chunks(entity_urn);
 CREATE INDEX idx_chunks_namespace ON chunks(namespace_id);
 
