@@ -41,6 +41,21 @@ Vector embeddings are stored in an embeddings table with HNSW indexes for cosine
 
 Semantic search finds conceptually related entities even when exact terms don't overlap.
 
+## Chunking
+
+Large documents can't be embedded as a single vector — detail is lost and token limits are exceeded. Compass chunks content before embedding:
+
+**Entities** are serialized into a single text block (name, type, URN, source, description, properties) and embedded as one chunk. Most entities fit within the 512-token default.
+
+**Documents** go through a multi-step split:
+
+1. **Structural split** — Split on markdown headings (h1-h4). Each section becomes a candidate chunk.
+2. **Size check** — Sections under the token limit (default 512) become one chunk. Oversized sections are split further on paragraph boundaries.
+3. **Contextual prefix** — Each chunk is prefixed with breadcrumb context (e.g., `Document: ADCS Recovery > Section: Recovery Steps`). This is the single biggest quality improvement — a chunk about "verify mode via HK telemetry" is meaningless alone but specific with context.
+4. **Overlap** — Adjacent chunks share ~50 tokens (configurable) to avoid losing information at boundaries.
+
+Chunks are an indexing mechanism, not knowledge. They're stored separately from entities and documents, linked by URN, and are fully rebuildable.
+
 ## Hybrid Ranking (RRF)
 
 Reciprocal Rank Fusion combines keyword and semantic results:

@@ -43,6 +43,13 @@ service:
 embedding:
   enabled: false
   provider: ollama        # ollama or openai
+  ollama:
+    host: http://localhost:11434
+    model: nomic-embed-text
+  openai:
+    api_key: ""           # required when provider is openai
+    model: text-embedding-3-small
+    base_url: https://api.openai.com
   workers: 2
   queue_size: 1000
   max_tokens: 512
@@ -149,11 +156,16 @@ helm install compass -f values.yaml raystack/compass
 | Key | Default | Description |
 |-----|---------|-------------|
 | `EMBEDDING_ENABLED` | `false` | Enable embedding pipeline |
-| `EMBEDDING_PROVIDER` | -- | `ollama` or `openai` |
+| `EMBEDDING_PROVIDER` | `ollama` | `ollama` or `openai` |
 | `EMBEDDING_WORKERS` | `2` | Worker pool size |
 | `EMBEDDING_QUEUE_SIZE` | `1000` | Embedding queue capacity |
 | `EMBEDDING_MAX_TOKENS` | `512` | Max tokens per chunk |
 | `EMBEDDING_OVERLAP` | `50` | Token overlap between chunks |
+| `EMBEDDING_OLLAMA_HOST` | `http://localhost:11434` | Ollama server URL |
+| `EMBEDDING_OLLAMA_MODEL` | `nomic-embed-text` | Ollama embedding model |
+| `EMBEDDING_OPENAI_API_KEY` | -- | OpenAI API key (required for openai provider) |
+| `EMBEDDING_OPENAI_MODEL` | `text-embedding-3-small` | OpenAI embedding model |
+| `EMBEDDING_OPENAI_BASE_URL` | `https://api.openai.com` | OpenAI API base URL |
 
 ### Telemetry
 
