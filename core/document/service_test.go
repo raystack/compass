@@ -3,6 +3,7 @@ package document
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"testing"
 	"time"
 
@@ -18,6 +19,15 @@ func newMockRepo() *mockRepo {
 }
 
 func (m *mockRepo) Upsert(_ context.Context, _ *namespace.Namespace, doc *Document) (string, error) {
+	if doc.EntityURN == "" {
+		return "", fmt.Errorf("entity_urn is required")
+	}
+	if doc.Title == "" {
+		return "", fmt.Errorf("title is required")
+	}
+	if doc.Body == "" {
+		return "", fmt.Errorf("body is required")
+	}
 	id := doc.EntityURN + "/" + doc.Title
 	doc.ID = id
 	doc.CreatedAt = time.Now()
@@ -134,5 +144,89 @@ func TestService_Delete(t *testing.T) {
 	_, err := svc.GetByID(ctx, id)
 	if err == nil {
 		t.Error("expected error after delete, got nil")
+	}
+}
+
+func TestService_GetAll(t *testing.T) {
+	svc := NewService(newMockRepo())
+	ctx := context.Background()
+	ns := namespace.DefaultNamespace
+
+	_, _ = svc.Upsert(ctx, ns, &Document{EntityURN: "urn:table:a", Title: "Doc A", Body: "body a"})
+	_, _ = svc.Upsert(ctx, ns, &Document{EntityURN: "urn:table:b", Title: "Doc B", Body: "body b"})
+	_, _ = svc.Upsert(ctx, ns, &Document{EntityURN: "urn:table:c", Title: "Doc C", Body: "body c"})
+
+	docs, err := svc.GetAll(ctx, ns, Filter{})
+	if err != nil {
+		t.Fatalf("GetAll failed: %v", err)
+	}
+	if len(docs) != 3 {
+		t.Errorf("expected 3 documents, got %d", len(docs))
+	}
+}
+
+func TestService_DeleteByEntityURN(t *testing.T) {
+	svc := NewService(newMockRepo())
+	ctx := context.Background()
+	ns := namespace.DefaultNamespace
+
+	_, _ = svc.Upsert(ctx, ns, &Document{EntityURN: "urn:table:orders", Title: "Runbook", Body: "content"})
+	_, _ = svc.Upsert(ctx, ns, &Document{EntityURN: "urn:table:orders", Title: "Schema", Body: "content"})
+	_, _ = svc.Upsert(ctx, ns, &Document{EntityURN: "urn:table:users", Title: "Users Doc", Body: "content"})
+
+	err := svc.DeleteByEntityURN(ctx, ns, "urn:table:orders")
+	if err != nil {
+		t.Fatalf("DeleteByEntityURN failed: %v", err)
+	}
+
+	// orders docs should be gone
+	docs, err := svc.GetByEntityURN(ctx, ns, "urn:table:orders")
+	if err != nil {
+		t.Fatalf("GetByEntityURN failed: %v", err)
+	}
+	if len(docs) != 0 {
+		t.Errorf("expected 0 documents for orders, got %d", len(docs))
+	}
+
+	// users doc should remain
+	docs, err = svc.GetByEntityURN(ctx, ns, "urn:table:users")
+	if err != nil {
+		t.Fatalf("GetByEntityURN failed: %v", err)
+	}
+	if len(docs) != 1 {
+		t.Errorf("expected 1 document for users, got %d", len(docs))
+	}
+}
+
+func TestService_Upsert_Validation(t *testing.T) {
+	svc := NewService(newMockRepo())
+	ctx := context.Background()
+	ns := namespace.DefaultNamespace
+
+	tests := []struct {
+		name string
+		doc  *Document
+	}{
+		{
+			name: "missing entity_urn",
+			doc:  &Document{Title: "Some Title", Body: "some body"},
+		},
+		{
+			name: "missing title",
+			doc:  &Document{EntityURN: "urn:table:x", Body: "some body"},
+		},
+		{
+			name: "missing body",
+			doc:  &Document{EntityURN: "urn:table:x", Title: "Some Title"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := svc.Upsert(ctx, ns, tt.doc)
+			if err == nil {
+				t.Errorf("expected error for %s, got nil", tt.name)
+			}
+		})
 	}
 }

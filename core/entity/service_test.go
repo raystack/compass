@@ -168,7 +168,9 @@ func TestService_GetTypes(t *testing.T) {
 
 // mockEdgeRepo is a simple in-memory edge repository for testing.
 type mockEdgeRepo struct {
-	edges []Edge
+	edges               []Edge
+	downstreamEdges     []Edge
+	lastDownstreamDepth int
 }
 
 func (m *mockEdgeRepo) Upsert(_ context.Context, _ *namespace.Namespace, e *Edge) error {
@@ -196,8 +198,9 @@ func (m *mockEdgeRepo) GetByTarget(_ context.Context, _ *namespace.Namespace, ur
 	return result, nil
 }
 
-func (m *mockEdgeRepo) GetDownstream(_ context.Context, _ *namespace.Namespace, _ string, _ int) ([]Edge, error) {
-	return nil, nil
+func (m *mockEdgeRepo) GetDownstream(_ context.Context, _ *namespace.Namespace, _ string, depth int) ([]Edge, error) {
+	m.lastDownstreamDepth = depth
+	return m.downstreamEdges, nil
 }
 
 func (m *mockEdgeRepo) GetUpstream(_ context.Context, _ *namespace.Namespace, _ string, _ int) ([]Edge, error) {
@@ -389,5 +392,174 @@ func TestService_Search_NilRepos(t *testing.T) {
 	}
 	if results != nil {
 		t.Errorf("expected nil results, got %v", results)
+	}
+}
+
+func TestService_GetByID(t *testing.T) {
+	repo := newMockRepo()
+	svc := NewService(repo, nil, nil)
+	ctx := context.Background()
+	ns := namespace.DefaultNamespace
+
+	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:table:orders", Type: TypeTable, Name: "orders", Source: "bigquery"})
+
+	got, err := svc.GetByID(ctx, "urn:table:orders")
+	if err != nil {
+		t.Fatalf("GetByID failed: %v", err)
+	}
+	if got.Name != "orders" {
+		t.Errorf("expected name 'orders', got %q", got.Name)
+	}
+	if got.Source != "bigquery" {
+		t.Errorf("expected source 'bigquery', got %q", got.Source)
+	}
+
+	// non-existent ID should error
+	_, err = svc.GetByID(ctx, "nonexistent")
+	if err == nil {
+		t.Error("expected error for non-existent ID, got nil")
+	}
+}
+
+func TestService_UpsertWithEdges(t *testing.T) {
+	repo := newMockRepo()
+	edges := &mockEdgeRepo{}
+	svc := NewService(repo, edges, nil)
+	ctx := context.Background()
+	ns := namespace.DefaultNamespace
+
+	ent := &Entity{URN: "urn:table:main", Type: TypeTable, Name: "main"}
+	upstreams := []string{"urn:table:source1", "urn:table:source2"}
+	downstreams := []string{"urn:table:sink1"}
+
+	id, err := svc.UpsertWithEdges(ctx, ns, ent, upstreams, downstreams)
+	if err != nil {
+		t.Fatalf("UpsertWithEdges failed: %v", err)
+	}
+	if id == "" {
+		t.Fatal("expected non-empty ID")
+	}
+
+	// Should have 2 upstream edges + 1 downstream edge = 3 total
+	if len(edges.edges) != 3 {
+		t.Fatalf("expected 3 edges, got %d", len(edges.edges))
+	}
+
+	// Check upstream edges: source -> main
+	if edges.edges[0].SourceURN != "urn:table:source1" || edges.edges[0].TargetURN != "urn:table:main" {
+		t.Errorf("upstream edge 0: got source=%q target=%q", edges.edges[0].SourceURN, edges.edges[0].TargetURN)
+	}
+	if edges.edges[1].SourceURN != "urn:table:source2" || edges.edges[1].TargetURN != "urn:table:main" {
+		t.Errorf("upstream edge 1: got source=%q target=%q", edges.edges[1].SourceURN, edges.edges[1].TargetURN)
+	}
+
+	// Check downstream edge: main -> sink
+	if edges.edges[2].SourceURN != "urn:table:main" || edges.edges[2].TargetURN != "urn:table:sink1" {
+		t.Errorf("downstream edge: got source=%q target=%q", edges.edges[2].SourceURN, edges.edges[2].TargetURN)
+	}
+
+	// All edges should be lineage type
+	for i, e := range edges.edges {
+		if e.Type != "lineage" {
+			t.Errorf("edge %d: expected type 'lineage', got %q", i, e.Type)
+		}
+	}
+}
+
+func TestService_GetImpact(t *testing.T) {
+	repo := newMockRepo()
+	edges := &mockEdgeRepo{
+		downstreamEdges: []Edge{
+			{SourceURN: "urn:a", TargetURN: "urn:b", Type: "lineage"},
+			{SourceURN: "urn:b", TargetURN: "urn:c", Type: "lineage"},
+		},
+	}
+	svc := NewService(repo, edges, nil)
+	ctx := context.Background()
+	ns := namespace.DefaultNamespace
+
+	// default depth (0 -> 3)
+	result, err := svc.GetImpact(ctx, ns, "urn:a", 0)
+	if err != nil {
+		t.Fatalf("GetImpact failed: %v", err)
+	}
+	if len(result) != 2 {
+		t.Errorf("expected 2 downstream edges, got %d", len(result))
+	}
+	if edges.lastDownstreamDepth != 3 {
+		t.Errorf("expected default depth 3, got %d", edges.lastDownstreamDepth)
+	}
+
+	// custom depth
+	_, err = svc.GetImpact(ctx, ns, "urn:a", 5)
+	if err != nil {
+		t.Fatalf("GetImpact with custom depth failed: %v", err)
+	}
+	if edges.lastDownstreamDepth != 5 {
+		t.Errorf("expected depth 5, got %d", edges.lastDownstreamDepth)
+	}
+}
+
+func TestService_GetImpact_NilEdges(t *testing.T) {
+	svc := NewService(newMockRepo(), nil, nil)
+	ctx := context.Background()
+	ns := namespace.DefaultNamespace
+
+	result, err := svc.GetImpact(ctx, ns, "urn:a", 2)
+	if err != nil {
+		t.Fatalf("GetImpact with nil edges should not error: %v", err)
+	}
+	if result != nil {
+		t.Errorf("expected nil result, got %v", result)
+	}
+}
+
+func TestService_Suggest_NilSearchRepo(t *testing.T) {
+	svc := NewService(newMockRepo(), nil, nil)
+	ctx := context.Background()
+	ns := namespace.DefaultNamespace
+
+	result, err := svc.Suggest(ctx, ns, "test", 10)
+	if err != nil {
+		t.Fatalf("Suggest with nil search repo should not error: %v", err)
+	}
+	if result != nil {
+		t.Errorf("expected nil result, got %v", result)
+	}
+}
+
+// mockSearchRepo is a simple in-memory search repository for testing.
+type mockSearchRepo struct {
+	results     []SearchResult
+	suggestions []string
+}
+
+func (m *mockSearchRepo) Search(_ context.Context, _ SearchConfig) ([]SearchResult, error) {
+	return m.results, nil
+}
+
+func (m *mockSearchRepo) Suggest(_ context.Context, _ *namespace.Namespace, _ string, _ int) ([]string, error) {
+	return m.suggestions, nil
+}
+
+func TestService_Search_WithKeyword(t *testing.T) {
+	search := &mockSearchRepo{
+		results: []SearchResult{
+			{URN: "urn:table:orders", Name: "orders", Type: "table"},
+			{URN: "urn:table:users", Name: "users", Type: "table"},
+		},
+	}
+	svc := NewService(newMockRepo(), nil, search)
+	ctx := context.Background()
+
+	results, err := svc.Search(ctx, SearchConfig{Text: "orders", Mode: SearchModeKeyword})
+	if err != nil {
+		t.Fatalf("Search failed: %v", err)
+	}
+	if len(results) != 2 {
+		t.Fatalf("expected 2 results, got %d", len(results))
+	}
+	if results[0].URN != "urn:table:orders" {
+		t.Errorf("expected first result URN 'urn:table:orders', got %q", results[0].URN)
 	}
 }
