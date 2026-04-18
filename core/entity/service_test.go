@@ -267,8 +267,8 @@ func TestService_GetContext_DefaultDepth(t *testing.T) {
 	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:b", Type: TypeTable, Name: "b"})
 	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:c", Type: TypeTable, Name: "c"})
 	edges.edges = []Edge{
-		{SourceURN: "urn:a", TargetURN: "urn:b", Type: "lineage"},
-		{SourceURN: "urn:b", TargetURN: "urn:c", Type: "lineage"},
+		{SourceURN: "urn:a", TargetURN: "urn:b", Type: "derived_from"},
+		{SourceURN: "urn:b", TargetURN: "urn:c", Type: "derived_from"},
 	}
 
 	// depth=0 should default to 1 (only direct neighbors of B)
@@ -297,9 +297,9 @@ func TestService_GetContext_MultiHop(t *testing.T) {
 	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:c", Type: TypeTable, Name: "c"})
 	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:d", Type: TypeTable, Name: "d"})
 	edges.edges = []Edge{
-		{SourceURN: "urn:a", TargetURN: "urn:b", Type: "lineage"},
-		{SourceURN: "urn:b", TargetURN: "urn:c", Type: "lineage"},
-		{SourceURN: "urn:c", TargetURN: "urn:d", Type: "lineage"},
+		{SourceURN: "urn:a", TargetURN: "urn:b", Type: "derived_from"},
+		{SourceURN: "urn:b", TargetURN: "urn:c", Type: "derived_from"},
+		{SourceURN: "urn:c", TargetURN: "urn:d", Type: "derived_from"},
 	}
 
 	// depth=2 from B should reach A, C, and D
@@ -366,9 +366,9 @@ func TestService_GetContext_CycleHandling(t *testing.T) {
 	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:b", Type: TypeTable, Name: "b"})
 	_, _ = svc.Upsert(ctx, ns, &Entity{URN: "urn:c", Type: TypeTable, Name: "c"})
 	edges.edges = []Edge{
-		{SourceURN: "urn:a", TargetURN: "urn:b", Type: "lineage"},
-		{SourceURN: "urn:b", TargetURN: "urn:c", Type: "lineage"},
-		{SourceURN: "urn:c", TargetURN: "urn:a", Type: "lineage"},
+		{SourceURN: "urn:a", TargetURN: "urn:b", Type: "derived_from"},
+		{SourceURN: "urn:b", TargetURN: "urn:c", Type: "derived_from"},
+		{SourceURN: "urn:c", TargetURN: "urn:a", Type: "derived_from"},
 	}
 
 	// depth=3 should not infinite loop
@@ -421,57 +421,12 @@ func TestService_GetByID(t *testing.T) {
 	}
 }
 
-func TestService_UpsertWithEdges(t *testing.T) {
-	repo := newMockRepo()
-	edges := &mockEdgeRepo{}
-	svc := NewService(repo, edges, nil)
-	ctx := context.Background()
-	ns := namespace.DefaultNamespace
-
-	ent := &Entity{URN: "urn:table:main", Type: TypeTable, Name: "main"}
-	upstreams := []string{"urn:table:source1", "urn:table:source2"}
-	downstreams := []string{"urn:table:sink1"}
-
-	id, err := svc.UpsertWithEdges(ctx, ns, ent, upstreams, downstreams)
-	if err != nil {
-		t.Fatalf("UpsertWithEdges failed: %v", err)
-	}
-	if id == "" {
-		t.Fatal("expected non-empty ID")
-	}
-
-	// Should have 2 upstream edges + 1 downstream edge = 3 total
-	if len(edges.edges) != 3 {
-		t.Fatalf("expected 3 edges, got %d", len(edges.edges))
-	}
-
-	// Check upstream edges: source -> main
-	if edges.edges[0].SourceURN != "urn:table:source1" || edges.edges[0].TargetURN != "urn:table:main" {
-		t.Errorf("upstream edge 0: got source=%q target=%q", edges.edges[0].SourceURN, edges.edges[0].TargetURN)
-	}
-	if edges.edges[1].SourceURN != "urn:table:source2" || edges.edges[1].TargetURN != "urn:table:main" {
-		t.Errorf("upstream edge 1: got source=%q target=%q", edges.edges[1].SourceURN, edges.edges[1].TargetURN)
-	}
-
-	// Check downstream edge: main -> sink
-	if edges.edges[2].SourceURN != "urn:table:main" || edges.edges[2].TargetURN != "urn:table:sink1" {
-		t.Errorf("downstream edge: got source=%q target=%q", edges.edges[2].SourceURN, edges.edges[2].TargetURN)
-	}
-
-	// All edges should be lineage type
-	for i, e := range edges.edges {
-		if e.Type != "lineage" {
-			t.Errorf("edge %d: expected type 'lineage', got %q", i, e.Type)
-		}
-	}
-}
-
 func TestService_GetImpact(t *testing.T) {
 	repo := newMockRepo()
 	edges := &mockEdgeRepo{
 		downstreamEdges: []Edge{
-			{SourceURN: "urn:a", TargetURN: "urn:b", Type: "lineage"},
-			{SourceURN: "urn:b", TargetURN: "urn:c", Type: "lineage"},
+			{SourceURN: "urn:a", TargetURN: "urn:b", Type: "derived_from"},
+			{SourceURN: "urn:b", TargetURN: "urn:c", Type: "derived_from"},
 		},
 	}
 	svc := NewService(repo, edges, nil)

@@ -55,24 +55,6 @@ func (s *Service) Upsert(ctx context.Context, ns *namespace.Namespace, ent *Enti
 	return id, nil
 }
 
-func (s *Service) UpsertWithEdges(ctx context.Context, ns *namespace.Namespace, ent *Entity, upstreams, downstreams []string) (string, error) {
-	id, err := s.Upsert(ctx, ns, ent)
-	if err != nil {
-		return "", err
-	}
-
-	if s.edges != nil {
-		for _, us := range upstreams {
-			_ = s.edges.Upsert(ctx, ns, &Edge{SourceURN: us, TargetURN: ent.URN, Type: "lineage", Properties: map[string]interface{}{"root": ent.URN}})
-		}
-		for _, ds := range downstreams {
-			_ = s.edges.Upsert(ctx, ns, &Edge{SourceURN: ent.URN, TargetURN: ds, Type: "lineage", Properties: map[string]interface{}{"root": ent.URN}})
-		}
-	}
-
-	return id, nil
-}
-
 func (s *Service) GetByURN(ctx context.Context, ns *namespace.Namespace, urn string) (Entity, error) {
 	return s.repo.GetByURN(ctx, ns, urn)
 }
