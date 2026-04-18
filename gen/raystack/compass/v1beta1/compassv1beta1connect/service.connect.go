@@ -68,24 +68,6 @@ const (
 	// CompassServiceDeleteEdgeProcedure is the fully-qualified name of the CompassService's DeleteEdge
 	// RPC.
 	CompassServiceDeleteEdgeProcedure = "/raystack.compass.v1beta1.CompassService/DeleteEdge"
-	// CompassServiceStarEntityProcedure is the fully-qualified name of the CompassService's StarEntity
-	// RPC.
-	CompassServiceStarEntityProcedure = "/raystack.compass.v1beta1.CompassService/StarEntity"
-	// CompassServiceUnstarEntityProcedure is the fully-qualified name of the CompassService's
-	// UnstarEntity RPC.
-	CompassServiceUnstarEntityProcedure = "/raystack.compass.v1beta1.CompassService/UnstarEntity"
-	// CompassServiceGetUserStarredEntitiesProcedure is the fully-qualified name of the CompassService's
-	// GetUserStarredEntities RPC.
-	CompassServiceGetUserStarredEntitiesProcedure = "/raystack.compass.v1beta1.CompassService/GetUserStarredEntities"
-	// CompassServiceGetMyStarredEntitiesProcedure is the fully-qualified name of the CompassService's
-	// GetMyStarredEntities RPC.
-	CompassServiceGetMyStarredEntitiesProcedure = "/raystack.compass.v1beta1.CompassService/GetMyStarredEntities"
-	// CompassServiceGetMyStarredEntityProcedure is the fully-qualified name of the CompassService's
-	// GetMyStarredEntity RPC.
-	CompassServiceGetMyStarredEntityProcedure = "/raystack.compass.v1beta1.CompassService/GetMyStarredEntity"
-	// CompassServiceGetEntityStargazersProcedure is the fully-qualified name of the CompassService's
-	// GetEntityStargazers RPC.
-	CompassServiceGetEntityStargazersProcedure = "/raystack.compass.v1beta1.CompassService/GetEntityStargazers"
 	// CompassServiceCreateNamespaceProcedure is the fully-qualified name of the CompassService's
 	// CreateNamespace RPC.
 	CompassServiceCreateNamespaceProcedure = "/raystack.compass.v1beta1.CompassService/CreateNamespace"
@@ -117,13 +99,6 @@ type CompassServiceClient interface {
 	UpsertEdge(context.Context, *connect.Request[v1beta1.UpsertEdgeRequest]) (*connect.Response[v1beta1.UpsertEdgeResponse], error)
 	GetEdges(context.Context, *connect.Request[v1beta1.GetEdgesRequest]) (*connect.Response[v1beta1.GetEdgesResponse], error)
 	DeleteEdge(context.Context, *connect.Request[v1beta1.DeleteEdgeRequest]) (*connect.Response[v1beta1.DeleteEdgeResponse], error)
-	// Domain: Star
-	StarEntity(context.Context, *connect.Request[v1beta1.StarEntityRequest]) (*connect.Response[v1beta1.StarEntityResponse], error)
-	UnstarEntity(context.Context, *connect.Request[v1beta1.UnstarEntityRequest]) (*connect.Response[v1beta1.UnstarEntityResponse], error)
-	GetUserStarredEntities(context.Context, *connect.Request[v1beta1.GetUserStarredEntitiesRequest]) (*connect.Response[v1beta1.GetUserStarredEntitiesResponse], error)
-	GetMyStarredEntities(context.Context, *connect.Request[v1beta1.GetMyStarredEntitiesRequest]) (*connect.Response[v1beta1.GetMyStarredEntitiesResponse], error)
-	GetMyStarredEntity(context.Context, *connect.Request[v1beta1.GetMyStarredEntityRequest]) (*connect.Response[v1beta1.GetMyStarredEntityResponse], error)
-	GetEntityStargazers(context.Context, *connect.Request[v1beta1.GetEntityStargazersRequest]) (*connect.Response[v1beta1.GetEntityStargazersResponse], error)
 	// Domain: Namespace
 	CreateNamespace(context.Context, *connect.Request[v1beta1.CreateNamespaceRequest]) (*connect.Response[v1beta1.CreateNamespaceResponse], error)
 	GetNamespace(context.Context, *connect.Request[v1beta1.GetNamespaceRequest]) (*connect.Response[v1beta1.GetNamespaceResponse], error)
@@ -214,42 +189,6 @@ func NewCompassServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(compassServiceMethods.ByName("DeleteEdge")),
 			connect.WithClientOptions(opts...),
 		),
-		starEntity: connect.NewClient[v1beta1.StarEntityRequest, v1beta1.StarEntityResponse](
-			httpClient,
-			baseURL+CompassServiceStarEntityProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("StarEntity")),
-			connect.WithClientOptions(opts...),
-		),
-		unstarEntity: connect.NewClient[v1beta1.UnstarEntityRequest, v1beta1.UnstarEntityResponse](
-			httpClient,
-			baseURL+CompassServiceUnstarEntityProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("UnstarEntity")),
-			connect.WithClientOptions(opts...),
-		),
-		getUserStarredEntities: connect.NewClient[v1beta1.GetUserStarredEntitiesRequest, v1beta1.GetUserStarredEntitiesResponse](
-			httpClient,
-			baseURL+CompassServiceGetUserStarredEntitiesProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetUserStarredEntities")),
-			connect.WithClientOptions(opts...),
-		),
-		getMyStarredEntities: connect.NewClient[v1beta1.GetMyStarredEntitiesRequest, v1beta1.GetMyStarredEntitiesResponse](
-			httpClient,
-			baseURL+CompassServiceGetMyStarredEntitiesProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetMyStarredEntities")),
-			connect.WithClientOptions(opts...),
-		),
-		getMyStarredEntity: connect.NewClient[v1beta1.GetMyStarredEntityRequest, v1beta1.GetMyStarredEntityResponse](
-			httpClient,
-			baseURL+CompassServiceGetMyStarredEntityProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetMyStarredEntity")),
-			connect.WithClientOptions(opts...),
-		),
-		getEntityStargazers: connect.NewClient[v1beta1.GetEntityStargazersRequest, v1beta1.GetEntityStargazersResponse](
-			httpClient,
-			baseURL+CompassServiceGetEntityStargazersProcedure,
-			connect.WithSchema(compassServiceMethods.ByName("GetEntityStargazers")),
-			connect.WithClientOptions(opts...),
-		),
 		createNamespace: connect.NewClient[v1beta1.CreateNamespaceRequest, v1beta1.CreateNamespaceResponse](
 			httpClient,
 			baseURL+CompassServiceCreateNamespaceProcedure,
@@ -279,28 +218,22 @@ func NewCompassServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 
 // compassServiceClient implements CompassServiceClient.
 type compassServiceClient struct {
-	getAllEntities         *connect.Client[v1beta1.GetAllEntitiesRequest, v1beta1.GetAllEntitiesResponse]
-	getEntityByID          *connect.Client[v1beta1.GetEntityByIDRequest, v1beta1.GetEntityByIDResponse]
-	upsertEntity           *connect.Client[v1beta1.UpsertEntityRequest, v1beta1.UpsertEntityResponse]
-	deleteEntity           *connect.Client[v1beta1.DeleteEntityRequest, v1beta1.DeleteEntityResponse]
-	searchEntities         *connect.Client[v1beta1.SearchEntitiesRequest, v1beta1.SearchEntitiesResponse]
-	suggestEntities        *connect.Client[v1beta1.SuggestEntitiesRequest, v1beta1.SuggestEntitiesResponse]
-	getEntityTypes         *connect.Client[v1beta1.GetEntityTypesRequest, v1beta1.GetEntityTypesResponse]
-	getEntityContext       *connect.Client[v1beta1.GetEntityContextRequest, v1beta1.GetEntityContextResponse]
-	getEntityImpact        *connect.Client[v1beta1.GetEntityImpactRequest, v1beta1.GetEntityImpactResponse]
-	upsertEdge             *connect.Client[v1beta1.UpsertEdgeRequest, v1beta1.UpsertEdgeResponse]
-	getEdges               *connect.Client[v1beta1.GetEdgesRequest, v1beta1.GetEdgesResponse]
-	deleteEdge             *connect.Client[v1beta1.DeleteEdgeRequest, v1beta1.DeleteEdgeResponse]
-	starEntity             *connect.Client[v1beta1.StarEntityRequest, v1beta1.StarEntityResponse]
-	unstarEntity           *connect.Client[v1beta1.UnstarEntityRequest, v1beta1.UnstarEntityResponse]
-	getUserStarredEntities *connect.Client[v1beta1.GetUserStarredEntitiesRequest, v1beta1.GetUserStarredEntitiesResponse]
-	getMyStarredEntities   *connect.Client[v1beta1.GetMyStarredEntitiesRequest, v1beta1.GetMyStarredEntitiesResponse]
-	getMyStarredEntity     *connect.Client[v1beta1.GetMyStarredEntityRequest, v1beta1.GetMyStarredEntityResponse]
-	getEntityStargazers    *connect.Client[v1beta1.GetEntityStargazersRequest, v1beta1.GetEntityStargazersResponse]
-	createNamespace        *connect.Client[v1beta1.CreateNamespaceRequest, v1beta1.CreateNamespaceResponse]
-	getNamespace           *connect.Client[v1beta1.GetNamespaceRequest, v1beta1.GetNamespaceResponse]
-	updateNamespace        *connect.Client[v1beta1.UpdateNamespaceRequest, v1beta1.UpdateNamespaceResponse]
-	listNamespaces         *connect.Client[v1beta1.ListNamespacesRequest, v1beta1.ListNamespacesResponse]
+	getAllEntities   *connect.Client[v1beta1.GetAllEntitiesRequest, v1beta1.GetAllEntitiesResponse]
+	getEntityByID    *connect.Client[v1beta1.GetEntityByIDRequest, v1beta1.GetEntityByIDResponse]
+	upsertEntity     *connect.Client[v1beta1.UpsertEntityRequest, v1beta1.UpsertEntityResponse]
+	deleteEntity     *connect.Client[v1beta1.DeleteEntityRequest, v1beta1.DeleteEntityResponse]
+	searchEntities   *connect.Client[v1beta1.SearchEntitiesRequest, v1beta1.SearchEntitiesResponse]
+	suggestEntities  *connect.Client[v1beta1.SuggestEntitiesRequest, v1beta1.SuggestEntitiesResponse]
+	getEntityTypes   *connect.Client[v1beta1.GetEntityTypesRequest, v1beta1.GetEntityTypesResponse]
+	getEntityContext *connect.Client[v1beta1.GetEntityContextRequest, v1beta1.GetEntityContextResponse]
+	getEntityImpact  *connect.Client[v1beta1.GetEntityImpactRequest, v1beta1.GetEntityImpactResponse]
+	upsertEdge       *connect.Client[v1beta1.UpsertEdgeRequest, v1beta1.UpsertEdgeResponse]
+	getEdges         *connect.Client[v1beta1.GetEdgesRequest, v1beta1.GetEdgesResponse]
+	deleteEdge       *connect.Client[v1beta1.DeleteEdgeRequest, v1beta1.DeleteEdgeResponse]
+	createNamespace  *connect.Client[v1beta1.CreateNamespaceRequest, v1beta1.CreateNamespaceResponse]
+	getNamespace     *connect.Client[v1beta1.GetNamespaceRequest, v1beta1.GetNamespaceResponse]
+	updateNamespace  *connect.Client[v1beta1.UpdateNamespaceRequest, v1beta1.UpdateNamespaceResponse]
+	listNamespaces   *connect.Client[v1beta1.ListNamespacesRequest, v1beta1.ListNamespacesResponse]
 }
 
 // GetAllEntities calls raystack.compass.v1beta1.CompassService.GetAllEntities.
@@ -363,36 +296,6 @@ func (c *compassServiceClient) DeleteEdge(ctx context.Context, req *connect.Requ
 	return c.deleteEdge.CallUnary(ctx, req)
 }
 
-// StarEntity calls raystack.compass.v1beta1.CompassService.StarEntity.
-func (c *compassServiceClient) StarEntity(ctx context.Context, req *connect.Request[v1beta1.StarEntityRequest]) (*connect.Response[v1beta1.StarEntityResponse], error) {
-	return c.starEntity.CallUnary(ctx, req)
-}
-
-// UnstarEntity calls raystack.compass.v1beta1.CompassService.UnstarEntity.
-func (c *compassServiceClient) UnstarEntity(ctx context.Context, req *connect.Request[v1beta1.UnstarEntityRequest]) (*connect.Response[v1beta1.UnstarEntityResponse], error) {
-	return c.unstarEntity.CallUnary(ctx, req)
-}
-
-// GetUserStarredEntities calls raystack.compass.v1beta1.CompassService.GetUserStarredEntities.
-func (c *compassServiceClient) GetUserStarredEntities(ctx context.Context, req *connect.Request[v1beta1.GetUserStarredEntitiesRequest]) (*connect.Response[v1beta1.GetUserStarredEntitiesResponse], error) {
-	return c.getUserStarredEntities.CallUnary(ctx, req)
-}
-
-// GetMyStarredEntities calls raystack.compass.v1beta1.CompassService.GetMyStarredEntities.
-func (c *compassServiceClient) GetMyStarredEntities(ctx context.Context, req *connect.Request[v1beta1.GetMyStarredEntitiesRequest]) (*connect.Response[v1beta1.GetMyStarredEntitiesResponse], error) {
-	return c.getMyStarredEntities.CallUnary(ctx, req)
-}
-
-// GetMyStarredEntity calls raystack.compass.v1beta1.CompassService.GetMyStarredEntity.
-func (c *compassServiceClient) GetMyStarredEntity(ctx context.Context, req *connect.Request[v1beta1.GetMyStarredEntityRequest]) (*connect.Response[v1beta1.GetMyStarredEntityResponse], error) {
-	return c.getMyStarredEntity.CallUnary(ctx, req)
-}
-
-// GetEntityStargazers calls raystack.compass.v1beta1.CompassService.GetEntityStargazers.
-func (c *compassServiceClient) GetEntityStargazers(ctx context.Context, req *connect.Request[v1beta1.GetEntityStargazersRequest]) (*connect.Response[v1beta1.GetEntityStargazersResponse], error) {
-	return c.getEntityStargazers.CallUnary(ctx, req)
-}
-
 // CreateNamespace calls raystack.compass.v1beta1.CompassService.CreateNamespace.
 func (c *compassServiceClient) CreateNamespace(ctx context.Context, req *connect.Request[v1beta1.CreateNamespaceRequest]) (*connect.Response[v1beta1.CreateNamespaceResponse], error) {
 	return c.createNamespace.CallUnary(ctx, req)
@@ -431,13 +334,6 @@ type CompassServiceHandler interface {
 	UpsertEdge(context.Context, *connect.Request[v1beta1.UpsertEdgeRequest]) (*connect.Response[v1beta1.UpsertEdgeResponse], error)
 	GetEdges(context.Context, *connect.Request[v1beta1.GetEdgesRequest]) (*connect.Response[v1beta1.GetEdgesResponse], error)
 	DeleteEdge(context.Context, *connect.Request[v1beta1.DeleteEdgeRequest]) (*connect.Response[v1beta1.DeleteEdgeResponse], error)
-	// Domain: Star
-	StarEntity(context.Context, *connect.Request[v1beta1.StarEntityRequest]) (*connect.Response[v1beta1.StarEntityResponse], error)
-	UnstarEntity(context.Context, *connect.Request[v1beta1.UnstarEntityRequest]) (*connect.Response[v1beta1.UnstarEntityResponse], error)
-	GetUserStarredEntities(context.Context, *connect.Request[v1beta1.GetUserStarredEntitiesRequest]) (*connect.Response[v1beta1.GetUserStarredEntitiesResponse], error)
-	GetMyStarredEntities(context.Context, *connect.Request[v1beta1.GetMyStarredEntitiesRequest]) (*connect.Response[v1beta1.GetMyStarredEntitiesResponse], error)
-	GetMyStarredEntity(context.Context, *connect.Request[v1beta1.GetMyStarredEntityRequest]) (*connect.Response[v1beta1.GetMyStarredEntityResponse], error)
-	GetEntityStargazers(context.Context, *connect.Request[v1beta1.GetEntityStargazersRequest]) (*connect.Response[v1beta1.GetEntityStargazersResponse], error)
 	// Domain: Namespace
 	CreateNamespace(context.Context, *connect.Request[v1beta1.CreateNamespaceRequest]) (*connect.Response[v1beta1.CreateNamespaceResponse], error)
 	GetNamespace(context.Context, *connect.Request[v1beta1.GetNamespaceRequest]) (*connect.Response[v1beta1.GetNamespaceResponse], error)
@@ -524,42 +420,6 @@ func NewCompassServiceHandler(svc CompassServiceHandler, opts ...connect.Handler
 		connect.WithSchema(compassServiceMethods.ByName("DeleteEdge")),
 		connect.WithHandlerOptions(opts...),
 	)
-	compassServiceStarEntityHandler := connect.NewUnaryHandler(
-		CompassServiceStarEntityProcedure,
-		svc.StarEntity,
-		connect.WithSchema(compassServiceMethods.ByName("StarEntity")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceUnstarEntityHandler := connect.NewUnaryHandler(
-		CompassServiceUnstarEntityProcedure,
-		svc.UnstarEntity,
-		connect.WithSchema(compassServiceMethods.ByName("UnstarEntity")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetUserStarredEntitiesHandler := connect.NewUnaryHandler(
-		CompassServiceGetUserStarredEntitiesProcedure,
-		svc.GetUserStarredEntities,
-		connect.WithSchema(compassServiceMethods.ByName("GetUserStarredEntities")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetMyStarredEntitiesHandler := connect.NewUnaryHandler(
-		CompassServiceGetMyStarredEntitiesProcedure,
-		svc.GetMyStarredEntities,
-		connect.WithSchema(compassServiceMethods.ByName("GetMyStarredEntities")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetMyStarredEntityHandler := connect.NewUnaryHandler(
-		CompassServiceGetMyStarredEntityProcedure,
-		svc.GetMyStarredEntity,
-		connect.WithSchema(compassServiceMethods.ByName("GetMyStarredEntity")),
-		connect.WithHandlerOptions(opts...),
-	)
-	compassServiceGetEntityStargazersHandler := connect.NewUnaryHandler(
-		CompassServiceGetEntityStargazersProcedure,
-		svc.GetEntityStargazers,
-		connect.WithSchema(compassServiceMethods.ByName("GetEntityStargazers")),
-		connect.WithHandlerOptions(opts...),
-	)
 	compassServiceCreateNamespaceHandler := connect.NewUnaryHandler(
 		CompassServiceCreateNamespaceProcedure,
 		svc.CreateNamespace,
@@ -610,18 +470,6 @@ func NewCompassServiceHandler(svc CompassServiceHandler, opts ...connect.Handler
 			compassServiceGetEdgesHandler.ServeHTTP(w, r)
 		case CompassServiceDeleteEdgeProcedure:
 			compassServiceDeleteEdgeHandler.ServeHTTP(w, r)
-		case CompassServiceStarEntityProcedure:
-			compassServiceStarEntityHandler.ServeHTTP(w, r)
-		case CompassServiceUnstarEntityProcedure:
-			compassServiceUnstarEntityHandler.ServeHTTP(w, r)
-		case CompassServiceGetUserStarredEntitiesProcedure:
-			compassServiceGetUserStarredEntitiesHandler.ServeHTTP(w, r)
-		case CompassServiceGetMyStarredEntitiesProcedure:
-			compassServiceGetMyStarredEntitiesHandler.ServeHTTP(w, r)
-		case CompassServiceGetMyStarredEntityProcedure:
-			compassServiceGetMyStarredEntityHandler.ServeHTTP(w, r)
-		case CompassServiceGetEntityStargazersProcedure:
-			compassServiceGetEntityStargazersHandler.ServeHTTP(w, r)
 		case CompassServiceCreateNamespaceProcedure:
 			compassServiceCreateNamespaceHandler.ServeHTTP(w, r)
 		case CompassServiceGetNamespaceProcedure:
@@ -685,30 +533,6 @@ func (UnimplementedCompassServiceHandler) GetEdges(context.Context, *connect.Req
 
 func (UnimplementedCompassServiceHandler) DeleteEdge(context.Context, *connect.Request[v1beta1.DeleteEdgeRequest]) (*connect.Response[v1beta1.DeleteEdgeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.DeleteEdge is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) StarEntity(context.Context, *connect.Request[v1beta1.StarEntityRequest]) (*connect.Response[v1beta1.StarEntityResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.StarEntity is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) UnstarEntity(context.Context, *connect.Request[v1beta1.UnstarEntityRequest]) (*connect.Response[v1beta1.UnstarEntityResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.UnstarEntity is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetUserStarredEntities(context.Context, *connect.Request[v1beta1.GetUserStarredEntitiesRequest]) (*connect.Response[v1beta1.GetUserStarredEntitiesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetUserStarredEntities is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetMyStarredEntities(context.Context, *connect.Request[v1beta1.GetMyStarredEntitiesRequest]) (*connect.Response[v1beta1.GetMyStarredEntitiesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetMyStarredEntities is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetMyStarredEntity(context.Context, *connect.Request[v1beta1.GetMyStarredEntityRequest]) (*connect.Response[v1beta1.GetMyStarredEntityResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetMyStarredEntity is not implemented"))
-}
-
-func (UnimplementedCompassServiceHandler) GetEntityStargazers(context.Context, *connect.Request[v1beta1.GetEntityStargazersRequest]) (*connect.Response[v1beta1.GetEntityStargazersResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("raystack.compass.v1beta1.CompassService.GetEntityStargazers is not implemented"))
 }
 
 func (UnimplementedCompassServiceHandler) CreateNamespace(context.Context, *connect.Request[v1beta1.CreateNamespaceRequest]) (*connect.Response[v1beta1.CreateNamespaceResponse], error) {
