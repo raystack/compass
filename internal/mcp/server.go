@@ -8,6 +8,7 @@ import (
 	"github.com/raystack/compass/core/document"
 	"github.com/raystack/compass/core/entity"
 	"github.com/raystack/compass/core/namespace"
+	"github.com/raystack/compass/internal/middleware"
 )
 
 // EntityService defines entity operations needed by the MCP server.
@@ -24,19 +25,17 @@ type DocumentService interface {
 
 // Server is the MCP server that exposes Compass as AI-agent tools.
 type Server struct {
-	entityService  EntityService
+	entityService   EntityService
 	documentService DocumentService
-	namespace      *namespace.Namespace
-	mcpServer      *mcpserver.MCPServer
-	httpServer     *mcpserver.StreamableHTTPServer
+	mcpServer       *mcpserver.MCPServer
+	httpServer      *mcpserver.StreamableHTTPServer
 }
 
 // New creates a new MCP server.
-func New(entitySvc EntityService, docSvc DocumentService, ns *namespace.Namespace) *Server {
+func New(entitySvc EntityService, docSvc DocumentService) *Server {
 	s := &Server{
-		entityService:  entitySvc,
+		entityService:   entitySvc,
 		documentService: docSvc,
-		namespace:      ns,
 	}
 
 	mcpSrv := mcpserver.NewMCPServer(
@@ -59,4 +58,9 @@ func New(entitySvc EntityService, docSvc DocumentService, ns *namespace.Namespac
 // Handler returns an http.Handler for mounting the MCP server.
 func (s *Server) Handler() http.Handler {
 	return s.httpServer
+}
+
+// getNamespace returns the namespace from context, falling back to DefaultNamespace.
+func getNamespace(ctx context.Context) *namespace.Namespace {
+	return middleware.FetchNamespaceFromContext(ctx)
 }

@@ -2,61 +2,30 @@ package handler
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/raystack/compass/core/namespace"
-	"github.com/raystack/compass/core/user"
 )
 
 type Handler struct {
 	namespaceService NamespaceService
-	starService      StarService
-	userService      UserService
 	entityService    EntityServiceV2
 	edgeService      EdgeServiceV2
 }
 
-var (
-	errMissingUserInfo = errors.New("missing user information")
-)
-
 func New(
 	namespaceService NamespaceService,
-	starService StarService,
-	userService UserService,
 	entityService EntityServiceV2,
 	edgeService EdgeServiceV2,
 ) *Handler {
 	return &Handler{
 		namespaceService: namespaceService,
-		starService:      starService,
-		userService:      userService,
 		entityService:    entityService,
 		edgeService:      edgeService,
 	}
-}
-
-func (server *Handler) validateUserInCtx(ctx context.Context, ns *namespace.Namespace) (string, error) {
-	usr := user.FromContext(ctx)
-	userID, err := server.userService.ValidateUser(ctx, ns, usr.UUID, usr.Email)
-	if err != nil {
-		if errors.Is(err, user.ErrNoUserInformation) {
-			return "", connect.NewError(connect.CodeInvalidArgument, err)
-		}
-		if errors.As(err, &user.DuplicateRecordError{UUID: usr.UUID, Email: usr.Email}) {
-			return "", connect.NewError(connect.CodeAlreadyExists, err)
-		}
-		return "", internalServerError(ctx, "error validating user", err)
-	}
-	if userID == "" {
-		return "", connect.NewError(connect.CodeInvalidArgument, errMissingUserInfo)
-	}
-	return userID, nil
 }
 
 func internalServerError(ctx context.Context, msg string, err error) error {

@@ -26,7 +26,7 @@ func (s *Server) handleSearchEntities(ctx context.Context, req gomcp.CallToolReq
 		Text:       strings.TrimSpace(text),
 		MaxResults: size,
 		Mode:       mode,
-		Namespace:  s.namespace,
+		Namespace:  getNamespace(ctx),
 	}
 
 	if types := gomcp.ParseString(req, "types", ""); types != "" {
@@ -59,7 +59,7 @@ func (s *Server) handleGetContext(ctx context.Context, req gomcp.CallToolRequest
 
 	depth := gomcp.ParseInt(req, "depth", 2)
 
-	cg, err := s.entityService.GetContext(ctx, s.namespace, urn, depth)
+	cg, err := s.entityService.GetContext(ctx, getNamespace(ctx), urn, depth)
 	if err != nil {
 		return gomcp.NewToolResultError("get context failed: " + err.Error()), nil
 	}
@@ -79,7 +79,7 @@ func (s *Server) handleImpact(ctx context.Context, req gomcp.CallToolRequest) (*
 
 	depth := gomcp.ParseInt(req, "depth", 3)
 
-	edges, err := s.entityService.GetImpact(ctx, s.namespace, urn, depth)
+	edges, err := s.entityService.GetImpact(ctx, getNamespace(ctx), urn, depth)
 	if err != nil {
 		return gomcp.NewToolResultError("impact analysis failed: " + err.Error()), nil
 	}

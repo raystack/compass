@@ -13,8 +13,7 @@ import (
 	"github.com/raystack/compass/core/entity"
 	"github.com/raystack/compass/core/namespace"
 	"github.com/raystack/compass/core/pipeline"
-	"github.com/raystack/compass/core/star"
-	"github.com/raystack/compass/core/user"
+	"github.com/raystack/compass/core/principal"
 	"github.com/raystack/compass/handler"
 	"github.com/raystack/compass/internal/config"
 	compassmcp "github.com/raystack/compass/internal/mcp"
@@ -65,19 +64,12 @@ func Start(ctx context.Context, cfg *config.Config, version string) error {
 		slog.Warn("db closed")
 	}()
 
-	// init user
-	userRepository, err := store.NewUserRepository(pgClient)
+	// init principal
+	principalRepository, err := store.NewPrincipalRepository(pgClient)
 	if err != nil {
-		return fmt.Errorf("failed to create user repository: %w", err)
+		return fmt.Errorf("failed to create principal repository: %w", err)
 	}
-	userService := user.NewService(userRepository)
-
-	// init star
-	starRepository, err := store.NewStarRepository(pgClient)
-	if err != nil {
-		return fmt.Errorf("failed to create star repository: %w", err)
-	}
-	starService := star.NewService(starRepository)
+	_ = principal.NewService(principalRepository) // available for future use
 
 	// init namespace
 	namespaceService := namespace.NewService(store.NewNamespaceRepository(pgClient), nil)
@@ -138,7 +130,7 @@ func Start(ctx context.Context, cfg *config.Config, version string) error {
 	}
 
 	// init MCP server
-	mcpServer := compassmcp.New(entityService, docService, namespace.DefaultNamespace)
+	mcpServer := compassmcp.New(entityService, docService)
 
 	// init document handler
 	docHandler := handler.NewDocumentHandler(docService)
@@ -148,8 +140,6 @@ func Start(ctx context.Context, cfg *config.Config, version string) error {
 		cfg.Service,
 		mcpServer,
 		namespaceService,
-		starService,
-		userService,
 		entityService,
 		edgeRepo,
 		docHandler,

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"connectrpc.com/connect"
@@ -13,8 +14,12 @@ import (
 	"connectrpc.com/grpcreflect"
 	"connectrpc.com/otelconnect"
 	"connectrpc.com/validate"
+	"github.com/google/uuid"
+	"github.com/raystack/compass/core/namespace"
+	"github.com/raystack/compass/core/principal"
 	"github.com/raystack/compass/gen/raystack/compass/v1beta1/compassv1beta1connect"
 	"github.com/raystack/compass/handler"
+	"github.com/raystack/compass/internal/client"
 	"github.com/raystack/compass/internal/config"
 	compassmcp "github.com/raystack/compass/internal/mcp"
 	"github.com/raystack/compass/internal/middleware"
@@ -28,8 +33,6 @@ func Serve(
 	cfg config.ServerConfig,
 	mcpServer *compassmcp.Server,
 	namespaceService handler.NamespaceService,
-	starService handler.StarService,
-	userService handler.UserService,
 	entityService handler.EntityServiceV2,
 	edgeService handler.EdgeServiceV2,
 	documentHandler *handler.DocumentHandler,
@@ -38,8 +41,6 @@ func Serve(
 
 	v1beta1Handler := handler.New(
 		namespaceService,
-		starService,
-		userService,
 		entityService,
 		edgeService,
 	)
@@ -59,7 +60,7 @@ func Serve(
 		validateInterceptor,
 		middleware.ErrorResponse(),
 		middleware.Namespace(namespaceService, cfg.Identity.NamespaceClaimKey, cfg.Identity.HeaderKeyUserUUID),
-		middleware.UserHeaderCtx(cfg.Identity.HeaderKeyUserUUID, cfg.Identity.HeaderKeyUserEmail),
+		middleware.PrincipalHeaderCtx(cfg.Identity.HeaderKeyUserUUID, cfg.Identity.HeaderKeyUserEmail),
 	)
 
 	// Create HTTP mux
@@ -92,9 +93,11 @@ func Serve(
 		_, _ = w.Write([]byte("pong"))
 	})
 
-	// MCP server for AI agent tool access
+	// MCP server for AI agent tool access, wrapped with HTTP middleware
+	// to extract principal and namespace from headers
 	if mcpServer != nil {
-		mux.Handle("/mcp", mcpServer.Handler())
+		mcpHandler := mcpHTTPMiddleware(mcpServer.Handler(), namespaceService, cfg)
+		mux.Handle("/mcp", mcpHandler)
 		logger.InfoContext(ctx, "MCP server enabled at /mcp")
 	}
 
@@ -141,4 +144,46 @@ func Serve(
 
 	logger.InfoContext(ctx, "server stopped")
 	return nil
+}
+
+// mcpHTTPMiddleware wraps an HTTP handler with namespace and principal extraction
+// from headers, mirroring the Connect interceptor logic for plain HTTP.
+func mcpHTTPMiddleware(next http.Handler, nsSvc middleware.NamespaceService, cfg config.ServerConfig) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		// Extract namespace from header
+		ns := namespace.DefaultNamespace
+		nsHeader := r.Header.Get(client.NamespaceHeaderKey)
+		if nsHeader != "" {
+			nsID, parseErr := uuid.Parse(strings.TrimSpace(nsHeader))
+			if parseErr != nil {
+				resolved, err := nsSvc.GetByName(ctx, strings.TrimSpace(nsHeader))
+				if err == nil {
+					ns = resolved
+				}
+			} else {
+				resolved, err := nsSvc.GetByID(ctx, nsID)
+				if err == nil {
+					ns = resolved
+				}
+			}
+		}
+		ctx = middleware.BuildContextWithNamespace(ctx, ns)
+
+		// Extract principal from headers
+		subject := r.Header.Get(cfg.Identity.HeaderKeyUserUUID)
+		name := r.Header.Get(cfg.Identity.HeaderKeyUserEmail)
+		pType := r.Header.Get("X-Principal-Type")
+		if pType == "" {
+			pType = "user"
+		}
+		ctx = principal.NewContext(ctx, principal.Principal{
+			Subject: subject,
+			Name:    name,
+			Type:    pType,
+		})
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }

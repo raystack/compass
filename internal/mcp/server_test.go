@@ -54,7 +54,6 @@ func newTestServer(entitySvc EntityService, docSvc DocumentService) *Server {
 	return &Server{
 		entityService:   entitySvc,
 		documentService: docSvc,
-		namespace:       namespace.DefaultNamespace,
 	}
 }
 

@@ -1,9 +1,9 @@
-package user_test
+package principal_test
 
 import (
 	"testing"
 
-	"github.com/raystack/compass/core/user"
+	"github.com/raystack/compass/core/principal"
 )
 
 func TestErrors(t *testing.T) {
@@ -16,18 +16,18 @@ func TestErrors(t *testing.T) {
 	var testCases = []testCase{
 		{
 			Description:    "not found error return correct error string",
-			Err:            user.NotFoundError{UUID: "uuid", Email: "email"},
-			ExpectedString: "could not find user with uuid \"uuid\" with email \"email\"",
+			Err:            principal.NotFoundError{Subject: "sub-123"},
+			ExpectedString: "could not find principal with subject \"sub-123\"",
 		},
 		{
 			Description:    "duplicate error return correct error string",
-			Err:            user.DuplicateRecordError{UUID: "uuid", Email: "email"},
-			ExpectedString: "duplicate user with uuid \"uuid\" with email \"email\"",
+			Err:            principal.DuplicateRecordError{Subject: "sub-123"},
+			ExpectedString: "duplicate principal with subject \"sub-123\"",
 		},
 		{
 			Description:    "invalid error return correct error string",
-			Err:            user.InvalidError{UUID: "uuid"},
-			ExpectedString: "empty field with uuid \"uuid\"",
+			Err:            principal.InvalidError{Subject: ""},
+			ExpectedString: "invalid principal: empty subject \"\"",
 		},
 	}
 

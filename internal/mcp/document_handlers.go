@@ -18,7 +18,7 @@ func (s *Server) handleGetDocuments(ctx context.Context, req gomcp.CallToolReque
 		return gomcp.NewToolResultError("'urn' parameter is required"), nil
 	}
 
-	docs, err := s.documentService.GetByEntityURN(ctx, s.namespace, urn)
+	docs, err := s.documentService.GetByEntityURN(ctx, getNamespace(ctx), urn)
 	if err != nil {
 		return gomcp.NewToolResultError("get documents failed: " + err.Error()), nil
 	}
