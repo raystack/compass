@@ -23,12 +23,11 @@ This enables point-in-time queries and change tracking without deleting data.
 | Table | Purpose |
 |-------|---------|
 | `namespaces` | Tenant isolation roots |
-| `users` | Identity (UUID, email, provider) |
+| `principals` | Caller identity (user, agent, service) |
 | `entities` | Core knowledge objects with temporal versioning |
 | `edges` | Typed, directed, temporal relationships |
 | `embeddings` | Vector embeddings for semantic search |
 | `documents` | Knowledge documents linked to entities |
-| `stars` | User-starred entities |
 
 ## Indexes
 
