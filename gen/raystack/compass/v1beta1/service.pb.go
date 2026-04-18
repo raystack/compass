@@ -684,8 +684,6 @@ type UpsertEntityRequest struct {
 	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
 	Properties    *structpb.Struct       `protobuf:"bytes,5,opt,name=properties,proto3" json:"properties,omitempty"`
 	Source        string                 `protobuf:"bytes,6,opt,name=source,proto3" json:"source,omitempty"`
-	Upstreams     []string               `protobuf:"bytes,7,rep,name=upstreams,proto3" json:"upstreams,omitempty"`
-	Downstreams   []string               `protobuf:"bytes,8,rep,name=downstreams,proto3" json:"downstreams,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -760,20 +758,6 @@ func (x *UpsertEntityRequest) GetSource() string {
 		return x.Source
 	}
 	return ""
-}
-
-func (x *UpsertEntityRequest) GetUpstreams() []string {
-	if x != nil {
-		return x.Upstreams
-	}
-	return nil
-}
-
-func (x *UpsertEntityRequest) GetDownstreams() []string {
-	if x != nil {
-		return x.Downstreams
-	}
-	return nil
 }
 
 type UpsertEntityResponse struct {
@@ -2680,7 +2664,7 @@ var File_raystack_compass_v1beta1_service_proto protoreflect.FileDescriptor
 
 const file_raystack_compass_v1beta1_service_proto_rawDesc = "" +
 	"\n" +
-	"&raystack/compass/v1beta1/service.proto\x12\x18raystack.compass.v1beta1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bbuf/validate/validate.proto\"\xd2\x01\n" +
+	"&raystack/compass/v1beta1/service.proto\x12\x18raystack.compass.v1beta1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd2\x01\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04uuid\x18\x02 \x01(\tR\x04uuid\x12\x14\n" +
@@ -2744,7 +2728,7 @@ const file_raystack_compass_v1beta1_service_proto_rawDesc = "" +
 	"\x14GetEntityByIDRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"M\n" +
 	"\x15GetEntityByIDResponse\x124\n" +
-	"\x04data\x18\x01 \x01(\v2 .raystack.compass.v1beta1.EntityR\x04data\"\x9d\x02\n" +
+	"\x04data\x18\x01 \x01(\v2 .raystack.compass.v1beta1.EntityR\x04data\"\x81\x02\n" +
 	"\x13UpsertEntityRequest\x12\x19\n" +
 	"\x03urn\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03urn\x12\x1b\n" +
 	"\x04type\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04type\x12\x1b\n" +
@@ -2753,9 +2737,7 @@ const file_raystack_compass_v1beta1_service_proto_rawDesc = "" +
 	"\n" +
 	"properties\x18\x05 \x01(\v2\x17.google.protobuf.StructR\n" +
 	"properties\x12\x16\n" +
-	"\x06source\x18\x06 \x01(\tR\x06source\x12\x1c\n" +
-	"\tupstreams\x18\a \x03(\tR\tupstreams\x12 \n" +
-	"\vdownstreams\x18\b \x03(\tR\vdownstreams\"&\n" +
+	"\x06source\x18\x06 \x01(\tR\x06sourceJ\x04\b\a\x10\bJ\x04\b\b\x10\tR\tupstreamsR\vdownstreams\"&\n" +
 	"\x14UpsertEntityResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"0\n" +
 	"\x13DeleteEntityRequest\x12\x19\n" +

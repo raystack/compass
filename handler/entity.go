@@ -16,7 +16,6 @@ import (
 // EntityServiceV2 defines entity operations for the handler.
 type EntityServiceV2 interface {
 	Upsert(ctx context.Context, ns *namespace.Namespace, ent *entity.Entity) (string, error)
-	UpsertWithEdges(ctx context.Context, ns *namespace.Namespace, ent *entity.Entity, upstreams, downstreams []string) (string, error)
 	GetByURN(ctx context.Context, ns *namespace.Namespace, urn string) (entity.Entity, error)
 	GetByID(ctx context.Context, id string) (entity.Entity, error)
 	GetAll(ctx context.Context, ns *namespace.Namespace, flt entity.Filter) ([]entity.Entity, int, error)
@@ -93,8 +92,7 @@ func (server *Handler) UpsertEntity(ctx context.Context, req *connect.Request[co
 		ent.Properties = req.Msg.GetProperties().AsMap()
 	}
 
-	id, err := server.entityService.UpsertWithEdges(ctx, ns, ent,
-		req.Msg.GetUpstreams(), req.Msg.GetDownstreams())
+	id, err := server.entityService.Upsert(ctx, ns, ent)
 	if err != nil {
 		return nil, internalServerError(ctx, "error upserting entity", err)
 	}
