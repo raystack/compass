@@ -15,9 +15,10 @@ import (
 // --- Mock services ---
 
 type mockEntityService struct {
-	searchFn     func(ctx context.Context, cfg entity.SearchConfig) ([]entity.SearchResult, error)
-	getContextFn func(ctx context.Context, ns *namespace.Namespace, urn string, depth int) (*entity.ContextGraph, error)
-	getImpactFn  func(ctx context.Context, ns *namespace.Namespace, urn string, depth int) ([]entity.Edge, error)
+	searchFn          func(ctx context.Context, cfg entity.SearchConfig) ([]entity.SearchResult, error)
+	getContextFn      func(ctx context.Context, ns *namespace.Namespace, urn string, depth int) (*entity.ContextGraph, error)
+	getImpactFn       func(ctx context.Context, ns *namespace.Namespace, urn string, depth int) ([]entity.Edge, error)
+	assembleContextFn func(ctx context.Context, ns *namespace.Namespace, req entity.AssemblyRequest) (*entity.AssembledContext, error)
 }
 
 func (m *mockEntityService) Search(ctx context.Context, cfg entity.SearchConfig) ([]entity.SearchResult, error) {
@@ -30,6 +31,10 @@ func (m *mockEntityService) GetContext(ctx context.Context, ns *namespace.Namesp
 
 func (m *mockEntityService) GetImpact(ctx context.Context, ns *namespace.Namespace, urn string, depth int) ([]entity.Edge, error) {
 	return m.getImpactFn(ctx, ns, urn, depth)
+}
+
+func (m *mockEntityService) AssembleContext(ctx context.Context, ns *namespace.Namespace, req entity.AssemblyRequest) (*entity.AssembledContext, error) {
+	return m.assembleContextFn(ctx, ns, req)
 }
 
 type mockDocumentService struct {
@@ -557,5 +562,116 @@ func TestHandleGetDocuments_ServiceError(t *testing.T) {
 	text := resultText(t, result)
 	if !strings.Contains(text, "get documents failed") {
 		t.Errorf("expected 'get documents failed' in error, got: %s", text)
+	}
+}
+
+// --- Assemble context handler tests ---
+
+func TestHandleAssembleContext(t *testing.T) {
+	svc := &mockEntityService{
+		assembleContextFn: func(_ context.Context, _ *namespace.Namespace, req entity.AssemblyRequest) (*entity.AssembledContext, error) {
+			if req.Query != "debug orders pipeline" {
+				t.Errorf("expected query 'debug orders pipeline', got %q", req.Query)
+			}
+			if req.Intent != entity.IntentDebug {
+				t.Errorf("expected intent debug, got %q", req.Intent)
+			}
+			return &entity.AssembledContext{
+				Query:       req.Query,
+				Intent:      req.Intent,
+				TokenBudget: 4000,
+				TokensUsed:  500,
+				Seeds: []entity.Entity{
+					{Name: "orders", Type: "table", URN: "urn:bq:orders", Source: "bigquery", Description: "Order events"},
+				},
+				Entities: []entity.ScoredEntity{
+					{Entity: entity.Entity{Name: "orders", Type: "table", URN: "urn:bq:orders"}, Score: 1.0, Distance: 0},
+					{Entity: entity.Entity{Name: "dashboard", Type: "dashboard", URN: "urn:bq:dashboard"}, Score: 0.5, Distance: 1},
+				},
+				Edges: []entity.Edge{
+					{SourceURN: "urn:bq:orders", TargetURN: "urn:bq:dashboard", Type: "lineage"},
+				},
+				Documents: []entity.FetchedDocument{
+					{Title: "Runbook", Body: "Steps to debug.", EntityURN: "urn:bq:orders"},
+				},
+				Stats: entity.AssemblyStats{
+					EntitiesConsidered: 5,
+					EntitiesIncluded:   2,
+					DocumentsFetched:   1,
+					GraphDepth:         2,
+				},
+			}, nil
+		},
+	}
+	srv := newTestServer(svc, nil)
+
+	result, err := srv.handleAssembleContext(context.Background(), makeRequest(map[string]any{
+		"query":  "debug orders pipeline",
+		"intent": "debug",
+	}))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.IsError {
+		t.Fatalf("expected success, got error: %s", resultText(t, result))
+	}
+
+	text := resultText(t, result)
+	if !strings.Contains(text, "Context: debug orders pipeline") {
+		t.Errorf("expected context header in output")
+	}
+	if !strings.Contains(text, "Seed Entities") {
+		t.Errorf("expected Seed Entities section")
+	}
+	if !strings.Contains(text, "Related Entities") {
+		t.Errorf("expected Related Entities section")
+	}
+	if !strings.Contains(text, "Relationships") {
+		t.Errorf("expected Relationships section")
+	}
+	if !strings.Contains(text, "Documents") {
+		t.Errorf("expected Documents section")
+	}
+	if !strings.Contains(text, "Provenance") {
+		t.Errorf("expected Provenance line")
+	}
+}
+
+func TestHandleAssembleContext_MissingQuery(t *testing.T) {
+	srv := newTestServer(&mockEntityService{}, nil)
+
+	result, err := srv.handleAssembleContext(context.Background(), makeRequest(map[string]any{}))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !result.IsError {
+		t.Fatal("expected error result")
+	}
+	text := resultText(t, result)
+	if !strings.Contains(text, "'query' parameter is required") {
+		t.Errorf("expected query parameter error, got: %s", text)
+	}
+}
+
+func TestHandleAssembleContext_ServiceError(t *testing.T) {
+	svc := &mockEntityService{
+		assembleContextFn: func(_ context.Context, _ *namespace.Namespace, _ entity.AssemblyRequest) (*entity.AssembledContext, error) {
+			return nil, errors.New("db failure")
+		},
+	}
+	srv := newTestServer(svc, nil)
+
+	result, err := srv.handleAssembleContext(context.Background(), makeRequest(map[string]any{
+		"query": "test",
+	}))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !result.IsError {
+		t.Fatal("expected error result")
+	}
+	text := resultText(t, result)
+	if !strings.Contains(text, "assemble context failed") {
+		t.Errorf("expected 'assemble context failed' in error, got: %s", text)
 	}
 }

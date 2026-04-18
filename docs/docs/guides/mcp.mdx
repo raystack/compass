@@ -92,13 +92,44 @@ Get documents (runbooks, annotations, decisions) attached to an entity.
 |-----------|----------|-------------|
 | `urn` | Yes | Entity URN |
 
+### `assemble_context`
+
+Assemble a curated, token-budget-aware context window for an AI agent task. This is the primary tool for agents — it replaces the pattern of calling search, context, impact, and documents separately.
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `query` | Yes | What you're trying to accomplish |
+| `seed_urns` | No | Comma-separated entity URNs to start from |
+| `intent` | No | Task intent: `debug`, `build`, `analyze`, `govern`, `general` (default: `general`) |
+| `token_budget` | No | Max tokens in response (default: 4000) |
+| `depth` | No | Graph traversal depth, 1-5 (default: 2) |
+
+The tool works in five phases:
+
+1. **Seed resolution** — If `seed_urns` are given, uses those. Otherwise, runs hybrid search to find the most relevant entities.
+2. **Graph expansion** — Walks edges bidirectionally from each seed up to the configured depth.
+3. **Document fetching** — Retrieves attached documents for seed and top-ranked related entities.
+4. **Intent-aware ranking** — Scores all entities by relevance. The `intent` parameter adjusts weights: `debug` prioritizes upstream lineage, `analyze` prioritizes metrics and dashboards, `build` prioritizes downstream consumers, `govern` prioritizes policies and ownership.
+5. **Budget packing** — Packs the highest-value context into the token budget. If the budget is exceeded, lower-ranked items are omitted and `Truncated: yes` is indicated.
+
+Returns structured markdown with seed entities, related entities, relationships, documents, and provenance metadata.
+
 ## Usage Patterns
 
-AI agents typically compose these tools together:
+### Quick Start: Use `assemble_context`
+
+For most agent tasks, `assemble_context` is the only tool you need:
+
+```
+assemble_context(query: "debug the user sessions pipeline", intent: "debug")
+assemble_context(query: "what metrics come from this table", seed_urns: "table:user_sessions", intent: "analyze")
+```
+
+### Composable Tools
+
+For fine-grained control, agents can compose the individual tools:
 
 1. **Discover** — `search_entities` to find relevant entities
 2. **Understand** — `get_context` to see relationships and neighbors
 3. **Assess risk** — `impact` to evaluate downstream effects
 4. **Get knowledge** — `get_documents` for runbooks and decisions
-
-The agent controls what context it assembles. Compass provides focused, composable tools rather than monolithic responses.

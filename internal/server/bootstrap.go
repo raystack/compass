@@ -96,6 +96,9 @@ func Start(ctx context.Context, cfg *config.Config, version string) error {
 	}
 	docService := document.NewService(docRepo)
 
+	// wire document fetcher into entity service for context assembly
+	entityService.WithDocumentFetcher(&docFetcherAdapter{svc: docService})
+
 	// init embedding pipeline (optional)
 	if cfg.Embedding.Enabled {
 		provider, err := initEmbeddingProvider(cfg.Embedding)
@@ -201,6 +204,29 @@ func initPostgres(cfg store.Config) (*store.Client, error) {
 	}
 	slog.Info("connected to postgres server", "host", cfg.Host, "port", cfg.Port)
 	return pgClient, nil
+}
+
+// docFetcherAdapter adapts document.Service to entity.DocumentFetcher.
+type docFetcherAdapter struct {
+	svc *document.Service
+}
+
+func (a *docFetcherAdapter) GetDocumentsForEntity(ctx context.Context, ns *namespace.Namespace, entityURN string) ([]entity.FetchedDocument, error) {
+	docs, err := a.svc.GetByEntityURN(ctx, ns, entityURN)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]entity.FetchedDocument, len(docs))
+	for i, d := range docs {
+		result[i] = entity.FetchedDocument{
+			Title:     d.Title,
+			Body:      d.Body,
+			Source:    d.Source,
+			SourceID:  d.SourceID,
+			EntityURN: entityURN,
+		}
+	}
+	return result, nil
 }
 
 func initEmbeddingProvider(cfg config.EmbeddingConfig) (embedding.Provider, error) {

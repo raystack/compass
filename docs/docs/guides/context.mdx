@@ -65,3 +65,17 @@ With depth 2, it would also include any entities connected to the Kafka Topic an
 ## Impact Analysis
 
 `impact` answers "if I change this, what breaks?" by tracing edges downstream from a root entity. Same depth mechanics and cycle detection as `get_context`, but follows relationships in one direction to map the blast radius. Available as `entity impact` in the CLI, `GetEntityImpact` in the API, and `impact` in MCP.
+
+## Context Assembly
+
+For AI agents, `assemble_context` provides an intelligent, all-in-one context assembly. Instead of composing multiple tool calls, agents describe their task and intent, and Compass returns a curated context window:
+
+```
+assemble_context(
+  query: "debug the user sessions pipeline",
+  intent: "debug",
+  token_budget: 4000
+)
+```
+
+This combines search, graph traversal, document fetching, intent-aware ranking, and token-budget packing into a single call. See the [MCP guide](/guides/mcp) for full parameter reference.

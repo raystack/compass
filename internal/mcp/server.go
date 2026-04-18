@@ -16,6 +16,7 @@ type EntityService interface {
 	Search(ctx context.Context, cfg entity.SearchConfig) ([]entity.SearchResult, error)
 	GetContext(ctx context.Context, ns *namespace.Namespace, urn string, depth int) (*entity.ContextGraph, error)
 	GetImpact(ctx context.Context, ns *namespace.Namespace, urn string, depth int) ([]entity.Edge, error)
+	AssembleContext(ctx context.Context, ns *namespace.Namespace, req entity.AssemblyRequest) (*entity.AssembledContext, error)
 }
 
 // DocumentService defines document operations needed by the MCP server.
@@ -40,7 +41,7 @@ func New(entitySvc EntityService, docSvc DocumentService) *Server {
 
 	mcpSrv := mcpserver.NewMCPServer(
 		"compass",
-		"0.2.0",
+		"0.3.0",
 		mcpserver.WithToolCapabilities(false),
 	)
 
@@ -48,6 +49,7 @@ func New(entitySvc EntityService, docSvc DocumentService) *Server {
 	mcpSrv.AddTool(getContextTool(), s.handleGetContext)
 	mcpSrv.AddTool(impactAnalysisTool(), s.handleImpact)
 	mcpSrv.AddTool(getDocumentsTool(), s.handleGetDocuments)
+	mcpSrv.AddTool(assembleContextTool(), s.handleAssembleContext)
 
 	s.mcpServer = mcpSrv
 	s.httpServer = mcpserver.NewStreamableHTTPServer(mcpSrv)

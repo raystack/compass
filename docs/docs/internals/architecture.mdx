@@ -43,7 +43,7 @@ Orchestrates graph traversal, hybrid search, and context composition:
 ### Serving Layer
 
 - **Connect RPC** — HTTP and gRPC via a single service definition. API definitions in [raystack/proton](https://github.com/raystack/proton).
-- **MCP Server** — Model Context Protocol at `/mcp` for AI agents. Composable tools for searching, understanding context, analyzing impact, and retrieving documents.
+- **MCP Server** — Model Context Protocol at `/mcp` for AI agents. Includes `assemble_context` for intelligent, intent-aware context assembly, plus composable tools for search, context, impact, and documents.
 
 ## Multi-Tenancy
 
@@ -54,10 +54,9 @@ The migration user and the application user must be different — RLS policies a
 ## Schema
 
 ```
-namespaces → users → entities → edges
-                              → embeddings
-                   → documents → embeddings
-                   → stars
+namespaces → principals → entities → edges
+                                   → embeddings
+                        → documents → embeddings
 ```
 
-All tables carry `namespace_id` and are covered by RLS policies.
+All tables carry `namespace_id` and are covered by RLS policies. Principals represent any caller identity — humans, AI agents, or services.

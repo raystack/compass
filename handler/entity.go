@@ -25,6 +25,7 @@ type EntityServiceV2 interface {
 	Suggest(ctx context.Context, ns *namespace.Namespace, text string, limit int) ([]string, error)
 	GetContext(ctx context.Context, ns *namespace.Namespace, urn string, depth int) (*entity.ContextGraph, error)
 	GetImpact(ctx context.Context, ns *namespace.Namespace, urn string, depth int) ([]entity.Edge, error)
+	AssembleContext(ctx context.Context, ns *namespace.Namespace, req entity.AssemblyRequest) (*entity.AssembledContext, error)
 }
 
 // EdgeServiceV2 defines edge operations for the handler.
