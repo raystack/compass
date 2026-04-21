@@ -1,10 +1,9 @@
 version: v2
-# Proto source lives in the proton repo (../proton).
-# After running `buf generate`, remove unwanted generated files:
-#   find gen/raystack -mindepth 1 -maxdepth 1 ! -name compass -exec rm -rf {} +
 inputs:
-  - directory: ../proton
-  - module: buf.build/bufbuild/protovalidate
+  - git_repo: https://github.com/raystack/proton.git
+    ref: 8516e5e694d6b029a524da2ce42d3e8a5be9f339
+    paths:
+      - raystack/compass
 managed:
   enabled: true
   override:
