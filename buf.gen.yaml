@@ -1,4 +1,9 @@
 version: v2
+inputs:
+  - git_repo: https://github.com/raystack/proton.git
+    ref: 8516e5e694d6b029a524da2ce42d3e8a5be9f339
+    paths:
+      - raystack/compass
 managed:
   enabled: true
   override:

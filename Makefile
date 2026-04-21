@@ -50,10 +50,8 @@ generate: ## Run go generate
 config: ## Generate sample config file
 	@cp internal/config/config.example.yaml config.yaml
 
-PROTON_REF ?= main
-
 proto: ## Generate protobuf files
-	@buf generate "https://github.com/raystack/proton.git#ref=${PROTON_REF}" --path raystack/compass
+	@buf generate
 
 setup: ## Install required dependencies
 	@go mod tidy
