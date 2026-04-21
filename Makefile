@@ -3,7 +3,6 @@ COMMIT := $(shell git rev-parse --short HEAD)
 TAG := "$(shell git rev-list --tags --max-count=1)"
 VERSION := "$(shell git describe --tags ${TAG})-next"
 BUILD_DIR=dist
-PROTON_COMMIT := "8516e5e"
 
 .PHONY: all build clean test tidy vet proto setup format generate lint install
 
@@ -52,8 +51,8 @@ config: ## Generate sample config file
 	@cp internal/config/config.example.yaml config.yaml
 
 proto: ## Generate protobuf files
-	@rm -rf proto/
-	@buf generate https://github.com/raystack/proton/archive/${PROTON_COMMIT}.zip#strip_components=1 --template buf.gen.yaml --path raystack/compass -v
+	@buf generate
+	@rm -rf gen/buf
 
 setup: ## Install required dependencies
 	@go mod tidy
