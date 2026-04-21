@@ -256,11 +256,6 @@ func checkPostgresError(err error) error {
 	return err
 }
 
-func isValidUUID(u string) bool {
-	_, err := uuid.Parse(u)
-	return err == nil
-}
-
 func namespaceFromContext(ctx context.Context) uuid.UUID {
 	return middleware.FetchNamespaceFromContext(ctx).ID
 }
